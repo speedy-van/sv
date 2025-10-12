@@ -9,6 +9,7 @@ import {
   validateBookingAmount, 
   convertBookingAmountsToPence
 } from '@/lib/utils/currency';
+import { dynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
 // Using Prisma enums instead
 // import {
 //   BookingStep,
@@ -324,29 +325,111 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Use pricing from booking data (already calculated on frontend)
-    console.log('🚀 Using pricing from booking data...');
+    // Calculate pricing using Dynamic Pricing Engine
+    console.log('🚀 Calculating pricing using Dynamic Pricing Engine...');
+    
+    // Prepare items for pricing engine
+    const pricingItems = (bookingData.items || []).map((item: any) => ({
+      category: item.category || 'general',
+      quantity: item.quantity || 1,
+      weight: item.weight || 0,
+      volume: item.volumeFactor || 0,
+      fragile: item.fragile || false,
+    }));
+
+    // Determine service type based on urgency
+    let serviceType: 'ECONOMY' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE' = 'STANDARD';
+    if (bookingData.urgency === 'urgent') {
+      serviceType = 'PREMIUM';
+    } else if (bookingData.urgency === 'same-day') {
+      serviceType = 'ENTERPRISE';
+    } else if (bookingData.urgency === 'flexible') {
+      serviceType = 'ECONOMY';
+    }
+
+    // Determine customer segment
+    const customerSegment = customerId ? 'BUSINESS' : 'INDIVIDUAL';
+    
+    // Determine loyalty tier (default to BRONZE for new customers)
+    let loyaltyTier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' = 'BRONZE';
+    if (customerId) {
+      // Check customer's booking history
+      const customerBookings = await prisma.booking.count({
+        where: { customerId: customerId },
+      });
+      
+      if (customerBookings >= 50) loyaltyTier = 'PLATINUM';
+      else if (customerBookings >= 20) loyaltyTier = 'GOLD';
+      else if (customerBookings >= 10) loyaltyTier = 'SILVER';
+    }
+
+    // Call dynamic pricing engine
+    const dynamicPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
+      pickupAddress: {
+        address: bookingData.pickupAddress.street || '',
+        postcode: bookingData.pickupAddress.postcode || '',
+        coordinates: rawPickupAddress.coordinates,
+      },
+      dropoffAddress: {
+        address: bookingData.dropoffAddress.street || '',
+        postcode: bookingData.dropoffAddress.postcode || '',
+        coordinates: rawDropoffAddress.coordinates,
+      },
+      scheduledDate: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
+                     bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
+      serviceType,
+      customerSegment,
+      loyaltyTier,
+      items: pricingItems,
+      customerId: customerId || undefined,
+    });
+
+    console.log('✅ Dynamic pricing calculated:', {
+      basePrice: dynamicPricingResult.basePrice,
+      finalPrice: dynamicPricingResult.finalPrice,
+      multipliers: dynamicPricingResult.dynamicMultipliers,
+      confidence: dynamicPricingResult.confidence,
+    });
+
+    // Compare with frontend pricing and log any significant differences
+    const frontendPrice = bookingData.pricing.total;
+    const backendPrice = dynamicPricingResult.finalPrice;
+    const priceDifference = Math.abs(frontendPrice - backendPrice);
+    const priceDifferencePercent = (priceDifference / frontendPrice) * 100;
+
+    if (priceDifferencePercent > 10) {
+      console.warn('⚠️ Significant price difference detected:', {
+        frontendPrice,
+        backendPrice,
+        difference: priceDifference,
+        differencePercent: priceDifferencePercent.toFixed(2) + '%',
+      });
+    }
+
+    // Use backend calculated price (more accurate and includes all multipliers)
     const pricingResult = {
-      price: bookingData.pricing.total,
-      currency: bookingData.pricing.currency,
-      totalPrice: bookingData.pricing.total,
-      subtotalBeforeVAT: bookingData.pricing.subtotal,
-      vatAmount: bookingData.pricing.vat,
+      price: dynamicPricingResult.finalPrice,
+      currency: 'GBP',
+      totalPrice: dynamicPricingResult.finalPrice,
+      subtotalBeforeVAT: dynamicPricingResult.finalPrice / 1.2, // Remove VAT
+      vatAmount: dynamicPricingResult.finalPrice - (dynamicPricingResult.finalPrice / 1.2),
       vatRate: 0.2,
-      basePrice: bookingData.pricing.subtotal,
-      itemsPrice: 0,
-      servicePrice: 0,
+      basePrice: dynamicPricingResult.basePrice,
+      itemsPrice: dynamicPricingResult.breakdown.itemsCost,
+      servicePrice: dynamicPricingResult.breakdown.timeCost,
       propertyAccessPrice: 0,
-      urgencyPrice: 0,
-      promoDiscount: 0,
+      urgencyPrice: dynamicPricingResult.breakdown.surcharges,
+      promoDiscount: dynamicPricingResult.breakdown.discounts,
       estimatedDuration: 60,
       recommendedVehicle: 'van',
       distance: 10,
-      breakdown: {},
+      breakdown: dynamicPricingResult.breakdown,
       surcharges: [],
-      multipliers: {},
-      recommendations: [],
+      multipliers: dynamicPricingResult.dynamicMultipliers,
+      recommendations: dynamicPricingResult.recommendations || [],
       optimizationTips: [],
+      validUntil: dynamicPricingResult.validUntil,
+      confidence: dynamicPricingResult.confidence,
     };
     
     // Validate pricing
@@ -491,6 +574,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save pricing snapshot for audit and analysis
+    try {
+      const { PricingSnapshotService } = await import('@/lib/services/pricing-snapshot-service');
+      
+      await PricingSnapshotService.createPricingSnapshot(
+        booking.id,
+        {
+          amountGbpMinor: poundsToPence(pricingResult.totalPrice),
+          subtotalBeforeVat: poundsToPence(pricingResult.subtotalBeforeVAT),
+          vatRate: pricingResult.vatRate,
+          breakdown: pricingResult.breakdown,
+        } as any,
+        {
+          pickupAddress: bookingData.pickupAddress,
+          dropoffAddress: bookingData.dropoffAddress,
+          items: bookingData.items,
+          urgency: bookingData.urgency,
+          scheduledDate: bookingData.pickupDate || bookingData.scheduledFor,
+          serviceType,
+          customerSegment,
+          loyaltyTier,
+          multipliers: pricingResult.multipliers,
+          frontendPrice: bookingData.pricing.total,
+          backendPrice: pricingResult.totalPrice,
+          priceDifference: priceDifference,
+          priceDifferencePercent: priceDifferencePercent,
+        },
+        'uk-default'
+      );
+
+      console.log('✅ Pricing snapshot saved for booking:', booking.id);
+    } catch (error) {
+      console.error('⚠️ Failed to save pricing snapshot:', error);
+      // Non-critical error, continue
+    }
+
     // Create audit log entry (only if user is authenticated)
     if (customerId) {
       await prisma.auditLog.create({
@@ -509,6 +628,9 @@ export async function POST(request: NextRequest) {
             itemsCount: bookingData.items?.length || 0,
             createdAt: new Date().toISOString(),
             linkedToAccount: 'Yes',
+            pricingEngine: 'dynamic',
+            multipliers: pricingResult.multipliers,
+            confidence: pricingResult.confidence,
           },
         },
       });
