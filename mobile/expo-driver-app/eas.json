@@ -21,6 +21,9 @@
     "production": {
       "distribution": "store",
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk"
+      },
       "ios": {
         "buildConfiguration": "Release",
         "simulator": false

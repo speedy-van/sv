@@ -15,8 +15,8 @@ const getBaseURL = () => {
     return process.env.EXPO_PUBLIC_DEV_API_URL || 'http://localhost:3000';
   }
   
-  // Production URL - MUST include 'api.' subdomain
-  return 'https://api.speedy-van.co.uk';
+  // Production URL - Main domain (backend is on main domain, not subdomain)
+  return 'https://speedy-van.co.uk';
 };
 
 export const API_CONFIG = {
