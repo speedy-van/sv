@@ -1,6 +1,6 @@
 # Speedy Van - Robots.txt
 # Optimized for SEO and Google Ads
-# Office 2.18, Hamilton, 1 Barrack Street, Hamilton, ML3 0DG
+# 140 Charles Street, Glasgow City, G21 2QB, UK
 
 User-agent: *
 Allow: /
@@ -28,15 +28,15 @@ Allow: /images/
 Allow: /og/
 
 # Sitemaps
-Sitemap: https://speedyvan.co.uk/sitemap.xml
-Sitemap: https://speedyvan.co.uk/sitemap-pages.xml
-Sitemap: https://speedyvan.co.uk/sitemap-blog.xml
+Sitemap: https://speedy-van.co.uk/sitemap.xml
+Sitemap: https://speedy-van.co.uk/sitemap-pages.xml
+Sitemap: https://speedy-van.co.uk/sitemap-blog.xml
 
 # Crawl delay for better server performance
 Crawl-delay: 1
 
 # Host directive
-Host: https://speedyvan.co.uk
+Host: https://speedy-van.co.uk
 
 # Google-specific rules
 User-agent: Googlebot
