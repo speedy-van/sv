@@ -151,10 +151,43 @@ export async function POST(
       ? aggregatedPerLegMiles
       : (typeof fallbackDistanceMiles === 'number' ? fallbackDistanceMiles : 0);
 
-    // 🚨 CRITICAL: Validate distance to prevent massive earnings
-    if (!Number.isFinite(computedDistanceMiles) || computedDistanceMiles <= 0 || computedDistanceMiles > 1000) {
-      console.error(`❌ INVALID DISTANCE: ${computedDistanceMiles} miles - using fallback`);
-      computedDistanceMiles = 50; // Fallback to reasonable UK distance
+    // FIXED: Validate distance - reject if invalid (no fallback)
+    if (!Number.isFinite(computedDistanceMiles) || computedDistanceMiles <= 0) {
+      logger.error('Invalid distance data for job completion', {
+        jobId,
+        driverId: driver.id,
+        computedDistanceMiles,
+        perLegDistanceMiles,
+        fallbackDistanceMiles,
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid distance data. Please ensure GPS tracking is enabled and retry.',
+          code: 'INVALID_DISTANCE',
+          details: {
+            receivedDistance: computedDistanceMiles,
+            suggestion: 'Check GPS permissions and location services'
+          }
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Sanity check: reject unreasonably long distances (>500 miles for UK)
+    if (computedDistanceMiles > 500) {
+      logger.warn('Unusually long distance detected', {
+        jobId,
+        driverId: driver.id,
+        distance: computedDistanceMiles,
+      });
+      return NextResponse.json(
+        { 
+          error: 'Distance exceeds maximum allowed (500 miles). Please contact support.',
+          code: 'DISTANCE_TOO_LONG',
+          details: { distance: computedDistanceMiles }
+        },
+        { status: 400 }
+      );
     }
     const computedDrivingMinutes = Math.max(0, Number(drivingDurationMinutes) || booking?.estimatedDurationMinutes || 0);
     let computedLoadingMinutes = Math.max(0, Number(loadingDurationMinutes) || 0);

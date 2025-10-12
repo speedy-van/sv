@@ -206,8 +206,8 @@ export class PerformanceTrackingService {
     // Calculate penalties
     const penalties = await this.calculatePenalties(driverId, assignmentId);
     
-    // Calculate helper share (35% of final driver payout)
-    const helperShare = routeData.helperCount > 0 ? subtotal * 0.35 : 0;
+    // Calculate helper share (20% of final driver payout - UNIFIED)
+    const helperShare = routeData.helperCount > 0 ? subtotal * 0.20 : 0;
     
     // Calculate final payout
     const totalBonuses = Object.values(bonuses).reduce((sum, bonus) => sum + bonus, 0);

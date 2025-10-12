@@ -40,11 +40,51 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Earning record not found' }, { status: 404 });
     }
 
+    // FIXED: Get old value before update (Audit Trail)
+    const currentEarning = await prisma.driverEarnings.findUnique({
+      where: { id: earningId },
+      select: { netAmountPence: true, driverId: true },
+    });
+    
+    if (!currentEarning) {
+      return NextResponse.json(
+        { error: 'Earning record not found' },
+        { status: 404 }
+      );
+    }
+    
+    const oldValuePence = currentEarning.netAmountPence;
+    const newValuePence = Math.round(adjustedAmountGBP * 100);
+    
     // Update the earning with admin adjustment
     const updatedEarning = await prisma.driverEarnings.update({
       where: { id: earningId },
       data: {
-        netAmountPence: Math.round(adjustedAmountGBP * 100),
+        netAmountPence: newValuePence,
+      },
+    });
+    
+    // FIXED: Create audit log entry
+    await prisma.auditLog.create({
+      data: {
+        actorId: (session.user as any).id,
+        actorRole: 'admin',
+        action: 'earnings_adjusted',
+        targetType: 'DriverEarnings',
+        targetId: earningId,
+        before: { 
+          netAmountPence: oldValuePence,
+          netAmountGBP: (oldValuePence / 100).toFixed(2)
+        },
+        after: { 
+          netAmountPence: newValuePence,
+          netAmountGBP: (newValuePence / 100).toFixed(2)
+        },
+        details: { 
+          reason: body.adminNotes || 'No reason provided',
+          difference: newValuePence - oldValuePence,
+          driverId: currentEarning.driverId,
+        },
       },
     });
 

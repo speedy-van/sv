@@ -203,7 +203,7 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   lateDeliveryPenaltyPence: 1000,  // £10.00
   lowRatingPenaltyPence: 500,      // £5.00
   
-  maxEarningsPercentOfBooking: 0.75,  // 75% cap
+  maxEarningsPercentOfBooking: 0.85,  // 85% cap (FIXED: 85% + 15% = 100%)
   minEarningsPerJob: 2000,            // £20.00 minimum
   
   platformFeePercentage: 0.15,        // 15% platform fee
@@ -315,8 +315,8 @@ export class DriverEarningsService {
       // Calculate platform fee (before helper share)
       const platformFee = Math.round(input.customerPaymentPence * this.config.platformFeePercentage);
       
-      // Calculate net earnings
-      let netEarnings = grossEarnings - helperShare;
+      // Calculate net earnings (FIXED: now subtracts platformFee)
+      let netEarnings = grossEarnings - helperShare - platformFee;
       
       // Apply earnings cap (percentage of customer payment)
       const earningsCap = Math.round(
@@ -338,6 +338,43 @@ export class DriverEarningsService {
       if (capApplied) {
         warnings.push(`Earnings capped at ${this.config.maxEarningsPercentOfBooking * 100}% of booking value`);
       }
+      
+      // FIXED: Daily Cap Enforcement (UK Compliance - £500/day)
+      const DAILY_CAP_PENCE = 50000; // £500
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const todaysEarnings = await prisma.driverEarnings.aggregate({
+        where: {
+          driverId: input.driverId,
+          calculatedAt: { gte: today, lt: tomorrow }
+        },
+        _sum: { netAmountPence: true }
+      });
+      
+      const currentDailyTotal = todaysEarnings._sum.netAmountPence || 0;
+      const projectedDailyTotal = currentDailyTotal + netEarnings;
+      
+      if (projectedDailyTotal > DAILY_CAP_PENCE) {
+        const remainingCapacity = Math.max(0, DAILY_CAP_PENCE - currentDailyTotal);
+        warnings.push(
+          `Daily earnings cap (£500) reached. ` +
+          `Current: £${currentDailyTotal/100}, ` +
+          `Requested: £${netEarnings/100}, ` +
+          `Capped to: £${remainingCapacity/100}`
+        );
+        netEarnings = remainingCapacity;
+        
+        // Require admin approval if cap is hit
+        if (remainingCapacity === 0) {
+          warnings.push('CRITICAL: Driver has reached daily cap. Job requires admin approval.');
+        }
+      }
+      
+      // Prevent negative earnings
+      netEarnings = Math.max(0, netEarnings);
       
       // Generate recommendations
       this.generateRecommendations(input, netEarnings, recommendations);
