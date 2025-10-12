@@ -101,7 +101,6 @@ export interface DriverEarningsBreakdown {
   subtotal: number;              // Before bonuses/penalties
   grossEarnings: number;         // After bonuses/penalties
   helperShare: number;           // Amount for helper
-  platformFee: number;           // Platform commission
   netEarnings: number;           // Final driver payout
   cappedNetEarnings: number;     // After applying cap
   
@@ -157,11 +156,8 @@ export interface DriverEarningsConfig {
   lowRatingPenaltyPence: number;
   
   // Caps and floors
-  maxEarningsPercentOfBooking: number; // e.g., 75% = 0.75
+  maxEarningsPercentOfBooking: number; // e.g., 100% = 1.0 (driver gets full amount)
   minEarningsPerJob: number;           // Minimum payout in pence
-  
-  // Platform fees
-  platformFeePercentage: number;       // e.g., 15% = 0.15
   
   // Helper share
   defaultHelperSharePercentage: number; // e.g., 20% = 0.20
@@ -203,10 +199,8 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   lateDeliveryPenaltyPence: 1000,  // £10.00
   lowRatingPenaltyPence: 500,      // £5.00
   
-  maxEarningsPercentOfBooking: 0.85,  // 85% cap (FIXED: 85% + 15% = 100%)
+  maxEarningsPercentOfBooking: 1.0,   // 100% - driver gets full calculated amount
   minEarningsPerJob: 2000,            // £20.00 minimum
-  
-  platformFeePercentage: 0.15,        // 15% platform fee
   
   defaultHelperSharePercentage: 0.20, // 20% for helper
   
@@ -312,11 +306,8 @@ export class DriverEarningsService {
         : 0;
       const helperShare = Math.round(grossEarnings * helperSharePercentage);
       
-      // Calculate platform fee (before helper share)
-      const platformFee = Math.round(input.customerPaymentPence * this.config.platformFeePercentage);
-      
-      // Calculate net earnings (FIXED: now subtracts platformFee)
-      let netEarnings = grossEarnings - helperShare - platformFee;
+      // Calculate net earnings (driver gets full amount minus helper share only)
+      let netEarnings = grossEarnings - helperShare;
       
       // Apply earnings cap (percentage of customer payment)
       const earningsCap = Math.round(
@@ -394,7 +385,6 @@ export class DriverEarningsService {
         subtotal,
         grossEarnings,
         helperShare,
-        platformFee,
         netEarnings,
         cappedNetEarnings,
         capApplied,
@@ -450,10 +440,10 @@ export class DriverEarningsService {
           result.breakdown.subtotal - result.breakdown.baseFare
         ),
         tipAmountPence: 0, // Tips handled separately
-        feeAmountPence: result.breakdown.platformFee,
+        feeAmountPence: 0, // No platform fee - driver gets full amount
         netAmountPence: result.breakdown.netEarnings,
         grossEarningsPence: result.breakdown.grossEarnings,
-        platformFeePence: result.breakdown.platformFee,
+        platformFeePence: 0, // No platform fee
         cappedNetEarningsPence: result.breakdown.cappedNetEarnings,
         rawNetEarningsPence: result.breakdown.netEarnings,
         currency: 'gbp',
