@@ -23,6 +23,15 @@ export interface DynamicPricingRequest {
     fragile?: boolean;
   }>;
   customerId?: string;
+  
+  // Multi-drop route support
+  isMultiDrop?: boolean; // True if this booking is part of a multi-drop route
+  multiDropInfo?: {
+    totalRouteDistance: number; // Total distance of the entire route in miles
+    numberOfStops: number; // Total number of stops in the route
+    customerSharePercentage: number; // This customer's share of the route (0-1)
+    estimatedTotalRouteCost: number; // Total cost of the entire route
+  };
 }
 
 export interface DynamicPricingResponse {
@@ -43,10 +52,16 @@ export interface DynamicPricingResponse {
     itemsCost: number;
     surcharges: number;
     discounts: number;
+    multiDropDiscount?: number; // Discount applied for multi-drop routes
   };
   confidence: number;
   validUntil: Date;
   recommendations?: string[];
+  
+  // Multi-drop route information
+  isMultiDrop?: boolean;
+  multiDropSavings?: number; // Amount saved by sharing the route
+  routeType?: 'single' | 'multi-drop';
 }
 
 export class DynamicPricingEngine {
@@ -98,6 +113,11 @@ export class DynamicPricingEngine {
   }
 
   private async calculateBasePrice(request: DynamicPricingRequest): Promise<number> {
+    // Check if this is a multi-drop route
+    if (request.isMultiDrop && request.multiDropInfo) {
+      return this.calculateMultiDropPrice(request);
+    }
+
     // Service type base rates
     const serviceRates = {
       ECONOMY: 35,
@@ -108,9 +128,46 @@ export class DynamicPricingEngine {
 
     let basePrice = serviceRates[request.serviceType];
 
-    // Distance calculation (simplified)
+    // Distance calculation with tiered pricing
     const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress);
-    basePrice += Math.max(0, distance - 5) * 2.5; // £2.50 per mile after 5 miles
+    
+    // Tiered distance pricing (more economical for long distances)
+    let distanceCost = 0;
+    const freeDistance = 5; // First 5 miles free
+    const remainingDistance = Math.max(0, distance - freeDistance);
+    
+    if (remainingDistance <= 0) {
+      distanceCost = 0;
+    } else if (distance <= 50) {
+      // Short distance: 5-50 miles at £2.50/mile
+      distanceCost = remainingDistance * 2.5;
+    } else if (distance <= 150) {
+      // Medium distance: 51-150 miles
+      // First 45 miles (5-50) at £2.50/mile = £112.50
+      // Remaining at £2.00/mile
+      distanceCost = (45 * 2.5) + ((distance - 50) * 2.0);
+    } else if (distance <= 300) {
+      // Long distance: 151-300 miles
+      // First 45 miles at £2.50/mile = £112.50
+      // Next 100 miles at £2.00/mile = £200
+      // Remaining at £1.50/mile
+      distanceCost = (45 * 2.5) + (100 * 2.0) + ((distance - 150) * 1.5);
+    } else {
+      // Very long distance: 300+ miles
+      // First 45 miles at £2.50/mile = £112.50
+      // Next 100 miles at £2.00/mile = £200
+      // Next 150 miles at £1.50/mile = £225
+      // Remaining at £1.20/mile
+      distanceCost = (45 * 2.5) + (100 * 2.0) + (150 * 1.5) + ((distance - 300) * 1.2);
+    }
+    
+    console.log('💰 Distance pricing calculated:', {
+      distance: distance.toFixed(1) + ' miles',
+      tier: distance <= 50 ? 'Short' : distance <= 150 ? 'Medium' : distance <= 300 ? 'Long' : 'Very Long',
+      distanceCost: '£' + distanceCost.toFixed(2),
+    });
+    
+    basePrice += distanceCost;
 
     // Items cost
     const itemsCost = request.items.reduce((total, item) => {
@@ -336,9 +393,110 @@ export class DynamicPricingEngine {
   }
 
   // Helper methods (simplified implementations)
+  
+  /**
+   * Calculate price for multi-drop routes
+   * Customer pays their fair share of the total route cost
+   */
+  private calculateMultiDropPrice(request: DynamicPricingRequest): number {
+    const { multiDropInfo } = request;
+    if (!multiDropInfo) {
+      throw new Error('Multi-drop info required for multi-drop pricing');
+    }
+
+    // Base fare (reduced for multi-drop)
+    const serviceRates = {
+      ECONOMY: 25, // Lower than single order (35)
+      STANDARD: 35, // Lower than single order (45)
+      PREMIUM: 50, // Lower than single order (65)
+      ENTERPRISE: 70, // Lower than single order (85)
+    };
+
+    let basePrice = serviceRates[request.serviceType];
+
+    // Calculate this customer's share of the route distance cost
+    const totalRouteDistance = multiDropInfo.totalRouteDistance;
+    const customerShare = multiDropInfo.customerSharePercentage;
+
+    // Use tiered pricing for the total route
+    let totalDistanceCost = 0;
+    const freeDistance = 5;
+    const remainingDistance = Math.max(0, totalRouteDistance - freeDistance);
+    
+    if (remainingDistance <= 0) {
+      totalDistanceCost = 0;
+    } else if (totalRouteDistance <= 50) {
+      totalDistanceCost = remainingDistance * 2.5;
+    } else if (totalRouteDistance <= 150) {
+      totalDistanceCost = (45 * 2.5) + ((totalRouteDistance - 50) * 2.0);
+    } else if (totalRouteDistance <= 300) {
+      totalDistanceCost = (45 * 2.5) + (100 * 2.0) + ((totalRouteDistance - 150) * 1.5);
+    } else {
+      totalDistanceCost = (45 * 2.5) + (100 * 2.0) + (150 * 1.5) + ((totalRouteDistance - 300) * 1.2);
+    }
+
+    // Customer pays their share of the distance cost
+    const customerDistanceCost = totalDistanceCost * customerShare;
+
+    // Items cost (same as single order)
+    const itemsCost = request.items.reduce((total, item) => {
+      let itemCost = item.quantity * 5;
+      if (item.fragile) itemCost *= 1.5;
+      if (item.weight && item.weight > 25) itemCost += 10;
+      return total + itemCost;
+    }, 0);
+
+    const totalPrice = basePrice + customerDistanceCost + itemsCost;
+
+    console.log('🚛 Multi-drop pricing calculated:', {
+      serviceType: request.serviceType,
+      basePrice: '£' + basePrice.toFixed(2),
+      totalRouteDistance: totalRouteDistance.toFixed(1) + ' miles',
+      customerShare: (customerShare * 100).toFixed(1) + '%',
+      totalDistanceCost: '£' + totalDistanceCost.toFixed(2),
+      customerDistanceCost: '£' + customerDistanceCost.toFixed(2),
+      itemsCost: '£' + itemsCost.toFixed(2),
+      totalPrice: '£' + totalPrice.toFixed(2),
+      numberOfStops: multiDropInfo.numberOfStops,
+    });
+
+    return totalPrice;
+  }
+
   private async calculateDistance(pickup: any, dropoff: any): Promise<number> {
-    // Mock distance calculation - integrate with mapping service
-    return 15; // miles
+    // Use Haversine formula for accurate distance calculation
+    if (!pickup.coordinates || !dropoff.coordinates) {
+      console.warn('⚠️ Missing coordinates for distance calculation, using default 15 miles');
+      return 15; // Fallback to default
+    }
+
+    const { lat: lat1, lng: lon1 } = pickup.coordinates;
+    const { lat: lat2, lng: lon2 } = dropoff.coordinates;
+
+    // Haversine formula
+    const R = 3958.8; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in miles
+
+    // Add 15% for actual road distance (straight line vs actual route)
+    const roadDistance = distance * 1.15;
+
+    console.log('📏 Distance calculated:', {
+      straightLine: distance.toFixed(1),
+      roadDistance: roadDistance.toFixed(1),
+      from: pickup.postcode,
+      to: dropoff.postcode,
+    });
+
+    return Math.round(roadDistance);
   }
 
   private async getCurrentDemand(postcode: string): Promise<number> {
