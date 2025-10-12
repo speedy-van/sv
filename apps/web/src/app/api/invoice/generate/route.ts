@@ -80,8 +80,8 @@ function generateProfessionalInvoice(data: {
   // Professional invoice template
   const invoice = {
     header: {
-      companyName: 'SPEEDY VAN LTD',
-      companyAddress: '123 Business Street, London, SW1A 1AA',
+      companyName: 'SPEEDY VAN REMOVALS LTD',
+      companyAddress: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG',
       companyPhone: '07901846297',
       companyEmail: 'support@speedy-van.co.uk',
       companyWebsite: 'www.speedy-van.co.uk',

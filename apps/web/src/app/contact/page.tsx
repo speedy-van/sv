@@ -495,8 +495,8 @@ export default function ContactPage() {
                       <AlertIcon />
                       <Box>
                         <Text fontSize="sm">
-                          We serve customers across the UK. Our Glasgow office is our main hub, 
-                          but we have local teams in major cities.
+                          We serve customers across the UK. Our Hamilton office is our main hub, 
+                          and we have local teams in major cities.
                         </Text>
                       </Box>
                     </Alert>

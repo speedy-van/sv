@@ -100,12 +100,12 @@ interface LegalSettings {
 
 const mockLegalSettings: LegalSettings = {
   company: {
-    name: 'Speedy Van Ltd',
-    address: '123 Business Street, London, SW1A 1AA, United Kingdom',
-    phone: '+44 20 7123 4567',
-    email: 'legal@speedy-van.co.uk',
-    website: 'https://speedyvan.com',
-    registrationNumber: '12345678',
+    name: 'SPEEDY VAN REMOVALS LTD',
+    address: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, United Kingdom',
+    phone: '+44 7901846297',
+    email: 'support@speedy-van.co.uk',
+    website: 'https://speedy-van.co.uk',
+    registrationNumber: 'SC865658',
     vatNumber: 'GB123456789',
   },
   vat: {
