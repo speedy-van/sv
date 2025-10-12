@@ -23,39 +23,41 @@ import { VisitorTracker } from '@/components/VisitorTracker';
 import { StructuredData } from '@/components/StructuredData';
 
 export const metadata = {
-  title: 'Speedy Van — Premium Moving & Delivery Services',
+  title: 'Man and Van London | Furniture Removal & Moving Services | Speedy Van',
   description:
-    'Fast, reliable moving and delivery services. Get instant quotes, book online, and experience premium service with our professional team. Available 24/7 across the city.',
+    'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same day service available. Book online instantly with trusted movers.',
   keywords:
-    'moving services, delivery, logistics, premium moving, instant quotes, online booking, professional movers',
+    'man and van London, furniture removal, house removals, moving services UK, van hire, removal company, furniture movers, office removals, same day delivery, man and van near me, cheap man and van, furniture delivery service, removal companies near me, van with driver, house moving company',
   authors: [{ name: 'Speedy Van' }],
   creator: 'Speedy Van',
   publisher: 'Speedy Van',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_APP_URL || 'https://speedy-van.co.uk'
   ),
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    locale: 'en_GB',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://speedy-van.co.uk',
     siteName: 'Speedy Van',
-    title: 'Speedy Van — Premium Moving & Delivery Services',
+    title: 'Man and Van London | Furniture Removal & Moving Services UK',
     description:
-      'Fast, reliable moving and delivery services. Get instant quotes, book online, and experience premium service.',
+      'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same day service available.',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Speedy Van - Premium Moving Services',
+        alt: 'Speedy Van - Professional Man and Van Service in London',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Speedy Van — Premium Moving & Delivery Services',
+    site: '@speedyvan',
+    creator: '@speedyvan',
+    title: 'Man and Van London | Furniture Removal & Moving Services UK',
     description:
-      'Fast, reliable moving and delivery services. Get instant quotes, book online, and experience premium service.',
+      'Professional man and van service across London & UK. House removals, furniture delivery from £25/hour. Book online instantly.',
     images: ['/og-image.jpg'],
   },
   robots: {

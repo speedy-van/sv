@@ -49,12 +49,70 @@ export async function GET() {
       changefreq: 'daily',
       priority: '1.0'
     },
+    // High-priority SEO landing pages
+    {
+      url: `${baseUrl}/man-and-van-london`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/furniture-removal`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/furniture-movers`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/van-hire`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/affordable-man-and-van`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    // Service pages
+    {
+      url: `${baseUrl}/services/furniture`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/services/house-moving`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/services/office`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.85'
+    },
+    {
+      url: `${baseUrl}/services/student`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.85'
+    },
+    // Location pages
     {
       url: `${baseUrl}/uk/london`,
       lastmod: currentDate,
       changefreq: 'weekly',
       priority: '0.9'
     },
+    // Booking and core pages
     {
       url: `${baseUrl}/booking-luxury`,
       lastmod: currentDate,
