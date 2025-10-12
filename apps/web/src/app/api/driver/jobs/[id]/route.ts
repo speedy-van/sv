@@ -140,9 +140,21 @@ export async function GET(
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c;
 
-    // ✅ This is a GET endpoint for display only - no earnings calculation
-    // Actual earnings calculated on job completion using driverEarningsService
-    const estimatedEarnings = booking.totalGBP * 0.85; // Rough estimate for display
+    // ✅ Calculate actual earnings using driverEarningsService
+    const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+    const earningsResult = await driverEarningsService.calculateEarnings({
+      driverId: driver.id,
+      bookingId: booking.id,
+      assignmentId: assignment.id,
+      bookingAmount: booking.totalGBP,
+      distanceMiles: distance,
+      durationMinutes: booking.estimatedDurationMinutes || 60,
+      dropCount: 1,
+      hasHelper: false,
+      urgencyLevel: 'standard',
+      isOnTime: true,
+    });
+    const estimatedEarnings = earningsResult.breakdown.netEarnings / 100; // Convert to GBP
     
     console.log('📊 Job retrieved for driver:', {
       bookingId: booking.id,

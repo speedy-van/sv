@@ -128,9 +128,23 @@ export async function POST(request: NextRequest) {
       booking.dropoffAddress?.lng || 0
     );
 
-    const totalAmount = booking.totalGBP;
-    // ✅ Driver gets 100% - rough estimate for notification
-    const estimatedEarnings = Math.floor(totalAmount * 0.85);
+    // ✅ Calculate actual earnings using driverEarningsService (no percentage!)
+    const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+    
+    // We don't have a specific driver yet, so use a generic calculation
+    const tempEarningsResult = await driverEarningsService.calculateEarnings({
+      driverId: 'temp_driver',
+      bookingId: booking.id,
+      assignmentId: 'temp_assignment',
+      bookingAmount: booking.totalGBP,
+      distanceMiles: distance,
+      durationMinutes: booking.estimatedDurationMinutes || 60,
+      dropCount: 1,
+      hasHelper: false,
+      urgencyLevel: 'standard',
+      isOnTime: true,
+    });
+    const estimatedEarnings = Math.floor(tempEarningsResult.breakdown.netEarnings);
 
     // Create job notification data
     const jobNotificationData = {

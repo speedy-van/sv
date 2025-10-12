@@ -119,10 +119,21 @@ export async function GET(request: NextRequest) {
         dropoffAddr?.lng || 0
       );
 
-      // TEMPORARY: Use simple calculation until Prisma includes are fixed
-      // ✅ Rough estimate for display - actual calculated on completion
-      const totalAmount = booking.totalGBP;
-      const estimatedEarnings = Math.floor(totalAmount * 0.85); // Rough estimate
+      // ✅ Calculate actual earnings using driverEarningsService
+      const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+      const earningsResult = await driverEarningsService.calculateEarnings({
+        driverId: driver.id,
+        bookingId: booking.id,
+        assignmentId: assignment.id,
+        bookingAmount: booking.totalGBP,
+        distanceMiles: distance,
+        durationMinutes: booking.estimatedDurationMinutes || 60,
+        dropCount: 1,
+        hasHelper: false,
+        urgencyLevel: 'standard',
+        isOnTime: true,
+      });
+      const estimatedEarnings = Math.floor(earningsResult.breakdown.netEarnings);
 
       // Calculate required workers based on items
       const totalVolume = booking.BookingItem.reduce((sum, item) => sum + (item.volumeM3 * item.quantity), 0);

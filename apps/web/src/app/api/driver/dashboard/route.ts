@@ -183,8 +183,21 @@ export async function GET(request: NextRequest) {
         distance = 0;
       }
 
-      // ✅ Rough estimate for display - actual calculated on completion
-      const estimatedEarnings = penceToPounds(Math.floor(assignment.Booking.totalGBP * 0.85)); // Rough estimate
+      // ✅ Calculate actual earnings using driverEarningsService
+      const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+      const earningsResult = await driverEarningsService.calculateEarnings({
+        driverId: driver.id,
+        bookingId: assignment.Booking.id,
+        assignmentId: assignment.id,
+        bookingAmount: assignment.Booking.totalGBP,
+        distanceMiles: distance,
+        durationMinutes: assignment.Booking.estimatedDurationMinutes || 60,
+        dropCount: 1,
+        hasHelper: false,
+        urgencyLevel: 'standard',
+        isOnTime: true,
+      });
+      const estimatedEarnings = penceToPounds(earningsResult.breakdown.netEarnings);
 
       return {
         id: assignment.Booking.id,
@@ -233,9 +246,21 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // TEMPORARY: Use simple calculation until Prisma includes are fixed
-      // ✅ Rough estimate for display - actual calculated on completion
-      const estimatedEarnings = penceToPounds(Math.floor(booking.totalGBP * 0.85)); // Rough estimate
+      // ✅ Calculate actual earnings using driverEarningsService
+      const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+      const earningsResult = await driverEarningsService.calculateEarnings({
+        driverId: driver.id,
+        bookingId: booking.id,
+        assignmentId: 'temp_' + booking.id,
+        bookingAmount: booking.totalGBP,
+        distanceMiles: distance,
+        durationMinutes: booking.estimatedDurationMinutes || 60,
+        dropCount: 1,
+        hasHelper: false,
+        urgencyLevel: 'standard',
+        isOnTime: true,
+      });
+      const estimatedEarnings = penceToPounds(earningsResult.breakdown.netEarnings);
       
       return {
         id: booking.id,
