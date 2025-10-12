@@ -81,12 +81,96 @@ class NotificationService: NSObject {
     
     // MARK: - Job Notifications
     
-    func notifyNewJob(job: Job) {
-        scheduleLocalNotification(
-            title: "New Job Available",
-            body: "From \(job.from) to \(job.to) - £\(job.estimatedEarnings)",
-            userInfo: ["jobId": job.id, "type": "new_job"]
+    func notifyNewJob(job: Job, distance: Double? = nil, duration: Int? = nil) {
+        var bodyText = "From \(job.from) to \(job.to)"
+        
+        // Add distance and duration if available
+        if let distance = distance {
+            bodyText += " • \(String(format: "%.1f", distance)) mi"
+        }
+        if let duration = duration {
+            let hours = duration / 60
+            let mins = duration % 60
+            if hours > 0 {
+                bodyText += " • \(hours)h \(mins)m"
+            } else {
+                bodyText += " • \(mins)m"
+            }
+        }
+        
+        bodyText += " • £\(String(format: "%.2f", job.estimatedEarnings))"
+        
+        let content = UNMutableNotificationContent()
+        content.title = "🚚 New Job Available"
+        content.body = bodyText
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("job_alert.wav"))
+        content.badge = 1
+        content.categoryIdentifier = "JOB_OFFER"
+        content.userInfo = [
+            "jobId": job.id,
+            "type": "new_job",
+            "distance": distance ?? 0,
+            "duration": duration ?? 0,
+            "earnings": job.estimatedEarnings
+        ]
+        
+        let request = UNNotificationRequest(
+            identifier: "job_\(job.id)",
+            content: content,
+            trigger: nil // Immediate
         )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to send job notification: \(error.localizedDescription)")
+            } else {
+                print("✅ Job notification sent: \(job.id)")
+            }
+        }
+    }
+    
+    func notifyRouteMatched(routeId: String, jobCount: Int, totalDistance: Double, totalDuration: Int, totalEarnings: Double) {
+        var bodyText = "\(jobCount) stops"
+        bodyText += " • \(String(format: "%.1f", totalDistance)) mi"
+        
+        let hours = totalDuration / 60
+        let mins = totalDuration % 60
+        if hours > 0 {
+            bodyText += " • \(hours)h \(mins)m"
+        } else {
+            bodyText += " • \(mins)m"
+        }
+        
+        bodyText += " • £\(String(format: "%.2f", totalEarnings))"
+        
+        let content = UNMutableNotificationContent()
+        content.title = "🗺️ Route Matched"
+        content.body = bodyText
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("route_alert.wav"))
+        content.badge = 1
+        content.categoryIdentifier = "ROUTE_OFFER"
+        content.userInfo = [
+            "routeId": routeId,
+            "type": "route_matched",
+            "jobCount": jobCount,
+            "distance": totalDistance,
+            "duration": totalDuration,
+            "earnings": totalEarnings
+        ]
+        
+        let request = UNNotificationRequest(
+            identifier: "route_\(routeId)",
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to send route notification: \(error.localizedDescription)")
+            } else {
+                print("✅ Route notification sent: \(routeId)")
+            }
+        }
     }
     
     func notifyJobAccepted(job: Job) {

@@ -27,10 +27,24 @@ struct Job: Codable, Identifiable {
     var assignmentId: String?
     var scheduledAt: Date?
     
+    // New fields for enhanced job details
+    var floorNumber: Int?
+    var elevatorAvailable: Bool?
+    var ulezWarning: ULEZWarning?
+    var lezWarning: LEZWarning?
+    var driverEarnings: DriverEarnings?
+    var distanceMiles: Double?
+    var durationMinutes: Int?
+    var trafficInfo: TrafficInfo?
+    var weatherInfo: WeatherInfo?
+    var workersRequired: Int?
+    
     enum CodingKeys: String, CodingKey {
         case id, reference, customer, customerPhone, date, time, from, to, distance
         case vehicleType, items, estimatedEarnings, status, priority, duration, crew
         case pickupAddress, dropoffAddress, bookingItems, assignmentId, scheduledAt
+        case floorNumber, elevatorAvailable, ulezWarning, lezWarning, driverEarnings
+        case distanceMiles, durationMinutes, trafficInfo, weatherInfo, workersRequired
     }
 }
 
@@ -202,5 +216,198 @@ struct JobProgressResponse: Codable {
 struct JobProgressData: Codable {
     let step: String
     let timestamp: String
+}
+
+
+
+
+// MARK: - Traffic Information
+
+struct TrafficInfo: Codable {
+    let level: TrafficLevel
+    let delayMinutes: Int
+    let description: String
+    let lastUpdated: String
+    
+    enum TrafficLevel: String, Codable {
+        case clear = "clear"
+        case light = "light"
+        case moderate = "moderate"
+        case heavy = "heavy"
+        case severe = "severe"
+        
+        var color: String {
+            switch self {
+            case .clear: return "green"
+            case .light: return "yellow"
+            case .moderate: return "orange"
+            case .heavy: return "red"
+            case .severe: return "purple"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .clear: return "checkmark.circle.fill"
+            case .light: return "exclamationmark.circle.fill"
+            case .moderate: return "exclamationmark.triangle.fill"
+            case .heavy: return "exclamationmark.triangle.fill"
+            case .severe: return "exclamationmark.octagon.fill"
+            }
+        }
+        
+        var displayName: String {
+            switch self {
+            case .clear: return "Clear"
+            case .light: return "Light Traffic"
+            case .moderate: return "Moderate Traffic"
+            case .heavy: return "Heavy Traffic"
+            case .severe: return "Severe Congestion"
+            }
+        }
+    }
+    
+    var displayText: String {
+        if delayMinutes > 0 {
+            return "\(level.displayName) • +\(delayMinutes)min delay"
+        }
+        return level.displayName
+    }
+}
+
+// MARK: - Weather Information
+
+struct WeatherInfo: Codable {
+    let condition: WeatherCondition
+    let temperature: Double
+    let description: String
+    let windSpeed: Double?
+    let precipitation: Double?
+    let lastUpdated: String
+    
+    enum WeatherCondition: String, Codable {
+        case clear = "clear"
+        case partlyCloudy = "partly_cloudy"
+        case cloudy = "cloudy"
+        case rain = "rain"
+        case heavyRain = "heavy_rain"
+        case snow = "snow"
+        case fog = "fog"
+        case storm = "storm"
+        
+        var icon: String {
+            switch self {
+            case .clear: return "sun.max.fill"
+            case .partlyCloudy: return "cloud.sun.fill"
+            case .cloudy: return "cloud.fill"
+            case .rain: return "cloud.rain.fill"
+            case .heavyRain: return "cloud.heavyrain.fill"
+            case .snow: return "cloud.snow.fill"
+            case .fog: return "cloud.fog.fill"
+            case .storm: return "cloud.bolt.rain.fill"
+            }
+        }
+        
+        var displayName: String {
+            switch self {
+            case .clear: return "Clear"
+            case .partlyCloudy: return "Partly Cloudy"
+            case .cloudy: return "Cloudy"
+            case .rain: return "Rain"
+            case .heavyRain: return "Heavy Rain"
+            case .snow: return "Snow"
+            case .fog: return "Fog"
+            case .storm: return "Storm"
+            }
+        }
+        
+        var color: String {
+            switch self {
+            case .clear: return "yellow"
+            case .partlyCloudy, .cloudy: return "gray"
+            case .rain, .heavyRain: return "blue"
+            case .snow: return "cyan"
+            case .fog: return "gray"
+            case .storm: return "purple"
+            }
+        }
+    }
+    
+    var displayText: String {
+        var text = "\(condition.displayName) • \(Int(temperature))°C"
+        if let wind = windSpeed, wind > 0 {
+            text += " • Wind \(Int(wind))mph"
+        }
+        if let precip = precipitation, precip > 0 {
+            text += " • \(Int(precip))% rain"
+        }
+        return text
+    }
+}
+
+// MARK: - ULEZ/LEZ Warnings
+
+struct ULEZWarning: Codable {
+    let inZone: Bool
+    let charge: Double?
+    let zones: [String]
+    let message: String?
+    
+    var displayText: String {
+        if inZone {
+            if let charge = charge {
+                return "ULEZ Charge: £\(String(format: "%.2f", charge))"
+            }
+            return "ULEZ Zone - Check vehicle compliance"
+        }
+        return "No ULEZ charges"
+    }
+}
+
+struct LEZWarning: Codable {
+    let inZone: Bool
+    let charge: Double?
+    let zones: [String]
+    let message: String?
+    
+    var displayText: String {
+        if inZone {
+            if let charge = charge {
+                return "LEZ Charge: £\(String(format: "%.2f", charge))"
+            }
+            return "LEZ Zone - Check vehicle compliance"
+        }
+        return "No LEZ charges"
+    }
+}
+
+// MARK: - Driver Earnings
+
+struct DriverEarnings: Codable {
+    let baseAmount: Double
+    let distanceAmount: Double
+    let timeAmount: Double
+    let bonuses: Double
+    let penalties: Double
+    let total: Double
+    let breakdown: String?
+    
+    var displayTotal: String {
+        return "£\(String(format: "%.2f", total))"
+    }
+    
+    var detailedBreakdown: String {
+        var parts: [String] = []
+        parts.append("Base: £\(String(format: "%.2f", baseAmount))")
+        parts.append("Distance: £\(String(format: "%.2f", distanceAmount))")
+        parts.append("Time: £\(String(format: "%.2f", timeAmount))")
+        if bonuses > 0 {
+            parts.append("Bonuses: +£\(String(format: "%.2f", bonuses))")
+        }
+        if penalties > 0 {
+            parts.append("Penalties: -£\(String(format: "%.2f", penalties))")
+        }
+        return parts.joined(separator: "\n")
+    }
 }
 
