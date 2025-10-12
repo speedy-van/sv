@@ -195,48 +195,28 @@ export async function GET(
     if (isValidUKCoord(pickupLat, pickupLng) && isValidUKCoord(dropoffLat, dropoffLng)) {
       distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
       
-      // Additional safety check
+      // ✅ Validate distance - no fallback, use actual value
       if (distance > 1000) {
-        console.error(`❌ DISTANCE TOO LARGE: ${distance} miles - using fallback`);
-        distance = 50; // Fallback to reasonable UK distance
+        console.warn(`⚠️ Large distance detected: ${distance} miles`);
+      }
+      if (distance <= 0) {
+        console.warn(`⚠️ Invalid distance: ${distance} miles - using 0`);
+        distance = 0;
       }
     } else {
       console.error('❌ INVALID COORDINATES:', { pickupLat, pickupLng, dropoffLat, dropoffLng });
-      distance = 50; // Fallback to reasonable UK distance
+      distance = 0;
     }
 
-    // ⚡ FAST calculation for mobile app - avoid slow performance queries  
-    const totalAmount = booking.totalGBP;
-    const baseFare = 25.00;
-    const perDropFee = 12.00; // £12 per drop
-    const mileageComponent = distance * 0.55; // £0.55 per mile
-    const performanceMultiplier = 1.1; // Default multiplier for mobile speed
+    // ✅ NO earnings calculation here - this is just for display
+    // Actual earnings are calculated in complete/route.ts using driverEarningsService
+    const estimatedEarnings = booking.totalGBP * 0.85; // Rough estimate for display only
     
-    const subtotal = baseFare + perDropFee + (mileageComponent * performanceMultiplier);
-    const finalPayout = Math.min(subtotal, totalAmount * 0.75); // Cap at 75% of booking value
-    
-    const earningsCalculation = {
-      routeBaseFare: baseFare,
-      perDropFee: perDropFee,
-      mileageComponent: mileageComponent * performanceMultiplier,
-      performanceMultiplier: performanceMultiplier,
-      subtotal: subtotal,
-      bonuses: { routeExcellence: 0, weeklyPerformance: 0, fuelEfficiency: 0, backhaul: 0, monthlyAchievement: 0, quarterlyTier: 0 },
-      penalties: { lateDelivery: 0, routeDeviation: 0, complianceBreach: 0, customerDamage: 0 },
-      helperShare: 0,
-      finalPayout: finalPayout
-    };
-    
-    const driverEarnings = Math.round(earningsCalculation.finalPayout * 100); // Convert to pence
-    
-    console.log('💰 Driver earnings calculated using REAL engine:', {
+    console.log('📊 Job details retrieved:', {
       bookingId: booking.id,
-      customerPaid: booking.totalGBP,
-      baseFare: earningsCalculation.routeBaseFare,
-      mileageComponent: earningsCalculation.mileageComponent,
-      performanceMultiplier: earningsCalculation.performanceMultiplier,
-      finalPayout: earningsCalculation.finalPayout,
-      driverEarningsPence: driverEarnings,
+      distance: distance,
+      estimatedEarnings: estimatedEarnings,
+      note: 'Actual earnings calculated on completion',
     });
 
     // Calculate required workers based on items

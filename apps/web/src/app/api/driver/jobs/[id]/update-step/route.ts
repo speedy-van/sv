@@ -149,50 +149,24 @@ export async function POST(
       
       if (booking) {
         try {
-          // ⚡ FAST calculation for mobile app - avoid slow performance queries
-          const totalAmount = booking.totalGBP;
-          const baseFare = 25.00;
-          const perDropFee = 12.00; // £12 per drop
-          const distance = booking.baseDistanceMiles || 5; // Default 5 miles
-          const mileageComponent = distance * 0.55; // £0.55 per mile
-          const performanceMultiplier = 1.1; // Default multiplier for mobile speed
+          // ✅ Use unified driver earnings service (100% to driver, daily cap £500)
+          const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
           
-          const subtotal = baseFare + perDropFee + (mileageComponent * performanceMultiplier);
-          const finalPayout = Math.min(subtotal, totalAmount * 0.75); // Cap at 75% of booking value
-          
-          const earningsCalculation = {
-            routeBaseFare: baseFare,
-            perDropFee: perDropFee,
-            mileageComponent: mileageComponent * performanceMultiplier,
-            performanceMultiplier: performanceMultiplier,
-            subtotal: subtotal,
-            bonuses: { routeExcellence: 0, weeklyPerformance: 0, fuelEfficiency: 0, backhaul: 0, monthlyAchievement: 0, quarterlyTier: 0 },
-            penalties: { lateDelivery: 0, routeDeviation: 0, complianceBreach: 0, customerDamage: 0 },
-            helperShare: 0,
-            finalPayout: finalPayout
-          };
-          
-          const driverEarnings = Math.round(earningsCalculation.finalPayout * 100); // Convert to pence
-          const platformFee = Math.round((booking.totalGBP * 100) - driverEarnings);
-          
-          // Create driver earnings record
-          const earningsId = `earnings_${Date.now()}_${booking.id}`;
-          await prisma.driverEarnings.create({
-            data: {
-              id: earningsId,
-              Driver: { connect: { id: driver.id } },
-              Assignment: { connect: { id: assignment.id } },
-              baseAmountPence: Math.round(earningsCalculation.routeBaseFare * 100),
-              surgeAmountPence: Math.round(earningsCalculation.perDropFee * 100),
-              tipAmountPence: 0, // Tips tracked separately
-              feeAmountPence: platformFee,
-              netAmountPence: driverEarnings,
-              currency: 'GBP',
-              calculatedAt: new Date(),
-              updatedAt: new Date(),
-              paidOut: false,
-            }
+          const earningsResult = await driverEarningsService.calculateEarnings({
+            driverId: driver.id,
+            bookingId: booking.id,
+            assignmentId: assignment.id,
+            bookingAmount: booking.totalGBP,
+            distanceMiles: booking.baseDistanceMiles || 0,
+            durationMinutes: booking.estimatedDurationMinutes || 0,
+            dropCount: 1,
+            hasHelper: false,
+            urgencyLevel: 'standard',
+            isOnTime: true,
           });
+
+          // Save to database
+          await driverEarningsService.saveToDatabase(earningsResult);
           
           console.log('✅ Driver earnings created using REAL engine:', {
             driverId: driver.id,
