@@ -6,6 +6,10 @@
  * Conversion-focused with 2-click booking
  */
 
+// Force dynamic rendering to avoid build timeout
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
+
 import { Metadata } from 'next';
 import {
   Box,

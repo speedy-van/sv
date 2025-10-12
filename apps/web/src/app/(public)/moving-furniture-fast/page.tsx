@@ -5,6 +5,10 @@
  * Target keywords: "moving furniture fast", "urgent furniture delivery", "same day furniture moving"
  */
 
+// Force dynamic rendering to avoid build timeout
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
+
 import { Metadata } from 'next';
 import {
   Box,
