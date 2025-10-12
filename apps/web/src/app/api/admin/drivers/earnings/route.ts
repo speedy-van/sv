@@ -30,22 +30,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Valid adjusted amount is required' }, { status: 400 });
     }
 
-    // Get current earning record
+    // FIXED: Get current earning record with all needed fields (Audit Trail)
     const currentEarning = await prisma.driverEarnings.findUnique({
       where: { id: earningId },
-      include: { Driver: true }
+      select: { 
+        netAmountPence: true, 
+        driverId: true,
+        Driver: true 
+      },
     });
 
-    if (!currentEarning) {
-      return NextResponse.json({ error: 'Earning record not found' }, { status: 404 });
-    }
-
-    // FIXED: Get old value before update (Audit Trail)
-    const currentEarning = await prisma.driverEarnings.findUnique({
-      where: { id: earningId },
-      select: { netAmountPence: true, driverId: true },
-    });
-    
     if (!currentEarning) {
       return NextResponse.json(
         { error: 'Earning record not found' },
