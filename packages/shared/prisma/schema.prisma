@@ -204,6 +204,15 @@ model Booking {
   specialHandling                                            String[]
   timeWindowFlexibility                                      Int                   @default(30)
   customerPreferences                                        Json                  @default("{}")
+  orderType                                                  String?               @default("single")
+  eligibleForMultiDrop                                       Boolean               @default(false)
+  multiDropEligibilityReason                                 String?
+  estimatedLoadPercentage                                    Float?
+  routePreference                                            String?               @default("balanced")
+  priority                                                   Int                   @default(5) @db.SmallInt
+  suggestedRouteIds                                          String[]              @default([])
+  potentialSavings                                           Float?
+  multiDropDiscount                                          Float?
   Assignment                                                 Assignment?
   customer                                                   User?                 @relation(fields: [customerId], references: [id])
   driver                                                     Driver?               @relation(fields: [driverId], references: [id])

@@ -215,9 +215,57 @@ async function handlePaymentIntentSucceeded(
         include: {
           customer: true,
           pickupAddress: true,
-          dropoffAddress: true
+          dropoffAddress: true,
+          BookingItem: true,
         }
       });
+
+      // ✅ NEW: Check multi-drop eligibility immediately after payment
+      try {
+        const { multiDropEligibilityEngine } = await import('@/lib/services/multi-drop-eligibility-engine');
+        
+        const eligibility = await multiDropEligibilityEngine.checkEligibility({
+          bookingId: updatedBooking.id,
+          items: updatedBooking.BookingItem.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            category: item.category || 'furniture',
+            estimatedVolume: item.estimatedVolume || 0,
+            estimatedWeight: item.estimatedWeight || 0,
+          })),
+          pickupAddress: {
+            lat: updatedBooking.pickupAddress.lat || 0,
+            lng: updatedBooking.pickupAddress.lng || 0,
+            postcode: updatedBooking.pickupAddress.postcode,
+            city: updatedBooking.pickupAddress.city,
+          },
+          dropoffAddress: {
+            lat: updatedBooking.dropoffAddress.lat || 0,
+            lng: updatedBooking.dropoffAddress.lng || 0,
+            postcode: updatedBooking.dropoffAddress.postcode,
+            city: updatedBooking.dropoffAddress.city,
+          },
+          scheduledDate: updatedBooking.scheduledAt,
+          urgency: updatedBooking.urgency || 'standard',
+        });
+
+        // Update booking with eligibility info
+        await prisma.booking.update({
+          where: { id: updatedBooking.id },
+          data: {
+            eligibleForMultiDrop: eligibility.eligible,
+            multiDropEligibilityReason: eligibility.reason,
+            estimatedLoadPercentage: eligibility.loadPercentage,
+            potentialSavings: eligibility.potentialSavings,
+            orderType: eligibility.eligible ? 'multi-drop-candidate' : 'single',
+          },
+        });
+
+        console.log(`[STRIPE WEBHOOK] ${correlationId} - Multi-drop eligibility checked: ${eligibility.eligible ? 'ELIGIBLE' : 'NOT ELIGIBLE'} (${eligibility.reason})`);
+      } catch (error) {
+        console.error(`[STRIPE WEBHOOK] ${correlationId} - Error checking multi-drop eligibility:`, error);
+        // Don't fail the webhook if eligibility check fails
+      }
 
       // Update drop status to 'booked'
       await prisma.drop.updateMany({
