@@ -134,23 +134,43 @@ export async function GET(request: NextRequest) {
           averageEarningsPerJob: totalJobs > 0 ? formatCurrency(totalEarnings / totalJobs) : '0.00',
         },
         earnings: earnings.map(earning => ({
+          // Unified field names for mobile apps
           id: earning.id,
           assignmentId: earning.assignmentId,
           bookingReference: earning.assignmentId ? earning.Assignment.Booking.reference : 'Bonus Payment',
           customerName: earning.assignmentId ? earning.Assignment.Booking.customerName : 'Admin Bonus',
+          
+          // Mobile app expects these field names (in pence)
+          baseEarningsPence: earning.baseAmountPence,
+          tipsPence: earning.tipAmountPence,
+          bonusesPence: earning.surgeAmountPence,
+          deductionsPence: earning.feeAmountPence,
+          grossEarningsPence: earning.grossEarningsPence || earning.netAmountPence,
+          netEarningsPence: earning.netAmountPence,
+          platformFeePence: earning.platformFeePence || earning.feeAmountPence,
+          
+          // Display amounts (in GBP)
           baseAmount: formatCurrency(earning.baseAmountPence),
           surgeAmount: formatCurrency(earning.surgeAmountPence),
           tipAmount: formatCurrency(earning.tipAmountPence),
           bonusAmount: formatCurrency((earning as any).bonusAmountPence || 0),
+          netAmount: formatCurrency(earning.netAmountPence),
+          
+          // Additional fields
           bonusType: (earning as any).bonusType || null,
           bonusReason: (earning as any).bonusReason || null,
           isBonus: !(earning as any).assignmentId,
-          // feeAmount removed from driver view for privacy
-          netAmount: formatCurrency(earning.netAmountPence),
           currency: earning.currency,
           calculatedAt: earning.calculatedAt,
           paidOut: earning.paidOut,
           payoutId: earning.payoutId,
+          requiresAdminApproval: earning.requiresAdminApproval || false,
+          
+          // Legacy compatibility (old field names)
+          baseAmountPence: earning.baseAmountPence,
+          tipAmountPence: earning.tipAmountPence,
+          surgeAmountPence: earning.surgeAmountPence,
+          feeAmountPence: earning.feeAmountPence,
         })),
       },
     };

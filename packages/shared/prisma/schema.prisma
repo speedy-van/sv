@@ -1176,6 +1176,50 @@ model PricingSettings {
   id                                   String   @id @default(cuid())
   customerPriceAdjustment              Decimal  @default(0) @db.Decimal(5, 4)
   driverRateMultiplier                 Decimal  @default(1) @db.Decimal(5, 4)
+  
+  // Driver Earnings Configuration (in pence)
+  baseFarePerJobPence                  Int      @default(2500)  // £25.00
+  perDropFeePence                      Int      @default(1200)  // £12.00
+  perMileFeePence                      Int      @default(55)    // £0.55
+  perMinuteFeePence                    Int      @default(15)    // £0.15
+  
+  // Bonuses (in pence)
+  onTimeBonusPence                     Int      @default(500)   // £5.00
+  multiDropBonusPerStopPence           Int      @default(300)   // £3.00
+  longDistanceBonusThresholdMiles      Int      @default(50)
+  longDistanceBonusPence               Int      @default(1000)  // £10.00
+  ratingBonusThresholdStars            Decimal  @default(4.5) @db.Decimal(2, 1)
+  ratingBonusPence                     Int      @default(500)   // £5.00
+  
+  // Penalties (in pence)
+  latePenaltyPerMinutePence            Int      @default(50)    // £0.50
+  customerComplaintPenaltyPence        Int      @default(1000)  // £10.00
+  
+  // Platform Fees
+  platformFeePercentage                Decimal  @default(0.15) @db.Decimal(4, 3)  // 15%
+  maxEarningsPercentage                Decimal  @default(0.75) @db.Decimal(4, 3)  // 75% max to driver
+  minEarningsPerJobPence               Int      @default(2000)  // £20.00 minimum
+  
+  // UK Compliance
+  dailyEarningsCapPence                Int      @default(50000) // £500.00
+  minimumHourlyRatePence               Int      @default(1144)  // £11.44 (UK minimum wage)
+  vatRate                              Decimal  @default(0.20) @db.Decimal(4, 3)   // 20%
+  nationalInsuranceRate                Decimal  @default(0.09) @db.Decimal(4, 3)   // 9%
+  
+  // Driver Tier Multipliers
+  bronzeTierMultiplier                 Decimal  @default(1.0) @db.Decimal(3, 2)
+  silverTierMultiplier                 Decimal  @default(1.1) @db.Decimal(3, 2)
+  goldTierMultiplier                   Decimal  @default(1.2) @db.Decimal(3, 2)
+  platinumTierMultiplier               Decimal  @default(1.3) @db.Decimal(3, 2)
+  
+  // Urgency Multipliers
+  standardUrgencyMultiplier            Decimal  @default(1.0) @db.Decimal(3, 2)
+  expressUrgencyMultiplier             Decimal  @default(1.3) @db.Decimal(3, 2)
+  premiumUrgencyMultiplier             Decimal  @default(1.5) @db.Decimal(3, 2)
+  
+  // Advanced Configuration (JSON for flexibility)
+  advancedConfig                       Json?
+  
   isActive                             Boolean  @default(true)
   createdAt                            DateTime @default(now())
   updatedAt                            DateTime @updatedAt
