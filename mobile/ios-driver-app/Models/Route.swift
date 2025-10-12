@@ -18,6 +18,23 @@ struct Route: Identifiable, Codable {
     let createdAt: Date
     let drops: [Drop]
     
+    // ✅ FIX #6: New fields for enhanced route details
+    let optimizationScore: Double?
+    let totalEarnings: Int? // Driver earnings in pence
+    let earningsPerHour: Double?
+    let earningsPerStop: Double?
+    let multiDropBonus: Int? // in pence
+    
+    var formattedEarnings: String {
+        guard let earnings = totalEarnings else { return "N/A" }
+        return "£\(String(format: "%.2f", Double(earnings) / 100.0))"
+    }
+    
+    var formattedEarningsPerHour: String {
+        guard let eph = earningsPerHour else { return "N/A" }
+        return "£\(String(format: "%.2f", eph / 100.0))/hr"
+    }
+    
     var progress: Double {
         guard totalDrops > 0 else { return 0 }
         return Double(completedDrops) / Double(totalDrops)

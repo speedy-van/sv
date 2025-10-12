@@ -39,12 +39,46 @@ struct Job: Codable, Identifiable {
     var weatherInfo: WeatherInfo?
     var workersRequired: Int?
     
+    // ✅ FIX #5: New fields for order routing system
+    var orderType: String? // "single", "multi-drop", "return-journey"
+    var eligibleForMultiDrop: Bool?
+    var estimatedLoadPercentage: Double?
+    var priorityLevel: Int? // 1-10
+    var potentialSavings: Int? // in pence
+    var multiDropDiscount: Int? // in pence
+    
+    // UI Helper computed properties
+    var priorityColor: String {
+        guard let priority = priorityLevel else { return "gray" }
+        if priority >= 8 { return "red" }    // Very urgent
+        if priority >= 6 { return "orange" } // Urgent
+        return "green"                        // Normal
+    }
+    
+    var priorityLabel: String {
+        guard let priority = priorityLevel else { return "Normal" }
+        if priority >= 8 { return "Very Urgent" }
+        if priority >= 6 { return "Urgent" }
+        return "Normal"
+    }
+    
+    var orderTypeLabel: String {
+        guard let type = orderType else { return "Single Order" }
+        switch type {
+        case "multi-drop": return "Multi-Drop Route"
+        case "return-journey": return "Return Journey"
+        default: return "Single Order"
+        }
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id, reference, customer, customerPhone, date, time, from, to, distance
         case vehicleType, items, estimatedEarnings, status, priority, duration, crew
         case pickupAddress, dropoffAddress, bookingItems, assignmentId, scheduledAt
         case floorNumber, elevatorAvailable, ulezWarning, lezWarning, driverEarnings
         case distanceMiles, durationMinutes, trafficInfo, weatherInfo, workersRequired
+        case orderType, eligibleForMultiDrop, estimatedLoadPercentage, priorityLevel
+        case potentialSavings, multiDropDiscount
     }
 }
 

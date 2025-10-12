@@ -193,7 +193,7 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   },
   
   onTimeBonusPence: 500,       // £5.00
-  multiDropBonusPerStop: 300,  // £3.00 per stop above threshold
+  multiDropBonusPerStop: 1000, // ✅ FIX #8: £10.00 per stop (increased from £3.00)
   highRatingBonusPence: 800,   // £8.00
   
   lateDeliveryPenaltyPence: 1000,  // £10.00
@@ -537,10 +537,16 @@ export class DriverEarningsService {
       bonuses.onTimeBonus = this.config.onTimeBonusPence;
     }
     
-    // Multi-drop bonus (for drops above threshold)
+    // ✅ FIX #8: Multi-drop bonus (for drops above threshold)
     if (input.dropCount > this.config.multiDropThreshold) {
       const extraDrops = input.dropCount - this.config.multiDropThreshold;
-      bonuses.multiDropBonus = extraDrops * this.config.multiDropBonusPerStop;
+      const calculatedBonus = extraDrops * this.config.multiDropBonusPerStop;
+      
+      // Minimum bonus of £20 for multi-drop routes
+      const MULTI_DROP_MINIMUM_BONUS = 2000; // £20.00
+      bonuses.multiDropBonus = Math.max(calculatedBonus, MULTI_DROP_MINIMUM_BONUS);
+      
+      console.log(`💰 Multi-drop bonus: ${input.dropCount} drops → £${(bonuses.multiDropBonus / 100).toFixed(2)}`);
     }
     
     // High rating bonus
@@ -639,4 +645,96 @@ export class DriverEarningsService {
 // ============================================================================
 
 export const driverEarningsService = new DriverEarningsService();
+
+
+
+
+// ============================================================================
+// ✅ FIX #10: ROUTE EARNINGS CALCULATION
+// ============================================================================
+
+export interface RouteEarningsResult {
+  routeId: string;
+  totalEarnings: number; // in pence
+  totalDistance: number; // in miles
+  totalDuration: number; // in minutes
+  numberOfStops: number;
+  breakdowns: DriverEarningsBreakdown[];
+  formattedEarnings: string;
+  earningsPerStop: number;
+  earningsPerMile: number;
+  earningsPerHour: number;
+}
+
+/**
+ * ✅ FIX #10: Calculate total earnings for an entire multi-drop route
+ * This allows drivers to see their total earnings before accepting a route
+ */
+export async function calculateRouteEarnings(
+  routeId: string
+): Promise<RouteEarningsResult> {
+  const route = await prisma.route.findUnique({
+    where: { id: routeId },
+    include: {
+      Booking: {
+        include: {
+          BookingItem: true,
+        },
+      },
+    },
+  });
+  
+  if (!route) {
+    throw new Error(`Route ${routeId} not found`);
+  }
+  
+  const service = new DriverEarningsService();
+  
+  let totalEarnings = 0;
+  const breakdowns: DriverEarningsBreakdown[] = [];
+  
+  // Calculate earnings for each booking in the route
+  for (const booking of route.Booking) {
+    const earnings = await service.calculateEarnings({
+      assignmentId: `temp_${routeId}_${booking.id}`,
+      driverId: route.driverId || 'unassigned',
+      bookingId: booking.id,
+      distanceMiles: booking.baseDistanceMiles || 0,
+      durationMinutes: booking.estimatedDurationMinutes || 0,
+      dropCount: route.Booking.length, // Total drops in route
+      customerPaymentPence: booking.totalGBP,
+      urgencyLevel: booking.urgency as any,
+      serviceType: 'standard',
+      onTimeDelivery: true, // Assume on-time for estimation
+    });
+    
+    totalEarnings += earnings.breakdown.cappedNetEarnings;
+    breakdowns.push(earnings.breakdown);
+  }
+  
+  // ✅ FIX #8: Add multi-drop bonus to route total
+  if (route.Booking.length > 2) {
+    const multiDropBonus = Math.max(
+      2000, // £20 minimum
+      (route.Booking.length - 2) * 1000 // £10 per extra stop
+    );
+    totalEarnings += multiDropBonus;
+  }
+  
+  const totalDistance = route.totalDistanceMiles || 0;
+  const totalDuration = route.totalDurationMinutes || 0;
+  
+  return {
+    routeId,
+    totalEarnings,
+    totalDistance,
+    totalDuration,
+    numberOfStops: route.Booking.length,
+    breakdowns,
+    formattedEarnings: `£${(totalEarnings / 100).toFixed(2)}`,
+    earningsPerStop: totalEarnings / route.Booking.length,
+    earningsPerMile: totalDistance > 0 ? totalEarnings / totalDistance : 0,
+    earningsPerHour: totalDuration > 0 ? (totalEarnings / totalDuration) * 60 : 0,
+  };
+}
 

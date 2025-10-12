@@ -290,6 +290,9 @@ async function createOptimizedRoutesForGroup(group: any) {
  * Create multi-drop routes from eligible bookings
  */
 async function createMultiDropRoutes(bookings: any[]) {
+  // ✅ FIX #1: Add validation before creating routes
+  console.log(`🔍 Validating ${bookings.length} bookings for multi-drop routes...`);
+  
   // Use intelligent route optimizer to create optimal routes
   const routes = await intelligentRouteOptimizer.createOptimalRoutes(
     bookings.map(b => ({
@@ -310,6 +313,20 @@ async function createMultiDropRoutes(bookings: any[]) {
 
   for (const route of routes) {
     try {
+      // ✅ FIX #1: Validate route before creating
+      const validation = await validateRoute(route, bookings);
+      
+      if (!validation.feasible) {
+        console.warn(`⚠️ Route not feasible: ${validation.reason}`);
+        continue; // Skip this route
+      }
+      
+      // ✅ FIX #4: Validate time windows
+      if (!validation.timeWindowsValid) {
+        console.warn(`⚠️ Time windows cannot be met for this route`);
+        continue;
+      }
+      
       // Create route in database
       const createdRoute = await prisma.route.create({
         data: {
@@ -325,21 +342,37 @@ async function createMultiDropRoutes(bookings: any[]) {
         },
       });
 
-      // Update bookings with route ID
+      // ✅ FIX #2: Recalculate prices for multi-drop and process refunds
       for (let i = 0; i < route.bookingIds.length; i++) {
-        await prisma.booking.update({
-          where: { id: route.bookingIds[i] },
-          data: {
-            routeId: createdRoute.id,
-            deliverySequence: i + 1,
-            orderType: 'multi-drop',
-          },
-        });
-        dropsAssigned++;
+        const booking = bookings.find((b: any) => b.id === route.bookingIds[i]);
+        
+        if (booking) {
+          // Recalculate price with multi-drop discount
+          const newPrice = await recalculateMultiDropPrice(booking, route, bookings.length);
+          
+          // Process refund if customer paid more
+          if (newPrice.refundAmount > 0) {
+            await processCustomerRefund(booking.id, newPrice.refundAmount);
+            console.log(`💰 Refund £${(newPrice.refundAmount / 100).toFixed(2)} to customer ${booking.reference}`);
+          }
+          
+          // Update booking
+          await prisma.booking.update({
+            where: { id: route.bookingIds[i] },
+            data: {
+              routeId: createdRoute.id,
+              deliverySequence: i + 1,
+              orderType: 'multi-drop',
+              multiDropDiscount: newPrice.discountAmount,
+              totalGBP: newPrice.newTotalPence,
+            },
+          });
+          dropsAssigned++;
+        }
       }
 
       routesCreated++;
-      console.log(`✅ Created multi-drop route ${createdRoute.id} with ${route.bookingIds.length} stops`);
+      console.log(`✅ Created multi-drop route ${createdRoute.id} with ${route.bookingIds.length} stops (validated & prices recalculated)`);
     } catch (error) {
       console.error('❌ Error saving multi-drop route:', error);
     }
@@ -480,6 +513,241 @@ async function notifyDriversAboutNewRoutes(routeCount: number) {
     console.log(`✅ Notified ${availableDrivers.length} drivers about ${plannedRoutes.length} new routes`);
   } catch (error) {
     console.error('❌ Error notifying drivers:', error);
+  }
+}
+
+
+
+// ============================================================================
+// HELPER FUNCTIONS FOR FIXES
+// ============================================================================
+
+/**
+ * ✅ FIX #1 & #4: Validate route feasibility and time windows
+ */
+async function validateRoute(route: any, bookings: any[]) {
+  const MAX_DISTANCE = 200; // miles
+  const MAX_DURATION = 780; // 13 hours in minutes
+  const MAX_LOAD = 0.95; // 95%
+  
+  // Check distance
+  if (route.totalDistance > MAX_DISTANCE) {
+    return {
+      feasible: false,
+      timeWindowsValid: false,
+      reason: `Route too long: ${route.totalDistance} miles > ${MAX_DISTANCE} miles`,
+    };
+  }
+  
+  // Check duration
+  if (route.totalDuration > MAX_DURATION) {
+    return {
+      feasible: false,
+      timeWindowsValid: false,
+      reason: `Route too long: ${route.totalDuration} minutes > ${MAX_DURATION} minutes`,
+    };
+  }
+  
+  // Check total load
+  const totalLoad = route.bookingIds.reduce((sum: number, id: string) => {
+    const booking = bookings.find((b: any) => b.id === id);
+    return sum + (booking?.estimatedLoadPercentage || 0);
+  }, 0);
+  
+  if (totalLoad > MAX_LOAD) {
+    return {
+      feasible: false,
+      timeWindowsValid: false,
+      reason: `Total load too high: ${(totalLoad * 100).toFixed(0)}% > ${(MAX_LOAD * 100).toFixed(0)}%`,
+    };
+  }
+  
+  // Validate time windows
+  let currentTime = new Date();
+  let timeWindowsValid = true;
+  let timeWindowReason = '';
+  
+  for (let i = 0; i < route.bookingIds.length; i++) {
+    const booking = bookings.find((b: any) => b.id === route.bookingIds[i]);
+    
+    if (!booking) continue;
+    
+    // Add driving time (estimated)
+    const drivingMinutes = i === 0 ? 30 : 20; // First stop: 30 min, others: 20 min
+    currentTime = new Date(currentTime.getTime() + drivingMinutes * 60 * 1000);
+    
+    // Add loading/unloading time
+    const loadingMinutes = 30;
+    currentTime = new Date(currentTime.getTime() + loadingMinutes * 60 * 1000);
+    
+    // Check if we're within the time window
+    const scheduledTime = new Date(booking.scheduledAt);
+    const timeWindowEnd = new Date(scheduledTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+    
+    if (currentTime > timeWindowEnd) {
+      timeWindowsValid = false;
+      timeWindowReason = `Stop ${i + 1} (${booking.reference}) cannot be reached within time window`;
+      break;
+    }
+  }
+  
+  return {
+    feasible: true,
+    timeWindowsValid,
+    reason: timeWindowsValid ? 'Route is feasible' : timeWindowReason,
+  };
+}
+
+/**
+ * ✅ FIX #2: Recalculate price with multi-drop discount
+ */
+async function recalculateMultiDropPrice(booking: any, route: any, numberOfStops: number) {
+  const originalPrice = booking.totalGBP; // in pence
+  
+  // Calculate discount based on number of stops
+  // 2 stops: 15%, 3 stops: 20%, 4 stops: 25%, 5+ stops: 30%
+  let discountPercentage = 0;
+  if (numberOfStops === 2) discountPercentage = 0.15;
+  else if (numberOfStops === 3) discountPercentage = 0.20;
+  else if (numberOfStops === 4) discountPercentage = 0.25;
+  else if (numberOfStops >= 5) discountPercentage = 0.30;
+  
+  const discountAmount = Math.round(originalPrice * discountPercentage);
+  const newTotalPence = originalPrice - discountAmount;
+  const refundAmount = discountAmount;
+  
+  return {
+    originalPrice,
+    discountPercentage,
+    discountAmount,
+    newTotalPence,
+    refundAmount,
+  };
+}
+
+/**
+ * ✅ FIX #2: Process customer refund via Stripe
+ */
+async function processCustomerRefund(bookingId: string, refundAmountPence: number) {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        Payment: {
+          where: {
+            status: 'succeeded',
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+    
+    if (!booking || booking.Payment.length === 0) {
+      console.warn(`⚠️ No payment found for booking ${bookingId}, cannot process refund`);
+      return;
+    }
+    
+    const payment = booking.Payment[0];
+    
+    // Create refund via Stripe (if using Stripe)
+    if (payment.paymentIntentId) {
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      
+      const refund = await stripe.refunds.create({
+        payment_intent: payment.paymentIntentId,
+        amount: refundAmountPence,
+        reason: 'multi_drop_discount',
+        metadata: {
+          bookingId,
+          reason: 'Multi-drop route discount applied',
+        },
+      });
+      
+      // Record refund in database
+      await prisma.refund.create({
+        data: {
+          id: refund.id,
+          bookingId,
+          paymentId: payment.id,
+          amountPence: refundAmountPence,
+          reason: 'multi_drop_discount',
+          status: 'succeeded',
+          processedAt: new Date(),
+        },
+      });
+      
+      console.log(`✅ Refund processed: £${(refundAmountPence / 100).toFixed(2)} for booking ${booking.reference}`);
+    }
+  } catch (error) {
+    console.error(`❌ Error processing refund for booking ${bookingId}:`, error);
+  }
+}
+
+/**
+ * ✅ FIX #3: Re-optimization - Check if new booking can be added to existing route
+ */
+export async function tryAddBookingToExistingRoute(newBooking: any): Promise<boolean> {
+  try {
+    // Get active routes that haven't started yet
+    const activeRoutes = await prisma.route.findMany({
+      where: {
+        status: { in: ['planned', 'assigned'] },
+        // Route start time is in the future
+        Booking: {
+          some: {
+            scheduledAt: {
+              gte: new Date(),
+            },
+          },
+        },
+      },
+      include: {
+        Booking: true,
+      },
+    });
+    
+    for (const route of activeRoutes) {
+      // Check if new booking can be added
+      const canAdd = await intelligentRouteOptimizer.canAddBookingToRoute({
+        routeId: route.id,
+        existingBookings: route.Booking,
+        newBooking,
+        maxDetourPercentage: 0.15, // Allow 15% detour
+        maxAdditionalTime: 30, // Allow 30 minutes additional time
+      });
+      
+      if (canAdd.feasible) {
+        // Add booking to route
+        await prisma.booking.update({
+          where: { id: newBooking.id },
+          data: {
+            routeId: route.id,
+            deliverySequence: route.Booking.length + 1,
+            orderType: 'multi-drop',
+          },
+        });
+        
+        // Update route totals
+        await prisma.route.update({
+          where: { id: route.id },
+          data: {
+            totalDistanceMiles: route.totalDistanceMiles + canAdd.additionalDistance,
+            totalDurationMinutes: route.totalDurationMinutes + canAdd.additionalTime,
+          },
+        });
+        
+        console.log(`✅ Added booking ${newBooking.reference} to existing route ${route.id}`);
+        return true;
+      }
+    }
+    
+    return false; // Could not add to any existing route
+  } catch (error) {
+    console.error('❌ Error in re-optimization:', error);
+    return false;
   }
 }
 
