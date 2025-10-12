@@ -577,3 +577,191 @@ export class IntelligentRouteOptimizer {
 
 export const intelligentRouteOptimizer = IntelligentRouteOptimizer.getInstance();
 
+
+
+  /**
+   * ✅ FIX #3: Check if a new booking can be added to an existing route
+   * Used for re-optimization when new bookings arrive
+   */
+  async canAddBookingToRoute(params: {
+    routeId: string;
+    existingBookings: any[];
+    newBooking: any;
+    maxDetourPercentage: number;
+    maxAdditionalTime: number;
+  }): Promise<{
+    feasible: boolean;
+    additionalDistance: number;
+    additionalTime: number;
+    reason?: string;
+  }> {
+    const { existingBookings, newBooking, maxDetourPercentage, maxAdditionalTime } = params;
+    
+    // Calculate current route totals
+    let currentTotalDistance = 0;
+    let currentTotalLoad = 0;
+    let currentTotalTime = 0;
+    
+    for (const booking of existingBookings) {
+      currentTotalDistance += booking.baseDistanceMiles || 0;
+      currentTotalLoad += booking.estimatedLoadPercentage || 0;
+      currentTotalTime += booking.estimatedDurationMinutes || 0;
+    }
+    
+    // Calculate new booking metrics
+    const newBookingDistance = newBooking.baseDistanceMiles || 0;
+    const newBookingLoad = newBooking.estimatedLoadPercentage || 0;
+    const newBookingTime = newBooking.estimatedDurationMinutes || 0;
+    
+    // Check load constraint
+    const projectedLoad = currentTotalLoad + newBookingLoad;
+    if (projectedLoad > this.MULTI_DROP_MAX_LOAD) {
+      return {
+        feasible: false,
+        additionalDistance: newBookingDistance,
+        additionalTime: newBookingTime,
+        reason: `Adding this booking would exceed van capacity (${(projectedLoad * 100).toFixed(0)}% > ${(this.MULTI_DROP_MAX_LOAD * 100).toFixed(0)}%)`,
+      };
+    }
+    
+    // Check distance constraint (detour percentage)
+    const projectedDistance = currentTotalDistance + newBookingDistance;
+    const detourPercentage = newBookingDistance / currentTotalDistance;
+    if (detourPercentage > maxDetourPercentage) {
+      return {
+        feasible: false,
+        additionalDistance: newBookingDistance,
+        additionalTime: newBookingTime,
+        reason: `Adding this booking would create too much detour (${(detourPercentage * 100).toFixed(0)}% > ${(maxDetourPercentage * 100).toFixed(0)}%)`,
+      };
+    }
+    
+    // Check time constraint
+    const projectedTime = currentTotalTime + newBookingTime;
+    if (newBookingTime > maxAdditionalTime) {
+      return {
+        feasible: false,
+        additionalDistance: newBookingDistance,
+        additionalTime: newBookingTime,
+        reason: `Adding this booking would add too much time (${newBookingTime} minutes > ${maxAdditionalTime} minutes)`,
+      };
+    }
+    
+    // Check total time doesn't exceed max working hours
+    if (projectedTime > this.MAX_WORKING_HOURS * 60) {
+      return {
+        feasible: false,
+        additionalDistance: newBookingDistance,
+        additionalTime: newBookingTime,
+        reason: `Total route time would exceed maximum working hours (${(projectedTime / 60).toFixed(1)} hours > ${this.MAX_WORKING_HOURS} hours)`,
+      };
+    }
+    
+    // All checks passed
+    return {
+      feasible: true,
+      additionalDistance: newBookingDistance,
+      additionalTime: newBookingTime,
+    };
+  }
+  
+  /**
+   * Create optimal routes from a list of bookings
+   * Groups compatible bookings into efficient multi-drop routes
+   */
+  async createOptimalRoutes(bookings: Array<{
+    bookingId: string;
+    pickupLat: number;
+    pickupLng: number;
+    dropoffLat: number;
+    dropoffLng: number;
+    scheduledAt: Date;
+    loadPercentage: number;
+    priority: number;
+    value: number;
+  }>): Promise<Array<{
+    bookingIds: string[];
+    totalDistance: number;
+    totalDuration: number;
+    totalValue: number;
+    optimizationScore: number;
+  }>> {
+    const routes: Array<{
+      bookingIds: string[];
+      totalDistance: number;
+      totalDuration: number;
+      totalValue: number;
+      optimizationScore: number;
+    }> = [];
+    
+    // Sort bookings by priority (high to low)
+    const sortedBookings = [...bookings].sort((a, b) => b.priority - a.priority);
+    
+    // Track which bookings have been assigned
+    const assignedBookings = new Set<string>();
+    
+    // Greedy algorithm: Build routes by finding compatible bookings
+    for (const booking of sortedBookings) {
+      if (assignedBookings.has(booking.bookingId)) continue;
+      
+      // Start a new route with this booking
+      const route = {
+        bookingIds: [booking.bookingId],
+        totalDistance: this.calculateDistance(
+          { lat: booking.pickupLat, lng: booking.pickupLng },
+          { lat: booking.dropoffLat, lng: booking.dropoffLng }
+        ),
+        totalDuration: 0, // Will be calculated
+        totalValue: booking.value,
+        totalLoad: booking.loadPercentage,
+        optimizationScore: 0,
+      };
+      
+      assignedBookings.add(booking.bookingId);
+      
+      // Try to add compatible bookings to this route
+      for (const candidate of sortedBookings) {
+        if (assignedBookings.has(candidate.bookingId)) continue;
+        
+        // Check if candidate is compatible
+        const projectedLoad = route.totalLoad + candidate.loadPercentage;
+        if (projectedLoad > this.MULTI_DROP_MAX_LOAD) continue;
+        
+        // Check time window compatibility (within 2 hours)
+        const timeDiff = Math.abs(booking.scheduledAt.getTime() - candidate.scheduledAt.getTime());
+        if (timeDiff > 2 * 60 * 60 * 1000) continue; // 2 hours
+        
+        // Add to route
+        route.bookingIds.push(candidate.bookingId);
+        route.totalDistance += this.calculateDistance(
+          { lat: candidate.pickupLat, lng: candidate.pickupLng },
+          { lat: candidate.dropoffLat, lng: candidate.dropoffLng }
+        );
+        route.totalValue += candidate.value;
+        route.totalLoad += candidate.loadPercentage;
+        
+        assignedBookings.add(candidate.bookingId);
+        
+        // Stop if we have enough bookings (max 6 per route)
+        if (route.bookingIds.length >= 6) break;
+      }
+      
+      // Calculate duration (distance / speed * 60 + loading time)
+      route.totalDuration = (route.totalDistance / this.AVERAGE_SPEED_MPH) * 60 + route.bookingIds.length * 30;
+      
+      // Calculate optimization score (higher is better)
+      route.optimizationScore = (route.bookingIds.length * 100) - (route.totalDistance * 0.5);
+      
+      // Add route to list
+      routes.push({
+        bookingIds: route.bookingIds,
+        totalDistance: route.totalDistance,
+        totalDuration: route.totalDuration,
+        totalValue: route.totalValue,
+        optimizationScore: route.optimizationScore,
+      });
+    }
+    
+    return routes;
+  }
+

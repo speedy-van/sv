@@ -33,6 +33,14 @@ export interface Job {
   priority: string;
   duration: string;
   crew: string;
+  
+  // ✅ FIX #5: New fields for order routing system
+  orderType?: 'single' | 'multi-drop' | 'return-journey';
+  eligibleForMultiDrop?: boolean;
+  estimatedLoadPercentage?: number;
+  priorityLevel?: number; // 1-10
+  potentialSavings?: number; // in pence
+  multiDropDiscount?: number; // in pence
 }
 
 export type JobStatus = 
@@ -215,5 +223,88 @@ export interface DeclineRouteResponse {
     acceptanceRate: number;
     change: number;
   };
+}
+
+
+
+// Route Types
+export interface Route {
+  id: string;
+  status: RouteStatus;
+  serviceTier: string;
+  driverId?: string;
+  totalDrops: number;
+  completedDrops: number;
+  estimatedDuration: number; // minutes
+  totalDistance: number; // kilometers
+  totalValue: number; // GBP (in pence)
+  timeWindowStart: string;
+  timeWindowEnd: string;
+  optimizedSequence: number[];
+  createdAt: string;
+  drops: Drop[];
+  
+  // ✅ FIX #6: New fields for enhanced route details
+  optimizationScore?: number;
+  totalEarnings?: number; // Driver earnings in pence
+  earningsPerHour?: number;
+  earningsPerStop?: number;
+  multiDropBonus?: number; // in pence
+}
+
+export type RouteStatus = 
+  | 'pending_assignment'
+  | 'assigned'
+  | 'active'
+  | 'completed'
+  | 'failed';
+
+export interface Drop {
+  id: string;
+  routeId?: string;
+  bookingId?: string;
+  customerId: string;
+  customerName?: string;
+  customerPhone?: string;
+  pickupAddress: string;
+  deliveryAddress: string;
+  pickupLatitude?: number;
+  pickupLongitude?: number;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
+  timeWindowStart: string;
+  timeWindowEnd: string;
+  serviceTier: string;
+  status: DropStatus;
+  quotedPrice: number; // in pence
+  weight?: number;
+  volume?: number;
+  specialInstructions?: string;
+  proofOfDelivery?: string;
+  failureReason?: string;
+  completedAt?: string;
+  createdAt: string;
+  sequenceNumber?: number;
+}
+
+export type DropStatus = 
+  | 'pending'
+  | 'assigned_to_route'
+  | 'picked_up'
+  | 'in_transit'
+  | 'delivered'
+  | 'failed';
+
+export interface RouteEarningsPreview {
+  routeId: string;
+  estimatedEarnings: number;
+  formattedEarnings: string;
+  numberOfStops: number;
+  totalDistance: number;
+  totalDuration: number;
+  earningsPerStop: number;
+  earningsPerMile: number;
+  earningsPerHour: number;
+  breakdown: any[];
 }
 

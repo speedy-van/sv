@@ -54,15 +54,35 @@ struct RouteDetailView: View {
                             .scaleEffect(x: 1, y: 2, anchor: .center)
                     }
                     
-                    // Stats
+                    // Stats - Enhanced with multi-drop bonus
                     HStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Total Earnings")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
-                            Text(route.formattedTotalValue)
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.green)
+                            HStack(spacing: 4) {
+                                Text(route.formattedEarnings)
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.green)
+                                
+                                // Multi-drop bonus indicator
+                                if let bonus = route.multiDropBonus, bonus > 0 {
+                                    Text("+£\(String(format: "%.2f", Double(bonus) / 100.0))")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.orange)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Color.orange.opacity(0.2))
+                                        .cornerRadius(4)
+                                }
+                            }
+                            
+                            // Earnings per hour
+                            if let eph = route.earningsPerHour {
+                                Text(route.formattedEarningsPerHour)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         
                         Spacer()
@@ -73,6 +93,9 @@ struct RouteDetailView: View {
                                 .foregroundColor(.secondary)
                             Text(route.formattedDuration)
                                 .font(.system(size: 18, weight: .bold))
+                            Text(route.formattedDistance)
+                                .font(.system(size: 10))
+                                .foregroundColor(.secondary)
                         }
                     }
                 }
