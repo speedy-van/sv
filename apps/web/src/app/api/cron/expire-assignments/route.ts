@@ -6,7 +6,7 @@ import { getPusherServer } from '@/lib/pusher';
  * Cron Job: Expire Assignments
  * 
  * This endpoint should be called every 1 minute by:
- * - Vercel Cron (vercel.json config)
+ * - Render Cron Jobs (configured in Render Dashboard)
  * - External cron service (e.g., cron-job.org)
  * - GitHub Actions (scheduled workflow)
  * 

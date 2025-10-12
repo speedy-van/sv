@@ -256,7 +256,7 @@ curl -X POST http://localhost:3000/api/driver/jobs/[id]/complete \
 git pull origin main
 pnpm install
 pnpm build
-vercel --prod
+render --prod
 ```
 
 ### 3. Monitor

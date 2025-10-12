@@ -319,7 +319,7 @@ if (hourlyRate < MIN_HOURLY_RATE_PENCE) {
 
 3. **Deploy to Production**
    ```bash
-   vercel --prod
+   render --prod
    ```
 
 4. **Monitor Logs**

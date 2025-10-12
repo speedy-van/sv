@@ -2,7 +2,7 @@
  * Cron Jobs Initializer
  * 
  * Starts all cron jobs when the server starts.
- * This works on any platform (Render, Railway, Heroku, Vercel, etc.)
+ * This works on any platform (Render, Railway, Heroku, etc.)
  */
 
 import { startAssignmentExpiryCron } from './assignment-expiry';

@@ -417,7 +417,7 @@ if (netEarnings < £20) {
 cd apps/web
 pnpm install
 pnpm build
-vercel --prod
+render --prod
 ```
 
 ### 2. iOS App Deployment

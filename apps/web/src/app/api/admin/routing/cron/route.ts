@@ -2,7 +2,7 @@
  * Auto-Routing Cron Job Endpoint
  * 
  * This endpoint should be called every 10-15 minutes by a cron service
- * (Vercel Cron, AWS Lambda, etc.)
+ * (Render Cron Jobs, AWS Lambda, etc.)
  * 
  * It runs automatic route generation if auto-mode is enabled
  */

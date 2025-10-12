@@ -406,7 +406,7 @@ export function generateKeywords(city: string): string[] {
 git pull origin main
 pnpm install
 pnpm build
-vercel --prod
+render --prod
 ```
 
 ### 2. Run Database Migrations

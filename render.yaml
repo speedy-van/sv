@@ -1,16 +1,19 @@
-# Render Blueprint for Speedy Van
+# Render Configuration for Speedy Van
+# Production-ready deployment configuration
 # https://render.com/docs/blueprint-spec
 
 services:
-  # Main Web Application
+  # Main Web Application (Next.js)
   - type: web
     name: speedy-van-web
     runtime: node
-    plan: starter # or free, standard, pro
-    region: frankfurt # or oregon, singapore, etc.
-    buildCommand: pnpm install && pnpm run build
+    plan: standard # Recommended for production
+    region: frankfurt # EU Central
+    rootDir: apps/web
+    buildCommand: pnpm install && pnpm build
     startCommand: pnpm start
     healthCheckPath: /api/health
+    numInstances: 2 # High availability
     envVars:
       # Node Environment
       - key: NODE_ENV

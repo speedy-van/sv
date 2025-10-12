@@ -116,7 +116,7 @@ To address future growth, the following scaling plan is recommended:
 1.  **Branch Merge:** Merge the `feature/driver-system-overhaul` branch into the `main` branch.
 2.  **Environment Variables:** Ensure all new environment variables (e.g., for Stripe, database connections) are updated in the production environment.
 3.  **Database Migration:** Run `npx prisma migrate deploy` to apply the latest schema changes to the production database.
-4.  **Build & Deploy:** Trigger a new build and deployment through the existing CI/CD pipeline (e.g., Vercel, AWS Amplify).
+4.  **Build & Deploy:** Trigger a new build and deployment through the existing CI/CD pipeline (e.g., Render, AWS Amplify).
 5.  **Smoke Testing:** After deployment, perform a series of smoke tests: complete a test job, verify the earnings in the database, and check that the admin pricing panel loads correctly.
 6.  **Monitoring:** Closely monitor system performance, error logs (e.g., Sentry, Datadog), and database metrics for the first 24 hours post-deployment.
 
