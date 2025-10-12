@@ -4,11 +4,14 @@
 
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY environment variable is required');
+// Allow build to proceed without Stripe keys (will fail at runtime if actually used)
+const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_build_placeholder';
+
+if (!process.env.STRIPE_SECRET_KEY && process.env.NODE_ENV !== 'production') {
+  console.warn('⚠️  STRIPE_SECRET_KEY not set - using placeholder for build');
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = new Stripe(stripeKey, {
   apiVersion: '2024-04-10',
 });
 
