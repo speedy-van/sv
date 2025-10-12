@@ -183,9 +183,8 @@ export async function GET(request: NextRequest) {
         distance = 0;
       }
 
-      // TEMPORARY: Use simple calculation until Prisma includes are fixed
-      // TODO: Replace with real pricing engine once database queries are corrected
-      const estimatedEarnings = penceToPounds(Math.floor(assignment.Booking.totalGBP * 0.70)); // 70% to driver
+      // ✅ Rough estimate for display - actual calculated on completion
+      const estimatedEarnings = penceToPounds(Math.floor(assignment.Booking.totalGBP * 0.85)); // Rough estimate
 
       return {
         id: assignment.Booking.id,
@@ -235,8 +234,8 @@ export async function GET(request: NextRequest) {
       }
 
       // TEMPORARY: Use simple calculation until Prisma includes are fixed
-      // TODO: Replace with real pricing engine once database queries are corrected
-      const estimatedEarnings = penceToPounds(Math.floor(booking.totalGBP * 0.70)); // 70% to driver
+      // ✅ Rough estimate for display - actual calculated on completion
+      const estimatedEarnings = penceToPounds(Math.floor(booking.totalGBP * 0.85)); // Rough estimate
       
       return {
         id: booking.id,

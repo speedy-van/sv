@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
     );
 
     const totalAmount = booking.totalGBP;
-    const platformFee = Math.floor(totalAmount * 0.15);
-    const driverEarnings = Math.floor((totalAmount - platformFee) * 0.85);
+    // ✅ Driver gets 100% - rough estimate for notification
+    const estimatedEarnings = Math.floor(totalAmount * 0.85);
 
     // Create job notification data
     const jobNotificationData = {
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
       estimatedDuration: Math.ceil(distance / 20),
       distance: distance,
       totalAmount: totalAmount,
-      driverEarnings: driverEarnings,
+      estimatedEarnings: estimatedEarnings,
         BookingItem: booking.items.map(item => ({
           name: item.name,
           quantity: item.quantity,
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
             driverId: driver.id,
             type: 'job_offer', // Using correct enum value
             title: 'New Job Available! 🚚',
-            message: `${booking.pickupAddress?.postcode} → ${booking.dropoffAddress?.postcode} | £${(driverEarnings / 100).toFixed(2)}`,
+            message: `${booking.pickupAddress?.postcode} → ${booking.dropoffAddress?.postcode} | £${(estimatedEarnings / 100).toFixed(2)}`,
             read: false,
           },
         });

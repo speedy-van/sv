@@ -120,9 +120,9 @@ export async function GET(request: NextRequest) {
       );
 
       // TEMPORARY: Use simple calculation until Prisma includes are fixed
-      // TODO: Replace with real pricing engine once database queries are corrected
+      // ✅ Rough estimate for display - actual calculated on completion
       const totalAmount = booking.totalGBP;
-      const driverEarnings = Math.floor(totalAmount * 0.70); // 70% to driver (30% platform fee)
+      const estimatedEarnings = Math.floor(totalAmount * 0.85); // Rough estimate
 
       // Calculate required workers based on items
       const totalVolume = booking.BookingItem.reduce((sum, item) => sum + (item.volumeM3 * item.quantity), 0);
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         estimatedDuration: Math.ceil(distance / 20),
         distance: distance,
         // Only show driver payout - never expose customer total
-        driverPayout: driverEarnings,
+        estimatedEarnings: estimatedEarnings,
         items: booking.BookingItem.map(item => ({
           name: item.name,
           quantity: item.quantity,

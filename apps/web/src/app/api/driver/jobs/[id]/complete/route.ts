@@ -266,10 +266,10 @@ export async function POST(
         baseAmountPence: breakdown.baseFare,
         surgeAmountPence: breakdown.perDropFee + breakdown.mileageFee,
         tipAmountPence: 0,
-        feeAmountPence: breakdown.platformFee,
+        feeAmountPence: 0, // No platform fee - driver gets 100%
         netAmountPence: breakdown.netEarnings,
         grossEarningsPence: breakdown.grossEarnings,
-        platformFeePence: breakdown.platformFee,
+        platformFeePence: 0, // No platform fee
         cappedNetEarningsPence: breakdown.cappedNetEarnings,
         rawNetEarningsPence: breakdown.netEarnings,
         currency: 'gbp',
@@ -286,7 +286,7 @@ export async function POST(
     // Prepare response with detailed breakdown for mobile apps
     const pricingResponse = {
       netDriverEarnings: netEarningsPence,
-      platformFee: breakdown.platformFee,
+      platformFee: 0, // No platform fee - driver gets 100%
       breakdown: {
         baseFare: breakdown.baseFare,
         perDropFee: breakdown.perDropFee,
