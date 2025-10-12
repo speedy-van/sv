@@ -205,13 +205,13 @@ model Booking {
   timeWindowFlexibility                                      Int                   @default(30)
   customerPreferences                                        Json                  @default("{}")
   Assignment                                                 Assignment?
-  User                                                       User?                 @relation(fields: [customerId], references: [id])
-  Driver                                                     Driver?               @relation(fields: [driverId], references: [id])
-  BookingAddress_Booking_dropoffAddressIdToBookingAddress    BookingAddress        @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
-  PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails PropertyDetails       @relation("Booking_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
-  BookingAddress_Booking_pickupAddressIdToBookingAddress     BookingAddress        @relation("Booking_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
-  PropertyDetails_Booking_pickupPropertyIdToPropertyDetails  PropertyDetails       @relation("Booking_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
-  Route                                                      Route?                @relation(fields: [routeId], references: [id])
+  customer                                                   User?                 @relation(fields: [customerId], references: [id])
+  driver                                                     Driver?               @relation(fields: [driverId], references: [id])
+  dropoffAddress                                             BookingAddress        @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
+  dropoffProperty                                            PropertyDetails       @relation("Booking_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
+  pickupAddress                                              BookingAddress        @relation("Booking_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
+  pickupProperty                                             PropertyDetails       @relation("Booking_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  route                                                      Route?                @relation(fields: [routeId], references: [id])
   BookingCancellation                                        BookingCancellation[]
   BookingItem                                                BookingItem[]
   BookingProgress                                            BookingProgress[]
@@ -1345,7 +1345,7 @@ model Quote {
   volume          Float?
   weight          Float?
   Drop            Drop[]
-  User            User         @relation(fields: [customerId], references: [id])
+  customer        User         @relation(fields: [customerId], references: [id])
 
   @@index([customerId])
   @@index([isAccepted])
@@ -1434,9 +1434,9 @@ model Route {
   breakTimeAllocated       Int              @default(0)
   emergencyContact         String?
   Booking                  Booking[]
-  Drop                     Drop[]
+  drops                    Drop[]
   PayoutLedger             PayoutLedger[]
-  User                     User             @relation(fields: [driverId], references: [id])
+  driver                   User             @relation(fields: [driverId], references: [id])
   Vehicle                  Vehicle?         @relation(fields: [vehicleId], references: [id])
   VehicleSpec              VehicleSpec?     @relation(fields: [vehicleSpecId], references: [id])
   RouteCandidate           RouteCandidate[]
@@ -1644,6 +1644,7 @@ model User {
   isActive                                        Boolean                          @default(true)
   lastLogin                                       DateTime?
   twoFactorEnabled                                Boolean                          @default(false)
+  stripeCustomerId                                String?
   // driverApprovedAt                                DateTime? // Temporarily commented out due to schema mismatch
   AccountDeletionRequest                          AccountDeletionRequest[]
   Address                                         Address[]
@@ -1654,8 +1655,8 @@ model User {
   ChatSession_ChatSession_createdByToUser         ChatSession[]                    @relation("ChatSession_createdByToUser")
   Contact                                         Contact[]
   CustomerNotificationPreferences                 CustomerNotificationPreferences?
-  CustomerProfile                                 CustomerProfile?
-  Driver                                          Driver?
+  customerProfile                                 CustomerProfile?
+  driver                                          Driver?
   DriverApplication                               DriverApplication?
   Drop                                            Drop[]
   Message                                         Message[]
