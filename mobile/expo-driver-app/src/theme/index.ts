@@ -88,18 +88,32 @@ export const LightColors = {
 };
 
 export const DarkColors = {
-  // Primary Brand Colors (brighter for dark mode)
+  // UNIFIED: Neon Blue (matching Web & iOS)
   primary: {
-    50: '#1E3A8A',
-    100: '#1E40AF',
-    200: '#1D4ED8',
-    300: '#2563EB',
-    400: '#3B82F6',
-    500: '#60A5FA', // Brighter Blue
-    600: '#93C5FD',
-    700: '#BFDBFE',
-    800: '#DBEAFE',
-    900: '#EFF6FF',
+    50: '#E6F7FF',
+    100: '#B3E5FF',
+    200: '#80D4FF',
+    300: '#4DC2FF',
+    400: '#1AB0FF',
+    500: '#00C2FF', // Neon Blue - Primary
+    600: '#0099CC',
+    700: '#007099',
+    800: '#004766',
+    900: '#001E33',
+  },
+  
+  // UNIFIED: Speedy Van Green
+  brand: {
+    50: '#E6FFF7',
+    100: '#B3FFE5',
+    200: '#80FFD4',
+    300: '#4DFFC2',
+    400: '#1AFFB0',
+    500: '#00D18F', // Brand Green
+    600: '#00B385',
+    700: '#009973',
+    800: '#007F61',
+    900: '#00654F',
   },
   
   // Accent Colors (adjusted for dark mode)

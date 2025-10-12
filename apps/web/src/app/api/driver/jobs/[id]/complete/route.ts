@@ -176,69 +176,108 @@ export async function POST(
       );
     }
 
-    // ⚡ FAST calculation for mobile app - avoid slow performance queries
-    const totalAmount = booking.totalGBP;
-    const baseFare = 25.00;
-    const perDropFee = computedDropCount * 12.00; // £12 per drop
-    const mileageComponent = computedDistanceMiles * 0.55; // £0.55 per mile
-    const performanceMultiplier = 1.1; // Default multiplier for mobile speed
+    // ============================================================================
+    // UNIFIED EARNINGS CALCULATION - SINGLE SOURCE OF TRUTH
+    // Used by: Web Portal, iOS App, Android App
+    // ============================================================================
     
-    const subtotal = baseFare + perDropFee + (mileageComponent * performanceMultiplier);
-    const finalPayout = Math.min(subtotal, totalAmount * 0.75); // Cap at 75% of booking value
+    const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
     
-    const earningsCalculation = {
-      routeBaseFare: baseFare,
-      perDropFee: perDropFee,
-      mileageComponent: mileageComponent * performanceMultiplier,
-      performanceMultiplier: performanceMultiplier,
-      subtotal: subtotal,
-      bonuses: { routeExcellence: 0, weeklyPerformance: 0, fuelEfficiency: 0, backhaul: 0, monthlyAchievement: 0, quarterlyTier: 0 },
-      penalties: { lateDelivery: 0, routeDeviation: 0, complianceBreach: 0, customerDamage: 0 },
-      helperShare: 0,
-      finalPayout: finalPayout
+    // Prepare input for unified earnings service
+    const earningsInput = {
+      assignmentId: assignment.id,
+      driverId: driver.id,
+      bookingId: jobId,
+      distanceMiles: computedDistanceMiles,
+      durationMinutes: computedDrivingMinutes + computedLoadingMinutes + computedUnloadingMinutes,
+      dropCount: computedDropCount,
+      loadingMinutes: computedLoadingMinutes,
+      unloadingMinutes: computedUnloadingMinutes,
+      drivingMinutes: computedDrivingMinutes,
+      waitingMinutes: computedWaitingMinutes,
+      customerPaymentPence: Math.round(booking.totalGBP * 100),
+      urgencyLevel: (booking.urgency as 'standard' | 'express' | 'premium') || 'standard',
+      serviceType: 'standard' as const,
+      onTimeDelivery: computedSlaDelayMinutes === 0,
+      tollCostsPence: tollCostsPence,
+      parkingCostsPence: parkingCostsPence,
+      adminApprovedBonusPence: adminApprovedBonusPence,
+      adminApprovalId: adminApprovalId,
     };
-
-    const pricingResponse = {
-      netDriverEarnings: Math.round(earningsCalculation.finalPayout * 100), // Convert to pence
-      platformFee: Math.round((booking.totalGBP * 100) - (earningsCalculation.finalPayout * 100)),
-      breakdown: earningsCalculation,
-      // Legacy compatibility
-      basePay: Math.round(earningsCalculation.routeBaseFare * 100),
-      distancePay: Math.round(earningsCalculation.mileageComponent * 100),
-      timePay: Math.round((earningsCalculation.bonuses?.routeExcellence || 0) * 100),
-      stopBonus: Math.round(earningsCalculation.perDropFee * 100),
-      totalPay: Math.round(earningsCalculation.finalPayout * 100)
-    };
-
-    console.log('✅ Driver earnings calculated using REAL performance engine:', {
+    
+    // Calculate earnings using unified service
+    const earningsResult = await driverEarningsService.calculateEarnings(earningsInput);
+    
+    if (!earningsResult.success) {
+      throw new Error('Failed to calculate driver earnings');
+    }
+    
+    const breakdown = earningsResult.breakdown;
+    
+    console.log('✅ Driver earnings calculated using UNIFIED service:', {
       driverId: driver.id,
       assignmentId: assignment.id,
       customerPaid: booking.totalGBP,
-      baseFare: earningsCalculation.routeBaseFare,
-      mileageComponent: earningsCalculation.mileageComponent,
-      performanceMultiplier: earningsCalculation.performanceMultiplier,
-      finalPayout: earningsCalculation.finalPayout,
-      netEarningsPence: pricingResponse.netDriverEarnings,
+      baseFare: breakdown.baseFare / 100,
+      perDropFee: breakdown.perDropFee / 100,
+      mileageFee: breakdown.mileageFee / 100,
+      netEarnings: breakdown.netEarnings / 100,
+      warnings: earningsResult.warnings,
     });
-
-    // Create driver earnings record using REAL calculated values
+    
+    // Create driver earnings record using unified calculation
     const earningsRecord = await prisma.driverEarnings.create({
       data: {
         driverId: driver.id,
         assignmentId: assignment.id,
-        baseAmountPence: pricingResponse.basePay,
-        surgeAmountPence: pricingResponse.stopBonus,
-        tipAmountPence: 0, // Could be added later
-        feeAmountPence: pricingResponse.platformFee,
-        netAmountPence: pricingResponse.netDriverEarnings,
+        baseAmountPence: breakdown.baseFare,
+        surgeAmountPence: breakdown.perDropFee + breakdown.mileageFee,
+        tipAmountPence: 0,
+        feeAmountPence: breakdown.platformFee,
+        netAmountPence: breakdown.netEarnings,
+        grossEarningsPence: breakdown.grossEarnings,
+        platformFeePence: breakdown.platformFee,
+        cappedNetEarningsPence: breakdown.cappedNetEarnings,
+        rawNetEarningsPence: breakdown.netEarnings,
         currency: 'gbp',
         calculatedAt: completedAt,
         paidOut: false,
+        requiresAdminApproval: earningsResult.requiresAdminApproval,
+        adminApprovalId: adminApprovalId,
       } as any,
     });
-
-    const netEarningsPence = pricingResponse.netDriverEarnings;
-    const grossEarningsPence = Math.round(booking.totalGBP * 100); // Customer payment in pence
+    
+    const netEarningsPence = breakdown.netEarnings;
+    const grossEarningsPence = breakdown.grossEarnings;
+    
+    // Prepare response with detailed breakdown for mobile apps
+    const pricingResponse = {
+      netDriverEarnings: netEarningsPence,
+      platformFee: breakdown.platformFee,
+      breakdown: {
+        baseFare: breakdown.baseFare,
+        perDropFee: breakdown.perDropFee,
+        mileageFee: breakdown.mileageFee,
+        timeFee: breakdown.timeFee,
+        bonuses: breakdown.bonuses,
+        penalties: breakdown.penalties,
+        reimbursements: breakdown.reimbursements,
+        subtotal: breakdown.subtotal,
+        grossEarnings: breakdown.grossEarnings,
+        helperShare: breakdown.helperShare,
+        netEarnings: breakdown.netEarnings,
+        cappedNetEarnings: breakdown.cappedNetEarnings,
+        capApplied: breakdown.capApplied,
+      },
+      // Legacy compatibility for older app versions
+      basePay: breakdown.baseFare,
+      distancePay: breakdown.mileageFee,
+      timePay: breakdown.timeFee,
+      stopBonus: breakdown.perDropFee,
+      totalPay: breakdown.netEarnings,
+      warnings: earningsResult.warnings,
+      recommendations: earningsResult.recommendations,
+    };
 
     // Stage 2: Create driver notification (FINAL confirmation)
     await prisma.driverNotification.create({

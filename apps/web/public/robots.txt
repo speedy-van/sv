@@ -1,8 +1,9 @@
+# Speedy Van - Robots.txt
+# Optimized for SEO and Google Ads
+# Office 2.18, Hamilton, 1 Barrack Street, Hamilton, ML3 0DG
+
 User-agent: *
 Allow: /
-
-# Sitemap
-Sitemap: https://speedy-van.co.uk/sitemap.xml
 
 # Disallow admin and private areas
 Disallow: /admin/
@@ -10,16 +11,44 @@ Disallow: /api/
 Disallow: /driver/
 Disallow: /_next/
 Disallow: /uploads/private/
+Disallow: /customer/orders/
+Disallow: /customer/profile/
 
-# Allow important pages
+# Allow important pages for SEO
 Allow: /uk/london
+Allow: /booking
 Allow: /booking-luxury
+Allow: /track
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /how-it-works
 Allow: /blog/
 Allow: /images/
 Allow: /og/
+
+# Sitemaps
+Sitemap: https://speedyvan.co.uk/sitemap.xml
+Sitemap: https://speedyvan.co.uk/sitemap-pages.xml
+Sitemap: https://speedyvan.co.uk/sitemap-blog.xml
 
 # Crawl delay for better server performance
 Crawl-delay: 1
 
 # Host directive
-Host: https://speedy-van.co.uk
+Host: https://speedyvan.co.uk
+
+# Google-specific rules
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /driver/
+
+# Bing-specific rules
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /driver/
+
