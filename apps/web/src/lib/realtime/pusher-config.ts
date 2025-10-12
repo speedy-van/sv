@@ -5,20 +5,20 @@
 import Pusher from 'pusher';
 import PusherClient from 'pusher-js';
 
-// Server-side Pusher instance
+// Server-side Pusher instance (with fallback for build time)
 export const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID!,
-  key: process.env.PUSHER_KEY!,
-  secret: process.env.PUSHER_SECRET!,
-  cluster: process.env.PUSHER_CLUSTER!,
+  appId: process.env.PUSHER_APP_ID || 'build-placeholder',
+  key: process.env.PUSHER_KEY || 'build-placeholder',
+  secret: process.env.PUSHER_SECRET || 'build-placeholder',
+  cluster: process.env.PUSHER_CLUSTER || 'eu',
   useTLS: true,
 });
 
-// Client-side Pusher instance (for use in components)
+// Client-side Pusher instance (for use in components) - with fallback for build time
 export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY!,
+  process.env.NEXT_PUBLIC_PUSHER_KEY || 'build-placeholder',
   {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
     forceTLS: true,
   }
 );
