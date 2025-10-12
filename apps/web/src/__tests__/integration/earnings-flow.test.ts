@@ -86,7 +86,7 @@ describe('Driver Earnings Integration Flow', () => {
       expect(result.breakdown.helperShare).toBeGreaterThan(0);
       
       // Verify urgency multiplier applied
-      expect(result.breakdown.urgencyMultiplier).toBe(1.3); // Express
+      expect(result.breakdown.urgencyMultiplier).toBe(1.4); // Express (updated from 1.3)
     });
   });
 
@@ -143,11 +143,11 @@ describe('Driver Earnings Integration Flow', () => {
       expect(result.success).toBe(true);
       
       // Should hit the cap
-      const maxDriverEarnings = maxJob.customerPaymentPence * 0.75; // 75% cap
+      const maxDriverEarnings = maxJob.customerPaymentPence * 0.70; // 70% cap (updated from 75%)
       expect(result.breakdown.cappedNetEarnings).toBeLessThanOrEqual(maxDriverEarnings);
       
       if (result.breakdown.capApplied) {
-        expect(result.warnings).toContain('Earnings capped at 75% of customer payment');
+        expect(result.warnings).toContain('Earnings capped at 70% of customer payment');
       }
     });
 

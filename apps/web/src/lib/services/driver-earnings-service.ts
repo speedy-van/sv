@@ -182,8 +182,8 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   
   urgencyMultipliers: {
     standard: 1.0,
-    express: 1.3,
-    premium: 1.6,
+    express: 1.4,   // Increased from 1.3 for better driver compensation
+    premium: 2.0,   // Increased from 1.6 for premium service incentive
   },
   
   serviceTypeMultipliers: {
@@ -199,7 +199,7 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   lateDeliveryPenaltyPence: 1000,  // £10.00
   lowRatingPenaltyPence: 500,      // £5.00
   
-  maxEarningsPercentOfBooking: 1.0,   // 100% - driver gets full calculated amount
+  maxEarningsPercentOfBooking: 0.70,  // 70% - ensures platform profitability
   minEarningsPerJob: 2000,            // £20.00 minimum
   
   defaultHelperSharePercentage: 0.20, // 20% for helper

@@ -266,12 +266,18 @@ export class DynamicPricingEngine {
   private applyDynamicPricing(basePrice: number, multipliers: any, adjustments: any): number {
     let finalPrice = basePrice;
     
-    // Apply all multipliers
-    finalPrice *= multipliers.demand;
-    finalPrice *= multipliers.market;
+    // Calculate combined multiplier for demand, market, time, and weather
+    // Apply a cap to prevent excessive pricing during peak times
+    const combinedMultiplier = Math.min(
+      multipliers.demand * multipliers.market * multipliers.time * multipliers.weather,
+      1.75 // Maximum 75% increase to keep prices competitive
+    );
+    
+    // Apply combined multiplier
+    finalPrice *= combinedMultiplier;
+    
+    // Apply customer-specific multiplier (loyalty discounts, etc.)
     finalPrice *= multipliers.customer;
-    finalPrice *= multipliers.time;
-    finalPrice *= multipliers.weather;
     
     // Apply customer adjustments
     if (adjustments.volumeDiscount) {

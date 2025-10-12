@@ -20,6 +20,7 @@ import Providers from '@/components/Providers';
 // import MotionProvider from '@/components/MotionProvider'; // Temporarily removed due to framer-motion export * issue
 import SchemaProvider from '@/components/Schema/SchemaProvider';
 import { VisitorTracker } from '@/components/VisitorTracker';
+import { StructuredData } from '@/components/StructuredData';
 
 export const metadata = {
   title: 'Speedy Van — Premium Moving & Delivery Services',
@@ -187,6 +188,7 @@ export default async function RootLayout({
       </head>
       <body>
         <VisitorTracker />
+        <StructuredData type="moving-company" />
         <SchemaProvider>
           <Providers>
             <ConsentProvider initialConsent={initialConsent}>

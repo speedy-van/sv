@@ -258,7 +258,7 @@ describe('Driver Earnings Service', () => {
   });
 
   describe('Platform Fee Cap', () => {
-    it('should cap driver earnings at 75% of customer payment', async () => {
+    it('should cap driver earnings at 70% of customer payment', async () => {
       const input = {
         assignmentId: 'test-1',
         driverId: 'driver-1',
@@ -280,11 +280,11 @@ describe('Driver Earnings Service', () => {
 
       const result = await driverEarningsService.calculateEarnings(input);
 
-      const maxEarnings = input.customerPaymentPence * 0.75; // 75% cap
+      const maxEarnings = input.customerPaymentPence * 0.70; // 70% cap
       expect(result.breakdown.cappedNetEarnings).toBeLessThanOrEqual(maxEarnings);
       
       if (result.breakdown.capApplied) {
-        expect(result.warnings).toContain('Earnings capped at 75% of customer payment');
+        expect(result.warnings).toContain('Earnings capped at 70% of customer payment');
       }
     });
   });
