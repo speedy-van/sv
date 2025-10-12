@@ -1,0 +1,61 @@
+{
+  "updatedAt": "2025-08-23T00:56:59.450Z",
+  "total": 6,
+  "places": [
+    {
+      "slug": "london",
+      "name": "London",
+      "type": "city",
+      "region": "England",
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "population": 8900000
+    },
+    {
+      "slug": "manchester",
+      "name": "Manchester",
+      "type": "city",
+      "region": "England",
+      "lat": 53.4808,
+      "lon": -2.2426,
+      "population": 553000
+    },
+    {
+      "slug": "glasgow",
+      "name": "Glasgow",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 55.8642,
+      "lon": -4.2518,
+      "population": 635000
+    },
+    {
+      "slug": "edinburgh",
+      "name": "Edinburgh",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 55.9533,
+      "lon": -3.1883,
+      "population": 488000
+    },
+    {
+      "slug": "inverness",
+      "name": "Inverness",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 57.4778,
+      "lon": -4.2247,
+      "population": 47000
+    },
+    {
+      "slug": "abingdon",
+      "name": "Abingdon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6711,
+      "lon": -1.2828,
+      "population": 36000,
+      "parentSlug": "oxford"
+    }
+  ]
+}

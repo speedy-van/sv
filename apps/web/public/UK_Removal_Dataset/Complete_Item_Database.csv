@@ -1,0 +1,399 @@
+Category,Item_Name,Length_cm,Width_cm,Height_cm,Area_m2,Weight_kg,Van_Units,Workers,Loading_Complexity,Special_Handling,Filename
+Antiques_Collectibles,Mahogany Grandfather Clock,60,40,210,0.24,175,1,2,Difficult,Fragile upright transport,mahogany_grandfather_clock_jpg_175kg.jpg
+Antiques_Collectibles,English Grandfather Clock,55,35,200,0.19,185,1,2,Difficult,Antique careful handling,english_grandfather_clock_jpg_185kg.jpg
+Antiques_Collectibles,Traditional Grandfather Clock,65,45,220,0.29,195,1,2,Difficult,Heavy base top-heavy,traditional_grandfather_clock_jpg_195kg.jpg
+Antiques_Collectibles,Antique China Cabinet,120,45,180,0.54,95,2,2,Medium,Glass shelves fragile,antique_china_cabinet_jpg_95kg.jpg
+Antiques_Collectibles,Display Case Curio,100,40,170,0.40,115,2,2,Medium,Multiple glass panels,display_case_curio_jpg_115kg.jpg
+Antiques_Collectibles,Victorian Display Cabinet,140,50,190,0.70,135,1,2,Medium,Ornate details heavy,victorian_display_cabinet_jpg_135kg.jpg
+Antiques_Collectibles,Antique Wardrobe Large,180,60,200,1.08,145,1,2,Difficult,May need disassembly,antique_wardrobe_large_jpg_145kg.jpg
+Antiques_Collectibles,Victorian Armoire,160,55,190,0.88,155,1,2,Difficult,Solid wood heavy doors,victorian_armoire_jpg_155kg.jpg
+Antiques_Collectibles,French Armoire,170,65,210,1.11,165,1,2,Difficult,Ornate fragile details,french_armoire_jpg_165kg.jpg
+Antiques_Collectibles,Vintage Dresser Oak,120,50,85,0.60,75,2,2,Medium,Solid wood construction,vintage_dresser_oak_jpg_75kg.jpg
+Antiques_Collectibles,Secretary Desk Bureau,100,60,120,0.60,105,2,2,Medium,Writing surface fragile,secretary_desk_bureau_jpg_105kg.jpg
+Antiques_Collectibles,Antique Buffet Sideboard,150,45,90,0.68,85,2,2,Medium,Heavy solid construction,antique_buffet_sideboard_jpg_85kg.jpg
+Antiques_Collectibles,Vintage Dining Chair Set,50,50,90,0.25,32,4,1,Easy,Set of 4 chairs,vintage_dining_chair_set_jpg_32kg.jpg
+Antiques_Collectibles,Antique Coffee Table,100,60,45,0.60,25,3,1,Easy,Glass or wood top,antique_coffee_table_jpg_25kg.jpg
+Antiques_Collectibles,Pub Chair Antique,45,45,110,0.20,8,6,1,Easy,Single chair,pub_chair_antique_jpg_8kg.jpg
+Antiques_Collectibles,Antique Trunk Storage,80,50,40,0.40,35,3,1,Medium,Heavy hinges,antique_trunk_storage_jpg_35kg.jpg
+Antiques_Collectibles,Vintage Floor Lamp,30,30,160,0.09,8,8,1,Medium,Fragile shade,vintage_floor_lamp_jpg_8kg.jpg
+Antiques_Collectibles,Antique Mirror Ornate,80,5,120,0.04,15,10,1,Medium,Fragile glass,antique_mirror_ornate_jpg_15kg.jpg
+Antiques_Collectibles,Pottery Vessel Large,40,40,60,0.16,5,12,1,Medium,Fragile ceramic,pottery_vessel_large_jpg_5kg.jpg
+Antiques_Collectibles,Picture Frame Gold,60,5,80,0.03,3,15,1,Easy,Fragile glass,picture_frame_gold_jpg_3kg.jpg
+Antiques_Collectibles,Book Collection Leather,30,20,25,0.06,15,10,1,Easy,Heavy books,book_collection_leather_jpg_15kg.jpg
+Antiques_Collectibles,Mantel Clock Antique,40,20,30,0.08,8,8,1,Medium,Delicate mechanism,mantel_clock_antique_jpg_8kg.jpg
+Antiques_Collectibles,Jewelry Box Antique,25,20,15,0.05,6,12,1,Easy,Small valuable,jewelry_box_antique_jpg_6kg.jpg
+Bathroom_Furniture,30 Inch Vanity Unit Sink,76,46,85,0.35,45,3,2,Medium,Plumbing disconnection,30_inch_vanity_unit_sink_jpg_45kg.jpg
+Bathroom_Furniture,Corner Vanity Unit,90,90,80,0.81,55,2,2,Medium,Triangular shape,corner_vanity_unit_jpg_55kg.jpg
+Bathroom_Furniture,Oak Double Basin Vanity,120,55,90,0.66,75,2,2,Medium,Heavy stone top,oak_double_basin_vanity_jpg_75kg.jpg
+Bathroom_Furniture,Tall Storage Cabinet Bamboo,40,35,180,0.14,32,5,1,Easy,Lightweight stackable,tall_storage_cabinet_bamboo_jpg_32kg.jpg
+Bathroom_Furniture,Medicine Cabinet LED,60,15,80,0.09,15,8,1,Easy,Wall-mounted fragile,medicine_cabinet_led_jpg_15kg.jpg
+Bathroom_Furniture,Over Toilet Storage,70,25,190,0.18,22,4,1,Medium,Fits around toilet,over_toilet_storage_jpg_22kg.jpg
+Bathroom_Furniture,Teak Shower Bench,60,35,45,0.21,6,6,1,Easy,Water resistant,teak_shower_bench_jpg_6kg.jpg
+Bathroom_Furniture,Storage Bench Vanity,80,40,45,0.32,7,5,1,Easy,Dual purpose,storage_bench_vanity_jpg_7kg.jpg
+Bathroom_Furniture,Ladder Shelf Towel Rack,50,30,180,0.15,12,5,1,Easy,Tall narrow,ladder_shelf_towel_rack_jpg_12kg.jpg
+Bathroom_Furniture,Corner Shelving 4-tier,40,40,160,0.16,8,6,1,Easy,Corner fit,corner_shelving_4_tier_jpg_8kg.jpg
+Bathroom_Furniture,Laundry Hamper Cabinet,50,40,70,0.20,14,4,1,Easy,Ventilated design,laundry_hamper_cabinet_jpg_14kg.jpg
+Bathroom_Furniture,Large Wall Mirror Black,80,5,100,0.04,22,8,1,Medium,Fragile heavy glass,large_wall_mirror_black_jpg_22kg.jpg
+Bathroom_Furniture,Vanity Light Fixture 3-bulb,60,15,20,0.09,5,10,1,Easy,Electrical disconnect,vanity_light_fixture_3_bulb_jpg_5kg.jpg
+Bathroom_Furniture,Towel Bar Wall Mount,60,10,5,0.06,4,12,1,Easy,Wall mounted,towel_bar_wall_mount_jpg_4kg.jpg
+Bathroom_Furniture,Soap Dispenser 3-chamber,20,15,25,0.03,2,15,1,Easy,Wall mounted,soap_dispenser_3_chamber_jpg_2kg.jpg
+Bathroom_Furniture,Digital Bathroom Scale,30,30,5,0.09,3,12,1,Easy,Electronic fragile,digital_bathroom_scale_jpg_3kg.jpg
+Bathroom_Furniture,Trash Can Pedal 5L,25,25,35,0.06,4,12,1,Easy,Metal construction,trash_can_pedal_5l_jpg_4kg.jpg
+Bathroom_Furniture,Multi-tier Plant Stand,40,40,120,0.16,10,6,1,Easy,Multiple levels,multi_tier_plant_stand_jpg_10kg.jpg
+Carpets_Rugs,6x9 White Geometric Rug,274,183,2,5.01,15,15,1,Easy,Roll for transport,6x9_white_geometric_rug_jpg_15kg.jpg
+Carpets_Rugs,8x10 Oriental Machine Rug,305,244,2,7.44,25,12,1,Medium,Heavy roll tightly,8x10_oriental_machine_rug_jpg_25kg.jpg
+Carpets_Rugs,9x12 Non-slip Large Rug,366,274,2,10.03,28,10,1,Medium,Largest standard size,9x12_non_slip_large_rug_jpg_28kg.jpg
+Carpets_Rugs,Modern Bordered Boho Rug,200,150,2,3.00,12,18,1,Easy,Medium size,modern_bordered_boho_rug_jpg_12kg.jpg
+Carpets_Rugs,Vintage Hamadan Collection,183,122,2,2.23,18,20,1,Easy,Traditional pattern,vintage_hamadan_collection_jpg_18kg.jpg
+Carpets_Rugs,Traditional Medallion Persian,200,150,2,3.00,22,15,1,Medium,Heavy traditional,traditional_medallion_persian_jpg_22kg.jpg
+Carpets_Rugs,Vintage Persian 6x9,274,183,2,5.01,16,18,1,Easy,Classic design,vintage_persian_6x9_jpg_16kg.jpg
+Carpets_Rugs,Hallway Runner 2x12,366,61,1,2.23,8,20,1,Easy,Long narrow,hallway_runner_2x12_jpg_8kg.jpg
+Carpets_Rugs,Extra Long Narrow Runner,305,61,1,1.86,10,25,1,Easy,Hallway size,extra_long_narrow_runner_jpg_10kg.jpg
+Carpets_Rugs,Washable Runner 2x10,305,61,1,1.86,6,25,1,Easy,Easy care,washable_runner_2x10_jpg_6kg.jpg
+Carpets_Rugs,Kitchen Runner 2x12,366,61,1,2.23,7,22,1,Easy,Kitchen specific,kitchen_runner_2x12_jpg_7kg.jpg
+Carpets_Rugs,Cotton Kitchen Runner 2x6,183,61,1,1.12,4,35,1,Easy,Lightweight cotton,cotton_kitchen_runner_2x6_jpg_4kg.jpg
+Carpets_Rugs,Kitchen Runner 2x10,305,61,1,1.86,5,30,1,Easy,Washable material,kitchen_runner_2x10_jpg_5kg.jpg
+Carpets_Rugs,Vintage Traditional Stair,300,76,1,2.28,12,20,1,Easy,Stair specific,vintage_traditional_stair_jpg_12kg.jpg
+Carpets_Rugs,Vintage Pattern Stair Runner,350,76,1,2.66,15,18,1,Easy,Pattern design,vintage_pattern_stair_runner_jpg_15kg.jpg
+Carpets_Rugs,Boho Round Rug 4ft,122,122,2,1.49,8,25,1,Easy,Round shape,boho_round_rug_4ft_jpg_8kg.jpg
+Carpets_Rugs,Ultra-thin Round Rug 6ft,183,183,2,3.35,12,20,1,Easy,Large round,ultra_thin_round_rug_6ft_jpg_12kg.jpg
+Carpets_Rugs,Green Round Rug 5ft,152,152,2,2.31,10,22,1,Easy,Medium round,green_round_rug_5ft_jpg_10kg.jpg
+Carpets_Rugs,Waterproof Outdoor Rug 5x8,244,152,2,3.71,18,15,1,Easy,Weather resistant,waterproof_outdoor_rug_5x8_jpg_18kg.jpg
+Children_Baby_Items,Complete Nursery Set 3-piece,200,150,120,3.00,85,1,2,Difficult,Crib dresser chair,complete_nursery_set_3_piece_jpg_85kg.jpg
+Children_Baby_Items,7-piece Nursery Set,250,200,120,5.00,120,1,2,Difficult,Complete room setup,7_piece_nursery_set_jpg_120kg.jpg
+Children_Baby_Items,Convertible Baby Crib,140,75,100,1.05,35,3,2,Medium,Converts toddler bed,convertible_baby_crib_jpg_35kg.jpg
+Children_Baby_Items,Changing Table Dresser Combo,120,60,100,0.72,42,2,2,Medium,Heavy stable base,changing_table_dresser_combo_jpg_42kg.jpg
+Children_Baby_Items,Nursery Glider Ottoman,80,90,100,0.72,28,3,2,Medium,Rocking mechanism,nursery_glider_ottoman_jpg_28kg.jpg
+Children_Baby_Items,Toddler Bed Wood,150,80,60,1.20,18,4,1,Easy,Low height safe,toddler_bed_wood_jpg_18kg.jpg
+Children_Baby_Items,Bunk Bed Twin over Twin,200,100,160,2.00,65,1,2,Difficult,Disassemble safety,bunk_bed_twin_over_twin_jpg_65kg.jpg
+Children_Baby_Items,House-style Bunk Bed,210,110,170,2.31,75,1,2,Difficult,Decorative complex,house_style_bunk_bed_jpg_75kg.jpg
+Children_Baby_Items,Kids Desk Chair Set,100,60,75,0.60,25,3,1,Medium,Adjustable height,kids_desk_chair_set_jpg_25kg.jpg
+Children_Baby_Items,Toddler Table Chair Set,80,80,50,0.64,25,3,1,Easy,Child size,toddler_table_chair_set_jpg_25kg.jpg
+Children_Baby_Items,Toy Furniture Table Chairs,60,60,45,0.36,18,4,1,Easy,Play furniture,toy_furniture_table_chairs_jpg_18kg.jpg
+Children_Baby_Items,Toy Storage Chest,80,40,40,0.32,12,4,1,Easy,Safety hinges,toy_storage_chest_jpg_12kg.jpg
+Children_Baby_Items,Kids Wardrobe Portable,80,50,160,0.40,25,3,1,Medium,Lightweight construction,kids_wardrobe_portable_jpg_25kg.jpg
+Children_Baby_Items,Dress-up Storage Unit,60,40,120,0.24,22,4,1,Easy,Costume storage,dress_up_storage_unit_jpg_22kg.jpg
+Children_Baby_Items,Kids Bookshelf Organizer,80,30,120,0.24,20,4,1,Easy,Multiple compartments,kids_bookshelf_organizer_jpg_20kg.jpg
+Children_Baby_Items,Large Toy Chest 39-inch,100,50,50,0.50,28,3,1,Medium,Safety lid,large_toy_chest_39_inch_jpg_28kg.jpg
+Children_Baby_Items,Wooden Toy Bench,80,35,40,0.28,15,4,1,Easy,Storage bench,wooden_toy_bench_jpg_15kg.jpg
+Children_Baby_Items,High Chair 4-in-1,60,60,120,0.36,8,6,1,Medium,Convertible design,high_chair_4_in_1_jpg_8kg.jpg
+Children_Baby_Items,High Chair 15-in-1,65,65,125,0.42,15,4,1,Medium,Multi-function,high_chair_15_in_1_jpg_15kg.jpg
+Children_Baby_Items,Baby Stroller Newborn,50,80,100,0.40,14,4,1,Medium,Foldable,baby_stroller_newborn_jpg_14kg.jpg
+Children_Baby_Items,Baby Stroller 2-in-1,55,85,105,0.47,18,3,1,Medium,Car seat compatible,baby_stroller_2_in_1_jpg_18kg.jpg
+Children_Baby_Items,Baby Playpen 6-panel,150,150,75,2.25,22,2,1,Medium,Safety enclosure,baby_playpen_6_panel_jpg_22kg.jpg
+Children_Baby_Items,Baby Swing 3-in-1,80,60,100,0.48,18,3,1,Medium,Motion mechanism,baby_swing_3_in_1_jpg_18kg.jpg
+Children_Baby_Items,Baby Bouncer Swing,70,50,80,0.35,15,4,1,Easy,Bouncing action,baby_bouncer_swing_jpg_15kg.jpg
+Dining_Room_Furniture,6-seater Modern Dining Set,180,90,75,1.62,85,2,2,Medium,Table plus 6 chairs,6_seater_modern_dining_set_jpg_85kg.jpg
+Dining_Room_Furniture,Extendable Solid Wood Table,160,90,75,1.44,65,2,2,Medium,Extension mechanism,extendable_solid_wood_table_jpg_65kg.jpg
+Dining_Room_Furniture,Round Pedestal Table 48,122,122,75,1.49,58,2,2,Medium,Single central support,round_pedestal_table_48_jpg_58kg.jpg
+Dining_Room_Furniture,Glass Dining Table 7-piece,180,100,75,1.80,85,2,2,Medium,Fragile glass top,glass_dining_table_7_piece_jpg_85kg.jpg
+Dining_Room_Furniture,Extension Table Drawleaf,170,90,75,1.53,78,2,2,Medium,Leaf mechanism,extension_table_drawleaf_jpg_78kg.jpg
+Dining_Room_Furniture,Upholstered Chair Set Tufted,50,60,90,0.30,28,4,1,Easy,Set of 4 chairs,upholstered_chair_set_tufted_jpg_28kg.jpg
+Dining_Room_Furniture,Leather Chair Walnut,55,65,95,0.36,26,4,1,Easy,Premium leather,leather_chair_walnut_jpg_26kg.jpg
+Dining_Room_Furniture,Bar Stool Counter Height,40,40,110,0.16,22,6,1,Easy,Adjustable height,bar_stool_counter_height_jpg_22kg.jpg
+Dining_Room_Furniture,Sideboard 66-inch,168,45,85,0.76,65,2,2,Medium,Heavy solid construction,sideboard_66_inch_jpg_65kg.jpg
+Dining_Room_Furniture,China Cabinet Lighted,120,40,190,0.48,82,2,2,Medium,Glass shelves electrical,china_cabinet_lighted_jpg_82kg.jpg
+Dining_Room_Furniture,Dining Hutch 69-inch,175,50,200,0.88,88,1,2,Medium,Two-piece construction,dining_hutch_69_inch_jpg_88kg.jpg
+Dining_Room_Furniture,Bar Cart Wooden Wheels,80,50,90,0.40,25,3,1,Easy,Mobile serving,bar_cart_wooden_wheels_jpg_25kg.jpg
+Dining_Room_Furniture,Wine Storage 58-inch,147,40,180,0.59,55,2,2,Medium,Temperature sensitive,wine_storage_58_inch_jpg_55kg.jpg
+Dining_Room_Furniture,Console Table 48-inch,122,35,75,0.43,55,3,2,Medium,Solid wood construction,console_table_48_inch_jpg_55kg.jpg
+Dining_Room_Furniture,Dining Bench Upholstered 74,188,40,45,0.75,32,3,1,Medium,Long bench seating,dining_bench_upholstered_74_jpg_32kg.jpg
+Dining_Room_Furniture,Chandelier Modern Linear,120,20,30,0.24,12,6,1,Medium,Electrical fixture,chandelier_modern_linear_jpg_12kg.jpg
+Dining_Room_Furniture,Mirror Round 32-inch,81,5,81,0.04,8,10,1,Medium,Fragile glass,mirror_round_32_inch_jpg_8kg.jpg
+Dining_Room_Furniture,Plant Stand Bamboo,40,40,80,0.16,12,6,1,Easy,Natural material,plant_stand_bamboo_jpg_12kg.jpg
+Electrical_Electronic,15-inch TV,35,25,8,0.09,8,15,1,Easy,Small portable,15_inch_tv_jpg_8kg.jpg
+Electrical_Electronic,19-inch TV,45,30,8,0.14,10,12,1,Easy,Compact size,19_inch_tv_jpg_10kg.jpg
+Electrical_Electronic,24-inch TV,55,35,8,0.19,12,10,1,Easy,Medium small,24_inch_tv_jpg_12kg.jpg
+Electrical_Electronic,32-inch TV,73,45,8,0.33,15,8,1,Easy,Standard size,32_inch_tv_jpg_15kg.jpg
+Electrical_Electronic,40-inch TV,90,55,8,0.50,20,6,1,Medium,Medium large,40_inch_tv_jpg_20kg.jpg
+Electrical_Electronic,43-inch TV,97,60,8,0.58,22,5,1,Medium,Large screen,43_inch_tv_jpg_22kg.jpg
+Electrical_Electronic,50-inch TV,112,70,8,0.78,25,4,2,Medium,Large fragile,50_inch_tv_jpg_25kg.jpg
+Electrical_Electronic,55-inch TV,123,75,8,0.92,28,3,2,Medium,Very large,55_inch_tv_jpg_28kg.jpg
+Electrical_Electronic,60-inch TV,135,80,8,1.08,35,2,2,Medium,Extra large,60_inch_tv_jpg_35kg.jpg
+Electrical_Electronic,65-inch TV,145,85,8,1.23,40,2,2,Difficult,Huge screen,65_inch_tv_jpg_40kg.jpg
+Electrical_Electronic,75-inch TV,167,100,8,1.67,55,1,2,Difficult,Massive screen,75_inch_tv_jpg_55kg.jpg
+Electrical_Electronic,85-inch TV,189,115,10,2.17,82,1,2,Difficult,Professional handling,85_inch_tv_jpg_82kg.jpg
+Electrical_Electronic,Desktop Computer Tower,20,45,40,0.09,10,8,1,Easy,Electronic fragile,desktop_computer_tower_jpg_10kg.jpg
+Electrical_Electronic,Gaming PC Tower,25,50,45,0.11,15,6,1,Easy,High-end components,gaming_pc_tower_jpg_15kg.jpg
+Electrical_Electronic,Laptop Computer,35,25,3,0.09,2,20,1,Easy,Portable fragile,laptop_computer_jpg_2kg.jpg
+Electrical_Electronic,Computer Monitor 24-inch,55,20,35,0.11,6,8,1,Easy,Fragile screen,computer_monitor_24_inch_jpg_6kg.jpg
+Electrical_Electronic,Computer Monitor 27-inch,62,22,40,0.14,8,6,1,Easy,Large screen,computer_monitor_27_inch_jpg_8kg.jpg
+Electrical_Electronic,All-in-one Printer,45,40,20,0.18,12,6,1,Easy,Multi-function,all_in_one_printer_jpg_12kg.jpg
+Electrical_Electronic,Laser Printer Office,50,45,25,0.23,18,4,1,Medium,Heavy duty,laser_printer_office_jpg_18kg.jpg
+Electrical_Electronic,Gaming Console PlayStation,40,25,10,0.10,5,10,1,Easy,Entertainment system,gaming_console_playstation_jpg_5kg.jpg
+Electrical_Electronic,Gaming Console Xbox,35,25,15,0.09,8,8,1,Easy,Microsoft system,gaming_console_xbox_jpg_8kg.jpg
+Electrical_Electronic,Soundbar TV Audio,100,10,8,0.10,4,10,1,Easy,Audio enhancement,soundbar_tv_audio_jpg_4kg.jpg
+Electrical_Electronic,Speakers Bookshelf Pair,30,25,40,0.08,15,6,1,Easy,Stereo pair,speakers_bookshelf_pair_jpg_15kg.jpg
+Electrical_Electronic,Home Theater System,120,40,15,0.48,25,3,2,Medium,Multiple components,home_theater_system_jpg_25kg.jpg
+Electrical_Electronic,Projector Home Cinema,35,25,15,0.09,8,8,1,Easy,Presentation device,projector_home_cinema_jpg_8kg.jpg
+Electrical_Electronic,Microwave Countertop,50,40,30,0.20,18,4,1,Medium,Kitchen appliance,microwave_countertop_jpg_18kg.jpg
+Electrical_Electronic,Mini Fridge Compact,50,50,85,0.25,35,3,1,Medium,Keep upright,mini_fridge_compact_jpg_35kg.jpg
+Electrical_Electronic,Portable Washing Machine,60,55,85,0.33,15,4,1,Medium,Drain water,portable_washing_machine_jpg_15kg.jpg
+Electrical_Electronic,Portable Air Conditioner,40,40,80,0.16,8,6,1,Medium,Cooling unit,portable_air_conditioner_jpg_8kg.jpg
+Electrical_Electronic,WiFi Router Modem,25,20,5,0.05,2,20,1,Easy,Network equipment,wifi_router_modem_jpg_2kg.jpg
+Electrical_Electronic,Smart Speaker Alexa,15,15,25,0.02,1,30,1,Easy,Voice assistant,smart_speaker_alexa_jpg_1kg.jpg
+Electrical_Electronic,Security Camera System,30,25,20,0.08,15,6,1,Easy,Surveillance equipment,security_camera_system_jpg_15kg.jpg
+Electrical_Electronic,Electric Kettle,25,20,25,0.05,1,30,1,Easy,Kitchen appliance,electric_kettle_jpg_1kg.jpg
+Electrical_Electronic,Robot Vacuum Cleaner,35,35,10,0.12,3,12,1,Easy,Automated cleaning,robot_vacuum_cleaner_jpg_3kg.jpg
+Electrical_Electronic,Tablet iPad,25,18,1,0.05,1,30,1,Easy,Portable device,tablet_ipad_jpg_1kg.jpg
+Garden_Outdoor,7-piece Metal Dining Set,200,100,75,2.00,42,2,2,Medium,Table plus 6 chairs,7_piece_metal_dining_set_jpg_42kg.jpg
+Garden_Outdoor,5-piece Outdoor Dining Set,180,90,75,1.62,35,2,2,Medium,Compact dining set,5_piece_outdoor_dining_set_jpg_35kg.jpg
+Garden_Outdoor,Rattan Patio Dining Set,180,90,75,1.62,32,2,2,Medium,Weather-resistant,rattan_patio_dining_set_jpg_32kg.jpg
+Garden_Outdoor,Acacia Wood Dining Table,180,90,75,1.62,55,2,2,Medium,Natural wood,acacia_wood_dining_table_jpg_55kg.jpg
+Garden_Outdoor,Garden Bench Wooden Arch,150,60,85,0.90,25,3,1,Easy,Decorative design,garden_bench_wooden_arch_jpg_25kg.jpg
+Garden_Outdoor,Gas Charcoal Combo Grill,120,60,110,0.72,58,2,2,Medium,Multi-fuel cooking,gas_charcoal_combo_grill_jpg_58kg.jpg
+Garden_Outdoor,Outdoor Kitchen Island,200,80,90,1.60,95,1,2,Difficult,Built-in features,outdoor_kitchen_island_jpg_95kg.jpg
+Garden_Outdoor,Patio Heater Fire Pit,80,80,200,0.64,28,3,2,Medium,Gas connection,patio_heater_fire_pit_jpg_28kg.jpg
+Garden_Outdoor,Riding Lawnmower 30-inch,150,90,100,1.35,165,1,2,Difficult,Drain fuel ramp,riding_lawnmower_30_inch_jpg_165kg.jpg
+Garden_Outdoor,Garden Shed Storage,244,183,200,4.47,65,1,2,Difficult,Disassemble recommended,garden_shed_storage_jpg_65kg.jpg
+Garden_Outdoor,Wheelbarrow Garden Tools,120,60,60,0.72,5,8,1,Easy,Utility transport,wheelbarrow_garden_tools_jpg_5kg.jpg
+Garden_Outdoor,Trampoline Mini Fitness,120,120,25,1.44,25,2,1,Medium,Safety net,trampoline_mini_fitness_jpg_25kg.jpg
+Garden_Outdoor,Trampoline 16ft Large,488,488,275,23.81,85,1,2,Difficult,Large assembly,trampoline_16ft_large_jpg_85kg.jpg
+Garden_Outdoor,Swing Set Basic,300,200,250,6.00,95,1,2,Difficult,Playground equipment,swing_set_basic_jpg_95kg.jpg
+Garden_Outdoor,Swing Set Multi-deck,400,300,300,12.00,185,1,2,Difficult,Complex structure,swing_set_multi_deck_jpg_185kg.jpg
+Garden_Outdoor,Gazebo 10x12 Hardtop,366,305,280,11.16,135,1,2,Difficult,Heavy roof,gazebo_10x12_hardtop_jpg_135kg.jpg
+Garden_Outdoor,Gazebo 14x12 Hardtop,427,366,300,15.63,155,1,2,Difficult,Extra large,gazebo_14x12_hardtop_jpg_155kg.jpg
+Garden_Outdoor,Outdoor Umbrella Parasol,300,300,250,9.00,6,4,1,Easy,Shade structure,outdoor_umbrella_parasol_jpg_6kg.jpg
+Garden_Outdoor,Outdoor Lounge Chair Egg,80,100,120,0.80,15,4,1,Easy,Comfort seating,outdoor_lounge_chair_egg_jpg_15kg.jpg
+Garden_Outdoor,Outdoor Storage Box 100gal,120,60,60,0.72,35,3,1,Medium,Weather resistant,outdoor_storage_box_100gal_jpg_35kg.jpg
+Garden_Outdoor,Garden Water Fountain 6-tier,60,60,150,0.36,35,3,2,Medium,Water feature,garden_water_fountain_6_tier_jpg_35kg.jpg
+Gym_Fitness_Equipment,Treadmill Home Model,180,80,140,1.44,75,1,2,Medium,Fold if possible,treadmill_home_model_jpg_75kg.jpg
+Gym_Fitness_Equipment,Exercise Bike Spinning,120,60,120,0.72,45,2,2,Medium,Adjust components,exercise_bike_spinning_jpg_45kg.jpg
+Gym_Fitness_Equipment,Elliptical Machine,200,70,160,1.40,85,1,2,Medium,Remove pedals,elliptical_machine_jpg_85kg.jpg
+Gym_Fitness_Equipment,Rowing Machine Teeter,220,60,50,1.32,92,1,2,Medium,Foldable design,rowing_machine_teeter_jpg_92kg.jpg
+Gym_Fitness_Equipment,Weight Bench Dumbbell,140,60,120,0.84,55,2,2,Medium,Adjustable positions,weight_bench_dumbbell_jpg_55kg.jpg
+Gym_Fitness_Equipment,Power Rack Body Solid,120,120,220,1.44,155,1,2,Difficult,Bolt-down disassemble,power_rack_body_solid_jpg_155kg.jpg
+Gym_Fitness_Equipment,Power Rack Rogue Monster,120,120,220,1.44,165,1,2,Difficult,Heavy duty,power_rack_rogue_monster_jpg_165kg.jpg
+Gym_Fitness_Equipment,Squat Stand Combo,100,100,200,1.00,125,1,2,Difficult,Safety features,squat_stand_combo_jpg_125kg.jpg
+Gym_Fitness_Equipment,Multi-gym Station 4-station,300,200,220,6.00,225,1,2,Difficult,Complex multiple parts,multi_gym_station_4_station_jpg_225kg.jpg
+Gym_Fitness_Equipment,Cable Machine Dual,200,150,220,3.00,195,1,2,Difficult,Cable system,cable_machine_dual_jpg_195kg.jpg
+Gym_Fitness_Equipment,Multi-gym Station Cable,250,200,220,5.00,285,1,2,Difficult,Commercial grade,multi_gym_station_cable_jpg_285kg.jpg
+Gym_Fitness_Equipment,Dumbbell Set Loadable 70lbs,60,40,30,0.24,32,4,1,Medium,Weight plates,dumbbell_set_loadable_70lbs_jpg_32kg.jpg
+Gym_Fitness_Equipment,Weight Plates Cast Iron,50,50,20,0.25,45,4,1,Medium,Heavy iron,weight_plates_cast_iron_jpg_45kg.jpg
+Gym_Fitness_Equipment,Slam Ball Medicine Ball,30,30,30,0.09,12,8,1,Easy,Rubber construction,slam_ball_medicine_ball_jpg_12kg.jpg
+Gym_Fitness_Equipment,Kettlebell Resistance Bands,40,40,25,0.16,18,6,1,Easy,Combo set,kettlebell_resistance_bands_jpg_18kg.jpg
+Gym_Fitness_Equipment,Punching Bag Venum 100lbs,45,45,120,0.20,45,3,2,Medium,Heavy bag,punching_bag_venum_100lbs_jpg_45kg.jpg
+Gym_Fitness_Equipment,Heavy Bag Speed Bag Stand,100,80,200,0.80,65,2,2,Medium,Boxing equipment,heavy_bag_speed_bag_stand_jpg_65kg.jpg
+Gym_Fitness_Equipment,Pilates Reformer Wood,220,60,40,1.32,85,1,2,Medium,Exercise equipment,pilates_reformer_wood_jpg_85kg.jpg
+Gym_Fitness_Equipment,Foam Roller Massage,60,15,15,0.09,2,15,1,Easy,Recovery tool,foam_roller_massage_jpg_2kg.jpg
+Gym_Fitness_Equipment,Balance Trainer Bosu,65,65,25,0.42,8,6,1,Easy,Balance training,balance_trainer_bosu_jpg_8kg.jpg
+Kitchen_appliances,Mini Fridge 25kg,45,45,75,0.20,25,5,1,Medium,Compact dorm-style,mini_fridge_25kg_jpg_25kg.jpg
+Kitchen_appliances,Mini Fridge 2-door 32kg,50,50,85,0.25,32,4,1,Medium,Two compartments,mini_fridge_2_door_32kg_jpg_32kg.jpg
+Kitchen_appliances,Mini Fridge 3.2 cuft 35kg,55,55,90,0.30,35,3,1,Medium,Larger capacity,mini_fridge_3_2_cuft_35kg_jpg_35kg.jpg
+Kitchen_appliances,Standard Fridge 7.5 cuft,60,60,170,0.36,65,2,2,Medium,Top freezer,standard_fridge_7_5_cuft_jpg_65kg.jpg
+Kitchen_appliances,Standard Refrigerator 85kg,60,65,170,0.39,85,2,2,Medium,Family size,standard_refrigerator_85kg_jpg_85kg.jpg
+Kitchen_appliances,Standard Refrigerator 95kg,65,65,175,0.42,95,2,2,Medium,Large family,standard_refrigerator_95kg_jpg_95kg.jpg
+Kitchen_appliances,Bosch Multi-door 145kg,80,70,180,0.56,145,1,2,Difficult,Premium features,bosch_multi_door_145kg_jpg_145kg.jpg
+Kitchen_appliances,American Fridge Large 165kg,90,70,180,0.63,165,1,2,Difficult,Side-by-side,american_fridge_large_165kg_jpg_165kg.jpg
+Kitchen_appliances,Small Chest Freezer 3.5cuft,85,55,85,0.47,35,3,1,Medium,Compact freezer,small_chest_freezer_3_5cuft_jpg_35kg.jpg
+Kitchen_appliances,Medium Chest Freezer 5cuft,100,60,85,0.60,42,2,2,Medium,Medium capacity,medium_chest_freezer_5cuft_jpg_42kg.jpg
+Kitchen_appliances,Chest Freezer 7cuft,110,65,85,0.72,45,2,2,Medium,Large capacity,chest_freezer_7cuft_jpg_45kg.jpg
+Kitchen_appliances,Large Chest Freezer 19.4cuft,150,80,90,1.20,85,1,2,Difficult,Commercial size,large_chest_freezer_19_4cuft_jpg_85kg.jpg
+Kitchen_appliances,Commercial Chest Freezer 30cuft,180,90,95,1.62,95,1,2,Difficult,Professional grade,commercial_chest_freezer_30cuft_jpg_95kg.jpg
+Kitchen_appliances,Upright Freezer 3cuft,50,55,130,0.28,38,3,1,Medium,Compact upright,upright_freezer_3cuft_jpg_38kg.jpg
+Kitchen_appliances,Upright Freezer Compact,55,60,140,0.33,42,3,2,Medium,Space saving,upright_freezer_compact_jpg_42kg.jpg
+Kitchen_appliances,Mini Washer 16L 15kg,50,50,85,0.25,15,4,1,Medium,Portable compact,mini_washer_16l_15kg_jpg_15kg.jpg
+Kitchen_appliances,Small Washer 9.9lb 18kg,55,55,85,0.30,18,3,1,Medium,Small capacity,small_washer_9_9lb_18kg_jpg_18kg.jpg
+Kitchen_appliances,Top-load Washer 1.6cuft,60,60,85,0.36,22,3,1,Medium,Top loading,top_load_washer_1_6cuft_jpg_22kg.jpg
+Kitchen_appliances,Standard Washer 75kg,60,60,85,0.36,75,2,2,Medium,Standard dimensions,standard_washer_75kg_jpg_75kg.jpg
+Kitchen_appliances,Standard Washer 85kg,65,65,90,0.42,85,2,2,Medium,Buying guide,standard_washer_85kg_jpg_85kg.jpg
+Kitchen_appliances,Whirlpool Washer 95kg,65,65,90,0.42,95,2,2,Medium,Brand model,whirlpool_washer_95kg_jpg_95kg.jpg
+Kitchen_appliances,Large Capacity Washer 105kg,70,70,95,0.49,105,2,2,Medium,High capacity,large_capacity_washer_105kg_jpg_105kg.jpg
+Kitchen_appliances,Consumer Rated Washer 110kg,70,70,95,0.49,110,2,2,Medium,Top rated,consumer_rated_washer_110kg_jpg_110kg.jpg
+Kitchen_appliances,Small Microwave 0.7cuft,40,30,25,0.12,12,6,1,Easy,Compact size,small_microwave_0_7cuft_jpg_12kg.jpg
+Kitchen_appliances,Countertop Microwave 1.1cuft,50,40,30,0.20,18,4,1,Easy,Standard size,countertop_microwave_1_1cuft_jpg_18kg.jpg
+Kitchen_appliances,Built-in Microwave 1.6cuft,60,50,35,0.30,25,3,1,Medium,Installation required,built_in_microwave_1_6cuft_jpg_25kg.jpg
+Kitchen_appliances,Over Range Microwave,60,35,40,0.21,32,3,2,Medium,Above stove,over_range_microwave_jpg_32kg.jpg
+Kitchen_appliances,Compact Dishwasher,55,50,45,0.28,35,3,2,Medium,Space saving,compact_dishwasher_jpg_35kg.jpg
+Kitchen_appliances,Built-in Dishwasher,60,60,85,0.36,45,2,2,Medium,Standard installation,built_in_dishwasher_jpg_45kg.jpg
+Kitchen_appliances,Portable Dishwasher,60,60,90,0.36,55,2,2,Medium,Wheels included,portable_dishwasher_jpg_55kg.jpg
+Kitchen_appliances,Electric Range 30-inch,76,65,95,0.49,65,2,2,Medium,Cooking appliance,electric_range_30_inch_jpg_65kg.jpg
+Kitchen_appliances,Gas Range Professional,76,70,95,0.53,85,2,2,Medium,Professional cooking,gas_range_professional_jpg_85kg.jpg
+Kitchen_appliances,Double Oven Electric,76,65,140,0.49,95,2,2,Difficult,Dual ovens,double_oven_electric_jpg_95kg.jpg
+Kitchen_appliances,Coffee Maker Drip,25,35,35,0.09,5,10,1,Easy,Basic brewing,coffee_maker_drip_jpg_5kg.jpg
+Kitchen_appliances,Espresso Machine,30,40,40,0.12,12,6,1,Easy,Premium brewing,espresso_machine_jpg_12kg.jpg
+Kitchen_appliances,Stand Mixer KitchenAid,35,25,35,0.09,10,8,1,Easy,Baking appliance,stand_mixer_kitchenaid_jpg_10kg.jpg
+Kitchen_appliances,Food Processor Large,25,35,40,0.09,8,8,1,Easy,Food preparation,food_processor_large_jpg_8kg.jpg
+Kitchen_appliances,Blender High Performance,20,20,45,0.04,6,12,1,Easy,Smoothie maker,blender_high_performance_jpg_6kg.jpg
+Kitchen_appliances,Air Fryer Large,35,35,35,0.12,8,8,1,Easy,Healthy cooking,air_fryer_large_jpg_8kg.jpg
+Kitchen_appliances,Pressure Cooker Electric,30,30,30,0.09,6,12,1,Easy,Quick cooking,pressure_cooker_electric_jpg_6kg.jpg
+Kitchen_appliances,Slow Cooker 6-quart,35,25,25,0.09,5,12,1,Easy,Slow cooking,slow_cooker_6_quart_jpg_5kg.jpg
+Kitchen_appliances,Rice Cooker Large,30,30,25,0.09,4,15,1,Easy,Rice preparation,rice_cooker_large_jpg_4kg.jpg
+Kitchen_appliances,Toaster Oven Convection,45,35,25,0.16,12,6,1,Easy,Versatile cooking,toaster_oven_convection_jpg_12kg.jpg
+Kitchen_appliances,Wine Cooler 28-bottle,40,55,85,0.22,45,2,2,Medium,Wine storage,wine_cooler_28_bottle_jpg_45kg.jpg
+Kitchen_appliances,Ice Maker Portable,35,50,45,0.18,25,4,1,Medium,Ice production,ice_maker_portable_jpg_25kg.jpg
+Kitchen_appliances,Water Dispenser 5-gallon,30,30,100,0.09,15,4,1,Easy,Water service,water_dispenser_5_gallon_jpg_15kg.jpg
+Kitchen_appliances,Garbage Disposal,15,15,30,0.02,8,10,1,Easy,Waste management,garbage_disposal_jpg_8kg.jpg
+Kitchen_appliances,Range Hood 30-inch,76,50,15,0.38,18,3,1,Medium,Ventilation system,range_hood_30_inch_jpg_18kg.jpg
+Kitchen_appliances,Bread Maker Automatic,35,25,30,0.09,6,12,1,Easy,Bread baking,bread_maker_automatic_jpg_6kg.jpg
+Kitchen_appliances,Vacuum Sealer,40,20,15,0.08,4,15,1,Easy,Food preservation,vacuum_sealer_jpg_4kg.jpg
+Kitchen_appliances,Electric Griddle Large,60,35,10,0.21,8,8,1,Easy,Cooking surface,electric_griddle_large_jpg_8kg.jpg
+Kitchen_appliances,Deep Fryer Commercial,40,30,40,0.12,12,6,1,Easy,Frying appliance,deep_fryer_commercial_jpg_12kg.jpg
+Living_room_Furniture,1-Seat Accent Chair,80,80,90,0.64,18,4,1,Easy,Single person,1_seat_accent_chair_jpg_18kg.jpg
+Living_room_Furniture,Armchair Reading,85,85,95,0.72,22,3,1,Easy,Comfort seating,armchair_reading_jpg_22kg.jpg
+Living_room_Furniture,Recliner Single,90,90,100,0.81,28,3,2,Medium,Reclining mechanism,recliner_single_jpg_28kg.jpg
+Living_room_Furniture,2-Seat Loveseat,140,90,90,1.26,45,2,2,Medium,Compact sofa,2_seat_loveseat_jpg_45kg.jpg
+Living_room_Furniture,Chesterfield 2-seat,150,95,85,1.43,68,2,2,Medium,Traditional style,chesterfield_2_seat_jpg_68kg.jpg
+Living_room_Furniture,3-Seat Standard Sofa,200,90,90,1.80,52,1,2,Medium,Most common,3_seat_standard_sofa_jpg_52kg.jpg
+Living_room_Furniture,Sleeper Sofa 3-in-1,210,95,90,2.00,48,1,2,Medium,Convertible bed,sleeper_sofa_3_in_1_jpg_48kg.jpg
+Living_room_Furniture,Fabric Sofa Modern,200,90,85,1.80,65,1,2,Medium,Contemporary design,fabric_sofa_modern_jpg_65kg.jpg
+Living_room_Furniture,Leather Sofa Premium,210,95,90,2.00,95,1,2,Medium,Premium material,leather_sofa_premium_jpg_95kg.jpg
+Living_room_Furniture,4-Seat Large Sofa,240,90,90,2.16,75,1,2,Medium,Family size,4_seat_large_sofa_jpg_75kg.jpg
+Living_room_Furniture,5-Seat Sectional,280,180,90,5.04,85,1,2,Difficult,L-shaped design,5_seat_sectional_jpg_85kg.jpg
+Living_room_Furniture,6-Seat Sectional Large,300,200,90,6.00,135,1,2,Difficult,Massive sectional,6_seat_sectional_large_jpg_135kg.jpg
+Living_room_Furniture,Recliner Set Power,250,180,100,4.50,85,1,2,Difficult,Power recliners,recliner_set_power_jpg_85kg.jpg
+Living_room_Furniture,Recliner Set Leather,280,200,105,5.60,125,1,2,Difficult,Premium leather,recliner_set_leather_jpg_125kg.jpg
+Living_room_Furniture,Coffee Table Modern,120,60,45,0.72,25,3,1,Easy,Glass top,coffee_table_modern_jpg_25kg.jpg
+Living_room_Furniture,Coffee Table Lift-top,130,70,45,0.91,32,3,1,Medium,Storage function,coffee_table_lift_top_jpg_32kg.jpg
+Living_room_Furniture,Side Table End Table,50,50,60,0.25,15,4,1,Easy,Accent furniture,side_table_end_table_jpg_15kg.jpg
+Living_room_Furniture,TV Stand 65-inch,150,40,60,0.60,35,3,2,Medium,Entertainment center,tv_stand_65_inch_jpg_35kg.jpg
+Living_room_Furniture,Entertainment Center Large,200,50,180,1.00,75,2,2,Medium,Multiple compartments,entertainment_center_large_jpg_75kg.jpg
+Living_room_Furniture,Bookshelf 5-tier,80,30,180,0.24,45,3,1,Medium,Storage display,bookshelf_5_tier_jpg_45kg.jpg
+Living_room_Furniture,Storage Ottoman Large,80,50,45,0.40,18,4,1,Easy,Dual purpose,storage_ottoman_large_jpg_18kg.jpg
+Living_room_Furniture,Floor Lamp Modern,30,30,160,0.09,8,8,1,Easy,Lighting fixture,floor_lamp_modern_jpg_8kg.jpg
+Living_room_Furniture,Table Lamp Set,25,25,60,0.06,6,10,1,Easy,Accent lighting,table_lamp_set_jpg_6kg.jpg
+Living_room_Furniture,Console Table Sofa,150,35,75,0.53,32,3,1,Medium,Behind sofa,console_table_sofa_jpg_32kg.jpg
+Living_room_Furniture,Accent Chair Velvet,75,75,85,0.56,22,3,1,Easy,Luxury seating,accent_chair_velvet_jpg_22kg.jpg
+Living_room_Furniture,Rocking Chair Traditional,70,80,100,0.56,25,3,1,Easy,Classic comfort,rocking_chair_traditional_jpg_25kg.jpg
+Living_room_Furniture,Bar Cart Mid-century,80,50,90,0.40,15,4,1,Easy,Mobile serving,bar_cart_mid_century_jpg_15kg.jpg
+Living_room_Furniture,Plant Stand Multi-tier,40,40,120,0.16,8,6,1,Easy,Plant display,plant_stand_multi_tier_jpg_8kg.jpg
+Living_room_Furniture,Mirror Large Gold,100,5,150,0.05,12,8,1,Medium,Fragile decorative,mirror_large_gold_jpg_12kg.jpg
+Living_room_Furniture,Wall Art Abstract,80,5,100,0.04,4,12,1,Easy,Decorative accent,wall_art_abstract_jpg_4kg.jpg
+Living_room_Furniture,Area Rug 8x10,305,244,2,7.44,15,15,1,Easy,Floor covering,area_rug_8x10_jpg_15kg.jpg
+Living_room_Furniture,Curtains Light Filtering,200,5,280,0.10,4,12,1,Easy,Window treatment,curtains_light_filtering_jpg_4kg.jpg
+Living_room_Furniture,Throw Pillows Set,50,50,15,0.25,2,20,1,Easy,Decorative accent,throw_pillows_set_jpg_2kg.jpg
+Living_room_Furniture,Fireplace Screen Sliding,100,30,80,0.30,12,6,1,Easy,Safety barrier,fireplace_screen_sliding_jpg_12kg.jpg
+Living_room_Furniture,Waste Basket Wood,30,30,40,0.09,2,15,1,Easy,Utility item,waste_basket_wood_jpg_2kg.jpg
+Bedroom,Single Bed 3ft,190,90,100,0.17,18,4,1,Easy,Child guest room,single_bed_3ft_jpg_18kg.jpg
+Bedroom,Small Double 4ft,190,120,100,0.23,25,3,1,Easy,Compact adult,small_double_4ft_jpg_25kg.jpg
+Bedroom,Double Bed 4ft6,190,135,100,0.26,35,3,2,Medium,Standard adult,double_bed_4ft6_jpg_35kg.jpg
+Bedroom,Queen Bed,200,150,100,0.30,32,3,2,Medium,American standard,queen_bed_jpg_32kg.jpg
+Bedroom,King Bed 5ft,200,150,100,0.30,55,2,2,Medium,Large adult,king_bed_5ft_jpg_55kg.jpg
+Bedroom,Super King 6ft,200,180,100,0.36,68,2,2,Medium,Luxury size,super_king_6ft_jpg_68kg.jpg
+Bedroom,Bunk Bed L-shaped,200,200,160,4.00,95,1,2,Difficult,Disassemble required,bunk_bed_l_shaped_jpg_95kg.jpg
+Bedroom,Bunk Bed Triple Sleeper,210,110,170,2.31,85,1,2,Difficult,Three levels,bunk_bed_triple_sleeper_jpg_85kg.jpg
+Bedroom,Bunk Bed Kids White,200,100,160,2.00,75,1,2,Difficult,Children specific,bunk_bed_kids_white_jpg_75kg.jpg
+Bedroom,Platform Bed Low,200,150,60,0.30,28,3,1,Easy,Minimalist design,platform_bed_low_jpg_28kg.jpg
+Bedroom,Platform Bed Solid Wood,210,160,70,0.34,45,2,2,Medium,Natural material,platform_bed_solid_wood_jpg_45kg.jpg
+Bedroom,Ottoman Bed Storage,200,150,100,0.30,58,2,2,Medium,Hydraulic lift,ottoman_bed_storage_jpg_58kg.jpg
+Bedroom,Ottoman Bed King Linen,200,150,100,0.30,65,2,2,Medium,Premium fabric,ottoman_bed_king_linen_jpg_65kg.jpg
+Bedroom,Murphy Bed Double 4ft6,140,30,200,0.42,125,2,2,Difficult,Wall-mounted complex,murphy_bed_double_4ft6_jpg_125kg.jpg
+Bedroom,Murphy Bed Diva Double,150,35,210,0.53,145,1,2,Difficult,Space saving,murphy_bed_diva_double_jpg_145kg.jpg
+Bedroom,Adjustable Bed Frame,200,150,100,0.30,85,2,2,Medium,Electric adjustment,adjustable_bed_frame_jpg_85kg.jpg
+Bedroom,Sofa Bed Convertible,200,90,90,1.80,55,2,2,Medium,Dual function,sofa_bed_convertible_jpg_55kg.jpg
+Bedroom,Daybed with Trundle,200,90,90,1.80,48,2,2,Medium,Extra sleeping,daybed_with_trundle_jpg_48kg.jpg
+Bedroom,Bed Frame Metal Tall,200,150,120,0.30,45,2,2,Medium,High headboard,bed_frame_metal_tall_jpg_45kg.jpg
+Bedroom,Bed Frame Fabric Grey,200,150,100,0.30,42,2,2,Medium,Upholstered design,bed_frame_fabric_grey_jpg_42kg.jpg
+Bedroom,Bed Frame Classic Storage,200,150,100,0.30,65,2,2,Medium,Built-in storage,bed_frame_classic_storage_jpg_65kg.jpg
+Bedroom,Bed Frame Transform,200,150,100,0.30,58,2,2,Medium,Modular design,bed_frame_transform_jpg_58kg.jpg
+Bedroom,Bed Frame Upholstered,200,150,110,0.30,68,2,2,Medium,Padded headboard,bed_frame_upholstered_jpg_68kg.jpg
+Bedroom,Bed Frame Sparkford Oak,210,160,100,0.34,85,2,2,Medium,Solid oak,bed_frame_sparkford_oak_jpg_85kg.jpg
+Bedroom,Bed Frame Harper Storage,200,135,100,0.27,45,2,2,Medium,Drawer storage,bed_frame_harper_storage_jpg_45kg.jpg
+Miscellaneous_household,Storage Bins 6-pack,60,40,30,0.24,8,4,1,Easy,Stackable plastic,storage_bins_6_pack_jpg_8kg.jpg
+Miscellaneous_household,Storage Containers Best 7,70,50,35,0.35,12,3,1,Easy,Top rated,storage_containers_best_7_jpg_12kg.jpg
+Miscellaneous_household,Storage Boxes Fabric,50,35,25,0.18,6,5,1,Easy,Household essentials,storage_boxes_fabric_jpg_6kg.jpg
+Miscellaneous_household,Vacuum Cleaner Cordless,30,25,110,0.08,4,8,1,Easy,Stick design,vacuum_cleaner_cordless_jpg_4kg.jpg
+Miscellaneous_household,Vacuum Cleaner Upright,35,30,110,0.11,8,6,1,Easy,Traditional design,vacuum_cleaner_upright_jpg_8kg.jpg
+Miscellaneous_household,Vacuum Cleaner Best 11,40,35,115,0.14,12,4,1,Easy,Expert tested,vacuum_cleaner_best_11_jpg_12kg.jpg
+Miscellaneous_household,Ironing Board Full Size,150,40,90,0.60,6,3,1,Easy,Heavy duty,ironing_board_full_size_jpg_6kg.jpg
+Miscellaneous_household,Ironing Board Tabletop,76,33,20,0.25,3,8,1,Easy,Compact size,ironing_board_tabletop_jpg_3kg.jpg
+Miscellaneous_household,Clothes Drying Rack,120,60,100,0.72,4,6,1,Easy,Foldable design,clothes_drying_rack_jpg_4kg.jpg
+Miscellaneous_household,Clothes Drying Rack 2-layer,130,70,110,0.91,6,4,1,Easy,Adjustable height,clothes_drying_rack_2_layer_jpg_6kg.jpg
+Miscellaneous_household,Clothes Drying Rack Steel,140,80,120,1.12,8,3,1,Easy,Large capacity,clothes_drying_rack_steel_jpg_8kg.jpg
+Miscellaneous_household,Waste Bin Hanging,30,25,40,0.08,2,12,1,Easy,Kitchen foldable,waste_bin_hanging_jpg_2kg.jpg
+Miscellaneous_household,Waste Bin Recycling,35,30,45,0.11,3,10,1,Easy,Indoor home,waste_bin_recycling_jpg_3kg.jpg
+Miscellaneous_household,Waste Bin Pedal 5L,25,25,35,0.06,4,12,1,Easy,Metal construction,waste_bin_pedal_5l_jpg_4kg.jpg
+Miscellaneous_household,Floor Fan 20-inch,50,50,130,0.25,8,6,1,Easy,High velocity,floor_fan_20_inch_jpg_8kg.jpg
+Musical_instruments,Digital Piano 88-key,140,40,85,0.56,35,3,2,Medium,Electronic fragile,digital_piano_88_key_jpg_35kg.jpg
+Musical_instruments,Budget Digital Piano,130,35,80,0.46,45,2,2,Medium,Beginner model,budget_digital_piano_jpg_45kg.jpg
+Musical_instruments,Kawai 508 Upright,150,60,120,0.90,180,1,2,Difficult,Professional movers,kawai_508_upright_jpg_180kg.jpg
+Musical_instruments,Yamaha U Series Upright,150,60,120,0.90,220,1,2,Difficult,Premium upright,yamaha_u_series_upright_jpg_220kg.jpg
+Musical_instruments,Yamaha U1 Mahogany 48,150,60,122,0.90,240,1,2,Difficult,Polished finish,yamaha_u1_mahogany_48_jpg_240kg.jpg
+Musical_instruments,Kawai GL-40 Grand,165,150,100,2.48,320,1,2,Difficult,Salon grand,kawai_gl_40_grand_jpg_320kg.jpg
+Musical_instruments,Kawai EX Concert Grand,200,150,100,3.00,480,1,2,Difficult,Concert level,kawai_ex_concert_grand_jpg_480kg.jpg
+Musical_instruments,Shigeru Kawai 9ft SK-EX,275,155,100,4.26,520,1,2,Difficult,Professional concert,shigeru_kawai_9ft_sk_ex_jpg_520kg.jpg
+Musical_instruments,Brooklyn Orangewood Guitar,100,35,10,0.35,2,15,1,Easy,Acoustic guitar,brooklyn_orangewood_guitar_jpg_2kg.jpg
+Musical_instruments,Squier Fender Acoustic,105,40,12,0.42,3,12,1,Easy,2-year warranty,squier_fender_acoustic_jpg_3kg.jpg
+Musical_instruments,Yamaha FS800 Small Body,100,35,10,0.35,3,12,1,Easy,Solid top,yamaha_fs800_small_body_jpg_3kg.jpg
+Musical_instruments,Ameritone Double Cutaway,100,30,5,0.30,4,10,1,Easy,Electric guitar,ameritone_double_cutaway_jpg_4kg.jpg
+Musical_instruments,Fender Clapton Stratocaster,100,30,5,0.30,4,10,1,Easy,Artist series,fender_clapton_stratocaster_jpg_4kg.jpg
+Musical_instruments,Vintage V6 ICON Blue,100,30,5,0.30,4,10,1,Easy,Distressed finish,vintage_v6_icon_blue_jpg_4kg.jpg
+Musical_instruments,Pearl Roadshow 5-piece,200,150,120,3.00,85,1,2,Difficult,Complete drum kit,pearl_roadshow_5_piece_jpg_85kg.jpg
+Office_furniture,Computer Desk 63-inch,160,60,75,0.96,45,2,2,Medium,Cable management,computer_desk_63_inch_jpg_45kg.jpg
+Office_furniture,Executive U-shaped Desk,200,150,75,3.00,125,1,2,Difficult,Multiple pieces,executive_u_shaped_desk_jpg_125kg.jpg
+Office_furniture,Executive Computer Desk 5ft,152,76,75,1.15,55,2,2,Medium,Home office,executive_computer_desk_5ft_jpg_55kg.jpg
+Office_furniture,Ergonomic Headrest Chair,65,65,120,0.42,18,4,1,Easy,Adjustable features,ergonomic_headrest_chair_jpg_18kg.jpg
+Office_furniture,NEO Ergonomic Lumbar,70,70,125,0.49,22,3,1,Easy,Back support,neo_ergonomic_lumbar_jpg_22kg.jpg
+Office_furniture,Leather Executive Chair,75,75,130,0.56,28,3,2,Medium,Premium seating,leather_executive_chair_jpg_28kg.jpg
+Office_furniture,Filing Cabinet 3-drawer,40,60,130,0.24,32,4,2,Medium,Document storage,filing_cabinet_3_drawer_jpg_32kg.jpg
+Office_furniture,Filing Cabinet 2-drawer,45,60,70,0.27,35,3,2,Medium,Vertical storage,filing_cabinet_2_drawer_jpg_35kg.jpg
+Office_furniture,Bookshelf Writing Desk,200,40,200,0.80,65,2,2,Medium,Combo furniture,bookshelf_writing_desk_jpg_65kg.jpg
+Office_furniture,Desktop Hutch Metal,120,30,40,0.36,15,4,1,Easy,2-tier design,desktop_hutch_metal_jpg_15kg.jpg
+Office_furniture,Office Shelving Home,150,35,180,0.53,45,2,2,Medium,Stylish storage,office_shelving_home_jpg_45kg.jpg
+Office_furniture,Conference Table Sturdy,240,122,75,2.93,85,1,2,Difficult,Cable management,conference_table_sturdy_jpg_85kg.jpg
+Office_furniture,Round Conference 47,120,120,75,1.44,55,2,2,Medium,4-people capacity,round_conference_47_jpg_55kg.jpg
+Office_furniture,Conference Table 8ft,244,122,75,2.98,95,1,2,Difficult,Large meetings,conference_table_8ft_jpg_95kg.jpg
+Office_furniture,Office Storage Simple,80,40,160,0.32,25,3,1,Medium,Workspace organization,office_storage_simple_jpg_25kg.jpg
+Wardrobes_closet,Single Door Wardrobe,80,60,180,0.48,35,3,2,Medium,Basic storage,single_door_wardrobe_jpg_35kg.jpg
+Wardrobes_closet,Space Saving Bedroom,70,55,170,0.39,42,3,2,Medium,Compact design,space_saving_bedroom_jpg_42kg.jpg
+Wardrobes_closet,Modern Luxury Wooden,90,65,185,0.59,45,2,2,Medium,Premium finish,modern_luxury_wooden_jpg_45kg.jpg
+Wardrobes_closet,Double Door 2-drawer,120,60,180,0.72,65,2,2,Medium,Standard size,double_door_2_drawer_jpg_65kg.jpg
+Wardrobes_closet,Render Closet Modway,110,55,175,0.61,75,2,2,Medium,Modern design,render_closet_modway_jpg_75kg.jpg
+Wardrobes_closet,Harmony Wood Better Home,125,65,180,0.81,68,2,2,Medium,Quality construction,harmony_wood_better_home_jpg_68kg.jpg
+Wardrobes_closet,Triple Door 3-door,180,60,180,1.08,95,1,2,Difficult,Large family,triple_door_3_door_jpg_95kg.jpg
+Wardrobes_closet,Triple Door White,185,65,185,1.20,98,1,2,Difficult,Clean finish,triple_door_white_jpg_98kg.jpg
+Wardrobes_closet,Built-in Custom Etsy,200,60,200,1.20,125,1,2,Difficult,Custom made,built_in_custom_etsy_jpg_125kg.jpg
+Wardrobes_closet,Built-in 20 Ideas,250,70,220,1.75,145,1,2,Difficult,Design inspiration,built_in_20_ideas_jpg_145kg.jpg
+Wardrobes_closet,Fitted Cupboards Bespoke,220,65,210,1.43,135,1,2,Difficult,Tailored storage,fitted_cupboards_bespoke_jpg_135kg.jpg
+Wardrobes_closet,Walk-in Closet Reveal,300,200,240,6.00,185,1,2,Difficult,Room conversion,walk_in_closet_reveal_jpg_185kg.jpg
+Wardrobes_closet,Walk-in Custom Factory,280,180,230,5.04,165,1,2,Difficult,Professional design,walk_in_custom_factory_jpg_165kg.jpg
+Wardrobes_closet,Armoire VINGLI Closet,100,55,180,0.55,85,2,2,Medium,Freestanding design,armoire_vingli_closet_jpg_85kg.jpg
+Wardrobes_closet,PAOFIN Green 71,100,50,180,0.50,78,2,2,Medium,Metal construction,paofin_green_71_jpg_78kg.jpg
+Wardrobes_closet,Sliding Door 56x80,142,60,203,0.85,95,1,2,Difficult,Space efficient,sliding_door_56x80_jpg_95kg.jpg
+Wardrobes_closet,Sliding Door 48x80,122,60,203,0.73,88,2,2,Medium,Compact sliding,sliding_door_48x80_jpg_88kg.jpg
+Wardrobes_closet,Ark Design 5-panel,127,60,203,0.76,105,1,2,Difficult,Bypass design,ark_design_5_panel_jpg_105kg.jpg
+Wardrobes_closet,Corner Wardrobe Cabinet,90,90,180,0.81,65,2,2,Medium,Corner utilization,corner_wardrobe_cabinet_jpg_65kg.jpg
+Wardrobes_closet,Corner Shelf Stand,80,80,170,0.64,35,3,2,Medium,Display storage,corner_shelf_stand_jpg_35kg.jpg
+Wardrobes_closet,Corner Hutch Storage,100,100,190,1.00,85,2,2,Medium,Multi-purpose,corner_hutch_storage_jpg_85kg.jpg
+Wardrobes_closet,Mirrored Wardrobe Large,150,60,200,0.90,95,1,2,Difficult,Reflective doors,mirrored_wardrobe_large_jpg_95kg.jpg
+Wardrobes_closet,Mirrored Sliding Door,140,55,190,0.77,88,2,2,Medium,Space enhancing,mirrored_sliding_door_jpg_88kg.jpg
+Wardrobes_closet,Vintage Wardrobe Antique,120,65,185,0.78,105,2,2,Medium,Character piece,vintage_wardrobe_antique_jpg_105kg.jpg
+Wardrobes_closet,Portable Wardrobe Fabric,80,45,160,0.36,25,4,1,Easy,Temporary storage,portable_wardrobe_fabric_jpg_25kg.jpg
+Wardrobes_closet,Modular Closet System,200,60,200,1.20,115,1,2,Difficult,Customizable,modular_closet_system_jpg_115kg.jpg
+Pet_items,Dog Crate 36-inch,91,58,64,0.53,15,4,1,Easy,Foldable design,dog_crate_36_inch_jpg_15kg.jpg
+Pet_items,Large Furniture Crate,112,76,81,0.85,35,3,2,Medium,Heavy duty,large_furniture_crate_jpg_35kg.jpg
+Pet_items,Heavy Duty Steel 45,114,81,91,0.92,45,2,2,Medium,Wheels included,heavy_duty_steel_45_jpg_45kg.jpg
+Pet_items,Cat Tree Multi-level,60,60,180,0.36,25,3,1,Medium,Solid construction,cat_tree_multi_level_jpg_25kg.jpg
+Pet_items,Cat Tower Best 11,70,70,160,0.49,18,3,1,Easy,Tested reviewed,cat_tower_best_11_jpg_18kg.jpg
+Pet_items,EDEN Wood Tower,80,80,170,0.64,22,3,1,Medium,Wooden modern,eden_wood_tower_jpg_22kg.jpg
+Pet_items,Dog Cat Beds Small,60,45,15,0.27,3,8,1,Easy,Comfort bedding,dog_cat_beds_small_jpg_3kg.jpg
+Pet_items,Bolster Washable Dog Bed,80,60,20,0.48,5,6,1,Easy,Multicolor woven,bolster_washable_dog_bed_jpg_5kg.jpg
+Pet_items,Kennel 23-inch Plastic,58,41,41,0.24,8,6,1,Easy,Portable carrier,kennel_23_inch_plastic_jpg_8kg.jpg
+Pet_items,Airline Approved Expandable,45,32,30,0.14,6,8,1,Easy,Travel carrier,airline_approved_expandable_jpg_6kg.jpg
+Pet_items,Pet Carrier Arlo Skye,40,25,25,0.10,4,10,1,Easy,Premium design,pet_carrier_arlo_skye_jpg_4kg.jpg
+Pet_items,240-gallon Glass Aquarium,244,61,76,1.49,185,1,2,Difficult,Drain completely,240_gallon_glass_aquarium_jpg_185kg.jpg
+Pet_items,Bird Cage 60.5-inch,61,41,154,0.25,28,3,1,Medium,Extra large,bird_cage_60_5_inch_jpg_28kg.jpg
+Special_Awkward_items,Hot Tub Aquatica Downtown,250,200,85,5.00,485,1,2,Difficult,Crane required,hot_tub_aquatica_downtown_jpg_485kg.jpg
+Special_Awkward_items,Hot Tub CosySpa Luxury,200,200,80,4.00,285,1,2,Difficult,40 degree quick,hot_tub_cosyspa_luxury_jpg_285kg.jpg
+Special_Awkward_items,Hot Tub Hot Spring Spas,230,230,90,5.29,365,1,2,Difficult,Cold plunge,hot_tub_hot_spring_spas_jpg_365kg.jpg
+Special_Awkward_items,Piano Cover Upright,150,60,120,0.90,180,1,2,Difficult,Keep piano safe,piano_cover_upright_jpg_180kg.jpg
+Special_Awkward_items,Wheelchair Jazzy 1450,110,65,110,0.72,65,2,2,Medium,Power chair,wheelchair_jazzy_1450_jpg_65kg.jpg
+Special_Awkward_items,Mobility Scooter 4-wheel,140,65,110,0.91,85,2,2,Medium,Heavy duty,mobility_scooter_4_wheel_jpg_85kg.jpg
+Special_Awkward_items,Home Vault Room,200,150,200,3.00,1250,1,2,Difficult,Smith security,home_vault_room_jpg_1250kg.jpg
+Special_Awkward_items,Safe BARSKA Fire Vault,60,55,140,0.33,185,1,2,Difficult,Fire protection,safe_barska_fire_vault_jpg_185kg.jpg
+Special_Awkward_items,Vault Door AMSEC,90,20,200,0.18,485,1,2,Difficult,Security entrance,vault_door_amsec_jpg_485kg.jpg
+Special_Awkward_items,Pool Table Brighton 87,221,127,81,2.81,285,1,2,Difficult,Slate bed,pool_table_brighton_87_jpg_285kg.jpg
+Special_Awkward_items,Pool Table Black Wolf 9,274,152,81,4.16,325,1,2,Difficult,Professional setup,pool_table_black_wolf_9_jpg_325kg.jpg
+Special_Awkward_items,Pool Table Luxury Theseus,300,170,85,5.10,385,1,2,Difficult,Custom design,pool_table_luxury_theseus_jpg_385kg.jpg
+Special_Awkward_items,Antique Clock Wall,60,15,100,0.09,35,6,1,Medium,Rare regulator,antique_clock_wall_jpg_35kg.jpg
+Bag_luggage_box,Suitcase 3-piece Spinner,75,50,30,0.38,12,8,1,Easy,Nested storage,suitcase_3_piece_spinner_jpg_12kg.jpg
+Bag_luggage_box,Luggage Set 7-piece,80,55,35,0.44,18,6,1,Easy,Multiple sizes,luggage_set_7_piece_jpg_18kg.jpg
+Bag_luggage_box,Suitcase Extra Large 33,84,56,33,0.47,8,6,1,Easy,Lightweight design,suitcase_extra_large_33_jpg_8kg.jpg
+Bag_luggage_box,Moving Boxes 10-pack,45,35,35,0.16,15,12,1,Easy,With handles,moving_boxes_10_pack_jpg_15kg.jpg
+Bag_luggage_box,Moving Boxes Economy 15,50,40,40,0.20,22,10,1,Easy,Room kit,moving_boxes_economy_15_jpg_22kg.jpg
+Bag_luggage_box,Moving Boxes Best 8,55,45,45,0.25,18,8,1,Easy,Top rated,moving_boxes_best_8_jpg_18kg.jpg
+Bag_luggage_box,Travel Bag Duffle 50L,60,30,30,0.18,3,12,1,Easy,Canvas material,travel_bag_duffle_50l_jpg_3kg.jpg
+Bag_luggage_box,Travel Luggage Brake Wheels,70,45,25,0.32,14,6,1,Easy,Spinner wheels,travel_luggage_brake_wheels_jpg_14kg.jpg
+Bag_luggage_box,Backpack Rucksack Continental,35,25,55,0.09,4,10,1,Easy,LL Bean quality,backpack_rucksack_continental_jpg_4kg.jpg
+Bag_luggage_box,Garment Bag 60 Deluxe,152,10,5,0.15,2,15,1,Easy,Travel protection,garment_bag_60_deluxe_jpg_2kg.jpg
+Bag_luggage_box,Storage Trunk Ashley,100,50,50,0.50,25,3,1,Medium,Decorative storage,storage_trunk_ashley_jpg_25kg.jpg

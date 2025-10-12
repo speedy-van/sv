@@ -1,0 +1,67 @@
+{
+  "name": "main",
+  "expo": {
+    "name": "Speedy Van Driver",
+    "slug": "speedy-van-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1E40AF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.speedyvan.driverapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Speedy Van needs your location to show your position to customers during deliveries.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Speedy Van needs your location in the background to provide real-time tracking to customers during active deliveries.",
+        "NSLocationAlwaysUsageDescription": "Speedy Van needs your location to track deliveries in the background.",
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification",
+          "processing"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1E40AF"
+      },
+      "package": "com.speedyvan.driverapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "web": {
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Speedy Van to use your location for real-time tracking during deliveries.",
+          "locationAlwaysPermission": "Allow Speedy Van to track your location in the background during active jobs.",
+          "locationWhenInUsePermission": "Allow Speedy Van to use your location while using the app."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1E40AF"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
+

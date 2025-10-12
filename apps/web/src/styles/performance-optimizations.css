@@ -1,0 +1,405 @@
+/* ===== PERFORMANCE OPTIMIZATION STYLES ===== */
+
+/* Critical CSS for above-the-fold content */
+
+/* ===== CORE WEB VITALS OPTIMIZATIONS ===== */
+
+/* Largest Contentful Paint (LCP) Optimizations */
+.hero-section {
+  /* Optimize hero images for LCP */
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+.hero-image {
+  /* Preload critical images */
+  loading: eager;
+  decoding: sync;
+  fetchpriority: high;
+}
+
+.lazy-image {
+  /* Optimize non-critical images */
+  loading: lazy;
+  decoding: async;
+  fetchpriority: low;
+}
+
+/* First Input Delay (FID) Optimizations */
+.interactive-element {
+  /* Ensure interactive elements are ready quickly */
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn,
+.form-input,
+.clickable {
+  /* Optimize button and form interactions */
+  touch-action: manipulation;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Cumulative Layout Shift (CLS) Optimizations */
+.skeleton-loader {
+  /* Prevent layout shifts during loading */
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-ratio-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+/* ===== RENDERING OPTIMIZATIONS ===== */
+
+/* GPU Acceleration */
+.gpu-layer {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Composite Layers for Animations */
+.animate-transform {
+  will-change: transform;
+}
+
+.animate-opacity {
+  will-change: opacity;
+}
+
+.animate-filter {
+  will-change: filter;
+}
+
+/* Remove will-change after animation */
+.animation-complete {
+  will-change: auto;
+}
+
+/* ===== CRITICAL RESOURCE LOADING ===== */
+
+/* Above-the-fold content */
+.above-fold {
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Below-the-fold content */
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
+}
+
+/* ===== FONT LOADING OPTIMIZATIONS ===== */
+
+/* Font display optimization */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: url('/fonts/inter-var.woff2') format('woff2');
+}
+
+.font-loading {
+  font-display: swap;
+}
+
+/* Prevent invisible text during font swap */
+.font-fallback {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ===== IMAGE OPTIMIZATIONS ===== */
+
+/* Responsive images with srcset */
+.responsive-img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* WebP support with fallback */
+.webp-image {
+  background-image: url('image.webp');
+}
+
+.no-webp .webp-image {
+  background-image: url('image.jpg');
+}
+
+/* Image lazy loading intersection observer */
+.lazy-load-observer {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.lazy-load-observer.loaded {
+  opacity: 1;
+}
+
+/* ===== CSS CONTAINMENT ===== */
+
+/* Layout containment for independent components */
+.component-container {
+  contain: layout style paint;
+}
+
+/* Style containment for isolated styling */
+.isolated-component {
+  contain: style;
+}
+
+/* Paint containment for visual effects */
+.paint-container {
+  contain: paint;
+}
+
+/* ===== SCROLL OPTIMIZATIONS ===== */
+
+/* Smooth scrolling with performance consideration */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Optimize scroll performance */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Virtual scrolling for large lists */
+.virtual-scroll {
+  height: 400px;
+  overflow-y: auto;
+  contain: strict;
+}
+
+/* ===== ANIMATION OPTIMIZATIONS ===== */
+
+/* Hardware-accelerated animations */
+.hw-accelerated {
+  transform: translateZ(0);
+  animation-fill-mode: both;
+}
+
+/* Efficient CSS animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+/* ===== MEMORY OPTIMIZATIONS ===== */
+
+/* Reduce memory usage for off-screen content */
+.offscreen {
+  content-visibility: hidden;
+}
+
+/* Optimize for mobile memory constraints */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-optimized {
+    contain: layout style;
+  }
+}
+
+/* ===== NETWORK OPTIMIZATIONS ===== */
+
+/* Preload critical resources */
+.preload-critical {
+  /* Applied via HTML link tags */
+}
+
+/* Prefetch non-critical resources */
+.prefetch-resources {
+  /* Applied via HTML link tags */
+}
+
+/* ===== INTERACTION OPTIMIZATIONS ===== */
+
+/* Fast tap response */
+.fast-tap {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+/* Prevent 300ms click delay on mobile */
+.no-delay {
+  touch-action: manipulation;
+}
+
+/* ===== LOADING STATES ===== */
+
+/* Loading spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Skeleton loading for content */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-title {
+  height: 1.5em;
+  width: 60%;
+  margin-bottom: 1em;
+}
+
+.skeleton-paragraph {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-paragraph:last-child {
+  width: 80%;
+}
+
+/* ===== CRITICAL CSS INLINING ===== */
+
+/* Critical styles that should be inlined */
+.critical-above-fold {
+  /* Essential styles for above-the-fold content */
+  display: block;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== PERFORMANCE MONITORING ===== */
+
+/* Performance markers for monitoring */
+.perf-marker {
+  /* Used for performance measurement */
+  position: relative;
+}
+
+.perf-marker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== REDUCED MOTION SUPPORT ===== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .parallax {
+    transform: none !important;
+  }
+}
+
+/* ===== PRINT OPTIMIZATIONS ===== */
+
+@media print {
+  /* Optimize for printing */
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+  
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+}
+

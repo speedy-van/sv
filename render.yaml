@@ -1,0 +1,108 @@
+# Render Blueprint for Speedy Van
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Main Web Application
+  - type: web
+    name: speedy-van-web
+    runtime: node
+    plan: starter # or free, standard, pro
+    region: frankfurt # or oregon, singapore, etc.
+    buildCommand: pnpm install && pnpm run build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      # Node Environment
+      - key: NODE_ENV
+        value: production
+      
+      # Database
+      - key: DATABASE_URL
+        sync: false # Set in Render Dashboard
+      
+      # NextAuth
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        value: https://speedy-van-web.onrender.com # Update with your domain
+      
+      # Pusher (Real-time)
+      - key: PUSHER_APP_ID
+        sync: false
+      - key: PUSHER_KEY
+        sync: false
+      - key: PUSHER_SECRET
+        sync: false
+      - key: PUSHER_CLUSTER
+        value: eu
+      - key: NEXT_PUBLIC_PUSHER_KEY
+        sync: false
+      - key: NEXT_PUBLIC_PUSHER_CLUSTER
+        value: eu
+      
+      # Stripe
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      
+      # Email
+      - key: ZEPTO_API_URL
+        value: https://api.zeptomail.eu/v1.1/email
+      - key: ZEPTO_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: noreply@speedy-van.co.uk
+      
+      # SMS
+      - key: THESMSWORKS_KEY
+        sync: false
+      - key: THESMSWORKS_SECRET
+        sync: false
+      - key: THESMSWORKS_JWT
+        sync: false
+      
+      # Other
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CUSTOM_KEY
+        sync: false
+      - key: NEXT_PUBLIC_MAPBOX_TOKEN
+        sync: false
+      - key: NEXT_PUBLIC_WEATHER_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      
+      # Company Info
+      - key: NEXT_PUBLIC_COMPANY_NAME
+        value: Speedy Van
+      - key: NEXT_PUBLIC_COMPANY_PHONE
+        value: +44 7901846297
+      - key: NEXT_PUBLIC_COMPANY_EMAIL
+        value: support@speedy-van.co.uk
+      
+      # Cron Security (not needed for node-cron, but keep for manual endpoint)
+      - key: CRON_SECRET
+        generateValue: true
+
+  # Optional: Background Worker (if you want separate process for cron)
+  # - type: worker
+  #   name: speedy-van-worker
+  #   runtime: node
+  #   buildCommand: pnpm install
+  #   startCommand: node apps/web/src/lib/cron/worker.js
+  #   envVars:
+  #     - fromService:
+  #         type: web
+  #         name: speedy-van-web
+  #         envVarKey: DATABASE_URL
+
+# Optional: Postgres Database (if not using Neon)
+# databases:
+#   - name: speedyvan-db
+#     databaseName: speedyvan
+#     plan: starter # or free
+#     region: frankfurt

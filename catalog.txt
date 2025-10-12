@@ -1,0 +1,375 @@
+weight-rack,Weight Rack,fitness,“squat rack, weight stand”,1.2,true,false,false,40
+ab-machine,Abdominal Machine,fitness,“ab roller, crunch machine”,0.6,false,false,false,25
+leg-press-machine,Leg Press Machine,fitness,“leg press, gym legs”,2.2,true,false,true,90
+cable-crossover-machine,Cable Crossover Machine,fitness,“cable machine, pulley system”,3.0,true,false,true,150
+smith-machine,Smith Machine,fitness,“guided barbell, smith rack”,2.8,true,false,true,140
+dip-bar,Dip Bar,fitness,“parallel bars, dip station”,0.5,false,false,false,20
+plyo-box,Plyometric Box,fitness,“jump box, workout box”,0.4,false,false,false,18
+heart-rate-monitor,Heart Rate Monitor,fitness,“chest strap, pulse monitor”,0.1,false,false,false,6
+fitness-tracker,Fitness Tracker,fitness,“activity tracker, smartwatch”,0.1,false,true,false,5
+gym-mat-large,Large Gym Mat,fitness,“exercise mat, tumbling mat”,0.6,false,false,false,20
+boxing-gloves,Boxing Gloves Set,fitness,“punching gloves, sparring”,0.2,false,false,false,10
+speed-bag,Speed Bag,fitness,“boxing speed ball”,0.3,false,false,false,15
+medicine-ball,Medicine Ball,fitness,“workout ball, fitness ball”,0.2,false,false,false,12
+foam-roller,Foam Roller,fitness,“muscle roller, recovery”,0.2,false,false,false,8
+yoga-block,Yoga Block,fitness,“yoga brick, support block”,0.1,false,false,false,4
+yoga-strap,Yoga Strap,fitness,“stretch strap, yoga belt”,0.1,false,false,false,4
+ankle-weights,Ankle Weights,fitness,“leg weights, resistance”,0.1,false,false,false,5
+wrist-weights,Wrist Weights,fitness,“arm weights”,0.1,false,false,false,5
+step-aerobics,Step Aerobics Platform,fitness,“aerobic step, workout step”,0.3,false,false,false,15
+balance-board,Balance Board,fitness,“wobble board, core trainer”,0.2,false,false,false,10
+jump-rope,Jump Rope,fitness,“skipping rope, speed rope”,0.1,false,false,false,4
+office-chair,Office Chair,office,“desk chair, swivel chair, computer chair”,0.6,false,false,false,18
+boardroom-chair,Boardroom Chair,office,“meeting chair, conference chair”,0.4,false,false,false,14
+reception-desk,Reception Desk,office,“office reception, front desk”,2.0,true,false,true,65
+filing-cabinet-4drawer,4-Drawer Filing Cabinet,office,“office filing, document storage”,1.0,true,false,false,32
+office-partition,Office Partition,office,“room divider, office screen”,0.8,true,false,false,25
+whiteboard,Whiteboard,office,“presentation board, meeting board”,0.4,false,false,false,15
+photocopier,Photocopier,office,“office copier, scanner”,1.8,true,false,false,55
+desk-lamp,Desk Lamp,office,“office light, task lamp”,0.1,false,false,false,5
+paper-shredder,Paper Shredder,office,“document shredder”,0.3,false,false,false,10
+water-cooler,Water Cooler,office,“water dispenser”,0.5,false,false,false,12
+conference-phone,Conference Phone,office,“speakerphone”,0.2,false,false,false,8
+bookcase-office,Office Bookcase,office,“reference shelf”,0.9,true,false,false,28
+coat-rack-office,Office Coat Rack,office,“standalone rack”,0.4,false,false,false,10
+chair-guest-office,Office Guest Chair,office,“visitor chair, side chair”,0.3,false,false,false,12
+desk-corner-unit,Desk Corner Unit,office,“desk extension, return unit”,0.8,false,false,false,25
+desk-hutch,Desk Hutch,office,“desk top cabinet, organizer”,0.6,false,false,false,20
+filing-cabinet-lateral,Lateral Filing Cabinet,office,“side filing cabinet”,1.2,true,false,false,38
+office-sofa,Office Sofa,office,“waiting area sofa, couch”,1.8,true,false,false,60
+office-table-coffee,Office Coffee Table,office,“lobby table, waiting area”,0.6,false,false,false,20
+cabinet-storage-office,Office Storage Cabinet,office,“supply cabinet, cupboard”,1.0,true,false,false,35
+rack-brochure,Brochure Rack,office,“literature stand, magazine rack”,0.3,false,false,false,12
+stand-whiteboard,Whiteboard Stand,office,“mobile whiteboard, easel”,0.5,false,false,false,18
+telephone-desk,Desk Telephone,office,“office phone, business phone”,0.1,false,false,false,6
+monitor-arm,Monitor Arm,office,“screen mount, monitor stand”,0.2,false,false,false,10
+keyboard-tray,Keyboard Tray,office,“slide out tray, under desk”,0.1,false,false,false,6
+cpu-holder,CPU Holder,office,“computer tower stand”,0.3,false,false,false,10
+cabinet-card,Card Cabinet,office,“index card drawer, catalog cabinet”,0.7,false,false,false,25
+plan-cabinet,Plan Cabinet,office,“blueprint storage, map cabinet”,1.4,true,false,false,50
+postal-scale,Postal Scale,office,“shipping scale, parcel scale”,0.1,false,false,false,8
+time-clock,Time Clock,office,“punch clock, attendance”,0.2,false,false,false,12
+safe-office,Office Safe,office,“data safe, document safe”,0.8,true,false,false,45
+bookcase-glass-door-office,Office Bookcase with Glass Doors,office,“display bookcase, cabinet”,1.1,true,true,false,40
+conference-table-large,Large Conference Table,office,“boardroom table, meeting table”,3.5,true,false,true,120
+conference-table-small,Small Conference Table,office,“meeting table, discussion table”,2.0,true,false,true,75
+lectern,Lectern,office,“podium, speaking stand”,0.5,false,false,false,22
+projector-ceiling-mount,Ceiling Projector Mount,office,“projector bracket, ceiling mount”,0.3,true,false,true,15
+screen-projection,Projection Screen,office,“pull down screen, electric”,0.5,false,false,false,20
+table-training,Training Table,office,“classroom table, workshop table”,1.8,true,false,true,60
+workstation-cubicle,Cubicle Workstation,office,“office cubicle, partition system”,2.5,true,false,true,100
+box-small,Box - Small,boxes,“small box, box, cardboard box”,0.2,false,false,false,4
+box-medium,Box - Medium,boxes,“medium box, packing box”,0.2,false,false,false,4
+box-large,Box - Large,boxes,“large box, suitcase, storage box”,0.4,false,false,false,9
+box-book,Book Box (heavy),boxes,“book box, heavy box, books box”,0.3,true,false,false,9
+plastic-crate,Plastic Crate (large),boxes,“plastic crate, plastic box”,0.4,false,false,false,9
+suitcase-large,Large Suitcase,boxes,“travel case, luggage”,0.4,false,false,false,8
+garment-box,Wardrobe Box,boxes,“hanging box, garment box”,0.6,false,false,false,12
+archive-box,Archive Box,boxes,“document box, file box”,0.3,false,false,false,6
+crockery-box,Crockery Box,boxes,“plates box, china box”,0.3,true,true,false,8
+glassware-box,Glassware Box,boxes,“glasses box, fragile box”,0.3,true,true,false,8
+picture-box,Picture/Art Box,boxes,“framed art box”,0.4,true,true,false,10
+tool-box,Tool Box,boxes,“tool storage box”,0.4,false,false,false,9
+bike-box,Bicycle Box,boxes,“bike packaging”,1.0,true,false,false,20
+box-mattress,Mattress Box,boxes,“mattress bag, mattress cover”,0.8,false,false,false,15
+box-tv,TV Box,boxes,“television box, screen box”,0.5,false,true,false,12
+box-mirror,Mirror Box,boxes,“picture box, glass box”,0.4,true,true,false,10
+box-lamp,Lamp Box,boxes,“light shade box, lamp packaging”,0.3,true,true,false,8
+box-computer,Computer Box,boxes,“pc box, monitor box”,0.4,false,true,false,10
+box-kitchen,Kitchen Box,boxes,“kitchenware box, utensils”,0.3,false,false,false,7
+box-bathroom,Bathroom Box,boxes,“bathroom items, toiletries”,0.3,false,false,false,7
+box-bedroom,Bedroom Box,boxes,“linen box, bedroom items”,0.3,false,false,false,7
+box-garage,Garage Box,boxes,“tools box, car items”,0.4,false,false,false,8
+box-office,Office Box,boxes,“stationery box, documents”,0.3,false,false,false,7
+box-toys,Toys Box,boxes,“children's toys, games”,0.3,false,false,false,7
+box-christmas,Christmas Decoration Box,boxes,“xmas decs, tree ornaments”,0.3,false,true,false,8
+box-camping,Camping Equipment Box,boxes,“tent box, outdoor gear”,0.6,false,false,false,12
+box-sports,Sports Equipment Box,boxes,“sports gear, balls”,0.4,false,false,false,9
+box-shoes,Shoes Box,boxes,“footwear box, shoes storage”,0.2,false,false,false,5
+box-jewelry,Jewelry Box,boxes,“small valuables box, jewelry case”,0.1,false,true,false,5
+box-cable,Cable Box,boxes,“wires box, electronics cables”,0.1,false,false,false,4
+box-medicine,Medicine Box,boxes,“first aid kit, pharmaceuticals”,0.1,false,false,false,4
+box-garden,Garden Box,boxes,“gardening tools, plant items”,0.4,false,false,false,8
+box-diy,DIY Box,boxes,“tools box, home improvement”,0.4,false,false,false,8
+box-music,Music Box,boxes,“cds box, records, instruments”,0.3,false,true,false,8
+box-photo,Photo Box,boxes,“photographs album, memories”,0.2,false,true,false,6
+box-sentimental,Sentimental Items Box,boxes,“keepsakes, memorabilia”,0.2,false,true,false,6
+box-sewing,Sewing Box,boxes,“sewing kit, fabric”,0.2,false,false,false,6
+box-cleaning,Cleaning Box,boxes,“cleaning supplies, detergents”,0.2,false,false,false,5
+box-pet,Pet Supplies Box,boxes,“pet food, animal items”,0.3,false,false,false,7
+box-misc,Miscellaneous Box,boxes,“assorted items, bits and bobs”,0.2,false,false,false,5
+lighting-chandelier,Chandelier,lighting,“ceiling light, crystal light”,0.6,true,true,false,25
+lighting-pendant,Pendant Light,lighting,“hanging light, ceiling pendant”,0.3,false,true,false,12
+floor-lamp,Floor Lamp,lighting,“standard lamp, reading lamp”,0.4,false,true,false,15
+table-lamp,Table Lamp,lighting,“desk lamp, bedside lamp”,0.2,false,true,false,8
+ceiling-fan,Ceiling Fan,lighting,“ceiling fan with light”,0.5,false,false,false,18
+lamp-standard,Standard Lamp,lighting,“arc lamp, tall lamp”,0.5,false,true,false,16
+spotlight-track,Spotlight Track,lighting,“track lighting, halogen spots”,0.4,false,false,false,12
+bathroom-light,Bathroom Light Unit,lighting,“shower light, extractor light”,0.3,false,false,false,10
+outdoor-light,Outdoor Security Light,lighting,“pir light, wall light”,0.2,false,false,false,8
+lamp-shade-large,Lampshade (large),lighting,“drum shade, empire shade”,0.2,false,true,false,6
+light-bathroom-mirror,Bathroom Mirror Light,lighting,“vanity light, makeup light”,0.2,false,false,false,10
+light-cabinet-under,Under Cabinet Light,lighting,“kitchen strip light, task light”,0.1,false,false,false,6
+light-ceiling-recessed,Recessed Ceiling Light,lighting,“downlight, spot light”,0.1,false,false,false,5
+light-chandelier-small,Small Chandelier,lighting,“mini chandelier, crystal light”,0.4,false,true,false,20
+light-desks,Desk Lamp,lighting,“task light, office lamp”,0.1,false,false,false,8
+light-emergency,Emergency Light,lighting,“exit light, safety light”,0.2,false,false,false,12
+light-floor-standard,Standard Floor Lamp,lighting,“reading light, standing lamp”,0.4,false,true,false,15
+light-flood-outdoor,Outdoor Flood Light,lighting,“security light, motion light”,0.3,false,false,false,14
+light-garage,Garage Light,lighting,“workshop light, utility light”,0.3,false,false,false,12
+light-halogen,Halogen Light,lighting,“halogen bulb, spot lamp”,0.1,false,false,false,6
+light-hanging-bulb,Hanging Bulb Light,lighting,“pendant bulb, industrial light”,0.2,false,true,false,10
+light-led-strip,LED Strip Light,lighting,“led tape, rope light”,0.1,false,false,false,8
+light-motion-sensor,Motion Sensor Light,lighting,“security light, automatic light”,0.2,false,false,false,12
+light-nighlight,Night Light,lighting,“plug in light, child's light”,0.1,false,false,false,4
+light-pendant-industrial,Industrial Pendant Light,lighting,“factory light, loft light”,0.3,false,true,false,16
+light-rail-lighting,Rail Lighting,lighting,“track light, display light”,0.4,false,false,false,18
+light-rope,Rope Light,lighting,“flexible led, decorative light”,0.2,false,false,false,10
+light-sconce,Wall Sconce,lighting,“wall light, mounted light”,0.2,false,false,false,12
+light-string,String Lights,lighting,“fairy lights, party lights”,0.1,false,false,false,6
+light-table-desk,Desk Table Lamp,lighting,“study lamp, office light”,0.1,false,false,false,8
+light-torchère,Torchère Lamp,lighting,“torch lamp, uplighter”,0.4,false,true,false,16
+light-track,Track Lighting,lighting,“ceiling track, spotlights”,0.4,false,false,false,18
+light-vanity,Vanity Light,lighting,“makeup light, bathroom mirror light”,0.2,false,false,false,14
+light-wall-bracket,Wall Bracket Light,lighting,“external light, outside light”,0.2,false,false,false,12
+lighting-ceiling-flush,Flush Ceiling Light,lighting,“ceiling mount light, dome light”,0.2,false,false,false,10
+lighting-ceiling-semi,Semi-Flush Ceiling Light,lighting,“ceiling light, bowl light”,0.3,false,false,false,12
+lighting-pendant-multi,Multi Pendant Light,lighting,“cluster light, group pendant”,0.4,false,true,false,22
+lighting-pendant-single,Single Pendant Light,lighting,“one light pendant, hanging light”,0.2,false,true,false,10
+carpet-roll,Carpet Roll,flooring,“carpet, floor covering”,1.2,true,false,false,30
+rug-large,Large Rug,flooring,“floor rug, area rug”,0.6,false,false,false,18
+rug-small,Small Rug,flooring,“mat, small carpet”,0.2,false,false,false,6
+laminate-flooring,Laminate Flooring,flooring,“wood flooring, floor panels”,0.8,true,false,false,22
+underlay-roll,Underlay Roll,flooring,“carpet underlay”,0.6,false,false,false,15
+vinyl-flooring,Vinyl Flooring Roll,flooring,“lino, vinyl sheet”,0.7,false,false,false,16
+tile-box,Box of Tiles,flooring,“floor tiles, ceramic tiles”,0.6,true,false,false,18
+wood-flooring,Wood Flooring Pack,flooring,“hardwood, engineered wood”,0.9,true,false,false,25
+carpet-remnant,Carpet Remnant,flooring,“carpet offcut, leftover carpet”,0.5,false,false,false,14
+carpet-tiles,Carpet Tiles,flooring,“modular carpet, square tiles”,0.4,false,false,false,12
+floor-mat-heavy,Heavy Duty Floor Mat,flooring,“entrance mat, doormat”,0.3,false,false,false,10
+flooring-cork,Cork Flooring,flooring,“cork tiles, cork planks”,0.6,false,false,false,18
+flooring-rubber,Rubber Flooring,flooring,“gym flooring, rubber mats”,0.7,false,false,false,20
+flooring-bamboo,Bamboo Flooring,flooring,“bamboo planks, eco flooring”,0.8,true,false,false,24
+grout-bag,Bag of Grout,flooring,“tile grout, adhesive”,0.2,false,false,false,8
+underfloor-heating-mat,Underfloor Heating Mat,flooring,“electric heating, floor warm”,0.3,false,false,false,22
+adhesive-tile,Tile Adhesive,flooring,“tile glue, mortar”,0.2,false,false,false,8
+threshold-strip,Threshold Strip,flooring,“door bar, transition strip”,0.1,false,false,false,5
+curtains-set,Curtain Set,soft-furnishing,“window curtains, drapes”,0.3,false,false,false,10
+blind-vertical,Vertical Blinds,soft-furnishing,“window blinds, office blinds”,0.4,false,false,false,12
+blind-roller,Roller Blind,soft-furnishing,“window roller, blind”,0.2,false,false,false,8
+cushions-set,Cushion Set,soft-furnishing,“throw pillows, sofa cushions”,0.2,false,false,false,6
+throws-set,Throw Set,soft-furnishing,“blanket, afghan, sofa throw”,0.2,false,false,false,6
+bedding-set,Bedding Set,soft-furnishing,“duvet cover, sheet set”,0.2,false,false,false,5
+rug-runner,Runner Rug,soft-furnishing,“hallway runner, carpet runner”,0.3,false,false,false,10
+bean-bag-small,Small Bean Bag,soft-furnishing,“children's beanbag”,0.3,false,false,false,8
+blanket-electric,Electric Blanket,soft-furnishing,“heated throw, warming blanket”,0.2,false,false,false,12
+blanket-weighted,Weighted Blanket,soft-furnishing,“anxiety blanket, heavy blanket”,0.4,false,false,false,15
+curtain-blackout,Blackout Curtains,soft-furnishing,“lined curtains, darkening”,0.3,false,false,false,12
+curtain-eyelet,Eyelet Curtains,soft-furnishing,“tab top curtains, metal grommets”,0.3,false,false,false,12
+curtain-sheer,Sheer Curtains,soft-furnishing,“voile curtains, net curtains”,0.2,false,false,false,8
+cushion-floor,Floor Cushion,soft-furnishing,“large pillow, pouf cushion”,0.3,false,false,false,10
+mat-dressing,Dressing Table Mat,soft-furnishing,“vanity mat, tray”,0.1,false,false,false,5
+mat-place,Place Mat,soft-furnishing,“table mat, setting”,0.1,false,false,false,4
+pillow-bed,Bed Pillow,soft-furnishing,“sleep pillow, head pillow”,0.2,false,false,false,6
+pillow-body,Body Pillow,soft-furnishing,“long pillow, pregnancy pillow”,0.3,false,false,false,10
+pillow-decorative,Decorative Pillow,soft-furnishing,“throw pillow, accent cushion”,0.1,false,false,false,5
+runner-table,Table Runner,soft-furnishing,“table cloth strip, decorative”,0.1,false,false,false,4
+tablecloth,Tablecloth,soft-furnishing,“dining table cover, cloth”,0.2,false,false,false,8
+tapestry-wall,Wall Tapestry,soft-furnishing,“fabric wall hanging, decor”,0.2,false,false,false,8
+towel-bath,Bath Towel,soft-furnishing,“large towel, bath sheet”,0.1,false,false,false,4
+towel-beach,Beach Towel,soft-furnishing,“sun towel, large towel”,0.2,false,false,false,6
+towel-hand,Hand Towel,soft-furnishing,“small towel, guest towel”,0.1,false,false,false,3
+towel-tea,Tea Towel,soft-furnishing,“kitchen towel, dish cloth”,0.1,false,false,false,2
+valance-bed,Bed Valance,soft-furnishing,“dust ruffle, bed skirt”,0.2,false,false,false,6
+kitchenware-box,Kitchen Items Box,kitchen,“pots pans, utensils, kitchenware”,0.4,true,false,false,12
+crockery-box,Crockery Box,kitchen,“plates, cups, dishes, china”,0.4,true,true,false,15
+glassware-box,Glassware Box,kitchen,“glasses, wine glasses, crystal”,0.3,true,true,false,12
+kitchen-appliance-small,Small Kitchen Appliance,kitchen,“kettle, toaster, blender”,0.2,false,false,false,8
+mixer-stand,Stand Mixer (e.g., KitchenAid),kitchen,“food mixer, kitchen aid”,0.4,false,false,false,15
+food-processor,Food Processor,kitchen,“magimix, kenwood”,0.3,false,false,false,12
+juicer,Juicer,kitchen,“juice extractor”,0.3,false,false,false,10
+pressure-cooker,Pressure Cooker,kitchen,“instant pot, slow cooker”,0.3,false,false,false,10
+wok-large,Large Wok,kitchen,“stir fry pan”,0.2,false,false,false,8
+set-knives,Knife Block Set,kitchen,“cutlery block, sharp knives”,0.3,false,false,false,12
+cutlery-caddy,Cutlery Caddy,kitchen,“utensil holder, knife organiser”,0.1,false,false,false,5
+spice-rack,Spice Rack,kitchen,“spice organiser”,0.1,false,false,false,5
+plate-rack,Plate Rack (drying),kitchen,“dish rack, drainer”,0.2,false,false,false,6
+bin-kitchen,Kitchen Bin,kitchen,“pedal bin, waste bin”,0.2,false,false,false,6
+step-stool,Kitchen Step Stool,kitchen,“step ladder, safety stool”,0.3,false,false,false,8
+bin-compost-kitchen,Kitchen Compost Bin,kitchen,“compost caddy, food waste”,0.1,false,false,false,5
+bread-bin,Bread Bin,kitchen,“bread box, storage tin”,0.1,false,false,false,6
+canister-set,Canister Set,kitchen,“storage jars, flour sugar tea”,0.1,false,false,false,6
+chopping-board,Chopping Board,kitchen,“cutting board, butcher block”,0.1,false,false,false,5
+colander,Colander,kitchen,“strainer, pasta drainer”,0.1,false,false,false,4
+cookbook-stand,Cookbook Stand,kitchen,“recipe holder, book stand”,0.1,false,false,false,4
+crock-pot,Crock Pot,kitchen,“slow cooker, stew pot”,0.3,false,false,false,10
+cutlery-set,Cutlery Set,kitchen,“knife fork spoon, flatware”,0.1,false,false,false,6
+dish-drainer,Dish Drainer,kitchen,“drying rack, dish rack”,0.2,false,false,false,6
+filter-water,Water Filter Jug,kitchen,“filter jug, brita filter”,0.1,false,false,false,5
+grater,Grater,kitchen,“cheese grater, vegetable grater”,0.1,false,false,false,4
+ice-cream-maker,Ice Cream Maker,kitchen,“gelato maker, ice cream machine”,0.4,false,false,false,18
+kitchen-scale,Kitchen Scale,kitchen,“food scale, weighing scale”,0.1,false,false,false,5
+kitchen-timer,Kitchen Timer,kitchen,“oven timer, egg timer”,0.1,false,false,false,3
+knife-sharpener,Knife Sharpener,kitchen,“sharpening steel, knife hone”,0.1,false,false,false,4
+measuring-cup,Measuring Cup Set,kitchen,“measuring jug, cups spoons”,0.1,false,false,false,4
+mixing-bowl-set,Mixing Bowl Set,kitchen,“bowls set, kitchen bowls”,0.2,false,false,false,6
+mortar-pestle,Mortar and Pestle,kitchen,“herb grinder, spice crusher”,0.1,false,false,false,5
+pan-steamer,Steamer Pan,kitchen,“steaming basket, vegetable steamer”,0.2,false,false,false,6
+pan-stockpot,Stock Pot,kitchen,“large pot, soup pot”,0.3,false,false,false,10
+rack-drying-dish,Dish Drying Rack,kitchen,“drainer rack, drying mat”,0.2,false,false,false,6
+rack-pot-lid,Pot Lid Rack,kitchen,“lid holder, storage rack”,0.1,false,false,false,4
+rack-spice-wall,Wall Spice Rack,kitchen,“spice shelf, mounted rack”,0.1,false,false,false,5
+rack-utensil-wall,Wall Utensil Rack,kitchen,“tool holder, kitchen tools”,0.1,false,false,false,5
+sieve,Sieve,kitchen,“strainer, flour sifter”,0.1,false,false,false,4
+sink-grid,Sink Grid,kitchen,“sink protector, bottom grid”,0.1,false,false,false,4
+splashback-kitchen,Kitchen Splashback,kitchen,“wall protector, backsplash”,0.3,false,false,false,12
+thermos-large,Large Thermos,kitchen,“flask, vacuum flask”,0.1,false,false,false,5
+toaster-4slice,4-Slice Toaster,kitchen,“large toaster, family toaster”,0.2,false,false,false,10
+trivet,Trivet,kitchen,“hot pad, pot stand”,0.1,false,false,false,3
+wok-stand,Wok Stand,kitchen,“wok holder, ring stand”,0.1,false,false,false,3
+bathroom-cabinet,Bathroom Cabinet,bathroom,“medicine cabinet, bathroom storage”,0.6,false,false,false,18
+toilet,Toilet,bathroom,“wc, lavatory, bathroom toilet”,0.8,true,true,true,35
+basin,Wash Basin,bathroom,“bathroom sink, hand basin”,0.6,true,true,false,20
+bath,Bathtub,bathroom,“bath tub, bathroom bath”,2.0,true,true,true,75
+shower-tray,Shower Tray,bathroom,“shower base, shower floor”,0.8,true,true,false,25
+towel-rail,Towel Rail,bathroom,“heated towel rail, bathroom radiator”,0.4,false,false,false,15
+shower-unit,Shower Unit (enclosed),bathroom,“shower cubicle, enclosure”,1.6,true,false,true,50
+bath-panel,Bath Panel,bathroom,“bath side panel”,0.6,false,false,false,15
+bathroom-mirror,Bathroom Mirror,bathroom,“shaving mirror”,0.3,false,true,false,12
+toilet-roll-holder,Toilet Roll Holder,bathroom,“bathroom accessory”,0.1,false,false,false,4
+soap-dispenser,Soap Dispenser (wall),bathroom,“bathroom accessory”,0.1,false,false,false,4
+bathroom-scale,Bathroom Scales,bathroom,“weighing scales”,0.1,false,true,false,4
+shower-curtain-rail,Shower Curtain Rail,bathroom,“curtain rod”,0.3,false,false,false,8
+accessory-bathroom-set,Bathroom Accessory Set,bathroom,“tumbler holder, soap dish”,0.1,false,false,false,6
+cabinet-bathroom-wall,Wall Bathroom Cabinet,bathroom,“mirror cabinet, storage”,0.5,false,false,false,16
+caddy-shower,Shower Caddy,bathroom,“shower organizer, basket”,0.1,false,false,false,5
+chair-bathroom,Bathroom Chair,bathroom,“shower chair, stool”,0.3,false,false,false,10
+hamper-bathroom,Bathroom Hamper,bathroom,“laundry basket, clothes bin”,0.3,false,false,false,8
+mat-bathroom,Bathroom Mat,bathroom,“bath mat, rug”,0.1,false,false,false,4
+mirror-bathroom-cabinet,Bathroom Cabinet Mirror,bathroom,“medicine cabinet mirror”,0.4,false,true,false,14
+organiser-bathroom,Bathroom Organiser,bathroom,“shelf unit, storage tower”,0.4,false,false,false,12
+rack-towel-free-standing,Free Standing Towel Rail,bathroom,“towel stand, floor rack”,0.3,false,false,false,10
+scale-bathroom-digital,Digital Bathroom Scale,bathroom,“digital scales, weight”,0.1,false,true,false,6
+seat-bathroom-toilet,Toilet Seat,bathroom,“wc seat, lavatory seat”,0.1,false,false,false,5
+shower-curtain,Shower Curtain,bathroom,“plastic curtain, liner”,0.1,false,false,false,4
+shower-head,Shower Head,bathroom,“handheld shower, rain head”,0.1,false,false,false,6
+shower-screen,Shower Screen,bathroom,“glass door, panel”,0.6,true,true,false,25
+sink-pedestal,Pedestal Sink,bathroom,“pedestal basin, vanity sink”,0.7,true,true,false,30
+stool-bathroom,Bathroom Stool,bathroom,“small seat, step stool”,0.2,false,false,false,6
+tissue-holder,Tissue Holder,bathroom,“toilet tissue cover, box”,0.1,false,false,false,4
+tray-bathroom,Bathroom Tray,bathroom,“soap tray, vanity tray”,0.1,false,false,false,4
+tumbler-holder,Tumbler Holder,bathroom,“toothbrush holder, cup”,0.1,false,false,false,4
+vanity-bathroom,Bathroom Vanity Unit,bathroom,“sink cabinet, storage vanity”,1.4,true,false,true,60
+clothes-rail,Clothes Rail,general,“clothing rack, garment rail”,0.4,false,false,false,12
+ironing-board,Ironing Board,general,“ironing table”,0.3,false,false,false,10
+vacuum-cleaner,Vacuum Cleaner,general,“hoover, carpet cleaner”,0.4,false,false,false,15
+cleaning-supplies,Cleaning Supplies Box,general,“household cleaners, cleaning products”,0.3,false,false,false,8
+tools-toolbox,Toolbox,general,“tool box, hand tools”,0.4,false,false,false,12
+ladder,Stepladder,general,“steps, household ladder”,0.6,false,false,false,18
+fire-extinguisher,Fire Extinguisher,general,“safety equipment”,0.2,false,false,false,8
+smoke-alarm,Smoke Detector,general,“fire alarm, smoke alarm”,0.1,false,true,false,5
+sewing-machine,Sewing Machine,general,“ Singer, embroidery machine”,0.5,false,false,false,18
+vacuum-cylinder,Cylinder Vacuum,general,“ Henry vacuum, hetty”,0.5,false,false,false,16
+iron,Iron,general,“clothes iron”,0.1,false,false,false,4
+clothes-airer,Clothes Airer,general,“drying rack, clothes horse”,0.4,false,false,false,10
+bag-laundry,Laundry Bag,general,“washing bag, linen bag”,0.2,false,false,false,5
+bucket-mop,Bucket and Mop,general,“cleaning bucket”,0.3,false,false,false,6
+recycling-bin,Recycling Bin,general,“wheelie bin, recycling box”,0.4,false,false,false,8
+rug-cleaner,Rug Cleaner (machine),general,“carpet cleaner, vax”,1.0,true,false,false,30
+tool-chest-large,Large Tool Chest,general,“mechanics toolbox, roll cab”,1.2,true,false,false,40
+workbench,Garage Workbench,general,“ workshop bench”,1.6,true,false,true,50
+generator-portable,Portable Generator,general,“petrol generator”,1.0,true,false,false,35
+sack-truck,Sack Truck,general,“hand truck, dolly”,0.5,false,false,false,15
+pet-crate-large,Large Pet Crate,general,“dog crate, animal carrier”,0.6,false,false,false,16
+pet-bed-large,Large Pet Bed,general,“dog bed, cat tree”,0.5,false,false,false,12
+bird-cage-large,Large Bird Cage,general,“aviary, parrot cage”,0.8,true,true,true,25
+fish-tank-stand,Fish Tank Stand,general,“aquarium cabinet”,0.7,false,false,false,20
+christmas-tree-artificial,Artificial Christmas Tree,general,“xmas tree, tree”,0.8,true,false,true,22
+decorations-box,Christmas Decorations Box,general,“xmas decs, ornaments box”,0.3,false,true,false,8
+suit-garment-bag,Suit in Garment Bag,general,“wedding suit, dress bag”,0.2,false,false,false,6
+airer-clothes-cover,Clothes Airer Cover,general,“drying cover, indoor dryer”,0.3,false,false,false,10
+bin-food-waste,Food Waste Bin,general,“kitchen caddy, compost bin”,0.1,false,false,false,5
+bin-recycling,Recycling Bin,general,“recycling box, sorting bin”,0.3,false,false,false,8
+bin-wheelie,Wheelie Bin,general,“wheeled bin, trash bin”,0.8,false,false,false,20
+broom,Broom,general,“sweeping brush, yard broom”,0.2,false,false,false,6
+brush-dustpan,Dustpan and Brush,general,“sweeper set, hand brush”,0.1,false,false,false,4
+caddy-cleaning,Cleaning Caddy,general,“cleaner organizer, bucket”,0.2,false,false,false,6
+caddy-shower,Shower Caddy,general,“bath organizer, basket”,0.1,false,false,false,5
+caddy-utility,Utility Caddy,general,“tool tote, organizer”,0.2,false,false,false,6
+cart-shopping,Shopping Cart,general,“granny trolley, grocery cart”,0.5,false,false,false,15
+clock-wall,Wall Clock,general,“analog clock, round clock”,0.1,false,true,false,5
+caddy-garden-tool,Garden Tool Caddy,general,“tool organizer, holder”,0.2,false,false,false,6
+dryer-clothes-indoor,Indoor Clothes Dryer,general,“drying rack, airer”,0.4,false,false,false,12
+duster-extendable,Extendable Duster,general,“long duster, feather duster”,0.1,false,false,false,4
+fan-floor,Floor Fan,general,“standing fan, oscillating fan”,0.3,false,false,false,12
+fan-tower,Tower Fan,general,“column fan, bladeless fan”,0.3,false,false,false,14
+filter-furnace,Furnace Filter,general,“air filter, hvac filter”,0.1,false,false,false,4
+filter-water-fridge,Fridge Water Filter,general,“refrigerator filter, water filter”,0.1,false,false,false,5
+fireplace-screen,Fireplace Screen,general,“hearth guard, spark guard”,0.4,false,false,false,15
+flag-pole,Flag Pole,general,“flagpole, banner pole”,0.6,true,false,false,20
+hanger-garment,Garment Hanger,general,“clothes hanger, coat hanger”,0.1,false,false,false,2
+heater-oil-filled,Oil Filled Heater,general,“radiator heater, electric heater”,0.5,false,false,false,18
+heater-portable,Portable Heater,general,“space heater, electric fire”,0.3,false,false,false,14
+heater-towel,Towel Heater,general,“heated rail, warmer”,0.3,false,false,false,16
+hook-coat,Coat Hook,general,“wall hook, coat rack”,0.1,false,false,false,3
+hook-over-door,Over Door Hook,general,“door hanger, rack”,0.1,false,false,false,4
+humidifier-tabletop,Tabletop Humidifier,general,“moisturizer, air humidifier”,0.2,false,false,false,10
+jack-car,Car Jack,general,“vehicle jack, trolley jack”,0.4,false,false,false,15
+key-holder,Key Holder,general,“key rack, organizer”,0.1,false,false,false,4
+ladder-extension,Extension Ladder,general,“telescopic ladder, tall ladder”,1.2,true,false,false,35
+ladder-step-aluminium,Aluminium Step Ladder,general,“metal steps, platform ladder”,0.7,false,false,false,22
+ladder-step-fibreglass,Fibreglass Step Ladder,general,“fiberglass ladder, insulated”,0.8,false,false,false,25
+ladder-step-wooden,Wooden Step Ladder,general,“wood steps, traditional ladder”,0.8,false,false,false,20
+ladder-telescopic,Telescopic Ladder,general,“collapsible ladder, compact”,0.6,false,false,false,25
+lamp-heat,Heat Lamp,general,“infrared lamp, warming light”,0.2,false,false,false,12
+mat-welcome,Welcome Mat,general,“doormat, entrance mat”,0.1,false,false,false,4
+mirror-inspection,Inspection Mirror,general,“mechanic mirror, dental mirror”,0.1,false,true,false,3
+mirror-pocket,Pocket Mirror,general,“hand mirror, compact mirror”,0.1,false,true,false,3
+organizer-jewelry,Jewelry Organizer,general,“jewelry box, tree”,0.1,false,false,false,6
+organizer-shoe,Shoe Organizer,general,“shoe rack, hanging organizer”,0.2,false,false,false,8
+organizer-under-sink,Under Sink Organizer,general,“cabinet organizer, pull out”,0.2,false,false,false,10
+paddle-ceiling-fan,Ceiling Fan Paddle,general,“fan blade, replacement”,0.1,false,false,false,4
+pan-dust,Dust Pan,general,“sweeping pan, hand dustpan”,0.1,false,false,false,3
+rack-drying,Drying Rack,general,“clothes dryer, airer”,0.4,false,false,false,12
+rack-magazine,Magazine Rack,general,“newspaper holder, display”,0.2,false,false,false,6
+rack-pot,Pot Rack,general,“hanging rack, ceiling rack”,0.4,false,false,false,15
+rack-shoe,Shoe Rack,general,“shoe shelf, organizer”,0.3,false,false,false,10
+rack-spice,Spice Rack,general,“spice shelf, organizer”,0.1,false,false,false,5
+rack-tie,Tie Rack,general,“necktie organizer, hanger”,0.1,false,false,false,4
+rack-umbrella,Umbrella Rack,general,“umbrella stand, holder”,0.2,false,false,false,8
+scale-kitchen,Kitchen Scale,general,“food scale, digital scale”,0.1,false,false,false,5
+scale-postal,Postal Scale,general,“shipping scale, parcel scale”,0.1,false,false,false,8
+scoop-litter,Litter Scoop,general,“cat litter scoop, shovel”,0.1,false,false,false,3
+screen-room-divider,Room Divider Screen,general,“partition screen, folding screen”,0.8,true,false,false,30
+shield-splash,Splash Shield,general,“splash guard, protector”,0.1,false,false,false,4
+sign-security,Security Sign,general,“warning sign, alarm sign”,0.1,false,false,false,4
+sink-utility,Utility Sink,general,“laundry sink, slop sink”,0.8,true,false,false,35
+stool-metal-step,Metal Step Stool,general,“kitchen step, platform”,0.3,false,false,false,10
+stool-wood-step,Wood Step Stool,general,“step up stool, kitchen helper”,0.3,false,false,false,10
+storage-bag-vacuum,Vacuum Storage Bag,general,“space bag, compression bag”,0.1,false,false,false,4
+storage-bin-plastic,Plastic Storage Bin,general,“container, tote box”,0.3,false,false,false,8
+storage-container-deck,Deck Storage Container,general,“patio box, outdoor chest”,0.9,false,false,false,25
+storage-organizer-closet,Closet Organizer,general,“shelf system, wardrobe organizer”,0.6,false,false,false,20
+storage-rack-shelving,Shelving Rack,general,“storage shelves, metal rack”,1.0,true,false,false,35
+strap-tie-down,Tie Down Strap,general,“ratchet strap, cargo strap”,0.1,false,false,false,4
+tarp-large,Large Tarp,general,“tarpaulin, cover sheet”,0.3,false,false,false,10
+thermometer-outdoor,Outdoor Thermometer,general,“temperature gauge, weather”,0.1,false,false,false,4
+timer-mechanical,Mechanical Timer,general,“outlet timer, light timer”,0.1,false,false,false,4
+timer-outdoor,Outdoor Timer,general,“sprinkler timer, garden timer”,0.1,false,false,false,5
+tool-garden-tote,Garden Tool Tote,general,“gardening bag, tool carrier”,0.2,false,false,false,8
+tool-organizer-pegboard,Pegboard Tool Organizer,general,“tool board, organizer”,0.3,false,false,false,12
+tool-set-basic,Basic Tool Set,general,“home tool kit, DIY tools”,0.4,false,false,false,15
+tote-storage-plastic,Plastic Storage Tote,general,“storage box, container”,0.3,false,false,false,8
+trap-insect,Insect Trap,general,“fly trap, moth catcher”,0.1,false,false,false,4
+tray-drip,Drip Tray,general,“plant saucer, water catcher”,0.1,false,false,false,3
+tray-utility,Utility Tray,general,“serving tray, organizer tray”,0.1,false,false,false,5
+vacuum-wet-dry,Wet Dry Vacuum,general,“shop vac, utility vacuum”,1.0,true,false,false,40
+valve-water-shut-off,Water Shut Off Valve,general,“stop valve, emergency valve”,0.1,false,false,false,5
+vase-large,Large Vase,general,“floor vase, decoration”,0.4,false,true,false,15
+vent-dryer,Dryer Vent,general,“dryer duct, exhaust vent”,0.1,false,false,false,4
+wardrobe-portable,Portable Wardrobe,general,“garment rack, temporary closet”,0.7,false,false,false,22
+washer-dryer-pedestal,Washer Dryer Pedestal,general,“appliance riser, storage drawer”,0.4,false,false,false,18
+waterer-plant,Plant Waterer,general,“watering globe, self-watering”,0.1,false,false,false,4
+wheel-caster,Caster Wheel,general,“furniture wheel, swivel wheel”,0.1,false,false,false,2
+wind-chime,Wind Chime,general,“garden chime, outdoor decor”,0.1,false,true,false,6
+wreath-door,Door Wreath,general,“christmas wreath, decoration”,0.1,false,false,false,5

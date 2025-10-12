@@ -1,0 +1,503 @@
+/**
+ * Mobile-First Responsive Optimizations for Speedy Van
+ * 
+ * Comprehensive mobile, tablet, and desktop optimizations
+ * Cross-browser compatibility for Safari, Chrome, Edge, Firefox
+ */
+
+/* ===== MOBILE-FIRST BASE STYLES ===== */
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile touch devices */
+  .chakra-button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 12px 16px !important;
+  }
+  
+  .chakra-input {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .chakra-select {
+    min-height: 44px !important;
+    font-size: 16px !important;
+  }
+  
+  /* Larger tap targets for cards */
+  .chakra-card {
+    min-height: 60px !important;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .chakra-button:hover,
+  .chakra-card:hover {
+    transform: none !important;
+  }
+}
+
+/* ===== SAFARI-SPECIFIC FIXES ===== */
+
+/* Safari iOS viewport fix */
+@supports (-webkit-touch-callout: none) {
+  .chakra-container {
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix Safari input styling */
+  .chakra-input,
+  .chakra-select,
+  .chakra-textarea {
+    -webkit-appearance: none;
+    border-radius: 8px !important;
+  }
+  
+  /* Fix Safari date input */
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 16px;
+  }
+  
+  /* Safari scroll momentum */
+  .chakra-modal__content,
+  .chakra-drawer__content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Mobile Portrait (320px - 480px) */
+@media screen and (max-width: 480px) {
+  /* Booking form optimizations */
+  .booking-step-container {
+    padding: 12px !important;
+    margin: 8px !important;
+  }
+  
+  /* Address autocomplete */
+  .address-autocomplete-container {
+    position: relative;
+  }
+  
+  .address-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Item selection grid */
+  .item-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Date time cards */
+  .date-card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Multiple drops route */
+  .route-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Pricing breakdown */
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Modal optimizations */
+  .chakra-modal__content {
+    margin: 16px !important;
+    max-height: calc(100vh - 32px) !important;
+  }
+  
+  /* Toast positioning */
+  .chakra-toast {
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+}
+
+/* Mobile Landscape (481px - 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .date-card-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .item-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .route-summary-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* Tablet Portrait (769px - 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .date-card-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  .item-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Desktop (1025px+) */
+@media screen and (min-width: 1025px) {
+  .date-card-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+  
+  .item-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ===== CROSS-BROWSER COMPATIBILITY ===== */
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+  /* Firefox input styling */
+  .chakra-input,
+  .chakra-select {
+    -moz-appearance: none;
+  }
+  
+  /* Firefox date/time inputs */
+  input[type="date"],
+  input[type="time"] {
+    -moz-appearance: textfield;
+  }
+  
+  /* Firefox scroll bars */
+  .chakra-modal__content,
+  .address-suggestions {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+}
+
+/* Edge/IE compatibility */
+@supports (-ms-ime-align: auto) {
+  /* Edge-specific styles */
+  .chakra-input,
+  .chakra-select {
+    -ms-appearance: none;
+  }
+}
+
+/* Chrome/Webkit optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Webkit scroll bars */
+  .chakra-modal__content::-webkit-scrollbar,
+  .address-suggestions::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .chakra-modal__content::-webkit-scrollbar-track,
+  .address-suggestions::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+  
+  .chakra-modal__content::-webkit-scrollbar-thumb,
+  .address-suggestions::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+  
+  .chakra-modal__content::-webkit-scrollbar-thumb:hover,
+  .address-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .chakra-card {
+    border: 2px solid currentColor !important;
+  }
+  
+  .chakra-button {
+    border: 2px solid currentColor !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus indicators */
+.chakra-button:focus,
+.chakra-input:focus,
+.chakra-select:focus,
+.chakra-card:focus {
+  outline: 2px solid #3182ce !important;
+  outline-offset: 2px !important;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for animations */
+.chakra-card,
+.chakra-button {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize repaints */
+.address-suggestions {
+  contain: layout style paint;
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  /* Hide interactive elements */
+  .chakra-button,
+  .chakra-modal,
+  .chakra-toast {
+    display: none !important;
+  }
+  
+  /* Optimize for printing */
+  .chakra-card {
+    break-inside: avoid;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+  
+  /* Ensure text is readable */
+  body {
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+  .address-suggestions {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  input[type="date"],
+  input[type="time"] {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+}
+
+/* ===== LOADING STATES ===== */
+
+/* Skeleton loading animations */
+.skeleton-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Safe area insets for notched devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Responsive text sizing */
+.responsive-text-xs {
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
+}
+
+.responsive-text-sm {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.responsive-text-base {
+  font-size: clamp(1rem, 3vw, 1.125rem);
+}
+
+.responsive-text-lg {
+  font-size: clamp(1.125rem, 3.5vw, 1.25rem);
+}
+
+.responsive-text-xl {
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
+}
+
+/* Container queries for modern browsers */
+@supports (container-type: inline-size) {
+  .booking-container {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 480px) {
+    .container-responsive {
+      padding: 8px;
+    }
+  }
+  
+  @container (min-width: 481px) {
+    .container-responsive {
+      padding: 16px;
+    }
+  }
+}
+
+/* ===== FORM OPTIMIZATIONS ===== */
+
+/* Prevent zoom on iOS inputs */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* Improve form field spacing on mobile */
+@media screen and (max-width: 768px) {
+  .chakra-form-control {
+    margin-bottom: 16px !important;
+  }
+  
+  .chakra-form-label {
+    margin-bottom: 8px !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* ===== ANIMATION OPTIMIZATIONS ===== */
+
+/* Smooth transitions for interactive elements */
+.chakra-button,
+.chakra-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects for non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .chakra-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chakra-button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* ===== ERROR HANDLING ===== */
+
+/* Network error states */
+.network-error {
+  background: #fed7d7;
+  border: 1px solid #fc8181;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+/* Loading states */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* ===== PROGRESSIVE ENHANCEMENT ===== */
+
+/* Base styles for no-JS users */
+.no-js .interactive-only {
+  display: none;
+}
+
+.no-js .fallback-content {
+  display: block;
+}
+
+/* Enhanced styles for JS-enabled users */
+.js .interactive-only {
+  display: block;
+}
+
+.js .fallback-content {
+  display: none;
+}

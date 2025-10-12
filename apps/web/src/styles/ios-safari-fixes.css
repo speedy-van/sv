@@ -1,0 +1,821 @@
+/* ===== إصلاحات iOS Safari الشاملة - Speedy Van ===== */
+
+/* ===== 1. إعدادات أساسية للعرض الكامل ===== */
+html, body, #__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ===== 2. وحدات العرض الديناميكية ===== */
+:root {
+  --vh: 1dvh; /* المتصفحات الحديثة */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* دعم المتصفحات القديمة */
+@supports not (height: 100dvh) {
+  .min-h-screen,
+  .h-screen,
+  [style*="100vh"] {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* ===== 3. مناطق الأمان للـ Notch ===== */
+.safe-area-top {
+  padding-top: var(--safe-area-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-area-left {
+  padding-left: var(--safe-area-left);
+}
+
+.safe-area-right {
+  padding-right: var(--safe-area-right);
+}
+
+.safe-area-all {
+  padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+}
+
+/* ===== 4. إعدادات التمرير والتركيز ===== */
+:root {
+  scroll-padding-top: calc(64px + var(--safe-area-top));
+  scroll-behavior: smooth;
+}
+
+/* تحسين التركيز للوحة المفاتيح */
+*:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* ===== 5. إصلاحات النماذج والمدخلات ===== */
+input, textarea, select {
+  font-size: 16px !important; /* منع التكبير التلقائي في iOS */
+  -webkit-appearance: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-height: 44px; /* الحد الأدنى للمس */
+  touch-action: manipulation;
+}
+
+/* تحسين المدخلات في iOS */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    -webkit-appearance: none;
+    border-radius: 8px;
+    font-size: 16px !important;
+  }
+  
+  /* إصلاح مشاكل الخط في iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  textarea {
+    font-size: 16px !important;
+    line-height: 1.4;
+  }
+}
+
+/* ===== 6. إصلاحات الأزرار والتفاعل ===== */
+button, .btn, .button {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: text;
+}
+
+/* تحسين التفاعل مع اللمس */
+@media (hover: none) and (pointer: coarse) {
+  button:hover,
+  .btn:hover,
+  .button:hover {
+    /* إزالة تأثيرات hover على الأجهزة اللمسية */
+  }
+}
+
+/* ===== 7. إصلاحات التخطيط والتمرير ===== */
+.page-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* منع التمرير الأفقي */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== 8. إصلاحات الهيدر الثابت ===== */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(11, 18, 32, 0.95);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: var(--safe-area-top);
+}
+
+/* ===== 9. إصلاحات شريط الكوكيز ===== */
+.cookie-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 999;
+  background: #1f2937;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: var(--safe-area-bottom);
+}
+
+/* إخفاء شريط الكوكيز عند فتح لوحة المفاتيح */
+@media (max-height: 500px) {
+  .cookie-bar {
+    display: none;
+  }
+}
+
+/* ===== 10. إصلاحات القوائم المنسدلة والـ Popovers ===== */
+.dropdown-menu,
+.popover-content,
+.autocomplete-list {
+  position: fixed !important;
+  z-index: 9999;
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== 11. إصلاحات الصور والوسائط ===== */
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* تحسين عرض الصور في iOS */
+@supports (-webkit-touch-callout: none) {
+  img {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* ===== 12. إصلاحات الأداء ===== */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* تحسين الحركات */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== 13. إصلاحات خاصة بـ Safari ===== */
+@supports (-webkit-touch-callout: none) {
+  /* إصلاح مشاكل العرض في Safari */
+  .safari-fix {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* إصلاح مشاكل الخط في Safari */
+  body {
+    -webkit-font-feature-settings: "kern" 1;
+    font-feature-settings: "kern" 1;
+  }
+}
+
+/* ===== 14. إصلاحات الوضع المظلم ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: #0f172a;
+    color: #f8fafc;
+  }
+}
+
+/* ===== 15. إصلاحات الطباعة ===== */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  .sticky-header,
+  .cookie-bar {
+    position: static !important;
+  }
+}
+
+/* ===== 16. إصلاحات الشاشات الصغيرة ===== */
+@media (max-width: 768px) {
+  /* تحسين المسافات للشاشات الصغيرة */
+  .mobile-spacing {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  /* تحسين أحجام الخطوط */
+  .mobile-text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* تحسين الأزرار */
+  .mobile-button {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-spacing {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .mobile-text {
+    font-size: 13px;
+  }
+}
+
+/* ===== 17. إصلاحات إضافية ===== */
+/* منع التمرير الأفقي */
+html, body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* تحسين عرض الجداول */
+table {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* تحسين عرض الكود */
+pre, code {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ===== 18. إصلاحات خاصة بـ PWA ===== */
+@media (display-mode: standalone) {
+  .pwa-header {
+    padding-top: var(--safe-area-top);
+  }
+  
+  .pwa-content {
+    padding-bottom: var(--safe-area-bottom);
+  }
+}
+
+/* ===== 19. إصلاحات إمكانية الوصول ===== */
+/* تحسين التباين */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+}
+
+/* دعم تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+  .animated-element {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ===== 20. إصلاحات نهائية ===== */
+/* ضمان عمل التمرير بشكل صحيح */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* تحسين الأداء العام */
+.performance-optimized {
+  will-change: auto;
+  contain: layout style paint;
+}
+
+/* إصلاحات نهائية للتوافق */
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* Safe area classes for header and footer */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top) !important;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+/* Make anchored scroll/focus land below sticky header */
+:root {
+  scroll-padding-top: calc(64px + env(safe-area-inset-top)) !important;
+}
+
+/* ===== 21. إصلاحات خاصة بصفحة الحجز ===== */
+/* إصلاح عرض التاريخ والوقت */
+.day:disabled,
+.slot:disabled {
+  opacity: 1 !important; /* منع الشفافية على العناصر المعطلة */
+}
+
+.day:disabled .d-label,
+.slot:disabled .slotline {
+  color: #9ca3af !important; /* لون رمادي واضح للنص المعطل */
+}
+
+.day:disabled .pricechip,
+.slot:disabled .badges .badge {
+  color: #9ca3af !important;
+  background: #f3f4f6 !important;
+}
+
+/* إصلاح التباين للعناصر النشطة */
+.d-label,
+.slotline {
+  color: #111827 !important; /* لون أسود واضح للنص النشط */
+}
+
+/* إصلاح خلفية البطاقات */
+.card {
+  background: #ffffff !important; /* خلفية بيضاء صلبة */
+}
+
+/* إصلاح التخطيط للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .dategrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .days {
+    max-height: 280px !important;
+  }
+  
+  .container {
+    margin: 0 auto !important;
+    padding: 0 12px !important;
+  }
+}
+
+/* إصلاح استخدام الارتفاع الكامل للشاشة */
+.container {
+  min-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.form {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* إصلاح المساحة المتاحة للمحتوى */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .card {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* إصلاحات إضافية لصفحة الحجز */
+body {
+  min-height: 100dvh !important;
+  overflow-x: hidden !important;
+}
+
+#__next {
+  min-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ضمان استخدام الارتفاع الكامل */
+.container {
+  flex: 1 !important;
+  min-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* إصلاح المساحة للعناصر الداخلية */
+.form {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+.card {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+}
+
+/* إصلاح المساحة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px !important;
+  }
+  
+  .card {
+    margin-bottom: 12px !important;
+  }
+}
+
+/* إصلاحات للشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+  .container {
+    padding: 8px !important;
+  }
+  
+  .card {
+    margin-bottom: 8px !important;
+  }
+}
+
+/* إصلاحات نهائية لضمان العرض الكامل */
+@media (max-height: 600px) {
+  .container {
+    padding: 8px !important;
+  }
+  
+  .card {
+    margin-bottom: 8px !important;
+  }
+}
+
+/* إصلاحات الفوتر */
+footer {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* إصلاحات مكون الفوتر */
+footer > div {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* إصلاحات إضافية لرؤية الفوتر */
+[data-testid="footer"],
+footer[role="contentinfo"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* إصلاحات نهائية لرؤية الفوتر */
+footer,
+footer * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ضمان عدم إخفاء الفوتر بأي CSS */
+footer {
+  clip: auto !important;
+  clip-path: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* إصلاحات نهائية لرؤية الفوتر لجميع أحجام الشاشات */
+@media (max-width: 768px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-height: 600px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+/* إصلاحات نهائية لرؤية الفوتر لجميع أحجام الشاشات */
+@media (max-width: 768px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-height: 600px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+/* إصلاحات نهائية لرؤية الفوتر لجميع أحجام الشاشات */
+@media (max-width: 768px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-height: 600px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+/* ===== 21. إصلاحات خاصة بصفحة الحجز ===== */
+/* إصلاح عرض التاريخ والوقت */
+.day:disabled,
+.slot:disabled {
+  opacity: 1 !important; /* منع الشفافية على العناصر المعطلة */
+}
+
+.day:disabled .d-label,
+.slot:disabled .slotline {
+  color: #9ca3af !important; /* لون رمادي واضح للنص المعطل */
+}
+
+.day:disabled .pricechip,
+.slot:disabled .badges .badge {
+  color: #9ca3af !important;
+  background: #f3f4f6 !important;
+}
+
+/* إصلاح التباين للعناصر النشطة */
+.d-label,
+.slotline {
+  color: #111827 !important; /* لون أسود واضح للنص النشط */
+}
+
+/* إصلاح خلفية البطاقات */
+.card {
+  background: #ffffff !important; /* خلفية بيضاء صلبة */
+}
+
+/* إصلاح التخطيط للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .dategrid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .days {
+    max-height: 280px !important;
+  }
+  
+  .container {
+    margin: 0 auto !important;
+    padding: 0 12px !important;
+    min-height: 100dvh !important;
+  }
+}
+
+/* إصلاح استخدام الارتفاع الكامل للشاشة */
+.container {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.form {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* إصلاح المساحة المتاحة للمحتوى */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .card {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* إصلاحات إضافية لصفحة الحجز */
+body {
+  overflow-x: hidden !important;
+}
+
+#__next {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ضمان استخدام الارتفاع الكامل */
+.container {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* إصلاح المساحة للعناصر الداخلية */
+.form {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+.card {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+}
+
+/* إصلاح المساحة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px !important;
+  }
+  
+  .card {
+    margin-bottom: 12px !important;
+  }
+}
+
+/* إصلاحات للشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+  .container {
+    padding: 8px !important;
+  }
+  
+  .card {
+    margin-bottom: 8px !important;
+  }
+}
+
+/* إصلاحات نهائية لضمان العرض الكامل */
+@media (max-height: 600px) {
+  .container {
+    padding: 8px !important;
+  }
+  
+  .card {
+    margin-bottom: 8px !important;
+  }
+}

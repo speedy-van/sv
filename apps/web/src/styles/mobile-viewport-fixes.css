@@ -1,0 +1,599 @@
+/* Mobile Viewport Fixes for Speedy Van */
+
+/* ===== Mobile Viewport Height Fixes ===== */
+/* Use dynamic viewport height for mobile browsers */
+.mobile-hero {
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+}
+
+/* ===== Mobile Header Scroll Behavior ===== */
+/* Ensure smooth header transitions */
+.mobile-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  transition: transform 0.3s ease-in-out !important;
+  will-change: transform !important;
+  /* Ensure header stays above video and other content */
+  background: rgba(15, 17, 20, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.mobile-header.hidden {
+  transform: translateY(-100%) !important;
+}
+
+.mobile-header.visible {
+  transform: translateY(0) !important;
+}
+
+/* Ensure content doesn't get hidden behind header */
+@media (max-width: 768px) {
+  .mobile-hero {
+    padding-top: 0 !important; /* No padding needed since header is fixed */
+  }
+  
+  /* Add some top margin to first content section if needed */
+  .mobile-stats {
+    margin-top: 0 !important;
+  }
+}
+
+/* ===== Mobile Sidebar/Drawer Improvements ===== */
+/* Enhanced mobile drawer styling */
+.chakra-drawer__content {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+}
+
+/* Section headers in sidebar */
+.mobile-sidebar-section {
+  background: rgba(0, 194, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(0, 194, 255, 0.1) !important;
+  padding: 0.75rem 1rem !important;
+  margin: 0 !important;
+}
+
+.mobile-sidebar-section .chakra-text {
+  color: #4a5568 !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Sidebar links with icons */
+.mobile-sidebar-link {
+  padding: 1rem !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+
+.mobile-sidebar-link:hover {
+  background: rgba(0, 194, 255, 0.08) !important;
+  transform: translateX(4px) !important;
+}
+
+.mobile-sidebar-link .chakra-text {
+  color: #2d3748 !important;
+  font-weight: 500 !important;
+}
+
+/* Action buttons section */
+.mobile-sidebar-actions {
+  background: rgba(0, 194, 255, 0.05) !important;
+  padding: 1rem !important;
+  margin: 0 !important;
+}
+
+/* Icon colors */
+.mobile-sidebar-icon {
+  color: #00C2FF !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+.mobile-sidebar-icon.driver {
+  color: #00D18F !important;
+}
+
+/* ===== Video Background Fixes ===== */
+/* Ensure video displays properly on all devices */
+.mobile-hero video {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  -webkit-playsinline: true !important;
+  playsinline: true !important;
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+  /* Additional mobile video fixes */
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+}
+
+/* iOS Safari specific video fixes */
+@supports (-webkit-touch-callout: none) {
+  .mobile-hero video {
+    -webkit-playsinline: true !important;
+    -webkit-media-controls: none !important;
+    -webkit-media-controls-panel: none !important;
+  }
+}
+
+/* Android Chrome specific video fixes */
+@supports not (-webkit-touch-callout: none) {
+  .mobile-hero video {
+    playsinline: true !important;
+  }
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+  .mobile-hero {
+    min-height: 100vh !important;
+    height: 100vh !important;
+  }
+}
+
+/* ===== Prevent Horizontal Overflow ===== */
+html, body {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+/* ===== Mobile Container Fixes ===== */
+.mobile-container {
+  width: 100% !important;
+  max-width: 100vw !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  margin: 0 auto !important;
+  overflow-x: hidden !important;
+}
+
+/* ===== Mobile Content Spacing ===== */
+@media (max-width: 768px) {
+  .mobile-hero .chakra-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  .mobile-hero .chakra-vstack {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Ensure content fits within viewport */
+  .mobile-hero .chakra-heading {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .mobile-hero .chakra-text {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  /* Adjust button sizes for mobile */
+  .mobile-hero .chakra-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Adjust stats spacing */
+  .mobile-hero .chakra-hstack {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 1rem !important;
+  }
+}
+
+/* ===== Very Small Screens ===== */
+@media (max-width: 480px) {
+  .mobile-hero {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+  }
+  
+  .mobile-container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .mobile-hero .chakra-heading {
+    font-size: 1.25rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .mobile-hero .chakra-text {
+    font-size: 0.9rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Reduce spacing between elements */
+  .mobile-hero .chakra-vstack {
+    gap: 1rem !important;
+  }
+}
+
+/* ===== iOS Safari Specific Fixes ===== */
+@supports (-webkit-touch-callout: none) {
+  .mobile-hero {
+    min-height: -webkit-fill-available !important;
+    height: -webkit-fill-available !important;
+  }
+  
+  /* Fallback for older iOS versions */
+  @media screen and (max-width: 768px) {
+    .mobile-hero {
+      min-height: 100vh !important;
+      height: 100vh !important;
+    }
+  }
+}
+
+/* ===== Android Chrome Fixes ===== */
+@supports not (-webkit-touch-callout: none) {
+  .mobile-hero {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+  }
+}
+
+/* ===== Landscape Orientation Fixes ===== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-hero {
+    min-height: 100vh !important;
+    height: 100vh !important;
+  }
+  
+  .mobile-hero .chakra-vstack {
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-hero .chakra-heading {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .mobile-hero .chakra-text {
+    font-size: 0.9rem !important;
+    margin-bottom: 1rem !important;
+  }
+}
+
+/* ===== Ensure Content is Visible ===== */
+.mobile-hero .chakra-box {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.mobile-hero .chakra-stack {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ===== Fix for Motion Components ===== */
+.mobile-hero .motion-box,
+.mobile-hero .motion-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ===== Additional Mobile Fixes ===== */
+/* Ensure all content is visible on mobile */
+@media (max-width: 768px) {
+  /* Fix for content being cut off */
+  .mobile-hero .chakra-vstack {
+    min-height: auto !important;
+    height: auto !important;
+    padding: 1rem 0 !important;
+  }
+  
+  /* Mobile video optimizations */
+  .mobile-hero video {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    -webkit-playsinline: true !important;
+    playsinline: true !important;
+  }
+  
+  /* Ensure buttons are fully visible */
+  .mobile-hero .chakra-button {
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+  }
+  
+  /* Fix for stats section */
+  .mobile-hero .chakra-hstack {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Ensure text doesn't overflow */
+  .mobile-hero .chakra-text {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+  
+  /* Fix for headings */
+  .mobile-hero .chakra-heading {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+}
+
+/* ===== Mobile Stats Section Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-stats .chakra-simplegrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-stats .chakra-box {
+    padding: 1rem !important;
+    min-height: auto !important;
+  }
+  
+  .mobile-stats .chakra-text {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .mobile-stats .chakra-heading {
+    font-size: 1.25rem !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* ===== Mobile Features Section Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-features .chakra-simplegrid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-features .chakra-box {
+    padding: 1.5rem !important;
+    min-height: auto !important;
+  }
+  
+  .mobile-features .chakra-vstack {
+    gap: 1rem !important;
+  }
+  
+  .mobile-features .chakra-text {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .mobile-features .chakra-heading {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* ===== Mobile Services Section Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-services .chakra-simplegrid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-services .chakra-box {
+    padding: 1.5rem !important;
+    min-height: auto !important;
+  }
+  
+  .mobile-services .chakra-vstack {
+    gap: 1rem !important;
+  }
+  
+  .mobile-services .chakra-text {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .mobile-services .chakra-heading {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Fix for service features list */
+  .mobile-services .chakra-hstack {
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-services .chakra-text {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ===== Mobile Testimonials Section Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-testimonials .chakra-simplegrid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-testimonials .chakra-box {
+    padding: 1.5rem !important;
+    min-height: auto !important;
+  }
+  
+  .mobile-testimonials .chakra-vstack {
+    gap: 1rem !important;
+  }
+  
+  .mobile-testimonials .chakra-text {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .mobile-testimonials .chakra-heading {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Fix for testimonial content */
+  .mobile-testimonials .chakra-hstack {
+    gap: 0.75rem !important;
+  }
+}
+
+/* ===== Mobile CTA Section Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-cta .chakra-box {
+    padding: 1.5rem !important;
+    margin: 1rem !important;
+  }
+  
+  .mobile-cta .chakra-vstack {
+    gap: 1.5rem !important;
+  }
+  
+  .mobile-cta .chakra-text {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .mobile-cta .chakra-heading {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .mobile-cta .chakra-stack {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-cta .chakra-button {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+  }
+}
+
+/* ===== Very Small Mobile Screens ===== */
+@media (max-width: 360px) {
+  .mobile-hero .chakra-heading {
+    font-size: 1.1rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .mobile-hero .chakra-text {
+    font-size: 0.85rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .mobile-hero .chakra-button {
+    font-size: 0.9rem !important;
+    padding: 10px 14px !important;
+  }
+  
+  .mobile-container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Apply to all sections */
+  .mobile-stats,
+  .mobile-features,
+  .mobile-services,
+  .mobile-testimonials,
+  .mobile-cta {
+    padding: 1rem 0 !important;
+  }
+  
+  .mobile-stats .chakra-container,
+  .mobile-features .chakra-container,
+  .mobile-services .chakra-container,
+  .mobile-testimonials .chakra-container,
+  .mobile-cta .chakra-container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+/* ===== General Mobile Container Fixes ===== */
+@media (max-width: 768px) {
+  .mobile-stats .chakra-container,
+  .mobile-features .chakra-container,
+  .mobile-services .chakra-container,
+  .mobile-testimonials .chakra-container,
+  .mobile-cta .chakra-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Ensure all sections have proper spacing */
+  .mobile-stats,
+  .mobile-features,
+  .mobile-services,
+  .mobile-testimonials,
+  .mobile-cta {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix for SimpleGrid responsiveness */
+  .mobile-stats .chakra-simplegrid,
+  .mobile-features .chakra-simplegrid,
+  .mobile-services .chakra-simplegrid,
+  .mobile-testimonials .chakra-simplegrid {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+  }
+  
+  /* Ensure VStack and HStack don't overflow */
+  .mobile-stats .chakra-vstack,
+  .mobile-stats .chakra-hstack,
+  .mobile-features .chakra-vstack,
+  .mobile-features .chakra-hstack,
+  .mobile-services .chakra-vstack,
+  .mobile-services .chakra-hstack,
+  .mobile-testimonials .chakra-vstack,
+  .mobile-testimonials .chakra-hstack,
+  .mobile-cta .chakra-vstack,
+  .mobile-cta .chakra-hstack {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ===== Debug Styles (Remove in production) ===== */
+/*
+.mobile-hero::before {
+  content: "Mobile Hero Debug";
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: red;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  z-index: 9999;
+}
+*/

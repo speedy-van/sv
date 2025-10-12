@@ -1,0 +1,1194 @@
+:root { color-scheme: dark; }
+
+/* Neon Dark Design Language - Speedy Van */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Mapbox GL JS CSS - Required for proper map display */
+@import url('https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css');
+
+
+
+/* Custom Mapbox styles for Speedy Van neon dark theme */
+.mapboxgl-map {
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure map container is properly sized */
+.mapboxgl-canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.mapboxgl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide default controls */
+.mapboxgl-ctrl-bottom-right {
+  display: none;
+}
+
+.mapboxgl-ctrl-bottom-left {
+  display: none;
+}
+
+.mapboxgl-ctrl-top-right {
+  display: none;
+}
+
+.mapboxgl-ctrl-top-left {
+  display: none;
+}
+
+/* Ensure map markers are visible */
+.mapboxgl-marker {
+  z-index: 1;
+}
+
+/* Map popup styling */
+.mapboxgl-popup {
+  z-index: 2;
+}
+
+.mapboxgl-popup-content {
+  background: rgba(13, 13, 13, 0.95);
+  color: #FFFFFF;
+  border: 1px solid #00C2FF;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Mobile-specific map styles */
+@media (max-width: 768px) {
+  .mapboxgl-map {
+    border-radius: 12px;
+  }
+  
+  .mapboxgl-popup-content {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
+/* Ensure map works in different color schemes */
+@media (prefers-color-scheme: light) {
+  .mapboxgl-popup-content {
+    background: rgba(255, 255, 255, 0.95);
+    color: #000000;
+    border: 1px solid #00C2FF;
+  }
+}
+
+/* Map loading state styles */
+.mapboxgl-map.loading {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.mapboxgl-map.loaded {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Ensure map container is always visible */
+.mapboxgl-map-container {
+  min-height: 300px;
+  min-width: 100%;
+}
+
+html, body, #__next { 
+  height: 100%; 
+  margin: 0; 
+  padding: 0; 
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; 
+  background: linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%);
+  background-attachment: fixed;
+  color: #FFFFFF;
+}
+
+/* iOS Safari viewport fixes */
+html, body { 
+  overflow-x: hidden; 
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* iOS text layout safety - prevent vertical glyphs and text tearing */
+.tab-label, [data-tab-label] {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+/* iOS: smoother glyphs and fewer artifacts */
+#item-category-strip {
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+}
+
+/* Dynamic viewport + notch safe areas */
+:root { 
+  --vh: 1dvh; 
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  scroll-padding-top: calc(64px + var(--safe-area-top));
+}
+
+/* Safe area utilities */
+.safe-area-top { padding-top: var(--safe-area-top); }
+.safe-area-bottom { padding-bottom: var(--safe-area-bottom); }
+.safe-area-left { padding-left: var(--safe-area-left); }
+.safe-area-right { padding-right: var(--safe-area-right); }
+
+/* Legacy browser support for dynamic viewport */
+@supports not (height: 100dvh) {
+  .min-h-screen,
+  .h-screen,
+  [style*="100vh"] {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Motion tokens - consistent with motion.ts */
+:root {
+  --ease-enter: cubic-bezier(.2,.8,.2,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --ease-bounce: cubic-bezier(.68,-.55,.265,1.55);
+  --ease-smooth: cubic-bezier(.25,.46,.45,.94);
+  --dur-fast: 120ms;
+  --dur-normal: 200ms;
+  --dur-slow: 280ms;
+  --dur-slower: 400ms;
+  --dur-180: 180ms; /* For drawer animations */
+}
+
+/* Page/content width and padding */
+main#main {
+  max-width: 1200px;
+  padding: 0;
+  margin: 0 auto;
+  animation: fade-rise var(--dur-200) var(--ease-enter);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Booking page specific fixes */
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px;
+  overflow: visible;
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  overflow: visible;
+}
+
+.card {
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+  overflow: visible;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure full viewport usage */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+  
+  main#main {
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px;
+  }
+}
+
+/* Safe area classes for header and footer */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Make anchored scroll/focus land below sticky header */
+:root {
+  scroll-padding-top: calc(64px + env(safe-area-inset-top));
+}
+
+/* Final viewport fixes */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+#__next {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+}
+
+main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  height: 100%;
+}
+
+/* Footer fixes */
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Footer component fixes */
+footer > div {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Additional footer visibility fixes */
+[data-testid="footer"],
+footer[role="contentinfo"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Final footer visibility fixes */
+footer,
+footer * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure footer is not hidden by any CSS */
+footer {
+  clip: auto !important;
+  clip-path: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* Final footer visibility fixes for all screen sizes */
+@media (max-width: 768px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-height: 600px) {
+  footer {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    clip: auto !important;
+    clip-path: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
+    width: 100% !important;
+  }
+}
+
+/* Additional viewport fixes for mobile */
+@media (max-width: 768px) {
+  html, body {
+    width: 100%;
+  }
+  
+  #__next {
+    width: 100%;
+  }
+  
+  main {
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+/* Additional viewport fixes for small screens */
+@media (max-width: 480px) {
+  html, body {
+    width: 100%;
+  }
+  
+  #__next {
+    width: 100%;
+  }
+  
+  main {
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+/* Additional viewport fixes for small height screens */
+@media (max-height: 600px) {
+  html, body {
+    width: 100%;
+  }
+  
+  #__next {
+    width: 100%;
+  }
+  
+  main {
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+/* Final booking page fixes */
+.container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+  padding: 16px;
+  overflow: visible;
+  position: relative;
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  overflow: visible;
+  position: relative;
+  height: 100%;
+}
+
+.card {
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+  overflow: visible;
+  position: relative;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { 
+    animation-duration: 0.001ms !important; 
+    animation-iteration-count: 1 !important; 
+    transition-duration: 0.001ms !important; 
+    scroll-behavior: auto !important; 
+  }
+}
+
+/* --- Booking blur guard (production-safe) ------------------------------ */
+/* Cancel any full-viewport blur overlays within the booking route only.   */
+[data-page="booking"] [style*="backdrop-filter"]:where([style*="inset: 0"], [style*="inset:0"]) {
+  /* if some component accidentally renders a full-screen blur, neutralize it */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+[data-page="booking"] .blur-overlay,
+[data-page="booking"] [data-overlay="glass"],
+[data-page="booking"] .frost,
+[data-page="booking"] .frosted {
+  /* keep overlays from covering content on booking pages */
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+[data-page="booking"] [data-glass="topbar"] {
+  /* allow only the nav's local blur */
+  pointer-events: auto !important;
+  z-index: 20 !important;
+}
+
+/* If a global body glass layer exists, disable it on booking pages */
+[data-page="booking"] body::before,
+[data-page="booking"] :root body::before {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  content: none !important;
+}
+
+/* Enhanced focus styles for better accessibility */
+*:focus-visible {
+  outline: 2px solid #00C2FF !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5) !important;
+}
+
+/* Skip focus styles for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+  
+  button, input, select, textarea {
+    border-width: 2px !important;
+  }
+}
+
+/* Skeleton shimmer */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.12) 37%, rgba(0,0,0,0.06) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1200ms linear infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Page fade + rise */
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Status chip animations */
+@keyframes status-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes status-bounce {
+  0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+  40%, 43% { transform: translate3d(0,-8px,0); }
+  70% { transform: translate3d(0,-4px,0); }
+  90% { transform: translate3d(0,-2px,0); }
+}
+
+/* Card hover animations */
+@keyframes card-lift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+/* Button press animations */
+@keyframes button-press {
+  from { transform: scale(1); }
+  to { transform: scale(0.98); }
+}
+
+/* Utility: status pill */
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.pill.neutral { background: #eef2ff; color: #3730a3; }
+.pill.success { background: #ecfdf5; color: #065f46; }
+.pill.warn { background: #fffbeb; color: #92400e; }
+.pill.error { background: #fef2f2; color: #991b1b; }
+
+/* Rain animation overlay for WeatherBanner */
+.rain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.15) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 2px 16px, 16px 1px;
+  animation: rain 0.8s linear infinite;
+  opacity: 0.6;
+}
+@keyframes rain {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: -8px 16px, 16px 0; }
+}
+
+/* Accessibility improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link styles */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #00D18F;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 10000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Improved button focus states */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #00C2FF !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5) !important;
+}
+
+/* Improved link focus states */
+a:focus-visible {
+  outline: 2px solid #00C2FF !important;
+  outline-offset: 2px !important;
+  text-decoration: underline !important;
+}
+
+/* Improved form control focus states */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #00C2FF !important;
+  outline-offset: 2px !important;
+  border-color: #00D18F !important;
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  .skip-link {
+    background: #00D18F;
+    color: #0B1220;
+  }
+  
+  .pill.neutral { background: #3730a3; color: #eef2ff; }
+  .pill.success { background: #065f46; color: #ecfdf5; }
+  .pill.warn { background: #92400e; color: #fffbeb; }
+  .pill.error { background: #991b1b; color: #fef2f2; }
+}
+
+/* Print styles */
+@media print {
+  .skip-link,
+  button,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  a {
+    text-decoration: underline !important;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* Pricing information styles */
+.pricing-info {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  border-left: 4px solid #00D18F;
+}
+
+.pricing-info small {
+  color: #495057;
+  line-height: 1.4;
+}
+
+.pricing-info strong {
+  color: #212529;
+}
+
+/* Dark mode support for pricing info */
+@media (prefers-color-scheme: dark) {
+  .pricing-info {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    border-left-color: #00D18F;
+  }
+  
+  .pricing-info small {
+    color: #a0aec0;
+  }
+  
+  .pricing-info strong {
+    color: #e2e8f0;
+  }
+}
+
+/* Mobile-friendly cookie components */
+#cookie-bar {
+  /* Ensure proper safe area handling */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Touch-friendly cookie buttons on mobile */
+@media (max-width: 768px) {
+  #cookie-bar button {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    touch-action: manipulation;
+  }
+  
+  #cookie-bar .chakra-button {
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  
+  /* Improve modal touch targets */
+  .chakra-modal__content button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better modal spacing on mobile */
+  .chakra-modal__body {
+    padding: 20px 16px;
+  }
+  
+  .chakra-modal__header {
+    padding: 16px 16px 8px;
+  }
+  
+  .chakra-modal__footer {
+    padding: 8px 16px 16px;
+  }
+}
+
+/* Enhanced cookie modal for mobile */
+@media (max-width: 768px) {
+  .chakra-modal__content {
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+  }
+  
+  /* Better switch touch targets */
+  .chakra-switch {
+    min-width: 44px;
+    min-height: 24px;
+  }
+  
+  .chakra-switch__track {
+    min-width: 44px;
+    min-height: 24px;
+  }
+  
+  .chakra-switch__thumb {
+    min-width: 20px;
+    min-height: 20px;
+  }
+}
+
+/* Improved cookie text readability on mobile */
+@media (max-width: 768px) {
+  #cookie-bar .chakra-text {
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  
+  /* Better spacing for cookie preferences */
+  .chakra-stack {
+    gap: 16px;
+  }
+}
+
+/* Safe area support for cookie components */
+@supports (padding: max(0px)) {
+  #cookie-bar {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  .chakra-modal__content {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Mobile-friendly booking steps */
+@media (max-width: 768px) {
+  /* Booking page container */
+  .booking-page-container {
+    padding: 16px 12px;
+  }
+  
+  /* Booking step cards */
+  .booking-step-card {
+    padding: 20px 16px;
+    margin-bottom: 16px;
+  }
+  
+  /* Progress bar improvements */
+  .booking-progress {
+    padding: 16px 12px;
+    margin-bottom: 20px;
+  }
+  
+  /* Step content spacing */
+  .booking-step-content {
+    padding: 0;
+  }
+  
+  /* Form controls */
+  .booking-form-control {
+    margin-bottom: 16px;
+  }
+  
+  /* Input fields */
+  .booking-input {
+    height: 48px;
+    font-size: 16px;
+  }
+  
+  /* Select dropdowns */
+  .booking-select {
+    height: 48px;
+    font-size: 16px;
+  }
+  
+  /* Checkboxes */
+  .booking-checkbox {
+    min-height: 44px;
+    padding: 8px 0;
+  }
+  
+  /* Number inputs */
+  .booking-number-input {
+    height: 48px;
+  }
+  
+  /* Text areas */
+  .booking-textarea {
+    min-height: 80px;
+    font-size: 16px;
+  }
+}
+
+/* Enhanced booking buttons */
+@media (max-width: 768px) {
+  /* Navigation buttons container */
+  .booking-navigation {
+    padding-top: 24px;
+    margin-top: 16px;
+  }
+  
+  /* Primary action buttons */
+  .booking-primary-button {
+    min-height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Secondary buttons */
+  .booking-secondary-button {
+    min-height: 48px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+  }
+  
+  /* Button hover effects */
+  .booking-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .booking-button:active {
+    transform: translateY(0);
+  }
+}
+
+/* Improved form layout on mobile */
+@media (max-width: 768px) {
+  /* Stack form fields vertically */
+  .booking-form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Full width inputs on mobile */
+  .booking-form-row .chakra-form-control {
+    width: 100%;
+  }
+  
+  /* Better spacing for form sections */
+  .booking-form-section {
+    margin-bottom: 24px;
+  }
+  
+  /* Improved divider spacing */
+  .booking-divider {
+    margin: 24px 0;
+  }
+}
+
+/* Touch-friendly interactive elements */
+@media (max-width: 768px) {
+  /* All interactive elements */
+  button, 
+  input, 
+  select, 
+  textarea,
+  [role="button"],
+  [tabindex] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  
+  /* Better focus states */
+  *:focus-visible {
+    outline: 2px solid #00C2FF;
+    outline-offset: 2px;
+  }
+}
+
+/* Safe area support for booking pages */
+@supports (padding: max(0px)) {
+  .booking-page-container {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  .booking-navigation {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Mobile-friendly styles for booking radio options */
+.booking-radio-option {
+  min-height: 44px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.booking-radio-option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.booking-radio-option:active {
+  transform: translateY(0);
+}
+
+/* Enhanced radio button styles for mobile */
+.booking-radio-option .chakra-radio {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.booking-radio-option .chakra-radio__control {
+  min-height: 24px;
+  min-width: 24px;
+}
+
+/* Mobile-specific improvements for radio options */
+@media (max-width: 768px) {
+  .booking-radio-option {
+    padding: 16px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+  }
+  
+  .booking-radio-option .chakra-radio {
+    min-height: 48px;
+  }
+  
+  .booking-radio-option .chakra-radio__control {
+    min-height: 28px;
+    min-width: 28px;
+  }
+  
+  .booking-radio-option .chakra-text {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  
+  .booking-radio-option .chakra-badge {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+/* Ensure proper spacing for radio option content */
+.booking-radio-option .chakra-stack {
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .booking-radio-option .chakra-stack {
+    gap: 16px;
+  }
+}
+
+/* Mobile-friendly styles for payment step */
+.booking-step-card .booking-primary-button {
+  min-height: 56px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  text-transform: none;
+}
+
+.booking-step-card .booking-primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 209, 143, 0.4);
+}
+
+.booking-step-card .booking-primary-button:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 15px rgba(0, 209, 143, 0.3);
+}
+
+/* Enhanced checkbox styles for payment step */
+.booking-step-card .booking-checkbox {
+  min-height: 44px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.booking-step-card .booking-checkbox .chakra-checkbox__control {
+  min-height: 24px;
+  min-width: 24px;
+}
+
+.booking-step-card .booking-checkbox .chakra-checkbox__label {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Mobile-specific improvements for payment step */
+@media (max-width: 768px) {
+  .booking-step-card .booking-primary-button {
+    min-height: 60px;
+    font-size: 18px;
+    padding: 16px 24px;
+  }
+  
+  .booking-step-card .booking-checkbox {
+    min-height: 48px;
+  }
+  
+  .booking-step-card .booking-checkbox .chakra-checkbox__control {
+    min-height: 28px;
+    min-width: 28px;
+  }
+  
+  .booking-step-card .booking-checkbox .chakra-checkbox__label {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  /* Improve payment amount display on mobile */
+  .booking-step-card .booking-form-section {
+    padding: 16px;
+  }
+  
+  .booking-step-card .booking-form-section .chakra-badge {
+    font-size: 20px;
+    padding: 12px 16px;
+  }
+  
+  .booking-step-card .booking-form-section .chakra-text {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+}
+
+/* Ensure proper spacing for payment step content */
+.booking-step-card .booking-form-section .chakra-vstack {
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .booking-step-card .booking-form-section .chakra-vstack {
+    gap: 20px;
+  }
+}
+
+/* Enhanced Button Animations for Booking Luxury */
+@keyframes pulse-enhanced {
+  0%, 100% { 
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 10px 35px rgba(251, 191, 36, 0.8);
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced Button Styles - Fallback for Chakra Theme */
+.chakra-button[data-variant="enhanced-minus"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.chakra-button[data-variant="enhanced-minus"]:hover {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
+  transform: scale(1.1) rotate(-5deg) !important;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4) !important;
+}
+
+.chakra-button[data-variant="enhanced-plus"] {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.chakra-button[data-variant="enhanced-plus"]:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
+  transform: scale(1.1) rotate(5deg) !important;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4) !important;
+}
+
+.chakra-button[data-variant="enhanced-add"] {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.chakra-button[data-variant="enhanced-add"]:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
+  transform: scale(1.15) rotate(10deg) !important;
+  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.7), 0 0 40px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Enhanced Quantity Box */
+.chakra-box[data-variant="enhanced-quantity"],
+.chakra-button[data-variant="enhanced-quantity"] {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+  color: white !important;
+  font-weight: bold !important;
+  animation: pulse-enhanced 2s ease-in-out infinite !important;
+  box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6) !important;
+  transition: all 0.3s ease !important;
+}
+
+.chakra-box[data-variant="enhanced-quantity"]:hover,
+.chakra-button[data-variant="enhanced-quantity"]:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 10px 35px rgba(251, 191, 36, 0.8) !important;
+}
+
+
+
+

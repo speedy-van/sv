@@ -1,0 +1,14 @@
+packages:
+  - apps/web
+  - packages/*
+  - mobile/*
+
+ignoredBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@sentry/cli'
+  - core-js
+  - esbuild
+  - prisma
+  - sharp
+  - unrs-resolver

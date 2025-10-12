@@ -1,0 +1,148 @@
+{
+  "version": "5.0.0",
+  "description": "Modern Speedy Van Logo System - Professional Design with Speed and Reliability",
+  "brand": "Speedy Van",
+  "tagline": "Fast • Reliable • Professional",
+
+  "designSystem": {
+    "primaryColors": {
+      "skyBlue": "#00C2FF",
+      "teal": "#00E5FF",
+      "gradient": "linear-gradient(90deg, #00C2FF, #00E5FF)"
+    },
+    "secondaryColors": {
+      "purple": "#B026FF",
+      "lightPurple": "#D147FF",
+      "gradient": "linear-gradient(90deg, #B026FF, #D147FF)"
+    },
+    "contrastColors": {
+      "white": "#FFFFFF",
+      "lightGray": "#F0F0F0",
+      "dark": "#333333"
+    },
+    "fonts": {
+      "primary": "Montserrat",
+      "secondary": "Poppins",
+      "fallback": "Arial, sans-serif"
+    }
+  },
+
+  "logoVariants": {
+    "main": {
+      "dark": {
+        "file": "speedy-van-logo-dark.svg",
+        "dimensions": "400×140px",
+        "usage": "Dark backgrounds, main branding",
+        "features": [
+          "Full logo with icon and text",
+          "Sky blue to teal gradients",
+          "Speed lines",
+          "Professional tagline"
+        ]
+      },
+      "light": {
+        "file": "speedy-van-logo-light.svg",
+        "dimensions": "400×140px",
+        "usage": "Light backgrounds, print materials",
+        "features": [
+          "Dark color scheme",
+          "High contrast",
+          "Print-friendly",
+          "Professional appearance"
+        ]
+      }
+    },
+    "icon": {
+      "main": {
+        "file": "speedy-van-icon.svg",
+        "dimensions": "80×80px",
+        "usage": "App icons, social media, square spaces",
+        "features": [
+          "Circular background",
+          "Centered van design",
+          "SV initials",
+          "Balanced composition"
+        ]
+      },
+      "minimal": {
+        "file": "speedy-van-icon-min.svg",
+        "dimensions": "48×48px",
+        "usage": "Very small spaces, favicons",
+        "features": [
+          "Simplified design",
+          "High scalability",
+          "Clear at small sizes",
+          "Minimal elements"
+        ]
+      }
+    },
+    "wordmark": {
+      "file": "speedy-van-wordmark.svg",
+      "dimensions": "300×80px",
+      "usage": "Horizontal spaces, headers, text-only applications",
+      "features": [
+        "Text-only design",
+        "Speed line accents",
+        "Typography-focused",
+        "Horizontal layout"
+      ]
+    }
+  },
+
+  "designFeatures": {
+    "typography": {
+      "speedy": "Bold italic (700) - represents speed and dynamism",
+      "van": "Normal weight (400) - provides balance and stability",
+      "tagline": "Light weight (300) - elegant and professional"
+    },
+    "iconography": {
+      "vanDesign": "Modern box van with rounded corners",
+      "speedLines": "Dynamic motion lines for speed concept",
+      "windows": "Realistic van windows with transparency",
+      "wheels": "Professional wheel design with brand colors"
+    },
+    "effects": {
+      "gradients": "Sky blue to teal primary, purple secondary",
+      "shadows": "Subtle drop shadows for depth",
+      "glow": "Gentle glow effects for premium feel",
+      "transparency": "Strategic opacity for layering"
+    }
+  },
+
+  "usageGuidelines": {
+    "minimumSizes": {
+      "mainLogo": "200×70px",
+      "icon": "40×40px",
+      "wordmark": "150×40px",
+      "minimalIcon": "24×24px"
+    },
+    "spacing": {
+      "clearSpace": "Equal to the height of the 'S' in Speedy",
+      "minimumMargin": "20px from other elements"
+    },
+    "backgrounds": {
+      "dark": "Use dark version for dark backgrounds",
+      "light": "Use light version for light backgrounds",
+      "avoid": "Busy patterns, low contrast backgrounds"
+    }
+  },
+
+  "technicalSpecs": {
+    "format": "SVG (Scalable Vector Graphics)",
+    "scalability": "Infinite scaling without quality loss",
+    "fileSize": "Optimized for web performance",
+    "compatibility": "All modern browsers and devices",
+    "accessibility": "High contrast ratios, clear text"
+  },
+
+  "brandValues": {
+    "speed": "Represented by italic typography and motion lines",
+    "reliability": "Shown through solid, professional design",
+    "professionalism": "Clean, modern aesthetic with premium feel",
+    "innovation": "Contemporary design with forward-thinking approach"
+  },
+
+  "created": "2024",
+  "designer": "AI Assistant",
+  "license": "Proprietary - Speedy Van Brand Assets"
+}

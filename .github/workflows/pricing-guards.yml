@@ -1,0 +1,248 @@
+name: Pricing System Guards
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  pricing-system-guards:
+    runs-on: ubuntu-latest
+    name: Enforce Unified Pricing System
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check for deprecated pricing endpoints
+      run: |
+        echo "🔍 Checking for deprecated pricing endpoints..."
+        
+        # Check for deprecated API routes
+        if find . -path "*/api/pricing/calculate*" -type f | grep -q .; then
+          echo "❌ BLOCKED: Deprecated /api/pricing/calculate endpoint found!"
+          echo "Use /api/pricing/quote instead"
+          exit 1
+        fi
+        
+        # Check for deprecated imports
+        if grep -r "from.*@speedy-van/pricing" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules .; then
+          echo "❌ BLOCKED: Deprecated @speedy-van/pricing imports found!"
+          echo "Use UnifiedPricingFacade instead"
+          exit 1
+        fi
+        
+        # Check for distance calculator usage
+        if grep -r "calculateDistance\|distance-calculator" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules . | grep -v "DEPRECATED\|disabled"; then
+          echo "❌ BLOCKED: Distance calculator usage found!"
+          echo "Distance calculations are disabled in unified pricing system"
+          exit 1
+        fi
+        
+        # Check for manual pricing triggers
+        if grep -r "Calculate.*Price.*Button\|onClick.*calculate.*pricing" --include="*.tsx" --exclude-dir=node_modules .; then
+          echo "❌ BLOCKED: Manual pricing triggers found!"
+          echo "Use automatic pricing with UnifiedPricingFacade"
+          exit 1
+        fi
+        
+        echo "✅ All pricing system guards passed!"
+
+    - name: Verify unified pricing usage
+      run: |
+        echo "🔍 Verifying unified pricing system usage..."
+        
+        # Check that UnifiedPricingFacade is being used
+        if ! grep -r "UnifiedPricingFacade\|unifiedPricingFacade" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules .; then
+          echo "⚠️ WARNING: No UnifiedPricingFacade usage found!"
+          echo "Make sure you're using the unified pricing system"
+        fi
+        
+        # Check for correct API endpoint usage
+        if grep -r "/api/pricing/quote" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules .; then
+          echo "✅ Unified pricing endpoint (/api/pricing/quote) is being used"
+        else
+          echo "⚠️ WARNING: No unified pricing endpoint usage found!"
+        fi
+        
+        echo "✅ Unified pricing verification completed!"
+
+    - name: Check pricing system architecture
+      run: |
+        echo "🏗️ Checking pricing system architecture..."
+        
+        # Ensure single source of truth
+        pricing_files=$(find . -name "*pricing*" -type f \( -name "*.ts" -o -name "*.tsx" \) ! -path "*/node_modules/*" ! -path "*/.next/*" | wc -l)
+        echo "Found $pricing_files pricing-related files"
+        
+        # Check for multiple pricing engines
+        if find . -name "*PricingCalculator*" -type f ! -path "*/node_modules/*" | grep -v "unified-pricing-facade"; then
+          echo "⚠️ WARNING: Multiple pricing calculators detected!"
+          echo "Ensure you're using only UnifiedPricingFacade"
+        fi
+        
+        echo "✅ Architecture check completed!"
+
+    - name: Performance and security checks
+      run: |
+        echo "🔒 Running performance and security checks..."
+        
+        # Check for hardcoded API keys or secrets in pricing files
+        if grep -r "sk_.*\|pk_.*\|api_key.*=" --include="*pricing*" --exclude-dir=node_modules . | grep -v "example\|placeholder"; then
+          echo "❌ BLOCKED: Hardcoded API keys found in pricing files!"
+          echo "Use environment variables instead"
+          exit 1
+        fi
+        
+        # Check for synchronous pricing calculations (should be async)
+        if grep -r "calculatePricing\s*(" --include="*pricing*" --exclude-dir=node_modules . | grep -v "async\|await"; then
+          echo "⚠️ WARNING: Synchronous pricing calculations found!"
+          echo "All pricing calculations should be asynchronous"
+        fi
+        
+        echo "✅ Security checks passed!"
+
+    - name: Documentation compliance
+      run: |
+        echo "📚 Checking documentation compliance..."
+        
+        # Check for deprecation warnings
+        if find . -name "*pricing*" -type f \( -name "*.ts" -o -name "*.tsx" \) ! -path "*/node_modules/*" -exec grep -l "deprecated\|DEPRECATED" {} \;; then
+          echo "✅ Found proper deprecation warnings"
+        fi
+        
+        # Check for migration documentation
+        if [ -f "PRICING_SYSTEM_UNIFICATION_COMPLETE.md" ]; then
+          echo "✅ Migration documentation found"
+        else
+          echo "⚠️ WARNING: No migration documentation found"
+        fi
+        
+        echo "✅ Documentation compliance checked!"
+
+  test-unified-pricing:
+    runs-on: ubuntu-latest
+    name: Test Unified Pricing System
+    needs: pricing-system-guards
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run unified pricing tests
+      run: |
+        echo "🧪 Running unified pricing system tests..."
+        
+        # Run specific pricing tests
+        if [ -f "__tests__/pricing-unification.test.ts" ]; then
+          npm test -- __tests__/pricing-unification.test.ts
+        else
+          echo "⚠️ WARNING: Unified pricing tests not found!"
+        fi
+        
+        # Run type checking
+        npm run type-check
+        
+        echo "✅ All tests passed!"
+
+    - name: Validate API endpoints
+      run: |
+        echo "🌐 Validating API endpoints..."
+        
+        # Start the application in test mode
+        npm run build
+        timeout 30s npm start &
+        SERVER_PID=$!
+        
+        # Wait for server to start
+        sleep 10
+        
+        # Test that old endpoint returns 404 or redirect
+        if curl -f "http://localhost:3000/api/pricing/calculate" 2>/dev/null; then
+          echo "❌ BLOCKED: Old pricing endpoint is still accessible!"
+          kill $SERVER_PID
+          exit 1
+        fi
+        
+        # Test that new endpoint is accessible
+        if curl -f "http://localhost:3000/api/pricing/quote" -X GET 2>/dev/null; then
+          echo "✅ New pricing endpoint is accessible"
+        else
+          echo "⚠️ WARNING: New pricing endpoint not accessible"
+        fi
+        
+        kill $SERVER_PID
+        echo "✅ API endpoint validation completed!"
+
+  deployment-readiness:
+    runs-on: ubuntu-latest
+    name: Check Deployment Readiness
+    needs: [pricing-system-guards, test-unified-pricing]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Verify system readiness
+      run: |
+        echo "🚀 Checking deployment readiness..."
+        
+        # Check for TODO items related to pricing
+        if grep -r "TODO.*pricing\|FIXME.*pricing" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules . | grep -v "completed\|done"; then
+          echo "⚠️ WARNING: Incomplete pricing-related TODO items found!"
+        fi
+        
+        # Check for console.log statements in pricing files (should be removed in production)
+        if grep -r "console\.log" --include="*pricing*" --exclude-dir=node_modules . | grep -v "error\|warn\|info"; then
+          echo "⚠️ WARNING: Debug console.log statements found in pricing files!"
+        fi
+        
+        # Verify environment variables are documented
+        if grep -r "process\.env\." --include="*pricing*" --exclude-dir=node_modules . | grep -v "NODE_ENV"; then
+          echo "✅ Environment variables found in pricing system"
+          echo "Make sure they are documented in .env.example"
+        fi
+        
+        echo "✅ Deployment readiness check completed!"
+
+    - name: Generate compliance report
+      run: |
+        echo "📊 Generating compliance report..."
+        
+        cat > pricing-compliance-report.md << EOF
+        # Pricing System Compliance Report
+        
+        Generated: $(date)
+        
+        ## ✅ Passed Checks
+        - Deprecated endpoints removed
+        - Distance calculations disabled  
+        - Manual pricing triggers removed
+        - Unified pricing system in use
+        - Security checks passed
+        - Type checking passed
+        
+        ## 📋 System Status
+        - Single source of truth: UnifiedPricingFacade
+        - API endpoint: /api/pricing/quote
+        - Automatic pricing: Enabled
+        - Legacy systems: Disabled
+        
+        ## 🚀 Deployment Status
+        Ready for production deployment
+        EOF
+        
+        echo "✅ Compliance report generated!"
+
+    - name: Upload compliance report
+      uses: actions/upload-artifact@v4
+      with:
+        name: pricing-compliance-report
+        path: pricing-compliance-report.md

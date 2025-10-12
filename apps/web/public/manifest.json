@@ -1,0 +1,145 @@
+{
+  "name": "Speedy Van - Professional Moving Services",
+  "short_name": "Speedy Van",
+  "description": "Professional moving and delivery services across the UK. Book your move with our luxury booking system.",
+  "start_url": "/booking-luxury",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00C2FF",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "categories": ["transportation", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-booking.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile booking interface"
+    },
+    {
+      "src": "/screenshots/tablet-booking.png",
+      "sizes": "768x1024",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tablet booking interface"
+    },
+    {
+      "src": "/screenshots/desktop-booking.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop booking interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Booking",
+      "short_name": "Book Now",
+      "description": "Start a new booking",
+      "url": "/booking-luxury",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Track Booking",
+      "short_name": "Track",
+      "description": "Track your existing booking",
+      "url": "/track",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+speedyvan",
+      "url": "/booking-luxury?ref=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/booking-luxury",
+      "accept": {
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/booking-luxury",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

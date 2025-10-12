@@ -1,0 +1,82 @@
+[
+  {
+    "category": "Bathroom Items",
+    "item_count": 8,
+    "subdirectory": "Bathroom_Items"
+  },
+  {
+    "category": "Bedroom Furniture",
+    "item_count": 8,
+    "subdirectory": "Bedroom_Furniture"
+  },
+  {
+    "category": "Children Baby Items",
+    "item_count": 8,
+    "subdirectory": "Children_Baby_Items"
+  },
+  {
+    "category": "Dining Room Furniture",
+    "item_count": 7,
+    "subdirectory": "Dining_Room_Furniture"
+  },
+  {
+    "category": "Electrical Electronics",
+    "item_count": 9,
+    "subdirectory": "Electrical_Electronics"
+  },
+  {
+    "category": "Garden Outdoor Furniture",
+    "item_count": 8,
+    "subdirectory": "Garden_Outdoor_Furniture"
+  },
+  {
+    "category": "Gym Equipment",
+    "item_count": 8,
+    "subdirectory": "Gym_Equipment"
+  },
+  {
+    "category": "Home Office Furniture",
+    "item_count": 8,
+    "subdirectory": "Home_Office_Furniture"
+  },
+  {
+    "category": "Kitchen Items",
+    "item_count": 8,
+    "subdirectory": "Kitchen_Items"
+  },
+  {
+    "category": "Living Room Furniture",
+    "item_count": 8,
+    "subdirectory": "Living_Room_Furniture"
+  },
+  {
+    "category": "Miscellaneous Items",
+    "item_count": 10,
+    "subdirectory": "Miscellaneous_Items"
+  },
+  {
+    "category": "Musical Instruments",
+    "item_count": 8,
+    "subdirectory": "Musical_Instruments"
+  },
+  {
+    "category": "Pet Items",
+    "item_count": 8,
+    "subdirectory": "Pet_Items"
+  },
+  {
+    "category": "Seasonal Items",
+    "item_count": 8,
+    "subdirectory": "Seasonal_Items"
+  },
+  {
+    "category": "Special Awkward Items",
+    "item_count": 10,
+    "subdirectory": "Special_Awkward_Items"
+  },
+  {
+    "category": "Storage Hallway Furniture",
+    "item_count": 8,
+    "subdirectory": "Storage_Hallway_Furniture"
+  }
+]

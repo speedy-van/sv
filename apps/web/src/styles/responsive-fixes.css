@@ -1,0 +1,126 @@
+/* Responsive Layout Fixes for Speedy Van */
+
+/* Ensure proper grid behavior */
+.chakra-simple-grid {
+  display: grid !important;
+}
+
+/* Fix for SimpleGrid columns not working properly */
+[data-chakra-component="SimpleGrid"] {
+  display: grid !important;
+}
+
+/* Force horizontal layout on large screens */
+@media (min-width: 1024px) {
+  /* Footer main content - force 5 columns */
+  .footer-main-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    display: grid !important;
+  }
+  
+  /* Footer trust features - force 4 columns */
+  .footer-trust-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    display: grid !important;
+  }
+  
+  /* Bottom footer - force horizontal */
+  .footer-bottom {
+    flex-direction: row !important;
+    display: flex !important;
+  }
+}
+
+/* Medium screens - 3 columns for main, 4 for trust */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .footer-main-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    display: grid !important;
+  }
+  
+  .footer-trust-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    display: grid !important;
+  }
+}
+
+/* Small screens - 2 columns */
+@media (min-width: 480px) and (max-width: 767px) {
+  .footer-main-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    display: grid !important;
+  }
+  
+  .footer-trust-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    display: grid !important;
+  }
+}
+
+/* Mobile - single column */
+@media (max-width: 479px) {
+  .footer-main-grid,
+  .footer-trust-grid {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+  }
+  
+  .footer-bottom {
+    flex-direction: column !important;
+    display: flex !important;
+  }
+}
+
+/* Override any VStack that might be forcing vertical layout */
+.footer-container [data-chakra-component="VStack"] {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure proper gap spacing */
+.footer-main-grid,
+.footer-trust-grid {
+  gap: 2rem !important;
+}
+
+/* Fix for Chakra UI emotion styles that might override grid */
+.chakra-ui-light [data-chakra-component="SimpleGrid"],
+.chakra-ui-dark [data-chakra-component="SimpleGrid"] {
+  display: grid !important;
+}
+
+/* Force grid behavior for all SimpleGrid instances */
+div[style*="display: grid"] {
+  display: grid !important;
+}
+
+/* Ensure motion components don't break layout */
+.motion-box,
+.motion-card {
+  display: inherit !important;
+}
+
+/* Debug styles - remove in production */
+/* 
+.footer-main-grid::before {
+  content: "Main Grid";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: red;
+  color: white;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+.footer-trust-grid::before {
+  content: "Trust Grid";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: blue;
+  color: white;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+*/

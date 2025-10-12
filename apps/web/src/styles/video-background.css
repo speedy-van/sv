@@ -1,0 +1,218 @@
+/* ===== Video Background Enhancements ===== */
+
+/* Ensure video background works properly on all devices */
+.hero-video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  /* Match map section edge styling */
+  border: 2px solid #00C2FF; /* neon.500 color */
+  border-radius: 16px; /* Same as map section */
+  box-shadow: 0 0 30px rgba(0,194,255,0.4); /* neon.glow effect */
+  /* Ensure seamless integration with home page */
+  margin: 0;
+  padding: 0;
+}
+
+.hero-video-background video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  /* Hardware acceleration for better performance */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+  /* Ensure video is visible */
+  display: block;
+  visibility: visible;
+  /* Match map section styling */
+  border: none;
+  outline: none;
+  border-radius: 14px; /* Slightly smaller than container to show border */
+}
+
+.hero-video-background video.loaded {
+  opacity: 1;
+}
+
+/* Video overlay for better text readability - matches home page neon theme */
+.hero-video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(13, 13, 13, 0.6) 0%, 
+    rgba(26, 26, 26, 0.3) 50%, 
+    rgba(13, 13, 13, 0.6) 100%
+  );
+  z-index: 1;
+  /* Match map section styling */
+  border-radius: 14px; /* Same as video element */
+}
+
+/* Fallback background when video is loading - matches home page theme */
+.hero-video-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%);
+  z-index: 1;
+  /* Match map section styling */
+  border-radius: 14px; /* Same as video element */
+}
+
+/* Enhanced text styling for video background - matches home page neon theme */
+.hero-text-overlay {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-text-overlay h1 {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,194,255,0.3);
+  font-weight: bold;
+  /* Match home page heading styles */
+  letter-spacing: -0.02em;
+}
+
+.hero-text-overlay p {
+  color: white;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,194,255,0.2);
+  /* Match home page text styles */
+  font-weight: 500;
+}
+
+/* Mobile optimizations for video background */
+@media (max-width: 768px) {
+  .hero-video-background video {
+    object-position: center center;
+  }
+  
+  /* Ensure video covers mobile screens properly */
+  .hero-video-background video {
+    transform: scale(1.05) translateZ(0); /* Minimal zoom for coverage */
+    -webkit-transform: scale(1.05) translateZ(0);
+  }
+  
+  /* Optimize for mobile performance */
+  .hero-video-background video {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+  }
+  
+  /* Adjust border radius for mobile */
+  .hero-video-background {
+    border-radius: 12px; /* Smaller radius on mobile */
+  }
+  
+  .hero-video-background video,
+  .hero-video-overlay,
+  .hero-video-fallback {
+    border-radius: 10px; /* Smaller radius on mobile */
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .hero-video-background video {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    perspective: 1000;
+  }
+  
+  /* Fix for iOS video autoplay issues */
+  .hero-video-background video {
+    -webkit-playsinline: true;
+    playsinline: true;
+  }
+}
+
+/* Android specific fixes */
+@supports not (-webkit-touch-callout: none) {
+  .hero-video-background video {
+    will-change: transform;
+    transform: translate3d(0,0,0);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .hero-video-background video {
+    transition: none;
+  }
+  
+  .hero-video-background video.loaded {
+    opacity: 1 !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .hero-video-overlay {
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .hero-text-overlay h1,
+  .hero-text-overlay p {
+    text-shadow: 0 2px 4px rgba(0,0,0,1);
+  }
+}
+
+/* Print styles */
+@media print {
+  .hero-video-background {
+    display: none;
+  }
+  
+  .hero-video-overlay {
+    display: none;
+  }
+  
+  .hero-text-overlay {
+    color: black !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Performance optimizations for slow devices */
+@media (max-width: 480px) {
+  .hero-video-background video {
+    /* Reduce quality for very small screens */
+    transform: scale(1.2) translateZ(0);
+    -webkit-transform: scale(1.2) translateZ(0);
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hero-video-background video {
+    object-position: center 30%;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .hero-video-background video {
+    /* Ensure crisp video on high DPI displays */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+

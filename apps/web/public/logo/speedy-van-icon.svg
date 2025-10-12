@@ -1,0 +1,73 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sky Blue to Teal Gradient -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00C2FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00D1FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00E5FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Secondary Purple Gradient -->
+    <linearGradient id="secondaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B026FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D147FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- White for contrast -->
+    <linearGradient id="whiteGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0F0F0;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Drop shadow filter -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feFlood flood-color="#00C2FF" flood-opacity="0.6" result="glowColor"/>
+      <feComposite in="glowColor" in2="coloredBlur" operator="in" result="coloredGlow"/>
+      <feMerge> 
+        <feMergeNode in="coloredGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="40" cy="40" r="38" fill="url(#primaryGradient)" opacity="0.1" stroke="url(#primaryGradient)" stroke-width="2"/>
+  
+  <!-- Van Icon - Centered -->
+  <g transform="translate(20, 25)">
+    <!-- Van Body -->
+    <rect x="0" y="15" width="40" height="25" rx="6" fill="url(#primaryGradient)" filter="url(#dropShadow)"/>
+    
+    <!-- Van Cab -->
+    <rect x="0" y="15" width="18" height="18" rx="4" fill="url(#primaryGradient)" filter="url(#dropShadow)"/>
+    
+    <!-- Windows -->
+    <rect x="2" y="17" width="14" height="8" rx="2" fill="url(#whiteGradient)" opacity="0.9"/>
+    <rect x="2" y="27" width="14" height="4" rx="1" fill="url(#whiteGradient)" opacity="0.7"/>
+    
+    <!-- Wheels -->
+    <circle cx="12" cy="45" r="5" fill="#333333" stroke="url(#primaryGradient)" stroke-width="1.5"/>
+    <circle cx="12" cy="45" r="2.5" fill="url(#whiteGradient)"/>
+    
+    <circle cx="38" cy="45" r="5" fill="#333333" stroke="url(#primaryGradient)" stroke-width="1.5"/>
+    <circle cx="38" cy="45" r="2.5" fill="url(#whiteGradient)"/>
+    
+    <!-- Speed Lines -->
+    <g opacity="0.8" filter="url(#glow)">
+      <line x1="45" y1="18" x2="55" y2="15" stroke="url(#secondaryGradient)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="45" y1="25" x2="52" y2="23" stroke="url(#secondaryGradient)" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="45" y1="32" x2="51" y2="30" stroke="url(#secondaryGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </g>
+  
+  <!-- Small "SV" text at bottom -->
+  <text x="40" y="70" font-family="Montserrat, Arial, sans-serif" font-size="10" font-weight="600" text-anchor="middle" fill="url(#secondaryGradient)">
+    SV
+  </text>
+</svg>

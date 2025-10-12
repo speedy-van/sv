@@ -1,0 +1,166 @@
+/**
+ * Shared Error Types and Interfaces
+ * Provides consistent error handling across Frontend and Backend
+ */
+// ================================
+// ERROR TYPES AND INTERFACES
+// ================================
+export var ErrorCode;
+(function (ErrorCode) {
+    // Validation Errors (400)
+    ErrorCode["VALIDATION_ERROR"] = "VALIDATION_ERROR";
+    ErrorCode["INVALID_INPUT"] = "INVALID_INPUT";
+    ErrorCode["MISSING_REQUIRED_FIELD"] = "MISSING_REQUIRED_FIELD";
+    // Authentication Errors (401)
+    ErrorCode["UNAUTHORIZED"] = "UNAUTHORIZED";
+    ErrorCode["INVALID_CREDENTIALS"] = "INVALID_CREDENTIALS";
+    ErrorCode["TOKEN_EXPIRED"] = "TOKEN_EXPIRED";
+    // Authorization Errors (403)
+    ErrorCode["FORBIDDEN"] = "FORBIDDEN";
+    ErrorCode["INSUFFICIENT_PERMISSIONS"] = "INSUFFICIENT_PERMISSIONS";
+    // Resource Errors (404)
+    ErrorCode["NOT_FOUND"] = "NOT_FOUND";
+    ErrorCode["RESOURCE_NOT_FOUND"] = "RESOURCE_NOT_FOUND";
+    // Conflict Errors (409)
+    ErrorCode["CONFLICT"] = "CONFLICT";
+    ErrorCode["DUPLICATE_RESOURCE"] = "DUPLICATE_RESOURCE";
+    // Server Errors (500)
+    ErrorCode["INTERNAL_ERROR"] = "INTERNAL_ERROR";
+    ErrorCode["DATABASE_ERROR"] = "DATABASE_ERROR";
+    ErrorCode["EXTERNAL_SERVICE_ERROR"] = "EXTERNAL_SERVICE_ERROR";
+    // Business Logic Errors
+    ErrorCode["BOOKING_ERROR"] = "BOOKING_ERROR";
+    ErrorCode["PAYMENT_ERROR"] = "PAYMENT_ERROR";
+    ErrorCode["NOTIFICATION_ERROR"] = "NOTIFICATION_ERROR";
+})(ErrorCode || (ErrorCode = {}));
+// ================================
+// ERROR CLASSES
+// ================================
+export class AppError extends Error {
+    code;
+    statusCode;
+    details;
+    validationErrors;
+    isOperational;
+    constructor(message, code, statusCode = 500, details, validationErrors, isOperational = true) {
+        super(message);
+        this.name = this.constructor.name;
+        this.code = code;
+        this.statusCode = statusCode;
+        this.details = details;
+        this.validationErrors = validationErrors;
+        this.isOperational = isOperational;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+export class ValidationAppError extends AppError {
+    constructor(message, validationErrors, details) {
+        super(message, ErrorCode.VALIDATION_ERROR, 400, details, validationErrors);
+    }
+}
+export class AuthenticationError extends AppError {
+    constructor(message = 'Authentication required', details) {
+        super(message, ErrorCode.UNAUTHORIZED, 401, details);
+    }
+}
+export class AuthorizationError extends AppError {
+    constructor(message = 'Insufficient permissions', details) {
+        super(message, ErrorCode.FORBIDDEN, 403, details);
+    }
+}
+export class NotFoundError extends AppError {
+    constructor(resource = 'Resource', details) {
+        super(`${resource} not found`, ErrorCode.NOT_FOUND, 404, details);
+    }
+}
+export class ConflictError extends AppError {
+    constructor(message, details) {
+        super(message, ErrorCode.CONFLICT, 409, details);
+    }
+}
+export class DatabaseError extends AppError {
+    constructor(message, details) {
+        super(message, ErrorCode.DATABASE_ERROR, 500, details);
+    }
+}
+export class ExternalServiceError extends AppError {
+    constructor(service, message, details) {
+        super(`${service} service error: ${message}`, ErrorCode.EXTERNAL_SERVICE_ERROR, 503, details);
+    }
+}
+// ================================
+// ERROR RESPONSE BUILDERS
+// ================================
+export function createErrorResponse(error, requestId, path) {
+    const timestamp = new Date().toISOString();
+    if (error instanceof AppError) {
+        return {
+            success: false,
+            error: error.name,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            validationErrors: error.validationErrors,
+            statusCode: error.statusCode,
+            timestamp,
+            requestId,
+            path,
+        };
+    }
+    // Handle unknown errors
+    return {
+        success: false,
+        error: 'InternalError',
+        code: ErrorCode.INTERNAL_ERROR,
+        message: 'An unexpected error occurred',
+        details: error.message,
+        statusCode: 500,
+        timestamp,
+        requestId,
+        path,
+    };
+}
+export function createSuccessResponse(data, message, requestId) {
+    return {
+        success: true,
+        data,
+        message,
+        timestamp: new Date().toISOString(),
+        requestId,
+    };
+}
+// ================================
+// VALIDATION ERROR HELPERS
+// ================================
+export function formatZodErrors(zodError) {
+    return zodError.issues.map((error) => ({
+        field: error.path.join('.'),
+        message: error.message,
+        code: error.code,
+        value: error.path.length > 0 ? undefined : error,
+    }));
+}
+export function createValidationError(message, zodError, details) {
+    const validationErrors = zodError ? formatZodErrors(zodError) : [];
+    return new ValidationAppError(message, validationErrors, details);
+}
+// ================================
+// HTTP STATUS CODE MAPPING
+// ================================
+export const HTTP_STATUS_CODES = {
+    OK: 200,
+    CREATED: 201,
+    NO_CONTENT: 204,
+    BAD_REQUEST: 400,
+    UNAUTHORIZED: 401,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
+    CONFLICT: 409,
+    UNPROCESSABLE_ENTITY: 422,
+    INTERNAL_SERVER_ERROR: 500,
+    SERVICE_UNAVAILABLE: 503,
+};
+export function getStatusCodeForError(error) {
+    return error.statusCode || HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR;
+}
+//# sourceMappingURL=errors.js.map

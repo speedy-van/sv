@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "config": {
+    "currency": "GBP",
+    "pricesInPence": true,
+    "vatRate": 0.20,
+    "baseRates": {
+      "baseFeeGBP": 2500,
+      "perKmGBP": 150,
+      "perMinuteGBP": 50,
+      "perVolumeM3GBP": 500,
+      "perKgGBP": 10
+    },
+    "serviceTypes": {
+      "standard": {
+        "name": "Standard Service",
+        "multiplier": 1.0,
+        "description": "Next day delivery"
+      },
+      "express": {
+        "name": "Express Service", 
+        "multiplier": 1.5,
+        "description": "Same day delivery"
+      },
+      "scheduled": {
+        "name": "Scheduled Service",
+        "multiplier": 0.9,
+        "description": "Booked in advance"
+      },
+      "signature": {
+        "name": "Signature Service",
+        "multiplier": 1.2,
+        "description": "Premium service with dedicated team"
+      },
+      "premium": {
+        "name": "Premium Service",
+        "multiplier": 1.4,
+        "description": "White glove service"
+      },
+      "white-glove": {
+        "name": "White Glove Service",
+        "multiplier": 1.8,
+        "description": "Full-service luxury moving"
+      }
+    },
+    "vehicleTypes": {
+      "small-van": {
+        "name": "Small Van",
+        "capacity": 8,
+        "multiplier": 1.0,
+        "maxWeight": 750,
+        "maxVolume": 8.0
+      },
+      "medium-van": {
+        "name": "Medium Van", 
+        "capacity": 15,
+        "multiplier": 1.2,
+        "maxWeight": 1000,
+        "maxVolume": 15.0
+      },
+      "large-van": {
+        "name": "Large Van",
+        "capacity": 20,
+        "multiplier": 1.4,
+        "maxWeight": 1250,
+        "maxVolume": 20.0
+      },
+      "luton-van": {
+        "name": "Luton Van",
+        "capacity": 30,
+        "multiplier": 1.6,
+        "maxWeight": 1500,
+        "maxVolume": 30.0
+      },
+      "7.5-tonne": {
+        "name": "7.5 Tonne Truck",
+        "capacity": 50,
+        "multiplier": 2.0,
+        "maxWeight": 3500,
+        "maxVolume": 50.0
+      }
+    },
+    "surcharges": {
+      "stairs": {
+        "perFloor": 500,
+        "maxFloors": 10
+      },
+      "lift": {
+        "accessFee": 0,
+        "description": "No charge for lift access"
+      },
+      "extraStop": {
+        "perStop": 2000,
+        "description": "Additional delivery location"
+      },
+      "oversizeItem": {
+        "fee": 1500,
+        "description": "Items requiring special handling"
+      },
+      "fragileItem": {
+        "fee": 1000,
+        "description": "Fragile items requiring extra care"
+      },
+      "disassembly": {
+        "perItem": 1500,
+        "description": "Furniture disassembly service"
+      },
+      "reassembly": {
+        "perItem": 2000,
+        "description": "Furniture reassembly service"
+      },
+      "packing": {
+        "perM3": 1000,
+        "description": "Professional packing service"
+      },
+      "insurance": {
+        "basic": {
+          "rate": 0.005,
+          "coverage": 10000,
+          "description": "Basic coverage up to £100"
+        },
+        "standard": {
+          "rate": 0.01,
+          "coverage": 50000,
+          "description": "Standard coverage up to £500"
+        },
+        "premium": {
+          "rate": 0.02,
+          "coverage": 200000,
+          "description": "Premium coverage up to £2000"
+        }
+      }
+    },
+    "multipliers": {
+      "seasonal": {
+        "summer": 1.1,
+        "winter": 0.95,
+        "spring": 1.0,
+        "autumn": 1.0
+      },
+      "timeOfDay": {
+        "morning": 1.0,
+        "afternoon": 1.05,
+        "evening": 1.15,
+        "weekend": 1.25
+      },
+      "demand": {
+        "low": 0.9,
+        "normal": 1.0,
+        "high": 1.2,
+        "peak": 1.5
+      }
+    },
+    "discounts": {
+      "volumeDiscount": {
+        "threshold10M3": 0.05,
+        "threshold20M3": 0.10,
+        "threshold50M3": 0.15
+      },
+      "loyaltyDiscount": {
+        "returning": 0.05,
+        "premium": 0.10
+      },
+      "promoCodeTypes": {
+        "percentage": "PERCENT",
+        "fixed": "FIXED",
+        "freeDelivery": "FREE_DELIVERY"
+      }
+    }
+  },
+  "routing": {
+    "maxStops": 5,
+    "distanceCalculation": "MAPBOX",
+    "fallbackProvider": "GOOGLE",
+    "routeOptimization": true,
+    "trafficAware": true
+  },
+  "limits": {
+    "maxDistance": 500,
+    "maxWeight": 5000,
+    "maxVolume": 100,
+    "maxItems": 200
+  }
+}

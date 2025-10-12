@@ -1,0 +1,251 @@
+/* Driver Portal Enhanced Styles */
+
+/* Enhanced Typography */
+.driver-portal-heading {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.driver-portal-subheading {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.driver-portal-body {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Enhanced Color Scheme */
+:root {
+  --speedy-blue: #2563eb;
+  --speedy-blue-light: #3b82f6;
+  --speedy-blue-dark: #1d4ed8;
+  --speedy-green: #059669;
+  --speedy-green-light: #10b981;
+  --speedy-green-dark: #047857;
+  --speedy-orange: #ea580c;
+  --speedy-orange-light: #f97316;
+  --speedy-orange-dark: #c2410c;
+  --speedy-purple: #7c3aed;
+  --speedy-purple-light: #8b5cf6;
+  --speedy-purple-dark: #6d28d9;
+  --speedy-gray: #6b7280;
+  --speedy-gray-light: #9ca3af;
+  --speedy-gray-dark: #374151;
+}
+
+/* Enhanced Job Card Styles */
+.enhanced-job-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.enhanced-job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: var(--speedy-blue);
+}
+
+/* Enhanced Button Styles */
+.enhanced-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  border-radius: 0.75rem;
+}
+
+.enhanced-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.enhanced-button:active {
+  transform: translateY(0);
+}
+
+/* Enhanced Header Styles */
+.enhanced-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Stats Card Styles */
+.enhanced-stats-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced No Jobs Message */
+.enhanced-no-jobs {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Typography Contrast */
+.enhanced-text-primary {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.enhanced-text-secondary {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.enhanced-text-muted {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* Enhanced Icon Styles */
+.enhanced-icon {
+  transition: all 0.2s ease-in-out;
+}
+
+.enhanced-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Enhanced Badge Styles */
+.enhanced-badge {
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+}
+
+/* Enhanced Input Styles */
+.enhanced-input {
+  border-radius: 0.75rem;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease-in-out;
+}
+
+.enhanced-input:focus {
+  border-color: var(--speedy-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Enhanced Card Hover Effects */
+.enhanced-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced Loading States */
+.enhanced-loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+  .enhanced-job-card {
+    margin: 0.5rem;
+    border-radius: 0.75rem;
+  }
+  
+  .enhanced-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+  
+  .enhanced-header {
+    padding: 1rem;
+  }
+}
+
+/* Enhanced Focus States */
+.enhanced-focus:focus {
+  outline: 2px solid var(--speedy-blue);
+  outline-offset: 2px;
+}
+
+/* Enhanced Status Colors */
+.status-active {
+  color: var(--speedy-green);
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+.status-busy {
+  color: var(--speedy-orange);
+  background-color: rgba(234, 88, 12, 0.1);
+}
+
+.status-offline {
+  color: var(--speedy-gray);
+  background-color: rgba(107, 114, 128, 0.1);
+}
+
+/* Enhanced Priority Colors */
+.priority-urgent {
+  color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.priority-high {
+  color: var(--speedy-orange);
+  background-color: rgba(234, 88, 12, 0.1);
+}
+
+.priority-normal {
+  color: var(--speedy-green);
+  background-color: rgba(5, 150, 105, 0.1);
+}
+
+/* Enhanced Animation for Job Cards */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.enhanced-job-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+/* Enhanced Scrollbar */
+.enhanced-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.enhanced-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

@@ -1,0 +1,308 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { penceToPounds } from '@/lib/utils/currency';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// Helper function to calculate distance between two points (Haversine formula)
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959; // Radius of the Earth in miles
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c; // Distance in miles
+  return Math.round(distance * 10) / 10; // Round to 1 decimal place
+}
+
+function deg2rad(deg: number): number {
+  return deg * (Math.PI/180);
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    // Check driver authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login' },
+        { status: 401 }
+      );
+    }
+
+    const userRole = (session.user as any)?.role;
+    if (userRole !== 'driver') {
+      return NextResponse.json(
+        { error: 'Forbidden - Driver access required' },
+        { status: 403 }
+      );
+    }
+
+    const userId = session.user.id;
+
+    // Get driver record
+    const driver = await prisma.driver.findUnique({
+      where: { userId },
+      select: { id: true, status: true, onboardingStatus: true }
+    });
+
+    if (!driver) {
+      return NextResponse.json(
+        { error: 'Driver profile not found' },
+        { status: 404 }
+      );
+    }
+
+    if (driver.status !== 'active' || driver.onboardingStatus !== 'approved') {
+      return NextResponse.json(
+        { error: 'Driver account not active or not approved' },
+        { status: 403 }
+      );
+    }
+
+    // Get driver's assigned jobs
+    const assignedJobs = await prisma.assignment.findMany({
+      where: {
+        driverId: driver.id,
+        status: { in: ['invited', 'accepted'] }
+      },
+      include: {
+        Booking: {
+          include: {
+            BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+            BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+            BookingItem: true,
+            User: {
+              select: { id: true, name: true, email: true }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Get available jobs (unassigned bookings)
+    const availableJobs = await prisma.booking.findMany({
+      where: {
+        status: 'CONFIRMED',
+        driverId: null, // Not assigned to any driver
+        scheduledAt: {
+          gte: new Date() // Future bookings only
+        }
+      },
+      include: {
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        BookingItem: true,
+        User: {
+          select: { id: true, name: true, email: true }
+        }
+      },
+      orderBy: { scheduledAt: 'asc' },
+      take: 10 // Limit to 10 available jobs
+    });
+
+    // Calculate driver statistics
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    let completedTodayCount = 0;
+    let totalCompletedCount = 0;
+    let totalEarningsResult = { _sum: { netAmountPence: 0 } };
+    let avgRatingResult = { _avg: { rating: 0 } };
+
+    try {
+      // Jobs completed today
+      completedTodayCount = await prisma.assignment.count({
+        where: {
+          driverId: driver.id,
+          status: 'completed',
+          updatedAt: { gte: today, lt: tomorrow }
+        }
+      });
+
+      // Total completed jobs
+      totalCompletedCount = await prisma.assignment.count({
+        where: {
+          driverId: driver.id,
+          status: 'completed'
+        }
+      });
+
+      // Total earnings (try driverEarnings table, fallback to 0 if not exists)
+      try {
+        totalEarningsResult = await prisma.driverEarnings.aggregate({
+          where: { driverId: driver.id },
+          _sum: { netAmountPence: true }
+        });
+      } catch (earningsError) {
+        console.warn('DriverEarnings table not available, using fallback:', earningsError.message);
+        totalEarningsResult = { _sum: { netAmountPence: 0 } };
+      }
+
+      // Average rating (try driverRating table, fallback to 0 if not exists)
+      try {
+        avgRatingResult = await prisma.driverRating.aggregate({
+          where: { driverId: driver.id },
+          _avg: { rating: true }
+        });
+      } catch (ratingError) {
+        console.warn('DriverRating table not available, using fallback:', ratingError.message);
+        avgRatingResult = { _avg: { rating: 0 } };
+      }
+    } catch (statsError) {
+      console.warn('Error calculating driver statistics, using defaults:', statsError.message);
+    }
+
+    // Format assigned jobs for frontend with REAL pricing engine
+    const formattedAssignedJobs = assignedJobs.map(assignment => {
+      const pickup = assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
+      const dropoff = assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      
+      // Calculate actual distance (handle null coordinates gracefully)
+      let distance = 0;
+      try {
+        const pickupLat = pickup?.lat;
+        const pickupLng = pickup?.lng;
+        const dropoffLat = dropoff?.lat;
+        const dropoffLng = dropoff?.lng;
+
+        if (pickupLat && pickupLng && dropoffLat && dropoffLng) {
+          distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
+        }
+      } catch (distanceError) {
+        console.warn('Error calculating distance:', distanceError?.message);
+        distance = 0;
+      }
+
+      // TEMPORARY: Use simple calculation until Prisma includes are fixed
+      // TODO: Replace with real pricing engine once database queries are corrected
+      const estimatedEarnings = penceToPounds(Math.floor(assignment.Booking.totalGBP * 0.70)); // 70% to driver
+
+      return {
+        id: assignment.Booking.id,
+        assignmentId: assignment.id,
+        customer: assignment.Booking.User?.name || assignment.Booking.customerName || 'Unknown Customer',
+        customerPhone: assignment.Booking.customerPhone || '',
+        customerEmail: assignment.Booking.customerEmail || '',
+        from: pickup?.label || 'Pickup Address',
+        to: dropoff?.label || 'Dropoff Address',
+        date: assignment.Booking.scheduledAt.toISOString().split('T')[0],
+        time: assignment.Booking.scheduledAt.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        distance: `${distance} miles`,
+        estimatedEarnings: estimatedEarnings,
+        vehicleType: assignment.Booking.crewSize === 'ONE' ? 'Van' : 'Large Van',
+        items: assignment.Booking.BookingItem?.map((item: any) => item.name).join(', ') || 'No items specified',
+        status: assignment.status,
+        assignmentStatus: assignment.status,
+        bookingStatus: assignment.Booking.status,
+        reference: assignment.Booking.reference,
+        createdAt: assignment.createdAt,
+        expiresAt: assignment.expiresAt
+      };
+    });
+
+    // Format available jobs for frontend with REAL pricing engine
+    const formattedAvailableJobs = availableJobs.map(booking => {
+      const pickup = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
+      const dropoff = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      
+      // Calculate distance for available jobs
+      let distance = booking.baseDistanceMiles || 0;
+      if (!distance && pickup && dropoff) {
+        try {
+          distance = calculateDistance(
+            pickup.lat || 0,
+            pickup.lng || 0,
+            dropoff.lat || 0,
+            dropoff.lng || 0
+          );
+        } catch (error) {
+          console.warn('Error calculating distance for available job:', error);
+          distance = 50; // Fallback
+        }
+      }
+
+      // TEMPORARY: Use simple calculation until Prisma includes are fixed
+      // TODO: Replace with real pricing engine once database queries are corrected
+      const estimatedEarnings = penceToPounds(Math.floor(booking.totalGBP * 0.70)); // 70% to driver
+      
+      return {
+        id: booking.id,
+        customer: booking.User?.name || booking.customerName || 'Unknown Customer',
+        customerPhone: booking.customerPhone || '',
+        customerEmail: booking.customerEmail || '',
+        from: pickup?.label || 'Pickup Address',
+        to: dropoff?.label || 'Dropoff Address',
+        date: booking.scheduledAt.toISOString().split('T')[0],
+        time: booking.scheduledAt.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        distance: `${distance} miles`,
+        estimatedEarnings: estimatedEarnings,
+        vehicleType: booking.crewSize === 'ONE' ? 'Van' : 'Large Van',
+        items: booking.BookingItem?.map((item: any) => item.name).join(', ') || 'No items specified',
+        status: 'available',
+        reference: booking.reference,
+        createdAt: booking.createdAt,
+        scheduledAt: booking.scheduledAt
+      };
+    });
+
+    // Calculate statistics
+    const stats = {
+      assignedJobs: assignedJobs.length,
+      availableJobs: availableJobs.length,
+      completedToday: completedTodayCount,
+      totalCompleted: totalCompletedCount,
+      earningsToday: 0, // Would need to calculate from today's completed jobs
+      totalEarnings: penceToPounds(totalEarningsResult._sum.netAmountPence || 0),
+      averageRating: avgRatingResult._avg.rating || 0,
+    };
+
+    console.log(`✅ Driver dashboard data loaded for driver ${driver.id}:`, {
+      assignedJobs: stats.assignedJobs,
+      availableJobs: stats.availableJobs,
+      completedToday: stats.completedToday,
+      totalEarnings: stats.totalEarnings
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        driver: {
+          id: driver.id,
+          status: driver.status,
+          onboardingStatus: driver.onboardingStatus
+        },
+        jobs: {
+          assigned: formattedAssignedJobs,
+          available: formattedAvailableJobs
+        },
+        statistics: stats
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error loading driver dashboard data:', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to load dashboard data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}

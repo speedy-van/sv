@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Driver Header - Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Enhanced Driver Header Demo -->
+    <header class="gradient-bg text-white px-4 md:px-6 py-4 md:py-5 shadow-xl relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute top-0 right-0 w-48 h-full bg-gradient-to-br from-white/10 to-transparent transform rotate-12 origin-top"></div>
+        
+        <div class="container mx-auto relative z-10">
+            <div class="flex justify-between items-center">
+                <!-- Left: Brand + Logo -->
+                <div class="flex items-center space-x-4 flex-1">
+                    <!-- Logo Circle -->
+                    <div class="w-12 h-12 md:w-15 md:h-15 bg-yellow-300 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-truck text-blue-800 text-xl md:text-2xl"></i>
+                    </div>
+                    
+                    <!-- Brand Text -->
+                    <div class="flex flex-col">
+                        <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-md">
+                            Speedy Van
+                        </h1>
+                        <p class="text-sm text-blue-100 font-semibold tracking-wide uppercase hidden md:block">
+                            Driver Portal
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Center: Driver Status (Desktop) -->
+                <div class="hidden lg:flex flex-col items-center space-y-2 flex-1 max-w-xs">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                            <span class="text-blue-800 font-bold text-sm">AH</span>
+                        </div>
+                        <div class="flex flex-col text-right">
+                            <p class="text-sm font-bold text-white">أحمد محمد</p>
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                    نشط
+                                </span>
+                                <div class="flex items-center space-x-1">
+                                    <i class="fas fa-map-marker-alt text-xs"></i>
+                                    <span class="text-xs text-blue-100">الرياض</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Actions -->
+                <div class="flex items-center space-x-2 flex-1 justify-end">
+                    <!-- Refresh Button -->
+                    <button class="p-2 md:p-3 text-white hover:bg-white/20 active:bg-white/30 rounded-xl transition-colors">
+                        <i class="fas fa-sync text-lg"></i>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button class="p-2 md:p-3 text-white hover:bg-white/20 active:bg-white/30 rounded-xl transition-colors relative">
+                        <i class="fas fa-bell text-lg"></i>
+                    </button>
+
+                    <!-- Main Menu -->
+                    <button class="p-3 bg-white/20 text-white hover:bg-white/30 active:bg-white/40 rounded-xl transition-colors w-12 h-12 flex items-center justify-center">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Driver Info -->
+            <div class="lg:hidden mt-4 pt-3 border-t border-white/30">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                            <span class="text-blue-800 font-bold text-sm">AH</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <p class="text-sm font-bold text-white">أحمد محمد</p>
+                            <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium inline-block w-fit">
+                                نشط
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-1 text-blue-100">
+                        <i class="fas fa-map-marker-alt text-xs"></i>
+                        <span class="text-xs max-w-24 truncate">الرياض</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Demo Content -->
+    <main class="container mx-auto p-6 space-y-6">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">✨ التحسينات المطبقة على الـ Header</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-blue-600">🎨 الهوية البصرية</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>• خلفية متدرجة جذابة بألوان العلامة التجارية</li>
+                        <li>• شعار واضح مع أيقونة الشاحنة</li>
+                        <li>• نمط خلفي ديناميكي</li>
+                        <li>• ظلال وتأثيرات بصرية محسنة</li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-green-600">📱 قابلية الاستخدام</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>• أيقونات أكبر وأزرار سهلة اللمس</li>
+                        <li>• تخطيط متجاوب للأجهزة المحمولة</li>
+                        <li>• معلومات السائق منظمة وواضحة</li>
+                        <li>• قائمة رئيسية محسنة</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 class="font-semibold text-blue-800 mb-2">🚀 الميزات الجديدة</h4>
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">خلفية متدرجة</span>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">أيقونات محسنة</span>
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">تصميم متجاوب</span>
+                    <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">هوية بصرية قوية</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

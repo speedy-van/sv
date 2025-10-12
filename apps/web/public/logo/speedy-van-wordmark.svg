@@ -1,0 +1,68 @@
+<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sky Blue to Teal Gradient -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00C2FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00D1FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00E5FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Secondary Purple Gradient -->
+    <linearGradient id="secondaryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B026FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D147FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- White for contrast -->
+    <linearGradient id="whiteGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0F0F0;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Drop shadow filter -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feFlood flood-color="#00C2FF" flood-opacity="0.6" result="glowColor"/>
+      <feComposite in="glowColor" in2="coloredBlur" operator="in" result="coloredGlow"/>
+      <feMerge> 
+        <feMergeNode in="coloredGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background (transparent) -->
+  
+  <!-- Main Text -->
+  <g transform="translate(20, 25)">
+    <!-- Speedy - Bold and italic for speed -->
+    <text x="0" y="35" font-family="Montserrat, Arial, sans-serif" font-size="36" font-weight="700" font-style="italic" fill="url(#primaryGradient)" filter="url(#dropShadow)">
+      Speedy
+    </text>
+    
+    <!-- Van - Normal weight for balance -->
+    <text x="0" y="65" font-family="Montserrat, Arial, sans-serif" font-size="32" font-weight="400" fill="url(#whiteGradient)" filter="url(#dropShadow)">
+      Van
+    </text>
+  </g>
+  
+  <!-- Decorative speed lines -->
+  <g opacity="0.6" filter="url(#glow)">
+    <line x1="250" y1="20" x2="280" y2="15" stroke="url(#secondaryGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="250" y1="30" x2="275" y2="27" stroke="url(#secondaryGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="250" y1="40" x2="270" y2="38" stroke="url(#secondaryGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="250" y1="50" x2="275" y2="48" stroke="url(#secondaryGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="250" y1="60" x2="280" y2="58" stroke="url(#secondaryGradient)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Subtle accent lines -->
+  <g opacity="0.3">
+    <line x1="20" y1="15" x2="280" y2="15" stroke="url(#primaryGradient)" stroke-width="1" stroke-dasharray="5,5"/>
+    <line x1="20" y1="70" x2="280" y2="70" stroke="url(#secondaryGradient)" stroke-width="1" stroke-dasharray="5,5"/>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://speedy-van.co.uk/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /driver/
+Disallow: /_next/
+Disallow: /uploads/private/
+
+# Allow important pages
+Allow: /uk/london
+Allow: /booking-luxury
+Allow: /blog/
+Allow: /images/
+Allow: /og/
+
+# Crawl delay for better server performance
+Crawl-delay: 1
+
+# Host directive
+Host: https://speedy-van.co.uk

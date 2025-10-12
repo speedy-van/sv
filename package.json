@@ -1,0 +1,74 @@
+{
+  "name": "speedy-van-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Enterprise-grade Speedy Van delivery platform monorepo",
+  "packageManager": "pnpm@10.17.0",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "clean": "turbo run clean && rimraf node_modules .turbo pnpm-lock.yaml",
+    "typecheck": "turbo run type-check",
+    "build:packages": "turbo run build --filter='./packages/*'",
+    "build:apps": "turbo run build --filter=@speedy-van/app",
+    "build": "turbo run build",
+    "start": "turbo run start --filter=@speedy-van/app",
+    "dev": "turbo run dev --parallel",
+    "export:critical": "tsx scripts/export-critical.ts",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter=!@speedy-van/docs && changeset publish",
+    "prisma:generate": "turbo run prisma:generate",
+    "prisma:migrate": "turbo run prisma:migrate"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@jest/globals": "^30.1.1",
+    "@prisma/client": "6.16.2",
+    "@types/jest": "^30.0.0",
+    "@types/node": "20.14.10",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^30.1.1",
+    "jest-environment-node": "^30.1.1",
+    "node-mocks-http": "^1.17.2",
+    "prettier": "^3.2.5",
+    "prisma": "6.16.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "turbo": "2.5.8",
+    "typescript": "5.9.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "typescript": "5.9.2",
+      "@types/node": "20.14.10",
+      
+      "prisma": "6.16.2",
+      "@prisma/client": "6.16.2"
+    }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": "10.17.0"
+  },
+  "dependencies": {
+    "node-cron": "^4.2.1",
+    "zod": "^3.25.76"
+  }
+}

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡️ Cyber Scan Effect Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin-bottom: 40px;
+        }
+
+        .item-box {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #2d2d44;
+            text-align: center;
+        }
+
+        .image-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #444;
+            background: #0a0e27;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container.hidden img {
+            opacity: 0;
+        }
+
+        .scanning-message {
+            position: absolute;
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 1.2rem;
+            animation: cyberPulse 1s ease-in-out infinite;
+            display: none;
+        }
+
+        .image-container.hidden .scanning-message {
+            display: block;
+        }
+
+        /* Main Scan Beam */
+        .scan-beam {
+            position: absolute;
+            top: 0;
+            left: -10%;
+            width: 6px;
+            height: 100%;
+            background: #00ffff;
+            box-shadow: 
+                0 0 20px 4px rgba(0, 255, 255, 0.8),
+                0 0 40px 8px rgba(0, 255, 255, 0.4),
+                0 0 60px 12px rgba(0, 255, 255, 0.2);
+            filter: blur(1px);
+            display: none;
+        }
+
+        .image-container.scanning .scan-beam {
+            display: block;
+            animation: cyberScan 3s ease-in-out forwards;
+        }
+
+        /* Secondary Scan Lines */
+        .scan-line-1, .scan-line-2 {
+            position: absolute;
+            top: 0;
+            left: -10%;
+            width: 2px;
+            height: 100%;
+            background: rgba(0, 255, 255, 0.8);
+            box-shadow: 0 0 10px 2px rgba(0, 255, 255, 0.6);
+            filter: blur(0.5px);
+            display: none;
+        }
+
+        .image-container.scanning .scan-line-1 {
+            display: block;
+            animation: cyberScanSecondary1 3s ease-in-out forwards;
+        }
+
+        .image-container.scanning .scan-line-2 {
+            display: block;
+            animation: cyberScanSecondary2 3s ease-in-out forwards;
+        }
+
+        /* Glow Overlay */
+        .glow-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(0, 255, 255, 0.1) 48%, 
+                rgba(0, 255, 255, 0.3) 50%, 
+                rgba(0, 255, 255, 0.1) 52%, 
+                transparent 100%);
+            display: none;
+        }
+
+        .image-container.scanning .glow-overlay {
+            display: block;
+            animation: cyberGlow 3s ease-in-out forwards;
+        }
+
+        /* Animations */
+        @keyframes cyberScan {
+            0% { left: -10%; }
+            100% { left: 110%; }
+        }
+
+        @keyframes cyberScanSecondary1 {
+            0% { left: -10%; opacity: 0; }
+            25% { opacity: 1; }
+            100% { left: 110%; opacity: 0.3; }
+        }
+
+        @keyframes cyberScanSecondary2 {
+            0% { left: -10%; opacity: 0; }
+            75% { opacity: 1; }
+            100% { left: 110%; opacity: 0.3; }
+        }
+
+        @keyframes cyberGlow {
+            0% { 
+                background: radial-gradient(circle at center, transparent 0%, transparent 100%);
+            }
+            50% { 
+                background: radial-gradient(circle at center, rgba(0, 255, 255, 0.2) 0%, transparent 70%);
+            }
+            100% { 
+                background: radial-gradient(circle at center, rgba(0, 255, 255, 0.4) 0%, transparent 70%);
+            }
+        }
+
+        @keyframes cyberPulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.05); 
+            }
+        }
+
+        @keyframes cyberFadeOut {
+            0% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .item-info {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .item-info h3 {
+            color: white;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ffff 0%, #0088ff 100%);
+            color: #0a0e27;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: right;
+        }
+
+        .info-box h3 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-right: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 10px;
+            color: #ccc;
+            position: relative;
+            padding-right: 20px;
+        }
+
+        .info-box li::before {
+            content: "⚡️";
+            position: absolute;
+            right: 0;
+        }
+
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .timeline-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .timeline-time {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .timeline-label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡️ Cyber Scan Effect Demo</h1>
+        <p>تأثير المسح السيبراني للعناصر الفردية في نظام الحجز</p>
+    </div>
+
+    <div class="demo-container">
+        <div class="item-box">
+            <div class="image-container" id="item1">
+                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400" alt="Sofa">
+                <div class="scanning-message">⚡️ SCANNING... ⚡️</div>
+                <div class="scan-beam"></div>
+                <div class="scan-line-1"></div>
+                <div class="scan-line-2"></div>
+                <div class="glow-overlay"></div>
+            </div>
+            <div class="item-info">
+                <h3>أريكة فاخرة</h3>
+                <p>85 كجم</p>
+            </div>
+        </div>
+
+        <div class="item-box">
+            <div class="image-container" id="item2">
+                <img src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=400" alt="Table">
+                <div class="scanning-message">⚡️ SCANNING... ⚡️</div>
+                <div class="scan-beam"></div>
+                <div class="scan-line-1"></div>
+                <div class="scan-line-2"></div>
+                <div class="glow-overlay"></div>
+            </div>
+            <div class="item-info">
+                <h3>طاولة خشبية</h3>
+                <p>45 كجم</p>
+            </div>
+        </div>
+
+        <div class="item-box">
+            <div class="image-container" id="item3">
+                <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=400" alt="Chair">
+                <div class="scanning-message">⚡️ SCANNING... ⚡️</div>
+                <div class="scan-beam"></div>
+                <div class="scan-line-1"></div>
+                <div class="scan-line-2"></div>
+                <div class="glow-overlay"></div>
+            </div>
+            <div class="item-info">
+                <h3>كرسي حديث</h3>
+                <p>12 كجم</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-time">0-3s</div>
+            <div class="timeline-label">مسح نشط</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">3-10s</div>
+            <div class="timeline-label">إخفاء + رسالة</div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-time">10s+</div>
+            <div class="timeline-label">عرض عادي</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="resetAll()">🔄 إعادة تشغيل التأثير</button>
+    </div>
+
+    <div style="height: 40px;"></div>
+
+    <div class="info-box">
+        <h3>📋 مواصفات التأثير</h3>
+        <ul>
+            <li>شعاع ضوئي رئيسي cyan بعرض 6px</li>
+            <li>خطان إضافيان في 25% و 75% من المسار</li>
+            <li>Box shadow متعدد الطبقات (3 مستويات)</li>
+            <li>توهج radial متدرج في الخلفية</li>
+            <li>مدة المسح: 3 ثواني</li>
+            <li>إخفاء الصورة بعد المسح لمدة 7 ثواني</li>
+            <li>رسالة SCANNING مع تأثير pulse</li>
+            <li>عودة الصورة بعد 10 ثواني إجمالية</li>
+            <li>التأثير يحدث مرة واحدة فقط</li>
+        </ul>
+    </div>
+
+    <script>
+        function startScan(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // Reset states
+            container.classList.remove('scanning', 'hidden');
+            
+            // Start scanning
+            setTimeout(() => {
+                container.classList.add('scanning');
+            }, 100);
+
+            // Hide after 3 seconds
+            setTimeout(() => {
+                container.classList.remove('scanning');
+                container.classList.add('hidden');
+            }, 3000);
+
+            // Show again after 10 seconds
+            setTimeout(() => {
+                container.classList.remove('hidden');
+            }, 10000);
+        }
+
+        function resetAll() {
+            ['item1', 'item2', 'item3'].forEach((id, index) => {
+                setTimeout(() => {
+                    startScan(id);
+                }, index * 300); // Stagger the start times
+            });
+        }
+
+        // Auto-start on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                resetAll();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "name": "@speedy-van/pricing",
+  "version": "1.0.0",
+  "description": "Pricing engine and calculation logic for Speedy Van",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@speedy-van/shared": "workspace:*",
+    "@speedy-van/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.19.123",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "sideEffects": false,
+  "publishConfig": { "access": "public" }
+}

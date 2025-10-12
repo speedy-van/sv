@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES6"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "jsxImportSource": "react",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@speedy-van/shared/*": ["packages/shared/dist/*"],
+      "@speedy-van/utils/*": ["packages/utils/dist/*"],
+      "@speedy-van/pricing/*": ["packages/pricing/dist/*"],
+  // AI agents mapping removed per cleanup
+      "@/*": ["apps/web/src/*"]
+    },
+    "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": false
+  },
+  "include": [
+    "next-env.d.ts",
+    "apps/web/**/*.ts",
+    "apps/web/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "references": []
+}
+

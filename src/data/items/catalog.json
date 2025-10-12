@@ -1,0 +1,312 @@
+{
+  "version": "1.0.0",
+  "catalog": {
+    "full-house": {
+      "1-bedroom": {
+        "id": "full-house-1bed",
+        "name": "1 Bedroom House Package",
+        "description": "Complete 1 bedroom house removal including bedroom, living room, kitchen, and bathroom items",
+        "category": "full-house",
+        "basePrice": 35000,
+        "weight": 1500,
+        "volume": 15.0,
+        "estimatedTime": 4,
+        "image": "/items/full-house/1-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_basics", "kitchen_essentials", "personal_items"],
+        "fragile": false,
+        "oversize": true
+      },
+      "2-bedroom": {
+        "id": "full-house-2bed", 
+        "name": "2 Bedroom House Package",
+        "description": "Complete 2 bedroom house removal",
+        "category": "full-house",
+        "basePrice": 45000,
+        "weight": 2500,
+        "volume": 25.0,
+        "estimatedTime": 6,
+        "image": "/items/full-house/2-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_furniture", "kitchen_appliances", "dining_room"],
+        "fragile": false,
+        "oversize": true
+      },
+      "3-bedroom": {
+        "id": "full-house-3bed",
+        "name": "3 Bedroom House Package", 
+        "description": "Complete 3 bedroom house removal",
+        "category": "full-house",
+        "basePrice": 55000,
+        "weight": 3500,
+        "volume": 35.0,
+        "estimatedTime": 8,
+        "image": "/items/full-house/3-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_furniture", "kitchen_appliances", "dining_room", "office"],
+        "fragile": false,
+        "oversize": true
+      },
+      "4-bedroom": {
+        "id": "full-house-4bed",
+        "name": "4 Bedroom House Package",
+        "description": "Complete 4 bedroom house removal",
+        "category": "full-house", 
+        "basePrice": 65000,
+        "weight": 4500,
+        "volume": 45.0,
+        "estimatedTime": 10,
+        "image": "/items/full-house/4-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_furniture", "kitchen_appliances", "dining_room", "office", "garage_items"],
+        "fragile": false,
+        "oversize": true
+      },
+      "5-bedroom": {
+        "id": "full-house-5bed",
+        "name": "5 Bedroom House Package",
+        "description": "Complete 5 bedroom house removal",
+        "category": "full-house",
+        "basePrice": 75000,
+        "weight": 5500,
+        "volume": 55.0,
+        "estimatedTime": 12,
+        "image": "/items/full-house/5-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_furniture", "kitchen_appliances", "dining_room", "office", "garage_items", "basement"],
+        "fragile": false,
+        "oversize": true
+      },
+      "6-bedroom": {
+        "id": "full-house-6bed",
+        "name": "6 Bedroom House Package",
+        "description": "Complete 6 bedroom house removal",
+        "category": "full-house",
+        "basePrice": 85000,
+        "weight": 6500,
+        "volume": 65.0,
+        "estimatedTime": 14,
+        "image": "/items/full-house/6-bedroom.png",
+        "includes": ["bedroom_furniture", "living_room_furniture", "kitchen_appliances", "dining_room", "office", "garage_items", "basement", "additional_storage"],
+        "fragile": false,
+        "oversize": true
+      }
+    },
+    "furniture": {
+      "sofa": {
+        "id": "sofa",
+        "name": "Sofa",
+        "description": "Standard 3-seater sofa",
+        "category": "furniture",
+        "basePrice": 4500,
+        "weight": 45,
+        "volume": 2.5,
+        "estimatedTime": 0.5,
+        "image": "/items/furniture/sofa.png",
+        "fragile": false,
+        "oversize": true
+      },
+      "washing-machine": {
+        "id": "washing-machine",
+        "name": "Washing Machine",
+        "description": "Standard washing machine",
+        "category": "appliances",
+        "basePrice": 5500,
+        "weight": 65,
+        "volume": 1.2,
+        "estimatedTime": 0.75,
+        "image": "/items/appliances/washing-machine.png",
+        "fragile": true,
+        "oversize": true,
+        "specialHandling": ["disconnect_plumbing", "secure_drum"]
+      },
+      "double-bed": {
+        "id": "double-bed",
+        "name": "Double Bed",
+        "description": "Standard double bed frame and mattress",
+        "category": "furniture",
+        "basePrice": 3500,
+        "weight": 35,
+        "volume": 2.0,
+        "estimatedTime": 0.5,
+        "image": "/items/furniture/double-bed.png",
+        "fragile": false,
+        "oversize": true,
+        "disassemblyRequired": true
+      },
+      "tv": {
+        "id": "tv",
+        "name": "Television",
+        "description": "Flat screen TV up to 55 inches",
+        "category": "electronics",
+        "basePrice": 2500,
+        "weight": 20,
+        "volume": 0.8,
+        "estimatedTime": 0.25,
+        "image": "/items/electronics/tv.png",
+        "fragile": true,
+        "oversize": false,
+        "specialHandling": ["bubble_wrap", "TV_box"]
+      },
+      "dining-table": {
+        "id": "dining-table",
+        "name": "Dining Table",
+        "description": "Standard dining table for 4-6 people",
+        "category": "furniture",
+        "basePrice": 3000,
+        "weight": 40,
+        "volume": 1.8,
+        "estimatedTime": 0.5,
+        "image": "/items/furniture/dining-table.png",
+        "fragile": false,
+        "oversize": true,
+        "disassemblyRequired": true
+      },
+      "wardrobe": {
+        "id": "wardrobe",
+        "name": "Wardrobe",
+        "description": "Standard wardrobe with doors",
+        "category": "furniture", 
+        "basePrice": 4000,
+        "weight": 50,
+        "volume": 3.0,
+        "estimatedTime": 1.0,
+        "image": "/items/furniture/wardrobe.png",
+        "fragile": false,
+        "oversize": true,
+        "disassemblyRequired": true
+      },
+      "fridge": {
+        "id": "fridge",
+        "name": "Fridge-Freezer",
+        "description": "Standard fridge-freezer combination",
+        "category": "appliances",
+        "basePrice": 6000,
+        "weight": 80,
+        "volume": 1.5,
+        "estimatedTime": 1.0,
+        "image": "/items/appliances/fridge.png",
+        "fragile": true,
+        "oversize": true,
+        "specialHandling": ["defrost_24h", "upright_transport"]
+      },
+      "office-desk": {
+        "id": "office-desk",
+        "name": "Office Desk",
+        "description": "Standard office desk with drawers",
+        "category": "furniture",
+        "basePrice": 2500,
+        "weight": 30,
+        "volume": 1.2,
+        "estimatedTime": 0.5,
+        "image": "/items/furniture/office-desk.png",
+        "fragile": false,
+        "oversize": false,
+        "disassemblyRequired": true
+      },
+      "chest-of-drawers": {
+        "id": "chest-of-drawers",
+        "name": "Chest of Drawers",
+        "description": "Standard chest of drawers",
+        "category": "furniture",
+        "basePrice": 2000,
+        "weight": 25,
+        "volume": 0.8,
+        "estimatedTime": 0.25,
+        "image": "/items/furniture/chest-of-drawers.png",
+        "fragile": false,
+        "oversize": false
+      },
+      "dishwasher": {
+        "id": "dishwasher", 
+        "name": "Dishwasher",
+        "description": "Standard built-in dishwasher",
+        "category": "appliances",
+        "basePrice": 5000,
+        "weight": 55,
+        "volume": 0.9,
+        "estimatedTime": 0.75,
+        "image": "/items/appliances/dishwasher.png",
+        "fragile": true,
+        "oversize": false,
+        "specialHandling": ["disconnect_plumbing", "drain_water"]
+      }
+    },
+    "boxes": {
+      "small-box": {
+        "id": "small-box",
+        "name": "Small Box",
+        "description": "Small moving box (books, documents)",
+        "category": "boxes",
+        "basePrice": 500,
+        "weight": 15,
+        "volume": 0.1,
+        "estimatedTime": 0.05,
+        "image": "/items/boxes/small-box.png",
+        "fragile": false,
+        "oversize": false
+      },
+      "medium-box": {
+        "id": "medium-box", 
+        "name": "Medium Box",
+        "description": "Medium moving box (clothes, kitchenware)",
+        "category": "boxes",
+        "basePrice": 750,
+        "weight": 20,
+        "volume": 0.15,
+        "estimatedTime": 0.08,
+        "image": "/items/boxes/medium-box.png",
+        "fragile": false,
+        "oversize": false
+      },
+      "large-box": {
+        "id": "large-box",
+        "name": "Large Box",
+        "description": "Large moving box (bedding, pillows)",
+        "category": "boxes",
+        "basePrice": 1000,
+        "weight": 25,
+        "volume": 0.2,
+        "estimatedTime": 0.1,
+        "image": "/items/boxes/large-box.png",
+        "fragile": false,
+        "oversize": false
+      }
+    }
+  },
+  "categories": {
+    "full-house": {
+      "name": "Full House Packages",
+      "description": "Complete house removal packages by bedroom count",
+      "multiplier": 1.0,
+      "volumeWeight": 1.2
+    },
+    "furniture": {
+      "name": "Furniture",
+      "description": "Individual furniture items",
+      "multiplier": 1.0,
+      "volumeWeight": 1.0
+    },
+    "appliances": {
+      "name": "Appliances",
+      "description": "White goods and electrical appliances",
+      "multiplier": 1.1,
+      "volumeWeight": 1.3,
+      "specialHandlingFee": 1000
+    },
+    "electronics": {
+      "name": "Electronics", 
+      "description": "TVs, computers, audio equipment",
+      "multiplier": 1.05,
+      "volumeWeight": 0.8,
+      "fragileFee": 500
+    },
+    "boxes": {
+      "name": "Boxes & Containers",
+      "description": "Moving boxes and storage containers",
+      "multiplier": 0.8,
+      "volumeWeight": 0.6
+    }
+  },
+  "metadata": {
+    "totalItems": 20,
+    "lastUpdated": "2025-10-03T00:00:00Z",
+    "currency": "GBP",
+    "pricesInPence": true
+  }
+}
