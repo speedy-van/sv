@@ -397,11 +397,25 @@ export class DynamicPricingEngine {
   /**
    * Calculate price for multi-drop routes
    * Customer pays their fair share of the total route cost
+   * 
+   * IMPORTANT: Multi-drop is only allowed when:
+   * 1. Customer's load is < 70% of van capacity (leaves room for others)
+   * 2. Total route distance is < 200 miles (feasible in one day)
+   * 3. Number of stops is >= 2 (actual multi-drop)
    */
   private calculateMultiDropPrice(request: DynamicPricingRequest): number {
     const { multiDropInfo } = request;
     if (!multiDropInfo) {
       throw new Error('Multi-drop info required for multi-drop pricing');
+    }
+
+    // Validate multi-drop eligibility
+    const eligibilityCheck = this.validateMultiDropEligibility(request);
+    if (!eligibilityCheck.eligible) {
+      console.warn('⚠️ Multi-drop not eligible:', eligibilityCheck.reason);
+      console.warn('⚠️ Falling back to single order pricing');
+      // Fall back to single order pricing
+      return this.calculateSingleOrderPrice(request);
     }
 
     // Base fare (reduced for multi-drop)
@@ -461,6 +475,159 @@ export class DynamicPricingEngine {
     });
 
     return totalPrice;
+  }
+
+  /**
+   * Validate if booking is eligible for multi-drop route
+   */
+  private validateMultiDropEligibility(request: DynamicPricingRequest): { eligible: boolean; reason?: string } {
+    const { multiDropInfo, items } = request;
+    
+    if (!multiDropInfo) {
+      return { eligible: false, reason: 'No multi-drop info provided' };
+    }
+
+    // Rule 1: Must have at least 2 stops (actual multi-drop)
+    if (multiDropInfo.numberOfStops < 2) {
+      return { eligible: false, reason: 'Multi-drop requires at least 2 stops' };
+    }
+
+    // Rule 2: Total route distance must be < 200 miles (feasible in one day with multiple stops)
+    if (multiDropInfo.totalRouteDistance > 200) {
+      return { 
+        eligible: false, 
+        reason: `Route too long for multi-drop (${multiDropInfo.totalRouteDistance} miles > 200 miles limit). Use single order or return journey instead.` 
+      };
+    }
+
+    // Rule 3: Customer's load must be < 70% of van capacity (leaves room for other customers)
+    // Estimate load based on items
+    const estimatedLoadPercentage = this.estimateLoadPercentage(items);
+    if (estimatedLoadPercentage > 0.70) {
+      return { 
+        eligible: false, 
+        reason: `Load too large for multi-drop (${(estimatedLoadPercentage * 100).toFixed(0)}% > 70% limit). This is a full/near-full load - use single order pricing.` 
+      };
+    }
+
+    // Rule 4: Customer's share should be reasonable (10-50%)
+    if (multiDropInfo.customerSharePercentage < 0.10 || multiDropInfo.customerSharePercentage > 0.50) {
+      return { 
+        eligible: false, 
+        reason: `Invalid customer share (${(multiDropInfo.customerSharePercentage * 100).toFixed(0)}%). Must be between 10-50%.` 
+      };
+    }
+
+    return { eligible: true };
+  }
+
+  /**
+   * Estimate load percentage based on items
+   * Luton van capacity: ~15 cubic meters, ~1000kg
+   */
+  private estimateLoadPercentage(items: Array<{ category: string; quantity: number; weight?: number; volume?: number }>): number {
+    const VAN_CAPACITY_M3 = 15; // Luton van capacity in cubic meters
+    const VAN_CAPACITY_KG = 1000; // Luton van weight capacity in kg
+
+    let totalVolume = 0;
+    let totalWeight = 0;
+
+    items.forEach(item => {
+      // Estimate volume if not provided
+      const itemVolume = item.volume || this.estimateItemVolume(item.category, item.quantity);
+      totalVolume += itemVolume;
+
+      // Estimate weight if not provided
+      const itemWeight = item.weight || this.estimateItemWeight(item.category, item.quantity);
+      totalWeight += itemWeight;
+    });
+
+    // Calculate percentage based on both volume and weight (use the higher one)
+    const volumePercentage = Math.min(totalVolume / VAN_CAPACITY_M3, 1.0);
+    const weightPercentage = Math.min(totalWeight / VAN_CAPACITY_KG, 1.0);
+
+    return Math.max(volumePercentage, weightPercentage);
+  }
+
+  /**
+   * Estimate item volume in cubic meters
+   */
+  private estimateItemVolume(category: string, quantity: number): number {
+    const volumeEstimates: Record<string, number> = {
+      'furniture': 1.5, // Large furniture ~1.5m³ each
+      'boxes': 0.1, // Standard box ~0.1m³
+      'appliances': 1.0, // Appliances ~1m³
+      'general': 0.5, // General items ~0.5m³
+    };
+
+    const unitVolume = volumeEstimates[category] || volumeEstimates['general'];
+    return unitVolume * quantity;
+  }
+
+  /**
+   * Estimate item weight in kg
+   */
+  private estimateItemWeight(category: string, quantity: number): number {
+    const weightEstimates: Record<string, number> = {
+      'furniture': 50, // Large furniture ~50kg each
+      'boxes': 10, // Standard box ~10kg
+      'appliances': 40, // Appliances ~40kg
+      'general': 20, // General items ~20kg
+    };
+
+    const unitWeight = weightEstimates[category] || weightEstimates['general'];
+    return unitWeight * quantity;
+  }
+
+  /**
+   * Calculate price for single order (extracted from calculateBasePrice)
+   */
+  private async calculateSingleOrderPrice(request: DynamicPricingRequest): Promise<number> {
+    // Service type base rates
+    const serviceRates = {
+      ECONOMY: 35,
+      STANDARD: 45,
+      PREMIUM: 65,
+      ENTERPRISE: 85,
+    };
+
+    let basePrice = serviceRates[request.serviceType];
+
+    // Distance calculation with tiered pricing
+    const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress);
+    
+    // Tiered distance pricing (more economical for long distances)
+    let distanceCost = 0;
+    const freeDistance = 5; // First 5 miles free
+    const remainingDistance = Math.max(0, distance - freeDistance);
+    
+    if (remainingDistance <= 0) {
+      distanceCost = 0;
+    } else if (distance <= 50) {
+      // Short distance: 5-50 miles at £2.50/mile
+      distanceCost = remainingDistance * 2.5;
+    } else if (distance <= 150) {
+      // Medium distance: 51-150 miles
+      distanceCost = (45 * 2.5) + ((distance - 50) * 2.0);
+    } else if (distance <= 300) {
+      // Long distance: 151-300 miles
+      distanceCost = (45 * 2.5) + (100 * 2.0) + ((distance - 150) * 1.5);
+    } else {
+      // Very long distance: 300+ miles
+      distanceCost = (45 * 2.5) + (100 * 2.0) + (150 * 1.5) + ((distance - 300) * 1.2);
+    }
+    
+    basePrice += distanceCost;
+
+    // Items cost
+    const itemsCost = request.items.reduce((total, item) => {
+      let itemCost = item.quantity * 5; // £5 per item base
+      if (item.fragile) itemCost *= 1.5;
+      if (item.weight && item.weight > 25) itemCost += 10; // Heavy item surcharge
+      return total + itemCost;
+    }, 0);
+
+    return basePrice + itemsCost;
   }
 
   private async calculateDistance(pickup: any, dropoff: any): Promise<number> {
