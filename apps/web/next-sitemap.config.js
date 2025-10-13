@@ -171,14 +171,6 @@ module.exports = {
           lastmod: new Date().toISOString(),
         });
       });
-
-      // Alternative URL patterns
-      paths.push({
-        loc: `/${service.replace('services/', '')}-${city}`,
-        changefreq: 'daily',
-        priority: 0.8,
-        lastmod: new Date().toISOString(),
-      });
     });
 
     return paths;
