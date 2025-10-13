@@ -15,11 +15,13 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
+    isAuthenticated: true,
     user: {
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
       role: session.user.role,
     },
+    driver: session.user.driver || null,
   });
 }
