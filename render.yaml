@@ -10,7 +10,7 @@ services:
     plan: standard # Recommended for production
     region: frankfurt # EU Central
     rootDir: apps/web
-    buildCommand: npm install -g pnpm@10.17.0 && pnpm install --frozen-lockfile && pnpm --filter ./apps/web build
+    buildCommand: cd ../.. && npm install -g pnpm@10.17.0 && pnpm install --frozen-lockfile && pnpm --filter ./apps/web build
     startCommand: pnpm start
     healthCheckPath: /api/health
     numInstances: 2 # High availability

@@ -69,15 +69,16 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        driver: {
-          id: user.Driver?.id,
-          userId: user.id,
-          onboardingStatus: user.Driver?.onboardingStatus,
-          basePostcode: user.Driver?.basePostcode,
-          vehicleType: user.Driver?.vehicleType,
-          status: user.Driver?.status,
-          rating: user.Driver?.rating,
-        },
+      },
+      driver: {
+        id: user.Driver?.id,
+        userId: user.id,
+        status: user.Driver?.status || 'active',
+        onboardingStatus: user.Driver?.onboardingStatus,
+        basePostcode: user.Driver?.basePostcode,
+        vehicleType: user.Driver?.vehicleType,
+        rating: user.Driver?.rating,
+        strikes: user.Driver?.strikes || 0,
       },
     });
   } catch (error) {
