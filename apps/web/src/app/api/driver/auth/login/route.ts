@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         role: 'driver',
       },
       include: {
-        Driver: true,
+        driver: true,
       },
     });
 
@@ -45,18 +45,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if driver is approved
-    if (user.Driver?.onboardingStatus !== 'approved') {
+    if (user.driver?.onboardingStatus !== 'approved') {
       return NextResponse.json(
         {
           error: 'Account not yet approved',
-          onboardingStatus: user.Driver?.onboardingStatus,
+          onboardingStatus: user.driver?.onboardingStatus,
         },
         { status: 403 }
       );
     }
 
     // Log successful login
-    await logAudit(user.id, 'driver_login_success', user.id, { targetType: 'auth', before: null, after: { email: user.email, role: user.role, driverId: user.Driver?.id } });
+    await logAudit(user.id, 'driver_login_success', user.id, { targetType: 'auth', before: null, after: { email: user.email, role: user.role, driverId: user.driver?.id } });
 
     // Generate a simple token (for mobile app compatibility)
     const token = Buffer.from(`${user.id}:${user.email}:${Date.now()}`).toString('base64');
@@ -71,14 +71,14 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
       driver: {
-        id: user.Driver?.id,
+        id: user.driver?.id,
         userId: user.id,
-        status: user.Driver?.status || 'active',
-        onboardingStatus: user.Driver?.onboardingStatus,
-        basePostcode: user.Driver?.basePostcode,
-        vehicleType: user.Driver?.vehicleType,
-        rating: user.Driver?.rating,
-        strikes: user.Driver?.strikes || 0,
+        status: user.driver?.status || 'active',
+        onboardingStatus: user.driver?.onboardingStatus,
+        basePostcode: user.driver?.basePostcode,
+        vehicleType: user.driver?.vehicleType,
+        rating: user.driver?.rating,
+        strikes: user.driver?.strikes || 0,
       },
     });
   } catch (error) {
