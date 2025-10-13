@@ -160,6 +160,46 @@ export default function WhoAndPaymentStep({
     }
   }, [formData.step1.items.length, formData.step1.pickupAddress?.full, formData.step1.dropoffAddress?.full]);
 
+  // Effect to check multi-drop eligibility when booking details change
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!formData.step1.pickupAddress || !formData.step1.dropoffAddress || formData.step1.items.length === 0) {
+        return;
+      }
+
+      setIsLoadingEligibility(true);
+      try {
+        const response = await fetch("/api/booking/check-multi-drop-eligibility", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pickup: formData.step1.pickupAddress,
+            dropoff: formData.step1.dropoffAddress,
+            items: formData.step1.items,
+            scheduledDate: formData.step1.pickupDate,
+            serviceType: formData.step1.serviceType,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to check eligibility");
+        }
+
+        const data = await response.json();
+        setEligibilityDecision(data);
+
+      } catch (error) {
+        console.error("Error checking multi-drop eligibility:", error);
+        setEligibilityDecision(null);
+      } finally {
+        setIsLoadingEligibility(false);
+      }
+    };
+
+    checkEligibility();
+
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, formData.step1.items, formData.step1.pickupDate, formData.step1.serviceType]);
+
   // CRITICAL FIX: Auto-trigger pricing calculation when Step 1 is complete but pricing is missing
   useEffect(() => {
     const hasItems = formData.step1.items.length > 0;
@@ -1508,46 +1548,3 @@ export default function WhoAndPaymentStep({
     </VStack>
   );
 }
-
-
-
-  // Effect to check multi-drop eligibility when booking details change
-  useEffect(() => {
-    const checkEligibility = async () => {
-      if (!formData.step1.pickupAddress || !formData.step1.dropoffAddress || formData.step1.items.length === 0) {
-        return;
-      }
-
-      setIsLoadingEligibility(true);
-      try {
-        const response = await fetch("/api/booking/check-multi-drop-eligibility", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pickup: formData.step1.pickupAddress,
-            dropoff: formData.step1.dropoffAddress,
-            items: formData.step1.items,
-            scheduledDate: formData.step1.dateTime,
-            serviceType: formData.step1.serviceType,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to check eligibility");
-        }
-
-        const data = await response.json();
-        setEligibilityDecision(data);
-
-      } catch (error) {
-        console.error("Error checking multi-drop eligibility:", error);
-        setEligibilityDecision(null);
-      } finally {
-        setIsLoadingEligibility(false);
-      }
-    };
-
-    checkEligibility();
-
-  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, formData.step1.items, formData.step1.dateTime, formData.step1.serviceType]);
-

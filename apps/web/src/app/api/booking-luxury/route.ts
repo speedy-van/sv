@@ -496,7 +496,6 @@ export async function POST(request: NextRequest) {
         crewMultiplierPercent: 0, // Will be calculated
         availabilityMultiplierPercent: 0, // Will be calculated
         totalGBP: amountsInPence.totalGBP,
-        promotionCode: bookingData.promotionCode || null,
 
         // Payment Intent will be created after booking
         stripePaymentIntentId: null,
