@@ -1,8 +1,8 @@
 # Multi-stage Dockerfile for Speedy Van unified application
-FROM node:18-alpine AS base
+FROM node:20.18.0-alpine AS base
 
 # Install pnpm
-RUN npm install -g pnpm@8.15.1
+RUN npm install -g pnpm@10.17.0
 
 # Set working directory
 WORKDIR /app
@@ -31,7 +31,7 @@ FROM base AS builder
 RUN pnpm run build
 
 # Production stage for unified web app
-FROM node:18-alpine AS production
+FROM node:20.18.0-alpine AS production
 
 WORKDIR /app
 
