@@ -1,61 +1,33 @@
-# Speedy Van - Robots.txt
-# Optimized for SEO and Google Search
-# Office 2.18 1 Barrack St, Hamilton ML3 0HS, UK
-
+# *
 User-agent: *
 Allow: /
-
-# Disallow admin and private areas
 Disallow: /admin/
 Disallow: /api/
-Disallow: /driver/
-Disallow: /customer/
-Disallow: /_next/
-Disallow: /uploads/private/
 Disallow: /auth/
+Disallow: /driver/
+Disallow: /customer-portal/
+Disallow: /driver-portal/
+Disallow: /portal/
+Disallow: /offline
+Disallow: /_next/
+Disallow: /uploads/driver-applications/
+Disallow: *.json$
 
-# Allow important pages for SEO
-Allow: /
-Allow: /man-and-van-london
-Allow: /furniture-removal
-Allow: /furniture-movers
-Allow: /van-hire
-Allow: /affordable-man-and-van
-Allow: /services/
-Allow: /uk/
-Allow: /booking
-Allow: /booking-luxury
-Allow: /track
-Allow: /pricing
-Allow: /about
-Allow: /contact
-Allow: /how-it-works
-Allow: /blog/
-Allow: /images/
-Allow: /og/
-
-# Sitemaps
-Sitemap: https://speedy-van.co.uk/sitemap.xml
-Sitemap: https://speedy-van.co.uk/sitemap-pages.xml
-Sitemap: https://speedy-van.co.uk/sitemap-blog.xml
-
-# Crawl delay for better server performance
-Crawl-delay: 1
-
-# Host directive
-Host: https://speedy-van.co.uk
-
-# Google-specific rules
+# Googlebot
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /auth/
 Disallow: /driver/
+Disallow: /customer-portal/
+Disallow: /driver-portal/
+Disallow: /portal/
+Disallow: /offline
 
-# Bing-specific rules
-User-agent: Bingbot
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /driver/
+# Host
+Host: http://localhost:3000
 
+# Sitemaps
+Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: http://localhost:3000/sitemap-0.xml

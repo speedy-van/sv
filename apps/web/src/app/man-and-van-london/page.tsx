@@ -1,9 +1,7 @@
-import { Metadata } from 'next';
-import { metadata as pageMetadata } from './metadata';
+'use client';
+
 import { Box, Container, Heading, Text, VStack, HStack, Icon, SimpleGrid, Card, CardBody, List, ListItem, ListIcon, Button, Divider, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from '@chakra-ui/react';
 import { FiCheckCircle, FiStar, FiPhone, FiCalendar, FiTruck } from 'react-icons/fi';
-
-export const metadata: Metadata = pageMetadata;
 
 export default function ManAndVanLondonPage() {
   return (

@@ -1,4 +1,5 @@
-import { Metadata } from 'next';
+'use client';
+
 import { notFound } from 'next/navigation';
 import {
   Box,
@@ -24,39 +25,6 @@ import { ALL_SERVICE_AREAS, getServiceAreaBySlug, getNearbyServiceAreas } from '
 interface AreaPageProps {
   params: {
     slug: string;
-  };
-}
-
-// Generate static params for all service areas
-export async function generateStaticParams() {
-  return ALL_SERVICE_AREAS.map((area) => ({
-    slug: area.slug,
-  }));
-}
-
-// Generate metadata for SEO
-export async function generateMetadata({ params }: AreaPageProps): Promise<Metadata> {
-  const area = getServiceAreaBySlug(params.slug);
-  
-  if (!area) {
-    return {
-      title: 'Area Not Found',
-    };
-  }
-  
-  return {
-    title: `Man and Van ${area.name} | Moving Services from £25/hour | Speedy Van`,
-    description: `Professional man and van services in ${area.name}, ${area.region}. House removals, furniture delivery, same-day service. Fully insured. Book online from £25/hour.`,
-    keywords: area.keywords.join(', '),
-    openGraph: {
-      title: `Man and Van ${area.name} | Speedy Van`,
-      description: `Professional moving services in ${area.name} from £25/hour. Same-day service available.`,
-      images: [{
-        url: `/og/areas/${area.slug}.jpg`,
-        width: 1200,
-        height: 630,
-      }],
-    },
   };
 }
 

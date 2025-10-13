@@ -2,8 +2,6 @@
 
 import { Box, Container, Heading, Text, VStack, UnorderedList, ListItem, Divider, Badge } from '@chakra-ui/react';
 
-export { metadata } from './metadata';
-
 export default function StudentMovingServicePage() {
   return (
     <Container maxW="container.lg" py={12}>
@@ -196,7 +194,7 @@ export default function StudentMovingServicePage() {
           </Heading>
           <Text fontSize="lg" lineHeight="tall" mb={6}>
             Most university campuses have strict vehicle access rules. Book your moving slot with accommodation office 1-2 weeks in advance. Some unis charge £10-30 for vehicle access permits. Peak times (September, June) have limited slots - book early. Have a backup parking plan if campus access is denied.
-          </Heading>
+          </Text>
 
           <Heading as="h3" size="lg" mt={6} mb={3}>
             Halls of Residence Challenges

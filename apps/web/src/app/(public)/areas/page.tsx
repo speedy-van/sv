@@ -1,4 +1,5 @@
-import { Metadata } from 'next';
+'use client';
+
 import {
   Box,
   Container,
@@ -18,17 +19,6 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { ALL_SERVICE_AREAS, getServiceAreasByRegion, UK_REGIONS } from '@/data/uk-service-areas';
-
-export const metadata: Metadata = {
-  title: 'Areas We Cover | Nationwide Man and Van Services UK | Speedy Van',
-  description: 'Speedy Van provides professional moving and delivery services across the entire United Kingdom. Coverage in England, Scotland, Wales, and Northern Ireland. Book online from £25/hour.',
-  keywords: 'man and van uk, removals uk, nationwide moving service, areas covered, delivery service uk',
-  openGraph: {
-    title: 'Areas We Cover | Nationwide Moving Services | Speedy Van',
-    description: 'Professional moving services across the entire UK. Coverage in all major cities.',
-    images: [{ url: '/og/areas-we-cover.jpg', width: 1200, height: 630 }],
-  },
-};
 
 export default function AreasPage() {
   const englandAreas = getServiceAreasByRegion('England');
