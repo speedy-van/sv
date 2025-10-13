@@ -4,12 +4,12 @@ struct AppConfig {
     // MARK: - API Configuration
     
     /// Base URL for API requests
-    /// Production: https://api.speedy-van.co.uk
+    /// Production: https://speedy-van.co.uk
     /// Development: http://localhost:3000
     #if DEBUG
     static let apiBaseURL = "http://localhost:3000"
     #else
-    static let apiBaseURL = "https://api.speedy-van.co.uk"
+    static let apiBaseURL = "https://speedy-van.co.uk"
     #endif
     
     /// API timeout in seconds
