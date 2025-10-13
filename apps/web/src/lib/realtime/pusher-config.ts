@@ -5,18 +5,18 @@
 import Pusher from 'pusher';
 import PusherClient from 'pusher-js';
 
-// Server-side Pusher instance (with fallback for build time)
+// Server-side Pusher instance
 export const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || 'build-placeholder',
-  key: process.env.PUSHER_KEY || 'build-placeholder',
-  secret: process.env.PUSHER_SECRET || 'build-placeholder',
+  appId: process.env.PUSHER_APP_ID || '',
+  key: process.env.PUSHER_KEY || '',
+  secret: process.env.PUSHER_SECRET || '',
   cluster: process.env.PUSHER_CLUSTER || 'eu',
   useTLS: true,
 });
 
-// Client-side Pusher instance (for use in components) - with fallback for build time
+// Client-side Pusher instance (for use in components)
 export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY || 'build-placeholder',
+  process.env.NEXT_PUBLIC_PUSHER_KEY || '',
   {
     cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
     forceTLS: true,
@@ -70,11 +70,6 @@ export function isAuthorizedForChannel(
   userId: string,
   userRole: string
 ): boolean {
-  // Allow driver-specific channels for drivers and admins
-  if (channel.startsWith('driver-')) {
-    return userRole === 'driver' || userRole === 'admin';
-  }
-  
   // Basic authorization logic
   if (channel.startsWith('booking-')) {
     return true; // Allow all authenticated users to subscribe to booking updates
