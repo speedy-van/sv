@@ -22,7 +22,7 @@
       "distribution": "store",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk"
+        "EXPO_PUBLIC_API_URL": "https://speedy-van-server.onrender.com"
       },
       "ios": {
         "buildConfiguration": "Release",
