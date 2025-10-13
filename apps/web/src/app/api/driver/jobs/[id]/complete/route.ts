@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import Pusher from 'pusher';
+// Fast mobile calculation - removed slow PerformanceTrackingService import
 
 // Initialize Pusher
 const pusher = new Pusher({
@@ -19,6 +21,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const jobId = params.id;
   try {
     const session = await getServerSession(authOptions);
     
@@ -30,9 +33,25 @@ export async function POST(
     }
 
     const userId = (session.user as any).id;
-    const { id: jobId } = params;
     const body = await request.json();
-    const { completionNotes, customerSignature, photos } = body;
+    const {
+      completionNotes,
+      customerSignature,
+      photos,
+      waitingDurationMinutes = 0,
+      loadingDurationMinutes = 0,
+      unloadingDurationMinutes = 0,
+      slaDelayMinutes = 0,
+      tollCostsPence = 0,
+      parkingCostsPence = 0,
+      dropCount,
+      perLegDistanceMiles,
+      usedCapacityCubicMeters,
+      vehicleCapacityCubicMeters,
+      adminApprovedBonusPence = 0,
+      adminApprovalId,
+      drivingDurationMinutes,
+    } = body;
 
     // Get driver record
     const driver = await prisma.driver.findUnique({
@@ -67,20 +86,29 @@ export async function POST(
     const booking = await prisma.booking.findUnique({
       where: { id: jobId },
       select: {
+        id: true,
         reference: true,
         customerName: true,
         customerPhone: true,
         totalGBP: true,
         baseDistanceMiles: true,
         estimatedDurationMinutes: true,
-        scheduledAt: true,
+        urgency: true,
+        BookingItem: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            volumeM3: true,
+          }
+        }
       }
     });
 
     const completedAt = new Date();
 
     // Update assignment status to completed
-    const updatedAssignment = await prisma.assignment.update({
+    await prisma.assignment.update({
       where: { id: assignment.id },
       data: { 
         status: 'completed',
@@ -112,64 +140,195 @@ export async function POST(
       },
     });
 
-    // Calculate driver earnings using comprehensive pricing engine
-    const { DriverPricingEngine } = await import('@/lib/pricing/driver-pricing-engine');
-    
-    const bookingItems = await prisma.bookingItem.findMany({
-      where: { bookingId: jobId },
-    });
-    
-    const earnings = DriverPricingEngine.calculateFromBooking({
-      baseDistanceMiles: booking?.baseDistanceMiles || 0,
-      estimatedDurationMinutes: booking?.estimatedDurationMinutes || 60,
-      vehicleType: 'medium_van',
-      itemsCount: bookingItems.length,
-      hasStairs: false,
-      floorCount: 0,
-      scheduledAt: booking?.scheduledAt || new Date(),
-      isUrgent: false,
-    });
-    
-    const baseEarnings = earnings.totalEarnings;
-    const surgeMultiplier = 1.0;
-    const finalEarnings = Math.floor(baseEarnings * surgeMultiplier);
-    
-    const totalAmount = booking?.totalGBP || 0;
-    const platformFee = Math.max(0, totalAmount - finalEarnings);
+    const fallbackDistanceMiles = booking?.baseDistanceMiles ?? 0;
+    const perLegMilesArray = Array.isArray(perLegDistanceMiles)
+      ? perLegDistanceMiles.map((m: number) => (Number.isFinite(Number(m)) ? Number(m) : 0))
+      : undefined;
+    const aggregatedPerLegMiles = perLegMilesArray && perLegMilesArray.length > 0
+      ? perLegMilesArray.reduce((sum, leg) => sum + leg, 0)
+      : undefined;
+    let computedDistanceMiles = aggregatedPerLegMiles && aggregatedPerLegMiles > 0
+      ? aggregatedPerLegMiles
+      : (typeof fallbackDistanceMiles === 'number' ? fallbackDistanceMiles : 0);
 
-    // Create driver earnings record
-    await prisma.driverEarnings.create({
+    // FIXED: Validate distance - reject if invalid (no fallback)
+    if (!Number.isFinite(computedDistanceMiles) || computedDistanceMiles <= 0) {
+      logger.error('Invalid distance data for job completion', {
+        jobId,
+        driverId: driver.id,
+        computedDistanceMiles,
+        perLegDistanceMiles,
+        fallbackDistanceMiles,
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid distance data. Please ensure GPS tracking is enabled and retry.',
+          code: 'INVALID_DISTANCE',
+          details: {
+            receivedDistance: computedDistanceMiles,
+            suggestion: 'Check GPS permissions and location services'
+          }
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Sanity check: reject unreasonably long distances (>500 miles for UK)
+    if (computedDistanceMiles > 500) {
+      logger.warn('Unusually long distance detected', {
+        jobId,
+        driverId: driver.id,
+        distance: computedDistanceMiles,
+      });
+      return NextResponse.json(
+        { 
+          error: 'Distance exceeds maximum allowed (500 miles). Please contact support.',
+          code: 'DISTANCE_TOO_LONG',
+          details: { distance: computedDistanceMiles }
+        },
+        { status: 400 }
+      );
+    }
+    const computedDrivingMinutes = Math.max(0, Number(drivingDurationMinutes) || booking?.estimatedDurationMinutes || 0);
+    let computedLoadingMinutes = Math.max(0, Number(loadingDurationMinutes) || 0);
+    let computedUnloadingMinutes = Math.max(0, Number(unloadingDurationMinutes) || 0);
+    if (computedLoadingMinutes === 0 && computedUnloadingMinutes === 0 && booking?.estimatedDurationMinutes) {
+      const handlingEstimate = Math.max(20, Math.round(booking.estimatedDurationMinutes * 0.3));
+      computedLoadingMinutes = Math.ceil(handlingEstimate / 2);
+      computedUnloadingMinutes = handlingEstimate - computedLoadingMinutes;
+    }
+
+    const computedWaitingMinutes = Math.max(0, Number(waitingDurationMinutes) || 0);
+    const computedSlaDelayMinutes = Math.max(0, Number(slaDelayMinutes) || 0);
+    const computedDropCount = Math.max(1, Number(dropCount) || 1);
+
+    if (!booking) {
+      return NextResponse.json(
+        { error: 'Booking not found' },
+        { status: 404 }
+      );
+    }
+
+    // ============================================================================
+    // UNIFIED EARNINGS CALCULATION - SINGLE SOURCE OF TRUTH
+    // Used by: Web Portal, iOS App, Android App
+    // ============================================================================
+    
+    const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+    
+    // Prepare input for unified earnings service
+    const earningsInput = {
+      assignmentId: assignment.id,
+      driverId: driver.id,
+      bookingId: jobId,
+      distanceMiles: computedDistanceMiles,
+      durationMinutes: computedDrivingMinutes + computedLoadingMinutes + computedUnloadingMinutes,
+      dropCount: computedDropCount,
+      loadingMinutes: computedLoadingMinutes,
+      unloadingMinutes: computedUnloadingMinutes,
+      drivingMinutes: computedDrivingMinutes,
+      waitingMinutes: computedWaitingMinutes,
+      customerPaymentPence: Math.round(booking.totalGBP * 100),
+      urgencyLevel: (booking.urgency as 'standard' | 'express' | 'premium') || 'standard',
+      serviceType: 'standard' as const,
+      onTimeDelivery: computedSlaDelayMinutes === 0,
+      tollCostsPence: tollCostsPence,
+      parkingCostsPence: parkingCostsPence,
+      adminApprovedBonusPence: adminApprovedBonusPence,
+      adminApprovalId: adminApprovalId,
+    };
+    
+    // Calculate earnings using unified service
+    const earningsResult = await driverEarningsService.calculateEarnings(earningsInput);
+    
+    if (!earningsResult.success) {
+      throw new Error('Failed to calculate driver earnings');
+    }
+    
+    const breakdown = earningsResult.breakdown;
+    
+    console.log('✅ Driver earnings calculated using UNIFIED service:', {
+      driverId: driver.id,
+      assignmentId: assignment.id,
+      customerPaid: booking.totalGBP,
+      baseFare: breakdown.baseFare / 100,
+      perDropFee: breakdown.perDropFee / 100,
+      mileageFee: breakdown.mileageFee / 100,
+      netEarnings: breakdown.netEarnings / 100,
+      warnings: earningsResult.warnings,
+    });
+    
+    // Create driver earnings record using unified calculation
+    const earningsRecord = await prisma.driverEarnings.create({
       data: {
         driverId: driver.id,
         assignmentId: assignment.id,
-        baseAmountPence: baseEarnings,
-        surgeAmountPence: Math.floor(baseEarnings * (surgeMultiplier - 1)),
-        tipAmountPence: 0, // Tips can be added later
-        feeAmountPence: platformFee,
-        netAmountPence: finalEarnings,
+        baseAmountPence: breakdown.baseFare,
+        surgeAmountPence: breakdown.perDropFee + breakdown.mileageFee,
+        tipAmountPence: 0,
+        feeAmountPence: 0, // No platform fee - driver gets 100%
+        netAmountPence: breakdown.netEarnings,
+        grossEarningsPence: breakdown.grossEarnings,
+        platformFeePence: 0, // No platform fee
+        cappedNetEarningsPence: breakdown.cappedNetEarnings,
+        rawNetEarningsPence: breakdown.netEarnings,
         currency: 'gbp',
         calculatedAt: completedAt,
         paidOut: false,
-      },
+        requiresAdminApproval: earningsResult.requiresAdminApproval,
+        adminApprovalId: adminApprovalId,
+      } as any,
     });
+    
+    const netEarningsPence = breakdown.netEarnings;
+    const grossEarningsPence = breakdown.grossEarnings;
+    
+    // Prepare response with detailed breakdown for mobile apps
+    const pricingResponse = {
+      netDriverEarnings: netEarningsPence,
+      platformFee: 0, // No platform fee - driver gets 100%
+      breakdown: {
+        baseFare: breakdown.baseFare,
+        perDropFee: breakdown.perDropFee,
+        mileageFee: breakdown.mileageFee,
+        timeFee: breakdown.timeFee,
+        bonuses: breakdown.bonuses,
+        penalties: breakdown.penalties,
+        reimbursements: breakdown.reimbursements,
+        subtotal: breakdown.subtotal,
+        grossEarnings: breakdown.grossEarnings,
+        helperShare: breakdown.helperShare,
+        netEarnings: breakdown.netEarnings,
+        cappedNetEarnings: breakdown.cappedNetEarnings,
+        capApplied: breakdown.capApplied,
+      },
+      // Legacy compatibility for older app versions
+      basePay: breakdown.baseFare,
+      distancePay: breakdown.mileageFee,
+      timePay: breakdown.timeFee,
+      stopBonus: breakdown.perDropFee,
+      totalPay: breakdown.netEarnings,
+      warnings: earningsResult.warnings,
+      recommendations: earningsResult.recommendations,
+    };
 
-    // Create driver notification
+    // Stage 2: Create driver notification (FINAL confirmation)
     await prisma.driverNotification.create({
       data: {
         driverId: driver.id,
-        type: 'job_completed', // Using correct enum value
-        title: 'Job Completed! 🎉',
-        message: `You have completed job ${booking?.reference} and earned £${(finalEarnings / 100).toFixed(2)}!`,
+        type: 'payout_processed',
+        title: 'Payment Confirmed! 💰',
+        message: `Your payment for ${booking?.reference} has been confirmed! You earned £${(netEarningsPence / 100).toFixed(2)}.`,
         read: false,
       },
     });
 
-    console.log('✅ Job completed:', {
+    logger.info('Driver job completed', {
       jobId,
       driverId: driver.id,
       assignmentId: assignment.id,
       bookingReference: booking?.reference,
-      earnings: finalEarnings,
+      earningsPence: netEarningsPence,
     });
 
     // Send real-time notifications
@@ -188,7 +347,7 @@ export async function POST(
         jobId,
         driverId: driver.id,
         bookingReference: booking?.reference,
-        earnings: finalEarnings,
+        earnings: netEarningsPence,
         timestamp: completedAt.toISOString(),
       });
 
@@ -200,9 +359,17 @@ export async function POST(
         timestamp: completedAt.toISOString(),
       });
 
-      console.log('📡 Real-time notifications sent for job completion');
+      logger.info('Real-time notifications sent for job completion', {
+        bookingReference: booking?.reference,
+        driverId: driver.id,
+        assignmentId: assignment.id,
+      });
     } catch (pusherError) {
-      console.error('⚠️ Failed to send real-time notifications:', pusherError);
+      logger.error('Failed to send real-time notifications', pusherError as Error, {
+        service: 'driver-job-complete',
+        userId: driver.id,
+        requestId: jobId,
+      });
     }
 
     return NextResponse.json({
@@ -213,17 +380,21 @@ export async function POST(
         status: 'completed',
         bookingReference: booking?.reference,
         earnings: {
-          base: baseEarnings,
-          surge: Math.floor(baseEarnings * (surgeMultiplier - 1)),
-          total: finalEarnings,
+          gross: grossEarningsPence,
+          net: netEarningsPence,
+          platformFee: pricingResponse.platformFee,
           currency: 'gbp',
         },
+        pricing: pricingResponse,
         completedAt: completedAt.toISOString(),
       },
     });
 
   } catch (error) {
-    console.error('❌ Error completing job:', error);
+    logger.error('Error completing driver job', error as Error, {
+      service: 'driver-job-complete',
+      requestId: jobId,
+    });
     return NextResponse.json(
       {
         error: 'Failed to complete job',
