@@ -21,8 +21,8 @@ export interface UKAddressRecord {
 const UK_ADDRESS_DATABASE: UKAddressRecord[] = [
   // Hamilton ML3 area (Speedy Van's main office location)
   {
-    postcode: 'ML3 0DG',
-    line1: 'Office 2.18, 1 Barrack Street',
+    postcode: 'ML3 0HS',
+    line1: 'Office 2.18 1 Barrack St',
     city: 'Hamilton',
     county: 'South Lanarkshire',
     country: 'Scotland',
@@ -31,7 +31,7 @@ const UK_ADDRESS_DATABASE: UKAddressRecord[] = [
     confidence: 0.95
   },
   {
-    postcode: 'ML3 0DG',
+    postcode: 'ML3 0HS',
     line1: '2 Barrack Street',
     city: 'Hamilton',
     county: 'South Lanarkshire',
@@ -41,7 +41,7 @@ const UK_ADDRESS_DATABASE: UKAddressRecord[] = [
     confidence: 0.95
   },
   {
-    postcode: 'ML3 0DG',
+    postcode: 'ML3 0HS',
     line1: '3 Barrack Street',
     city: 'Hamilton',
     county: 'South Lanarkshire',
@@ -51,7 +51,7 @@ const UK_ADDRESS_DATABASE: UKAddressRecord[] = [
     confidence: 0.95
   },
   {
-    postcode: 'ML3 0DG',
+    postcode: 'ML3 0HS',
     line1: '4 Barrack Street',
     city: 'Hamilton',
     county: 'South Lanarkshire',
@@ -61,7 +61,7 @@ const UK_ADDRESS_DATABASE: UKAddressRecord[] = [
     confidence: 0.95
   },
   {
-    postcode: 'ML3 0DG',
+    postcode: 'ML3 0HS',
     line1: '5 Barrack Street',
     city: 'Hamilton',
     county: 'South Lanarkshire',

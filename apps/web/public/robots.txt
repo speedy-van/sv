@@ -1,6 +1,6 @@
 # Speedy Van - Robots.txt
 # Optimized for SEO and Google Search
-# Office 2.18, Hamilton, 1 Barrack Street, Hamilton, ML3 0DG, UK
+# Office 2.18 1 Barrack St, Hamilton ML3 0HS, UK
 
 User-agent: *
 Allow: /

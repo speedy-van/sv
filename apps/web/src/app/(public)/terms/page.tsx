@@ -24,7 +24,7 @@ export default function TermsPage() {
             Company No. SC865658 · Registered in Scotland
           </Text>
           <Text fontSize="sm" color="gray.600">
-            Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, United Kingdom
+            Office 2.18 1 Barrack St, Hamilton ML3 0HS, United Kingdom
           </Text>
         </VStack>
 

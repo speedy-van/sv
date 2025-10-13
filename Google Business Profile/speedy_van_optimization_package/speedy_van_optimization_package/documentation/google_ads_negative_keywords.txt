@@ -1,0 +1,126 @@
+# Google Ads Negative Keywords for Speedy Van
+# Add these to your campaigns to reduce irrelevant clicks and lower CPC
+
+## Job-Related Keywords
+jobs
+employment
+careers
+driver jobs
+van driver jobs
+delivery driver jobs
+hiring
+recruit
+recruitment
+apply
+cv
+resume
+work for
+join our team
+
+## Van Sales/Rental Keywords
+cheap van hire
+used van
+van for sale
+van rental
+self drive
+DIY moving
+van lease
+hire purchase
+van finance
+second hand
+buy van
+sell van
+van dealer
+van showroom
+commercial vehicle sales
+
+## Repair/Maintenance Keywords
+scrap van
+van parts
+mechanic
+repair
+garage
+MOT
+service
+maintenance
+breakdown
+recovery
+tow
+towing
+salvage
+spare parts
+engine
+transmission
+
+## Free/Low-Value Keywords
+free
+free quote
+free estimate
+free service
+cheap
+cheapest
+budget
+discount
+bargain
+
+## Competitor Brand Names
+[Add competitor names here]
+anyvan
+man with a van
+shiply
+compare the man
+fantastic services
+
+## Unrelated Services
+taxi
+cab
+uber
+lyft
+passenger transport
+airport transfer
+wedding car
+limo
+limousine
+chauffeur
+
+## DIY/Self-Service
+do it yourself
+DIY
+self service
+self move
+rent a van
+hire a van
+van hire
+
+## Insurance/Legal
+insurance
+claim
+compensation
+legal
+solicitor
+lawyer
+sue
+complaint
+
+## Education/Training
+course
+training
+learn
+study
+school
+college
+university
+lesson
+tutorial
+
+## Other Irrelevant Terms
+volunteer
+charity
+donation
+sponsor
+grant
+funding
+investment
+franchise
+business opportunity
+

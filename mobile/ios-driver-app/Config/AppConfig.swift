@@ -26,7 +26,7 @@ struct AppConfig {
     static let companyName = "Speedy Van"
     static let supportEmail = "support@speedy-van.co.uk"
     static let supportPhone = "07901846297"
-    static let companyAddress = "Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, Scotland"
+    static let companyAddress = "Office 2.18 1 Barrack St, Hamilton ML3 0HS, Scotland"
     
     // MARK: - Location Tracking
     

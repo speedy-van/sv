@@ -14,7 +14,7 @@ export const COMPANY_INFO = {
   description: 'Professional moving and delivery services across the UK',
   founded: '2020',
   website: 'https://speedy-van.co.uk',
-  address: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG',
+  address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
   phone: '+44 7901846297',
   email: 'support@speedy-van.co.uk',
 } as const;
@@ -22,7 +22,7 @@ export const COMPANY_INFO = {
 export const COMPANY_CONTACT = {
   phone: '+44 7901846297',
   email: 'support@speedy-van.co.uk',
-  address: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG',
+  address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
   supportPhone: '+44 7901846297',
   supportEmail: 'support@speedy-van.co.uk',
   emergencyPhone: '+44 7901846297',

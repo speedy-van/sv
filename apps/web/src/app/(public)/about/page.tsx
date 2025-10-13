@@ -361,7 +361,7 @@ export default function AboutPage() {
             Registered in Scotland · Companies House
           </Text>
           <Text color="gray.600" fontSize="sm">
-            Registered address: Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, United Kingdom
+            Registered address: Office 2.18 1 Barrack St, Hamilton ML3 0HS, United Kingdom
           </Text>
           <Text color="gray.600" fontSize="sm">
             Date of incorporation: 7 October 2025

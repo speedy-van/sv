@@ -85,7 +85,7 @@ const contactMethods = [
     description: 'Meet us in person',
     icon: FiMapPin,
     color: 'orange',
-    contact: 'Office 2.18, 1 Barrack Street, Hamilton',
+    contact: 'Office 2.18 1 Barrack St, Hamilton',
     availability: 'Mon-Fri 9AM-5PM',
     action: () => {/* Open maps */}
   }
@@ -486,7 +486,7 @@ export default function ContactPage() {
                           Our Location
                         </Heading>
                         <Text color="text.secondary">
-                          Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG
+                          Office 2.18 1 Barrack St, Hamilton ML3 0HS
                         </Text>
                       </VStack>
                     </HStack>

@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform jobs to match frontend interface
-    const transformedJobs = availableJobs.map(booking => {
+    const transformedJobs = await Promise.all(availableJobs.map(async booking => {
       // Calculate estimated distance (simplified)
       // Note: For UK-wide coverage, we show all jobs regardless of driver location
       const distance = calculateDistance(
@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
         expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         createdAt: booking.createdAt.toISOString(),
       };
-    });
+    }));
 
     console.log('✅ Available jobs loaded for driver:', driver.id, 'Jobs count:', transformedJobs.length);
 

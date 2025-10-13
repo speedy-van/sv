@@ -420,7 +420,7 @@ function Footer() {
             <div className="space-y-2 text-gray-400">
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2" />
-                Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG
+                Office 2.18 1 Barrack St, Hamilton ML3 0HS
               </div>
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2" />

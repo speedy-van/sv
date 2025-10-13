@@ -268,7 +268,7 @@ viewport={{ once: true }}
                 <HStack spacing={3} w="full">
                   <Icon as={FaMapMarkerAlt} color="neon.500" />
                   <Text fontSize="sm" color="text.secondary" textAlign="center">
-                    Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG
+                    Office 2.18 1 Barrack St, Hamilton ML3 0HS
                   </Text>
                 </HStack>
               </VStack>

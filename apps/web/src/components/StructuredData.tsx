@@ -64,7 +64,7 @@ function getMovingCompanySchema() {
     email: 'support@speedy-van.co.uk',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Office 2.18, 1 Barrack Street',
+      streetAddress: 'Office 2.18 1 Barrack St',
       addressLocality: 'Hamilton',
       addressRegion: 'Scotland',
       postalCode: 'ML3 0DG',
@@ -312,7 +312,7 @@ function getOrganizationSchema() {
     },
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Office 2.18, 1 Barrack Street',
+      streetAddress: 'Office 2.18 1 Barrack St',
       addressLocality: 'Hamilton',
       addressRegion: 'Scotland',
       postalCode: 'ML3 0DG',
@@ -344,7 +344,7 @@ function getLocalBusinessSchema() {
     email: 'support@speedy-van.co.uk',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Office 2.18, 1 Barrack Street',
+      streetAddress: 'Office 2.18 1 Barrack St',
       addressLocality: 'Hamilton',
       addressRegion: 'Scotland',
       postalCode: 'ML3 0DG',

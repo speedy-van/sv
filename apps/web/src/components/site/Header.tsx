@@ -731,7 +731,7 @@ const Header: React.FC = memo(() => {
                         Address
                       </Text>
                       <Text fontSize="sm" color="text.secondary">
-                        Office 2.18, 1 Barrack Street, Hamilton
+                        Office 2.18 1 Barrack St, Hamilton ML3 0HS
                       </Text>
                     </VStack>
                   </HStack>

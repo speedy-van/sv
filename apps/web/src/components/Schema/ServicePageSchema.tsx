@@ -41,10 +41,10 @@ export function ServicePageSchema({
       email: 'support@speedy-van.co.uk',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Office 2.18, Hamilton, 1 Barrack Street',
+        streetAddress: 'Office 2.18 1 Barrack St',
         addressLocality: 'Hamilton',
         addressRegion: 'Scotland',
-        postalCode: 'ML3 0DG',
+        postalCode: 'ML3 0HS',
         addressCountry: 'GB',
       },
       aggregateRating: {

@@ -117,7 +117,7 @@ export async function GET(
         legalName: 'SPEEDY VAN REMOVALS LTD',
         companyNumber: 'SC865658',
         registeredIn: 'Scotland',
-        address: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG',
+        address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
         email: 'support@speedy-van.co.uk',
         phone: '07901846297',
         vatNumber: 'GB123456789',

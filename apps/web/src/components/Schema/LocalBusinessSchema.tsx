@@ -32,10 +32,10 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
   businessName = 'Speedy Van (SPEEDY VAN REMOVALS LTD)',
   description = 'Professional moving services across the UK. Fast, reliable, and fully insured van hire and moving solutions. Company No. SC865658, registered in Scotland.',
   address = {
-    streetAddress: 'Office 2.18, 1 Barrack Street',
+    streetAddress: 'Office 2.18 1 Barrack St',
     addressLocality: 'Hamilton',
     addressRegion: 'South Lanarkshire',
-    postalCode: 'ML3 0DG',
+    postalCode: 'ML3 0HS',
     addressCountry: 'GB',
   },
   telephone = '+447901846297',

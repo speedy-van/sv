@@ -101,7 +101,7 @@ interface LegalSettings {
 const mockLegalSettings: LegalSettings = {
   company: {
     name: 'SPEEDY VAN REMOVALS LTD',
-    address: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, United Kingdom',
+    address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS, United Kingdom',
     phone: '+44 7901846297',
     email: 'support@speedy-van.co.uk',
     website: 'https://speedy-van.co.uk',

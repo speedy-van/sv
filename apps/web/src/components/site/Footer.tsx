@@ -323,7 +323,7 @@ const Footer: React.FC = () => {
                   <VStack align="start" spacing={0}>
                     <Text fontSize="xs" color="text.secondary">Address</Text>
                     <Text fontSize="sm" fontWeight="medium" color="text.primary">
-                      Office 2.18, 1 Barrack Street, Hamilton
+                      Office 2.18 1 Barrack St, Hamilton ML3 0HS
                     </Text>
                   </VStack>
                 </HStack>

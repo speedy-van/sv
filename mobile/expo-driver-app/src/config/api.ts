@@ -74,7 +74,7 @@ export const COMPANY_INFO = {
   NAME: 'Speedy Van',
   SUPPORT_EMAIL: 'support@speedy-van.co.uk',
   SUPPORT_PHONE: '07901846297',
-  ADDRESS: 'Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, Scotland',
+  ADDRESS: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS, Scotland',
 };
 
 // App Configuration

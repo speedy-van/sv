@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speedy Van - Google Business Profile Implementation Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .nav {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav button {
+            padding: 10px 20px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .nav button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .nav button.active {
+            background: #1e3c72;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .card h4 {
+            color: #667eea;
+            margin: 15px 0 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .copy-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .copy-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        
+        .copy-btn.copied {
+            background: #10b981;
+        }
+        
+        .instruction {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .checklist li:hover {
+            background: #e9ecef;
+        }
+        
+        .checklist li.checked {
+            background: #d4edda;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        .checklist li::before {
+            content: '☐ ';
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .checklist li.checked::before {
+            content: '✓ ';
+            color: #28a745;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .alert-info {
+            background: #cfe2ff;
+            border: 1px solid #b6d4fe;
+            color: #084298;
+        }
+        
+        .alert-success {
+            background: #d1e7dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+        }
+        
+        .service-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .faq-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .faq-item strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚚 Speedy Van - Google Business Profile Setup</h1>
+            <p>Complete Implementation Guide with Copy-Paste Ready Content</p>
+        </div>
+        
+        <div class="nav">
+            <button onclick="showSection('overview')" class="active">Overview</button>
+            <button onclick="showSection('basic-info')">Basic Info</button>
+            <button onclick="showSection('services')">Services</button>
+            <button onclick="showSection('faqs')">FAQs</button>
+            <button onclick="showSection('posts')">Google Posts</button>
+            <button onclick="showSection('checklist')">Checklist</button>
+        </div>
+        
+        <div class="content">
+            <!-- Overview Section -->
+            <div id="overview" class="section active">
+                <div class="alert alert-info">
+                    <strong>📋 Getting Started</strong><br>
+                    This guide contains all the content you need to optimize your Google Business Profile. Click through each section and copy the content directly into your profile.
+                </div>
+                
+                <div class="card">
+                    <h3>Quick Setup Steps</h3>
+                    <ol style="padding-left: 20px;">
+                        <li>Open <a href="https://business.google.com" target="_blank">Google Business Profile</a> in another tab</li>
+                        <li>Select your "Speedy van - Dundee/London" profile</li>
+                        <li>Follow each section in this guide</li>
+                        <li>Copy and paste the provided content</li>
+                        <li>Check off items in the Checklist as you complete them</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <h3>Expected Results</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="background: #e9ecef;">
+                            <th style="padding: 10px; text-align: left;">Metric</th>
+                            <th style="padding: 10px; text-align: left;">Timeline</th>
+                            <th style="padding: 10px; text-align: left;">Improvement</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">Profile Strength</td>
+                            <td style="padding: 10px;">Immediate</td>
+                            <td style="padding: 10px; color: #10b981; font-weight: bold;">100/100</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 10px;">Profile Views</td>
+                            <td style="padding: 10px;">2-4 weeks</td>
+                            <td style="padding: 10px; color: #10b981; font-weight: bold;">+400-900%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">Website Clicks</td>
+                            <td style="padding: 10px;">2-4 weeks</td>
+                            <td style="padding: 10px; color: #10b981; font-weight: bold;">+400-900%</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 10px;">Phone Calls</td>
+                            <td style="padding: 10px;">2-4 weeks</td>
+                            <td style="padding: 10px; color: #10b981; font-weight: bold;">+400-900%</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Basic Info Section -->
+            <div id="basic-info" class="section">
+                <div class="card">
+                    <h3>Business Name</h3>
+                    <div class="instruction">
+                        Update your business name to ensure proper capitalization
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Speedy Van</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Business Address</h3>
+                    <div class="instruction">
+                        Update to your registered office address
+                    </div>
+                    <h4>Address Line 1:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>1 Barrack Street</pre>
+                    </div>
+                    
+                    <h4>Address Line 2:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Office 2.18</pre>
+                    </div>
+                    
+                    <h4>City:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Hamilton</pre>
+                    </div>
+                    
+                    <h4>Postcode:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>ML3 0DG</pre>
+                    </div>
+                    
+                    <div class="alert alert-info" style="margin-top: 15px;">
+                        <strong>💡 Tip:</strong> Check "Hide my address" option since you're a service-area business
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Business Description (750 characters)</h3>
+                    <div class="instruction">
+                        Copy this SEO-optimized description to your profile
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Speedy Van is a premium moving and delivery service operating nationwide across the United Kingdom. Based in Hamilton, we provide fast, reliable, and affordable van services covering London, Manchester, Birmingham, Glasgow, Edinburgh, Leeds, Liverpool, Bristol, Cardiff, Belfast, and every major city across England, Scotland, Wales, and Northern Ireland.
+
+We specialize in furniture moving, house removals, same-day delivery, student moves, office relocations, and professional man and van services. With over 50,000 happy customers, 95% on-time delivery, and fully insured drivers, we offer 24/7 support and competitive pricing from £25/hour.
+
+Whether you need to move a single item or an entire home, our experienced team handles your belongings with care. Book online instantly or call us for a free quote.</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Contact Information</h3>
+                    
+                    <h4>Primary Phone:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>+44 7901 846297</pre>
+                    </div>
+                    
+                    <h4>Secondary Phone:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>+44 7770 498047</pre>
+                    </div>
+                    
+                    <h4>Website:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>https://speedy-van.co.uk</pre>
+                    </div>
+                    
+                    <h4>Email:</h4>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>support@speedy-van.co.uk</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Service Areas to Add</h3>
+                    <div class="instruction">
+                        Add these locations one by one to your service areas
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy All</button>
+                        <pre>United Kingdom
+England
+Scotland
+Wales
+Northern Ireland
+London
+Manchester
+Birmingham
+Glasgow
+Edinburgh
+Leeds
+Liverpool
+Bristol
+Newcastle upon Tyne
+Sheffield
+Nottingham
+Leicester
+Cardiff
+Belfast
+Aberdeen
+Dundee</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Business Categories</h3>
+                    <div class="instruction">
+                        <strong>Primary Category:</strong> Moving and storage service
+                    </div>
+                    <div class="instruction">
+                        <strong>Additional Categories (add up to 9):</strong>
+                    </div>
+                    <ul style="padding-left: 20px; margin-top: 10px;">
+                        <li>Moving supply store</li>
+                        <li>Courier service</li>
+                        <li>Delivery service</li>
+                        <li>Furniture moving service</li>
+                        <li>Piano moving service</li>
+                        <li>Van rental agency</li>
+                        <li>Storage facility</li>
+                        <li>Packing service</li>
+                        <li>Logistics service</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Services Section -->
+            <div id="services" class="section">
+                <div class="alert alert-info">
+                    Add each service with its description and pricing. Click "Add service" in your Google Business Profile and copy each one.
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 1: House Removals</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Professional full-house moving services for homes of all sizes. We handle everything from packing to transportation and unpacking at your new location.</pre>
+                    </div>
+                    <strong>Price:</strong> From £50
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 2: Furniture Transport</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Safe and secure furniture moving for individual items or full room sets. Expert handling of sofas, tables, beds, and delicate pieces.</pre>
+                    </div>
+                    <strong>Price:</strong> From £25/hour
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 3: Same-Day Delivery</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Urgent same-day delivery services across the UK. Book online or call for immediate pickup and delivery.</pre>
+                    </div>
+                    <strong>Price:</strong> From £50
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 4: Student Moves</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Affordable student relocation services for university and college moves. Special student discounts available.</pre>
+                    </div>
+                    <strong>Price:</strong> From £40
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 5: Office Relocation</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Professional business and office moving services with minimal downtime. We handle IT equipment, furniture, and sensitive documents.</pre>
+                    </div>
+                    <strong>Price:</strong> From £75/hour
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 6: Man and Van Service</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Flexible man and van hire for small to medium moves. Perfect for single items, apartment moves, or deliveries.</pre>
+                    </div>
+                    <strong>Price:</strong> From £25/hour
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 7: Furniture Assembly</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Professional furniture assembly and disassembly services. We handle flat-pack furniture, beds, wardrobes, and more.</pre>
+                    </div>
+                    <strong>Price:</strong> From £30
+                </div>
+                
+                <div class="service-item">
+                    <h4>Service 8: Packing Service</h4>
+                    <strong>Description:</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Professional packing services with high-quality materials. We supply boxes, bubble wrap, and protective blankets.</pre>
+                    </div>
+                    <strong>Price:</strong> From £20/hour
+                </div>
+            </div>
+            
+            <!-- FAQs Section -->
+            <div id="faqs" class="section">
+                <div class="alert alert-info">
+                    Go to Q&A section, click "Ask a question" and then immediately answer it with these responses.
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q1: What areas do you cover?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>We provide nationwide moving services across the entire UK, including England, Scotland, Wales, and Northern Ireland. Major cities include London, Manchester, Birmingham, Glasgow, Edinburgh, Leeds, Liverpool, Bristol, Cardiff, Belfast, and many more. Visit speedy-van.co.uk for a full list of service areas.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q2: How much does a man and van service cost?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Our services start from £25/hour for standard man and van moves. House removals start from £50. Prices vary based on distance, size of the move, and additional services required. We provide free instant quotes online at speedy-van.co.uk or over the phone at +44 7901 846297.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q3: Do you offer same-day delivery?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Yes! We offer same-day and next-day delivery services across the UK. For urgent moves, book online at speedy-van.co.uk or call us directly at +44 7901 846297. Subject to availability and location.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q4: Are your drivers insured?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Absolutely. All our drivers are fully insured, DBS checked, and professionally trained to handle your belongings with care. We carry comprehensive goods in transit insurance and public liability insurance for your peace of mind.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q5: Can you help with furniture assembly?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Yes, we offer furniture assembly and disassembly services as part of our comprehensive moving solutions. This includes flat-pack furniture, beds, wardrobes, and more. Pricing starts from £30 per item.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q6: Do you provide packing materials?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Yes, we supply professional packing materials including boxes, bubble wrap, protective blankets, and tape. We also offer full packing services starting from £20/hour if you prefer our team to pack your belongings.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q7: What payment methods do you accept?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>We accept cash, all major credit and debit cards, bank transfers, and online payments through our website. Payment is typically due upon completion of the move.</pre>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q8: Can I track my delivery?</strong>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>Yes! We provide real-time tracking for all deliveries through our website and mobile app. You'll receive updates via SMS and email throughout the moving process.</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Google Posts Section -->
+            <div id="posts" class="section">
+                <div class="alert alert-info">
+                    Create weekly posts in your Google Business Profile. Here are the first 4 weeks ready to go!
+                </div>
+                
+                <div class="card">
+                    <h3>Week 1: Service Announcement</h3>
+                    <div class="instruction">
+                        Post Type: What's New | CTA: Book | Image: speedy-van-hero-banner.png
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>🚚 Professional Moving Services Across the UK
+
+Need a reliable man and van? Speedy Van offers same-day service from £25/hour!
+
+✅ Fully insured drivers
+✅ 50,000+ happy customers
+✅ 95% on-time delivery
+✅ 24/7 support
+
+Covering London, Manchester, Birmingham, Glasgow, Edinburgh, and all UK cities.
+
+Book now at speedy-van.co.uk or call +44 7901 846297</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Week 2: Special Offer</h3>
+                    <div class="instruction">
+                        Post Type: Offer | CTA: Book | Image: speedy-van-london-delivery.png
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>📦 10% Off Your First Booking!
+
+Moving to Manchester, Birmingham, or Glasgow? Get 10% off your first move with Speedy Van!
+
+✨ Professional furniture moving across the UK
+✨ Same-day service available
+✨ Fully insured and DBS-checked drivers
+
+Use code: FIRST10
+Book online: speedy-van.co.uk
+
+Valid until end of month. Terms apply.
+Call +44 7901 846297 for details.</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Week 3: Student Focus</h3>
+                    <div class="instruction">
+                        Post Type: What's New | CTA: Learn More | Image: furniture-transport.png
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>🎓 Student Moving? We've Got You Covered!
+
+Special student discounts on all moves. Perfect for university relocations.
+
+✅ Affordable rates from £40
+✅ Flexible scheduling
+✅ Professional service
+✅ Packing materials available
+
+Edinburgh, Leeds, Bristol, Manchester - we cover it all!
+
+Book now: speedy-van.co.uk
+Student ID required. Call +44 7901 846297</pre>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Week 4: Social Proof</h3>
+                    <div class="instruction">
+                        Post Type: What's New | CTA: Call | Image: speedy-van-glasgow-moving.png
+                    </div>
+                    <div class="copy-box">
+                        <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                        <pre>⭐ 50,000+ Happy Customers Trust Speedy Van!
+
+"Excellent service from start to finish. The team was professional, careful with our furniture, and completed the move faster than expected. Highly recommend!" 
+- Sarah M., London
+
+🏆 95% on-time delivery
+🏆 5-star rated service
+🏆 Fully insured drivers
+
+Experience the UK's most reliable moving service.
+
+Get your free quote today: speedy-van.co.uk
+📞 +44 7901 846297</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Checklist Section -->
+            <div id="checklist" class="section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress">0% Complete</div>
+                </div>
+                
+                <div class="card">
+                    <h3>Profile Setup Checklist</h3>
+                    <p style="margin-bottom: 15px;">Click items to mark as complete</p>
+                    <ul class="checklist" id="checklist-items">
+                        <li onclick="toggleCheck(this)">Update business name to "Speedy Van"</li>
+                        <li onclick="toggleCheck(this)">Update address to Hamilton office</li>
+                        <li onclick="toggleCheck(this)">Check "Hide my address" option</li>
+                        <li onclick="toggleCheck(this)">Add all UK service areas (20+ cities)</li>
+                        <li onclick="toggleCheck(this)">Update business description (742 chars)</li>
+                        <li onclick="toggleCheck(this)">Set primary category: Moving and storage service</li>
+                        <li onclick="toggleCheck(this)">Add 9 additional categories</li>
+                        <li onclick="toggleCheck(this)">Add primary phone: +44 7901 846297</li>
+                        <li onclick="toggleCheck(this)">Add secondary phone: +44 7770 498047</li>
+                        <li onclick="toggleCheck(this)">Add website: https://speedy-van.co.uk</li>
+                        <li onclick="toggleCheck(this)">Add email: support@speedy-van.co.uk</li>
+                        <li onclick="toggleCheck(this)">Upload logo (logo_premium.png)</li>
+                        <li onclick="toggleCheck(this)">Upload cover photo (speedy-van-hero-banner.png)</li>
+                        <li onclick="toggleCheck(this)">Upload 10+ service photos</li>
+                        <li onclick="toggleCheck(this)">Add Service: House Removals (£50)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Furniture Transport (£25/hour)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Same-Day Delivery (£50)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Student Moves (£40)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Office Relocation (£75/hour)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Man and Van (£25/hour)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Furniture Assembly (£30)</li>
+                        <li onclick="toggleCheck(this)">Add Service: Packing Service (£20/hour)</li>
+                        <li onclick="toggleCheck(this)">Add all 8 FAQ Q&A pairs</li>
+                        <li onclick="toggleCheck(this)">Enable messaging/chat</li>
+                        <li onclick="toggleCheck(this)">Set up automated welcome message</li>
+                        <li onclick="toggleCheck(this)">Create Week 1 Google Post</li>
+                        <li onclick="toggleCheck(this)">Enable review notifications</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-success">
+                    <strong>🎉 Once Complete:</strong><br>
+                    Your profile should reach 100% strength within 24-48 hours. Monitor performance in Google Business Profile Insights!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function copyText(button) {
+            const copyBox = button.parentElement;
+            const text = copyBox.querySelector('pre').textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        function toggleCheck(item) {
+            item.classList.toggle('checked');
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const items = document.querySelectorAll('.checklist li');
+            const checked = document.querySelectorAll('.checklist li.checked');
+            const percentage = Math.round((checked.length / items.length) * 100);
+            
+            const progressFill = document.getElementById('progress');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '% Complete';
+        }
+        
+        // Initialize progress
+        updateProgress();
+    </script>
+</body>
+</html>

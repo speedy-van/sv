@@ -573,11 +573,6 @@ export class IntelligentRouteOptimizer {
     
     return twoWorkerItems.some(item => name.includes(item));
   }
-}
-
-export const intelligentRouteOptimizer = IntelligentRouteOptimizer.getInstance();
-
-
 
   /**
    * ✅ FIX #3: Check if a new booking can be added to an existing route
@@ -764,4 +759,6 @@ export const intelligentRouteOptimizer = IntelligentRouteOptimizer.getInstance()
     
     return routes;
   }
+}
 
+export const intelligentRouteOptimizer = IntelligentRouteOptimizer.getInstance();

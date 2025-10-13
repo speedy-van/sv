@@ -653,7 +653,7 @@ function generateAdminWelcomeHTML(data: AdminWelcomeData): string {
           <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 500;">© ${new Date().getFullYear()} Speedy Van. All rights reserved.</p>
           <p style="margin: 0 0 10px 0; font-size: 12px; opacity: 0.9;">SPEEDY VAN REMOVALS LTD • Company No. SC865658 • Registered in Scotland</p>
           <p style="margin: 0 0 10px 0; font-size: 12px; opacity: 0.9;">Professional Moving Services • Fully Insured • 5-Star Rated • 24/7 Support</p>
-          <p style="margin: 0; font-size: 12px; opacity: 0.8;">Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, United Kingdom</p>
+          <p style="margin: 0; font-size: 12px; opacity: 0.8;">Office 2.18 1 Barrack St, Hamilton ML3 0HS, United Kingdom</p>
         </div>
 
       </div>

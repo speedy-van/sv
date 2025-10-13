@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform assignments to match frontend interface
-    const transformedJobs = myAssignments.map(assignment => {
+    const transformedJobs = await Promise.all(myAssignments.map(async assignment => {
       const booking = assignment.Booking;
       
       if (!booking) return null;
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
         acceptedAt: assignment.claimedAt?.toISOString(),
         updatedAt: assignment.updatedAt.toISOString(),
       };
-    }).filter(job => job !== null);
+    })).filter(job => job !== null);
 
     console.log('✅ My jobs loaded for driver:', driver.id, 'Jobs count:', transformedJobs.length);
 

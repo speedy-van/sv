@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Format assigned jobs for frontend with REAL pricing engine
-    const formattedAssignedJobs = assignedJobs.map(assignment => {
+    const formattedAssignedJobs = await Promise.all(assignedJobs.map(async assignment => {
       const pickup = assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
       const dropoff = assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
       
@@ -223,10 +223,10 @@ export async function GET(request: NextRequest) {
         createdAt: assignment.createdAt,
         expiresAt: assignment.expiresAt
       };
-    });
+    }));
 
     // Format available jobs for frontend with REAL pricing engine
-    const formattedAvailableJobs = availableJobs.map(booking => {
+    const formattedAvailableJobs = await Promise.all(availableJobs.map(async booking => {
       const pickup = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
       const dropoff = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
       
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
         createdAt: booking.createdAt,
         scheduledAt: booking.scheduledAt
       };
-    });
+    }));
 
     // Calculate statistics
     const stats = {

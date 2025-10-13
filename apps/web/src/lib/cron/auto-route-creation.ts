@@ -75,7 +75,6 @@ async function createRoutesAutomatically() {
             id: true,
             name: true,
             email: true,
-            phone: true,
           },
         },
       },

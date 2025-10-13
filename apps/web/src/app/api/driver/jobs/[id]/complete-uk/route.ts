@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
-import { ukCompliantPricingService } from '@/lib/services/uk-compliant-pricing-service';
+import { driverEarningsService } from '@/lib/services/driver-earnings-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +42,7 @@ export async function POST(
     const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
       include: {
-        booking: {
+        Booking: {
           include: {
             route: {
               include: {
@@ -62,7 +62,7 @@ export async function POST(
       );
     }
 
-    if (assignment.status === 'COMPLETED') {
+    if (assignment.status === 'completed') {
       return NextResponse.json(
         { error: 'Assignment already completed' },
         { status: 400 }
@@ -70,12 +70,12 @@ export async function POST(
     }
 
     // 2. Determine if single order or multiple drops
-    const isMultiDrop = assignment.booking.route?.stops?.length > 1;
-    const dropCount = assignment.booking.route?.stops?.length || 1;
+    const isMultiDrop = assignment.Booking.route?.stops?.length > 1;
+    const dropCount = assignment.Booking.route?.stops?.length || 1;
 
     // 3. Calculate distance and duration
-    const distanceMiles = body.actualDistance || assignment.booking.estimatedDistance || 10;
-    const durationMinutes = body.actualDuration || assignment.booking.estimatedDuration || 60;
+    const distanceMiles = body.actualDistance || assignment.Booking.estimatedDistance || 10;
+    const durationMinutes = body.actualDuration || assignment.Booking.estimatedDuration || 60;
 
     // 4. Break down time components
     const timeBreakdown = calculateTimeBreakdown(durationMinutes, dropCount);
@@ -92,9 +92,9 @@ export async function POST(
       unloadingMinutes: timeBreakdown.unloading,
       drivingMinutes: timeBreakdown.driving,
       waitingMinutes: timeBreakdown.waiting,
-      customerPaymentPence: assignment.booking.totalPricePence || 0,
-      urgencyLevel: assignment.booking.urgencyLevel || 'standard',
-      serviceType: assignment.booking.serviceType || 'standard',
+      customerPaymentPence: assignment.Booking.totalPricePence || 0,
+      urgencyLevel: assignment.Booking.urgencyLevel || 'standard',
+      serviceType: assignment.Booking.serviceType || 'standard',
       onTimeDelivery: isOnTime(assignment),
       customerRating: body.customerRating,
       tollCostsPence: body.tollCosts ? Math.round(body.tollCosts * 100) : 0,
@@ -106,7 +106,7 @@ export async function POST(
     };
 
     // 6. Calculate UK-compliant earnings
-    const earningsResult = await ukCompliantPricingService.calculateEarnings(pricingInput);
+    const earningsResult = await driverEarningsService.calculateEarnings(pricingInput);
 
     if (!earningsResult.success) {
       return NextResponse.json(
@@ -125,11 +125,7 @@ export async function POST(
     await prisma.assignment.update({
       where: { id: assignmentId },
       data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-        completionNotes: body.completionNotes,
-        actualDistance: distanceMiles,
-        actualDuration: durationMinutes,
+        status: 'completed',
       },
     });
 
@@ -138,7 +134,6 @@ export async function POST(
       data: {
         driverId: assignment.driverId,
         assignmentId: assignment.id,
-        bookingId: assignment.bookingId,
         
         // Base earnings
         baseFare: breakdown.baseFare,
@@ -199,14 +194,13 @@ export async function POST(
       where: { bookingId: assignment.bookingId },
     });
 
-    const allCompleted = allAssignments.every((a) => a.status === 'COMPLETED');
+    const allCompleted = allAssignments.every((a) => a.status === 'completed');
 
     if (allCompleted) {
       await prisma.booking.update({
         where: { id: assignment.bookingId },
         data: {
           status: 'COMPLETED',
-          completedAt: new Date(),
         },
       });
     }
