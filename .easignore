@@ -1,0 +1,69 @@
+# EAS Build Ignore - Keep only essential files
+
+# Ignore other apps (keep only mobile/expo-driver-app)
+apps/**
+!apps/.gitkeep
+
+# Ignore large datasets
+**/UK_Removal_Dataset/**
+**/Images_Only/**
+
+# Ignore build artifacts and deps
+node_modules/**
+.turbo/**
+dist/**
+.next/**
+build/**
+
+# Ignore test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+__tests__/**
+e2e/**
+test-scenarios/**
+
+# Ignore docs and temp files
+docs/**
+backups/**
+logs/**
+load-test-reports/**
+*.log
+*.tmp
+.DS_Store
+
+# Ignore git
+.git/**
+
+# Ignore scripts
+scripts/**
+*.sh
+*.bat
+*.ps1
+*.cjs
+*.mjs
+check-*.js
+create-*.js
+test-*.js
+debug-*.js
+quick-*.js
+fix-*.js
+
+# Ignore markdown docs
+*.md
+!README.md
+
+# Ignore SQL and other data files
+*.sql
+*.csv
+*.txt
+!mobile/expo-driver-app/**/*.txt
+
+# Keep only necessary files
+!mobile/**
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!turbo.json
+

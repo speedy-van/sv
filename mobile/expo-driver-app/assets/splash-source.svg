@@ -1,0 +1,77 @@
+<svg width="1284" height="2778" viewBox="0 0 1284 2778" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="splashBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E40AF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="splashVan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F3F4F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1284" height="2778" fill="url(#splashBg)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="200" cy="400" r="150" fill="#3B82F6" opacity="0.1"/>
+  <circle cx="1084" cy="2200" r="200" fill="#3B82F6" opacity="0.1"/>
+  <circle cx="100" cy="2500" r="100" fill="#60A5FA" opacity="0.1"/>
+  
+  <!-- Main content centered -->
+  <g transform="translate(642, 1389)">
+    <!-- Van illustration (larger) -->
+    <g transform="scale(1.5)">
+      <!-- Van body -->
+      <rect x="-220" y="-120" width="360" height="200" rx="20" fill="url(#splashVan)"/>
+      
+      <!-- Van cabin -->
+      <path d="M -220,-120 L -220,-50 L -180,-10 L -140,-10 L -140,-120 Z" fill="#FFFFFF" opacity="0.95"/>
+      
+      <!-- Van windows -->
+      <rect x="-200" y="-100" width="50" height="40" rx="5" fill="#60A5FA" opacity="0.5"/>
+      <rect x="-100" y="-100" width="80" height="40" rx="5" fill="#60A5FA" opacity="0.3"/>
+      <rect x="0" y="-100" width="80" height="40" rx="5" fill="#60A5FA" opacity="0.3"/>
+      
+      <!-- Van wheels -->
+      <circle cx="-150" cy="80" r="35" fill="#374151"/>
+      <circle cx="-150" cy="80" r="20" fill="#6B7280"/>
+      <circle cx="80" cy="80" r="35" fill="#374151"/>
+      <circle cx="80" cy="80" r="20" fill="#6B7280"/>
+      
+      <!-- Speed lines -->
+      <line x1="-280" y1="-60" x2="-240" y2="-60" stroke="#60A5FA" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      <line x1="-290" y1="-20" x2="-240" y2="-20" stroke="#60A5FA" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      <line x1="-280" y1="20" x2="-240" y2="20" stroke="#60A5FA" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+      
+      <!-- Logo on van -->
+      <text x="0" y="10" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#1E40AF" text-anchor="middle">SV</text>
+      
+      <!-- Speed arrow -->
+      <path d="M 160,-80 L 200,-60 L 160,-40" fill="none" stroke="#10B981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="120" y1="-60" x2="160" y2="-60" stroke="#10B981" stroke-width="8" stroke-linecap="round"/>
+    </g>
+    
+    <!-- App title -->
+    <text x="0" y="280" font-family="Arial, sans-serif" font-size="96" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Speedy Van</text>
+    <text x="0" y="370" font-family="Arial, sans-serif" font-size="64" font-weight="300" fill="#E5E7EB" text-anchor="middle">Driver Portal</text>
+    
+    <!-- Tagline -->
+    <text x="0" y="480" font-family="Arial, sans-serif" font-size="40" font-weight="normal" fill="#93C5FD" text-anchor="middle" opacity="0.8">Delivering Excellence</text>
+  </g>
+  
+  <!-- Loading indicator at bottom -->
+  <g transform="translate(642, 2500)">
+    <circle cx="-60" cy="0" r="12" fill="#FFFFFF" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+    </circle>
+    <circle cx="0" cy="0" r="12" fill="#FFFFFF" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="60" cy="0" r="12" fill="#FFFFFF" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+  </g>
+</svg>
+
