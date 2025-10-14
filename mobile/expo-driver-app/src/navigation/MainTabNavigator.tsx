@@ -32,8 +32,8 @@ const NotificationBadge = ({ count }: { count: number }) => {
 };
 
 export default function MainTabNavigator() {
-  // Mock unread notifications count
-  const unreadNotificationsCount = 3;
+  // Unread notifications count - will be dynamic from context/store
+  const unreadNotificationsCount = 0; // Changed from 3 to 0
 
   return (
     <Tab.Navigator
