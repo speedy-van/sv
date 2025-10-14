@@ -158,10 +158,18 @@ struct SettingsTabButton: View {
     }
 }
 
-// MARK: - Profile Tab
+// MARK: - Profile Tab (FIXED - Editable Fields)
 
 struct ProfileTabContent: View {
     @ObservedObject var viewModel: SettingsViewModel
+    
+    // Local state for editing
+    @State private var editedName: String = ""
+    @State private var editedEmail: String = ""
+    @State private var editedPhone: String = ""
+    @State private var editedEmergencyContact: String = ""
+    @State private var editedDrivingLicense: String = ""
+    @State private var editedVehicleReg: String = ""
     
     var body: some View {
         VStack(spacing: 20) {
@@ -172,10 +180,10 @@ struct ProfileTabContent: View {
                         .font(.system(size: 80))
                         .foregroundColor(.brandPrimary)
                     
-                    Text(profile.name)
+                    Text(editedName.isEmpty ? profile.name : editedName)
                         .font(.system(size: 24, weight: .bold))
                     
-                    Text(profile.email)
+                    Text(editedEmail.isEmpty ? profile.email : editedEmail)
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
@@ -184,60 +192,42 @@ struct ProfileTabContent: View {
                 VStack(spacing: 16) {
                     SettingsTextField(
                         label: "Full Name",
-                        text: Binding(
-                            get: { viewModel.profile?.name ?? "" },
-                            set: { viewModel.profile?.name = $0 }
-                        )
+                        text: $editedName
                     )
                     
                     SettingsTextField(
                         label: "Email",
-                        text: Binding(
-                            get: { viewModel.profile?.email ?? "" },
-                            set: { viewModel.profile?.email = $0 }
-                        ),
+                        text: $editedEmail,
                         keyboardType: .emailAddress
                     )
                     
                     SettingsTextField(
                         label: "Phone Number",
-                        text: Binding(
-                            get: { viewModel.profile?.phone ?? "" },
-                            set: { viewModel.profile?.phone = $0 }
-                        ),
+                        text: $editedPhone,
                         keyboardType: .phonePad
                     )
                     
                     SettingsTextField(
                         label: "Emergency Contact",
-                        text: Binding(
-                            get: { viewModel.profile?.emergencyContact ?? "" },
-                            set: { viewModel.profile?.emergencyContact = $0 }
-                        ),
+                        text: $editedEmergencyContact,
                         keyboardType: .phonePad
                     )
                     
                     SettingsTextField(
                         label: "Driving License",
-                        text: Binding(
-                            get: { viewModel.profile?.drivingLicense ?? "" },
-                            set: { viewModel.profile?.drivingLicense = $0 }
-                        )
+                        text: $editedDrivingLicense
                     )
                     
                     SettingsTextField(
                         label: "Vehicle Registration",
-                        text: Binding(
-                            get: { viewModel.profile?.vehicleReg ?? "" },
-                            set: { viewModel.profile?.vehicleReg = $0 }
-                        )
+                        text: $editedVehicleReg
                     )
                 }
                 .padding(.horizontal)
                 
                 Button {
                     Task {
-                        await viewModel.updateProfile()
+                        await saveProfile()
                     }
                 } label: {
                     HStack {
@@ -261,6 +251,41 @@ struct ProfileTabContent: View {
             }
         }
         .padding(.vertical)
+        .onAppear {
+            // Initialize local state with profile data
+            if let profile = viewModel.profile {
+                editedName = profile.name
+                editedEmail = profile.email
+                editedPhone = profile.phone ?? ""
+                editedEmergencyContact = profile.emergencyContact ?? ""
+                editedDrivingLicense = profile.drivingLicense ?? ""
+                editedVehicleReg = profile.vehicleReg ?? ""
+            }
+        }
+        .onChange(of: viewModel.profile) { newProfile in
+            // Update local state when profile changes
+            if let profile = newProfile {
+                editedName = profile.name
+                editedEmail = profile.email
+                editedPhone = profile.phone ?? ""
+                editedEmergencyContact = profile.emergencyContact ?? ""
+                editedDrivingLicense = profile.drivingLicense ?? ""
+                editedVehicleReg = profile.vehicleReg ?? ""
+            }
+        }
+    }
+    
+    private func saveProfile() async {
+        // Update viewModel.profile with edited values
+        viewModel.profile?.name = editedName
+        viewModel.profile?.email = editedEmail
+        viewModel.profile?.phone = editedPhone.isEmpty ? nil : editedPhone
+        viewModel.profile?.emergencyContact = editedEmergencyContact.isEmpty ? nil : editedEmergencyContact
+        viewModel.profile?.drivingLicense = editedDrivingLicense.isEmpty ? nil : editedDrivingLicense
+        viewModel.profile?.vehicleReg = editedVehicleReg.isEmpty ? nil : editedVehicleReg
+        
+        // Call the update function
+        await viewModel.updateProfile()
     }
 }
 
