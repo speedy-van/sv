@@ -366,9 +366,9 @@ export const GET = withApiHandler(async (request: NextRequest) => {
         driverId: { not: null },
       },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-        Driver: {
+        pickupAddress: true,
+        dropoffAddress: true,
+        driver: {
           select: {
             id: true,
             User: {
@@ -440,9 +440,9 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       ref: job.reference,
       status: job.status,
       eta,
-      driver: job.Driver?.User?.name || 'Unknown',
-      pickupAddress: job.BookingAddress_Booking_pickupAddressIdToBookingAddress,
-      dropoffAddress: job.BookingAddress_Booking_dropoffAddressIdToBookingAddress,
+      driver: job.driver?.User?.name || 'Unknown',
+      pickupAddress: job.pickupAddress,
+      dropoffAddress: job.dropoffAddress,
       timeSinceClaimed,
     };
   });

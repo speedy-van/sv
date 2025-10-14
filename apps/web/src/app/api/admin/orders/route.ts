@@ -145,14 +145,14 @@ export async function GET(req: Request) {
       ...dateFilter,
     },
     include: {
-      User: {
+      customer: {
         select: {
           id: true,
           name: true,
           email: true,
         },
       },
-      Driver: {
+      driver: {
         include: {
           User: {
             select: {
@@ -163,11 +163,11 @@ export async function GET(req: Request) {
           },
         },
       },
-      BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-      BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+      pickupAddress: true,
+      dropoffAddress: true,
       Assignment: {
         include: {
-          Driver: {
+          driver: {
             include: {
               User: {
                 select: {

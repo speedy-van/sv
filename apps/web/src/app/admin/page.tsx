@@ -54,26 +54,12 @@ async function getDashboardData() {
       },
     },
     include: {
-      Driver: {
+      driver: {
         include: {
-          User: {
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              role: true,
-              createdAt: true,
-              isActive: true,
-              lastLogin: true,
-              resetTokenExpiry: true,
-              emailVerificationExpiry: true,
-              emailVerified: true,
-              twoFactorEnabled: true,
-            },
-          },
+          User: true,
         },
       },
-      User: true,
+      customer: true,
     },
     orderBy: {
       createdAt: 'desc',

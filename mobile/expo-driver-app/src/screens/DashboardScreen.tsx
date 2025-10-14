@@ -25,6 +25,7 @@ import { API_ENDPOINTS } from '../config/api';
 import { getUser, saveUser, savePendingOffer, getPendingOffers, removePendingOffer, PendingOffer } from '../services/storage.service';
 import PermissionWarningModal from '../components/PermissionWarningModal';
 import { Linking } from 'react-native';
+import { colors } from '../theme/colors';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -797,7 +798,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background.primary} />
       
       <ScrollView
         style={styles.scrollView}
@@ -917,15 +918,15 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.routeCardStats}>
               <View style={styles.routeCardStat}>
-                <Ionicons name="location" size={16} color="#6B7280" />
+                <Ionicons name="location" size={16} color="#9CA3AF" />
                 <Text style={styles.routeCardStatText}>{route.distance}</Text>
               </View>
               <View style={styles.routeCardStat}>
-                <Ionicons name="time" size={16} color="#6B7280" />
+                <Ionicons name="time" size={16} color="#9CA3AF" />
                 <Text style={styles.routeCardStatText}>{route.duration}</Text>
               </View>
               <View style={styles.routeCardStat}>
-                <Ionicons name="git-network" size={16} color="#6B7280" />
+                <Ionicons name="git-network" size={16} color="#9CA3AF" />
                 <Text style={styles.routeCardStatText}>{route.stops} stops</Text>
               </View>
               {route.hasCameras && (
@@ -943,7 +944,7 @@ export default function DashboardScreen() {
           <View key={route.id} style={styles.recentRouteCard}>
             <View style={styles.recentRouteHeader}>
               <View style={styles.recentRouteLeft}>
-                <Ionicons name="git-network" size={20} color="#6B7280" />
+                <Ionicons name="git-network" size={20} color="#9CA3AF" />
                 <View style={styles.recentRouteInfo}>
                   <Text style={styles.recentRouteTitle}>{route.title}</Text>
                   <Text style={styles.recentRouteLocation}>{route.location}</Text>
@@ -1103,8 +1104,8 @@ export default function DashboardScreen() {
         >
           <View style={styles.actionCardHeader}>
             <View style={styles.actionCardLeft}>
-              <View style={[styles.actionCardIcon, { backgroundColor: '#F3F4F6' }]}>
-                <Ionicons name="shield-checkmark" size={28} color="#6B7280" />
+              <View style={[styles.actionCardIcon, { backgroundColor: '#374151' }]>
+                <Ionicons name="shield-checkmark" size={28} color="#9CA3AF" />
               </View>
               <View style={styles.actionCardInfo}>
                 <Text style={styles.actionCardTitle}>Account & Documents</Text>
@@ -1160,7 +1161,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#111827',  // Dark background
   },
   scrollView: {
     flex: 1,
@@ -1172,21 +1173,21 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#E5E7EB',  // Light gray text
   },
   statusCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F2937',  // Dark card
     marginHorizontal: 24,
     marginBottom: 24,
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#374151',  // Dark border
   },
   statusHeader: {
     flexDirection: 'row',
@@ -1214,17 +1215,17 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     marginBottom: 4,
   },
   statusSubtext: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   statsTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     marginBottom: 16,
     marginHorizontal: 24,
   },
@@ -1236,12 +1237,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F2937',  // Dark card
     margin: '1%',
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#374151',  // Dark border
   },
   statContent: {
     alignItems: 'center',
@@ -1249,18 +1250,18 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   actionsTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     marginBottom: 16,
     marginHorizontal: 24,
   },
@@ -1272,16 +1273,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     width: '48%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F2937',  // Dark card
     margin: '1%',
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#374151',  // Dark border
   },
   actionText: {
-    color: '#1F2937',
+    color: '#FFFFFF',  // White text
     fontSize: 14,
     fontWeight: '500',
     marginTop: 8,
@@ -1289,12 +1290,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
     marginBottom: 12,
     marginTop: 20,
   },
   routeCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F2937',  // Dark card
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -1324,11 +1325,11 @@ const styles = StyleSheet.create({
   routeCardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
   },
   routeCardLocation: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   routeCardRight: {
     alignItems: 'flex-end',
@@ -1362,7 +1363,7 @@ const styles = StyleSheet.create({
   },
   routeCardStatText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   camerasBadge: {
     backgroundColor: '#F59E0B',
@@ -1376,12 +1377,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   recentRouteCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#1F2937',  // Dark card
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#374151',  // Dark border
   },
   recentRouteHeader: {
     flexDirection: 'row',
@@ -1401,11 +1402,11 @@ const styles = StyleSheet.create({
   recentRouteTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
   },
   recentRouteLocation: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   recentRouteRight: {
     alignItems: 'flex-end',
@@ -1437,10 +1438,10 @@ const styles = StyleSheet.create({
   },
   recentRouteStatText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   actionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F2937',  // Dark card
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -1475,18 +1476,18 @@ const styles = StyleSheet.create({
   actionCardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
     marginBottom: 4,
   },
   actionCardSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
   },
   actionCardStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#374151',  // Darker background
     borderRadius: 8,
     padding: 12,
   },
@@ -1497,18 +1498,18 @@ const styles = StyleSheet.create({
   actionCardStatValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
     marginBottom: 4,
   },
   actionCardStatLabel: {
     fontSize: 11,
-    color: '#6B7280',
+    color: '#9CA3AF',  // Muted text
     textAlign: 'center',
   },
   actionCardDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#4B5563',  // Dark divider
     marginHorizontal: 8,
   },
   ratingContainer: {
@@ -1527,6 +1528,6 @@ const styles = StyleSheet.create({
   },
   documentText: {
     fontSize: 13,
-    color: '#1A1A1A',
+    color: '#FFFFFF',  // White text
   },
 });
