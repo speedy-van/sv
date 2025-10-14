@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { encode } from 'next-auth/jwt';
+import jwt from 'jsonwebtoken';
 import { logAudit } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Log successful login
     await logAudit(user.id, 'driver_login_success', user.id, { targetType: 'auth', before: null, after: { email: user.email, role: user.role, driverId: user.driver?.id } });
 
-    // Generate secure JWT token using NextAuth JWT secret
+    // Generate secure JWT token
     const jwtSecret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
     if (!jwtSecret) {
       console.error('❌ CRITICAL: JWT_SECRET or NEXTAUTH_SECRET not found in environment');
@@ -68,18 +68,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = await encode({
-      token: {
+    // Create JWT token with 30 days expiration
+    const token = jwt.sign(
+      {
         sub: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
         driverId: user.driver?.id,
-        iat: Math.floor(Date.now() / 1000),
       },
-      secret: jwtSecret,
-      maxAge: 30 * 24 * 60 * 60, // 30 days for mobile app
-    });
+      jwtSecret,
+      { 
+        expiresIn: '30d',
+        algorithm: 'HS256'
+      }
+    );
 
     return NextResponse.json({
       success: true,
