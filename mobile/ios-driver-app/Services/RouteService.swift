@@ -1,53 +1,49 @@
 import Foundation
 
+// MARK: - Route Service (UPDATED)
+
 class RouteService {
     static let shared = RouteService()
-    private let networkService = NetworkService.shared
+    private let network = NetworkService.shared
     
     private init() {}
     
     // MARK: - Fetch Routes
     
     func fetchRoutes() async throws -> [Route] {
-        let response: RoutesResponse = try await networkService.request(
-            endpoint: "/api/driver/routes",
-            method: "GET"
-        )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to fetch routes")
+        struct RoutesResponse: Codable {
+            let success: Bool
+            let data: [Route]
         }
         
+        let response: RoutesResponse = try await network.request(.routes)
         return response.data
     }
     
     // MARK: - Fetch Route Details
     
     func fetchRouteDetails(routeId: String) async throws -> Route {
-        let response: RouteDetailResponse = try await networkService.request(
-            endpoint: "/api/driver/routes/\(routeId)",
-            method: "GET"
-        )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to fetch route details")
+        struct RouteDetailResponse: Codable {
+            let success: Bool
+            let data: Route
         }
         
+        let response: RouteDetailResponse = try await network.request(.routeDetail(routeId))
         return response.data
     }
     
     // MARK: - Accept Route
     
     func acceptRoute(routeId: String) async throws -> Route {
-        let response: RouteDetailResponse = try await networkService.request(
-            endpoint: "/api/driver/routes/\(routeId)/accept",
-            method: "POST",
-            body: EmptyBody()
-        )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to accept route")
+        struct RouteDetailResponse: Codable {
+            let success: Bool
+            let data: Route
         }
+        
+        let response: RouteDetailResponse = try await network.request(
+            .acceptRoute(routeId),
+            method: .post
+        )
         
         return response.data
     }
@@ -59,9 +55,13 @@ class RouteService {
             let reason: String
         }
         
-        let _: RouteDetailResponse = try await networkService.request(
-            endpoint: "/api/driver/routes/\(routeId)/decline",
-            method: "POST",
+        struct EmptyResponse: Codable {
+            let success: Bool
+        }
+        
+        let _: EmptyResponse = try await network.request(
+            .declineRoute(routeId),
+            method: .post,
             body: DeclineRequest(reason: reason)
         )
     }
@@ -77,7 +77,23 @@ class RouteService {
         proofOfDelivery: String?,
         failureReason: String?
     ) async throws -> Route {
+        struct DropUpdateRequest: Codable {
+            let dropId: String
+            let status: DropStatus
+            let latitude: Double?
+            let longitude: Double?
+            let proofOfDelivery: String?
+            let failureReason: String?
+            let completedAt: Date
+        }
+        
+        struct RouteDetailResponse: Codable {
+            let success: Bool
+            let data: Route
+        }
+        
         let updateRequest = DropUpdateRequest(
+            dropId: dropId,
             status: status,
             latitude: latitude,
             longitude: longitude,
@@ -86,15 +102,11 @@ class RouteService {
             completedAt: Date()
         )
         
-        let response: RouteDetailResponse = try await networkService.request(
-            endpoint: "/api/driver/routes/\(routeId)/complete-drop",
-            method: "POST",
+        let response: RouteDetailResponse = try await network.request(
+            .completeRouteDrop(routeId),
+            method: .post,
             body: updateRequest
         )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to complete drop")
-        }
         
         return response.data
     }
@@ -107,7 +119,11 @@ class RouteService {
     }
 }
 
-// MARK: - Empty Body Helper
+// MARK: - Drop Status
 
-struct EmptyBody: Codable {}
+enum DropStatus: String, Codable {
+    case pending
+    case completed
+    case failed
+}
 

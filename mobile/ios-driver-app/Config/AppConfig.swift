@@ -72,10 +72,40 @@ extension AppConfig {
         
         // Jobs
         case jobs
+        case activeJobs
+        case availableJobs
         case jobDetail(String)
         case acceptJob(String)
         case declineJob(String)
+        case startJob(String)
+        case completeJob(String)
         case updateJobProgress(String)
+        
+        // Routes (Multi-Drop)
+        case routes
+        case routeDetail(String)
+        case acceptRoute(String)
+        case declineRoute(String)
+        case completeRouteDrop(String)
+        
+        // Schedule
+        case schedule
+        case scheduleJobs
+        case scheduleStats
+        case scheduleExport
+        
+        // Earnings
+        case earnings
+        case payouts
+        case tips
+        
+        // Dashboard
+        case dashboard
+        
+        // Settings
+        case settings
+        case notificationPreferences
+        case updateNotificationPreferences
         
         // Tracking
         case sendLocation
@@ -83,6 +113,8 @@ extension AppConfig {
         
         // Notifications
         case registerDevice
+        case notifications
+        case markNotificationRead
         
         var path: String {
             switch self {
@@ -98,10 +130,40 @@ extension AppConfig {
             
             // Jobs
             case .jobs: return "/api/driver/jobs"
+            case .activeJobs: return "/api/driver/jobs/active"
+            case .availableJobs: return "/api/driver/jobs/available"
             case .jobDetail(let id): return "/api/driver/jobs/\(id)"
             case .acceptJob(let id): return "/api/driver/jobs/\(id)/accept"
             case .declineJob(let id): return "/api/driver/jobs/\(id)/decline"
+            case .startJob(let id): return "/api/driver/jobs/\(id)/start"
+            case .completeJob(let id): return "/api/driver/jobs/\(id)/complete"
             case .updateJobProgress(let id): return "/api/driver/jobs/\(id)/progress"
+            
+            // Routes
+            case .routes: return "/api/driver/routes"
+            case .routeDetail(let id): return "/api/driver/routes/\(id)"
+            case .acceptRoute(let id): return "/api/driver/routes/\(id)/accept"
+            case .declineRoute(let id): return "/api/driver/routes/\(id)/decline"
+            case .completeRouteDrop(let id): return "/api/driver/routes/\(id)/complete-drop"
+            
+            // Schedule
+            case .schedule: return "/api/driver/schedule"
+            case .scheduleJobs: return "/api/driver/schedule/jobs"
+            case .scheduleStats: return "/api/driver/schedule/stats"
+            case .scheduleExport: return "/api/driver/schedule/export"
+            
+            // Earnings
+            case .earnings: return "/api/driver/earnings"
+            case .payouts: return "/api/driver/payouts"
+            case .tips: return "/api/driver/tips"
+            
+            // Dashboard
+            case .dashboard: return "/api/driver/dashboard"
+            
+            // Settings
+            case .settings: return "/api/driver/settings"
+            case .notificationPreferences: return "/api/driver/settings/notification-preferences"
+            case .updateNotificationPreferences: return "/api/driver/settings/notification-preferences"
             
             // Tracking
             case .sendLocation: return "/api/driver/tracking"
@@ -109,6 +171,8 @@ extension AppConfig {
             
             // Notifications
             case .registerDevice: return "/api/driver/notifications/register"
+            case .notifications: return "/api/driver/notifications"
+            case .markNotificationRead: return "/api/driver/notifications/read"
             }
         }
         

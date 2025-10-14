@@ -1,30 +1,34 @@
 import Foundation
 
+// MARK: - Settings Service (UPDATED)
+
 class SettingsService {
     static let shared = SettingsService()
-    private let networkService = NetworkService.shared
+    private let network = NetworkService.shared
     
     private init() {}
     
     // MARK: - Profile
     
     func fetchProfile() async throws -> DriverProfile {
-        let response: ProfileResponse = try await networkService.request(
-            endpoint: "/api/driver/profile",
-            method: "GET"
-        )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to fetch profile")
+        struct ProfileResponse: Codable {
+            let success: Bool
+            let data: DriverProfile
         }
         
+        let response: ProfileResponse = try await network.request(.profile)
         return response.data
     }
     
     func updateProfile(_ profile: DriverProfile) async throws {
-        let _: UpdateResponse = try await networkService.request(
-            endpoint: "/api/driver/profile",
-            method: "PUT",
+        struct UpdateResponse: Codable {
+            let success: Bool
+            let message: String?
+        }
+        
+        let _: UpdateResponse = try await network.request(
+            .profile,
+            method: .put,
             body: profile
         )
     }
@@ -32,24 +36,54 @@ class SettingsService {
     // MARK: - Notification Preferences
     
     func fetchNotificationPreferences() async throws -> NotificationPreferences {
-        let response: NotificationPreferencesResponse = try await networkService.request(
-            endpoint: "/api/driver/settings/notification-preferences",
-            method: "GET"
-        )
-        
-        guard response.success else {
-            throw NetworkError.serverError("Failed to fetch notification preferences")
+        struct NotificationPreferencesResponse: Codable {
+            let success: Bool
+            let data: NotificationPreferences
         }
+        
+        let response: NotificationPreferencesResponse = try await network.request(
+            .notificationPreferences
+        )
         
         return response.data
     }
     
     func updateNotificationPreferences(_ preferences: NotificationPreferences) async throws {
-        let _: UpdateResponse = try await networkService.request(
-            endpoint: "/api/driver/settings/notification-preferences",
-            method: "PUT",
+        struct UpdateResponse: Codable {
+            let success: Bool
+            let message: String?
+        }
+        
+        let _: UpdateResponse = try await network.request(
+            .updateNotificationPreferences,
+            method: .put,
             body: preferences
         )
     }
+    
+    // MARK: - Settings (General)
+    
+    func fetchSettings() async throws -> DriverSettings {
+        struct SettingsResponse: Codable {
+            let success: Bool
+            let data: DriverSettings
+        }
+        
+        let response: SettingsResponse = try await network.request(.settings)
+        return response.data
+    }
+}
+
+// MARK: - Driver Settings Model
+
+struct DriverSettings: Codable {
+    let profile: DriverProfile
+    let notificationPreferences: NotificationPreferences
+    let securitySettings: SecuritySettings?
+}
+
+struct SecuritySettings: Codable {
+    let twoFactorEnabled: Bool
+    let lastPasswordChange: Date?
 }
 
