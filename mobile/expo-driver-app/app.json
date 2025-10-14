@@ -10,10 +10,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#1E40AF"
     },
+    "icon": "./assets/icon.png",
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
+      "icon": "./assets/icon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.speedyvan.driverapp",
       "infoPlist": {
@@ -34,6 +36,7 @@
       }
     },
     "android": {
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#1E40AF"
       },
