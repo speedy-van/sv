@@ -1,9 +1,11 @@
 import React, { Component, ErrorInfo } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import Toast from 'react-native-toast-message';
 import { AuthProvider } from './src/context/AuthContext';
 import { LocationProvider } from './src/context/LocationContext';
 import RootNavigator from './src/navigation/RootNavigator';
+import { toastConfig } from './src/components/ui/ToastConfig';
 
 // Global error handling to capture stack traces that otherwise cause silent crashes
 // and to print helpful diagnostics to Metro logs.
@@ -61,6 +63,7 @@ export default function App() {
             <StatusBar style="auto" />
             <RootNavigator />
           </NavigationContainer>
+          <Toast config={toastConfig} />
         </RootErrorBoundary>
       </LocationProvider>
     </AuthProvider>

@@ -11,13 +11,17 @@ import {
   Image,
   Modal,
   Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useAuth } from '../context/AuthContext';
 import { COMPANY_INFO } from '../config/api';
 import * as ImagePicker from 'expo-image-picker';
 import apiService from '../services/api.service';
 import { saveProfile, getProfile } from '../services/storage.service';
+import { ProfileShimmer, NotificationShimmer } from '../components/ui/ShimmerLoader';
+import showToast from '../utils/toast';
 
 interface ProfileData {
   firstName: string;
@@ -161,12 +165,14 @@ export default function ProfileScreen() {
 
   const handleSaveProfile = async () => {
     if (!validateForm()) {
-      Alert.alert('Validation Error', 'Please fix the highlighted fields before saving.');
+      showToast.error('Validation Error', 'Please fix the highlighted fields before saving.');
       return;
     }
 
     try {
       setIsLoading(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      
       const response = await apiService.put('/api/driver/settings', {
         profile: {
           name: `${profileData.firstName} ${profileData.lastName}`,
@@ -190,13 +196,13 @@ export default function ProfileScreen() {
         await saveProfile(profileData);
         console.log('✅ Profile saved to both server and cache');
         
-        Alert.alert('Success', 'Profile updated successfully!');
+        showToast.success('Profile Updated', 'Your profile has been saved successfully!');
       } else {
         throw new Error(response?.error || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Error saving profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      showToast.error('Update Failed', 'Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -205,6 +211,8 @@ export default function ProfileScreen() {
   const handleSaveNotifications = async () => {
     try {
       setIsLoading(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      
       const response = await apiService.put('/api/driver/settings', {
         notifications: {
           pushJobOffers: notifications.newJobs,
@@ -229,13 +237,13 @@ export default function ProfileScreen() {
       }) as any;
 
       if (response?.success) {
-        Alert.alert('Success', 'Notification settings updated successfully!');
+        showToast.success('Settings Updated', 'Notification preferences saved successfully!');
       } else {
         throw new Error(response?.error || 'Failed to update notifications');
       }
     } catch (error) {
       console.error('Error saving notifications:', error);
-      Alert.alert('Error', 'Failed to update notification settings. Please try again.');
+      showToast.error('Update Failed', 'Failed to update notification settings. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -271,11 +279,11 @@ export default function ProfileScreen() {
       if (!result.canceled && result.assets[0]) {
         // Here you would upload the image to your backend
         setProfileData(prev => ({ ...prev, profilePhoto: result.assets[0].uri }));
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        showToast.success('Photo Updated', 'Profile photo updated successfully!');
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      showToast.error('Photo Error', 'Failed to take photo. Please try again.');
     }
   };
 
@@ -297,11 +305,11 @@ export default function ProfileScreen() {
       if (!result.canceled && result.assets[0]) {
         // Here you would upload the image to your backend
         setProfileData(prev => ({ ...prev, profilePhoto: result.assets[0].uri }));
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        showToast.success('Photo Updated', 'Profile photo updated successfully!');
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to select photo. Please try again.');
+      showToast.error('Photo Error', 'Failed to select photo. Please try again.');
     }
   };
 
@@ -332,10 +340,19 @@ export default function ProfileScreen() {
     </TouchableOpacity>
   );
 
-  const renderProfileTab = () => (
-    <ScrollView style={styles.tabContent}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Personal Information</Text>
+  const renderProfileTab = () => {
+    if (isLoading && !profileData.firstName) {
+      return (
+        <ScrollView style={styles.tabContent}>
+          <ProfileShimmer />
+        </ScrollView>
+      );
+    }
+
+    return (
+      <ScrollView style={styles.tabContent}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Personal Information</Text>
         
         {/* Profile Photo */}
         <View style={styles.photoSection}>
@@ -440,18 +457,23 @@ export default function ProfileScreen() {
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.saveButton} 
+              style={[styles.saveButton, isLoading && styles.saveButtonDisabled]} 
               onPress={handleSaveProfile}
               disabled={isLoading}
             >
-              <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+              )}
+              <Text style={styles.saveButtonText}>{isLoading ? 'Saving...' : 'Save Changes'}</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
     </ScrollView>
-  );
+    );
+  };
 
   const renderVehicleTab = () => (
     <ScrollView style={styles.tabContent}>
@@ -538,9 +560,13 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={notifications.newJobs}
-            onValueChange={(value) => setNotifications(prev => ({ ...prev, newJobs: value }))}
+            onValueChange={(value) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setNotifications(prev => ({ ...prev, newJobs: value }));
+            }}
             trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
             thumbColor={notifications.newJobs ? '#FFFFFF' : '#FFFFFF'}
+            disabled={isLoading}
           />
         </View>
 
@@ -551,9 +577,13 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={notifications.routeUpdates}
-            onValueChange={(value) => setNotifications(prev => ({ ...prev, routeUpdates: value }))}
+            onValueChange={(value) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setNotifications(prev => ({ ...prev, routeUpdates: value }));
+            }}
             trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
             thumbColor={notifications.routeUpdates ? '#FFFFFF' : '#FFFFFF'}
+            disabled={isLoading}
           />
         </View>
 
@@ -564,9 +594,13 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={notifications.earningsUpdates}
-            onValueChange={(value) => setNotifications(prev => ({ ...prev, earningsUpdates: value }))}
+            onValueChange={(value) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setNotifications(prev => ({ ...prev, earningsUpdates: value }));
+            }}
             trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
             thumbColor={notifications.earningsUpdates ? '#FFFFFF' : '#FFFFFF'}
+            disabled={isLoading}
           />
         </View>
 
@@ -577,21 +611,29 @@ export default function ProfileScreen() {
           </View>
           <Switch
             value={notifications.maintenanceReminders}
-            onValueChange={(value) => setNotifications(prev => ({ ...prev, maintenanceReminders: value }))}
+            onValueChange={(value) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setNotifications(prev => ({ ...prev, maintenanceReminders: value }));
+            }}
             trackColor={{ false: '#E5E7EB', true: '#3B82F6' }}
             thumbColor={notifications.maintenanceReminders ? '#FFFFFF' : '#FFFFFF'}
+            disabled={isLoading}
           />
         </View>
       </View>
 
       <View style={styles.actionButtons}>
         <TouchableOpacity 
-          style={styles.saveButton} 
+          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]} 
           onPress={handleSaveNotifications}
           disabled={isLoading}
         >
-          <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Save Settings</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          )}
+          <Text style={styles.saveButtonText}>{isLoading ? 'Saving...' : 'Save Settings'}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -862,6 +904,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
   },
   documentStatus: {
     backgroundColor: '#FFFFFF',
