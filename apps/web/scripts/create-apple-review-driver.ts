@@ -73,7 +73,6 @@ async function createAppleReviewDriver() {
           status: 'active',
           vehicleType: 'van',
           basePostcode: 'G1 1AA',
-          licenseNumber: 'TEST123456',
           rating: 5.0,
           strikes: 0
         }
@@ -89,7 +88,6 @@ async function createAppleReviewDriver() {
           status: 'active',
           vehicleType: 'van',
           basePostcode: 'G1 1AA',
-          licenseNumber: 'TEST123456',
           rating: 5.0,
           strikes: 0
         }
