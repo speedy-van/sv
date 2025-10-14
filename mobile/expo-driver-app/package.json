@@ -55,5 +55,9 @@
     "metro-runtime": "^0.83.3",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "author": {
+    "name": "Ahmad Alwakai",
+    "email": "ahmadalwakai@gmx.com"
+  }
 }
