@@ -24,8 +24,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { captureRef } from 'react-native-view-shot';
 import SignatureCanvas from 'react-native-signature-canvas';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing, typography } from '../theme';
-import { apiService } from '../services/api';
+import { DarkColors as colors, Spacing as spacing, Typography as typography } from '../theme';
+import apiService from '../services/api.service';
 
 const { width } = Dimensions.get('window');
 
