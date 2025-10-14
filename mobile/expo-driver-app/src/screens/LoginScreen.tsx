@@ -9,10 +9,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen() {
   const { login, isLoading } = useAuth();
@@ -33,109 +33,106 @@ export default function LoginScreen() {
     }
   };
 
-  const handleBecomeDriver = async () => {
-    const url = 'https://speedy-van.co.uk/driver-application';
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert('Error', 'Cannot open the driver application page');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to open the link');
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <View style={styles.content}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <Ionicons name="car-sport" size={60} color="#3B82F6" />
-          <Text style={styles.title}>Speedy Van</Text>
-          <Text style={styles.subtitle}>Driver Portal</Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Email */}
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail" size={20} color="#6B7280" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+      <LinearGradient
+        colors={['#0A1929', '#1E3A8A', '#2563EB']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
+        <View style={styles.content}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="car-sport" size={60} color="#00BFFF" />
+            </View>
+            <Text style={styles.title}>Speedy Van</Text>
+            <Text style={styles.subtitle}>Driver Portal</Text>
           </View>
 
-          {/* Password */}
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed" size={20} color="#6B7280" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor="#9CA3AF"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
+          {/* Form */}
+          <View style={styles.form}>
+            {/* Email */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail" size={20} color="#00BFFF" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email or Username"
+                placeholderTextColor="#94A3B8"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
 
-          {/* Login Button */}
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
-            )}
-          </TouchableOpacity>
+            {/* Password */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed" size={20} color="#00BFFF" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#94A3B8"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
 
-          {/* Test Credentials */}
-          {__DEV__ && (
+            {/* Login Button */}
             <TouchableOpacity
-              style={styles.testCredentials}
-              onPress={() => {
-                setEmail('deloalo99');
-                setPassword('Aa234311Aa');
-              }}
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
             >
-              <Text style={styles.testCredentialsText}>Use Test Account</Text>
+              <LinearGradient
+                colors={['#00BFFF', '#1E90FF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Text style={styles.buttonText}>Sign In</Text>
+                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
-          )}
-        </View>
 
-        {/* Become a Driver */}
-        <View style={styles.becomeDriver}>
-          <Text style={styles.becomeDriverText}>Not a driver yet?</Text>
-          <TouchableOpacity onPress={handleBecomeDriver}>
-            <Text style={styles.becomeDriverLink}>Become a Driver →</Text>
-          </TouchableOpacity>
-        </View>
+            {/* Test Credentials */}
+            {__DEV__ && (
+              <TouchableOpacity
+                style={styles.testCredentials}
+                onPress={() => {
+                  setEmail('deloalo99');
+                  setPassword('Aa234311Aa');
+                }}
+              >
+                <Text style={styles.testCredentialsText}>Use Test Account</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-        {/* Support */}
-        <View style={styles.support}>
-          <Text style={styles.supportText}>Need help?</Text>
-          <Text style={styles.supportEmail}>support@speedy-van.co.uk</Text>
-          <Text style={styles.supportPhone}>07901846297</Text>
+          {/* Support */}
+          <View style={styles.support}>
+            <Text style={styles.supportText}>Need help?</Text>
+            <Text style={styles.supportEmail}>support@speedy-van.co.uk</Text>
+            <Text style={styles.supportPhone}>07901846297</Text>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
     </KeyboardAvoidingView>
   );
 }
@@ -143,7 +140,9 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+  },
+  gradient: {
+    flex: 1,
   },
   content: {
     flex: 1,
@@ -154,15 +153,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(0, 191, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: '#00BFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#00BFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 12,
+    color: '#FFFFFF',
+    marginTop: 16,
+    textShadowColor: 'rgba(0, 191, 255, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#CBD5E1',
     marginTop: 4,
   },
   form: {
@@ -171,13 +188,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
-    height: 48,
+    height: 56,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(0, 191, 255, 0.3)',
   },
   inputIcon: {
     marginRight: 12,
@@ -185,73 +202,76 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1F2937',
+    color: '#FFFFFF',
   },
   eyeIcon: {
     padding: 4,
   },
   button: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 12,
+    height: 56,
     marginTop: 8,
+    overflow: 'hidden',
+    shadowColor: '#00BFFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
+  buttonGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginLeft: 4,
   },
   testCredentials: {
     marginTop: 16,
     padding: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 191, 255, 0.2)',
   },
   testCredentialsText: {
-    color: '#6B7280',
+    color: '#CBD5E1',
     fontSize: 14,
-  },
-  becomeDriver: {
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 24,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  becomeDriverText: {
-    color: '#6B7280',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  becomeDriverLink: {
-    color: '#3B82F6',
-    fontSize: 16,
-    fontWeight: '600',
   },
   support: {
     alignItems: 'center',
+    marginTop: 32,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   supportText: {
-    color: '#6B7280',
+    color: '#CBD5E1',
     fontSize: 14,
     marginBottom: 8,
   },
   supportEmail: {
-    color: '#3B82F6',
+    color: '#00BFFF',
     fontSize: 14,
     fontWeight: '600',
   },
   supportPhone: {
-    color: '#3B82F6',
+    color: '#00BFFF',
     fontSize: 14,
     fontWeight: '600',
     marginTop: 4,
   },
 });
+
