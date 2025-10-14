@@ -9,7 +9,7 @@ struct AppConfig {
     #if DEBUG
     static let apiBaseURL = "http://localhost:3000"
     #else
-    static let apiBaseURL = "https://speedy-van-server.onrender.com"
+    static let apiBaseURL = "https://speedy-van.co.uk"
     #endif
     
     /// API timeout in seconds
