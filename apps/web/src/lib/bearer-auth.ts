@@ -54,7 +54,7 @@ export async function validateBearerToken(token: string): Promise<{
     const user = await withPrisma(async (prisma) => {
       return await prisma.user.findUnique({
         where: { id: userId },
-        include: { Driver: true },
+        include: { driver: true },
       });
     });
 
@@ -77,7 +77,7 @@ export async function validateBearerToken(token: string): Promise<{
         email: user.email,
         name: user.name,
         role: user.role,
-        driver: user.Driver,
+        driver: user.driver,
       },
     };
   } catch (error) {
