@@ -1,0 +1,8 @@
+Trigger Render rebuild - Prisma Client sync
+
+This file is created to trigger a rebuild on Render.
+The Prisma Client needs to be regenerated to match the production database schema.
+
+Date: 2025-10-15
+Reason: Prisma Client out of sync with database
+
