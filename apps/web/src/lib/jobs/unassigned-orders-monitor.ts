@@ -21,7 +21,7 @@ const SLA_THRESHOLDS = {
 };
 
 export class UnassignedOrdersMonitor {
-  private intervalId: NodeJS.Timeout | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private readonly checkInterval = 5 * 60 * 1000; // Check every 5 minutes
 
   async start() {

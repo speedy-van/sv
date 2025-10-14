@@ -17,7 +17,7 @@ class LocationTracker {
   private lastPingTime: number = 0;
   private isTracking: boolean = false;
   private config: LocationConfig = {};
-  private pingInterval: NodeJS.Timeout | null = null;
+  private pingInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(config: LocationConfig = {}) {
     this.config = config;

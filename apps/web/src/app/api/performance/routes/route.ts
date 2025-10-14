@@ -271,7 +271,9 @@ async function handleBatchUpdate(body: any): Promise<NextResponse> {
     bookingId: update.bookingId,
     status: update.status,
     actualArrival: update.actualArrival ? new Date(update.actualArrival) : undefined,
-    coordinates: update.coordinates
+    coordinates: update.coordinates && update.coordinates.lat !== undefined && update.coordinates.lng !== undefined
+      ? { lat: update.coordinates.lat, lng: update.coordinates.lng }
+      : undefined
   }));
   
   const result = await APIPerformanceService.batchUpdateBookings(processedUpdates);

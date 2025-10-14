@@ -30,7 +30,7 @@ export async function POST(
         reviewedBy: user.name || user.email,
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

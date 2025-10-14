@@ -38,13 +38,13 @@ export async function POST(req: Request) {
             id: { in: orderIds },
           },
           include: {
-            User: {
+            customer: {
               select: {
                 name: true,
                 email: true,
               },
             },
-            Driver: {
+            driver: {
               include: {
                 User: {
                   select: {
@@ -53,20 +53,20 @@ export async function POST(req: Request) {
                 },
               },
             },
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+            pickupAddress: true,
+            dropoffAddress: true,
           },
         });
 
         const csvData = orders.map(order => ({
           reference: order.reference,
           status: order.status,
-          customerName: order.User?.name || 'Unknown',
-          customerEmail: order.User?.email || 'Unknown',
-          BookingAddress_Booking_pickupAddressIdToBookingAddress: order.BookingAddress_Booking_pickupAddressIdToBookingAddress.label,
-          BookingAddress_Booking_dropoffAddressIdToBookingAddress: order.BookingAddress_Booking_dropoffAddressIdToBookingAddress.label,
+          customerName: order.customer?.name || 'Unknown',
+          customerEmail: order.customer?.email || 'Unknown',
+          pickupAddress: order.pickupAddress?.label || 'Unknown',
+          dropoffAddress: order.dropoffAddress?.label || 'Unknown',
           amount: (order.totalGBP / 100).toFixed(2),
-          driverName: order.Driver?.User.name || 'Unassigned',
+          driverName: order.driver?.User.name || 'Unassigned',
           createdAt: order.createdAt,
           scheduledAt: order.scheduledAt,
         }));
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
             id: { in: orderIds },
           },
           include: {
-            User: true,
+            customer: true,
           },
         });
 
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
           try {
             const booking = await prisma.booking.findUnique({
               where: { id: orderId },
-              include: { Driver: true },
+              include: { driver: true },
             });
 
             if (!booking) {

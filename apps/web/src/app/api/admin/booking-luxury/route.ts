@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           dropoffAddress: true,
           pickupProperty: true,
           dropoffProperty: true,
-          items: true,
+          BookingItem: true,
           customer: {
             select: {
               id: true,
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
           },
           driver: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,

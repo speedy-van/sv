@@ -89,33 +89,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Load pricing configuration (in production, this would come from the actual config)
     const mockPricingConfig = {
-      baseFees: { standard: 2500 }, // £25.00 in pence
-      rates: {
-        perKm: 150, // £1.50 per km
-        perMinute: 50, // £0.50 per minute
-        difficultyMultiplier: 200 // £2.00 per difficulty point above 5
+      baseRates: {
+        perKm: 150,
+        perMinute: 50,
+        multiDropDiscount: 0
       },
-      surcharges: {
-        extraStop: { perStop: 800 }, // £8.00 per extra stop
-        congestionZone: { perLeg: 1000 }, // £10.00 per leg in congestion zone
-        tollRoad: { estimated: 500 }, // £5.00 estimated toll
-        heavyTraffic: { perLeg: 300 }, // £3.00 per leg in heavy traffic
-        multipleStops: { perExtraStop: 200 }, // £2.00 per extra stop beyond 3
-        propertyAccess: {
-          noLift: { highFloor: 1500 }, // £15.00 for high floors without lift
-          noParking: { standard: 800 }, // £8.00 for no parking
-          permit: { required: 1200 } // £12.00 for permit required
-        }
-      },
-      discounts: {
-        routeOptimization: {
-          highEfficiency: 500, // £5.00 for >80% efficiency
-          mediumEfficiency: 200, // £2.00 for >60% efficiency
-          distanceSaving: 300, // £3.00 for >5km saved
-          timeSaving: 400 // £4.00 for >15min saved
-        }
+      vanSpecs: {
+        maxVolumeM3: 15,
+        maxWeightKg: 1000,
+        maxItems: 150,
+        loadingTimeMinutes: 5,
+        unloadingTimeMinutes: 5
       }
-    };
+    } as const;
 
     // Initialize advanced multi-drop router
     const router = new AdvancedMultiDropRouter(mockPricingConfig);

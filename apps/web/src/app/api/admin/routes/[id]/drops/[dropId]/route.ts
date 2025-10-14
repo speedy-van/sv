@@ -67,7 +67,7 @@ export async function DELETE(
     }
 
     // Cannot remove completed drops
-    if (drop.status === 'completed') {
+    if (drop.status === 'delivered') {
       return NextResponse.json(
         { error: 'Cannot remove completed drops' },
         { status: 400 }
@@ -102,21 +102,11 @@ export async function DELETE(
         },
         drops: {
           include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            },
-            booking: {
-              select: {
-                id: true
-              }
-            }
+            User: { select: { id: true, name: true, email: true } },
+            Booking: { select: { id: true } }
           }
         },
-        bookings: {
+        Booking: {
           include: {
             customer: {
               select: {

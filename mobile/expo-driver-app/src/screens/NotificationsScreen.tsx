@@ -134,8 +134,8 @@ export default function NotificationsScreen() {
         },
       });
 
-      if (response.data) {
-        const fetchedNotifications = response.data.notifications || [];
+      if (response) {
+        const fetchedNotifications = response.notifications || [];
         
         // If no notifications from API, show sample notifications for better UX
         if (fetchedNotifications.length === 0) {
@@ -264,11 +264,11 @@ export default function NotificationsScreen() {
     setUnreadCount(0);
 
     try {
-      const response = await apiService.put('/api/driver/notifications/read', {
+      const response = await apiService.put<{ success: boolean }>('/api/driver/notifications/read', {
         markAllAsRead: true,
       });
 
-      if (response.data?.success) {
+      if (response?.success) {
         console.log('✅ All notifications marked as read');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -293,7 +293,7 @@ export default function NotificationsScreen() {
       case 'route_reminder':
         if (data?.routeId) {
           // Navigate to route details
-          navigation.navigate('RouteDetails' as never, { routeId: data.routeId } as never);
+          (navigation as any).navigate('RouteDetails', { routeId: data.routeId });
         }
         break;
 
@@ -301,7 +301,7 @@ export default function NotificationsScreen() {
       case 'job_updated':
         if (data?.jobId) {
           // Navigate to job details
-          navigation.navigate('JobDetails' as never, { jobId: data.jobId } as never);
+          (navigation as any).navigate('JobDetails', { jobId: data.jobId });
         }
         break;
 

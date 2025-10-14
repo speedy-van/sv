@@ -207,7 +207,7 @@ export class AnalyticsService {
           }
         },
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true
@@ -246,7 +246,7 @@ export class AnalyticsService {
 
         return {
           driverId: driver.userId,
-          driverName: driver.user.name || 'Unknown Driver',
+          driverName: driver.User?.name || 'Unknown Driver',
           totalBookings,
           totalRevenue,
           averageRating,
@@ -274,14 +274,14 @@ export class AnalyticsService {
       const customersWithBookings = await prisma.user.findMany({
         where: {
           role: 'customer',
-          bookings: {
+          Booking: {
             some: {
               createdAt: { gte: startDate, lte: endDate }
             }
           }
         },
         include: {
-          bookings: {
+          Booking: {
             where: {
               createdAt: { gte: startDate, lte: endDate }
             },
@@ -298,7 +298,7 @@ export class AnalyticsService {
       });
 
       return customersWithBookings.map(customer => {
-        const bookings = customer.bookings || [];
+        const bookings = customer.Booking || [];
         const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
         
         const totalBookings = bookings.length;

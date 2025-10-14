@@ -107,7 +107,7 @@ const SmartNotifications: React.FC<SmartNotificationsProps> = ({
 
   // Auto-hide alerts
   useEffect(() => {
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     visibleAlerts.forEach(alert => {
       if (alert.autoHide && alert.hideAfter) {

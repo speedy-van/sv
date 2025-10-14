@@ -49,12 +49,7 @@ export async function GET(request: NextRequest) {
         pickupAddress: true,
         dropoffAddress: true,
         customer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
+          select: { id: true, name: true, email: true }
         },
       },
       orderBy: [
@@ -78,7 +73,7 @@ export async function GET(request: NextRequest) {
     let filteredBookings = eligibleBookings;
     if (region) {
       filteredBookings = eligibleBookings.filter(b => 
-        b.pickupAddress.postcode.startsWith(region)
+        (b as any).pickupAddress?.postcode?.startsWith(region)
       );
     }
 
@@ -88,10 +83,10 @@ export async function GET(request: NextRequest) {
     const suggestedRoutes = await intelligentRouteOptimizer.createOptimalRoutes(
       filteredBookings.map(b => ({
         bookingId: b.id,
-        pickupLat: b.pickupAddress.lat || 0,
-        pickupLng: b.pickupAddress.lng || 0,
-        dropoffLat: b.dropoffAddress.lat || 0,
-        dropoffLng: b.dropoffAddress.lng || 0,
+        pickupLat: (b as any).pickupAddress?.lat || 0,
+        pickupLng: (b as any).pickupAddress?.lng || 0,
+        dropoffLat: (b as any).dropoffAddress?.lat || 0,
+        dropoffLng: (b as any).dropoffAddress?.lng || 0,
         scheduledAt: b.scheduledAt,
         loadPercentage: b.estimatedLoadPercentage || 0,
         priority: b.priority || 5,

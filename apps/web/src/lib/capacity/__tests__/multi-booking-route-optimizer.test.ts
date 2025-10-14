@@ -95,7 +95,6 @@ describe('Multi-Booking Route Optimizer', () => {
       const result = await planMultiBookingRoutes(bookings, {
         tier: 'economy',
         maxBookingsPerRoute: 10,
-        minBookingsPerRoute: 2,
       });
       
       expect(result.success).toBe(true);
@@ -360,7 +359,6 @@ describe('Multi-Booking Route Optimizer', () => {
       
       const result = await planMultiBookingRoutes(bookings, {
         tier: 'economy',
-        minBookingsPerRoute: 2,
       });
       
       // Should still create a route even with 1 booking

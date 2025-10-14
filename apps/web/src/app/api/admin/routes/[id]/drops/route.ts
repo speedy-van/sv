@@ -20,7 +20,7 @@ export async function GET(
       where: { routeId },
       orderBy: { timeWindowStart: 'asc' },
       include: {
-        booking: {
+        Booking: {
           select: {
             id: true,
             reference: true,
@@ -100,9 +100,9 @@ export async function POST(
     // Create drop
     const drop = await prisma.drop.create({
       data: {
-        routeId,
-        bookingId: bookingId || null,
-        customerId,
+        Route: { connect: { id: routeId } },
+        ...(bookingId ? { Booking: { connect: { id: bookingId } } } : {}),
+        User: { connect: { id: customerId } },
         pickupAddress,
         deliveryAddress,
         timeWindowStart: new Date(timeWindowStart),
@@ -112,8 +112,8 @@ export async function POST(
         status: 'booked',
       },
       include: {
-        booking: true,
-        customer: true,
+        Booking: true,
+        User: true,
       },
     });
 

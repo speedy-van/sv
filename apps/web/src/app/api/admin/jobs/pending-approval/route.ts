@@ -12,7 +12,7 @@ type AssignmentWithRelations = Prisma.AssignmentGetPayload<{
   include: {
     Driver: {
       include: {
-        user: {
+        User: {
           select: {
             id: true;
             name: true;
@@ -23,7 +23,7 @@ type AssignmentWithRelations = Prisma.AssignmentGetPayload<{
     };
     Booking: {
       include: {
-        items: true;
+        BookingItem: true;
         pickupAddress: true;
       };
     };
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       include: {
         Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         },
         Booking: {
           include: {
-            items: true,
+            BookingItem: true,
             pickupAddress: true,
           },
         },
@@ -158,8 +158,8 @@ export async function GET(request: NextRequest) {
         bookingReference: assignment.Booking.reference,
         driver: {
           id: assignment.Driver.id,
-          name: assignment.Driver.user.name,
-          email: assignment.Driver.user.email,
+          name: assignment.Driver.User.name,
+          email: assignment.Driver.User.email,
         },
         jobDetails: {
           customerName: assignment.Booking.customerName,
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
           duration: assignment.Booking.estimatedDurationMinutes,
           urgency: assignment.Booking.urgency,
           customerPaid: assignment.Booking.totalGBP,
-          items: assignment.Booking.items,
+          items: assignment.Booking.BookingItem,
         },
         timing: {
           completedAt: assignment.claimedAt,

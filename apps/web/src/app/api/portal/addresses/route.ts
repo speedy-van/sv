@@ -85,8 +85,17 @@ export async function POST(request: NextRequest) {
 
     const address = await prisma.address.create({
       data: {
-        ...validatedData,
-        userId: customerId,
+        label: validatedData.label,
+        line1: validatedData.line1,
+        line2: validatedData.line2,
+        city: validatedData.city,
+        postcode: validatedData.postcode,
+        floor: validatedData.floor,
+        flat: validatedData.flat,
+        lift: validatedData.lift,
+        notes: validatedData.notes,
+        isDefault: validatedData.isDefault ?? false,
+        User: { connect: { id: customerId } },
       },
     });
 

@@ -56,10 +56,34 @@ async function getDashboardData() {
     include: {
       driver: {
         include: {
-          User: true,
+          User: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              createdAt: true,
+              isActive: true,
+              lastLogin: true,
+              resetTokenExpiry: true,
+              emailVerificationExpiry: true
+            }
+          },
         },
       },
-      customer: true,
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          isActive: true,
+          lastLogin: true,
+          resetTokenExpiry: true,
+          emailVerificationExpiry: true
+        }
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -124,25 +148,25 @@ async function getDashboardData() {
     updatedAt: job.updatedAt.toISOString(),
     scheduledAt: job.scheduledAt.toISOString(),
     paidAt: job.paidAt?.toISOString(),
-    driver: job.Driver ? {
-      ...job.Driver,
-      createdAt: job.Driver.createdAt.toISOString(),
-      updatedAt: job.Driver.updatedAt.toISOString(),
-      approvedAt: job.Driver.approvedAt?.toISOString(),
+    driver: job.driver ? {
+      ...job.driver,
+      createdAt: job.driver.createdAt.toISOString(),
+      updatedAt: job.driver.updatedAt.toISOString(),
+      approvedAt: job.driver.approvedAt?.toISOString(),
       user: {
-        ...job.Driver.User,
-        createdAt: job.Driver.User.createdAt.toISOString(),
-        lastLogin: job.Driver.User.lastLogin?.toISOString(),
-        resetTokenExpiry: job.Driver.User.resetTokenExpiry?.toISOString(),
-        emailVerificationExpiry: job.Driver.User.emailVerificationExpiry?.toISOString(),
+        ...job.driver.User,
+        createdAt: job.driver.User.createdAt.toISOString(),
+        lastLogin: job.driver.User.lastLogin?.toISOString(),
+        resetTokenExpiry: job.driver.User.resetTokenExpiry?.toISOString(),
+        emailVerificationExpiry: job.driver.User.emailVerificationExpiry?.toISOString(),
       },
     } : null,
-    customer: job.User ? {
-      ...job.User,
-      createdAt: job.User.createdAt.toISOString(),
-      lastLogin: job.User.lastLogin?.toISOString(),
-      resetTokenExpiry: job.User.resetTokenExpiry?.toISOString(),
-      emailVerificationExpiry: job.User.emailVerificationExpiry?.toISOString(),
+    customer: job.customer ? {
+      ...job.customer,
+      createdAt: job.customer.createdAt.toISOString(),
+      lastLogin: job.customer.lastLogin?.toISOString(),
+      resetTokenExpiry: job.customer.resetTokenExpiry?.toISOString(),
+      emailVerificationExpiry: job.customer.emailVerificationExpiry?.toISOString(),
     } : null,
   }));
 

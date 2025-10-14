@@ -16,7 +16,7 @@ export default function EnhancedNeonCard({
   variant = 'default',
   glow = false 
 }: EnhancedNeonCardProps) {
-  const getGradientColors = () => {
+  const getGradientColors = (): readonly [string, string] => {
     switch (variant) {
       case 'primary':
         return ['rgba(30, 64, 175, 0.9)', 'rgba(59, 130, 246, 0.7)'];

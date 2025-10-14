@@ -67,7 +67,6 @@ export async function GET(request: NextRequest) {
         const bookings = await prisma.booking.findMany({
           where: {
             customerId: { not: null },
-            customerPhone: { not: null },
           },
           select: {
             customerId: true,

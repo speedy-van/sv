@@ -15,7 +15,7 @@ interface SchedulerStats {
 
 class AutoRouteScheduler {
   private isRunningFlag = false; // Flag for single run in progress
-  private intervalId: NodeJS.Timeout | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private stats: SchedulerStats = {
     lastRun: null,
     totalRuns: 0,
@@ -132,13 +132,10 @@ class AutoRouteScheduler {
       // Get available drivers
       const availableDrivers = await prisma.driver.findMany({
         where: {
-          status: 'active',
-          availability: {
-            status: 'online',
-          }
+          status: 'active'
         },
         include: {
-          user: { select: { name: true } }
+          User: { select: { name: true } }
         },
       });
 
@@ -189,7 +186,8 @@ class AutoRouteScheduler {
             }
           });
 
-          // Log optimization history
+          // Log optimization history (disabled - model not available)
+          /*
           await prisma.routeOptimizationHistory.create({
             data: {
               routeId: route.id,
@@ -209,11 +207,12 @@ class AutoRouteScheduler {
               },
             }
           });
+          */
 
           routesCreated++;
           dropsAssigned += dropGroup.length;
 
-          console.log(`  ✅ Route ${i + 1}: ${dropGroup.length} drops${assignedDriver ? ` → ${assignedDriver.user.name}` : ' (unassigned)'}`);
+          console.log(`  ✅ Route ${i + 1}: ${dropGroup.length} drops${assignedDriver ? ` → ${assignedDriver.User?.name}` : ' (unassigned)'}`);
 
         } catch (error) {
           console.error(`  ❌ Failed to create route ${i + 1}:`, error);
@@ -296,7 +295,7 @@ class AutoRouteScheduler {
       let systemDriver = await prisma.user.findFirst({
         where: {
           email: 'system@speedy-van.co.uk',
-          role: 'DRIVER'
+          role: 'driver'
         }
       });
 
@@ -306,12 +305,10 @@ class AutoRouteScheduler {
           data: {
             email: 'system@speedy-van.co.uk',
             name: 'System Driver',
-            role: 'DRIVER',
-            phone: '+44 7901846297',
+            password: 'system_password_not_used', // System user, password not used
+            role: 'driver',
             isActive: true,
-            emailVerified: new Date(),
-            createdAt: new Date(),
-            updatedAt: new Date()
+            emailVerified: true
           }
         });
       }

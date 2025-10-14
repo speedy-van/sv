@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         }
       },
       include: {
-        Drop: {
+        drops: {
           include: {
             User: {
               select: {
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
       console.log(`📊 Found ${routes.length} route(s) in database`);
       routes.forEach((r, i) => {
-        console.log(`  Route ${i + 1}: ${r.id} (${r.status}, ${r.Drop?.length || 0} drops)`);
+        console.log(`  Route ${i + 1}: ${r.id} (${r.status}, ${r.drops?.length || 0} drops)`);
       });
 
       return { driver, routes };
@@ -112,13 +112,13 @@ export async function GET(request: NextRequest) {
     const formattedRoutes = routes.map(route => {
       // Calculate totals from drops
       const totalDistance = route.optimizedDistanceKm || route.actualDistanceKm || 
-        route.Drop.reduce((sum, drop) => sum + (drop.distance || 0), 0);
+        route.drops.reduce((sum, drop) => sum + (drop.distance || 0), 0);
       
       const totalEarnings = route.driverPayout || route.totalOutcome || 
-        route.Drop.reduce((sum, drop) => sum + Number(drop.quotedPrice || 0), 0);
+        route.drops.reduce((sum, drop) => sum + Number(drop.quotedPrice || 0), 0);
 
       // Format drops
-      const drops = route.Drop.map(drop => ({
+      const drops = route.drops.map(drop => ({
         id: drop.id,
         customerName: drop.User?.name || 'Unknown',
         deliveryAddress: drop.deliveryAddress,
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
         status: route.status,
         drops: drops,
         estimatedDuration: route.estimatedDuration || 
-          Math.round((route.Drop.length * 30) + (totalDistance * 2.5)), // 30 min per drop + travel time
+          Math.round((route.drops.length * 30) + (totalDistance * 2.5)), // 30 min per drop + travel time
         estimatedDistance: totalDistance,
         estimatedEarnings: Number(totalEarnings),
         startTime: route.startTime.toISOString(),

@@ -102,9 +102,9 @@ export class DriverTrackingService {
           }
         },
         include: {
-          driver: {
+          Driver: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -114,7 +114,7 @@ export class DriverTrackingService {
                   isActive: true
                 }
               },
-              profile: true
+              DriverProfile: true
             }
           }
         }
@@ -193,12 +193,12 @@ export class DriverTrackingService {
       }
 
       // Get latest tracking data (note: routeId field doesn't exist in TrackingPing)
-      const latestPing = await prisma.trackingPing.findFirst({
-        where: { 
+      const latestPing = route.driverId ? await prisma.trackingPing.findFirst({
+        where: {
           driverId: route.driverId
         },
         orderBy: { createdAt: 'desc' }
-      });
+      }) : null;
 
       // Note: route.drops relationship doesn't exist in current schema, using placeholders
       const completedDrops = 0; // route.drops?.filter(drop => drop.status === 'completed').length || 0;
@@ -382,8 +382,8 @@ export class DriverTrackingService {
         include: {
           driver: {
             include: {
-              profile: true,
-              performance: true
+              DriverProfile: true,
+              DriverPerformance: true
             }
           }
         }
@@ -404,7 +404,7 @@ export class DriverTrackingService {
         name: driver.name,
         email: driver.email,
         currentStatus: driver.driver.status,
-        profile: driver.driver.profile ? {
+        profile: driver.driver.DriverProfile ? {
           performanceScore: 0, // driver.driver.profile.performanceScore || 0 - field not available in current schema
           avgCsat: 0, // driver.driver.profile.avgCsat || 0 - field not available in current schema
           totalJobs: 0, // driver.driver.profile.totalJobs || 0 - field not available in current schema

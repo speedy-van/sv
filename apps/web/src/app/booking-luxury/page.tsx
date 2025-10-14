@@ -101,8 +101,8 @@ export default function BookingLuxuryPage() {
   const calculateComprehensivePricing = useCallback(async () => {
     // Only calculate if we have all required data with full addresses
     if (
-      !formData.step1.pickup?.coordinates ||
-      formData.step1.drops.length === 0 ||
+      !formData.step1.pickupAddress?.coordinates ||
+      formData.step1.items.length === 0 ||
       formData.step1.items.length === 0
     ) {
       return;
@@ -114,18 +114,18 @@ export default function BookingLuxuryPage() {
       number: address.formatted?.houseNumber || address.houseNumber || address.line1?.split(' ')[0] || ''
     });
 
-    const pickupAddress = extractStreetAndNumber(formData.step1.pickup);
-    const dropAddresses = formData.step1.drops.map(extractStreetAndNumber);
+    const pickupAddress = extractStreetAndNumber(formData.step1.pickupAddress);
+    const dropAddresses = [extractStreetAndNumber(formData.step1.dropoffAddress)];
 
     // Validate all addresses have required components
-    if (!pickupAddress.street || !pickupAddress.number || !formData.step1.pickup.coordinates) {
+    if (!pickupAddress.street || !pickupAddress.number || !formData.step1.pickupAddress.coordinates) {
       console.warn('Incomplete pickup address - Enterprise Engine requires full address structure');
       return;
     }
 
-    const hasCompleteDrops = dropAddresses.every(drop => 
+    const hasCompleteDrops = dropAddresses.every(drop =>
       drop.street && drop.number
-    ) && formData.step1.drops.every(drop => drop.coordinates);
+    ) && formData.step1.dropoffAddress.coordinates;
 
     if (!hasCompleteDrops) {
       console.warn('Incomplete drop addresses - Enterprise Engine requires full address structure');
@@ -147,28 +147,28 @@ export default function BookingLuxuryPage() {
             volume_override: item.volume
           })),
           pickup: {
-            full: formData.step1.pickup.full,
-            line1: formData.step1.pickup.line1,
-            city: formData.step1.pickup.city,
-            postcode: formData.step1.pickup.postcode,
+            full: formData.step1.pickupAddress.formatted_address || formData.step1.pickupAddress.address,
+            line1: formData.step1.pickupAddress.address,
+            city: formData.step1.pickupAddress.city,
+            postcode: formData.step1.pickupAddress.postcode,
             // ENTERPRISE REQUIREMENT: Full structured address
-            street: formData.step1.pickup.formatted?.street || formData.step1.pickup.line1?.split(' ').slice(1).join(' ') || '',
-            number: formData.step1.pickup.formatted?.houseNumber || formData.step1.pickup.houseNumber || formData.step1.pickup.line1?.split(' ')[0] || '',
-            coordinates: formData.step1.pickup.coordinates,
+            street: formData.step1.pickupAddress.address,
+            number: formData.step1.pickupAddress.houseNumber || '',
+            coordinates: formData.step1.pickupAddress.coordinates,
             propertyType: 'house'
           },
-          dropoffs: formData.step1.drops.map(drop => ({
-            full: drop.full,
-            line1: drop.line1,
-            city: drop.city,
-            postcode: drop.postcode,
+          dropoffs: [{
+            full: formData.step1.dropoffAddress.formatted_address || formData.step1.dropoffAddress.address,
+            line1: formData.step1.dropoffAddress.address,
+            city: formData.step1.dropoffAddress.city,
+            postcode: formData.step1.dropoffAddress.postcode,
             // ENTERPRISE REQUIREMENT: Full structured address
-            street: drop.formatted?.street || drop.line1?.split(' ').slice(1).join(' ') || '',
-            number: drop.formatted?.houseNumber || drop.houseNumber || drop.line1?.split(' ')[0] || '',
-            coordinates: drop.coordinates,
+            street: formData.step1.dropoffAddress.address,
+            number: formData.step1.dropoffAddress.houseNumber || '',
+            coordinates: formData.step1.dropoffAddress.coordinates,
             propertyType: 'house'
-          })),
-          scheduledDate: formData.step1.scheduledAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          }],
+          scheduledDate: formData.step1.pickupDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           serviceLevel: 'standard'
         })
       });
@@ -202,8 +202,8 @@ export default function BookingLuxuryPage() {
 
         console.log('✅ Enterprise Engine: Full-address availability calculated', {
           availability: data.data.availability,
-          pickup: { city: formData.step1.pickup.city },
-          dropCount: formData.step1.drops.length
+          pickup: { city: formData.step1.pickupAddress.city },
+          dropCount: 1 // Single dropoff for now
         });
 
       } else {
@@ -215,10 +215,10 @@ export default function BookingLuxuryPage() {
       setIsLoadingAvailability(false);
     }
   }, [
-    formData.step1.pickup?.street,
-    formData.step1.pickup?.number,
-    formData.step1.pickup?.coordinates,
-    formData.step1.drops,
+    formData.step1.pickupAddress?.address,
+    formData.step1.pickupAddress?.houseNumber,
+    formData.step1.pickupAddress?.coordinates,
+    formData.step1.dropoffAddress,
     formData.step1.items
   ]);
 
@@ -785,7 +785,6 @@ export default function BookingLuxuryPage() {
                       updateFormData={updateFormData}
                       errors={errors}
                       onNext={() => setCurrentStep(2)}
-                      calculatePricing={calculatePricing}
                       pricingTiers={pricingTiers}
                       availabilityData={availabilityData}
                       isLoadingAvailability={isLoadingAvailability}

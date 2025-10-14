@@ -36,7 +36,7 @@ async function globalSetup(config: FullConfig) {
     await prisma.assignment.deleteMany({
       where: {
         Driver: {
-          user: {
+          User: {
             email: testDriverEmail,
           },
         },
@@ -45,8 +45,8 @@ async function globalSetup(config: FullConfig) {
 
     await prisma.driverAvailability.deleteMany({
       where: {
-        driver: {
-          user: {
+        Driver: {
+          User: {
             email: testDriverEmail,
           },
         },
@@ -55,27 +55,37 @@ async function globalSetup(config: FullConfig) {
 
     await prisma.driverVehicle.deleteMany({
       where: {
-        driver: {
-          user: {
-            email: testDriverEmail,
-          },
+        driverId: {
+          in: await prisma.driver.findMany({
+            where: {
+              User: {
+                email: testDriverEmail,
+              },
+            },
+            select: { id: true },
+          }).then(drivers => drivers.map(d => d.id)),
         },
       },
     });
 
     await prisma.driverProfile.deleteMany({
       where: {
-        driver: {
-          user: {
-            email: testDriverEmail,
-          },
+        driverId: {
+          in: await prisma.driver.findMany({
+            where: {
+              User: {
+                email: testDriverEmail,
+              },
+            },
+            select: { id: true },
+          }).then(drivers => drivers.map(d => d.id)),
         },
       },
     });
 
     await prisma.driver.deleteMany({
       where: {
-        user: {
+        User: {
           email: testDriverEmail,
         },
       },
@@ -132,14 +142,14 @@ async function globalSetup(config: FullConfig) {
         rating: 4.5,
         vehicleType: 'van',
         approvedAt: new Date(),
-        profile: {
+        DriverProfile: {
           create: {
             phone: '+447700900000',
             address: '123 Test Street, London, UK',
             dob: new Date('1990-01-01'),
           },
         },
-        vehicles: {
+        DriverVehicle: {
           create: {
             make: 'Ford',
             model: 'Transit',
@@ -147,7 +157,7 @@ async function globalSetup(config: FullConfig) {
             weightClass: '3500kg',
           },
         },
-        availability: {
+        DriverAvailability: {
           create: {
             status: 'online',
             lastSeenAt: new Date(),

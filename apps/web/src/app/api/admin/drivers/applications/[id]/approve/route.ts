@@ -40,7 +40,7 @@ export async function POST(
         email: true,
         userId: true,
         status: true,
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

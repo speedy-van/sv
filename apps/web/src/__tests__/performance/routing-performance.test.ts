@@ -99,8 +99,6 @@ describe('Routing System - Performance Tests', () => {
           password: 'hashed',
           role: 'admin',
           phone: '+447901846297',
-          createdAt: new Date(),
-          updatedAt: new Date(),
         }
       });
       adminUserId = newAdmin.id;
@@ -164,8 +162,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_pickup_${Date.now()}_${i}`,
             ...bookingData.pickupAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -173,8 +169,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_dropoff_${Date.now()}_${i}`,
             ...bookingData.dropoffAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -219,8 +213,13 @@ describe('Routing System - Performance Tests', () => {
             distanceCostGBP: Math.floor(bookingData.baseDistanceMiles * 100),
             itemsSurchargeGBP: 0,
             weatherSurchargeGBP: 0,
-            updatedAt: new Date(),
-            ...bookingData,
+            scheduledAt: bookingData.scheduledAt,
+            totalGBP: bookingData.totalGBP,
+            customerName: bookingData.customerName,
+            customerEmail: bookingData.customerEmail,
+            customerPhone: bookingData.customerPhone,
+            baseDistanceMiles: bookingData.baseDistanceMiles,
+            estimatedDurationMinutes: bookingData.estimatedDurationMinutes,
           }
         });
 
@@ -256,8 +255,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_manual_pickup_${Date.now()}_${i}`,
             ...bookingData.pickupAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -265,8 +262,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_manual_dropoff_${Date.now()}_${i}`,
             ...bookingData.dropoffAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -309,8 +304,13 @@ describe('Routing System - Performance Tests', () => {
             distanceCostGBP: Math.floor(bookingData.baseDistanceMiles * 100),
             itemsSurchargeGBP: 0,
             weatherSurchargeGBP: 0,
-            updatedAt: new Date(),
-            ...bookingData,
+            scheduledAt: bookingData.scheduledAt,
+            totalGBP: bookingData.totalGBP,
+            customerName: bookingData.customerName,
+            customerEmail: bookingData.customerEmail,
+            customerPhone: bookingData.customerPhone,
+            baseDistanceMiles: bookingData.baseDistanceMiles,
+            estimatedDurationMinutes: bookingData.estimatedDurationMinutes,
           }
         });
 
@@ -360,8 +360,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_auto_small_pickup_${Date.now()}_${i}`,
             ...bookingData.pickupAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -369,8 +367,6 @@ describe('Routing System - Performance Tests', () => {
           data: {
             id: `perf_auto_small_dropoff_${Date.now()}_${i}`,
             ...bookingData.dropoffAddress,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }
         });
 
@@ -413,8 +409,13 @@ describe('Routing System - Performance Tests', () => {
             distanceCostGBP: Math.floor(bookingData.baseDistanceMiles * 100),
             itemsSurchargeGBP: 0,
             weatherSurchargeGBP: 0,
-            updatedAt: new Date(),
-            ...bookingData,
+            scheduledAt: bookingData.scheduledAt,
+            totalGBP: bookingData.totalGBP,
+            customerName: bookingData.customerName,
+            customerEmail: bookingData.customerEmail,
+            customerPhone: bookingData.customerPhone,
+            baseDistanceMiles: bookingData.baseDistanceMiles,
+            estimatedDurationMinutes: bookingData.estimatedDurationMinutes,
           }
         });
 

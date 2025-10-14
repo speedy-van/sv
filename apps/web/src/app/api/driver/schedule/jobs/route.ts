@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
         status: true,
         customerName: true,
         customerPhone: true,
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+        pickupAddress: {
           select: {
             label: true,
             postcode: true,
           },
         },
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+        dropoffAddress: {
           select: {
             label: true,
             postcode: true,
@@ -85,13 +85,13 @@ export async function GET(request: NextRequest) {
         status: true,
         customerName: true,
         customerPhone: true,
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+        pickupAddress: {
           select: {
             label: true,
             postcode: true,
           },
         },
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+        dropoffAddress: {
           select: {
             label: true,
             postcode: true,
@@ -130,13 +130,13 @@ export async function GET(request: NextRequest) {
             scheduledAt: true,
             customerName: true,
             customerPhone: true,
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+            pickupAddress: {
               select: {
                 label: true,
                 postcode: true,
               },
             },
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+            dropoffAddress: {
               select: {
                 label: true,
                 postcode: true,
@@ -167,8 +167,8 @@ export async function GET(request: NextRequest) {
       status: booking.status.toLowerCase(),
       customerName: booking.customerName || 'Customer',
       customerPhone: booking.customerPhone || '',
-      pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Location',
-      dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Location',
+      pickupAddress: booking.pickupAddress?.label || 'Pickup Location',
+      dropoffAddress: booking.dropoffAddress?.label || 'Dropoff Location',
       items: booking.BookingItem || [],
       // Hide customer payment amount from driver
       // Driver will see their earnings separately
@@ -183,8 +183,8 @@ export async function GET(request: NextRequest) {
       declinedAt: assignment.createdAt.toISOString(),
       customerName: assignment.Booking.customerName || 'Customer',
       customerPhone: assignment.Booking.customerPhone || '',
-      pickupAddress: assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Location',
-      dropoffAddress: assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Location',
+      pickupAddress: assignment.Booking.pickupAddress?.label || 'Pickup Location',
+      dropoffAddress: assignment.Booking.dropoffAddress?.label || 'Dropoff Location',
       items: assignment.Booking.BookingItem || [],
       // Hide customer payment amount from driver
       // Driver will see their earnings separately

@@ -43,7 +43,7 @@ export async function POST(
       const booking = await prisma.booking.findFirst({
         where: { reference: code },
         include: {
-          Driver: {
+          driver: {
             include: {
               User: {
                 select: { name: true, email: true }
@@ -68,7 +68,7 @@ export async function POST(
         );
       }
 
-      const oldDriverName = booking.Driver?.User?.name || 'Unknown';
+      const oldDriverName = booking.driver?.User?.name || 'Unknown';
       const oldDriverId = booking.driverId;
 
       // Unassign the driver using transaction

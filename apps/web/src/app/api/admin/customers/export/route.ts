@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         lastLogin: true,
         isActive: true,
         emailVerified: true,
-        bookings: {
+        Booking: {
           select: {
             id: true,
             reference: true,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
             createdAt: true,
           },
         },
-        supportTickets: {
+        SupportTicket: {
           select: {
             id: true,
             description: true,
@@ -56,14 +56,14 @@ export async function GET(request: NextRequest) {
             createdAt: true,
           },
         },
-        addresses: {
+        Address: {
           select: {
             id: true,
             label: true,
             postcode: true,
           },
         },
-        contacts: {
+        Contact: {
           select: {
             id: true,
             name: true,
@@ -77,15 +77,15 @@ export async function GET(request: NextRequest) {
 
     // Process customer data for export
     const exportData = customers.map(customer => {
-      const totalBookings = customer.bookings.length;
-      const totalSpent = customer.bookings.reduce(
+      const totalBookings = customer.Booking.length;
+      const totalSpent = customer.Booking.reduce(
         (sum, booking) => sum + (booking.totalGBP || 0),
         0
       );
-      const activeTickets = customer.supportTickets.filter(
+      const activeTickets = customer.SupportTicket.filter(
         ticket => ticket.status === 'open'
       ).length;
-      const completedBookings = customer.bookings.filter(
+      const completedBookings = customer.Booking.filter(
         booking => booking.status === 'COMPLETED'
       ).length;
 
@@ -102,10 +102,10 @@ export async function GET(request: NextRequest) {
         completedBookings,
         totalSpent: (totalSpent / 100).toFixed(2), // Convert from pence to pounds
         activeTickets,
-        addressCount: customer.addresses.length,
-        contactCount: customer.contacts.length,
-        primaryAddress: customer.addresses[0]?.label || 'No address',
-        primaryContact: customer.contacts[0]?.name || 'No contact',
+        addressCount: customer.Address.length,
+        contactCount: customer.Contact.length,
+        primaryAddress: customer.Address[0]?.label || 'No address',
+        primaryContact: customer.Contact[0]?.name || 'No contact',
       };
     });
 

@@ -51,7 +51,7 @@ export default function SEO({
   ];
 
   if (breadcrumbs && breadcrumbs.length > 0) {
-    schemas.push(SCHEMA_ORG.breadcrumb(breadcrumbs));
+    schemas.push(SCHEMA_ORG.breadcrumb(breadcrumbs) as any);
   }
 
   if (schema) {

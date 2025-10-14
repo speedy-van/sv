@@ -17,8 +17,6 @@ export const SpringPresets: Record<string, WithSpringConfig> = {
     mass: 1,
     stiffness: 150,
     overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
   },
 
   // Bouncy spring - playful, energetic
@@ -27,8 +25,6 @@ export const SpringPresets: Record<string, WithSpringConfig> = {
     mass: 1,
     stiffness: 100,
     overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
   },
 
   // Stiff spring - quick, responsive
@@ -37,8 +33,6 @@ export const SpringPresets: Record<string, WithSpringConfig> = {
     mass: 1,
     stiffness: 200,
     overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
   },
 
   // iOS-style spring
@@ -47,8 +41,6 @@ export const SpringPresets: Record<string, WithSpringConfig> = {
     mass: 0.8,
     stiffness: 121,
     overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
   },
 
   // Wobbly spring - exaggerated bounce
@@ -57,8 +49,6 @@ export const SpringPresets: Record<string, WithSpringConfig> = {
     mass: 1.2,
     stiffness: 100,
     overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
   },
 };
 

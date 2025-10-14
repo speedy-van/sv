@@ -4,7 +4,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": false,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -29,10 +29,6 @@
       }
     ],
     "types": ["node", "jest"],
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "strictNullChecks": false,
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": false
   },

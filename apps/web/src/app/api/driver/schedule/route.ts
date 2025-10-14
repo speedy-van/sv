@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: { isActive: true },
           orderBy: { startTime: 'asc' },
         },
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Get shifts in the date range
-    const shifts = driver.shifts
+    const shifts = driver.DriverShift
       .filter(shift => {
         // For recurring shifts, check if they fall in the date range
         if (shift.isRecurring) {

@@ -403,7 +403,7 @@ export class DynamicPricingEngine {
    * 2. Total route distance is < 200 miles (feasible in one day)
    * 3. Number of stops is >= 2 (actual multi-drop)
    */
-  private calculateMultiDropPrice(request: DynamicPricingRequest): number {
+  private async calculateMultiDropPrice(request: DynamicPricingRequest): Promise<number> {
     const { multiDropInfo } = request;
     if (!multiDropInfo) {
       throw new Error('Multi-drop info required for multi-drop pricing');
@@ -415,7 +415,7 @@ export class DynamicPricingEngine {
       console.warn('⚠️ Multi-drop not eligible:', eligibilityCheck.reason);
       console.warn('⚠️ Falling back to single order pricing');
       // Fall back to single order pricing
-      return this.calculateSingleOrderPrice(request);
+      return await this.calculateSingleOrderPrice(request);
     }
 
     // Base fare (reduced for multi-drop)
@@ -730,6 +730,20 @@ export class DynamicPricingEngine {
     else if (customerBookings > 10) volumeDiscount = 0.05;
     
     return { volumeDiscount };
+  }
+
+  // Simple calculatePrice method for backward compatibility
+  async calculatePrice(variables: any): Promise<any> {
+    // Basic calculation for quote service
+    const basePrice = variables.distance * 0.55 + variables.weight * 0.5 + variables.estimatedDuration * 0.15;
+    const totalPrice = basePrice * (variables.seasonalFactor || 1.0) * (variables.laneUtilization || 1.0);
+
+    return {
+      basePrice: Math.round(basePrice * 100), // Convert to pence
+      totalPrice: Math.round(totalPrice * 100),
+      surcharges: 0,
+      discounts: 0
+    };
   }
 }
 

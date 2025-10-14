@@ -43,10 +43,8 @@ export async function POST(
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
-          User: {
-            select: { name: true, email: true }
-          },
-          Drop: {
+          driver: { select: { name: true, email: true } },
+          drops: {
             orderBy: { createdAt: 'asc' }
           },
           Booking: {
@@ -119,10 +117,8 @@ export async function POST(
             adminNotes: reason || 'Assigned by admin',
           },
           include: {
-            User: {
-              select: { name: true, email: true }
-            },
-            Drop: {
+            driver: { select: { name: true, email: true } },
+            drops: {
               orderBy: { createdAt: 'asc' }
             },
             Booking: true
@@ -190,7 +186,7 @@ export async function POST(
         }
 
         // Update all drops in the route (if status 'assigned_to_driver' exists)
-        if (route.Drop.length > 0) {
+        if ((route as any).drops.length > 0) {
           // For now we'll leave drops as is, since the schema might not have 'assigned_to_driver' status
           // await tx.drop.updateMany({
           //   where: { routeId: routeId },
@@ -207,7 +203,7 @@ export async function POST(
         routeId: result.updatedRoute.id,
         driverAssigned: driver.User?.name || 'Unknown',
         bookingsCount: result.bookingsCount,
-        dropsCount: result.updatedRoute.Drop.length
+        dropsCount: (result.updatedRoute as any).drops.length
       });
 
       // Send real-time notifications
@@ -215,7 +211,7 @@ export async function POST(
         const pusher = getPusherServer();
 
         // Get first booking reference for display
-        const firstBooking = result.updatedRoute.Booking?.[0];
+        const firstBooking = (result.updatedRoute as any).Booking?.[0];
         const bookingReference = firstBooking?.reference || `ROUTE-${result.updatedRoute.id.slice(-8).toUpperCase()}`;
 
         // Notify the driver with "route-matched" event - THIS IS THE KEY EVENT
@@ -226,15 +222,14 @@ export async function POST(
           orderNumber: bookingReference,  // ✅ Alias for consistency
           bookingsCount: result.bookingsCount,
           jobCount: result.bookingsCount,  // For mobile app compatibility
-          dropCount: result.updatedRoute.Drop.length,
-          dropsCount: result.updatedRoute.Drop.length,
+          dropCount: (result.updatedRoute as any).drops.length,
+          dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
-          estimatedEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           assignedAt: new Date().toISOString(),
           message: `New ${result.bookingsCount > 1 ? 'route' : 'order'} ${bookingReference} assigned to you`,
-          drops: result.updatedRoute.Drop.map(drop => ({
+          drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
             pickupAddress: drop.pickupAddress,
             deliveryAddress: drop.deliveryAddress,
@@ -284,7 +279,7 @@ export async function POST(
             driverId: driverId,
             driverName: driver.User?.name || 'Unknown',
             bookingsCount: result.bookingsCount,
-            dropsCount: result.updatedRoute.Drop.length,
+            dropsCount: (result.updatedRoute as any).drops.length,
             reason: reason || 'Assigned by admin',
             assignedAt: new Date().toISOString(),
           }
@@ -302,7 +297,7 @@ export async function POST(
             email: driver.User?.email || '',
           },
           bookingsCount: result.bookingsCount,
-          dropsCount: result.updatedRoute.Drop.length,
+          dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
           assignedAt: new Date().toISOString(),

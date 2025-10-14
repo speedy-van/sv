@@ -1123,9 +1123,9 @@ export default function WhoAndPaymentStep({
             const hasPickupAddress = formData.step1.pickupAddress?.full || formData.step1.pickupAddress?.line1 || formData.step1.pickupAddress?.address || formData.step1.pickupAddress?.formatted_address;
             const hasDropoffAddress = formData.step1.dropoffAddress?.full || formData.step1.dropoffAddress?.line1 || formData.step1.dropoffAddress?.address || formData.step1.dropoffAddress?.formatted_address;
             const hasValidPickupCoordinates = !!(formData.step1.pickupAddress?.coordinates?.lat && formData.step1.pickupAddress?.coordinates?.lng &&
-                                                (formData.step1.pickupAddress.coordinates.lat !== 0 || formData.step1.dropoffAddress.coordinates.lng !== 0));
+                                                (formData.step1.pickupAddress.coordinates.lat !== 0 || formData.step1.dropoffAddress?.coordinates?.lng !== 0));
             const hasValidDropoffCoordinates = !!(formData.step1.dropoffAddress?.coordinates?.lat && formData.step1.dropoffAddress?.coordinates?.lng &&
-                                                 (formData.step1.dropoffAddress.coordinates.lat !== 0 || formData.step1.dropoffAddress.coordinates.lng !== 0));
+                                                 (formData.step1.dropoffAddress?.coordinates?.lat !== 0 || formData.step1.dropoffAddress?.coordinates?.lng !== 0));
             const hasPricing = formData.step1.pricing.total > 0;
             const currentlyCalculatingPricing = isCalculatingPricing === true;
 

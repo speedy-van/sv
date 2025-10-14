@@ -138,7 +138,7 @@ export default function TrackingHub() {
   const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Real-time tracking hook
   const { isConnected } = useAdminRealTimeTracking({

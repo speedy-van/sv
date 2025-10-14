@@ -252,7 +252,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
       const existingApplication = await prisma.driverApplication.findUnique({
         where: { email },
         include: { 
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -515,7 +515,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       take: limit,
       orderBy: { applicationDate: 'desc' },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

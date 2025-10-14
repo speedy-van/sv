@@ -24,13 +24,13 @@ export async function PUT(
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: { id: params.id },
         },
       },
     });
 
-    if (!driver || driver.shifts.length === 0) {
+    if (!driver || driver.DriverShift.length === 0) {
       return NextResponse.json({ error: 'Shift not found' }, { status: 404 });
     }
 
@@ -128,13 +128,13 @@ export async function DELETE(
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: { id: params.id },
         },
       },
     });
 
-    if (!driver || driver.shifts.length === 0) {
+    if (!driver || driver.DriverShift.length === 0) {
       return NextResponse.json({ error: 'Shift not found' }, { status: 404 });
     }
 

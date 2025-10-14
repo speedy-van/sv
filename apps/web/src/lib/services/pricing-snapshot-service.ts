@@ -275,6 +275,15 @@ export class PricingSnapshotService {
 
       const recalculatedHash = this.generatePricingHash(
         {
+          metadata: {
+            currency: 'GBP',
+            calculatedAt: new Date().toISOString(),
+            version: '1.0',
+            recommendations: [],
+            requestId: 'validation',
+            warnings: [],
+            dataSourceVersion: '1.0',
+          },
           amountGbpMinor: totalIncVat,
           subtotalBeforeVat: subtotalExVat,
           vatAmount: expectedVatAmount,

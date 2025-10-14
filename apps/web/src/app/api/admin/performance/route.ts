@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       const driver = await prisma.driver.findUnique({
         where: { id: driverId },
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -29,13 +29,13 @@ export async function GET(request: NextRequest) {
               isActive: true
             }
           },
-          performance: true,
-          ratings: {
+          DriverPerformance: true,
+          DriverRating: {
             where: { status: 'active' },
             orderBy: { createdAt: 'desc' },
             take: 50,
           },
-          incidents: {
+          DriverIncident: {
             orderBy: { createdAt: 'desc' },
             take: 50,
           },
@@ -65,14 +65,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         driver: {
           id: driver.id,
-          name: driver.user.name,
-          email: driver.user.email,
+          name: driver.User?.name || '',
+          email: driver.User?.email || '',
           status: driver.status,
           onboardingStatus: driver.onboardingStatus,
         },
-        performance: driver.performance,
-        ratings: driver.ratings,
-        incidents: driver.incidents,
+        performance: driver.DriverPerformance,
+        ratings: driver.DriverRating,
+        incidents: driver.DriverIncident,
         Assignment: driver.Assignment,
       });
     }
@@ -80,19 +80,19 @@ export async function GET(request: NextRequest) {
     // Get all drivers with performance data
     const drivers = await prisma.driver.findMany({
       include: {
-        user: {
+        User: {
           select: {
             name: true,
             email: true,
           },
         },
-        performance: true,
+        DriverPerformance: true,
         _count: {
           select: {
-            ratings: {
+            DriverRating: {
               where: { status: 'active' },
             },
-            incidents: true,
+            DriverIncident: true,
             Assignment: {
               where: { status: 'completed' },
             },
@@ -100,23 +100,21 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        performance: {
-          averageRating: 'desc',
-        },
+        createdAt: 'desc'
       },
     });
 
     return NextResponse.json({
       drivers: drivers.map(driver => ({
         id: driver.id,
-        name: driver.user.name,
-        email: driver.user.email,
+        name: driver.User?.name || '',
+        email: driver.User?.email || '',
         status: driver.status,
         onboardingStatus: driver.onboardingStatus,
-        performance: driver.performance,
+        performance: driver.DriverPerformance,
         stats: {
-          totalRatings: driver._count.ratings,
-          totalIncidents: driver._count.incidents,
+          totalRatings: (driver._count as any).DriverRating,
+          totalIncidents: (driver._count as any).DriverIncident,
           completedJobs: driver._count.Assignment,
         },
       })),

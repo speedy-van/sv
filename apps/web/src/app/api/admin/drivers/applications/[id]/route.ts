@@ -21,7 +21,7 @@ export async function GET(
     const application = await prisma.driverApplication.findUnique({
       where: { id },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -201,7 +201,7 @@ export async function GET(
 
       // User relationship
       userId: application.userId,
-      user: application.user,
+      user: application.User,
     };
 
     return NextResponse.json(transformedApplication);
@@ -246,7 +246,7 @@ export async function PUT(
         reviewedBy: user.name || user.email,
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

@@ -8,6 +8,41 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 
+/**
+ * Get or create a system driver for unassigned routes
+ */
+async function getOrCreateSystemDriver() {
+  try {
+    // Try to find existing system driver
+    let systemDriver = await prisma.user.findFirst({
+      where: {
+        email: 'system@speedy-van.co.uk',
+        role: 'driver'
+      }
+    });
+
+    if (!systemDriver) {
+      // Create system driver if not exists
+      // Create minimal user with a placeholder password to satisfy schema
+      systemDriver = await prisma.user.create({
+        data: {
+          email: 'system@speedy-van.co.uk',
+          name: 'System Driver',
+          role: 'driver',
+          password: 'temporary-generated-password',
+          isActive: true,
+          emailVerified: true
+        }
+      });
+    }
+
+    return systemDriver;
+  } catch (error) {
+    console.error('❌ Failed to get/create system driver:', error);
+    throw error;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -41,33 +76,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Analyze the route
-    const routeAnalysis = await intelligentRouteOptimizer.analyzeRoute({
-      bookings: bookings.map(b => ({
-        bookingId: b.id,
-        pickupLat: b.pickupAddress.lat || 0,
-        pickupLng: b.pickupAddress.lng || 0,
-        dropoffLat: b.dropoffAddress.lat || 0,
-        dropoffLng: b.dropoffAddress.lng || 0,
-        scheduledAt: b.scheduledAt,
-        loadPercentage: b.estimatedLoadPercentage || 0,
-        priority: b.priority || 5,
-        value: b.totalGBP / 100,
-      })),
-    });
+  // Analyze the route using multi-drop eligibility per booking then aggregate
+  const analyses = await Promise.all(bookings.map(async (b) => {
+    return intelligentRouteOptimizer.analyzeMultiDropEligibility({
+      pickup: {
+        coordinates: { lat: b.pickupAddress.lat || 0, lng: b.pickupAddress.lng || 0 },
+      },
+      dropoff: {
+        coordinates: { lat: b.dropoffAddress.lat || 0, lng: b.dropoffAddress.lng || 0 },
+      },
+      items: [],
+      floorLevel: 0,
+      hasLift: false,
+    } as any);
+  }));
+
+  const totalDistance = analyses.reduce((sum, a: any) => sum + (a.route.distance || 0), 0);
+  const totalDuration = analyses.reduce((sum, a: any) => sum + (a.route.totalTime || 0), 0);
+  const totalValue = bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0);
 
     // Create route
+    // Get the driver ID to use (either provided driver or system driver for unassigned)
+    const routeDriverId = driverId || (await getOrCreateSystemDriver()).id;
+
     const route = await prisma.route.create({
       data: {
         id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         status: driverId ? 'assigned' : 'planned',
-        driverId: driverId || 'unassigned',
-        totalDistanceMiles: routeAnalysis.totalDistance,
-        totalDurationMinutes: routeAnalysis.totalDuration,
-        totalOutcome: routeAnalysis.totalValue,
-        optimizationScore: routeAnalysis.optimizationScore,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        driver: { connect: { id: routeDriverId } },
+        startTime: new Date(),
+    optimizedDistanceKm: totalDistance * 1.609,
+    estimatedDuration: Math.round(totalDuration),
+    totalOutcome: totalValue,
       },
     });
 
@@ -84,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If driver assigned, notify them
-    if (driverId && driverId !== 'unassigned') {
+    if (driverId) {
       try {
         const { getPusherServer } = await import('@/lib/pusher');
         const pusher = getPusherServer();
@@ -92,7 +132,7 @@ export async function POST(request: NextRequest) {
         await pusher.trigger(`driver-${driverId}`, 'route-assigned', {
           routeId: route.id,
           stops: bookings.length,
-          totalValue: routeAnalysis.totalValue,
+          totalValue: totalValue,
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
@@ -118,7 +158,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         route: fullRoute,
-        analysis: routeAnalysis,
+        analysis: { totalDistance, totalDuration, totalValue },
       },
     });
   } catch (error) {

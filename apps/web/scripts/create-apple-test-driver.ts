@@ -13,7 +13,7 @@ async function createAppleTestDriver() {
     // Check if user already exists
     let user = await prisma.user.findUnique({
       where: { email: testEmail },
-      include: { Driver: true },
+      include: { driver: true },
     });
 
     if (!user) {
@@ -28,7 +28,7 @@ async function createAppleTestDriver() {
           role: 'driver',
           password: hashedPassword,
         },
-        include: { Driver: true },
+        include: { driver: true },
       });
 
       console.log('✅ Test driver user created:', user.email);
@@ -45,20 +45,16 @@ async function createAppleTestDriver() {
     }
 
     // Create or update driver record
-    if (!user.Driver) {
+    if (!user.driver) {
       const driver = await prisma.driver.create({
         data: {
           id: `driver_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId: user.id,
-          firstName: 'Apple',
-          lastName: 'Test Driver',
-          phone: '+447901846297',
           onboardingStatus: 'approved',
           basePostcode: 'G21 2QB',
           vehicleType: 'medium_van',
           status: 'active',
           rating: 5.0,
-          updatedAt: new Date(),
         },
       });
 
@@ -132,13 +128,10 @@ async function createAppleTestDriver() {
     } else {
       // Update existing driver to approved status
       await prisma.driver.update({
-        where: { id: user.Driver.id },
+        where: { id: user.driver.id },
         data: {
           onboardingStatus: 'approved',
           status: 'active',
-          firstName: 'Apple',
-          lastName: 'Test Driver',
-          phone: '+447901846297',
           rating: 5.0,
         },
       });
@@ -147,14 +140,14 @@ async function createAppleTestDriver() {
 
       // Ensure driver availability exists
       const availability = await prisma.driverAvailability.findUnique({
-        where: { driverId: user.Driver.id },
+        where: { driverId: user.driver.id },
       });
 
       if (!availability) {
         await prisma.driverAvailability.create({
           data: {
             id: `availability_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            driverId: user.Driver.id,
+            driverId: user.driver.id,
             status: 'offline',
             locationConsent: false,
             updatedAt: new Date(),

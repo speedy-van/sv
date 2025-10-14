@@ -21,7 +21,7 @@ export async function GET(
         reference: params.code,
       },
       include: {
-        Driver: {
+        driver: {
           include: {
             User: {
               select: {
@@ -31,9 +31,9 @@ export async function GET(
             },
           },
         },
-        Route: {
+        route: {
           include: {
-            Drop: {
+            drops: {
               include: {
                 Booking: {
                   select: {
@@ -47,10 +47,10 @@ export async function GET(
             }
           }
         },
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-        PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: true,
-        PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: true,
+        pickupAddress: true,
+        dropoffAddress: true,
+        pickupProperty: true,
+        dropoffProperty: true,
         Assignment: {
           include: {
             JobEvent: {
@@ -101,10 +101,10 @@ export async function GET(
       }, { status: 404 });
     }
 
-    const pickupAddress = (booking as any).BookingAddress_Booking_pickupAddressIdToBookingAddress;
-    const dropoffAddress = (booking as any).BookingAddress_Booking_dropoffAddressIdToBookingAddress;
-    const bookingRoute = (booking as any).Route;
-    const isMultiDrop = !!bookingRoute && bookingRoute.Drop && bookingRoute.Drop.length > 1;
+    const pickupAddress = (booking as any).pickupAddress;
+    const dropoffAddress = (booking as any).dropoffAddress;
+    const bookingRoute = (booking as any).route;
+    const isMultiDrop = !!bookingRoute && bookingRoute.drops && bookingRoute.drops.length > 1;
 
     console.log('✅ Booking found:', {
       id: booking.id,
@@ -112,11 +112,11 @@ export async function GET(
       status: booking.status,
       hasPickupAddress: !!pickupAddress,
       hasDropoffAddress: !!dropoffAddress,
-      hasDriver: !!(booking as any).Driver,
+      hasDriver: !!(booking as any).driver,
       hasAssignment: !!(booking as any).Assignment,
       isMultiDrop: isMultiDrop,
       routeId: booking.routeId,
-      totalDropsInRoute: bookingRoute?.Drop?.length || 0
+      totalDropsInRoute: bookingRoute?.drops?.length || 0
     });
 
     // Calculate ETA and route progress
@@ -283,8 +283,8 @@ export async function GET(
         payload: event.payload,
       })) || [];
 
-    const pickupProperty = (booking as any).PropertyDetails_Booking_pickupPropertyIdToPropertyDetails;
-    const dropoffProperty = (booking as any).PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails;
+    const pickupProperty = (booking as any).pickupProperty;
+    const dropoffProperty = (booking as any).dropoffProperty;
 
     return Response.json({
       id: booking.id,
@@ -294,9 +294,9 @@ export async function GET(
       isMultiDrop: isMultiDrop,
       routeInfo: isMultiDrop ? {
         routeId: booking.routeId,
-        totalStops: bookingRoute?.Drop?.length || 0,
-        completedStops: bookingRoute?.Drop?.filter((d: any) => d.status === 'delivered').length || 0,
-        allStops: bookingRoute?.Drop?.map((d: any) => ({
+        totalStops: bookingRoute?.drops?.length || 0,
+        completedStops: bookingRoute?.drops?.filter((d: any) => d.status === 'delivered').length || 0,
+        allStops: bookingRoute?.drops?.map((d: any) => ({
           id: d.id,
           address: d.deliveryAddress,
           status: d.status,
@@ -337,10 +337,10 @@ export async function GET(
       scheduledAt: booking.scheduledAt,
       pickupTimeSlot: booking.pickupTimeSlot,
       urgency: booking.urgency,
-      driver: (booking as any).Driver
+        driver: (booking as any).driver
         ? {
-            name: (booking as any).Driver.User?.name || 'Driver',
-            email: (booking as any).Driver.User?.email || 'N/A',
+            name: (booking as any).driver.User?.name || 'Driver',
+            email: (booking as any).driver.User?.email || 'N/A',
           }
         : null,
       routeProgress,

@@ -20,7 +20,7 @@ export async function POST(
       where: { id: routeId },
       include: {
         drops: true,
-        bookings: true,
+        Booking: true,
       },
     });
 
@@ -48,7 +48,7 @@ export async function POST(
       include: {
         driver: true,
         drops: true,
-        bookings: true,
+        Booking: true,
       },
     });
 

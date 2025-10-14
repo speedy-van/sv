@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        documents: {
+        Document: {
           where: category ? { category: category as any } : undefined,
           orderBy: { uploadedAt: 'desc' },
         },
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      documents: driver.documents,
+      documents: driver.Document,
     });
   } catch (error) {
     console.error('Driver documents GET error:', error);

@@ -143,7 +143,7 @@ class LogExporter {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

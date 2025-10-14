@@ -974,7 +974,7 @@ export default function DriverSchedulePage() {
                                   </Text>
                                   {job.items.length > 0 && (
                                     <Text fontSize="xs" color="text.tertiary">
-                                      {job.items.map(item => `${item.name} (${item.quantity})`).join(', ')}
+                                      {job.items.map((item: any) => `${item.name} (${item.quantity})`).join(', ')}
                                     </Text>
                                   )}
                                 </Box>
@@ -1150,7 +1150,7 @@ export default function DriverSchedulePage() {
                                   </Text>
                                   {job.items.length > 0 && (
                                     <Text fontSize="xs" color="text.tertiary">
-                                      {job.items.map(item => `${item.name} (${item.quantity})`).join(', ')}
+                                      {job.items.map((item: any) => `${item.name} (${item.quantity})`).join(', ')}
                                     </Text>
                                   )}
                                 </Box>

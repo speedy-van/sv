@@ -57,7 +57,7 @@ export class PerformanceMonitor {
   private metrics: Map<string, MetricData[]> = new Map();
   private alerts: AlertData[] = [];
   private isMonitoring = false;
-  private monitoringInterval?: NodeJS.Timeout;
+  private monitoringInterval?: ReturnType<typeof setInterval>;
 
   constructor() {
     this.initializeMonitoring();
@@ -435,7 +435,7 @@ export class SystemHealthMonitor {
     { healthy: boolean; lastCheck: Date; error?: string }
   > = new Map();
   private isMonitoring = false;
-  private monitoringInterval?: NodeJS.Timeout;
+  private monitoringInterval?: ReturnType<typeof setInterval>;
 
   constructor() {
     this.setupHealthChecks();

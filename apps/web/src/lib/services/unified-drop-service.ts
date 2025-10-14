@@ -114,7 +114,7 @@ class UnifiedDropService {
           customer: {
             select: { id: true, name: true, email: true }
           },
-          items: true
+          BookingItem: true
         }
       });
 

@@ -42,46 +42,12 @@ export async function GET(request: NextRequest) {
       include: {
         Booking: {
           include: {
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: {
-              select: {
-                label: true,
-                postcode: true,
-                lat: true,
-                lng: true,
-              }
-            },
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
-              select: {
-                label: true,
-                postcode: true,
-                lat: true,
-                lng: true,
-              }
-            },
-            PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: {
-              select: {
-                propertyType: true,
-                accessType: true,
-                floors: true,
-              }
-            },
-            PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: {
-              select: {
-                propertyType: true,
-                accessType: true,
-                floors: true,
-              }
-            },
-            BookingItem: {
-              select: {
-                name: true,
-                quantity: true,
-                volumeM3: true,
-              }
-            },
-            User: {
-              select: { id: true, name: true, email: true }
-            }
+            pickupAddress: { select: { label: true, postcode: true, lat: true, lng: true } },
+            dropoffAddress: { select: { label: true, postcode: true, lat: true, lng: true } },
+            pickupProperty: { select: { propertyType: true, accessType: true, floors: true } },
+            dropoffProperty: { select: { propertyType: true, accessType: true, floors: true } },
+            BookingItem: { select: { name: true, quantity: true, volumeM3: true } },
+            customer: { select: { id: true, name: true, email: true } }
           }
         },
         JobEvent: {
@@ -102,14 +68,14 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform assignments to match frontend interface
-    const transformedJobs = await Promise.all(myAssignments.map(async assignment => {
+    const transformedJobs = (await Promise.all(myAssignments.map(async assignment => {
       const booking = assignment.Booking;
       
       if (!booking) return null;
 
       // Get addresses with correct field names
-      const pickupAddr = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoffAddr = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickupAddr = booking.pickupAddress;
+      const dropoffAddr = booking.dropoffAddress;
       
       // Calculate distance - fix the calculation
       const distance = calculateDistance(
@@ -125,13 +91,13 @@ export async function GET(request: NextRequest) {
         driverId: driver.id,
         bookingId: booking.id,
         assignmentId: assignment.id,
-        bookingAmount: booking.totalGBP,
+        customerPaymentPence: booking.totalGBP,
         distanceMiles: distance,
         durationMinutes: booking.estimatedDurationMinutes || 60,
         dropCount: 1,
         hasHelper: false,
         urgencyLevel: 'standard',
-        isOnTime: true,
+        onTimeDelivery: true,
       });
       const estimatedEarnings = Math.floor(earningsResult.breakdown.netEarnings);
 
@@ -162,14 +128,14 @@ export async function GET(request: NextRequest) {
           lng: dropoffAddr?.lng || 0,
         },
         pickupProperty: {
-          type: booking.PropertyDetails_Booking_pickupPropertyIdToPropertyDetails?.propertyType || 'Unknown',
-          accessType: booking.PropertyDetails_Booking_pickupPropertyIdToPropertyDetails?.accessType || 'Unknown',
-          floors: booking.PropertyDetails_Booking_pickupPropertyIdToPropertyDetails?.floors || 0,
+          type: booking.pickupProperty?.propertyType || 'Unknown',
+          accessType: booking.pickupProperty?.accessType || 'Unknown',
+          floors: booking.pickupProperty?.floors || 0,
         },
         dropoffProperty: {
-          type: booking.PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails?.propertyType || 'Unknown',
-          accessType: booking.PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails?.accessType || 'Unknown',
-          floors: booking.PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails?.floors || 0,
+          type: booking.dropoffProperty?.propertyType || 'Unknown',
+          accessType: booking.dropoffProperty?.accessType || 'Unknown',
+          floors: booking.dropoffProperty?.floors || 0,
         },
         scheduledDate: booking.scheduledAt?.toISOString() || new Date().toISOString(),
         timeSlot: booking.pickupTimeSlot || 'Flexible',
@@ -194,7 +160,7 @@ export async function GET(request: NextRequest) {
         acceptedAt: assignment.claimedAt?.toISOString(),
         updatedAt: assignment.updatedAt.toISOString(),
       };
-    })).filter(job => job !== null);
+    }))).filter((job): job is NonNullable<typeof job> => job !== null);
 
     console.log('✅ My jobs loaded for driver:', driver.id, 'Jobs count:', transformedJobs.length);
 

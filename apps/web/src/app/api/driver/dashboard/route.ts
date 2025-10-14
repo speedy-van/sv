@@ -75,12 +75,10 @@ export async function GET(request: NextRequest) {
       include: {
         Booking: {
           include: {
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+            pickupAddress: true,
+            dropoffAddress: true,
             BookingItem: true,
-            User: {
-              select: { id: true, name: true, email: true }
-            }
+            customer: { select: { id: true, name: true, email: true } }
           }
         }
       },
@@ -97,12 +95,10 @@ export async function GET(request: NextRequest) {
         }
       },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        pickupAddress: true,
+        dropoffAddress: true,
         BookingItem: true,
-        User: {
-          select: { id: true, name: true, email: true }
-        }
+        customer: { select: { id: true, name: true, email: true } }
       },
       orderBy: { scheduledAt: 'asc' },
       take: 10 // Limit to 10 available jobs
@@ -139,33 +135,43 @@ export async function GET(request: NextRequest) {
 
       // Total earnings (try driverEarnings table, fallback to 0 if not exists)
       try {
-        totalEarningsResult = await prisma.driverEarnings.aggregate({
+        const earningsAggregate = await prisma.driverEarnings.aggregate({
           where: { driverId: driver.id },
           _sum: { netAmountPence: true }
         });
+        totalEarningsResult = {
+          _sum: {
+            netAmountPence: earningsAggregate._sum.netAmountPence ?? 0
+          }
+        };
       } catch (earningsError) {
-        console.warn('DriverEarnings table not available, using fallback:', earningsError.message);
+        console.warn('DriverEarnings table not available, using fallback:', earningsError instanceof Error ? earningsError.message : String(earningsError));
         totalEarningsResult = { _sum: { netAmountPence: 0 } };
       }
 
       // Average rating (try driverRating table, fallback to 0 if not exists)
       try {
-        avgRatingResult = await prisma.driverRating.aggregate({
+        const ratingAggregate = await prisma.driverRating.aggregate({
           where: { driverId: driver.id },
           _avg: { rating: true }
         });
+        avgRatingResult = {
+          _avg: {
+            rating: ratingAggregate._avg.rating ?? 0
+          }
+        };
       } catch (ratingError) {
-        console.warn('DriverRating table not available, using fallback:', ratingError.message);
+        console.warn('DriverRating table not available, using fallback:', ratingError instanceof Error ? ratingError.message : String(ratingError));
         avgRatingResult = { _avg: { rating: 0 } };
       }
     } catch (statsError) {
-      console.warn('Error calculating driver statistics, using defaults:', statsError.message);
+      console.warn('Error calculating driver statistics, using defaults:', statsError instanceof Error ? statsError.message : String(statsError));
     }
 
     // Format assigned jobs for frontend with REAL pricing engine
     const formattedAssignedJobs = await Promise.all(assignedJobs.map(async assignment => {
-      const pickup = assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoff = assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickup = assignment.Booking.pickupAddress;
+      const dropoff = assignment.Booking.dropoffAddress;
       
       // Calculate actual distance (handle null coordinates gracefully)
       let distance = 0;
@@ -179,7 +185,7 @@ export async function GET(request: NextRequest) {
           distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
         }
       } catch (distanceError) {
-        console.warn('Error calculating distance:', distanceError?.message);
+        console.warn('Error calculating distance:', distanceError instanceof Error ? distanceError.message : String(distanceError));
         distance = 0;
       }
 
@@ -189,20 +195,20 @@ export async function GET(request: NextRequest) {
         driverId: driver.id,
         bookingId: assignment.Booking.id,
         assignmentId: assignment.id,
-        bookingAmount: assignment.Booking.totalGBP,
+        customerPaymentPence: assignment.Booking.totalGBP,
         distanceMiles: distance,
         durationMinutes: assignment.Booking.estimatedDurationMinutes || 60,
         dropCount: 1,
         hasHelper: false,
         urgencyLevel: 'standard',
-        isOnTime: true,
+        onTimeDelivery: true,
       });
       const estimatedEarnings = penceToPounds(earningsResult.breakdown.netEarnings);
 
       return {
         id: assignment.Booking.id,
         assignmentId: assignment.id,
-        customer: assignment.Booking.User?.name || assignment.Booking.customerName || 'Unknown Customer',
+        customer: assignment.Booking.customer?.name || assignment.Booking.customerName || 'Unknown Customer',
         customerPhone: assignment.Booking.customerPhone || '',
         customerEmail: assignment.Booking.customerEmail || '',
         from: pickup?.label || 'Pickup Address',
@@ -227,8 +233,8 @@ export async function GET(request: NextRequest) {
 
     // Format available jobs for frontend with REAL pricing engine
     const formattedAvailableJobs = await Promise.all(availableJobs.map(async booking => {
-      const pickup = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoff = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickup = booking.pickupAddress;
+      const dropoff = booking.dropoffAddress;
       
       // Calculate distance for available jobs
       let distance = booking.baseDistanceMiles || 0;
@@ -252,19 +258,19 @@ export async function GET(request: NextRequest) {
         driverId: driver.id,
         bookingId: booking.id,
         assignmentId: 'temp_' + booking.id,
-        bookingAmount: booking.totalGBP,
+        customerPaymentPence: booking.totalGBP,
         distanceMiles: distance,
         durationMinutes: booking.estimatedDurationMinutes || 60,
         dropCount: 1,
         hasHelper: false,
         urgencyLevel: 'standard',
-        isOnTime: true,
+        onTimeDelivery: true,
       });
       const estimatedEarnings = penceToPounds(earningsResult.breakdown.netEarnings);
       
       return {
         id: booking.id,
-        customer: booking.User?.name || booking.customerName || 'Unknown Customer',
+        customer: booking.customer?.name || booking.customerName || 'Unknown Customer',
         customerPhone: booking.customerPhone || '',
         customerEmail: booking.customerEmail || '',
         from: pickup?.label || 'Pickup Address',

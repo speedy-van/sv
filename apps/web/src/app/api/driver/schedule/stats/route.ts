@@ -89,12 +89,12 @@ export async function GET(request: NextRequest) {
         status: true,
         customerName: true,
         customerPhone: true,
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+        pickupAddress: {
           select: {
             label: true,
           },
         },
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+        dropoffAddress: {
           select: {
             label: true,
           },
@@ -155,8 +155,8 @@ export async function GET(request: NextRequest) {
         status: nextJob.status.toLowerCase(),
         customerName: nextJob.customerName || 'Customer',
         customerPhone: nextJob.customerPhone || '',
-        pickupAddress: nextJob.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Location',
-        dropoffAddress: nextJob.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Location',
+        pickupAddress: nextJob.pickupAddress?.label || 'Pickup Location',
+        dropoffAddress: nextJob.dropoffAddress?.label || 'Dropoff Location',
         items: nextJob.BookingItem || [],
         // Hide customer payment amount from driver
         // Driver will see their earnings separately

@@ -271,12 +271,15 @@ model BookingCancellation {
 }
 
 model BookingItem {
-  id        String  @id @default(cuid())
-  bookingId String
-  name      String
-  quantity  Int     @default(1)
-  volumeM3  Float
-  Booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id               String  @id @default(cuid())
+  bookingId        String
+  name             String
+  quantity         Int     @default(1)
+  volumeM3         Float
+  category         String?
+  estimatedVolume  Float?
+  estimatedWeight  Float?
+  Booking          Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
 }
@@ -955,6 +958,7 @@ model Drop {
   completedAt         DateTime?
   deliveryAddress     String
   quotedPrice         Decimal
+  estimatedDuration   Int?
   serviceTier         ServiceTier @default(standard)
   status              DropStatus  @default(pending)
   Booking             Booking?    @relation(fields: [bookingId], references: [id])
@@ -1400,7 +1404,7 @@ model Refund {
 
 model Route {
   id                       String           @id @default(cuid())
-  driverId                 String
+  driverId                 String?
   vehicleId                String?
   vehicleSpecId            String?
   startTime                DateTime
@@ -1440,12 +1444,15 @@ model Route {
   customerSatisfactionTarget Decimal?
   carbonFootprintKg        Decimal?
   totalEstimatedTime       Int?
+  optimizationScore        Float?
+  totalDistanceMiles       Float?
+  totalDurationMinutes     Int?
   breakTimeAllocated       Int              @default(0)
   emergencyContact         String?
   Booking                  Booking[]
   drops                    Drop[]
   PayoutLedger             PayoutLedger[]
-  driver                   User             @relation(fields: [driverId], references: [id])
+  driver                   User?            @relation(fields: [driverId], references: [id])
   Vehicle                  Vehicle?         @relation(fields: [vehicleId], references: [id])
   VehicleSpec              VehicleSpec?     @relation(fields: [vehicleSpecId], references: [id])
   RouteCandidate           RouteCandidate[]
@@ -1638,6 +1645,7 @@ model User {
   id                                              String                           @id @default(cuid())
   email                                           String                           @unique
   name                                            String?
+  phone                                           String?
   role                                            Role                             @default(customer)
   adminRole                                       AdminRole?
   password                                        String
@@ -2014,6 +2022,7 @@ enum PropertyType {
   MAISONETTE
   COTTAGE
   STUDIO
+  HOUSE
 }
 
 enum RatingCategory {

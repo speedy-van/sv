@@ -79,6 +79,8 @@ export interface DriverEarningsBreakdown {
     multiDropBonus: number;
     highRatingBonus: number;
     adminBonus: number;
+    longDistanceBonus: number;
+    routeExcellence: number;
     total: number;
   };
   
@@ -94,6 +96,8 @@ export interface DriverEarningsBreakdown {
   reimbursements: {
     tolls: number;
     parking: number;
+    tollCosts: number;
+    parkingCosts: number;
     total: number;
   };
   
@@ -113,6 +117,7 @@ export interface DriverEarningsBreakdown {
 
 export interface DriverEarningsResult {
   success: boolean;
+  error?: string;
   earningsId?: string;
   breakdown: DriverEarningsBreakdown;
   currency: 'GBP';
@@ -150,6 +155,9 @@ export interface DriverEarningsConfig {
   onTimeBonusPence: number;
   multiDropBonusPerStop: number;
   highRatingBonusPence: number;
+  longDistanceThresholdMiles: number;
+  longDistanceBonusPerMilePence: number;
+  routeExcellenceBonusPence: number;
   
   // Penalties (in pence)
   lateDeliveryPenaltyPence: number;
@@ -195,6 +203,9 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   onTimeBonusPence: 500,       // £5.00
   multiDropBonusPerStop: 1000, // ✅ FIX #8: £10.00 per stop (increased from £3.00)
   highRatingBonusPence: 800,   // £8.00
+  longDistanceThresholdMiles: 50,
+  longDistanceBonusPerMilePence: 10,
+  routeExcellenceBonusPence: 500,
   
   lateDeliveryPenaltyPence: 1000,  // £10.00
   lowRatingPenaltyPence: 500,      // £5.00
@@ -235,10 +246,10 @@ export class DriverEarningsService {
         // Apply driver rate multiplier from admin settings
         const multiplier = settings.driverRateMultiplier || 1.0;
         
-        this.config.baseFarePerJob = Math.round(DEFAULT_CONFIG.baseFarePerJob * multiplier);
-        this.config.perDropFee = Math.round(DEFAULT_CONFIG.perDropFee * multiplier);
-        this.config.perMileFee = Math.round(DEFAULT_CONFIG.perMileFee * multiplier);
-        this.config.perMinuteFee = Math.round(DEFAULT_CONFIG.perMinuteFee * multiplier);
+        this.config.baseFarePerJob = Math.round(DEFAULT_CONFIG.baseFarePerJob * Number(multiplier));
+        this.config.perDropFee = Math.round(DEFAULT_CONFIG.perDropFee * Number(multiplier));
+        this.config.perMileFee = Math.round(DEFAULT_CONFIG.perMileFee * Number(multiplier));
+        this.config.perMinuteFee = Math.round(DEFAULT_CONFIG.perMinuteFee * Number(multiplier));
         
         logger.info('Driver earnings config loaded from database', {
           settingsId: settings.id,
@@ -283,10 +294,14 @@ export class DriverEarningsService {
       const penalties = this.calculatePenalties(input);
       
       // Calculate reimbursements
+      const tollCosts = input.tollCostsPence || 0;
+      const parkingCosts = input.parkingCostsPence || 0;
       const reimbursements = {
-        tolls: input.tollCostsPence || 0,
-        parking: input.parkingCostsPence || 0,
-        total: (input.tollCostsPence || 0) + (input.parkingCostsPence || 0),
+        tolls: tollCosts,
+        parking: parkingCosts,
+        tollCosts: tollCosts,
+        parkingCosts: parkingCosts,
+        total: tollCosts + parkingCosts,
       };
       
       // Calculate subtotal
@@ -416,8 +431,7 @@ export class DriverEarningsService {
       
     } catch (error) {
       logger.error('Failed to calculate driver earnings', error as Error, {
-        assignmentId: input.assignmentId,
-        driverId: input.driverId,
+        userId: input.driverId,
       });
       
       throw error;
@@ -529,6 +543,8 @@ export class DriverEarningsService {
       multiDropBonus: 0,
       highRatingBonus: 0,
       adminBonus: input.adminApprovedBonusPence || 0,
+      longDistanceBonus: 0,
+      routeExcellence: 0,
       total: 0,
     };
     
@@ -553,7 +569,18 @@ export class DriverEarningsService {
     if (input.customerRating && input.customerRating >= this.config.highRatingThreshold) {
       bonuses.highRatingBonus = this.config.highRatingBonusPence;
     }
-    
+
+    // Long distance bonus
+    if (input.distanceMiles > this.config.longDistanceThresholdMiles) {
+      const extraMiles = input.distanceMiles - this.config.longDistanceThresholdMiles;
+      bonuses.longDistanceBonus = Math.round(extraMiles * this.config.longDistanceBonusPerMilePence);
+    }
+
+    // Route excellence bonus (for on-time delivery with high rating)
+    if (input.onTimeDelivery && input.customerRating && input.customerRating >= 4.5) {
+      bonuses.routeExcellence = this.config.routeExcellenceBonusPence;
+    }
+
     bonuses.total = Object.values(bonuses).reduce((sum, val) => sum + val, 0);
     
     return bonuses;
@@ -721,8 +748,8 @@ export async function calculateRouteEarnings(
     totalEarnings += multiDropBonus;
   }
   
-  const totalDistance = route.totalDistanceMiles || 0;
-  const totalDuration = route.totalDurationMinutes || 0;
+  const totalDistance = route.actualDistanceKm || route.optimizedDistanceKm || 0;
+  const totalDuration = route.actualDuration || route.estimatedDuration || 0;
   
   return {
     routeId,

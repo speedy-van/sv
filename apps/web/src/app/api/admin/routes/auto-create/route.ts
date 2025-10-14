@@ -38,8 +38,11 @@ export async function POST(request: NextRequest) {
         ...(serviceTier && { serviceTier }),
       },
       include: {
-        customer: {
-          select: { name: true, email: true }
+        Booking: {
+          select: {
+            customerName: true,
+            customerEmail: true,
+          }
         }
       },
       orderBy: { timeWindowStart: 'asc' },
@@ -86,12 +89,10 @@ export async function POST(request: NextRequest) {
       availableDrivers = await prisma.driver.findMany({
         where: {
           status: 'active',
-          availability: {
-            status: 'online',
-          }
+          DriverAvailability: { status: 'online' }
         },
         include: {
-          user: { select: { name: true } }
+          User: { select: { name: true } }
         },
         take: routes.length,
       });
@@ -135,7 +136,8 @@ export async function POST(request: NextRequest) {
       });
 
       // Log optimization history
-      await prisma.routeOptimizationHistory.create({
+      // Optional: routeOptimizationHistory table may not exist in schema
+      /* await prisma.routeOptimizationHistory.create({
         data: {
           routeId: route.id,
           optimizationType: 'initial',
@@ -152,11 +154,11 @@ export async function POST(request: NextRequest) {
           },
           createdBy: (session.user as any).id,
         }
-      });
+      }); */
 
       createdRoutes.push({
         ...route,
-        driverName: assignedDriver?.user?.name || 'Unassigned',
+        driverName: assignedDriver?.User?.name || 'Unassigned',
         dropCount: dropGroup.length,
       });
     }

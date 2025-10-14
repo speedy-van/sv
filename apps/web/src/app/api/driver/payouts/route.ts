@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       prisma.driverPayout.findMany({
         where,
         include: {
-          earnings: {
+          DriverEarnings: {
             include: {
               Assignment: {
                 include: {
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
         stripeTransferId: payout.stripeTransferId,
         createdAt: payout.createdAt,
         updatedAt: payout.updatedAt,
-        earnings: payout.earnings.map(earning => ({
+        earnings: payout.DriverEarnings.map(earning => ({
           id: earning.id,
           assignmentId: earning.assignmentId,
           bookingCode: earning.Assignment.Booking.reference,

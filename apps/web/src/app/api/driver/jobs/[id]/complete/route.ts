@@ -153,8 +153,8 @@ export async function POST(
 
     // FIXED: Validate distance - reject if invalid (no fallback)
     if (!Number.isFinite(computedDistanceMiles) || computedDistanceMiles <= 0) {
-      logger.error('Invalid distance data for job completion', {
-        jobId,
+      logger.error('Invalid distance data for job completion', undefined, {
+        assignmentId: assignment.id,
         driverId: driver.id,
         computedDistanceMiles,
         perLegDistanceMiles,

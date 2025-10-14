@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
       where: {
         status: 'active',
         onboardingStatus: 'approved',
-        availability: null, // No availability record
+        DriverAvailability: null, // No availability record
       },
       select: {
         id: true,
-        user: {
+        User: {
           select: {
             name: true,
             email: true,
@@ -65,18 +65,18 @@ export async function POST(request: NextRequest) {
 
         createdRecords.push({
           driverId: driver.id,
-          driverName: driver.user.name,
-          driverEmail: driver.user.email,
+          driverName: driver.User.name,
+          driverEmail: driver.User.email,
           status: 'created'
         });
 
-        console.log(`✅ Created availability record for driver ${driver.user.name} (${driver.id})`);
+        console.log(`✅ Created availability record for driver ${driver.User.name} (${driver.id})`);
       } catch (error) {
         console.error(`❌ Failed to create availability for driver ${driver.id}:`, error);
         createdRecords.push({
           driverId: driver.id,
-          driverName: driver.user.name,
-          driverEmail: driver.user.email,
+          driverName: driver.User.name,
+          driverEmail: driver.User.email,
           status: 'failed',
           error: error instanceof Error ? error.message : 'Unknown error'
         });
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
         where: {
           status: 'active',
           onboardingStatus: 'approved',
-          availability: {
+          DriverAvailability: {
             isNot: null
           }
         }
@@ -152,11 +152,11 @@ export async function GET(request: NextRequest) {
         where: {
           status: 'active',
           onboardingStatus: 'approved',
-          availability: null
+          DriverAvailability: null
         },
         select: {
           id: true,
-          user: {
+          User: {
             select: {
               name: true,
               email: true,
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
         where: {
           status: 'active',
           onboardingStatus: 'approved',
-          availability: {
+          DriverAvailability: {
             locationConsent: true
           }
         }
@@ -186,8 +186,8 @@ export async function GET(request: NextRequest) {
       },
       driversNeedingFix: driversWithoutAvailability.map(driver => ({
         id: driver.id,
-        name: driver.user.name,
-        email: driver.user.email
+        name: driver.User.name,
+        email: driver.User.email
       })),
       recommendations: driversWithoutAvailability.length > 0 
         ? ['Run POST /api/admin/drivers/fix-availability to create missing records']

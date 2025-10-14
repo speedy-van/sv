@@ -115,12 +115,12 @@ export async function GET(req: Request) {
         ? {
             OR: [
               {
-                BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+                pickupAddress: {
                   label: { contains: area, mode: 'insensitive' },
                 },
               },
               {
-                BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+                dropoffAddress: {
                   label: { contains: area, mode: 'insensitive' },
                 },
               },
@@ -132,10 +132,10 @@ export async function GET(req: Request) {
             OR: [
               { reference: { contains: q, mode: 'insensitive' } },
               {
-                BookingAddress_Booking_pickupAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' } },
+                pickupAddress: { label: { contains: q, mode: 'insensitive' } },
               },
               {
-                BookingAddress_Booking_dropoffAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' } },
+                dropoffAddress: { label: { contains: q, mode: 'insensitive' } },
               },
               { customerName: { contains: q, mode: 'insensitive' } },
               { customerEmail: { contains: q, mode: 'insensitive' } },
@@ -167,7 +167,7 @@ export async function GET(req: Request) {
       dropoffAddress: true,
       Assignment: {
         include: {
-          driver: {
+          Driver: {
             include: {
               User: {
                 select: {

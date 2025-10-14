@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  ImageStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -139,8 +140,8 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
               // Submit completion
               const response = await apiService.completeJob({
                 jobId: job.id,
-                photoUrls,
-                signatureUrl,
+                photos: photoUrls,
+                signature: signatureUrl,
                 notes: deliveryNotes,
               });
 
@@ -255,12 +256,12 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
             {photos.length < 5 && (
               <View style={styles.addPhotoButtons}>
                 <TouchableOpacity style={styles.addPhotoButton} onPress={takePhoto}>
-                  <Ionicons name="camera" size={32} color={colors.primary} />
+                  <Ionicons name="camera" size={32} color={colors.primary[500]} />
                   <Text style={styles.addPhotoText}>Camera</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-                  <Ionicons name="images" size={32} color={colors.primary} />
+                  <Ionicons name="images" size={32} color={colors.primary[500]} />
                   <Text style={styles.addPhotoText}>Gallery</Text>
                 </TouchableOpacity>
               </View>
@@ -405,7 +406,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
     marginVertical: spacing.md,
   },
   locationRow: {
@@ -453,7 +454,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 12,
-  },
+  } as ImageStyle,
   removePhotoButton: {
     position: 'absolute',
     top: -8,
@@ -492,7 +493,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
-  },
+  } as ImageStyle,
   signaturePlaceholder: {
     flex: 1,
     justifyContent: 'center',
@@ -551,7 +552,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border.light,
   },
   signaturePadTitle: {
     ...typography.h4,
@@ -562,7 +563,7 @@ const styles = StyleSheet.create({
   },
   signaturePadDone: {
     ...typography.body,
-    color: colors.primary,
+    color: colors.primary[500],
     fontWeight: '600',
   },
 });

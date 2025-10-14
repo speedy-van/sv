@@ -229,12 +229,13 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
       console.log('📧 Attempting to send email via SendGrid...');
       return await sendViaSendGrid(to, subject, html);
     } catch (error) {
-      const errorMsg = `SendGrid failed: ${error instanceof Error ? error.message : String(error)}`;
+      const isError = error instanceof Error;
+      const errorMsg = `SendGrid failed: ${isError ? (error as Error).message : String(error)}`;
       console.warn('⚠️', errorMsg);
       errors.push(errorMsg);
-      
+
       // If it's an auth error, don't retry SendGrid
-      if (error instanceof Error && error.message.includes('Unauthorized')) {
+      if (isError && (error as Error).message.includes('Unauthorized')) {
         console.warn('SendGrid auth failed, skipping SendGrid');
       }
     }

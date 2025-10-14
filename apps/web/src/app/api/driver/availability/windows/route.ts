@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: {
             isActive: true,
             isRecurring: true,
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      availabilityWindows: driver.shifts,
+      availabilityWindows: driver.DriverShift,
     });
   } catch (error) {
     console.error('Availability windows GET error:', error);
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: { isRecurring: true },
         },
       },

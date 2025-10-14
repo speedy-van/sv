@@ -286,8 +286,8 @@ export class RouteManager {
           }
         },
         include: {
-          BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-          BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+          pickupAddress: true,
+          dropoffAddress: true,
           BookingItem: true,
         },
         orderBy: { scheduledAt: 'asc' },
@@ -435,8 +435,8 @@ export class RouteManager {
             routeId: null,
           },
           include: {
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+            pickupAddress: true,
+            dropoffAddress: true,
           }
         });
 
@@ -545,8 +545,8 @@ export class RouteManager {
     const bookings = await prisma.booking.findMany({
       where: { id: { in: bookingIds } },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        pickupAddress: true,
+        dropoffAddress: true,
       }
     });
 
@@ -715,8 +715,8 @@ export class RouteManager {
     const drops = [];
     
     for (const booking of bookings) {
-      const pickupAddress = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoffAddress = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickupAddress = booking.pickupAddress;
+      const dropoffAddress = booking.dropoffAddress;
 
       if (!pickupAddress?.lat || !pickupAddress?.lng || !dropoffAddress?.lat || !dropoffAddress?.lng) {
         continue; // Skip bookings without geocoded addresses
@@ -829,16 +829,15 @@ export class RouteManager {
         include: {
           Booking: {
             include: {
-              BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-              BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+              pickupAddress: true,
+              dropoffAddress: true,
             }
           },
-          Drop: true,
-          User: {
+          drops: true,
+          driver: {
             select: {
               name: true,
               email: true,
-              phone: true,
             }
           }
         }
@@ -852,7 +851,8 @@ export class RouteManager {
       const driver = await prisma.driver.findUnique({
         where: { id: driverId },
         include: {
-          User: true
+          User: true,
+          DriverProfile: true
         }
       });
 
@@ -861,7 +861,7 @@ export class RouteManager {
         return;
       }
 
-      const driverPhone = driver.User?.phone;
+      const driverPhone = driver.DriverProfile?.phone;
       const driverName = driver.User?.name || 'Driver';
 
       // Prepare notification data
@@ -872,7 +872,7 @@ export class RouteManager {
         estimatedDuration: route.estimatedDuration,
         totalValue: route.totalOutcome.toString(),
         status: route.status,
-        firstPickup: (route as any).Booking?.[0]?.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'N/A',
+        firstPickup: (route as any).Booking?.[0]?.pickupAddress?.label || 'N/A',
       };
 
       // 1. Pusher Real-time Notification
@@ -924,14 +924,13 @@ export class RouteManager {
             await prisma.communicationLog.create({
               data: {
                 id: `sms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                bookingId: (route as any).Booking?.[0]?.id || null,
+                bookingId: (route as any).Booking?.[0]?.id || '',
                 channel: 'sms',
                 recipient: driverPhone,
-                subject: 'New Route Assigned',
-                body: smsMessage,
+                messageId: smsMessage,
+                type: 'SMS',
                 status: 'SENT',
-                sentAt: new Date(),
-                createdAt: new Date(),
+                attemptedAt: new Date(),
               }
             });
           } else {
@@ -1184,14 +1183,6 @@ export class RouteManager {
   public async getPendingApprovals(): Promise<any[]> {
     return await prisma.routeApproval.findMany({
       where: { status: 'pending' },
-      include: {
-        Route: {
-          include: {
-            Booking: true,
-            Drop: true,
-          }
-        }
-      },
       orderBy: { submittedAt: 'desc' },
     });
   }

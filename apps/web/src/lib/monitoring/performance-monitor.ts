@@ -84,7 +84,7 @@ class PerformanceMonitor {
   private alertRules: Map<string, AlertRule> = new Map();
   private alerts: Alert[] = [];
   private isMonitoring = false;
-  private monitoringInterval: NodeJS.Timeout | null = null;
+  private monitoringInterval: ReturnType<typeof setInterval> | null = null;
   private apiMetrics = {
     totalRequests: 0,
     responseTimes: [] as number[],

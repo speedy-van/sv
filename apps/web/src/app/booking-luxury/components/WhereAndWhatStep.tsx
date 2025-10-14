@@ -2335,7 +2335,7 @@ export default function WhereAndWhatStep({
         return (
           lowerName.includes(query) ||
           lowerCategory.includes(query) ||
-          item.keywords.some((keyword) => keyword.includes(query))
+          item.keywords.some((keyword: string) => keyword.includes(query))
         );
       });
     }
@@ -4165,7 +4165,7 @@ export default function WhereAndWhatStep({
                             </Text>
                             <Tooltip label={pricingTiers.economy.availability.explanation}>
                               <Text fontSize="xs" color="green.300">
-                                {Math.round(pricingTiers.economy.availability.fill_rate)}% route efficiency
+                                {Math.round(pricingTiers.economy.availability.fill_rate || 0)}% route efficiency
                               </Text>
                             </Tooltip>
                           </VStack>

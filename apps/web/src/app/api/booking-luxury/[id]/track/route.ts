@@ -23,7 +23,7 @@ export async function GET(
         dropoffAddress: true,
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -104,8 +104,8 @@ export async function GET(
         },
         driver: booking.driver ? {
           id: booking.driver.id,
-          name: booking.driver.user?.name,
-          phone: booking.driver.user?.email, // Using email as phone is not available in user model
+          name: booking.driver.User?.name,
+          phone: booking.driver.User?.email,
           location: driverLocation,
         } : null,
         timeline: [

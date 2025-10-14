@@ -106,28 +106,21 @@ export async function PUT(
     });
 
     // Re-analyze route
-    const routeAnalysis = await intelligentRouteOptimizer.analyzeRoute({
-      bookings: bookings.map(b => ({
-        bookingId: b.id,
-        pickupLat: b.pickupAddress.lat || 0,
-        pickupLng: b.pickupAddress.lng || 0,
-        dropoffLat: b.dropoffAddress.lat || 0,
-        dropoffLng: b.dropoffAddress.lng || 0,
-        scheduledAt: b.scheduledAt,
-        loadPercentage: b.estimatedLoadPercentage || 0,
-        priority: b.priority || 5,
-        value: b.totalGBP / 100,
-      })),
-    });
+    const routeAnalysis = await intelligentRouteOptimizer.analyzeMultiDropEligibility({
+      pickup: { coordinates: { lat: bookings[0]?.pickupAddress.lat || 0, lng: bookings[0]?.pickupAddress.lng || 0 } },
+      dropoff: { coordinates: { lat: bookings.at(-1)?.dropoffAddress.lat || 0, lng: bookings.at(-1)?.dropoffAddress.lng || 0 } },
+      items: [],
+      floorLevel: 0,
+      hasLift: false,
+    } as any);
 
     // Update route
     await prisma.route.update({
       where: { id: routeId },
       data: {
-        totalDistanceMiles: routeAnalysis.totalDistance,
-        totalDurationMinutes: routeAnalysis.totalDuration,
-        totalOutcome: routeAnalysis.totalValue,
-        optimizationScore: routeAnalysis.optimizationScore,
+        optimizedDistanceKm: (routeAnalysis as any).route.distance * 1.609,
+        estimatedDuration: Math.round((routeAnalysis as any).route.totalTime),
+        totalOutcome: bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0),
         updatedAt: new Date(),
       },
     });

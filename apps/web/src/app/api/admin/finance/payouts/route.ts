@@ -56,9 +56,9 @@ export async function GET(request: NextRequest) {
       prisma.driverPayout.findMany({
         where,
         include: {
-          driver: {
+          Driver: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          earnings: true,
+          DriverEarnings: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -128,9 +128,9 @@ export async function GET(request: NextRequest) {
       payouts: payouts.map(payout => ({
         id: payout.id,
         driver: {
-          id: payout.driver.id,
-          name: payout.driver.user.name,
-          email: payout.driver.user.email,
+          id: payout.Driver.id,
+          name: payout.Driver.User.name,
+          email: payout.Driver.User.email,
         },
         totalAmountPence: payout.totalAmountPence,
         currency: payout.currency,
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         stripeTransferId: payout.stripeTransferId,
         bankAccountId: payout.bankAccountId,
         createdAt: payout.createdAt,
-        earnings: payout.earnings.map(earning => ({
+        earnings: payout.DriverEarnings.map(earning => ({
           id: earning.id,
           assignmentId: earning.assignmentId,
           baseAmountPence: earning.baseAmountPence,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         },
-        payoutSettings: true,
+        DriverPayoutSettings: true,
       },
     });
 
@@ -260,7 +260,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check minimum payout amount
-    const minPayoutAmount = driver.payoutSettings?.minPayoutAmountPence || 5000; // £50
+    const minPayoutAmount = driver.DriverPayoutSettings?.minPayoutAmountPence || 5000; // £50
     if (totalAmountPence < minPayoutAmount) {
       return NextResponse.json(
         {
@@ -277,14 +277,14 @@ export async function POST(request: NextRequest) {
         totalAmountPence: totalAmountPence,
         currency: 'gbp',
         status: 'pending',
-        earnings: {
+        DriverEarnings: {
           connect: earningsIds.map((id: string) => ({ id })),
         },
       },
       include: {
-        driver: {
+        Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -296,7 +296,7 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        earnings: true,
+        DriverEarnings: true,
       },
     });
 
@@ -336,11 +336,11 @@ export async function POST(request: NextRequest) {
       success: true,
       payout: {
         id: payout.id,
-        driverName: payout.driver.user.name,
+        driverName: payout.Driver.User.name,
         totalAmountPence: payout.totalAmountPence,
         status: payout.status,
         createdAt: payout.createdAt,
-        earningsCount: payout.earnings.length,
+        earningsCount: payout.DriverEarnings.length,
       },
     });
   } catch (error) {

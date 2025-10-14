@@ -17,10 +17,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { comprehensivePricingEngine } from '@/lib/pricing/comprehensive-engine';
 import {
-  validatePricingInput,
   createRequestId,
   formatGbpMinor
 } from '@/lib/pricing/schemas';
+import { EnhancedPricingInputSchema } from '@/lib/pricing/comprehensive-schemas';
 import {
   createPaymentIntent,
   generateIdempotencyKey
@@ -168,6 +168,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Step 1: Transform form data to pricing input
     const pricingInput = {
+      requestId: createRequestId(),
+      correlationId,
       items: requestData.items.map(item => ({
         id: item.id || '',
         name: item.name,
@@ -234,11 +236,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         isReturningCustomer: requestData.userContext?.isReturningCustomer || false,
         customerTier: requestData.userContext?.customerTier || 'standard',
         locale: requestData.userContext?.locale || 'en-GB'
-      }
+      },
+
+      timeFactors: {
+        scheduledDate: requestData.scheduledDate || new Date().toISOString(),
+        isPeakTime: false,
+        isWeekend: false,
+        weatherImpact: 'none',
+        trafficMultiplier: 1.0
+      },
+
+      customerSegment: 'bronze' as const
     };
 
     // Step 2: Validate pricing input
-    const validatedPricingInput = validatePricingInput(pricingInput);
+    const validatedPricingInput = EnhancedPricingInputSchema.parse(pricingInput);
     
     console.log(`[BOOKING PAYMENT API] ${correlationId} - Pricing input validated`, {
       itemsCount: validatedPricingInput.items.length,
@@ -252,7 +264,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log(`[BOOKING PAYMENT API] ${correlationId} - Pricing calculated`, {
       amountGbpMinor: pricingResult.amountGbpMinor,
       amountGbpFormatted: formatGbpMinor(pricingResult.amountGbpMinor),
-      requestId: pricingResult.metadata.requestId
+      requestId: pricingResult.requestId
     });
 
     // Step 3.5: Create drops and routes for the booking
@@ -327,10 +339,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         totalGBP: Math.round(pricingResult.amountGbpMinor / 100), // Convert pence to pounds
         accessSurchargeGBP: 0,
         availabilityMultiplierPercent: 0,
-        baseDistanceMiles: pricingResult.route.totalDistance || 10,
+        baseDistanceMiles: pricingResult.route.totalDistanceKm || 10,
         crewMultiplierPercent: 0,
         distanceCostGBP: 0,
-        estimatedDurationMinutes: pricingResult.route.totalDuration || 60,
+        estimatedDurationMinutes: pricingResult.route.totalDurationMinutes || 60,
         itemsSurchargeGBP: 0,
         weatherSurchargeGBP: 0,
         status: 'PENDING_PAYMENT',
@@ -352,7 +364,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         weight: requestData.items.reduce((sum, item) => sum + (item.weight || 0) * item.quantity, 0),
         volume: requestData.items.reduce((sum, item) => sum + (item.volume || 0) * item.quantity, 0),
         quotedPrice: pricingResult.amountGbpMinor / 100, // Convert pence to pounds
-        distance: pricingResult.route.totalDistance || 10,
+        distance: pricingResult.route.totalDistanceKm || 10,
       }
     });
 
@@ -362,8 +374,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         driverId: 'temp_driver', // Will be assigned later
         status: 'planned',
         startTime: new Date(requestData.scheduledDate || Date.now()),
-        optimizedDistanceKm: pricingResult.route.totalDistance || 10,
-        estimatedDuration: pricingResult.route.totalDuration || 60,
+        optimizedDistanceKm: pricingResult.route.totalDistanceKm || 10,
+        estimatedDuration: pricingResult.route.totalDurationMinutes || 60,
         totalOutcome: pricingResult.amountGbpMinor / 100,
         drops: {
           connect: { id: pickupDrop.id }
@@ -380,7 +392,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Save pricing snapshot to ensure immutability and Stripe matching
     await PricingSnapshotService.createPricingSnapshot(
       booking.id,
-      pricingResult,
+      pricingResult as any,
       pricingInput
     );
 

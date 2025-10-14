@@ -23,19 +23,19 @@ export async function GET(
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
-        items: true,
+        BookingItem: true,
         customer: true,
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
                 email: true,
                 role: true,
                 createdAt: true,
-                isActive: true
-              }
+                isActive: true,
+              },
             },
           },
         },
@@ -84,7 +84,7 @@ export async function GET(
             buildingTypeDisplay: booking.dropoffProperty.propertyType?.toLowerCase().replace('_', ' ') || 'house'
           } : null,
         },
-        items: booking.items,
+        items: booking.BookingItem,
         scheduledAt: booking.scheduledAt,
         pickupTimeSlot: booking.pickupTimeSlot,
         urgency: booking.urgency,
@@ -92,8 +92,8 @@ export async function GET(
         totalGBP: booking.totalGBP,
         driver: booking.driver ? {
           id: booking.driver.id,
-          name: booking.driver.user?.name,
-          phone: booking.driver.user?.email, // Using email as phone is not available in user model
+          name: booking.driver.User?.name,
+          phone: booking.driver.User?.email,
         } : null,
         createdAt: booking.createdAt,
         updatedAt: booking.updatedAt,
@@ -173,7 +173,7 @@ export async function PUT(
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
-        items: true,
+        BookingItem: true,
       },
     });
 

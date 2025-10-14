@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       include: {
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 name: true,
                 email: true,
@@ -64,17 +64,15 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        ...(includeTracking && {
-          TrackingPing: {
-            orderBy: { createdAt: 'desc' },
-            take: 10,
-            select: {
-              lat: true,
-              lng: true,
-              createdAt: true,
-            },
+        TrackingPing: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            lat: true,
+            lng: true,
+            createdAt: true,
           },
-        }),
+        },
       },
       orderBy: { scheduledAt: 'asc' },
     });
@@ -164,8 +162,8 @@ export async function GET(request: NextRequest) {
         driver: booking.driver
           ? {
               id: booking.driver.id,
-              name: booking.driver.user.name,
-              email: booking.driver.user.email,
+              name: booking.driver.User?.name,
+              email: booking.driver.User?.email,
             }
           : null,
         addresses: {

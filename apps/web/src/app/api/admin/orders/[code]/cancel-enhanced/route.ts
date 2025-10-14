@@ -31,7 +31,7 @@ export async function POST(
       include: {
         driver: {
           include: {
-            user: {
+            User: {
               select: { name: true, email: true }
             }
           }
@@ -40,7 +40,7 @@ export async function POST(
           include: {
             Driver: {
               include: {
-                user: {
+                User: {
                   select: { name: true, email: true }
                 }
               }
@@ -67,7 +67,7 @@ export async function POST(
       );
     }
 
-    const driverName = booking.driver?.user?.name;
+    const driverName = booking.driver?.User?.name;
     const hasDriver = !!booking.driverId;
 
     // Use transaction to ensure data consistency

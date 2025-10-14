@@ -50,7 +50,7 @@ class RealTimePerformanceMonitor extends EventEmitter {
   private monitoring: boolean = false;
   private metricsHistory: PerformanceMetrics[] = [];
   private alertThresholds: AlertThreshold[] = [];
-  private monitoringInterval: NodeJS.Timeout | null = null;
+  private monitoringInterval: ReturnType<typeof setInterval> | null = null;
   private alertsTriggered: Set<string> = new Set();
 
   constructor() {

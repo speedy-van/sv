@@ -29,7 +29,7 @@ export async function POST(
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -93,8 +93,8 @@ export async function POST(
       message: 'Driver suspended successfully',
       driver: {
         id: driver.id,
-        name: driver.user.name,
-        email: driver.user.email,
+        name: driver.User.name,
+        email: driver.User.email,
         status: 'suspended',
         suspendedAt: new Date().toISOString(),
         reason: reason,

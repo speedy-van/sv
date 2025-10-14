@@ -88,12 +88,12 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-        PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: true,
-        PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: true,
+        pickupAddress: true,
+        dropoffAddress: true,
+        pickupProperty: true,
+        dropoffProperty: true,
         BookingItem: true,
-        User: {
+        customer: {
           select: { id: true, name: true, email: true }
         },
         Assignment: {
@@ -173,10 +173,10 @@ export async function GET(
     }
 
     // Calculate distance
-    const pickupAddr = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-    const dropoffAddr = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
-    const pickupProp = booking.PropertyDetails_Booking_pickupPropertyIdToPropertyDetails;
-    const dropoffProp = booking.PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails;
+    const pickupAddr = booking.pickupAddress;
+    const dropoffAddr = booking.dropoffAddress;
+    const pickupProp = booking.pickupProperty;
+    const dropoffProp = booking.dropoffProperty;
     const items = booking.BookingItem || [];
 
     // 🚨 CRITICAL: Validate coordinates before calculating distance
@@ -213,14 +213,14 @@ export async function GET(
     const earningsResult = await driverEarningsService.calculateEarnings({
       driverId: driver.id,
       bookingId: booking.id,
-      assignmentId: assignment.id,
-      bookingAmount: booking.totalGBP,
+      assignmentId: booking.Assignment?.id || `temp_${booking.id}`,
+      customerPaymentPence: booking.totalGBP,
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
       dropCount: 1,
       hasHelper: false,
       urgencyLevel: 'standard',
-      isOnTime: true,
+      onTimeDelivery: true,
     });
     const estimatedEarnings = earningsResult.breakdown.netEarnings / 100; // Convert to GBP
     
@@ -272,10 +272,10 @@ export async function GET(
       
       // Customer information
       customer: {
-        name: booking.User?.name || booking.customerName,
+        name: booking.customer?.name || booking.customerName,
         email: booking.customerEmail,
         phone: booking.customerPhone,
-        canContact: true // Drivers can contact customers for assigned jobs
+        canContact: true
       },
       
       // Addresses and properties
@@ -370,69 +370,16 @@ export async function GET(
       })),
       
       // Financial details - REAL DRIVER EARNINGS (not customer price)
-      driverPayout: driverEarnings, // Driver net pay in pence
+      driverPayout: earningsResult.breakdown.netEarnings, // Driver net pay in pence
       pricing: {
         // ✅ Driver's actual earnings (what they receive)
-        driverPayout: penceToPounds(driverEarnings),
-        driverPayoutPence: driverEarnings,
-        estimatedEarnings: penceToPounds(driverEarnings),
+        driverPayout: penceToPounds(earningsResult.breakdown.netEarnings),
+        driverPayoutPence: earningsResult.breakdown.netEarnings,
+        estimatedEarnings: penceToPounds(earningsResult.breakdown.netEarnings),
         currency: 'GBP',
-        
-        // ✅ Complete breakdown from pricing engine
-        earningsBreakdown: earningsBreakdown ? {
-          // Distance earnings
-          distanceMiles: earningsBreakdown.distance_miles,
-          distanceEarningsPence: earningsBreakdown.distance_earnings_pence,
-          distanceEarningsGBP: penceToPounds(earningsBreakdown.distance_earnings_pence),
-          distanceBandBreakdown: earningsBreakdown.distance_band_breakdown,
-          
-          // Multi-drop bonus (if applicable)
-          multiDropBonusPence: earningsBreakdown.multi_drop_bonus_pence,
-          multiDropBonusGBP: penceToPounds(earningsBreakdown.multi_drop_bonus_pence),
-          
-          // Adjustments
-          utilizationMultiplier: earningsBreakdown.utilization_multiplier,
-          utilizationAdjustmentPence: earningsBreakdown.utilization_adjustment_pence,
-          routeCompactnessMultiplier: earningsBreakdown.route_compactness_multiplier,
-          routeCompactnessAdjustmentPence: earningsBreakdown.route_compactness_adjustment_pence,
-          loadIntensityMultiplier: earningsBreakdown.load_intensity_multiplier,
-          loadIntensityAdjustmentPence: earningsBreakdown.load_intensity_adjustment_pence,
-          
-          // Allowances
-          handlingEarningsPence: earningsBreakdown.handling_earnings_pence,
-          handlingEarningsGBP: penceToPounds(earningsBreakdown.handling_earnings_pence),
-          waitingTimeEarningsPence: earningsBreakdown.waiting_time_earnings_pence,
-          waitingTimeEarningsGBP: penceToPounds(earningsBreakdown.waiting_time_earnings_pence),
-          fuelAllowancePence: earningsBreakdown.fuel_allowance_pence,
-          fuelAllowanceGBP: penceToPounds(earningsBreakdown.fuel_allowance_pence),
-          
-          // Reimbursements
-          tollReimbursementPence: earningsBreakdown.toll_reimbursement_pence,
-          tollReimbursementGBP: penceToPounds(earningsBreakdown.toll_reimbursement_pence),
-          parkingReimbursementPence: earningsBreakdown.parking_reimbursement_pence,
-          parkingReimbursementGBP: penceToPounds(earningsBreakdown.parking_reimbursement_pence),
-          
-          // Admin bonus
-          adminApprovedBonusPence: earningsBreakdown.admin_approved_bonus_pence,
-          adminApprovedBonusGBP: penceToPounds(earningsBreakdown.admin_approved_bonus_pence),
-          
-          // Fees & penalties
-          platformFeePence: earningsBreakdown.platform_fee_pence,
-          platformFeeGBP: penceToPounds(earningsBreakdown.platform_fee_pence),
-          latePenaltyPence: earningsBreakdown.late_penalty_pence,
-          latePenaltyGBP: penceToPounds(earningsBreakdown.late_penalty_pence),
-          
-          // Totals
-          grossEarningsPence: earningsBreakdown.gross_earnings_pence,
-          grossEarningsGBP: penceToPounds(earningsBreakdown.gross_earnings_pence),
-          rawNetEarningsPence: earningsBreakdown.raw_net_earnings_pence,
-          rawNetEarningsGBP: penceToPounds(earningsBreakdown.raw_net_earnings_pence),
-          cappedNetEarningsPence: earningsBreakdown.capped_net_earnings_pence,
-          cappedNetEarningsGBP: penceToPounds(earningsBreakdown.capped_net_earnings_pence),
-        } : null,
-        
-        // ⚠️ Warnings from pricing engine
-        warnings: earningsWarnings,
+        // No extended breakdown available here; using primary breakdown only
+        earningsBreakdown: null,
+        warnings: [],
         
         // Customer payment (for reference only - NOT what driver receives)
         customerPaidTotal: penceToPounds(booking.totalGBP),
@@ -510,7 +457,7 @@ export async function GET(
       bookingId,
       reference: booking.reference,
       isAssigned: isAssignedToDriver,
-      estimatedEarnings: driverEarnings
+      estimatedEarnings: earningsResult.breakdown.netEarnings
     });
 
     return NextResponse.json({

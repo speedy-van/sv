@@ -11,6 +11,40 @@ import { getPusherServer } from '@/lib/pusher';
 import { multiDropEligibilityEngine } from '@/lib/services/multi-drop-eligibility-engine';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 
+/**
+ * Get or create a system driver for unassigned routes
+ */
+async function getOrCreateSystemDriver() {
+  try {
+    // Try to find existing system driver
+    let systemDriver = await prisma.user.findFirst({
+      where: {
+        email: 'system@speedy-van.co.uk',
+        role: 'driver'
+      }
+    });
+
+    if (!systemDriver) {
+      // Create system driver if not exists
+      systemDriver = await prisma.user.create({
+        data: {
+          email: 'system@speedy-van.co.uk',
+          name: 'System Driver',
+          password: 'system_password_not_used', // System user, password not used
+          role: 'driver',
+          isActive: true,
+          emailVerified: true
+        }
+      });
+    }
+
+    return systemDriver;
+  } catch (error) {
+    console.error('❌ Failed to get/create system driver:', error);
+    throw error;
+  }
+}
+
 let cronJob: cron.ScheduledTask | null = null;
 
 /**
@@ -103,30 +137,37 @@ async function createRoutesAutomatically() {
         }
 
         // Analyze eligibility
-        const eligibility = await multiDropEligibilityEngine.checkEligibility({
-          bookingId: booking.id,
-          items: booking.BookingItem.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            category: item.category || 'furniture',
-            estimatedVolume: item.estimatedVolume || 0,
-            estimatedWeight: item.estimatedWeight || 0,
-          })),
-          pickupAddress: {
+      const bookingRequest = {
+          id: booking.id,
+        pickup: {
+          address: booking.pickupAddress.label,
+          postcode: booking.pickupAddress.postcode,
+          coordinates: {
             lat: booking.pickupAddress.lat || 0,
             lng: booking.pickupAddress.lng || 0,
-            postcode: booking.pickupAddress.postcode,
-            city: booking.pickupAddress.city,
           },
-          dropoffAddress: {
+        },
+        dropoff: {
+          address: booking.dropoffAddress.label,
+          postcode: booking.dropoffAddress.postcode,
+          coordinates: {
             lat: booking.dropoffAddress.lat || 0,
             lng: booking.dropoffAddress.lng || 0,
-            postcode: booking.dropoffAddress.postcode,
-            city: booking.dropoffAddress.city,
           },
-          scheduledDate: booking.scheduledAt,
-          urgency: booking.urgency || 'standard',
-        });
+        },
+          items: booking.BookingItem.map(item => ({
+          category: item.category || 'furniture',
+          name: item.name,
+          quantity: item.quantity,
+          weight: item.estimatedWeight || 0,
+          volume: item.estimatedVolume || 0,
+          })),
+        scheduledDate: booking.scheduledAt,
+        serviceType: 'STANDARD',
+        };
+
+        const decision = await multiDropEligibilityEngine.shouldShowMultiDropOption(bookingRequest as any);
+        const eligibility = decision.eligibility;
 
         // Update booking with eligibility info
         await prisma.booking.update({
@@ -134,8 +175,8 @@ async function createRoutesAutomatically() {
           data: {
             eligibleForMultiDrop: eligibility.eligible,
             multiDropEligibilityReason: eligibility.reason,
-            estimatedLoadPercentage: eligibility.loadPercentage,
-            potentialSavings: eligibility.potentialSavings,
+            estimatedLoadPercentage: eligibility.loadConstraint?.currentLoad ?? 0,
+            potentialSavings: undefined,
             orderType: eligibility.eligible ? 'multi-drop-candidate' : 'single',
           },
         });
@@ -326,16 +367,19 @@ async function createMultiDropRoutes(bookings: any[]) {
         continue;
       }
       
+      // Get system driver for unassigned routes
+      const systemDriver = await getOrCreateSystemDriver();
+
       // Create route in database
       const createdRoute = await prisma.route.create({
         data: {
           id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           status: 'planned',
-          driverId: 'unassigned',
-          totalDistanceMiles: route.totalDistance,
-          totalDurationMinutes: route.totalDuration,
+          driverId: systemDriver.id,
+          optimizedDistanceKm: route.totalDistance * 1.609, // Convert miles to km
+          estimatedDuration: route.totalDuration,
           totalOutcome: route.totalValue,
-          optimizationScore: route.optimizationScore,
+          startTime: new Date(), // Use current time as start time
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -384,15 +428,18 @@ async function createMultiDropRoutes(bookings: any[]) {
  * Create a single-order route for one booking
  */
 async function createSingleOrderRoute(booking: any) {
+  // Get system driver for unassigned routes
+  const systemDriver = await getOrCreateSystemDriver();
+
   const route = await prisma.route.create({
     data: {
       id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       status: 'planned',
-      driverId: 'unassigned',
-      totalDistanceMiles: booking.baseDistanceMiles,
-      totalDurationMinutes: booking.estimatedDurationMinutes,
+      driverId: systemDriver.id,
+      optimizedDistanceKm: booking.baseDistanceMiles * 1.609, // Convert miles to km
+      estimatedDuration: booking.estimatedDurationMinutes,
       totalOutcome: booking.totalGBP / 100,
-      optimizationScore: 100, // Single orders are always "optimized"
+      startTime: booking.scheduledAt || new Date(), // Use booking scheduled time or current time
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -443,11 +490,14 @@ async function notifyAdminAboutUnassignedBookings(count: number) {
  */
 async function notifyDriversAboutNewRoutes(routeCount: number) {
   try {
+    // Get system driver for unassigned routes
+    const systemDriver = await getOrCreateSystemDriver();
+
     // Get all planned routes (not yet assigned)
     const plannedRoutes = await prisma.route.findMany({
       where: {
         status: 'planned',
-        driverId: 'unassigned',
+        driverId: systemDriver.id,
       },
       include: {
         Booking: {
@@ -634,7 +684,7 @@ async function processCustomerRefund(bookingId: string, refundAmountPence: numbe
       include: {
         Payment: {
           where: {
-            status: 'succeeded',
+            status: 'paid',
           },
           orderBy: {
             createdAt: 'desc',
@@ -652,11 +702,11 @@ async function processCustomerRefund(bookingId: string, refundAmountPence: numbe
     const payment = booking.Payment[0];
     
     // Create refund via Stripe (if using Stripe)
-    if (payment.paymentIntentId) {
+    if (payment.intentId) {
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
       
       const refund = await stripe.refunds.create({
-        payment_intent: payment.paymentIntentId,
+        payment_intent: payment.intentId,
         amount: refundAmountPence,
         reason: 'multi_drop_discount',
         metadata: {
@@ -669,11 +719,10 @@ async function processCustomerRefund(bookingId: string, refundAmountPence: numbe
       await prisma.refund.create({
         data: {
           id: refund.id,
-          bookingId,
           paymentId: payment.id,
-          amountPence: refundAmountPence,
+          amount: refundAmountPence,
           reason: 'multi_drop_discount',
-          status: 'succeeded',
+          status: 'completed',
           processedAt: new Date(),
         },
       });
@@ -733,8 +782,8 @@ export async function tryAddBookingToExistingRoute(newBooking: any): Promise<boo
         await prisma.route.update({
           where: { id: route.id },
           data: {
-            totalDistanceMiles: route.totalDistanceMiles + canAdd.additionalDistance,
-            totalDurationMinutes: route.totalDurationMinutes + canAdd.additionalTime,
+            optimizedDistanceKm: (route.optimizedDistanceKm || 0) + (canAdd.additionalDistance * 1.609), // Convert miles to km
+            estimatedDuration: (route.estimatedDuration || 0) + canAdd.additionalTime,
           },
         });
         

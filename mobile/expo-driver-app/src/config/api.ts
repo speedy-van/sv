@@ -10,9 +10,17 @@ const getBaseURL = () => {
   
   // If running in development mode
   if (__DEV__) {
-    // Use localhost for Expo Go (will work with tunneling)
-    // Or change to your computer's IP if needed
-    return process.env.EXPO_PUBLIC_DEV_API_URL || 'http://localhost:3000';
+    // IMPORTANT: For iOS devices, localhost won't work!
+    // Use your computer's IP address or ngrok tunnel for development
+    // Example: 'http://192.168.1.100:3000' or 'https://your-tunnel.ngrok.io'
+    const devUrl = process.env.EXPO_PUBLIC_DEV_API_URL;
+    if (devUrl) {
+      console.log('📡 Using DEV API URL:', devUrl);
+      return devUrl;
+    }
+    // Fallback to production URL (safer for iOS builds)
+    console.warn('⚠️  No DEV_API_URL set, using production URL');
+    return 'https://speedy-van.co.uk';
   }
   
   // Production URL - Main domain (backend is on main domain, not subdomain)

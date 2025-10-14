@@ -330,7 +330,7 @@ export class LocationService {
 // Address autocomplete service
 export class AddressAutocompleteService {
   private static instance: AddressAutocompleteService;
-  private debounceTimer: NodeJS.Timeout | null = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private cache = new Map<string, AddressSuggestion[]>();
   private readonly DEBOUNCE_DELAY = 300; // ms
   private readonly CACHE_DURATION = 300000; // 5 minutes

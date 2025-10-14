@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { id: driver_id },
       include: {
-        user: {
+        User: {
           select: {
             name: true,
             email: true,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
       data: {
         bonusRequestId: bonusRequest.id,
         driverId: driver_id,
-        driverName: driver.user.name,
+        driverName: driver.User.name,
         assignmentId: assignment_id,
         bookingReference: assignment.Booking?.reference,
         bonusType: bonus_type,

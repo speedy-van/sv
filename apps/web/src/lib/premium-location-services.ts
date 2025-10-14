@@ -225,7 +225,7 @@ const extractCity = (addressComponents: any[]): string => {
 // Premium Address Autocomplete Service with Dual Provider Support
 export class PremiumAddressAutocompleteService {
   private static instance: PremiumAddressAutocompleteService;
-  private debounceTimer: NodeJS.Timeout | null = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private cache = new Map<string, AddressSuggestion[]>();
   private readonly DEBOUNCE_DELAY = 300; // ms
   private readonly CACHE_DURATION = 300000; // 5 minutes

@@ -117,7 +117,7 @@ export default function AdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const toast = useToast();
   const router = useRouter();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fetchRef = useRef<(() => Promise<void>) | null>(null);
 
   const fetchDashboardData = useCallback(async () => {

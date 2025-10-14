@@ -276,15 +276,15 @@ export async function PUT(
             bookingId: booking.id,
             bookingReference: booking.reference,
             customerName: booking.customerName,
-            driverName: driverDetails?.user.name || 'Unknown Driver',
+            driverName: driverDetails?.User?.name || 'Unknown Driver',
             completedAt: new Date().toISOString(),
-            message: `Order ${booking.reference} has been completed by driver ${driverDetails?.user.name || 'Unknown'}`,
+            message: `Order ${booking.reference} has been completed by driver ${driverDetails?.User?.name || 'Unknown'}`,
           });
 
           console.log('✅ Admin notification sent for order completion via progress API:', {
             bookingId: booking.id,
             bookingReference: booking.reference,
-            driverName: driverDetails?.user.name
+            driverName: driverDetails?.User?.name
           });
         } catch (notificationError) {
           console.error('❌ Error sending admin notification for order completion via progress API:', notificationError);

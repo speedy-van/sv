@@ -49,7 +49,7 @@ export async function GET(
     const route = await prisma.route.findUnique({
       where: { id: params.id },
       include: {
-        Drop: {
+        drops: {
           include: {
             Booking: {
               select: {
@@ -83,10 +83,10 @@ export async function GET(
       return NextResponse.json({ error: 'Not authorized for this route' }, { status: 403 });
     }
 
-    const drops = route.Drop || [];
-    const totalDistance = drops.reduce((sum, drop) => sum + (drop.distance || 0), 0);
+    const drops = route.drops || [];
+    const totalDistance = drops.reduce((sum: number, drop: any) => sum + (drop.distance || 0), 0);
     const totalEarnings = Number(route.driverPayout || route.totalOutcome || 0) / 100;
-    const completedDrops = drops.filter(d => d.status === 'delivered').length;
+    const completedDrops = drops.filter((d: any) => d.status === 'delivered').length;
 
     return NextResponse.json({
       route: {

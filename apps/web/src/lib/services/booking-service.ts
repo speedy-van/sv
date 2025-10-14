@@ -127,9 +127,9 @@ export class BookingService {
     try {
       const drop = await prisma.drop.findUnique({
         where: { id: dropId },
-        include: { 
-          customer: true,
-          route: true 
+        include: {
+          User: true,
+          Route: true
         }
       });
 
@@ -160,7 +160,7 @@ export class BookingService {
     try {
       const drop = await prisma.drop.findUnique({
         where: { id: dropId },
-        include: { route: true }
+        include: { Route: true }
       });
 
       if (!drop) {
@@ -171,7 +171,7 @@ export class BookingService {
         throw new Error('Cannot cancel delivered booking');
       }
 
-      if (drop.status === 'in_transit' && drop.route) {
+      if (drop.status === 'in_transit' && drop.Route) {
         throw new Error('Cannot cancel booking that is already in progress');
       }
 

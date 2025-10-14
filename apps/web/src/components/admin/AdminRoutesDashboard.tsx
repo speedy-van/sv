@@ -1,36 +1,9 @@
 /**
  * Admin Dashboard Multi-Drop Route Management Enhancement
- * 
+ *
  * Comprehensive admin interface for monitoring and managing the Multi-Drop Route system.
- * Provi      loadDashboardData();
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Calculate live progress percentage based on completed drops
-  const getProgressPercentage = (route: RouteData): number => {
-    if (route.status === 'completed') return 100;
-    if (route.status === 'planned') return 0;
-    
-    const { completedDrops, totalDrops } = route;
-    if (totalDrops === 0) return 0;
-    
-    return Math.round((completedDrops / totalDrops) * 100);
-  };
-
-  // Get color scheme based on route status
-  const getProgressColorScheme = (route: RouteData): string => {
-    if (route.status === 'completed') return 'green';
-    if (route.status === 'closed') return 'gray';
-    if (route.progress > 75) return 'green';
-    if (route.progress > 50) return 'blue';
-    if (route.progress > 25) return 'orange';
-    return 'yellow';
-  };
-
-  const loadDashboardData = async () {l-time insights, route optimization controls, and driver management tools.
- * 
+ * Provides real-time insights, route optimization controls, and driver management tools.
+ *
  * Key Features:
  * - Live route monitoring with interactive maps
  * - Real-time performance metrics and analytics
@@ -184,6 +157,28 @@ const AdminRoutesDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Calculate live progress percentage based on completed drops
+  const getProgressPercentage = (route: RouteData): number => {
+    if (route.status === 'completed') return 100;
+    if (route.status === 'pending_assignment') return 0;
+
+    const { completedDrops, totalDrops } = route;
+    if (totalDrops === 0) return 0;
+
+    return Math.round((completedDrops / totalDrops) * 100);
+  };
+
+  // Get color scheme based on route status
+  const getProgressColorScheme = (route: RouteData): string => {
+    if (route.status === 'completed') return 'green';
+    if (route.status === 'failed') return 'gray';
+    if (route.progress > 75) return 'green';
+    if (route.progress > 50) return 'blue';
+    if (route.progress > 25) return 'orange';
+    return 'yellow';
+  };
+
   const [dateFilter, setDateFilter] = useState('today');
   
   const { isOpen: isRouteModalOpen, onOpen: onRouteModalOpen, onClose: onRouteModalClose } = useDisclosure();

@@ -105,8 +105,8 @@ export class AddressValidationService {
         pickupAddress.coordinates.lat !== 0 && dropoffAddress.coordinates.lat !== 0) {
       
       const distance = this.calculateDistance(
-        pickupAddress.coordinates,
-        dropoffAddress.coordinates
+        { lat: pickupAddress.coordinates.lat || 0, lng: pickupAddress.coordinates.lng || 0 },
+        { lat: dropoffAddress.coordinates.lat || 0, lng: dropoffAddress.coordinates.lng || 0 }
       );
 
       if (distance < 0.1) { // Less than 0.1 miles

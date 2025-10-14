@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
       prisma.user.count({
         where: {
           role: 'customer',
-          bookings: {
+          Booking: {
             some: {
               createdAt: {
                 gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days

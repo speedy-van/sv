@@ -31,7 +31,7 @@ export async function POST(
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
-        items: true,
+        BookingItem: true,
       },
     });
 

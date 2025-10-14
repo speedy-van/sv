@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        shifts: {
+        DriverShift: {
           where: { isActive: true },
           orderBy: { startTime: 'asc' },
         },
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     ];
 
     // Add shifts
-    driver.shifts.forEach((shift, index) => {
+    driver.DriverShift.forEach((shift, index) => {
       const start = format(new Date(shift.startTime), "yyyyMMdd'T'HHmmss");
       const end = format(new Date(shift.endTime), "yyyyMMdd'T'HHmmss");
       const created = format(new Date(shift.createdAt), "yyyyMMdd'T'HHmmss");

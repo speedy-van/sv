@@ -89,12 +89,12 @@ export async function POST(request: NextRequest) {
       where: {
         status: 'active',
         onboardingStatus: 'approved',
-        availability: {
+        DriverAvailability: {
           status: 'online',
         },
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         },
-        availability: true,
-        vehicles: true,
+        DriverAvailability: true,
+        DriverVehicle: true,
         Booking: {
           where: {
             status: {
@@ -113,8 +113,8 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        ratings: true,
-        performance: true,
+        DriverRating: true,
+        DriverPerformance: true,
       },
     });
 
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       include: {
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,

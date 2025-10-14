@@ -65,22 +65,20 @@ export async function GET(request: NextRequest) {
     const routes = await prisma.route.findMany({
       where,
       include: {
-        User: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+        driver: {
+          select: { id: true, name: true, email: true },
         },
         Vehicle: {
           select: {
             id: true,
-            type: true,
-            registration: true,
+            licensePlate: true,
+            make: true,
+            model: true,
             capacity: true,
+            fuelType: true,
           },
         },
-        Drop: {
+        drops: {
           include: {
             Booking: {
               select: {
@@ -92,9 +90,7 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          orderBy: {
-            sequence: 'asc',
-          },
+          orderBy: { timeWindowStart: 'asc' },
         },
         Booking: {
           select: {
@@ -218,7 +214,7 @@ export async function POST(request: NextRequest) {
     // Create route
     const route = await prisma.route.create({
       data: {
-        driverId: driver.User.id,
+        driverId: driver.userId,
         vehicleId,
         startTime: new Date(startTime),
         optimizedDistanceKm: totalDistance,
@@ -233,54 +229,51 @@ export async function POST(request: NextRequest) {
           sequence: idx + 1,
           bookingId: d.bookingId,
           address: d.address,
-          estimatedArrival: new Date(
-            new Date(startTime).getTime() + idx * 30 * 60 * 1000
-          ).toISOString(),
         })),
       },
       include: {
-        User: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
+        driver: { select: { id: true, name: true, email: true } },
       },
     });
 
     // Create drops
     for (let i = 0; i < drops.length; i++) {
       const drop = drops[i];
+      // Try to fetch booking to derive customerId and quotedPrice if bookingId present
+      let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
+      if (drop.bookingId) {
+        try {
+          const b = await prisma.booking.findUnique({
+            where: { id: String(drop.bookingId) },
+            select: { customerId: true, totalGBP: true },
+          });
+          if (b) bookingForDrop = b as any;
+        } catch {}
+      }
       await prisma.drop.create({
         data: {
-          routeId: route.id,
-          bookingId: drop.bookingId,
-          sequence: i + 1,
+          Route: { connect: { id: route.id } },
+          ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
+          // Required fields per schema
+          quotedPrice: bookingForDrop ? bookingForDrop.totalGBP : 0,
+          User: { connect: { id: bookingForDrop ? bookingForDrop.customerId : drop.customerId } },
           pickupAddress: drop.pickupAddress,
           deliveryAddress: drop.deliveryAddress,
-          estimatedArrival: new Date(
-            new Date(startTime).getTime() + i * 30 * 60 * 1000
-          ),
+          timeWindowStart: new Date(new Date(startTime).getTime() + i * 30 * 60 * 1000),
+          timeWindowEnd: new Date(new Date(startTime).getTime() + (i + 1) * 30 * 60 * 1000),
           status: 'pending',
-          weight: drop.weight || 0,
-          volume: drop.volume || 0,
+          weight: typeof drop.weight === 'number' ? drop.weight : undefined,
+          volume: typeof drop.volume === 'number' ? drop.volume : undefined,
         },
       });
     }
 
     // Log audit
-    await logAudit({
-      userId: adminId,
-      action: 'create_multi_drop_route',
-      entityType: 'route',
-      entityId: route.id,
-      details: {
-        driverId,
-        dropsCount: drops.length,
-        totalDistance,
-        estimatedDuration,
-      },
+    await logAudit(adminId, 'create_multi_drop_route', route.id, {
+      driverId,
+      dropsCount: drops.length,
+      totalDistance,
+      estimatedDuration,
     });
 
     logger.info('Multi-drop route created', {
@@ -343,7 +336,7 @@ export async function PUT(request: NextRequest) {
     const existingRoute = await prisma.route.findUnique({
       where: { id: routeId },
       include: {
-        Drop: true,
+        drops: true,
       },
     });
 
@@ -396,16 +389,29 @@ export async function PUT(request: NextRequest) {
       // Create new drops
       for (let i = 0; i < drops.length; i++) {
         const drop = drops[i];
+        let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
+        if (drop.bookingId) {
+          try {
+            const b = await prisma.booking.findUnique({
+              where: { id: String(drop.bookingId) },
+              select: { customerId: true, totalGBP: true },
+            });
+            if (b) bookingForDrop = b as any;
+          } catch {}
+        }
         await prisma.drop.create({
           data: {
-            routeId,
-            bookingId: drop.bookingId,
-            sequence: i + 1,
+            Route: { connect: { id: routeId } },
+            ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
+            quotedPrice: bookingForDrop ? bookingForDrop.totalGBP : 0,
+            User: { connect: { id: bookingForDrop ? bookingForDrop.customerId : drop.customerId } },
             pickupAddress: drop.pickupAddress,
             deliveryAddress: drop.deliveryAddress,
-            estimatedArrival: new Date(
-              new Date(startTime || existingRoute.startTime).getTime() +
-                i * 30 * 60 * 1000
+            timeWindowStart: new Date(
+              new Date(startTime || existingRoute.startTime).getTime() + i * 30 * 60 * 1000
+            ),
+            timeWindowEnd: new Date(
+              new Date(startTime || existingRoute.startTime).getTime() + (i + 1) * 30 * 60 * 1000
             ),
             status: drop.status || 'pending',
             weight: drop.weight || 0,
@@ -427,14 +433,8 @@ export async function PUT(request: NextRequest) {
       where: { id: routeId },
       data: updateData,
       include: {
-        User: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        Drop: {
+        driver: { select: { id: true, name: true, email: true } },
+        drops: {
           include: {
             Booking: {
               select: {
@@ -444,9 +444,7 @@ export async function PUT(request: NextRequest) {
               },
             },
           },
-          orderBy: {
-            sequence: 'asc',
-          },
+          orderBy: { timeWindowStart: 'asc' },
         },
       },
     });

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { endpoint, p256dh, auth, platform, deviceInfo } = body;
+    const { endpoint, p256dh, auth: webPushAuth, platform, deviceInfo } = body;
 
     if (!endpoint) {
       return NextResponse.json(
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       where: { endpoint },
       update: {
         p256dh: p256dh || null,
-        auth: auth || null,
+        auth: webPushAuth || null,
         platform: platform || 'web',
         deviceInfo: deviceInfo || null,
         driverId: driver.id,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         id: `push_${driver.id}_${Date.now()}`,
         endpoint,
         p256dh: p256dh || null,
-        auth: auth || null,
+        auth: webPushAuth || null,
         platform: platform || 'web',
         deviceInfo: deviceInfo || null,
         driverId: driver.id,

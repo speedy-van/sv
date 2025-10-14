@@ -47,21 +47,24 @@ async function getFinanceData() {
       },
     },
     include: {
-      driver: {
+      Driver: {
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
               email: true,
               role: true,
               createdAt: true,
-              isActive: true
+              isActive: true,
+              lastLogin: true,
+              resetTokenExpiry: true,
+              emailVerificationExpiry: true
             }
           },
         },
       },
-      earnings: {
+      DriverEarnings: {
         include: {
           Assignment: {
             include: {
@@ -146,19 +149,19 @@ async function getFinanceData() {
     updatedAt: payout.updatedAt.toISOString(),
     processedAt: payout.processedAt?.toISOString(),
     driver: {
-      ...payout.driver,
-      createdAt: payout.driver.createdAt.toISOString(),
-      updatedAt: payout.driver.updatedAt.toISOString(),
-      approvedAt: payout.driver.approvedAt?.toISOString(),
+      ...payout.Driver,
+      createdAt: payout.Driver.createdAt.toISOString(),
+      updatedAt: payout.Driver.updatedAt.toISOString(),
+      approvedAt: payout.Driver.approvedAt?.toISOString(),
       user: {
-        ...payout.driver.user,
-        createdAt: payout.driver.user.createdAt.toISOString(),
-        lastLogin: payout.driver.user.lastLogin?.toISOString(),
-        resetTokenExpiry: payout.driver.user.resetTokenExpiry?.toISOString(),
-        emailVerificationExpiry: payout.driver.user.emailVerificationExpiry?.toISOString(),
+        ...payout.Driver.User,
+        createdAt: payout.Driver.User.createdAt.toISOString(),
+        lastLogin: payout.Driver.User.lastLogin?.toISOString(),
+        resetTokenExpiry: payout.Driver.User.resetTokenExpiry?.toISOString(),
+        emailVerificationExpiry: payout.Driver.User.emailVerificationExpiry?.toISOString(),
       },
     },
-    earnings: payout.earnings.map(earning => ({
+    earnings: payout.DriverEarnings.map(earning => ({
       ...earning,
       createdAt: earning.createdAt.toISOString(),
       updatedAt: earning.updatedAt.toISOString(),

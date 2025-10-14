@@ -53,8 +53,8 @@ interface PremiumButtonProps {
   soundEnabled?: boolean;
 }
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity as any) as any;
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient as any) as any;
 
 export default function PremiumButton({
   children,

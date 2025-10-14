@@ -7,12 +7,23 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk",
+        "EXPO_PUBLIC_PUSHER_KEY": "407cb06c423e6c032e9c",
+        "EXPO_PUBLIC_PUSHER_CLUSTER": "eu"
+      },
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "buildConfiguration": "Debug"
       }
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk",
+        "EXPO_PUBLIC_PUSHER_KEY": "407cb06c423e6c032e9c",
+        "EXPO_PUBLIC_PUSHER_CLUSTER": "eu"
+      },
       "ios": {
         "simulator": false,
         "buildConfiguration": "Release"
@@ -22,7 +33,10 @@
       "distribution": "store",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk"
+        "EXPO_PUBLIC_API_URL": "https://speedy-van.co.uk",
+        "EXPO_PUBLIC_PUSHER_KEY": "407cb06c423e6c032e9c",
+        "EXPO_PUBLIC_PUSHER_CLUSTER": "eu",
+        "EXPO_PUBLIC_BUILD_ENV": "production"
       },
       "ios": {
         "buildConfiguration": "Release",

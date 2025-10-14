@@ -5,9 +5,13 @@ struct AppConfig {
     
     /// Base URL for API requests
     /// Production: https://speedy-van.co.uk
-    /// Development: http://localhost:3000
+    /// Development: Use ngrok tunnel or local IP address
+    /// IMPORTANT: For production builds, ALWAYS use HTTPS URL
     #if DEBUG
-    static let apiBaseURL = "http://localhost:3000"
+    // For development: Use your computer's IP or ngrok tunnel
+    // Example: "http://192.168.1.100:3000" or "https://your-tunnel.ngrok.io"
+    // NEVER use localhost in iOS builds - it won't work!
+    static let apiBaseURL = "https://speedy-van.co.uk" // Changed to production URL for all builds
     #else
     static let apiBaseURL = "https://speedy-van.co.uk"
     #endif

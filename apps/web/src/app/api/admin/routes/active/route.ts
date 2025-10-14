@@ -36,29 +36,18 @@ export async function GET(request: NextRequest) {
             dropoffAddress: true,
             BookingItem: true,
             customer: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-              },
+              select: { id: true, name: true, email: true }
             },
           },
           orderBy: {
             deliverySequence: 'asc',
           },
         },
-        Driver: {
-          include: {
-            User: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-              },
-            },
-            DriverAvailability: true,
+        driver: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
       },
@@ -101,13 +90,10 @@ export async function GET(request: NextRequest) {
             estimatedPickupTime: nextStop.estimatedPickupTime,
           } : null,
         },
-        driver: route.Driver ? {
-          id: route.Driver.id,
-          name: route.Driver.User.name,
-          email: route.Driver.User.email,
-          phone: route.Driver.User.phone,
-          status: route.Driver.DriverAvailability?.status || 'unknown',
-          // TODO: Add real-time location from tracking service
+        driver: (route as any).driver ? {
+          id: (route as any).driver.id,
+          name: (route as any).driver.name,
+          email: (route as any).driver.email,
         } : null,
       };
     });
@@ -117,10 +103,10 @@ export async function GET(request: NextRequest) {
       total: enrichedRoutes.length,
       assigned: enrichedRoutes.filter(r => r.status === 'assigned').length,
       inProgress: enrichedRoutes.filter(r => r.status === 'in_progress').length,
-      totalStops: enrichedRoutes.reduce((sum, r) => sum + r.Booking.length, 0),
-      completedStops: enrichedRoutes.reduce((sum, r) => sum + r.progress.completedStops, 0),
-      totalDistance: enrichedRoutes.reduce((sum, r) => sum + r.totalDistanceMiles, 0),
-      totalRevenue: enrichedRoutes.reduce((sum, r) => sum + r.totalOutcome, 0),
+      totalStops: enrichedRoutes.reduce((sum, r: any) => sum + (r.Booking?.length || 0), 0),
+      completedStops: enrichedRoutes.reduce((sum, r: any) => sum + (r.progress?.completedStops || 0), 0),
+      totalDistance: enrichedRoutes.reduce((sum, r: any) => sum + (r.optimizedDistanceKm || r.actualDistanceKm || 0), 0),
+      totalRevenue: enrichedRoutes.reduce((sum, r: any) => sum + Number(r.totalOutcome || 0), 0),
     };
 
     return NextResponse.json({

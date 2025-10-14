@@ -24,9 +24,9 @@ export async function POST(
     const payout = await prisma.driverPayout.findUnique({
       where: { id: payoutId },
       include: {
-        driver: {
+        Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -36,10 +36,10 @@ export async function POST(
                 isActive: true
               }
             },
-            payoutSettings: true,
+            DriverPayoutSettings: true,
           },
         },
-        earnings: {
+        DriverEarnings: {
           include: {
             Assignment: {
               include: {
@@ -65,7 +65,7 @@ export async function POST(
     }
 
     // Check if driver has payout settings
-    if (!payout.driver.payoutSettings) {
+    if (!payout.Driver?.DriverPayoutSettings) {
       return NextResponse.json(
         {
           error: 'Driver has no payout settings configured',
@@ -79,17 +79,17 @@ export async function POST(
     let failureReason = null;
 
     try {
-      if (payout.driver.payoutSettings.stripeAccountId) {
+      if (payout.Driver?.DriverPayoutSettings?.stripeAccountId) {
         // Process through Stripe Connect
         const transfer = await stripe.transfers.create({
           amount: payout.totalAmountPence,
           currency: payout.currency,
-          destination: payout.driver.payoutSettings.stripeAccountId,
-          description: `Payout for ${payout.driver.user.name}`,
+          destination: payout.Driver.DriverPayoutSettings.stripeAccountId,
+          description: `Payout for ${payout.Driver.User?.name || 'Unknown Driver'}`,
           metadata: {
             payoutId: payout.id,
-            driverId: payout.driver.id,
-            earningsCount: payout.earnings.length.toString(),
+            driverId: payout.driverId,
+            earningsCount: payout.DriverEarnings?.length.toString() || '0',
           },
         });
         stripeTransferId = transfer.id;
@@ -97,7 +97,7 @@ export async function POST(
         // Manual payout processing (bank transfer, etc.)
         // This would integrate with your bank's API or manual process
         console.log(
-          `Manual payout processing required for driver ${payout.driver.user.name}`
+          `Manual payout processing required for driver ${payout.Driver?.User?.name || 'Unknown Driver'}`
         );
       }
     } catch (stripeError: any) {
@@ -179,7 +179,7 @@ export async function POST(
     // Send notification to driver
     try {
       const { notifyPayoutProcessed } = await import('@/lib/notifications');
-      await notifyPayoutProcessed(payout.driver.id, {
+      await notifyPayoutProcessed(payout.driverId, {
         id: payout.id,
         amount: payout.totalAmountPence,
       });
@@ -191,7 +191,7 @@ export async function POST(
       success: true,
       payout: {
         id: updatedPayout.id,
-        driverName: payout.driver.user.name,
+        driverName: payout.Driver?.User?.name || 'Unknown',
         totalAmountPence: updatedPayout.totalAmountPence,
         status: updatedPayout.status,
         processedAt: updatedPayout.processedAt,

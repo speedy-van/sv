@@ -4,7 +4,7 @@ class AudioService {
   private sound: Audio.Sound | null = null;
   private isInitialized: boolean = false;
   private isPlaying: boolean = false;
-  private loopIntervalId: NodeJS.Timeout | null = null;
+  private loopIntervalId: ReturnType<typeof setInterval> | null = null;
 
   async initialize() {
     if (this.isInitialized) return;

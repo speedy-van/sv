@@ -11,6 +11,41 @@ import path from 'path';
 // import { PayoutCalculator } from '../pricing/payout-calculator';
 
 /**
+ * Get or create a system driver for unassigned routes
+ */
+async function getOrCreateSystemDriver() {
+  try {
+    // Try to find existing system driver
+    let systemDriver = await prisma.user.findFirst({
+      where: {
+        email: 'system@speedy-van.co.uk',
+        role: 'driver'
+      }
+    });
+
+    if (!systemDriver) {
+      // Create system driver if not exists
+      systemDriver = await prisma.user.create({
+        data: {
+          email: 'system@speedy-van.co.uk',
+          name: 'System Driver',
+          role: 'driver',
+          isActive: true,
+          emailVerified: true,
+          createdAt: new Date(),
+          password: 'system_password_not_used', // System user, password not used
+        }
+      });
+    }
+
+    return systemDriver;
+  } catch (error) {
+    console.error('❌ Failed to get/create system driver:', error);
+    throw error;
+  }
+}
+
+/**
  * Advanced Driver Pricing Engine
  *
  * Implements the enterprise pricing system with:
@@ -152,7 +187,7 @@ export class RouteOrchestrationService {
       // Validate that ALL items have weights - NO EXCEPTIONS
       const itemsWithoutWeight = dataset.items.filter((item: any) => !item.weight && item.weight !== 0);
       if (itemsWithoutWeight.length > 0) {
-        throw new Error(`CRITICAL DATA INTEGRITY ERROR: ${itemsWithoutWeight.length} items missing weights in official dataset: ${itemsWithoutWeight.map(i => i.id).join(', ')}\n\nThis will cause REAL FINANCIAL LOSS through incorrect pricing.`);
+        throw new Error(`CRITICAL DATA INTEGRITY ERROR: ${itemsWithoutWeight.length} items missing weights in official dataset: ${itemsWithoutWeight.map((i: any) => i.id).join(', ')}\n\nThis will cause REAL FINANCIAL LOSS through incorrect pricing.`);
       }
 
       // Validate that ALL items have volumes
@@ -267,7 +302,7 @@ export class RouteOrchestrationService {
         },
         orderBy: { timeWindowStart: 'asc' },
         include: {
-          booking: {
+          Booking: {
             select: {
               id: true,
               reference: true,
@@ -287,7 +322,7 @@ export class RouteOrchestrationService {
                   label: true
                 }
               },
-              items: {
+              BookingItem: {
                 select: {
                   id: true,
                   name: true,
@@ -320,7 +355,7 @@ export class RouteOrchestrationService {
       const dropsWithBooking = pendingDrops as any[]; // Type assertion for complex Prisma include
       
       for (const drop of dropsWithBooking) {
-        const items = drop.booking?.items || [];
+        const items = drop.booking?.BookingItem || [];
         allItems.push(...items);
       }
 
@@ -356,6 +391,9 @@ export class RouteOrchestrationService {
 
       for (const optimizedRoute of optimizedRoutes) {
         try {
+          // Get system driver for unassigned routes
+          const systemDriver = await getOrCreateSystemDriver();
+
           const route = await prisma.route.create({
             data: {
               status: 'planned' as const,
@@ -368,7 +406,7 @@ export class RouteOrchestrationService {
                   .filter(stop => stop.dropId) // Only connect actual drops
                   .map(stop => ({ id: stop.dropId! }))
               },
-              driverId: 'unassigned'
+              driverId: systemDriver.id
             },
             include: {
               drops: true
@@ -452,7 +490,7 @@ export class RouteOrchestrationService {
         },
         orderBy: { timeWindowStart: 'asc' },
         include: {
-          booking: {
+          Booking: {
             select: {
               id: true,
               reference: true,
@@ -500,6 +538,9 @@ export class RouteOrchestrationService {
             // Calculate route metrics
             const routeMetrics = this.calculateRouteMetrics(drops);
 
+            // Get system driver for unassigned routes
+            const systemDriver = await getOrCreateSystemDriver();
+
             // Create route (unassigned - admin will assign to driver)
             const route = await prisma.route.create({
               data: {
@@ -511,7 +552,7 @@ export class RouteOrchestrationService {
                 drops: {
                   connect: drops.map(drop => ({ id: drop.id }))
                 },
-                driverId: 'unassigned' // Will be assigned later by admin
+                driverId: systemDriver.id // Will be assigned later by admin
               },
               include: {
                 drops: true
@@ -591,7 +632,7 @@ export class RouteOrchestrationService {
 
       const driver = await prisma.user.findUnique({
         where: { id: driverId },
-        include: { driver: true }
+          include: { driver: true }
       });
 
       if (!driver || !driver.driver) {
@@ -713,10 +754,10 @@ export class RouteOrchestrationService {
         where: { id: routeId },
         include: {
           drops: true,
-          driver: {
-            include: { driver: true }
-          },
-          vehicle: true
+        driver: {
+          include: { driver: true }
+        },
+        Vehicle: true
         }
       });
 
@@ -749,11 +790,11 @@ export class RouteOrchestrationService {
           name: route.driver.name,
           email: route.driver.email
         } : null,
-        vehicle: route.vehicle ? {
-          id: route.vehicle.id,
-          licensePlate: route.vehicle.licensePlate,
-          make: route.vehicle.make,
-          model: route.vehicle.model
+        vehicle: route.Vehicle ? {
+          id: route.Vehicle.id,
+          licensePlate: route.Vehicle.licensePlate,
+          make: route.Vehicle.make,
+          model: route.Vehicle.model
         } : null
       };
 
@@ -850,8 +891,8 @@ export class RouteOrchestrationService {
       include: {
         driver: {
           include: {
-            profile: true,
-            availability: true
+            DriverProfile: true,
+            DriverAvailability: true
           }
         }
       }

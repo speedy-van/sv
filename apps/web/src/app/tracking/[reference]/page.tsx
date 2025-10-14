@@ -67,6 +67,7 @@ interface TrackingPageData {
   driver?: {
     name: string;
     email?: string;
+    isOnline?: boolean;
   };
   routeProgress: number;
   currentLocation?: {

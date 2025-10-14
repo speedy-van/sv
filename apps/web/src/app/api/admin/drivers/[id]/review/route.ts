@@ -24,7 +24,7 @@ export async function POST(
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -34,9 +34,9 @@ export async function POST(
             isActive: true
           }
         },
-        documents: true,
-        checks: true,
-        vehicles: true,
+        Document: true,
+        DriverChecks: true,
+        DriverVehicle: true,
       },
     });
 
@@ -101,7 +101,7 @@ export async function POST(
     }
 
     // Log the review action
-    await logAudit(user.id, `driver_${action}`, driverId, { targetType: 'driver', before: { onboardingStatus: driver.onboardingStatus, documents: driver.documents.map(d => ({ id: d.id, status: d.status })) }, after: { onboardingStatus: updateData.onboardingStatus || driver.onboardingStatus, reviewNotes, documentId, reviewedBy: user.id } });
+    await logAudit(user.id, `driver_${action}`, driverId, { targetType: 'driver', before: { onboardingStatus: driver.onboardingStatus, documents: driver.Document.map(d => ({ id: d.id, status: d.status })) }, after: { onboardingStatus: updateData.onboardingStatus || driver.onboardingStatus, reviewNotes, documentId, reviewedBy: user.id } });
 
     return NextResponse.json({
       success: true,
@@ -138,7 +138,7 @@ export async function GET(
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -148,11 +148,11 @@ export async function GET(
             isActive: true
           }
         },
-        documents: {
+        Document: {
           orderBy: { uploadedAt: 'desc' },
         },
-        checks: true,
-        vehicles: true,
+        DriverChecks: true,
+        DriverVehicle: true,
       },
     });
 
@@ -162,29 +162,29 @@ export async function GET(
 
     // Check compliance status
     const complianceStatus = {
-      personalInfo: !!driver.user.name && !!driver.basePostcode,
-      vehicle: driver.vehicles.length > 0,
-      license: !!driver.checks?.licenceCategories?.length,
-      insurance: !!driver.checks?.insurancePolicyNo && !!driver.checks?.insurer,
-      rtw: !!driver.checks?.rtwMethod,
-      dbs: !!driver.checks?.dbsType,
+      personalInfo: !!driver.User.name && !!driver.basePostcode,
+      vehicle: driver.DriverVehicle.length > 0,
+      license: !!driver.DriverChecks?.licenceCategories?.length,
+      insurance: !!driver.DriverChecks?.insurancePolicyNo && !!driver.DriverChecks?.insurer,
+      rtw: !!driver.DriverChecks?.rtwMethod,
+      dbs: !!driver.DriverChecks?.dbsType,
       documents: {
-        rtw: driver.documents.some(
+        rtw: driver.Document.some(
           d => d.category === 'rtw' && d.status === 'verified'
         ),
-        licence: driver.documents.some(
+        licence: driver.Document.some(
           d => d.category === 'licence' && d.status === 'verified'
         ),
-        insurance: driver.documents.some(
+        insurance: driver.Document.some(
           d => d.category === 'insurance' && d.status === 'verified'
         ),
-        mot: driver.documents.some(
+        mot: driver.Document.some(
           d => d.category === 'mot' && d.status === 'verified'
         ),
-        v5c: driver.documents.some(
+        v5c: driver.Document.some(
           d => d.category === 'v5c' && d.status === 'verified'
         ),
-        dbs: driver.documents.some(
+        dbs: driver.Document.some(
           d => d.category === 'dbs' && d.status === 'verified'
         ),
       },
@@ -198,8 +198,8 @@ export async function GET(
     return NextResponse.json({
       driver: {
         id: driver.id,
-        name: driver.user.name,
-        email: driver.user.email,
+        name: driver.User.name,
+        email: driver.User.email,
         onboardingStatus: driver.onboardingStatus,
         approvedAt: driver.approvedAt,
         createdAt: driver.createdAt,
@@ -214,9 +214,9 @@ export async function GET(
           allRequiredDocumentsVerified &&
           driver.onboardingStatus === 'in_review',
       },
-      documents: driver.documents,
-      checks: driver.checks,
-      vehicles: driver.vehicles,
+      documents: driver.Document,
+      checks: driver.DriverChecks,
+      vehicles: driver.DriverVehicle,
     });
   } catch (error) {
     console.error('Driver review GET error:', error);

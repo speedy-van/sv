@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
           },
           select: {
             totalGBP: true,
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+            pickupAddress: {
               select: {
                 postcode: true,
                 label: true,
@@ -225,10 +225,10 @@ export async function GET(request: NextRequest) {
     const areaMap = new Map<string, { bookings: number; revenue: number; postcodes: Set<string> }>();
     
     for (const booking of serviceAreaBookings) {
-      if (!booking.BookingAddress_Booking_pickupAddressIdToBookingAddress) continue;
+      if (!booking.pickupAddress) continue;
       
       // Extract region from postcode (first 1-2 letters indicate area)
-      const postcode = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress.postcode || '';
+      const postcode = booking.pickupAddress.postcode || '';
       const postcodePrefix = postcode.replace(/[0-9]/g, '').trim().substring(0, 2).toUpperCase();
       
       // Group by major UK regions based on postcode prefixes

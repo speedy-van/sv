@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Get or create driver record
     let driver = await prisma.driver.findUnique({
       where: { userId },
-      include: { vehicles: true, checks: true },
+      include: { DriverVehicle: true, DriverChecks: true },
     });
 
     if (!driver) {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
           basePostcode: formData.postcode,
           vehicleType: formData.vehicleType,
         },
-        include: { vehicles: true, checks: true },
+        include: { DriverVehicle: true, DriverChecks: true },
       });
 
       // Create driver availability record - Default to online
@@ -50,9 +50,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Create or update vehicle
-    if (driver.vehicles.length > 0) {
+    if (driver.DriverVehicle.length > 0) {
       await prisma.driverVehicle.update({
-        where: { id: driver.vehicles[0].id },
+        where: { id: driver.DriverVehicle[0].id },
         data: {
           make: formData.vehicleMake,
           model: formData.vehicleModel,
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update driver checks
-    if (driver.checks) {
+    if (driver.DriverChecks) {
       await prisma.driverChecks.update({
-        where: { id: driver.checks.id },
+        where: { id: driver.DriverChecks.id },
         data: {
           // Add any additional check data here
         },

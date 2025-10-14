@@ -12,6 +12,7 @@ export interface InvoiceData {
     email?: string;
     phone?: string;
     vatNumber?: string;
+    legalName?: string;
   };
   customer: {
     name: string;

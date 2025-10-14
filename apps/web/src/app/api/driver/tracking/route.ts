@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId },
       include: {
-        availability: true,
+        DriverAvailability: true,
         Assignment: {
           where: {
             bookingId: bookingId,
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check or create driver availability
-    let driverAvailability = driver.availability;
+    let driverAvailability = (driver as any).DriverAvailability;
     
     if (!driverAvailability) {
       // Create availability record if it doesn't exist

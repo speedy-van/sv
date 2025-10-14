@@ -146,7 +146,7 @@ async function testDatabaseQueries() {
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,

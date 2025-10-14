@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       const job = await prisma.booking.findUnique({
         where: { id: jobId },
         include: {
-          Driver: true,
+          driver: true,
         },
       });
 
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     const existingJob = await prisma.booking.findUnique({
       where: { id: jobId },
       include: {
-        Driver: true,
+        driver: true,
       },
     });
 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
         status: 'CONFIRMED',
       },
       include: {
-        Driver: {
+        driver: {
           include: {
             User: {
               select: {
@@ -156,13 +156,13 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+        pickupAddress: {
           select: {
             label: true,
             postcode: true
           }
         },
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+        dropoffAddress: {
           select: {
             label: true,
             postcode: true
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
       jobId,
       driverId: finalDriverId,
       reference: updatedJob.reference,
-      driverName: updatedJob.Driver?.User.name
+      driverName: updatedJob.driver?.User.name
     });
 
     // ========================================
@@ -227,8 +227,8 @@ export async function POST(request: NextRequest) {
         jobCount: 1,
         assignedAt: new Date().toISOString(),
         message: `New order ${updatedJob.reference} assigned to you`,
-        from: updatedJob.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup location',
-        to: updatedJob.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Delivery location',
+        from: updatedJob.pickupAddress?.label || 'Pickup location',
+        to: updatedJob.dropoffAddress?.label || 'Delivery location',
         scheduledAt: updatedJob.scheduledAt,
       });
 
@@ -296,7 +296,7 @@ export async function POST(request: NextRequest) {
       data: {
         jobId,
         driverId: finalDriverId,
-        driverName: updatedJob.Driver?.User.name,
+        driverName: updatedJob.driver?.User.name,
         bookingReference: updatedJob.reference,
         assignmentId: assignmentId,
       },

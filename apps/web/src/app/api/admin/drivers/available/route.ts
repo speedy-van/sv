@@ -74,18 +74,15 @@ export async function GET(request: NextRequest) {
               in: ['accepted', 'claimed']
             }
           },
-          select: {
-            id: true,
-            status: true,
-            claimedAt: true,
+          include: {
             Booking: {
               select: {
                 reference: true,
                 customerName: true,
-                BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+                pickupAddress: {
                   select: {
                     label: true,
-                    postcode: true,
+                    postcode: true
                   }
                 }
               }
@@ -141,8 +138,8 @@ export async function GET(request: NextRequest) {
           booking: {
             reference: assignment.Booking.reference,
             customerName: assignment.Booking.customerName,
-            pickupAddress: assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label,
-            postcode: assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.postcode,
+            pickupAddress: assignment.Booking.pickupAddress?.label,
+            postcode: assignment.Booking.pickupAddress?.postcode,
           }
         })),
         isAvailable: isAvailableForAssignment,

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId: session.user.id },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -24,20 +24,20 @@ export async function POST(request: NextRequest) {
             isActive: true
           }
         },
-        vehicles: true,
-        checks: true,
-        documents: true,
-        availability: true,
-        shifts: true,
-        earnings: true,
-        tips: true,
-        payoutSettings: true,
-        payouts: true,
-        ratings: true,
-        incidents: true,
-        performance: true,
-        notifications: true,
-        notificationPrefs: true,
+        DriverVehicle: true,
+        DriverChecks: true,
+        Document: true,
+        DriverAvailability: true,
+        DriverShift: true,
+        DriverEarnings: true,
+        DriverTip: true,
+        DriverPayoutSettings: true,
+        DriverPayout: true,
+        DriverRating: true,
+        DriverIncident: true,
+        DriverPerformance: true,
+        DriverNotification: true,
+        DriverNotificationPreferences: true,
         Assignment: {
           include: {
             Booking: {
@@ -59,10 +59,10 @@ export async function POST(request: NextRequest) {
     const exportData = {
       exportDate: new Date().toISOString(),
       user: {
-        id: driver.user.id,
-        email: driver.user.email,
-        name: driver.user.name,
-        createdAt: driver.user.createdAt,
+        id: driver.User.id,
+        email: driver.User.email,
+        name: driver.User.name,
+        createdAt: driver.User.createdAt,
         // Exclude sensitive fields like password, 2FA secrets
       },
       driver: {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         createdAt: driver.createdAt,
         updatedAt: driver.updatedAt,
       },
-      vehicles: driver.vehicles.map(v => ({
+      vehicles: driver.DriverVehicle.map(v => ({
         id: v.id,
         make: v.make,
         model: v.model,
@@ -86,32 +86,32 @@ export async function POST(request: NextRequest) {
         createdAt: v.createdAt,
         updatedAt: v.updatedAt,
       })),
-      checks: driver.checks
+      checks: driver.DriverChecks
         ? {
-            id: driver.checks.id,
-            rtwMethod: driver.checks.rtwMethod,
-            rtwResultRef: driver.checks.rtwResultRef,
-            rtwExpiresAt: driver.checks.rtwExpiresAt,
-            dvlaCheckRef: driver.checks.dvlaCheckRef,
-            licenceCategories: driver.checks.licenceCategories,
-            points: driver.checks.points,
-            licenceExpiry: driver.checks.licenceExpiry,
-            dbsType: driver.checks.dbsType,
-            dbsCheckRef: driver.checks.dbsCheckRef,
-            dbsCheckedAt: driver.checks.dbsCheckedAt,
-            dbsRetentionUntil: driver.checks.dbsRetentionUntil,
-            insurancePolicyNo: driver.checks.insurancePolicyNo,
-            insurer: driver.checks.insurer,
-            coverType: driver.checks.coverType,
-            goodsInTransit: driver.checks.goodsInTransit,
-            publicLiability: driver.checks.publicLiability,
-            policyStart: driver.checks.policyStart,
-            policyEnd: driver.checks.policyEnd,
-            createdAt: driver.checks.createdAt,
-            updatedAt: driver.checks.updatedAt,
+            id: driver.DriverChecks.id,
+            rtwMethod: driver.DriverChecks.rtwMethod,
+            rtwResultRef: driver.DriverChecks.rtwResultRef,
+            rtwExpiresAt: driver.DriverChecks.rtwExpiresAt,
+            dvlaCheckRef: driver.DriverChecks.dvlaCheckRef,
+            licenceCategories: driver.DriverChecks.licenceCategories,
+            points: driver.DriverChecks.points,
+            licenceExpiry: driver.DriverChecks.licenceExpiry,
+            dbsType: driver.DriverChecks.dbsType,
+            dbsCheckRef: driver.DriverChecks.dbsCheckRef,
+            dbsCheckedAt: driver.DriverChecks.dbsCheckedAt,
+            dbsRetentionUntil: driver.DriverChecks.dbsRetentionUntil,
+            insurancePolicyNo: driver.DriverChecks.insurancePolicyNo,
+            insurer: driver.DriverChecks.insurer,
+            coverType: driver.DriverChecks.coverType,
+            goodsInTransit: driver.DriverChecks.goodsInTransit,
+            publicLiability: driver.DriverChecks.publicLiability,
+            policyStart: driver.DriverChecks.policyStart,
+            policyEnd: driver.DriverChecks.policyEnd,
+            createdAt: driver.DriverChecks.createdAt,
+            updatedAt: driver.DriverChecks.updatedAt,
           }
         : null,
-      documents: driver.documents.map(d => ({
+      documents: driver.Document.map(d => ({
         id: d.id,
         category: d.category,
         uploadedAt: d.uploadedAt,
@@ -120,16 +120,16 @@ export async function POST(request: NextRequest) {
         status: d.status,
         // Exclude fileUrl for security
       })),
-      availability: driver.availability
+      availability: driver.DriverAvailability
         ? {
-            id: driver.availability.id,
-            lastSeenAt: driver.availability.lastSeenAt,
-            locationConsent: driver.availability.locationConsent,
-            createdAt: driver.availability.createdAt,
-            updatedAt: driver.availability.updatedAt,
+            id: driver.DriverAvailability.id,
+            lastSeenAt: driver.DriverAvailability.lastSeenAt,
+            locationConsent: driver.DriverAvailability.locationConsent,
+            createdAt: driver.DriverAvailability.createdAt,
+            updatedAt: driver.DriverAvailability.updatedAt,
           }
         : null,
-      shifts: driver.shifts.map(s => ({
+      shifts: driver.DriverShift.map(s => ({
         id: s.id,
         startTime: s.startTime,
         endTime: s.endTime,
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       })),
-      earnings: driver.earnings.map(e => ({
+      earnings: driver.DriverEarnings.map(e => ({
         id: e.id,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
@@ -146,40 +146,40 @@ export async function POST(request: NextRequest) {
         surgeAmountPence: e.surgeAmountPence,
         tipAmountPence: e.tipAmountPence,
       })),
-      tips: driver.tips.map(t => ({
+      tips: driver.DriverTip.map(t => ({
         id: t.id,
         amountPence: t.amountPence,
         method: t.method,
         createdAt: t.createdAt,
       })),
-      payoutSettings: driver.payoutSettings
+      payoutSettings: driver.DriverPayoutSettings
         ? {
-            id: driver.payoutSettings.id,
-            accountName: driver.payoutSettings.accountName,
-            accountNumber: driver.payoutSettings.accountNumber,
-            sortCode: driver.payoutSettings.sortCode,
-            autoPayout: driver.payoutSettings.autoPayout,
-            minPayoutAmountPence: driver.payoutSettings.minPayoutAmountPence,
-            verified: driver.payoutSettings.verified,
-            verifiedAt: driver.payoutSettings.verifiedAt,
-            createdAt: driver.payoutSettings.createdAt,
-            updatedAt: driver.payoutSettings.updatedAt,
+            id: driver.DriverPayoutSettings.id,
+            accountName: driver.DriverPayoutSettings.accountName,
+            accountNumber: driver.DriverPayoutSettings.accountNumber,
+            sortCode: driver.DriverPayoutSettings.sortCode,
+            autoPayout: driver.DriverPayoutSettings.autoPayout,
+            minPayoutAmountPence: driver.DriverPayoutSettings.minPayoutAmountPence,
+            verified: driver.DriverPayoutSettings.verified,
+            verifiedAt: driver.DriverPayoutSettings.verifiedAt,
+            createdAt: driver.DriverPayoutSettings.createdAt,
+            updatedAt: driver.DriverPayoutSettings.updatedAt,
           }
         : null,
-      payouts: driver.payouts.map(p => ({
+      payouts: driver.DriverPayout.map(p => ({
         id: p.id,
         totalAmountPence: p.totalAmountPence,
         status: p.status,
         processedAt: p.processedAt,
         createdAt: p.createdAt,
       })),
-      ratings: driver.ratings.map(r => ({
+      ratings: driver.DriverRating.map(r => ({
         id: r.id,
         rating: r.rating,
         category: r.category,
         createdAt: r.createdAt,
       })),
-      incidents: driver.incidents.map(i => ({
+      incidents: driver.DriverIncident.map(i => ({
         id: i.id,
         type: i.type,
         description: i.description,
@@ -187,16 +187,16 @@ export async function POST(request: NextRequest) {
         reportedAt: i.reportedAt,
         createdAt: i.createdAt,
       })),
-      performance: driver.performance
+      performance: driver.DriverPerformance
         ? {
-            id: driver.performance.id,
-            averageRating: driver.performance.averageRating,
-            totalJobs: driver.performance.totalJobs,
-            completionRate: driver.performance.completionRate,
-            acceptanceRate: driver.performance.acceptanceRate,
-            onTimeRate: driver.performance.onTimeRate,
-            createdAt: driver.performance.createdAt,
-            updatedAt: driver.performance.updatedAt,
+            id: driver.DriverPerformance.id,
+            averageRating: driver.DriverPerformance.averageRating,
+            totalJobs: driver.DriverPerformance.totalJobs,
+            completionRate: driver.DriverPerformance.completionRate,
+            acceptanceRate: driver.DriverPerformance.acceptanceRate,
+            onTimeRate: driver.DriverPerformance.onTimeRate,
+            createdAt: driver.DriverPerformance.createdAt,
+            updatedAt: driver.DriverPerformance.updatedAt,
           }
         : null,
       Assignment: driver.Assignment.map(a => ({

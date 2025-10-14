@@ -9,7 +9,7 @@ export class AddressCacheService implements AddressCache {
   private cache = new Map<string, CacheEntry<any>>();
   private readonly defaultTtl: number;
   private readonly maxSize: number;
-  private cleanupInterval?: NodeJS.Timeout;
+  private cleanupInterval?: ReturnType<typeof setInterval>;
   private hits = 0;
   private misses = 0;
 

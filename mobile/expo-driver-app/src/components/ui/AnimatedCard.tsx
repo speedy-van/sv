@@ -46,8 +46,8 @@ interface AnimatedCardProps {
   hapticEnabled?: boolean;
 }
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity as any) as any;
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient as any) as any;
 
 export default function AnimatedCard({
   children,
@@ -142,11 +142,13 @@ export default function AnimatedCard({
       case 'glass':
         return (
           <Wrapper
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={handlePress}
-            disabled={disabled}
-            activeOpacity={0.9}
+            {...(pressable && onPress ? {
+              onPressIn: handlePressIn,
+              onPressOut: handlePressOut,
+              onPress: handlePress,
+              disabled,
+              activeOpacity: 0.9,
+            } : {})}
             style={[
               styles.card,
               sizeStyles,
@@ -181,11 +183,13 @@ export default function AnimatedCard({
         const colors = gradientColors || theme.gradients.primary;
         return (
           <Wrapper
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={handlePress}
-            disabled={disabled}
-            activeOpacity={0.9}
+            {...(pressable && onPress ? {
+              onPressIn: handlePressIn,
+              onPressOut: handlePressOut,
+              onPress: handlePress,
+              disabled,
+              activeOpacity: 0.9,
+            } : {})}
             style={[
               styles.card,
               sizeStyles,
@@ -196,9 +200,11 @@ export default function AnimatedCard({
             exiting={FadeOut.duration(200)}
           >
             <AnimatedLinearGradient
-              colors={colors as any}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+              {...{
+                colors: colors as any,
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 },
+              } as any}
               style={[
                 styles.gradientContainer,
                 {
@@ -217,11 +223,13 @@ export default function AnimatedCard({
       case 'flat':
         return (
           <Wrapper
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={handlePress}
-            disabled={disabled}
-            activeOpacity={0.9}
+            {...(pressable && onPress ? {
+              onPressIn: handlePressIn,
+              onPressOut: handlePressOut,
+              onPress: handlePress,
+              disabled,
+              activeOpacity: 0.9,
+            } : {})}
             style={[
               styles.card,
               sizeStyles,
@@ -244,11 +252,13 @@ export default function AnimatedCard({
       default:
         return (
           <Wrapper
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={handlePress}
-            disabled={disabled}
-            activeOpacity={0.9}
+            {...(pressable && onPress ? {
+              onPressIn: handlePressIn,
+              onPressOut: handlePressOut,
+              onPress: handlePress,
+              disabled,
+              activeOpacity: 0.9,
+            } : {})}
             style={[
               styles.card,
               sizeStyles,

@@ -52,7 +52,7 @@ export default function AboutPage() {
   const consent = parseConsentCookie(cookies().get('sv_consent')?.value);
   return (
     <Container maxW="6xl" py={{ base: 8, md: 14 }}>
-      {consent?.preferences?.analytics && <AnalyticsClient />}
+      {consent && consent.preferences?.analytics && <AnalyticsClient />}
       <JsonLd />
       {/* Hero */}
       <VStack spacing={4} align="start">

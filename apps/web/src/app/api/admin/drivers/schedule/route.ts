@@ -3,6 +3,38 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+interface DriverJob {
+  id: string;
+  reference: string;
+  scheduledAt: string;
+  status: string;
+  customerName: string;
+  customerPhone: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  items: any[];
+  totalValue: number;
+  duration: number;
+  priority: string;
+  type: string;
+}
+
+interface DeclinedJob {
+  id: string;
+  reference: string;
+  scheduledAt: string;
+  declinedAt: string;
+  customerName: string;
+  customerPhone: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  items: any[];
+  totalValue: number;
+  duration: number;
+  priority: string;
+  reason: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -68,12 +100,12 @@ export async function GET(request: NextRequest) {
             status: true,
             customerName: true,
             customerPhone: true,
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+            pickupAddress: {
               select: {
                 label: true,
               },
             },
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+            dropoffAddress: {
               select: {
                 label: true,
               },
@@ -122,12 +154,12 @@ export async function GET(request: NextRequest) {
             scheduledAt: true,
             customerName: true,
             customerPhone: true,
-            BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+            pickupAddress: {
               select: {
                 label: true,
               },
             },
-            BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+            dropoffAddress: {
               select: {
                 label: true,
               },
@@ -207,8 +239,8 @@ export async function GET(request: NextRequest) {
           driverId,
           driverName: stats.driverName,
           driverEmail: stats.driverEmail,
-          jobs: [],
-          declinedJobs: [],
+          jobs: [] as DriverJob[],
+          declinedJobs: [] as DeclinedJob[],
           totalAssignments: stats.totalAssignments,
           acceptedAssignments: stats.acceptedAssignments,
           declinedAssignments: stats.declinedAssignments,
@@ -224,8 +256,8 @@ export async function GET(request: NextRequest) {
         status: assignment.status.toLowerCase(),
         customerName: assignment.Booking.customerName || 'Customer',
         customerPhone: assignment.Booking.customerPhone || '',
-        pickupAddress: assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Location',
-        dropoffAddress: assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Location',
+        pickupAddress: assignment.Booking.pickupAddress?.label || 'Pickup Location',
+        dropoffAddress: assignment.Booking.dropoffAddress?.label || 'Dropoff Location',
         items: assignment.Booking.BookingItem || [],
         totalValue: assignment.Booking.totalGBP || 0,
         duration: assignment.Booking.estimatedDurationMinutes || 60,
@@ -246,8 +278,8 @@ export async function GET(request: NextRequest) {
           declinedAt: assignment.createdAt.toISOString(),
           customerName: assignment.Booking.customerName || 'Customer',
           customerPhone: assignment.Booking.customerPhone || '',
-          pickupAddress: assignment.Booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Location',
-          dropoffAddress: assignment.Booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Location',
+          pickupAddress: assignment.Booking.pickupAddress?.label || 'Pickup Location',
+          dropoffAddress: assignment.Booking.dropoffAddress?.label || 'Dropoff Location',
           items: assignment.Booking.BookingItem || [],
           totalValue: assignment.Booking.totalGBP || 0,
           duration: assignment.Booking.estimatedDurationMinutes || 60,
@@ -259,8 +291,8 @@ export async function GET(request: NextRequest) {
 
     // Transform to final format
     const driverSchedules = Array.from(driverMap.values()).map(driver => {
-      const completedJobs = driver.jobs.filter(job => job.status === 'completed').length;
-      const upcomingJobs = driver.jobs.filter(job => job.status === 'confirmed' || job.status === 'in_progress').length;
+      const completedJobs = driver.jobs.filter((job: DriverJob) => job.status === 'completed').length;
+      const upcomingJobs = driver.jobs.filter((job: DriverJob) => job.status === 'confirmed' || job.status === 'in_progress').length;
       const todaysJobs = driver.jobs.length;
 
       return {
@@ -269,8 +301,8 @@ export async function GET(request: NextRequest) {
         completedJobs,
         upcomingJobs,
         todaysJobs,
-        jobs: driver.jobs.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()),
-        declinedJobs: driver.declinedJobs.sort((a, b) => new Date(b.declinedAt).getTime() - new Date(a.declinedAt).getTime()),
+        jobs: driver.jobs.sort((a: DriverJob, b: DriverJob) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()),
+        declinedJobs: driver.declinedJobs.sort((a: DeclinedJob, b: DeclinedJob) => new Date(b.declinedAt).getTime() - new Date(a.declinedAt).getTime()),
       };
     });
 

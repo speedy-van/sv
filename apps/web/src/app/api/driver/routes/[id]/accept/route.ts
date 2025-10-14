@@ -79,7 +79,7 @@ export async function POST(
     const route = await prisma.route.findUnique({
       where: { id: routeId },
       include: {
-        Drop: {
+        drops: {
           include: {
             Booking: true
           }
@@ -128,7 +128,7 @@ export async function POST(
 
       // Update all associated bookings
       // booking.driverId is Driver.id (different from route.driverId which is User.id)
-      const bookingIds = route.Drop
+      const bookingIds = route.drops
         .filter(drop => drop.Booking)
         .map(drop => drop.Booking!.id);
 
@@ -166,7 +166,7 @@ export async function POST(
           details: {
             driverId: driver.id,
             driverName: driver.User?.name,
-            dropCount: route.Drop.length,
+            dropCount: route.drops.length,
             totalEarnings: Number(route.driverPayout || 0),
             acceptedAt: new Date().toISOString()
           }
@@ -183,10 +183,10 @@ export async function POST(
         routeId: routeId,
         driverId: driver.id,
         driverName: driver.User?.name || 'Unknown Driver',
-        dropCount: route.Drop.length,
+        dropCount: route.drops.length,
         totalEarnings: Number(route.driverPayout || 0) / 100,
         acceptedAt: new Date().toISOString(),
-        message: `Driver ${driver.User?.name} accepted route with ${route.Drop.length} stops`
+        message: `Driver ${driver.User?.name} accepted route with ${route.drops.length} stops`
       });
 
       console.log('✅ Admin notification sent via Pusher');
@@ -218,7 +218,7 @@ export async function POST(
     console.log('🎉 Route accepted successfully:', {
       routeId,
       driverId: driver.id,
-      dropCount: route.Drop.length
+      dropCount: route.drops.length
     });
 
     return NextResponse.json({
@@ -227,7 +227,7 @@ export async function POST(
       data: {
         routeId: result.id,
         status: result.status,
-        dropCount: route.Drop.length,
+        dropCount: route.drops.length,
         estimatedEarnings: Number(result.driverPayout || 0) / 100
       }
     });

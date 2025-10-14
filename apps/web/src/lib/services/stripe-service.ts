@@ -164,10 +164,7 @@ export class StripeService {
 
       return customer;
     } catch (error) {
-      logger.error('Failed to get or create Stripe customer', error as Error, {
-        email,
-        userId,
-      });
+      logger.error('Failed to get or create Stripe customer', error as Error);
       throw error;
     }
   }
@@ -287,11 +284,7 @@ export class StripeService {
         nextActionType: paymentIntent.next_action?.type,
       };
     } catch (error) {
-      logger.error('Failed to create payment intent', error as Error, {
-        amount: input.amount,
-        currency: input.currency,
-        customerEmail: input.customerEmail,
-      });
+      logger.error('Failed to create payment intent', error as Error);
 
       return {
         success: false,
@@ -308,9 +301,7 @@ export class StripeService {
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
       return paymentIntent;
     } catch (error) {
-      logger.error('Failed to retrieve payment intent', error as Error, {
-        paymentIntentId,
-      });
+      logger.error('Failed to retrieve payment intent', error as Error);
       return null;
     }
   }
@@ -347,9 +338,7 @@ export class StripeService {
         nextActionType: paymentIntent.next_action?.type,
       };
     } catch (error) {
-      logger.error('Failed to confirm payment intent', error as Error, {
-        paymentIntentId,
-      });
+      logger.error('Failed to confirm payment intent', error as Error);
 
       return {
         success: false,
@@ -387,9 +376,7 @@ export class StripeService {
         paymentIntent,
       };
     } catch (error) {
-      logger.error('Failed to capture payment intent', error as Error, {
-        paymentIntentId,
-      });
+      logger.error('Failed to capture payment intent', error as Error);
 
       return {
         success: false,
@@ -413,9 +400,7 @@ export class StripeService {
       logger.info('Payment intent cancelled', { paymentIntentId });
       return true;
     } catch (error) {
-      logger.error('Failed to cancel payment intent', error as Error, {
-        paymentIntentId,
-      });
+      logger.error('Failed to cancel payment intent', error as Error);
       return false;
     }
   }
@@ -456,9 +441,7 @@ export class StripeService {
 
       return refund;
     } catch (error) {
-      logger.error('Failed to create refund', error as Error, {
-        paymentIntentId: input.paymentIntentId,
-      });
+      logger.error('Failed to create refund', error as Error);
       return null;
     }
   }
@@ -488,9 +471,7 @@ export class StripeService {
       const paymentMethod = await this.stripe.paymentMethods.retrieve(paymentMethodId);
       return paymentMethod;
     } catch (error) {
-      logger.error('Failed to retrieve payment method', error as Error, {
-        paymentMethodId,
-      });
+      logger.error('Failed to retrieve payment method', error as Error);
       return null;
     }
   }
@@ -514,10 +495,7 @@ export class StripeService {
 
       return true;
     } catch (error) {
-      logger.error('Failed to attach payment method', error as Error, {
-        paymentMethodId,
-        customerId,
-      });
+      logger.error('Failed to attach payment method', error as Error);
       return false;
     }
   }

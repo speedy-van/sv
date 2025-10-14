@@ -23,13 +23,15 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId: session.user.id },
       include: { 
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
             role: true,
             createdAt: true,
+            // password should be selected explicitly if required
+            password: true,
             isActive: true
           }
         }
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
     const bcrypt = require('bcryptjs');
     const isValidPassword = await bcrypt.compare(
       password,
-      driver.user.password
+      driver.User.password
     );
 
     if (!isValidPassword) {

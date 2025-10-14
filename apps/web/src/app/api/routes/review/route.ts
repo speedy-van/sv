@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
     const routePlan = await planMultiBookingRoutes(bookingRequests, {
       tier: tier as 'economy' | 'standard' | 'express',
       maxBookingsPerRoute: 10,
-      minBookingsPerRoute: 2,
       prioritizeCapacityEfficiency: true,
     });
 

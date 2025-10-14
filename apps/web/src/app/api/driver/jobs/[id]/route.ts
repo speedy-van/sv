@@ -61,10 +61,10 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-        PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: true,
-        PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: true,
+        pickupAddress: true,
+        dropoffAddress: true,
+        pickupProperty: true,
+        dropoffProperty: true,
         BookingItem: true,
         Assignment: {
           include: {
@@ -120,10 +120,10 @@ export async function GET(
       // Continue with placeholder - don't fail the request
     }
 
-    const pickupAddress = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-    const dropoffAddress = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
-    const pickupProperty = booking.PropertyDetails_Booking_pickupPropertyIdToPropertyDetails;
-    const dropoffProperty = booking.PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails;
+    const pickupAddress = booking.pickupAddress;
+    const dropoffAddress = booking.dropoffAddress;
+    const pickupProperty = booking.pickupProperty;
+    const dropoffProperty = booking.dropoffProperty;
 
     // Calculate distance for pricing (using proper haversine formula)
     const lat1 = pickupAddress?.lat || 0;
@@ -145,14 +145,14 @@ export async function GET(
     const earningsResult = await driverEarningsService.calculateEarnings({
       driverId: driver.id,
       bookingId: booking.id,
-      assignmentId: assignment.id,
-      bookingAmount: booking.totalGBP,
+      assignmentId: booking.Assignment?.id || `temp_${booking.id}`,
+      customerPaymentPence: booking.totalGBP,
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
       dropCount: 1,
       hasHelper: false,
       urgencyLevel: 'standard',
-      isOnTime: true,
+      onTimeDelivery: true,
     });
     const estimatedEarnings = earningsResult.breakdown.netEarnings / 100; // Convert to GBP
     
@@ -222,11 +222,11 @@ export async function GET(
         volumeM3: item.volumeM3,
       })),
       // ✅ Include driver earnings calculated above
-      driverPayout: driverEarnings, // Driver net pay in pence
+      driverPayout: earningsResult.breakdown.netEarnings, // Driver net pay in pence
       pricing: {
-        driverPayout: penceToPounds(driverEarnings),
-        driverPayoutPence: driverEarnings,
-        estimatedEarnings: penceToPounds(driverEarnings),
+        driverPayout: penceToPounds(earningsResult.breakdown.netEarnings),
+        driverPayoutPence: earningsResult.breakdown.netEarnings,
+        estimatedEarnings: penceToPounds(earningsResult.breakdown.netEarnings),
         currency: 'GBP',
         isEstimate: false, // Using fast calculation
         calculationNote: 'Fast mobile calculation optimized for driver app performance'

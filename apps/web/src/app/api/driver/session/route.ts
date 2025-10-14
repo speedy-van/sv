@@ -22,6 +22,6 @@ export async function GET(request: NextRequest) {
       name: session.user.name,
       role: session.user.role,
     },
-    driver: session.user.driver || null,
+    driver: (session.user as any).driver || null,
   });
 }

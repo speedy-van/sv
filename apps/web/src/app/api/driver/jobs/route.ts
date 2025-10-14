@@ -95,12 +95,10 @@ export async function GET(request: NextRequest) {
         include: {
           Booking: {
             include: {
-              BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-              BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+              pickupAddress: true,
+              dropoffAddress: true,
               BookingItem: true,
-              User: {
-                select: { id: true, name: true, email: true }
-              }
+              customer: { select: { id: true, name: true, email: true } }
             }
           }
         },
@@ -117,12 +115,10 @@ export async function GET(request: NextRequest) {
           }
         },
         include: {
-          BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-          BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+          pickupAddress: true,
+          dropoffAddress: true,
           BookingItem: true,
-          User: {
-            select: { id: true, name: true, email: true }
-          }
+          customer: { select: { id: true, name: true, email: true } }
         },
         orderBy: { scheduledAt: 'asc' },
         take: 50 // Limit to prevent overwhelming the UI
@@ -139,8 +135,8 @@ export async function GET(request: NextRequest) {
     // Transform assigned jobs
     const transformedAssignedJobs = assignedJobs.map(assignment => {
       const booking = assignment.Booking;
-      const pickup = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoff = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickup = booking.pickupAddress;
+      const dropoff = booking.dropoffAddress;
       // Map assignment status to display status
       const status = assignment.status === 'accepted' ? 'accepted' : 
                      assignment.status === 'invited' ? 'available' : // Invited jobs show as available with Accept/Decline buttons
@@ -149,8 +145,8 @@ export async function GET(request: NextRequest) {
       return {
         id: booking.id,
         reference: booking.reference,
-        customer: booking.User?.name || booking.customerName || 'Unknown Customer',
-        customerPhone: booking.customerPhone || booking.User?.email || 'No contact info',
+        customer: booking.customer?.name || booking.customerName || 'Unknown Customer',
+        customerPhone: booking.customerPhone || booking.customerEmail || 'No contact info',
         date: booking.scheduledAt.toISOString().split('T')[0],
         time: booking.scheduledAt.toTimeString().split(' ')[0].slice(0, 5),
         from: pickup?.label || 'Pickup Address',
@@ -175,14 +171,14 @@ export async function GET(request: NextRequest) {
 
     // Transform available jobs
     const transformedAvailableJobs = availableJobs.map(booking => {
-      const pickup = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-      const dropoff = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+      const pickup = booking.pickupAddress;
+      const dropoff = booking.dropoffAddress;
       
       return {
         id: booking.id,
         reference: booking.reference,
-        customer: booking.User?.name || booking.customerName || 'Unknown Customer',
-        customerPhone: booking.customerPhone || booking.User?.email || 'No contact info',
+        customer: booking.customer?.name || booking.customerName || 'Unknown Customer',
+        customerPhone: booking.customerPhone || booking.customerEmail || 'No contact info',
         date: booking.scheduledAt.toISOString().split('T')[0],
         time: booking.scheduledAt.toTimeString().split(' ')[0].slice(0, 5),
         from: pickup?.label || 'Pickup Address',

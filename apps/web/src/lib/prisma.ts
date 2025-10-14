@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
-  connectionCheckInterval?: NodeJS.Timeout;
+  connectionCheckInterval?: ReturnType<typeof setInterval>;
 };
 
 // Force set DATABASE_URL to Neon database URL with proper pooling parameters

@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       include: {
         Booking: {
           include: {
-            User: true,
+            customer: true,
           },
         },
       },
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
       include: {
         Booking: {
           include: {
-            User: true,
+            customer: true,
           },
         },
       },
@@ -230,9 +230,9 @@ export async function GET(request: NextRequest) {
           amount: invoice.amount,
           status: invoice.status,
           createdAt: invoice.createdAt,
-          customer: invoice.Booking.User ? {
-            name: invoice.Booking.User.name,
-            email: invoice.Booking.User.email,
+          customer: invoice.Booking.customer ? {
+            name: invoice.Booking.customer.name,
+            email: invoice.Booking.customer.email,
           } : null,
           bookingRef: invoice.Booking.reference,
         })),
@@ -241,9 +241,9 @@ export async function GET(request: NextRequest) {
           amount: refund.amount,
           status: refund.status,
           updatedAt: refund.updatedAt,
-          customer: refund.Booking.User ? {
-            name: refund.Booking.User.name,
-            email: refund.Booking.User.email,
+          customer: refund.Booking.customer ? {
+            name: refund.Booking.customer.name,
+            email: refund.Booking.customer.email,
           } : null,
           bookingRef: refund.Booking.reference,
         })),

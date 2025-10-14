@@ -351,12 +351,14 @@ class RouteOrchestrationEngine {
       const totalValue = cluster.reduce((sum, drop) => sum + drop.value, 0);
       const serviceTier = this.determineRoutServiceTier(cluster);
       const estimatedDuration = this.calculateRouteDuration(cluster);
-      
+      const totalDistance = this.calculateRouteDistance(cluster);
+
       return {
         id: `route_${Date.now()}_${index}`,
         drops: cluster,
         serviceTier,
         estimatedDuration,
+        totalDistance,
         totalValue,
         priority: this.calculateRoutePriority(cluster),
         status: 'proposed' as const,
@@ -521,7 +523,7 @@ class RouteOrchestrationEngine {
     return drops.every(drop => drop.serviceTier === firstTier);
   }
 
-  private async calculateRouteDistance(drops: Drop[]): Promise<number> {
+  private calculateRouteDistance(drops: Drop[]): number {
     // Simplified distance calculation
     let totalDistance = 0;
     for (let i = 0; i < drops.length - 1; i++) {
@@ -567,6 +569,7 @@ interface RouteProposal {
   drops: Drop[];
   serviceTier: string;
   estimatedDuration: number;
+  totalDistance: number; // km
   totalValue: number;
   priority: number;
   status: 'proposed' | 'approved' | 'rejected' | 'active' | 'completed';

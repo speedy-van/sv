@@ -15,14 +15,17 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId: session.user.id },
       include: { 
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
             role: true,
             createdAt: true,
-            isActive: true
+            isActive: true,
+            twoFactorSecret: true,
+            backupCodesGenerated: true,
+            backupCodes: true
           }
         }
       },
@@ -33,18 +36,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if 2FA is already enabled
-    const is2FAEnabled = driver.user.twoFactorSecret !== null;
+    const is2FAEnabled = driver.User.twoFactorSecret !== null;
 
     if (is2FAEnabled) {
       return NextResponse.json({
         enabled: true,
-        backupCodesGenerated: driver.user.backupCodesGenerated || false,
+        backupCodesGenerated: driver.User.backupCodesGenerated || false,
       });
     }
 
     // Generate new secret for setup
     const secret = generateTOTPSecret();
-    const qrCodeUrl = `otpauth://totp/SpeedyVan:${driver.user.email}?secret=${secret}&issuer=SpeedyVan`;
+    const qrCodeUrl = `otpauth://totp/SpeedyVan:${driver.User.email}?secret=${secret}&issuer=SpeedyVan`;
 
     return NextResponse.json({
       enabled: false,
@@ -73,14 +76,17 @@ export async function POST(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId: session.user.id },
       include: { 
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             email: true,
             role: true,
             createdAt: true,
-            isActive: true
+            isActive: true,
+            twoFactorSecret: true,
+            backupCodesGenerated: true,
+            backupCodes: true
           }
         }
       },
@@ -135,7 +141,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify current 2FA token or backup code
-        const currentSecret = driver.user.twoFactorSecret;
+        const currentSecret = driver.User.twoFactorSecret;
         if (!currentSecret) {
           return NextResponse.json(
             { error: '2FA not enabled' },
@@ -145,7 +151,7 @@ export async function POST(request: NextRequest) {
 
         const isValidToken =
           verifyTOTP(currentSecret, token) ||
-          driver.user.backupCodes?.includes(token);
+          driver.User.backupCodes?.includes(token);
 
         if (!isValidToken) {
           return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
@@ -174,7 +180,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const secretForBackup = driver.user.twoFactorSecret;
+        const secretForBackup = driver.User.twoFactorSecret;
         if (!secretForBackup) {
           return NextResponse.json(
             { error: '2FA not enabled' },
@@ -184,7 +190,7 @@ export async function POST(request: NextRequest) {
 
         const isValidBackupToken =
           verifyTOTP(secretForBackup, token) ||
-          driver.user.backupCodes?.includes(token);
+          driver.User.backupCodes?.includes(token);
 
         if (!isValidBackupToken) {
           return NextResponse.json({ error: 'Invalid token' }, { status: 400 });

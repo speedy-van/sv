@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { DynamicAvailabilityEngine, type FullStructuredAddress, type BookingCapacity } from '@/lib/availability/dynamic-availability-engine';
 import { logger } from '@/lib/logger';
 import { v4 as uuidv4 } from 'uuid';
-import { assertFullStructuredAddresses, sanitizeAddressForLog } from '@/lib/validation/address-validation';
+import { assertFullStructuredAddresses, sanitizeAddressForLog, LegacyAddressSchema, convertToFullStructuredAddress } from '@/lib/validation/address-validation';
 import { createMetricsMiddleware } from '@/lib/observability/availability-metrics';
 
 
@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
     let pickup: FullStructuredAddress;
     try {
       const pickupData = JSON.parse(pickupParam);
-      [pickup] = assertFullStructuredAddresses([pickupData], 'pickup');
+      const validatedPickup = LegacyAddressSchema.parse(pickupData);
+      pickup = convertToFullStructuredAddress(validatedPickup, 'pickup') as FullStructuredAddress;
     } catch (error) {
       logger.error('Invalid pickup address structure', error instanceof Error ? error : new Error('Parse error'), { requestId });
       return NextResponse.json(
@@ -86,7 +87,12 @@ export async function GET(request: NextRequest) {
       if (!Array.isArray(dropsData) || dropsData.length === 0) {
         throw new Error('Drops must be a non-empty array');
       }
-      drops = assertFullStructuredAddresses(dropsData, 'drops');
+      const validatedDrops = dropsData.map((drop, index) =>
+        LegacyAddressSchema.parse(drop)
+      );
+      drops = validatedDrops.map((drop, index) =>
+        convertToFullStructuredAddress(drop, `drop[${index}]`)
+      ) as FullStructuredAddress[];
     } catch (error) {
       logger.error('Invalid drops address structure', error instanceof Error ? error : new Error('Parse error'), { requestId });
       return NextResponse.json(
@@ -114,7 +120,8 @@ export async function GET(request: NextRequest) {
 
     let capacity: BookingCapacity;
     try {
-      capacity = BookingCapacitySchema.parse(JSON.parse(capacityParam));
+      const capacityData = JSON.parse(capacityParam);
+      capacity = BookingCapacitySchema.parse(capacityData) as BookingCapacity;
     } catch (error) {
       logger.error('Invalid capacity structure', error instanceof Error ? error : new Error('Parse error'), { requestId });
       return NextResponse.json(

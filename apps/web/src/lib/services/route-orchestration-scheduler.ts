@@ -33,8 +33,13 @@ interface Drop {
   deliveryLongitude?: number;
   timeWindowStart: Date;
   timeWindowEnd: Date;
+  specialInstructions?: string;
   serviceTier: string;
   status: string;
+  quotedPrice?: number;
+  weight?: number;
+  volume?: number;
+  estimatedDuration?: number;
 }
 
 // ============================================================================
@@ -681,9 +686,9 @@ class PerformanceAnalyzer {
       },
       preferences: {
         maxRadius: 100,
-        preferredHours: [],
-        avoidWeather: [],
-        preferredRegions: []
+        preferredHours: [] as number[],
+        avoidWeather: [] as string[],
+        preferredRegions: [] as string[]
       },
       stats: {
         totalRoutes: 0,
@@ -694,8 +699,8 @@ class PerformanceAnalyzer {
         adaptabilityScore: 1.0
       },
       history: {
-        recentPerformance: [],
-        trend: 'stable'
+        recentPerformance: [] as number[],
+        trend: 'stable' as 'improving' | 'stable' | 'declining'
       }
     };
   }
@@ -713,8 +718,8 @@ class PerformanceAnalyzer {
       const recent = profile.history.recentPerformance.slice(-5);
       const older = profile.history.recentPerformance.slice(0, 5);
 
-      const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-      const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+      const recentAvg = recent.reduce((a: number, b: number) => a + b, 0) / recent.length;
+      const olderAvg = older.reduce((a: number, b: number) => a + b, 0) / older.length;
 
       if (recentAvg > olderAvg + 0.1) profile.history.trend = 'improving';
       else if (recentAvg < olderAvg - 0.1) profile.history.trend = 'declining';
@@ -1855,32 +1860,24 @@ class RouteOrchestrationScheduler {
     // Get bookings from today onwards
     const futureBookings = await prisma.booking.findMany({
       where: {
-        pickupDate: {
+        scheduledAt: {
           gte: today
         },
         status: {
-          in: ['confirmed', 'luxury']
+          in: ['CONFIRMED']
         }
       },
       include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true
-          }
-        },
         pickupAddress: true,
         dropoffAddress: true,
-        items: {
+        BookingItem: {
           include: {
-            itemType: true
+            // Note: itemType relation may not exist in current schema
           }
         }
       },
       orderBy: {
-        pickupDate: 'asc'
+        scheduledAt: 'asc'
       }
     });
 
@@ -2151,8 +2148,8 @@ class RouteOrchestrationScheduler {
         // Check capacity constraints
         const newWeight = cluster.totalWeight + this.estimateBookingWeight(otherBooking);
         const newVolume = cluster.totalVolume + this.estimateBookingVolume(otherBooking);
-        const maxCapacity = this.vehicleCapacities[cluster.serviceTier]?.weight || 1000;
-        const maxVolumeCapacity = this.vehicleCapacities[cluster.serviceTier]?.volume || 15;
+        const maxCapacity = this.vehicleCapacities[cluster.serviceTier as keyof typeof this.vehicleCapacities]?.weight || 1000;
+        const maxVolumeCapacity = this.vehicleCapacities[cluster.serviceTier as keyof typeof this.vehicleCapacities]?.volume || 15;
 
         if (distanceMiles <= maxClusterRadiusMiles &&
             timeDiff <= maxTimeDiff &&
@@ -2238,8 +2235,8 @@ class RouteOrchestrationScheduler {
       serviceTier: cluster.serviceTier,
       timeWindowStart: cluster.timeWindowStart,
       timeWindowEnd: cluster.timeWindowEnd,
-      maxCapacityWeight: this.vehicleCapacities[cluster.serviceTier]?.weight || 1000,
-      maxCapacityVolume: this.vehicleCapacities[cluster.serviceTier]?.volume || 15,
+      maxCapacityWeight: this.vehicleCapacities[cluster.serviceTier as keyof typeof this.vehicleCapacities]?.weight || 1000,
+      maxCapacityVolume: this.vehicleCapacities[cluster.serviceTier as keyof typeof this.vehicleCapacities]?.volume || 15,
       optimizationStrategy: strategy,
       costSavings
     };
@@ -2398,7 +2395,7 @@ class RouteOrchestrationScheduler {
       for (let j = i + 1; j < routes.length; j++) {
         if (processedIndices.has(j)) continue;
 
-        const merged = this.tryMergeRoutes(currentRoute, routes[j]);
+        const merged = await this.tryMergeRoutes(currentRoute, routes[j]);
         if (merged && merged.costSavings > Math.max(currentRoute.costSavings, routes[j].costSavings)) {
           currentRoute = merged;
           processedIndices.add(j);
@@ -2415,7 +2412,7 @@ class RouteOrchestrationScheduler {
   /**
    * Try to merge two routes if beneficial
    */
-  private tryMergeRoutes(route1: any, route2: any): any | null {
+  private async tryMergeRoutes(route1: any, route2: any): Promise<any | null> {
     // Check if routes are geographically compatible
     const centroidDistance = this.calculateDistance(
       route1.centroid?.lat || 51.5074, route1.centroid?.lng || -0.1278,
@@ -2492,7 +2489,6 @@ class RouteOrchestrationScheduler {
         volume: this.estimateBookingVolume(booking),
         specialInstructions: booking.customerName || undefined,
         estimatedDuration: 45, // minutes per drop
-        createdAt: booking.createdAt || new Date()
       };
 
       drops.push(drop);
@@ -2591,9 +2587,9 @@ class RouteOrchestrationScheduler {
           lng: drop.pickupLongitude || 0
         },
         drops: [drop],
-        estimatedDuration: drop.estimatedDuration || 30,
+        estimatedDuration: Math.ceil((drop.timeWindowEnd.getTime() - drop.timeWindowStart.getTime()) / (1000 * 60)) || 30,
         totalDistance: 0,
-        totalValue: drop.quotedPrice,
+        totalValue: Number(drop.quotedPrice) || 0,
         serviceTier
       };
 
@@ -2612,7 +2608,7 @@ class RouteOrchestrationScheduler {
         // Add to cluster if within reasonable distance (15km)
         if (distance <= 15) {
           cluster.drops.push(otherDrop);
-          cluster.totalValue = cluster.totalValue + otherDrop.quotedPrice;
+          cluster.totalValue = cluster.totalValue + (Number(otherDrop.quotedPrice) || 0);
           cluster.estimatedDuration += otherDrop.estimatedDuration || 30;
           processed.add(otherDrop.id);
 
@@ -2764,8 +2760,8 @@ class RouteOrchestrationScheduler {
           drops: routeDrops,
           optimizedSequence,
           totalDistance: this.calculateRouteDistance(routeDrops),
-          estimatedDuration: routeDrops.reduce((sum, drop) => sum + (drop.estimatedDuration || 30), 0),
-          totalValue: routeDrops.reduce((sum, drop) => sum + drop.quotedPrice, 0),
+          estimatedDuration: routeDrops.reduce((sum, drop) => sum + (Math.ceil((drop.timeWindowEnd.getTime() - drop.timeWindowStart.getTime()) / (1000 * 60)) || 30), 0),
+          totalValue: routeDrops.reduce((sum, drop) => sum + (Number(drop.quotedPrice) || 0), 0),
           serviceTier,
           timeWindowStart: this.getEarliestTimeWindow(routeDrops),
           timeWindowEnd: this.getLatestTimeWindow(routeDrops),

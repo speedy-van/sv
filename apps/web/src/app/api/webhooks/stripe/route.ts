@@ -23,7 +23,7 @@ async function sendOrderConfirmationEmail(bookingId: string) {
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
-        items: true,
+        BookingItem: true,
       },
     });
 
@@ -274,7 +274,7 @@ async function handleCheckoutSessionCompleted(session: any) {
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
-        items: true,
+        BookingItem: true,
         customer: true,
         Assignment: {
           include: {

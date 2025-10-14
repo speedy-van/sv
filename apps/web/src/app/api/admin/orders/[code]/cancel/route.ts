@@ -30,7 +30,7 @@ export async function POST(
       include: {
         pickupAddress: true,
         dropoffAddress: true,
-        items: true,
+        BookingItem: true,
       },
     });
 

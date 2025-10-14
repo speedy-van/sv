@@ -3,6 +3,10 @@ import path from 'path';
 import { PricingInput, PricingResult, MultiDropCalculation, createRequestId } from './schemas';
 import { AdvancedMultiDropRouter, type MultiDropPricing, type OptimizedRoute } from '../routing/multi-drop-router';
 
+// Export types for hooks
+export type UnifiedPricingRequest = PricingInput;
+export type UnifiedPricingResult = PricingResult;
+
 // UK Dataset Item Interface
 interface UKDatasetItem {
   id: string;
@@ -928,7 +932,8 @@ export class UnifiedPricingEngine {
    * Get service multiplier
    */
   private getServiceMultiplier(serviceLevel: string): number {
-    return this.pricingConfig!.serviceMultipliers[serviceLevel as keyof typeof this.pricingConfig.serviceMultipliers] || 1.0;
+    const multipliers = this.pricingConfig!.serviceMultipliers;
+    return multipliers?.[serviceLevel as keyof typeof multipliers] || 1.0;
   }
 
   /**
@@ -1080,6 +1085,11 @@ export class UnifiedPricingEngine {
 
   private logError(message: string, data?: any) {
     console.error(`[PRICING ENGINE ERROR] ${message}`, data || '');
+  }
+
+  // Alias for backward compatibility
+  async calculatePricing(input: PricingInput): Promise<PricingResult> {
+    return this.calculatePrice(input);
   }
 }
 

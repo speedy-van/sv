@@ -77,7 +77,7 @@ function loadUKDataset(): UKDatasetItem[] {
     const dataset = JSON.parse(datasetContent);
 
     datasetCache = dataset.items || [];
-    return datasetCache;
+    return datasetCache as UKDatasetItem[];
   } catch (error) {
     console.error('Failed to load UK Removal Dataset:', error);
     return [];

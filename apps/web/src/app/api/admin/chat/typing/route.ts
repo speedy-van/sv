@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
           include: {
             User: {
               include: {
-                Driver: {
+                driver: {
                   select: {
                     id: true
                   }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     const driverParticipant = chatSession.ChatParticipant.find((p) => p.role === 'driver');
-    if (!driverParticipant || !driverParticipant.User.Driver?.id) {
+    if (!driverParticipant || !driverParticipant.User?.driver?.id) {
       return NextResponse.json(
         { error: 'Driver not found in chat session' },
         { status: 404 }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // Send typing indicator to driver via Pusher
     try {
       const pusher = getPusherServer();
-      const driverId = driverParticipant.User.Driver.id;
+      const driverId = driverParticipant.User!.driver!.id;
       
       await pusher.trigger(`driver-${driverId}`, 'typing_indicator', {
         sessionId,

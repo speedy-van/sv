@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const applications = await prisma.driverApplication.findMany({
       where,
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
 
         // User relationship
         userId: app.userId,
-        user: app.user,
+        user: app.User,
       };
     });
 

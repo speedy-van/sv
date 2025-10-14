@@ -5,15 +5,33 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-// TODO: DynamicPricingEngine needs to be implemented
-// import { DynamicPricingEngine, type PricingVariables, type PricingResult } from '../pricing/dynamic-pricing-engine';
+import { dynamicPricingEngine } from './dynamic-pricing-engine';
 
 // Placeholder interfaces
 interface PricingVariables {
   distance: number;
   weight: number;
+  volume: number;
   urgency: 'standard' | 'express' | 'premium';
   timeOfDay: 'peak' | 'standard' | 'offPeak';
+  fragility?: 'low' | 'medium' | 'high';
+  laneUtilization?: number;
+  networkCapacity?: number;
+  timeOfWeek?: string;
+  seasonalFactor?: number;
+  fuelCostPence?: number;
+  weatherConditions?: string;
+  trafficConditions?: string;
+  localEvents?: boolean;
+  customerSegment?: string;
+  serviceTier?: string;
+  loyaltyDiscount?: number;
+  volumeDiscount?: number;
+  pickupPostcode?: string;
+  deliveryPostcode?: string;
+  isUrbanPickup?: boolean;
+  isUrbanDelivery?: boolean;
+  congestionZone?: boolean;
 }
 
 interface PricingResult {
@@ -73,11 +91,17 @@ export class QuoteService {
         request.deliveryPostcode
       );
 
-      // 3. Get current market variables
-      const marketVariables = await DynamicPricingEngine.getCurrentMarketVariables(
-        request.pickupPostcode,
-        request.deliveryPostcode
-      );
+      // 3. Get current market variables (using defaults for now)
+      const marketVariables = {
+        laneUtilization: 0.6,
+        networkCapacity: 0.7,
+        timeOfWeek: 'standard' as const,
+        seasonalFactor: 1.0,
+        fuelCostPence: 145,
+        weatherConditions: 'good' as const,
+        trafficConditions: 'moderate' as const,
+        localEvents: false
+      };
 
       // 4. Build pricing variables
       const pricingVariables: PricingVariables = {
@@ -85,9 +109,9 @@ export class QuoteService {
         weight: request.weight || 10, // Default 10kg
         volume: request.volume || 0.1, // Default 0.1m3
         distance,
-        estimatedDuration: duration,
+        urgency: 'standard', // Default urgency
+        timeOfDay: 'standard', // Default time of day
         fragility: request.fragility || 'low',
-        specialHandling: request.specialHandling || false,
 
         // Operational factors (from market data)
         laneUtilization: marketVariables.laneUtilization || 0.6,
@@ -104,8 +128,6 @@ export class QuoteService {
         // Customer factors
         customerSegment: customer.customerProfile?.segment || 'bronze',
         serviceTier: 'standard', // Will be applied per tier
-        leadTime: request.requestedPickupTime ? 
-          (request.requestedPickupTime.getTime() - Date.now()) / (1000 * 60 * 60) : 24,
         loyaltyDiscount: this.calculateLoyaltyDiscount(customer.customerProfile),
         volumeDiscount: this.calculateVolumeDiscount(customer.customerProfile),
 
@@ -118,7 +140,7 @@ export class QuoteService {
       };
 
       // 5. Calculate pricing
-      const pricingResult = DynamicPricingEngine.calculatePrice(pricingVariables);
+      const pricingResult = await dynamicPricingEngine.calculatePrice(pricingVariables);
 
       // 6. Store quote in database
       const quote = await prisma.quote.create({

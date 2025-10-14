@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+        pickupAddress: {
           select: {
             label: true,
             postcode: true,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             lng: true,
           }
         },
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+        dropoffAddress: {
           select: {
             label: true,
             postcode: true,
@@ -107,12 +107,12 @@ export async function POST(request: NextRequest) {
       }
       
       // For local drivers, check distance
-      if (!driver.availability?.lastLat || !driver.availability?.lastLng) return false;
+      if (!driver.DriverAvailability?.lastLat || !driver.DriverAvailability?.lastLng) return false;
       if (!booking.pickupAddress?.lat || !booking.pickupAddress?.lng) return true; // Include all if no location data
       
       const distance = calculateDistance(
-        driver.availability.lastLat,
-        driver.availability.lastLng,
+        driver.DriverAvailability.lastLat,
+        driver.DriverAvailability.lastLng,
         booking.pickupAddress.lat,
         booking.pickupAddress.lng
       );
@@ -136,13 +136,13 @@ export async function POST(request: NextRequest) {
       driverId: 'temp_driver',
       bookingId: booking.id,
       assignmentId: 'temp_assignment',
-      bookingAmount: booking.totalGBP,
+      customerPaymentPence: booking.totalGBP * 100, // Convert GBP to pence
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
       dropCount: 1,
       hasHelper: false,
       urgencyLevel: 'standard',
-      isOnTime: true,
+      onTimeDelivery: true,
     });
     const estimatedEarnings = Math.floor(tempEarningsResult.breakdown.netEarnings);
 
@@ -152,13 +152,13 @@ export async function POST(request: NextRequest) {
       bookingReference: booking.reference,
       customerName: booking.customerName,
       customerPhone: booking.customerPhone || '',
-      BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+      pickupAddress: {
         label: booking.pickupAddress?.label || '',
         postcode: booking.pickupAddress?.postcode || '',
         lat: booking.pickupAddress?.lat || 0,
         lng: booking.pickupAddress?.lng || 0,
       },
-      BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+      dropoffAddress: {
         label: booking.dropoffAddress?.label || '',
         postcode: booking.dropoffAddress?.postcode || '',
         lat: booking.dropoffAddress?.lat || 0,
@@ -168,14 +168,14 @@ export async function POST(request: NextRequest) {
       timeSlot: booking.pickupTimeSlot || 'Flexible',
       estimatedDuration: Math.ceil(distance / 20),
       distance: distance,
-      totalAmount: totalAmount,
+      totalAmount: booking.totalGBP,
       estimatedEarnings: estimatedEarnings,
-        BookingItem: booking.items.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          size: 'Medium', // Default since size field doesn't exist
-        })),
-        specialInstructions: '', // notes field doesn't exist
+      items: booking.BookingItem.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        size: 'Medium', // Default since size field doesn't exist
+      })),
+      specialInstructions: '', // notes field doesn't exist
       priority: determinePriority(booking),
       status: 'available',
       expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
@@ -189,10 +189,10 @@ export async function POST(request: NextRequest) {
         // Send real-time notification via Pusher
         await pusher.trigger(`driver-${driver.id}`, 'new-job', {
           job: jobNotificationData,
-          driverDistance: driver.availability?.lastLat && driver.availability?.lastLng 
+          driverDistance: driver.DriverAvailability?.lastLat && driver.DriverAvailability?.lastLng 
             ? calculateDistance(
-                driver.availability.lastLat,
-                driver.availability.lastLng,
+                driver.DriverAvailability.lastLat,
+                driver.DriverAvailability.lastLng,
                 booking.pickupAddress?.lat || 0,
                 booking.pickupAddress?.lng || 0
               ).toFixed(1)

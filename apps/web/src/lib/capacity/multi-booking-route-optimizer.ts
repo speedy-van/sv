@@ -16,11 +16,34 @@
  */
 
 import { z } from 'zod';
+import { driverEarningsService } from '@/lib/services/driver-earnings-service';
+
+/**
+ * Maps ServiceTier to the values expected by DriverEarningsInput
+ */
+function mapServiceTierToEarnings(tier: ServiceTier): 'economy' | 'standard' | 'priority' {
+  switch (tier) {
+    case 'economy':
+      return 'economy';
+    case 'standard':
+      return 'standard';
+    case 'priority':
+      return 'priority';
+    case 'express':
+      return 'priority'; // Map express to priority for earnings calculation
+    case 'luxury':
+      return 'priority'; // Map luxury to priority for earnings calculation
+    default:
+      return 'standard';
+  }
+}
+
 import {
   planCapacityConstrainedRoute,
   type BookingRequest,
   type RouteSolution,
 } from './capacity-constrained-vrp';
+import { ServiceTier } from '@prisma/client';
 import {
   type RouteStop,
   type LegByLegAnalysis,
@@ -89,7 +112,7 @@ export interface MultiBookingRoute {
   status: 'pending_review' | 'approved' | 'rejected'; // ✅ Pre-execution review
 
   // Dynamic pricing preview
-  pricingPreview?: DriverEarningsResponse;
+  pricingPreview?: import('@/lib/services/driver-earnings-service').DriverEarningsResult;
 }
 
 /**
@@ -351,20 +374,20 @@ export async function validateDailyCapAndRequireApproval(
     );
 
     try {
-      const pricingResponse = calculateDriverEarnings(pricingRequest);
+      const pricingResponse = await driverEarningsService.calculateEarnings(pricingRequest);
       route.pricingPreview = pricingResponse;
 
-      const netPence = pricingResponse.breakdown.capped_net_earnings_pence;
+      const netPence = pricingResponse.breakdown.cappedNetEarnings;
       route.estimatedDriverPay_pence = netPence;
-      route.requiresAdminApproval = pricingResponse.daily_cap_validation.requires_admin_approval;
-      route.status = pricingResponse.status === 'pending_admin_review' ? 'pending_review' : 'approved';
+      route.requiresAdminApproval = pricingResponse.requiresAdminApproval;
+      route.status = pricingResponse.requiresAdminApproval ? 'pending_review' : 'approved';
 
       pricingResponse.warnings.forEach(warning => warnings.push(`[Route ${route.routeId}] ${warning}`));
 
       runningDailyTotal += netPence;
       totalNewEarnings += netPence;
 
-      if (pricingResponse.daily_cap_validation.requires_admin_approval || pricingResponse.status === 'pending_admin_review') {
+      if (pricingResponse.requiresAdminApproval) {
         requiresAdminApproval = true;
       }
     } catch (error) {
@@ -622,7 +645,7 @@ function buildPricingRequestForRoute(
   route: MultiBookingRoute,
   driverId: string,
   currentDailyEarningsPence: number
-): DriverEarningsRequest {
+): import('@/lib/services/driver-earnings-service').DriverEarningsInput {
   const primaryBookingId = route.bookingIds[0] ?? driverId;
   const assignmentIdCandidate = route.routeId && route.routeId.length >= 25 ? route.routeId : primaryBookingId;
 
@@ -644,12 +667,9 @@ function buildPricingRequestForRoute(
     route.bookingIds.length
   );
 
-  const serviceType: DriverEarningsRequest['serviceType'] = (() => {
-    if (route.tier === 'economy' && dropCount > 1) {
-      return 'multi-drop';
-    }
+  const serviceType: import('@/lib/services/driver-earnings-service').DriverEarningsInput['serviceType'] = (() => {
     if (route.tier === 'economy') return 'economy';
-    if (route.tier === 'express') return 'express';
+    if (route.tier === 'express') return 'priority';
     return 'standard';
   })();
 
@@ -661,25 +681,16 @@ function buildPricingRequestForRoute(
     driverId,
     assignmentId: assignmentIdCandidate,
     bookingId: primaryBookingId,
-    distance_miles: Number(safeDistanceMiles.toFixed(2)),
-    per_leg_distance_miles: perLegDistance,
-    average_leg_distance_miles: averageLegDistanceMiles,
-    driving_duration_minutes: estimatedDurationMinutes,
-    loading_duration_minutes: loadingMinutes,
-    unloading_duration_minutes: unloadingMinutes,
-    waiting_duration_minutes: 0,
-    sla_delay_minutes: 0,
-    serviceType,
-    drop_count: dropCount,
-    toll_costs_pence: 0,
-    parking_costs_pence: 0,
-    admin_approved_bonus_pence: 0,
-    admin_approval_id: undefined,
-    used_capacity_cubic_meters: route.capacityAnalysis?.peakVolume_m3,
-    vehicle_capacity_cubic_meters: (route.capacityAnalysis as any)?.vehicleCapacity_m3,
-    total_weight_kg: route.capacityAnalysis?.peakWeight_kg,
-    current_daily_earnings_pence: currentDailyEarningsPence,
-    customer_paid_total_pence: customerPaidTotalPence,
+    distanceMiles: Number(safeDistanceMiles.toFixed(2)),
+    durationMinutes: estimatedDurationMinutes,
+    dropCount: dropCount,
+    loadingMinutes,
+    unloadingMinutes,
+    customerPaymentPence: customerPaidTotalPence,
+    urgencyLevel: 'standard', // MultiBookingRoute doesn't have urgency
+    serviceType: mapServiceTierToEarnings(route.tier || 'standard'),
+    onTimeDelivery: true,
+    customerRating: 5,
   };
 }
 

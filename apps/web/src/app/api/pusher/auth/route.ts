@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
             
             if (now - tokenTime < maxAge) {
               // Find user in database
-              const user = await prisma.user.findUnique({
-                where: { id: decodedUserId, email },
-                include: { Driver: true },
-              });
+          const user = await prisma.user.findUnique({
+            where: { id: decodedUserId, email },
+            include: { driver: true },
+          });
               
               if (user) {
                 userId = user.id;

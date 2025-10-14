@@ -232,7 +232,7 @@ async function handleExportData(adminId: string, customerId: string) {
       name: true,
       email: true,
       createdAt: true,
-      bookings: {
+      Booking: {
         select: {
           id: true,
           reference: true,
@@ -244,16 +244,16 @@ async function handleExportData(adminId: string, customerId: string) {
           createdAt: true,
         },
       },
-      addresses: true,
-      contacts: true,
-      supportTickets: {
+      Address: true,
+      Contact: true,
+      SupportTicket: {
         select: {
           id: true,
           category: true,
           description: true,
           status: true,
           createdAt: true,
-          responses: {
+          SupportTicketResponse: {
             select: {
               message: true,
               isFromSupport: true,

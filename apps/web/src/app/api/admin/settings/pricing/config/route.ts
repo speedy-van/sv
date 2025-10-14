@@ -138,10 +138,10 @@ export async function POST(request: NextRequest) {
         isActive: config.isActive !== false,
         createdBy: adminId,
         updatedBy: adminId,
-        metadata: {
-          advancedConfig: config,
+        advancedConfig: {
+          ...config,
           updatedAt: new Date().toISOString(),
-        } as any,
+        },
       },
     });
 

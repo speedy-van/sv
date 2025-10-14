@@ -37,7 +37,7 @@ export async function POST(
       where: { userId: userId },
       select: { 
         id: true,
-        availability: {
+        DriverAvailability: {
           select: {
             status: true,
             locationConsent: true,
@@ -164,7 +164,7 @@ export async function POST(
       message: 'Job started successfully',
       data: {
         assignmentId: assignment.id,
-        status: 'in_progress',
+        status: 'accepted',
         bookingReference: assignment.Booking?.reference,
         trackingEnabled: true,
       },

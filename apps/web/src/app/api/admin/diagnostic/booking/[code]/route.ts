@@ -26,9 +26,9 @@ export async function GET(
     const booking = await prisma.booking.findFirst({
       where: { reference },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-        Driver: {
+        pickupAddress: true,
+        dropoffAddress: true,
+        driver: {
           include: {
             User: {
               select: {
@@ -100,11 +100,11 @@ export async function GET(
         paidAt: booking.paidAt,
         customerName: booking.customerName,
         customerEmail: booking.customerEmail,
-        driverName: booking.Driver?.User?.name || null,
+        driverName: booking.driver?.User?.name || null,
         hasAssignment: !!booking.Assignment,
         assignmentStatus: booking.Assignment?.status || null,
-        pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label,
-        dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label
+        pickupAddress: booking.pickupAddress?.label,
+        dropoffAddress: booking.dropoffAddress?.label
       },
       eligibility: {
         isConfirmed,
@@ -114,7 +114,7 @@ export async function GET(
         shouldAppearInJobs,
         reasons: [
           !isConfirmed && `Status is ${booking.status}, not CONFIRMED`,
-          !hasNoDriver && `Already assigned to driver: ${booking.Driver?.User?.name}`,
+          !hasNoDriver && `Already assigned to driver: ${booking.driver?.User?.name}`,
           !isInFuture && `Scheduled time is in the past: ${booking.scheduledAt}`,
           !hasNoAssignment && `Has assignment record with status: ${booking.Assignment?.status}`
         ].filter(Boolean)

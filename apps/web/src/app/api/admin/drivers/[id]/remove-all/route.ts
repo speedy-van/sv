@@ -124,7 +124,7 @@ export async function POST(
             await tx.route.update({
               where: { id: route.id },
               data: {
-                driverId: null
+                driverId: { set: null }
               }
             });
 

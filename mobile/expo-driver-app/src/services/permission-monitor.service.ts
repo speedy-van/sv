@@ -21,7 +21,7 @@ interface AssignedJob {
 }
 
 class PermissionMonitorService {
-  private checkInterval: NodeJS.Timeout | null = null;
+  private checkInterval: ReturnType<typeof setInterval> | null = null;
   private appStateSubscription: any = null;
   private permissionStatus: PermissionStatus = {
     location: false,

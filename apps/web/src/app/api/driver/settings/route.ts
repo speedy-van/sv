@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching driver settings:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch settings', details: error.message },
+      { error: 'Failed to fetch settings', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -434,11 +434,12 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error updating driver settings:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error('❌ Error updating driver settings:', err);
     console.error('❌ Error details:', {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack,
-      name: error?.name,
+      message: err.message,
+      stack: err.stack,
+      name: err.name,
     });
     
     // Log the request body for debugging
@@ -450,10 +451,10 @@ export async function PUT(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { 
-        error: 'Failed to update settings', 
-        details: error?.message || 'Unknown error',
-        success: false 
+      {
+        error: 'Failed to update settings',
+        details: err.message || 'Unknown error',
+        success: false
       },
       { status: 500 }
     );

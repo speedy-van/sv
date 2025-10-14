@@ -115,11 +115,8 @@ export async function GET(
       company: {
         name: 'Speedy Van',
         legalName: 'SPEEDY VAN REMOVALS LTD',
-        companyNumber: 'SC865658',
-        registeredIn: 'Scotland',
         address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
         email: 'support@speedy-van.co.uk',
-        phone: '07901846297',
         vatNumber: 'GB123456789',
       },
       customer: {

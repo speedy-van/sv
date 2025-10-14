@@ -9,7 +9,7 @@ async function createTestJob() {
     // Find a driver
     const driver = await prisma.driver.findFirst({
       where: { status: 'ACTIVE' },
-      include: { user: true }
+      include: { User: true }
     });
 
     if (!driver) {
@@ -17,7 +17,7 @@ async function createTestJob() {
       return;
     }
 
-    console.log('👤 Found driver:', driver.user.name);
+    console.log('👤 Found driver:', driver.User.name);
 
     // Create test addresses
     const pickupAddress = await prisma.address.create({
@@ -26,7 +26,7 @@ async function createTestJob() {
         line1: '123 Test Street',
         city: 'London',
         postcode: 'SW1A 1AA',
-        user: {
+        User: {
           connect: { id: driver.userId }
         }
       }
@@ -38,7 +38,7 @@ async function createTestJob() {
         line1: '456 Destination Road',
         city: 'London',
         postcode: 'SW1A 2BB',
-        user: {
+        User: {
           connect: { id: driver.userId }
         }
       }
@@ -70,7 +70,7 @@ async function createTestJob() {
         availabilityMultiplierPercent: 100,
         crewMultiplierPercent: 100,
         estimatedDurationMinutes: 120,
-        items: {
+        BookingItem: {
           create: [
             {
               name: 'Test Box 1',
@@ -189,7 +189,7 @@ async function createTestJob() {
     console.log('✅ Test job created successfully!');
     console.log('📊 Summary:');
     console.log(`  - Booking: ${booking.reference}`);
-    console.log(`  - Driver: ${driver.user.name}`);
+    console.log(`  - Driver: ${driver.User.name}`);
     console.log(`  - Total Amount: £${(totalAmount / 100).toFixed(2)}`);
     console.log(`  - Driver Earnings: £${(driverEarnings / 100).toFixed(2)}`);
     console.log(`  - Platform Fee: £${(platformFee / 100).toFixed(2)}`);

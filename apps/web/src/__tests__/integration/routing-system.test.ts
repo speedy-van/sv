@@ -76,8 +76,6 @@ describe('Dual Routing System - Integration Tests', () => {
           password: 'hashed_password',
           role: 'admin',
           phone: '+447901846297',
-          createdAt: new Date(),
-          updatedAt: new Date(),
         }
       });
       adminUserId = newAdmin.id;

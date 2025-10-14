@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         const driver = await prisma.driver.findUnique({
           where: { id: recentLocationUpdate.driverId },
           include: {
-            user: {
+            User: {
               select: { name: true, email: true }
             }
           }
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
         diagnostics.realTimeFlow.lastLocationUpdate = {
           timestamp: recentLocationUpdate.createdAt.toISOString(),
           bookingReference: recentLocationUpdate.Booking?.reference,
-          driverName: driver?.user?.name,
+          driverName: driver?.User?.name,
           lat: recentLocationUpdate.lat,
           lng: recentLocationUpdate.lng,
         };
@@ -292,7 +292,7 @@ async function simulateLocationUpdate() {
     const driver = await prisma.driver.findUnique({
       where: { id: activeBooking.driverId! },
       include: {
-        user: {
+        User: {
           select: { name: true, email: true }
         }
       }
@@ -316,7 +316,7 @@ async function simulateLocationUpdate() {
       message: 'Simulated location update sent',
       booking: {
         reference: activeBooking.reference,
-        driverName: driver?.user?.name,
+        driverName: driver?.User?.name,
         customerName: activeBooking.customerName,
       }
     });
@@ -359,7 +359,7 @@ async function checkActiveDrivers() {
     const drivers = await prisma.driver.findMany({
       where: { id: { in: driverIds } },
       include: {
-        user: {
+        User: {
           select: { name: true, email: true }
         }
       }
@@ -376,7 +376,7 @@ async function checkActiveDrivers() {
           const driver = driverMap.get(d.driverId);
           return {
             id: d.driverId,
-            name: (driver as any)?.user?.name || 'Unknown',
+            name: (driver as any)?.User?.name || 'Unknown',
             lastSeen: d.lastSeenAt,
             hasLocation: !!(d.lastLat && d.lastLng),
             lastLocation: d.lastLat && d.lastLng ? { lat: d.lastLat, lng: d.lastLng } : null,
@@ -386,7 +386,7 @@ async function checkActiveDrivers() {
           const driver = driverMap.get(a.driverId);
           return {
             driverId: a.driverId,
-            driverName: (driver as any)?.user?.name || 'Unknown',
+            driverName: (driver as any)?.User?.name || 'Unknown',
             bookingReference: a.Booking.reference,
             bookingStatus: a.Booking.status,
           };

@@ -140,7 +140,7 @@ async function getCustomerDashboard(request: NextRequest): Promise<NextResponse>
           driver: {
             select: {
               id: true,
-              user: {
+              User: {
                 select: {
                   name: true,
                   email: true
@@ -173,8 +173,8 @@ async function getCustomerDashboard(request: NextRequest): Promise<NextResponse>
         dropoffLocation: booking.dropoffAddress?.label || '',
         totalGBP: booking.totalGBP || 0,
         driver: booking.driver ? {
-          name: booking.driver.user?.name || '',
-          phone: booking.driver.user?.email || '' // Using email as fallback for phone
+          name: (booking.driver as any).User?.name || '',
+          phone: (booking.driver as any).User?.email || ''
         } : undefined
       }))
     };

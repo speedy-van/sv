@@ -31,17 +31,11 @@ export async function GET(
         driver: true,
         drops: {
           include: {
-            customer: {
-              select: { id: true, name: true, email: true }
-            }
+            User: { select: { id: true, name: true, email: true } }
           },
           orderBy: { createdAt: 'asc' }
         },
-        vehicle: true,
-        optimizationHistory: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-        }
+        Vehicle: true
       }
     });
 

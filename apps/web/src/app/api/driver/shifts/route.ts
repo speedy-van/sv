@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
   try {
     const driver = await prisma.driver.findUnique({
       where: { userId },
-      include: {
-        shifts: {
-          where: { isActive: true },
-          orderBy: { startTime: 'asc' },
-        },
+    include: {
+      DriverShift: {
+        where: { isActive: true },
+        orderBy: { startTime: 'asc' },
       },
+    },
     });
 
     if (!driver) {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      shifts: driver.shifts,
+    shifts: driver.DriverShift,
     });
   } catch (error) {
     console.error('Shifts GET error:', error);

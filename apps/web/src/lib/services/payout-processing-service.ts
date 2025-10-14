@@ -100,7 +100,7 @@ export class PayoutProcessingService {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const todaysEarnings = await prisma.driverEarnings.aggregate({
+      const todaysEarnings = route.driverId ? await prisma.driverEarnings.aggregate({
         where: {
           driverId: route.driverId,
           calculatedAt: {
@@ -111,7 +111,7 @@ export class PayoutProcessingService {
         _sum: {
           netAmountPence: true
         }
-      });
+      }) : { _sum: { netAmountPence: 0 } };
 
       // ✅ Calculate earnings using REAL performance-based engine
       const performanceService = PerformanceTrackingService.getInstance();
@@ -129,6 +129,10 @@ export class PayoutProcessingService {
         helperCount: 0 // Will be calculated from request if needed
       };
       
+      if (!route.driverId) {
+        throw new Error('Cannot calculate earnings for route without assigned driver');
+      }
+
       const earningsCalculation = await performanceService.calculateDriverEarnings(
         route.driverId,
         `route_${route.id}`,
@@ -218,19 +222,19 @@ export class PayoutProcessingService {
       include: {
         drops: {
           include: {
-            customer: true
+            User: true
           }
         },
         driver: {
           include: {
             driver: {
               include: {
-                profile: true
+                DriverProfile: true
               }
             }
           }
         },
-        vehicle: true
+        Vehicle: true
       }
     });
   }
@@ -357,7 +361,7 @@ export class PayoutProcessingService {
     }
 
     // Add helper share transaction
-    if (breakdown.helperShare > 0) {
+    if (breakdown.helperShare && breakdown.helperShare > 0) {
       transactions.push({
         routeId,
         userId: driverId, // Will be changed to helper ID when we have helper management
@@ -369,11 +373,13 @@ export class PayoutProcessingService {
       });
     }
 
-    // Create all transactions
+    // Create all transactions (filter out those with undefined amounts)
     return await Promise.all(
-      transactions.map(transaction => 
-        prisma.payoutLedger.create({ data: transaction })
-      )
+      transactions
+        .filter(transaction => transaction.amount !== undefined && transaction.amount !== null)
+        .map(transaction =>
+          prisma.payoutLedger.create({ data: transaction as any })
+        )
     );
   }
 
@@ -390,7 +396,7 @@ export class PayoutProcessingService {
     const payout = await prisma.driverPayout.create({
       data: {
         driverId,
-        totalAmountPence: Math.round(breakdown.netDriverPayout * 100),
+        totalAmountPence: Math.round((breakdown.netDriverPayout || 0) * 100),
         status: 'pending'
       }
     });
@@ -434,7 +440,7 @@ export class PayoutProcessingService {
     await prisma.performanceMetrics.create({
       data: {
         driverId,
-        routeId: payoutBreakdown.routeBaseFare.toString(), // This should be the actual routeId
+        routeId: (payoutBreakdown.routeBaseFare || 0).toString(), // This should be the actual routeId
         csatScore: performanceData.customerRatings.reduce((a: number, b: number) => a + b, 0) / performanceData.customerRatings.length,
         onTimePerformance: performanceData.onTimeDrops / performanceData.totalDrops,
         firstTimeSuccess: performanceData.successfulDrops / performanceData.totalDrops,
@@ -449,14 +455,14 @@ export class PayoutProcessingService {
       where: { id: driverId },
       include: { 
         driver: { 
-          include: { profile: true } 
+          include: { DriverProfile: true } 
         } 
       }
     });
 
     // Note: Driver profile updates would go here when enterprise fields are added to DriverProfile model
     // For now, we skip profile updates as the current schema doesn't have totalJobs, totalEarnings, etc.
-    if (driver?.driver?.profile) {
+    if (driver?.driver?.DriverProfile) {
       console.log(`Driver ${driverId} profile exists but enterprise fields not yet available in schema`);
     }
   }
@@ -530,11 +536,11 @@ export class PayoutProcessingService {
         optimizedDistance: route.optimizedDistanceKm,
         actualDistance: route.actualDistanceKm
       },
-      driver: {
+      driver: route.driver ? {
         id: route.driver.id,
         name: route.driver.name,
         email: route.driver.email
-      },
+      } : null,
       drops: route.drops.map((drop: any) => ({
         id: drop.id,
         status: drop.status,

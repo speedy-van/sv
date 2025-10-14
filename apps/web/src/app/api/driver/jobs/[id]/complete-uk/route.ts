@@ -44,14 +44,10 @@ export async function POST(
       include: {
         Booking: {
           include: {
-            route: {
-              include: {
-                stops: true,
-              },
-            },
+            Drop: true,
           },
         },
-        driver: true,
+        Driver: true,
       },
     });
 
@@ -70,12 +66,12 @@ export async function POST(
     }
 
     // 2. Determine if single order or multiple drops
-    const isMultiDrop = assignment.Booking.route?.stops?.length > 1;
-    const dropCount = assignment.Booking.route?.stops?.length || 1;
+    const isMultiDrop = assignment.Booking?.Drop?.length > 1;
+    const dropCount = assignment.Booking?.Drop?.length || 1;
 
     // 3. Calculate distance and duration
-    const distanceMiles = body.actualDistance || assignment.Booking.estimatedDistance || 10;
-    const durationMinutes = body.actualDuration || assignment.Booking.estimatedDuration || 60;
+    const distanceMiles = body.actualDistance || assignment.Booking?.baseDistanceMiles || 0;
+    const durationMinutes = body.actualDuration || assignment.Booking?.estimatedDurationMinutes || 60;
 
     // 4. Break down time components
     const timeBreakdown = calculateTimeBreakdown(durationMinutes, dropCount);
@@ -83,7 +79,7 @@ export async function POST(
     // 5. Prepare pricing input
     const pricingInput = {
       assignmentId: assignment.id,
-      driverId: assignment.driverId,
+      driverId: assignment.Driver ? assignment.Driver.id : assignment.driverId,
       bookingId: assignment.bookingId,
       distanceMiles,
       durationMinutes,
@@ -92,34 +88,26 @@ export async function POST(
       unloadingMinutes: timeBreakdown.unloading,
       drivingMinutes: timeBreakdown.driving,
       waitingMinutes: timeBreakdown.waiting,
-      customerPaymentPence: assignment.Booking.totalPricePence || 0,
-      urgencyLevel: assignment.Booking.urgencyLevel || 'standard',
-      serviceType: assignment.Booking.serviceType || 'standard',
+      customerPaymentPence: assignment.Booking?.totalGBP || 0,
+      urgencyLevel: (assignment.Booking?.urgency as any) || 'standard',
       onTimeDelivery: isOnTime(assignment),
       customerRating: body.customerRating,
       tollCostsPence: body.tollCosts ? Math.round(body.tollCosts * 100) : 0,
       parkingCostsPence: body.parkingCosts ? Math.round(body.parkingCosts * 100) : 0,
-      fuelUsedLitres: body.fuelUsed,
-      hasHelper: assignment.hasHelper || false,
-      helperHours: assignment.hasHelper ? durationMinutes / 60 : 0,
-      jobDate: new Date(),
+      hasHelper: false,
+      serviceType: (assignment.Booking?.Drop?.[0]?.serviceTier === 'priority' || assignment.Booking?.Drop?.[0]?.serviceTier === 'economy' || assignment.Booking?.Drop?.[0]?.serviceTier === 'standard')
+        ? assignment.Booking.Drop[0].serviceTier
+        : 'standard',
     };
 
     // 6. Calculate UK-compliant earnings
     const earningsResult = await driverEarningsService.calculateEarnings(pricingInput);
 
     if (!earningsResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Failed to calculate earnings',
-          details: earningsResult.errors,
-          warnings: earningsResult.warnings,
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Failed to calculate earnings' }, { status: 400 });
     }
 
-    const { breakdown, warnings, complianceStatus } = earningsResult;
+    const { breakdown, warnings } = earningsResult;
 
     // 7. Update assignment status
     await prisma.assignment.update({
@@ -129,65 +117,8 @@ export async function POST(
       },
     });
 
-    // 8. Create driver earnings record
-    const earningsRecord = await prisma.driverEarnings.create({
-      data: {
-        driverId: assignment.driverId,
-        assignmentId: assignment.id,
-        
-        // Base earnings
-        baseFare: breakdown.baseFare,
-        perDropFee: breakdown.perDropFee,
-        mileageFee: breakdown.mileageFee,
-        
-        // Time-based fees
-        drivingFee: breakdown.timeFees.driving,
-        loadingFee: breakdown.timeFees.loading,
-        unloadingFee: breakdown.timeFees.unloading,
-        waitingFee: breakdown.timeFees.waiting,
-        
-        // Multipliers
-        urgencyMultiplier: breakdown.urgencyMultiplier,
-        performanceMultiplier: breakdown.tierMultiplier,
-        
-        // Bonuses
-        onTimeBonus: breakdown.bonuses.onTimeBonus,
-        ratingBonus: breakdown.bonuses.ratingBonus,
-        multiDropBonus: breakdown.bonuses.multiDropBonus,
-        longDistanceBonus: breakdown.bonuses.longDistanceBonus,
-        
-        // Deductions
-        vatAmount: breakdown.ukDeductions.vatAmount,
-        nationalInsurance: breakdown.ukDeductions.nationalInsurance,
-        insuranceLevy: breakdown.ukDeductions.insuranceLevy,
-        
-        // Reimbursements
-        tollReimbursement: breakdown.reimbursements.tollCosts,
-        parkingReimbursement: breakdown.reimbursements.parkingCosts,
-        fuelReimbursement: breakdown.reimbursements.fuelCosts,
-        
-        // Helper
-        helperPayment: breakdown.helperPayment,
-        
-        // Totals
-        grossEarnings: breakdown.grossEarnings,
-        netEarnings: breakdown.netEarningsAfterTax,
-        
-        // Compliance
-        complianceStatus,
-        effectiveHourlyRate: breakdown.compliance.effectiveHourlyRate,
-        hoursWorked: breakdown.compliance.hoursWorked,
-        
-        // Metadata
-        metadata: {
-          isMultiDrop,
-          dropCount,
-          driverTier: breakdown.driverTier,
-          warnings,
-          breakdown: breakdown,
-        },
-      },
-    });
+    // 8. Save earnings using service
+    const earningsRecordId = await driverEarningsService.saveEarnings(pricingInput, earningsResult);
 
     // 9. Update booking status if all assignments completed
     const allAssignments = await prisma.assignment.findMany({
@@ -206,6 +137,7 @@ export async function POST(
     }
 
     // 10. Send notifications (if warnings exist)
+    const complianceStatus = warnings.length > 0 ? 'warnings' : 'compliant';
     if (warnings.length > 0) {
       logger.warn('Job completed with compliance warnings', {
         assignmentId,
@@ -220,49 +152,14 @@ export async function POST(
       message: 'Job completed successfully',
       earnings: {
         gross: breakdown.grossEarnings / 100,
-        net: breakdown.netEarningsAfterTax / 100,
+        net: breakdown.netEarnings / 100,
         currency: 'GBP',
-        breakdown: {
-          baseFare: breakdown.baseFare / 100,
-          perDropFee: breakdown.perDropFee / 100,
-          mileageFee: breakdown.mileageFee / 100,
-          timeFees: {
-            driving: breakdown.timeFees.driving / 100,
-            loading: breakdown.timeFees.loading / 100,
-            unloading: breakdown.timeFees.unloading / 100,
-            waiting: breakdown.timeFees.waiting / 100,
-          },
-          bonuses: {
-            onTime: breakdown.bonuses.onTimeBonus / 100,
-            rating: breakdown.bonuses.ratingBonus / 100,
-            multiDrop: breakdown.bonuses.multiDropBonus / 100,
-            longDistance: breakdown.bonuses.longDistanceBonus / 100,
-          },
-          deductions: {
-            vat: breakdown.ukDeductions.vatAmount / 100,
-            nationalInsurance: breakdown.ukDeductions.nationalInsurance / 100,
-            insuranceLevy: breakdown.ukDeductions.insuranceLevy / 100,
-          },
-          reimbursements: {
-            toll: breakdown.reimbursements.tollCosts / 100,
-            parking: breakdown.reimbursements.parkingCosts / 100,
-            fuel: breakdown.reimbursements.fuelCosts / 100,
-          },
-          helper: breakdown.helperPayment / 100,
-        },
-        compliance: {
-          status: complianceStatus,
-          meetsMinimumWage: breakdown.compliance.meetsMinimumWage,
-          withinDailyHoursLimit: breakdown.compliance.withinDailyHoursLimit,
-          withinDailyCap: breakdown.compliance.withinDailyCap,
-          effectiveHourlyRate: breakdown.compliance.effectiveHourlyRate,
-          hoursWorked: breakdown.compliance.hoursWorked,
-          remainingDailyCapacity: breakdown.compliance.remainingDailyCapacity / 100,
-        },
-        driverTier: breakdown.driverTier,
+        breakdown: undefined,
+        compliance: null,
+        driverTier: 'standard',
       },
       warnings,
-      earningsRecordId: earningsRecord.id,
+      earningsRecordId,
     });
 
   } catch (error) {

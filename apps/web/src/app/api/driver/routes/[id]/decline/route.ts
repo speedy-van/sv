@@ -72,7 +72,7 @@ export async function POST(
     const route = await prisma.route.findUnique({
       where: { id: routeId },
       include: {
-        Drop: {
+        drops: {
           include: {
             Booking: true
           }
@@ -105,16 +105,16 @@ export async function POST(
       await tx.route.update({
         where: { id: routeId },
         data: {
-          driverId: null,
+          driverId: { set: null },
           status: 'planned',
           updatedAt: new Date()
         }
       });
 
       // Reset all associated bookings
-      const bookingIds = route.Drop
-        .filter(drop => drop.Booking)
-        .map(drop => drop.Booking!.id);
+      const bookingIds = route.drops
+        .filter((drop: any) => drop.Booking)
+        .map((drop: any) => drop.Booking!.id);
 
       if (bookingIds.length > 0) {
         await tx.booking.updateMany({
@@ -183,7 +183,7 @@ export async function POST(
             driverId: driver.id,
             driverName: driver.User?.name,
             reason: reason || 'Driver declined',
-            dropCount: route.Drop.length,
+            dropCount: (route as any).drops.length,
             declinedAt: new Date().toISOString(),
             impactOnAcceptanceRate: true,
             totalDeclinesLast30Days: declinedCount + 1,
@@ -249,10 +249,10 @@ export async function POST(
           // Notify next driver
           await pusher.trigger(`driver-${nextDriver.id}`, 'route-offer', {
             routeId: routeId,
-            dropCount: route.Drop.length,
+            dropCount: (route as any).drops.length,
             estimatedEarnings: Number(route.driverPayout || 0) / 100,
             estimatedDuration: route.estimatedDuration,
-            message: `New route assigned with ${route.Drop.length} stops (auto-reassigned)`,
+            message: `New route assigned with ${(route as any).drops.length} stops (auto-reassigned)`,
             timestamp: new Date().toISOString()
           });
 
@@ -263,7 +263,7 @@ export async function POST(
             previousDriverName: driver.User?.name,
             newDriver: nextDriver.id,
             newDriverName: nextDriver.User?.name,
-            dropCount: route.Drop.length,
+            dropCount: (route as any).drops.length,
             timestamp: new Date().toISOString()
           });
 
@@ -275,10 +275,10 @@ export async function POST(
             try {
               await pusher.trigger(`driver-${altDriver.id}`, 'route-offer', {
                 routeId: routeId,
-                dropCount: route.Drop.length,
+                dropCount: (route as any).drops.length,
                 estimatedEarnings: Number(route.driverPayout || 0) / 100,
                 estimatedDuration: route.estimatedDuration,
-                message: `New route available with ${route.Drop.length} stops`
+                message: `New route available with ${(route as any).drops.length} stops`
               });
             } catch (e) {
               console.warn(`Failed to notify driver ${altDriver.id}:`, e);
@@ -350,7 +350,7 @@ export async function POST(
         previousDriver: driver.id,
         driverName: driver.User?.name,
         reason: 'declined',
-        dropCount: route.Drop.length,
+        dropCount: (route as any).drops.length,
         timestamp: new Date().toISOString()
       });
 
@@ -366,12 +366,12 @@ export async function POST(
         routeId: routeId,
         driverId: driver.id,
         driverName: driver.User?.name || 'Unknown Driver',
-        dropCount: route.Drop.length,
+        dropCount: (route as any).drops.length,
         reason: reason || 'Driver declined',
         declinedAt: new Date().toISOString(),
         acceptanceRate: newAcceptanceRate,
         autoReassigned: true,
-        message: `Driver ${driver.User?.name} declined route with ${route.Drop.length} stops. Acceptance rate: ${newAcceptanceRate}%. Route auto-reassigned.`
+        message: `Driver ${driver.User?.name} declined route with ${(route as any).drops.length} stops. Acceptance rate: ${newAcceptanceRate}%. Route auto-reassigned.`
       });
 
       console.log('✅ Admin notification sent via Pusher');

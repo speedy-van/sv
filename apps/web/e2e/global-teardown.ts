@@ -20,7 +20,7 @@ async function globalTeardown(config: FullConfig) {
     await prisma.assignment.deleteMany({
       where: {
         Driver: {
-          user: {
+          User: {
             email: testDriverEmail,
           },
         },
@@ -49,8 +49,8 @@ async function globalTeardown(config: FullConfig) {
 
     await prisma.driverAvailability.deleteMany({
       where: {
-        driver: {
-          user: {
+        Driver: {
+          User: {
             email: testDriverEmail,
           },
         },
@@ -59,27 +59,37 @@ async function globalTeardown(config: FullConfig) {
 
     await prisma.driverVehicle.deleteMany({
       where: {
-        driver: {
-          user: {
-            email: testDriverEmail,
-          },
+        driverId: {
+          in: await prisma.driver.findMany({
+            where: {
+              User: {
+                email: testDriverEmail,
+              },
+            },
+            select: { id: true },
+          }).then(drivers => drivers.map(d => d.id)),
         },
       },
     });
 
     await prisma.driverProfile.deleteMany({
       where: {
-        driver: {
-          user: {
-            email: testDriverEmail,
-          },
+        driverId: {
+          in: await prisma.driver.findMany({
+            where: {
+              User: {
+                email: testDriverEmail,
+              },
+            },
+            select: { id: true },
+          }).then(drivers => drivers.map(d => d.id)),
         },
       },
     });
 
     await prisma.driver.deleteMany({
       where: {
-        user: {
+        User: {
           email: testDriverEmail,
         },
       },

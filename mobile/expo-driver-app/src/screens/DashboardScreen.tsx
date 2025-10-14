@@ -1104,7 +1104,7 @@ export default function DashboardScreen() {
         >
           <View style={styles.actionCardHeader}>
             <View style={styles.actionCardLeft}>
-              <View style={[styles.actionCardIcon, { backgroundColor: '#374151' }]>
+              <View style={[styles.actionCardIcon, { backgroundColor: '#374151' }]}>
                 <Ionicons name="shield-checkmark" size={28} color="#9CA3AF" />
               </View>
               <View style={styles.actionCardInfo}>

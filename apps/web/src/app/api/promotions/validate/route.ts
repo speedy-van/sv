@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     if (promotion.firstTimeOnly && customerEmail) {
       const existingBooking = await prisma.booking.findFirst({
         where: {
-          User: {
+          customer: {
             email: customerEmail
           },
           status: { not: 'CANCELLED' }

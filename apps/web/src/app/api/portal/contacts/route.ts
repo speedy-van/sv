@@ -79,8 +79,13 @@ export async function POST(request: NextRequest) {
 
     const contact = await prisma.contact.create({
       data: {
-        ...validatedData,
-        userId: customerId,
+        label: validatedData.label,
+        name: validatedData.name,
+        phone: validatedData.phone,
+        email: validatedData.email,
+        notes: validatedData.notes,
+        isDefault: validatedData.isDefault ?? false,
+        User: { connect: { id: customerId } },
       },
     });
 

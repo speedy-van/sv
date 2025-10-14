@@ -57,7 +57,7 @@ export default function RouteMatchModal({
 
   // Countdown timer state
   const [remainingSeconds, setRemainingSeconds] = React.useState<number>(expiresInSeconds);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Calculate remaining time from expiresAt
   useEffect(() => {

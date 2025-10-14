@@ -1,0 +1,41 @@
+﻿
+> speedy-van-monorepo@1.0.0 typecheck C:\sv
+> turbo run type-check
+
+node.exe : turbo 2.5.8
+At C:\Users\Administrator\AppData\Roaming\npm\pnpm.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (turbo 2.5.8:String) [], RemoteExc 
+   eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ÔÇó Packages in scope: @speedy-van/app, @speedy-van/pricing, @speedy-van/shared, @speedy-van/utils, speedy-van-driver
+ÔÇó Running type-check in 5 packages
+ÔÇó Remote caching disabled
+@speedy-van/shared:type-check: cache miss, executing 3fa8a52a974ecee6
+@speedy-van/shared:type-check: 
+@speedy-van/shared:type-check: > @speedy-van/shared@1.0.0 type-check C:\sv\packages\shared
+@speedy-van/shared:type-check: > tsc --noEmit
+@speedy-van/shared:type-check: 
+@speedy-van/utils:type-check: cache miss, executing 499a93bf88c0c962
+@speedy-van/utils:type-check: 
+@speedy-van/utils:type-check: > @speedy-van/utils@1.0.0 type-check C:\sv\packages\utils
+@speedy-van/utils:type-check: > tsc --noEmit
+@speedy-van/utils:type-check: 
+@speedy-van/pricing:type-check: cache miss, executing 219209e1ac0cf3c2
+@speedy-van/pricing:type-check: 
+@speedy-van/pricing:type-check: > @speedy-van/pricing@1.0.0 type-check C:\sv\packages\pricing
+@speedy-van/pricing:type-check: > tsc --noEmit
+@speedy-van/pricing:type-check: 
+@speedy-van/app:type-check: cache miss, executing 480bfe5e264f6276
+@speedy-van/app:type-check: 
+@speedy-van/app:type-check: > @speedy-van/app@1.0.0 type-check C:\sv\apps\web
+@speedy-van/app:type-check: > tsc --noEmit
+@speedy-van/app:type-check: 
+
+ Tasks:    4 successful, 4 total
+Cached:    0 cached, 4 total
+  Time:    19.151s 
+

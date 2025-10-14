@@ -198,10 +198,10 @@ async function findSuitableDrivers(
       })
     },
     include: {
-      user: {
+      User: {
         select: { id: true, name: true, email: true }
       },
-      availability: true,
+      DriverAvailability: true,
       // ratings: {
       //   select: { overall: true }
       // },

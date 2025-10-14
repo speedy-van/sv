@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Scheduler GET error:', error);
-    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'Unknown error');
     return NextResponse.json(
       {
         success: false,

@@ -83,20 +83,10 @@ export async function POST(
         driverId: true,
         status: true,
         driverPayout: true,
-        Drop: {
+        drops: {
           where: { id: dropId },
           include: {
-            Booking: {
-              include: {
-                User: {
-                  select: {
-                    id: true,
-                    name: true,
-                    email: true
-                  }
-                }
-              }
-            }
+            Booking: true
           }
         }
       }
@@ -116,7 +106,7 @@ export async function POST(
       );
     }
 
-    const drop = route.Drop[0];
+    const drop = (route as any).drops[0];
     if (!drop) {
       return NextResponse.json(
         { error: 'Drop not found' },

@@ -48,7 +48,7 @@ export function useRealTimeTracking(
   const [lastUpdate, setLastUpdate] = useState<TrackingUpdate | null>(null);
 
   const currentBookingId = useRef<string | null>(null);
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { autoSubscribe = true, refreshInterval = 30000 } = options;
 
   // Initialize connection status

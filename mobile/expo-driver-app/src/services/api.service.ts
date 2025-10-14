@@ -104,15 +104,15 @@ class ApiService {
     }
   }
 
-  async get<T>(url: string): Promise<T> {
+  async get<T>(url: string, config?: any): Promise<T> {
     await this.checkConnectivity();
-    const response = await this.api.get<T>(url);
+    const response = await this.api.get<T>(url, config);
     return response.data;
   }
 
-  async post<T>(url: string, data?: any): Promise<T> {
+  async post<T>(url: string, data?: any, config?: any): Promise<T> {
     await this.checkConnectivity();
-    const response = await this.api.post<T>(url, data);
+    const response = await this.api.post<T>(url, data, config);
     return response.data;
   }
 
@@ -133,6 +133,32 @@ class ApiService {
    */
   getOnlineStatus(): boolean {
     return this.isOnline;
+  }
+
+  /**
+   * Complete a job with proof of delivery
+   */
+  async completeJob(data: {
+    jobId: string;
+    photos: string[];
+    signature: string;
+    notes?: string;
+    recipientName?: string;
+  }): Promise<any> {
+    return this.post('/api/driver/jobs/complete', data);
+  }
+
+  /**
+   * Upload an image file
+   */
+  async uploadImage(formData: FormData): Promise<string> {
+    await this.checkConnectivity();
+    const response = await this.api.post<{ url: string }>('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.url;
   }
 }
 

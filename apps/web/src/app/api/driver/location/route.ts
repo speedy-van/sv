@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const driver = await prisma.driver.findUnique({
       where: { userId },
-      include: { availability: true },
+      include: { DriverAvailability: true },
     });
 
     if (!driver) {
@@ -51,9 +51,9 @@ export async function POST(request: NextRequest) {
 
     // Only update location if driver is online and has given consent
     if (
-      !driver.availability ||
-      driver.availability.status !== 'online' ||
-      !driver.availability.locationConsent
+      !driver.DriverAvailability ||
+      driver.DriverAvailability.status !== 'online' ||
+      !driver.DriverAvailability.locationConsent
     ) {
       return NextResponse.json(
         { error: 'Location updates only allowed when online with consent' },

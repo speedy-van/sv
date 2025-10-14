@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Calculate efficiency metrics
-    const totalDistance = routes.reduce((sum, r) => sum + r.totalDistanceMiles, 0);
-    const totalDuration = routes.reduce((sum, r) => sum + r.totalDurationMinutes, 0);
+    const totalDistance = routes.reduce((sum, r) => sum + (r.totalDistanceMiles || 0), 0);
+    const totalDuration = routes.reduce((sum, r) => sum + (r.totalDurationMinutes || 0), 0);
 
     // Calculate CO2 savings (rough estimate: 0.4 kg CO2 per mile saved)
     const estimatedMilesSaved = multiDropOrders.length * 15; // Assume 15 miles saved per multi-drop order

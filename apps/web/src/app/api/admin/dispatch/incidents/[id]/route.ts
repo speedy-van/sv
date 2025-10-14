@@ -16,9 +16,9 @@ export async function GET(
     const incident = await prisma.driverIncident.findUnique({
       where: { id: params.id },
       include: {
-        driver: {
+        Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -28,7 +28,7 @@ export async function GET(
                 isActive: true
               }
             },
-            availability: true,
+            DriverAvailability: true,
           },
         },
         Assignment: {
@@ -99,9 +99,9 @@ export async function PUT(
             reviewNotes: data.notes || null,
           },
           include: {
-            driver: {
+            Driver: {
               include: {
-                user: {
+                User: {
                   select: {
                     id: true,
                     name: true,
@@ -148,9 +148,9 @@ export async function PUT(
             reviewNotes: data.reason || null,
           },
           include: {
-            driver: {
+            Driver: {
               include: {
-                user: {
+                User: {
                   select: {
                     id: true,
                     name: true,
@@ -197,9 +197,9 @@ export async function PUT(
             updatedAt: new Date(),
           },
           include: {
-            driver: {
+            Driver: {
               include: {
-                user: {
+                User: {
                   select: {
                     id: true,
                     name: true,
@@ -249,9 +249,9 @@ export async function PUT(
             updatedAt: new Date(),
           },
           include: {
-            driver: {
+            Driver: {
               include: {
-                user: {
+                User: {
                   select: {
                     id: true,
                     name: true,

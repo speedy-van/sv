@@ -127,7 +127,7 @@ export interface LoggerConfig {
 class ComprehensiveLogger {
   private config: LoggerConfig;
   private buffer: LogEntry[] = [];
-  private flushTimer?: NodeJS.Timeout;
+  private flushTimer?: ReturnType<typeof setTimeout>;
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {

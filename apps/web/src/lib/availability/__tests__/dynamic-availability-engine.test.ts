@@ -4,7 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { DynamicAvailabilityEngine, type FullStructuredAddress, type BookingCapacity } from '../dynamic-availability-engine';
+import { DynamicAvailabilityEngine, type FullStructuredAddress, type BookingCapacity, type RouteCandidate, type VehicleSpecs } from '../dynamic-availability-engine';
+
+interface MockDriver {
+  driverId: string;
+  vehicleId: string;
+}
 
 // Mock Prisma client
 const mockPrisma = {
@@ -156,7 +161,7 @@ describe('DynamicAvailabilityEngine', () => {
   describe('Route Type Logic', () => {
     it('should return Economy for multi-drop with sufficient fill rate', async () => {
       // Mock route candidates to return ready economy route
-      const mockGetRouteCandidates = jest.fn().mockResolvedValue([
+      const mockGetRouteCandidates = jest.fn<() => Promise<RouteCandidate[]>>().mockResolvedValue([
         {
           id: 'route1',
           corridor: 'test-corridor',
@@ -174,6 +179,7 @@ describe('DynamicAvailabilityEngine', () => {
       ]);
 
       (engine as any).getRouteCandidates = mockGetRouteCandidates;
+      (engine as any).getAvailableDrivers = jest.fn<() => Promise<MockDriver[]>>().mockResolvedValue([]);
 
       const result = await engine.calculateAvailability(
         mockPickup,
@@ -188,11 +194,11 @@ describe('DynamicAvailabilityEngine', () => {
 
     it('should return Express for immediate availability', async () => {
       // Mock available drivers and vehicles
-      const mockGetAvailableDrivers = jest.fn().mockResolvedValue([
+      const mockGetAvailableDrivers = jest.fn<() => Promise<MockDriver[]>>().mockResolvedValue([
         { driverId: 'driver1', vehicleId: 'vehicle1' },
         { driverId: 'driver2', vehicleId: 'vehicle2' }
       ]);
-      const mockGetSuitableVehicles = jest.fn().mockResolvedValue([
+      const mockGetSuitableVehicles = jest.fn<() => Promise<VehicleSpecs[]>>().mockResolvedValue([
         { id: 'vehicle1', type: 'large_van', maxWeightKg: 1000, maxVolumeM3: 15, crewSize: 2 }
       ]);
 
@@ -265,7 +271,7 @@ describe('DynamicAvailabilityEngine', () => {
   describe('Error Handling', () => {
     it('should return fallback availability on calculation failure', async () => {
       // Force an error in route calculation
-      (engine as any).getAvailableDrivers = jest.fn().mockRejectedValue(new Error('Database error'));
+      (engine as any).getAvailableDrivers = jest.fn<() => Promise<MockDriver[]>>().mockRejectedValue(new Error('Database error'));
       
       const result = await engine.calculateAvailability(
         mockPickup,
@@ -279,8 +285,8 @@ describe('DynamicAvailabilityEngine', () => {
     });
 
     it('should handle empty route candidates gracefully', async () => {
-      (engine as any).getRouteCandidates = jest.fn().mockResolvedValue([]);
-      (engine as any).getAvailableDrivers = jest.fn().mockResolvedValue([]);
+      (engine as any).getRouteCandidates = jest.fn<() => Promise<RouteCandidate[]>>().mockResolvedValue([]);
+      (engine as any).getAvailableDrivers = jest.fn<() => Promise<MockDriver[]>>().mockResolvedValue([]);
       
       const result = await engine.calculateAvailability(
         mockPickup,
@@ -304,10 +310,10 @@ describe('DynamicAvailabilityEngine', () => {
       };
 
       // Mock drivers to be available to test duration limit
-      (engine as any).getAvailableDrivers = jest.fn().mockResolvedValue([
+      (engine as any).getAvailableDrivers = jest.fn<() => Promise<MockDriver[]>>().mockResolvedValue([
         { driverId: 'driver1', vehicleId: 'vehicle1' }
       ]);
-      (engine as any).getSuitableVehicles = jest.fn().mockResolvedValue([
+      (engine as any).getSuitableVehicles = jest.fn<() => Promise<VehicleSpecs[]>>().mockResolvedValue([
         { id: 'vehicle1', type: 'large_van', maxWeightKg: 1000, maxVolumeM3: 15, crewSize: 2 }
       ]);
 

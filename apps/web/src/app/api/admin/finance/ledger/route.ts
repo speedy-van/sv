@@ -30,12 +30,12 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { booking: { orderRef: { contains: search, mode: 'insensitive' } } },
         {
-          driver: { user: { name: { contains: search, mode: 'insensitive' } } },
+          driver: { User: { name: { contains: search, mode: 'insensitive' } } },
         },
         {
           booking: {
             customer: {
-              user: { name: { contains: search, mode: 'insensitive' } },
+              User: { name: { contains: search, mode: 'insensitive' } },
             },
           },
         },
@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
       prisma.driverEarnings.findMany({
         where,
         include: {
-          driver: {
+          Driver: {
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         id: { in: driverBreakdown.map(d => d.driverId) },
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -169,8 +169,8 @@ export async function GET(request: NextRequest) {
       const driverDetail = driverDetails.find(d => d.id === driver.driverId);
       return {
         driverId: driver.driverId,
-        driverName: driverDetail?.user.name || 'Unknown',
-        driverEmail: driverDetail?.user.email || 'Unknown',
+        driverName: driverDetail?.User?.name || 'Unknown',
+        driverEmail: driverDetail?.User?.email || 'Unknown',
         baseAmount: driver._sum.baseAmountPence || 0,
         surgeAmount: driver._sum.surgeAmountPence || 0,
         tipAmount: driver._sum.tipAmountPence || 0,
@@ -184,9 +184,9 @@ export async function GET(request: NextRequest) {
       ledger: earnings.map(earning => ({
         id: earning.id,
         driver: {
-          id: earning.driver.id,
-          name: earning.driver.user.name,
-          email: earning.driver.user.email,
+          id: earning.Driver.id,
+          name: earning.Driver.User?.name || 'Unknown',
+          email: earning.Driver.User?.email || 'Unknown',
         },
         assignmentId: earning.assignmentId,
         breakdown: {

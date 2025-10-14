@@ -52,16 +52,12 @@ async function notifyAvailableDrivers(bookingData: {
     // Get all available drivers
     const availableDrivers = await prisma.driver.findMany({
       where: {
-        availability: {
-          status: 'AVAILABLE',
-        },
-        user: {
-          isActive: true,
-        },
+        DriverAvailability: { status: 'online' },
+        User: { isActive: true },
       },
       select: {
         id: true,
-        user: {
+        User: {
           select: {
             name: true,
           },
@@ -101,7 +97,7 @@ async function notifyAvailableDrivers(bookingData: {
       
       try {
         await pusher.trigger(channelName, 'new-job', notification);
-        console.log(`✅ Notification sent to driver ${driver.id} (${driver.user.name})`);
+        console.log(`✅ Notification sent to driver ${driver.id} (${driver.User.name})`);
       } catch (error) {
         console.error(`❌ Failed to notify driver ${driver.id}:`, error);
       }
@@ -339,11 +335,11 @@ export async function POST(request: NextRequest) {
 
     // Determine service type based on urgency
     let serviceType: 'ECONOMY' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE' = 'STANDARD';
-    if (bookingData.urgency === 'urgent') {
-      serviceType = 'PREMIUM';
-    } else if (bookingData.urgency === 'same-day') {
+    if (bookingData.urgency === 'same-day') {
       serviceType = 'ENTERPRISE';
-    } else if (bookingData.urgency === 'flexible') {
+    } else if (bookingData.urgency === 'next-day') {
+      serviceType = 'PREMIUM';
+    } else if (bookingData.urgency === 'scheduled') {
       serviceType = 'ECONOMY';
     }
 

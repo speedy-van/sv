@@ -113,7 +113,7 @@ class Logger {
     });
   }
 
-  error(message: string, error?: Error, context?: { service?: string; userId?: string; requestId?: string }): void {
+  error(message: string, error?: Error, context?: { service?: string; userId?: string; requestId?: string; [key: string]: any }): void {
     this.log({
       level: 'error',
       message,

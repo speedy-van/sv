@@ -17,7 +17,7 @@ export async function GET(
       customer: true,
       driver: {
         include: {
-          user: {
+          User: {
             select: {
               id: true,
               name: true,
@@ -29,9 +29,9 @@ export async function GET(
           },
         },
       },
-      chatSessions: {
+      ChatSession: {
         include: {
-          messages: {
+          Message: {
             orderBy: {
               createdAt: 'desc',
             },
@@ -128,7 +128,7 @@ function generateTimeline(booking: any) {
       status: 'completed',
       title: 'Crew Assigned',
       description: booking.driver
-        ? `Your crew has been assigned: ${booking.driver.user.name}`
+        ? `Your crew has been assigned: ${booking.driver.User?.name}`
         : 'Your crew has been assigned',
       timestamp: booking.createdAt, // Would be actual timestamp
       icon: '👥',

@@ -74,7 +74,8 @@ export async function POST(request: NextRequest) {
 
     // Parse multipart form data
     const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
+    const filesData = formData.getAll('files');
+    const files = filesData.filter((f): f is File => f instanceof File || (typeof f === 'object' && 'name' in f && 'type' in f));
     const category = formData.get('category') as keyof typeof FILE_TYPES;
     const directory = formData.get('directory') as keyof typeof UPLOAD_DIRS;
 

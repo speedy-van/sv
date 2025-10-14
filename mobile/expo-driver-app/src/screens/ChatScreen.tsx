@@ -48,7 +48,7 @@ export default function ChatScreen() {
   const [adminStatus, setAdminStatus] = useState<AdminStatus>({ status: 'offline', lastActive: new Date().toISOString() });
   const flatListRef = useRef<FlatList>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     initializeChat();

@@ -221,10 +221,12 @@ export class MultiDropEligibilityEngine {
       items: booking.items,
       scheduledDate: booking.scheduledDate,
       serviceType: booking.serviceType,
+      customerSegment: 'INDIVIDUAL' as const,
+      loyaltyTier: 'BRONZE' as const,
       isMultiDrop: false,
     });
-    
-    const singleOrderPrice = singleOrderResult.totalPrice;
+
+    const singleOrderPrice = singleOrderResult.finalPrice;
     
     // Calculate multi-drop price (customer pays their share of total route)
     const multiDropPrice = singleOrderPrice * match.sharePercentage;

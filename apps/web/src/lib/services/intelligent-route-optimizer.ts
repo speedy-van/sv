@@ -432,11 +432,13 @@ export class IntelligentRouteOptimizer {
       items: booking.items,
       scheduledDate: booking.scheduledDate,
       serviceType: booking.serviceType,
+      customerSegment: 'INDIVIDUAL' as const,
+      loyaltyTier: 'BRONZE' as const,
       isMultiDrop: false,
     };
     
     const result = await dynamicPricingEngine.calculateDynamicPrice(pricingRequest);
-    return result.totalPrice;
+    return result.finalPrice;
   }
   
   /**

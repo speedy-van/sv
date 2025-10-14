@@ -13,18 +13,14 @@ async function testNavigation() {
       },
       include: {
         Booking: {
-          select: {
-            id: true,
-            reference: true,
+          include: {
             pickupAddress: true,
             dropoffAddress: true,
-            scheduledAt: true,
-            estimatedDurationMinutes: true,
           },
         },
         Driver: {
           include: {
-            availability: true,
+            DriverAvailability: true,
           },
         },
       },
@@ -72,20 +68,20 @@ async function testNavigation() {
     }
 
     // Test 3: Check driver availability
-    if (assignment.Driver.availability) {
+    if (assignment.Driver.DriverAvailability) {
       console.log('\n✅ Driver availability found:');
-      console.log(`   Status: ${assignment.Driver.availability.status}`);
+      console.log(`   Status: ${assignment.Driver.DriverAvailability.status}`);
       console.log(
-        `   Location Consent: ${assignment.Driver.availability.locationConsent}`
+        `   Location Consent: ${assignment.Driver.DriverAvailability.locationConsent}`
       );
-      console.log(`   Last Seen: ${assignment.Driver.availability.lastSeenAt}`);
+      console.log(`   Last Seen: ${assignment.Driver.DriverAvailability.lastSeenAt}`);
 
       if (
-        assignment.Driver.availability.lastLat &&
-        assignment.Driver.availability.lastLng
+        assignment.Driver.DriverAvailability.lastLat &&
+        assignment.Driver.DriverAvailability.lastLng
       ) {
         console.log(
-          `   Last Location: ${assignment.Driver.availability.lastLat}, ${assignment.Driver.availability.lastLng}`
+          `   Last Location: ${assignment.Driver.DriverAvailability.lastLat}, ${assignment.Driver.DriverAvailability.lastLng}`
         );
       }
     } else {

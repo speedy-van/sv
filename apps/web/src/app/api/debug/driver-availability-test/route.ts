@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const driver = await prisma.driver.findUnique({
       where: { userId: userId },
       include: {
-        availability: true,
+        DriverAvailability: true,
       },
     });
 
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const availability = driver.availability;
+    const availability = (driver as any).DriverAvailability;
 
     // Get or create default availability settings
     const defaultSettings = {

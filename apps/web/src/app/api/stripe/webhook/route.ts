@@ -223,31 +223,40 @@ async function handlePaymentIntentSucceeded(
       // ✅ NEW: Check multi-drop eligibility immediately after payment
       try {
         const { multiDropEligibilityEngine } = await import('@/lib/services/multi-drop-eligibility-engine');
-        
-        const eligibility = await multiDropEligibilityEngine.checkEligibility({
-          bookingId: updatedBooking.id,
+
+        const bookingRequest = {
+          id: updatedBooking.id,
+          pickup: {
+            address: updatedBooking.pickupAddress.label,
+            postcode: updatedBooking.pickupAddress.postcode,
+            coordinates: {
+              lat: updatedBooking.pickupAddress.lat || 0,
+              lng: updatedBooking.pickupAddress.lng || 0,
+            },
+            city: '',
+          },
+          dropoff: {
+            address: updatedBooking.dropoffAddress.label,
+            postcode: updatedBooking.dropoffAddress.postcode,
+            coordinates: {
+              lat: updatedBooking.dropoffAddress.lat || 0,
+              lng: updatedBooking.dropoffAddress.lng || 0,
+            },
+            city: '',
+          },
           items: updatedBooking.BookingItem.map(item => ({
             name: item.name,
             quantity: item.quantity,
             category: item.category || 'furniture',
-            estimatedVolume: item.estimatedVolume || 0,
-            estimatedWeight: item.estimatedWeight || 0,
+            weight: item.estimatedWeight || 0,
+            volume: item.estimatedVolume || 0,
           })),
-          pickupAddress: {
-            lat: updatedBooking.pickupAddress.lat || 0,
-            lng: updatedBooking.pickupAddress.lng || 0,
-            postcode: updatedBooking.pickupAddress.postcode,
-            city: updatedBooking.pickupAddress.city,
-          },
-          dropoffAddress: {
-            lat: updatedBooking.dropoffAddress.lat || 0,
-            lng: updatedBooking.dropoffAddress.lng || 0,
-            postcode: updatedBooking.dropoffAddress.postcode,
-            city: updatedBooking.dropoffAddress.city,
-          },
           scheduledDate: updatedBooking.scheduledAt,
-          urgency: updatedBooking.urgency || 'standard',
-        });
+          serviceType: (updatedBooking.urgency || 'standard') as any,
+        };
+
+        const decision = await multiDropEligibilityEngine.shouldShowMultiDropOption(bookingRequest as any);
+        const eligibility = decision.eligibility;
 
         // Update booking with eligibility info
         await prisma.booking.update({
@@ -255,8 +264,8 @@ async function handlePaymentIntentSucceeded(
           data: {
             eligibleForMultiDrop: eligibility.eligible,
             multiDropEligibilityReason: eligibility.reason,
-            estimatedLoadPercentage: eligibility.loadPercentage,
-            potentialSavings: eligibility.potentialSavings,
+            estimatedLoadPercentage: eligibility.loadConstraint?.currentLoad ?? 0,
+            potentialSavings: undefined,
             orderType: eligibility.eligible ? 'multi-drop-candidate' : 'single',
           },
         });

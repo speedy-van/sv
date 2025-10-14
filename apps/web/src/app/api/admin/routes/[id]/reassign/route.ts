@@ -40,10 +40,10 @@ export async function POST(
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
-          User: {
+          driver: {
             select: { name: true, email: true }
           },
-          Drop: {
+          drops: {
             orderBy: { createdAt: 'asc' }
           },
           Booking: {
@@ -59,7 +59,7 @@ export async function POST(
       }
 
       const oldDriverId = route.driverId;
-      const oldDriverName = route.User?.name || 'Unknown';
+      const oldDriverName = (route as any).driver?.name || 'Unknown';
 
       // Check if new driver exists
       const newDriver = await prisma.driver.findUnique({
@@ -104,10 +104,8 @@ export async function POST(
             adminNotes: `Driver reassigned from ${oldDriverName} to ${newDriver.User?.name || 'Unknown'} by admin. Reason: ${reason || 'Not specified'}`,
           },
           include: {
-            User: {
-              select: { name: true, email: true }
-            },
-            Drop: {
+            driver: { select: { name: true, email: true } },
+            drops: {
               orderBy: { createdAt: 'asc' }
             },
             Booking: true,
@@ -221,13 +219,13 @@ export async function POST(
           type: 'full-route',
           routeId: result.updatedRoute.id,
           bookingsCount: result.bookingsCount,
-          dropsCount: result.updatedRoute.Drop.length,
+          dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
           totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           assignedAt: new Date().toISOString(),
           message: `Route with ${result.bookingsCount} jobs has been reassigned to you`,
-          drops: result.updatedRoute.Drop.map(drop => ({
+          drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
             pickupAddress: drop.pickupAddress,
             deliveryAddress: drop.deliveryAddress,
@@ -291,7 +289,7 @@ export async function POST(
             email: newDriver.User?.email || '',
           },
           bookingsCount: result.bookingsCount,
-          dropsCount: result.updatedRoute.Drop.length,
+          dropsCount: (result.updatedRoute as any).drops.length,
           reassignedAt: new Date().toISOString(),
         }
       });

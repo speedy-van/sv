@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
             },
           },
           include: {
-            Driver: {
+            driver: {
               include: {
                 User: {
                   select: {
@@ -39,7 +39,6 @@ export async function GET(request: NextRequest) {
                 DriverAvailability: true,
               },
             },
-            User: true,
           },
           orderBy: {
             updatedAt: 'desc',
@@ -196,7 +195,7 @@ export async function POST(request: NextRequest) {
             updatedAt: new Date(),
           },
           include: {
-            Driver: {
+            driver: {
               include: {
                 User: {
                   select: {
@@ -210,7 +209,6 @@ export async function POST(request: NextRequest) {
                 },
               },
             },
-            User: true,
           },
         });
 
@@ -262,7 +260,7 @@ export async function POST(request: NextRequest) {
             updatedAt: new Date(),
           },
           include: {
-            Driver: {
+            driver: {
               include: {
                 User: {
                   select: {
@@ -276,7 +274,6 @@ export async function POST(request: NextRequest) {
                 },
               },
             },
-            User: true,
           },
         });
 

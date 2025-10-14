@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Check if user is already a driver
     const existingDriver = await prisma.driver.findFirst({
       where: {
-        user: {
+        User: {
           email: email,
         },
       },

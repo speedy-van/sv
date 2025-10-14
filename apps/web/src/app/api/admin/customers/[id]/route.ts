@@ -26,7 +26,7 @@ export async function GET(
         email: true,
         createdAt: true,
         emailVerified: true,
-        bookings: {
+        Booking: {
           select: {
             id: true,
             reference: true,
@@ -40,7 +40,7 @@ export async function GET(
             driver: {
               select: {
                 id: true,
-                user: {
+                User: {
                   select: {
                     name: true,
                   },
@@ -50,7 +50,7 @@ export async function GET(
           },
           orderBy: { createdAt: 'desc' },
         },
-        addresses: {
+        Address: {
           select: {
             id: true,
             label: true,
@@ -67,7 +67,7 @@ export async function GET(
           },
           orderBy: { createdAt: 'desc' },
         },
-        contacts: {
+        Contact: {
           select: {
             id: true,
             label: true,
@@ -80,7 +80,7 @@ export async function GET(
           },
           orderBy: { createdAt: 'desc' },
         },
-        supportTickets: {
+        SupportTicket: {
           select: {
             id: true,
             category: true,
@@ -93,7 +93,7 @@ export async function GET(
             attachments: true,
             createdAt: true,
             updatedAt: true,
-            responses: {
+            SupportTicketResponse: {
               select: {
                 id: true,
                 message: true,
@@ -106,7 +106,7 @@ export async function GET(
           },
           orderBy: { createdAt: 'desc' },
         },
-        notificationPrefs: true,
+        CustomerNotificationPreferences: true,
       },
     });
 
@@ -118,22 +118,22 @@ export async function GET(
     }
 
     // Calculate customer stats
-    const totalOrders = customer.bookings.length;
-    const completedOrders = customer.bookings.filter(
+    const totalOrders = customer.Booking.length;
+    const completedOrders = customer.Booking.filter(
       (b: any) => b.status === 'completed'
     ).length;
-    const cancelledOrders = customer.bookings.filter(
+    const cancelledOrders = customer.Booking.filter(
       (b: any) => b.status === 'cancelled'
     ).length;
     const totalLtv =
-      customer.bookings
+      customer.Booking
         .filter((b: any) => b.status === 'completed')
         .reduce((sum: number, b: any) => sum + b.amountPence, 0) / 100;
 
-    const openTickets = customer.supportTickets.filter(
+    const openTickets = customer.SupportTicket.filter(
       (t: any) => t.status === 'OPEN'
     ).length;
-    const urgentTickets = customer.supportTickets.filter(
+    const urgentTickets = customer.SupportTicket.filter(
       (t: any) => t.priority === 'URGENT'
     ).length;
 
@@ -146,8 +146,8 @@ export async function GET(
         totalLtv,
         openTickets,
         urgentTickets,
-        addressesCount: customer.addresses.length,
-        contactsCount: customer.contacts.length,
+        addressesCount: customer.Address.length,
+        contactsCount: customer.Contact.length,
       },
     };
 

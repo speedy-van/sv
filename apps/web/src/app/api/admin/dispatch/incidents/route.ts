@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
         status: 'reported',
       },
       include: {
-        driver: {
+        Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -119,9 +119,9 @@ export async function GET(request: NextRequest) {
     const incidents = await prisma.driverIncident.findMany({
       where,
       include: {
-        driver: {
+        Driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,

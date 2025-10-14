@@ -20,7 +20,7 @@ export async function GET(
       include: {
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 name: true,
                 email: true,
@@ -37,6 +37,15 @@ export async function GET(
         },
         pickupAddress: true,
         dropoffAddress: true,
+        TrackingPing: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            lat: true,
+            lng: true,
+            createdAt: true,
+          },
+        },
         Assignment: {
           include: {
             JobEvent: {
@@ -47,15 +56,6 @@ export async function GET(
                 notes: true,
               },
             },
-          },
-        },
-        TrackingPing: {
-          orderBy: { createdAt: 'desc' },
-          select: {
-            id: true,
-            lat: true,
-            lng: true,
-            createdAt: true,
           },
         },
       },
@@ -146,8 +146,8 @@ export async function GET(
         driver: booking.driver
           ? {
               id: booking.driver.id,
-              name: booking.driver.user.name,
-              email: booking.driver.user.email,
+              name: booking.driver.User.name,
+              email: booking.driver.User.email,
             }
           : null,
         customer: booking.customer ? {

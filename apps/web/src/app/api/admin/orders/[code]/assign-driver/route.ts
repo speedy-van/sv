@@ -50,7 +50,7 @@ export async function POST(
       const booking = await prisma.booking.findFirst({
         where: { reference: code },
         include: {
-          Driver: {
+          driver: {
             include: {
               User: {
                 select: { name: true, email: true }
@@ -69,8 +69,8 @@ export async function POST(
             }
           },
           // Include address relations for Pusher notifications
-          BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-          BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+          pickupAddress: true,
+          dropoffAddress: true,
         }
       });
 
@@ -79,7 +79,7 @@ export async function POST(
         reference: booking.reference,
         status: booking.status,
         hasAssignment: !!booking.Assignment,
-        currentDriver: booking.Driver?.User?.name || 'None'
+        currentDriver: booking.driver?.User?.name || 'None'
       } : 'Not found');
 
       if (!booking) {
@@ -311,8 +311,8 @@ export async function POST(
           assignedAt: new Date().toISOString(),
           expiresAt: expiresAt?.toISOString() || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           expiresInSeconds: 1800, // 30 minutes in seconds
-          pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup location',
-          dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff location',
+          pickupAddress: booking.pickupAddress?.label || 'Pickup location',
+          dropoffAddress: booking.dropoffAddress?.label || 'Dropoff location',
           estimatedEarnings: booking.totalGBP || 0,
           distance: booking.baseDistanceMiles || 0,
           message: 'New job assigned to you - 30 minutes to accept',

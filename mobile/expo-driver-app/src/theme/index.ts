@@ -161,6 +161,17 @@ export const DarkColors = {
     link: '#60A5FA',
   },
   
+  // Quick alias for common usage
+  textPrimary: '#F9FAFB',
+  textSecondary: '#D1D5DB',
+  textTertiary: '#9CA3AF',
+  
+  // Background aliases
+  backgroundSecondary: '#1E293B',
+  
+  // Disabled state
+  disabled: '#64748B',
+  
   // Border Colors
   border: {
     light: '#334155',
@@ -370,6 +381,54 @@ export const Typography = {
     wide: 0.4,
     wider: 0.8,
     widest: 1.6,
+  },
+  
+  // Typography Presets
+  h1: {
+    fontSize: 32,
+    fontWeight: '700' as const,
+    lineHeight: 1.2,
+  },
+  h2: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+    lineHeight: 1.2,
+  },
+  h3: {
+    fontSize: 24,
+    fontWeight: '600' as const,
+    lineHeight: 1.35,
+  },
+  h4: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    lineHeight: 1.35,
+  },
+  h5: {
+    fontSize: 18,
+    fontWeight: '500' as const,
+    lineHeight: 1.5,
+  },
+  h6: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    lineHeight: 1.5,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    lineHeight: 1.5,
+  },
+  caption: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 1.5,
+  },
+  button: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    lineHeight: 1.5,
+    letterSpacing: 0.4,
   },
 };
 

@@ -446,7 +446,7 @@ describe('Ultra-Smart Route Optimization System', () => {
 
     test('should handle edge cases gracefully', () => {
       // Empty bookings
-      const emptyBookings = [];
+      const emptyBookings: any[] = [];
 
       // Should not crash
       expect(() => priorityScorer.calculateBookingPriority(emptyBookings[0], {

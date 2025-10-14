@@ -596,11 +596,11 @@ export default function LiveTrackingMap({
                 )}
               </HStack>
               
-              {trackingData.tracking.currentDestination && (
+              {trackingData.tracking?.currentDestination && (
                 <HStack>
                   <Icon as={FaRoute} color="green.500" boxSize={4} />
                   <Text fontSize="sm">{trackingData.tracking.currentDestination.label}</Text>
-                  {trackingData.tracking.estimatedArrival && (
+                  {trackingData.tracking?.estimatedArrival && (
                     <Badge colorScheme="green" size="sm">
                       ETA: {trackingData.tracking.estimatedArrival}
                     </Badge>
@@ -656,7 +656,7 @@ export default function LiveTrackingMap({
         </CardHeader>
         <CardBody>
           <VStack spacing={3} align="stretch">
-            {trackingData.timeline.map((item, index) => (
+            {trackingData.timeline?.map((item, index) => (
               <HStack key={item.status} spacing={3}>
                 <Box
                   w={4}

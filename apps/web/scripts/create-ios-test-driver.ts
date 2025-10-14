@@ -10,7 +10,7 @@ async function createIOSTestDriver() {
     // Check if user already exists
     let user = await prisma.user.findUnique({
       where: { email: 'driver@test.com' },
-      include: { Driver: true },
+      include: { driver: true },
     });
 
     if (!user) {
@@ -25,7 +25,7 @@ async function createIOSTestDriver() {
           role: 'driver',
           password: hashedPassword,
         },
-        include: { Driver: true },
+        include: { driver: true },
       });
 
       console.log('✅ Test driver user created:', user.email);
@@ -42,20 +42,16 @@ async function createIOSTestDriver() {
     }
 
     // Create or update driver record
-    if (!user.Driver) {
+    if (!user.driver) {
       const driver = await prisma.driver.create({
         data: {
           id: `driver_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId: user.id,
-          firstName: 'Test',
-          lastName: 'Driver',
-          phone: '+447700900123',
           onboardingStatus: 'approved',
           basePostcode: 'SW1A 1AA',
           vehicleType: 'medium_van',
           status: 'active',
           rating: 4.8,
-          updatedAt: new Date(),
         },
       });
 
@@ -129,13 +125,10 @@ async function createIOSTestDriver() {
     } else {
       // Update existing driver to approved status
       await prisma.driver.update({
-        where: { id: user.Driver.id },
+        where: { id: user.driver.id },
         data: {
           onboardingStatus: 'approved',
           status: 'active',
-          firstName: 'Test',
-          lastName: 'Driver',
-          phone: '+447700900123',
           rating: 4.8,
         },
       });
@@ -144,14 +137,14 @@ async function createIOSTestDriver() {
 
       // Ensure driver availability exists
       const availability = await prisma.driverAvailability.findUnique({
-        where: { driverId: user.Driver.id },
+        where: { driverId: user.driver.id },
       });
 
       if (!availability) {
         await prisma.driverAvailability.create({
           data: {
             id: `availability_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            driverId: user.Driver.id,
+            driverId: user.driver.id,
             status: 'offline',
             locationConsent: false,
             updatedAt: new Date(),

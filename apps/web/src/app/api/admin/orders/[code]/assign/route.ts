@@ -30,7 +30,7 @@ export async function POST(
         },
         driver: {
           include: {
-            user: {
+            User: {
               select: {
                 id: true,
                 name: true,
@@ -127,15 +127,15 @@ export async function POST(
             },
           },
           driver: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
+    include: {
+      User: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
           },
         },
       });
@@ -202,12 +202,12 @@ export async function GET(
     where: {
       status: 'active',
       onboardingStatus: 'approved',
-      availability: {
+      DriverAvailability: {
         status: 'online',
       },
     },
     include: {
-      user: {
+      User: {
         select: {
           id: true,
           name: true,
@@ -221,7 +221,7 @@ export async function GET(
           },
         },
       },
-      vehicles: {
+      DriverVehicle: {
         take: 1,
       },
     },

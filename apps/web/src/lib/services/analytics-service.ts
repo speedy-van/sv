@@ -207,7 +207,7 @@ export class AnalyticsService {
       const drivers = await prisma.user.findMany({
         where: {
           role: 'driver',
-          routes: {
+          Route: {
             some: {
               status: 'completed',
               startTime: { gte: startDate, lte: endDate }
@@ -215,7 +215,7 @@ export class AnalyticsService {
           }
         },
         include: {
-          routes: {
+          Route: {
             where: {
               status: 'completed',
               startTime: { gte: startDate, lte: endDate }
@@ -226,7 +226,7 @@ export class AnalyticsService {
           },
           driver: {
             include: {
-              profile: true
+              DriverProfile: true
             }
           }
         },
@@ -234,7 +234,7 @@ export class AnalyticsService {
       });
 
       const driverAnalytics = drivers.map((driver, index) => {
-        const routes = driver.routes || [];
+        const routes = driver.Route || [];
         const totalRoutes = routes.length;
         const totalDrops = routes.reduce((sum, route) => sum + route.drops.length, 0);
         const totalEarnings = routes.reduce(
@@ -292,14 +292,14 @@ export class AnalyticsService {
       const customers = await prisma.user.findMany({
         where: {
           role: 'customer',
-          drops: {
+          Booking: {
             some: {
               createdAt: { gte: startDate, lte: endDate }
             }
           }
         },
         include: {
-          drops: {
+          Booking: {
             where: {
               createdAt: { gte: startDate, lte: endDate }
             }
@@ -310,14 +310,14 @@ export class AnalyticsService {
       });
 
       return customers.map(customer => {
-        const drops = customer.drops || [];
-        const totalOrders = drops.length;
-        const totalSpent = drops.reduce(
-          (sum, drop) => sum + (drop.quotedPrice?.toNumber() || 0), 0
+        const bookings = customer.Booking || [];
+        const totalOrders = bookings.length;
+        const totalSpent = bookings.reduce(
+          (sum, booking) => sum + (booking.totalGBP / 100), 0
         );
         const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
-        const lastOrderDate = drops.length > 0 
-          ? new Date(Math.max(...drops.map(drop => drop.createdAt.getTime())))
+        const lastOrderDate = bookings.length > 0
+          ? new Date(Math.max(...bookings.map(booking => booking.createdAt.getTime())))
           : new Date();
 
         // Calculate metrics

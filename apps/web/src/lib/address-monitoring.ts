@@ -46,10 +46,10 @@ export class AddressAutocompleteMonitoringService {
   };
 
   private securityConfig: SecurityConfig = {
-    allowe    allowedDomains: [
+    allowedDomains: [
       'localhost',
       'speedy-van.onrender.com',
-      'speedy-van.co.uk',n.com',
+      'speedy-van.co.uk',
       // Add your production domains here
     ],
     allowedIPs: [], // Can be populated for additional IP restrictions

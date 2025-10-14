@@ -69,20 +69,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Transform data to internal format
     const drops: Drop[] = rawDrops.map(drop => ({
-      ...drop,
+      id: drop.id,
+      bookingId: drop.bookingId,
+      pickupLocation: {
+        latitude: drop.pickupLocation.latitude || 0,
+        longitude: drop.pickupLocation.longitude || 0,
+        address: drop.pickupLocation.address || 'Address not provided'
+      },
+      deliveryLocation: {
+        latitude: drop.deliveryLocation.latitude || 0,
+        longitude: drop.deliveryLocation.longitude || 0,
+        address: drop.deliveryLocation.address || 'Address not provided'
+      },
       timeWindow: {
         earliest: new Date(drop.timeWindow.earliest),
         latest: new Date(drop.timeWindow.latest)
-      }
+      },
+      weight: drop.weight,
+      volume: drop.volume,
+      serviceTier: drop.serviceTier,
+      priority: drop.priority,
+      estimatedDuration: drop.estimatedDuration,
+      value: drop.value,
+      status: drop.status
     }));
 
     // Initialize orchestration engine with custom config
     const engine = new RouteOrchestrationEngine(options.customConfig);
 
     // Transform options
-    const orchestrationOptions = {
-      ...options,
-      preferredStartTime: options.preferredStartTime ? new Date(options.preferredStartTime) : undefined
+  const orchestrationOptions: {
+      emergencyMode?: boolean;
+      preferredStartTime?: Date;
+      availableDrivers?: number;
+      geofenceConstraints?: { lat: number; lng: number; radius: number }[];
+    } = {
+      emergencyMode: options.emergencyMode,
+      preferredStartTime: options.preferredStartTime ? new Date(options.preferredStartTime) : undefined,
+      availableDrivers: options.availableDrivers,
+      geofenceConstraints: options.geofenceConstraints?.map(g => ({ lat: g.lat, lng: g.lng, radius: g.radius }))
     };
 
     // Execute orchestration
@@ -196,11 +221,29 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }).parse(body);
 
     const drops: Drop[] = rawDrops.map(drop => ({
-      ...drop,
+      id: drop.id || `temp_${Date.now()}_${Math.random()}`,
+      bookingId: drop.bookingId,
+      pickupLocation: {
+        latitude: drop.pickupLocation.latitude || 0,
+        longitude: drop.pickupLocation.longitude || 0,
+        address: drop.pickupLocation.address || 'Address not provided'
+      },
+      deliveryLocation: {
+        latitude: drop.deliveryLocation.latitude || 0,
+        longitude: drop.deliveryLocation.longitude || 0,
+        address: drop.deliveryLocation.address || 'Address not provided'
+      },
       timeWindow: {
         earliest: new Date(drop.timeWindow.earliest),
         latest: new Date(drop.timeWindow.latest)
-      }
+      },
+      weight: drop.weight,
+      volume: drop.volume,
+      serviceTier: drop.serviceTier,
+      priority: drop.priority,
+      estimatedDuration: drop.estimatedDuration,
+      value: drop.value,
+      status: drop.status
     }));
 
     const validationResults = {

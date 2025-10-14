@@ -45,8 +45,8 @@ export async function GET(request: NextRequest) {
       prisma.driver.findMany({
         where: {
           OR: [
-            { user: { name: { contains: searchTerm, mode: 'insensitive' } } },
-            { user: { email: { contains: searchTerm, mode: 'insensitive' } } },
+            { User: { name: { contains: searchTerm, mode: 'insensitive' } } },
+            { User: { email: { contains: searchTerm, mode: 'insensitive' } } },
             { basePostcode: { contains: searchTerm, mode: 'insensitive' } },
           ],
         },
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
           status: true,
           basePostcode: true,
           vehicleType: true,
-          user: {
+          User: {
             select: {
               name: true,
               email: true,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           id: true,
           name: true,
           email: true,
-          bookings: {
+          Booking: {
             select: {
               id: true,
               status: true,
@@ -109,12 +109,12 @@ export async function GET(request: NextRequest) {
       ...drivers.map(driver => ({
         id: driver.id,
         type: 'driver' as const,
-        title: driver.user.name,
+        title: (driver as any).User?.name,
         subtitle: `Driver • ${driver.vehicleType} • ${driver.basePostcode}`,
         href: `/admin/drivers/${driver.id}`,
         badge: driver.status,
         metadata: {
-          email: driver.user.email,
+          email: (driver as any).User?.email,
           vehicleType: driver.vehicleType,
         },
       })),
@@ -124,11 +124,11 @@ export async function GET(request: NextRequest) {
         id: customer.id,
         type: 'customer' as const,
         title: customer.name,
-        subtitle: `Customer • ${customer.bookings.length} orders`,
+        subtitle: `Customer • ${customer.Booking.length} orders`,
         href: `/admin/customers/${customer.id}`,
         metadata: {
           email: customer.email,
-          orderCount: customer.bookings.length,
+          orderCount: customer.Booking.length,
         },
       })),
     ];

@@ -285,14 +285,10 @@ export async function POST(request: NextRequest) {
           await prisma.driverNotification.create({
             data: {
               driverId: participant.userId,
-              type: 'chat_message',
+              type: 'message_received',
               title: `New message from ${userName}`,
               message: content.substring(0, 100),
               read: false,
-              metadata: {
-                sessionId,
-                messageId: message.id,
-              },
             },
           }).catch(() => {
             // Ignore if driver notification fails (user might not be a driver)

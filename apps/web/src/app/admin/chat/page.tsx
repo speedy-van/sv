@@ -88,8 +88,8 @@ export default function EnhancedAdminChatPage() {
   const channelRef = useRef<any>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const typingIndicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadAllChats();

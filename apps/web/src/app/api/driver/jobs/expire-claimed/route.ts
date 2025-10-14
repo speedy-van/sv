@@ -53,7 +53,8 @@ export async function POST() {
           where: { id: assignment.id },
           data: { 
             status: 'declined',
-            declinedAt: now,
+            // declinedAt removed from schema; only update status and timestamps
+            updatedAt: now,
           },
         });
 

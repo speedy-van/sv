@@ -257,7 +257,7 @@ export class APIPerformanceService {
             driver: {
               select: {
                 id: true,
-                user: {
+                User: {
                   select: {
                     name: true,
                     email: true
@@ -292,11 +292,11 @@ export class APIPerformanceService {
         id: true,
         status: true,
         currentLocation: true,
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
-            phone: true
+            email: true
           }
         }
       };

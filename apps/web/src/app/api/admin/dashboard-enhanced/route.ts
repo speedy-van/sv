@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
         scheduledAt: { gte: new Date() } // Future bookings only
       },
       include: {
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        pickupAddress: true,
+        dropoffAddress: true,
         BookingItem: true,
-        User: {
+        customer: {
           select: { id: true, name: true, email: true }
         }
       },
@@ -199,10 +199,10 @@ export async function GET(request: NextRequest) {
       unassignedBookings: unassignedWithSLA.slice(0, 10).map(booking => ({
         id: booking.id,
         reference: booking.reference,
-        customer: booking.User?.name || booking.customerName,
+        customer: booking.customer?.name || booking.customerName,
         customerPhone: booking.customerPhone,
-        pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'Pickup Address',
-        dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'Dropoff Address',
+        pickupAddress: booking.pickupAddress?.label || 'Pickup Address',
+        dropoffAddress: booking.dropoffAddress?.label || 'Dropoff Address',
         scheduledAt: booking.scheduledAt,
         totalAmount: penceToPounds(booking.totalGBP),
         waitingMinutes: booking.waitingMinutes,

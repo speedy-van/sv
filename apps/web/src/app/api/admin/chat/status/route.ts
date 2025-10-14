@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             include: {
               User: {
                 include: {
-                  Driver: {
+                  driver: {
                     select: {
                       id: true
                     }
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       // Notify each driver
       const notifications = activeSessions.map(session => {
         const driverParticipant = session.ChatParticipant.find(p => p.role === 'driver');
-        if (driverParticipant?.User.Driver?.id) {
-          return pusher.trigger(`driver-${driverParticipant.User.Driver.id}`, 'admin_status', {
+        if (driverParticipant?.User?.driver?.id) {
+          return pusher.trigger(`driver-${driverParticipant.User.driver.id}`, 'admin_status', {
             status,
             lastActive: new Date().toISOString(),
             adminId: authResult.id

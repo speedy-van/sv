@@ -142,8 +142,8 @@ export async function POST(
         where: { id: assignment.bookingId },
         include: {
           BookingItem: true,
-          BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-          BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+          pickupAddress: true,
+          dropoffAddress: true,
         }
       });
       
@@ -156,28 +156,34 @@ export async function POST(
             driverId: driver.id,
             bookingId: booking.id,
             assignmentId: assignment.id,
-            bookingAmount: booking.totalGBP,
+            customerPaymentPence: booking.totalGBP,
             distanceMiles: booking.baseDistanceMiles || 0,
             durationMinutes: booking.estimatedDurationMinutes || 0,
             dropCount: 1,
             hasHelper: false,
             urgencyLevel: 'standard',
-            isOnTime: true,
+            onTimeDelivery: true,
           });
 
           // Save to database
-          await driverEarningsService.saveToDatabase(earningsResult);
+          await driverEarningsService.saveEarnings({
+            driverId: driver.id,
+            assignmentId: assignment.id,
+            bookingId: booking.id,
+            distanceMiles: booking.baseDistanceMiles || 0,
+            durationMinutes: booking.estimatedDurationMinutes || 0,
+            dropCount: 1,
+            customerPaymentPence: booking.totalGBP,
+            urgencyLevel: 'standard',
+            onTimeDelivery: true,
+          }, earningsResult);
           
           console.log('✅ Driver earnings created using REAL engine:', {
             driverId: driver.id,
             assignmentId: assignment.id,
             bookingReference: booking.reference,
             customerPaid: booking.totalGBP,
-            baseFare: earningsCalculation.routeBaseFare,
-            mileageComponent: earningsCalculation.mileageComponent,
-            performanceMultiplier: earningsCalculation.performanceMultiplier,
-            finalPayout: earningsCalculation.finalPayout,
-            netEarningsPence: driverEarnings,
+            netEarningsPence: earningsResult.breakdown.netEarnings,
           });
         } catch (earningsError) {
           console.error('❌ Failed to calculate driver earnings on job completion:', earningsError);

@@ -70,23 +70,13 @@ export async function GET(request: NextRequest) {
     console.log('🔎 [Admin Routes API] Querying routes with filters:', JSON.stringify(where));
 
     // Get routes with all related data
-    let routes = [];
+    let routes: any[] = [];
     try {
       routes = await prisma.route.findMany({
         where,
         include: {
-          Driver: {
-            include: {
-              User: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                }
-              }
-            }
-          },
-          Drop: {
+          driver: { select: { id: true, name: true, email: true } },
+          drops: {
             select: {
               id: true,
               status: true,
@@ -94,6 +84,7 @@ export async function GET(request: NextRequest) {
               deliveryAddress: true,
               weight: true,
               volume: true,
+              quotedPrice: true,
             }
           },
           Booking: {
@@ -131,7 +122,7 @@ export async function GET(request: NextRequest) {
     console.log('🔍 [Admin Routes API] Querying drivers...');
 
     // Get active drivers with their availability
-    let driversData = [];
+    let driversData: any[] = [];
     try {
       driversData = await prisma.driver.findMany({
         where: {
@@ -161,7 +152,7 @@ export async function GET(request: NextRequest) {
     }
     
     const drivers = driversData.map((driver: any) => ({
-      id: driver.User?.id || driver.userId,
+      id: driver.userId,
       name: driver.User?.name || 'Unknown',
       status: driver.DriverAvailability?.status || 'offline',
       currentRoutes: 0,
@@ -169,20 +160,11 @@ export async function GET(request: NextRequest) {
 
     // Log audit (non-blocking)
     try {
-      await logAudit(
-        (session.user as any).id,
-        'view_routes',
-        undefined,
-        { 
-          targetType: 'route', 
-          filters: { 
-            status: status || null, 
-            driverId: driverId || null, 
-            startDate: startDate || null, 
-            endDate: endDate || null 
-          } 
-        }
-      );
+      await logAudit({
+        userId: (session.user as any).id,
+        action: 'view_routes',
+        details: { filters: { status, driverId, startDate, endDate } },
+      });
     } catch (auditError) {
       console.error('⚠️ Audit logging failed (non-critical):', auditError);
     }
@@ -195,14 +177,14 @@ export async function GET(request: NextRequest) {
         id: route.id,
         status: route.status,
         driverId: route.driverId,
-        driverName: route.Driver?.User?.name || 'Unassigned',
-        driverEmail: route.Driver?.User?.email,
-        totalDrops: route.totalDrops || route.Drop?.length || 0,
+        driverName: route.driver?.name || 'Unassigned',
+        driverEmail: route.driver?.email,
+        totalDrops: route.totalDrops || (route as any).drops?.length || 0,
         completedDrops: route.completedDrops,
         startTime: route.startTime,
         totalOutcome: route.totalOutcome,
         serviceTier: route.serviceTier,
-        drops: route.Drop || [],
+        drops: (route as any).drops || [],
         bookings: route.Booking || [],
         progress: route.totalDrops > 0 ? (route.completedDrops / route.totalDrops * 100) : 0,
         createdAt: route.createdAt,
@@ -294,12 +276,8 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date()
       },
       include: {
-        Driver: {
-          include: {
-            User: true
-          }
-        },
-        Drop: true,
+        driver: { select: { id: true, name: true, email: true } },
+        drops: true,
       }
     });
 

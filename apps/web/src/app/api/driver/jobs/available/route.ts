@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       select: { 
         id: true,
         basePostcode: true,
-        availability: {
+        DriverAvailability: {
           select: {
             status: true,
             lastLat: true,
@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
         status: true,
         customerName: true,
         customerPhone: true,
+        estimatedDurationMinutes: true,
         totalGBP: true,
         createdAt: true,
         driverId: true,
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
             lng: true,
           }
         },
-        items: {
+        BookingItem: {
           select: {
             name: true,
             quantity: true,
@@ -118,13 +119,13 @@ export async function GET(request: NextRequest) {
         driverId: driver.id,
         bookingId: booking.id,
         assignmentId: 'temp_' + booking.id,
-        bookingAmount: booking.totalGBP,
+        customerPaymentPence: booking.totalGBP,
         distanceMiles: distance,
         durationMinutes: booking.estimatedDurationMinutes || 60,
         dropCount: 1,
         hasHelper: false,
         urgencyLevel: 'standard',
-        isOnTime: true,
+        onTimeDelivery: true,
       });
       const estimatedEarnings = Math.floor(earningsResult.breakdown.netEarnings);
 
@@ -151,7 +152,7 @@ export async function GET(request: NextRequest) {
         distance: distance,
         // Only show driver payout - never expose customer total
         estimatedEarnings: estimatedEarnings,
-        items: booking.items.map(item => ({
+        items: booking.BookingItem.map(item => ({
           name: item.name,
           quantity: item.quantity,
           size: 'Medium', // Default size since field doesn't exist

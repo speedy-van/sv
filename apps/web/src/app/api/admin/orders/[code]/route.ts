@@ -26,14 +26,14 @@ export async function GET(
     const order = await prisma.booking.findUnique({
       where: { reference: code },
       include: {
-        User: {
+        customer: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        Driver: {
+        driver: {
           include: {
             User: {
               select: {
@@ -44,8 +44,10 @@ export async function GET(
             },
           },
         },
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        pickupAddress: true,
+        dropoffAddress: true,
+        pickupProperty: true,
+        dropoffProperty: true,
         BookingItem: {
           select: {
             id: true,
@@ -105,22 +107,26 @@ export async function GET(
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       customerPhone: order.customerPhone,
-      BookingAddress_Booking_pickupAddressIdToBookingAddress: order.BookingAddress_Booking_pickupAddressIdToBookingAddress ? {
-        label: order.BookingAddress_Booking_pickupAddressIdToBookingAddress.label,
-        postcode: order.BookingAddress_Booking_pickupAddressIdToBookingAddress.postcode,
-        // Add flatNumber when available in schema
+      pickupAddress: order.pickupAddress ? {
+        label: order.pickupAddress.label,
+        postcode: order.pickupAddress.postcode,
       } : null,
-      BookingAddress_Booking_dropoffAddressIdToBookingAddress: order.BookingAddress_Booking_dropoffAddressIdToBookingAddress ? {
-        label: order.BookingAddress_Booking_dropoffAddressIdToBookingAddress.label,
-        postcode: order.BookingAddress_Booking_dropoffAddressIdToBookingAddress.postcode,
-        // Add flatNumber when available in schema
+      dropoffAddress: order.dropoffAddress ? {
+        label: order.dropoffAddress.label,
+        postcode: order.dropoffAddress.postcode,
       } : null,
-      pickupProperty: null,
-      dropoffProperty: null,
-      driver: order.Driver ? {
-        user: {
-          name: order.Driver.User.name,
-          email: order.Driver.User.email,
+      pickupProperty: order.pickupProperty ? {
+        floors: order.pickupProperty.floors,
+        accessType: order.pickupProperty.accessType,
+      } : null,
+      dropoffProperty: order.dropoffProperty ? {
+        floors: order.dropoffProperty.floors,
+        accessType: order.dropoffProperty.accessType,
+      } : null,
+      driver: order.driver ? {
+        User: {
+          name: order.driver.User.name,
+          email: order.driver.User.email,
         },
       } : null,
       createdAt: order.createdAt.toISOString(),
@@ -207,14 +213,14 @@ export async function PUT(
         }),
       },
       include: {
-        User: {
+        customer: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        Driver: {
+        driver: {
           include: {
             User: {
               select: {
@@ -225,8 +231,10 @@ export async function PUT(
             },
           },
         },
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+        pickupAddress: true,
+        dropoffAddress: true,
+        pickupProperty: true,
+        dropoffProperty: true,
         BookingItem: {
           select: {
             id: true,
@@ -256,20 +264,26 @@ export async function PUT(
       customerName: updatedOrder.customerName,
       customerEmail: updatedOrder.customerEmail,
       customerPhone: updatedOrder.customerPhone,
-      BookingAddress_Booking_pickupAddressIdToBookingAddress: updatedOrder.BookingAddress_Booking_pickupAddressIdToBookingAddress ? {
-        label: updatedOrder.BookingAddress_Booking_pickupAddressIdToBookingAddress.label,
-        postcode: updatedOrder.BookingAddress_Booking_pickupAddressIdToBookingAddress.postcode,
+      pickupAddress: updatedOrder.pickupAddress ? {
+        label: updatedOrder.pickupAddress.label,
+        postcode: updatedOrder.pickupAddress.postcode,
       } : null,
-      BookingAddress_Booking_dropoffAddressIdToBookingAddress: updatedOrder.BookingAddress_Booking_dropoffAddressIdToBookingAddress ? {
-        label: updatedOrder.BookingAddress_Booking_dropoffAddressIdToBookingAddress.label,
-        postcode: updatedOrder.BookingAddress_Booking_dropoffAddressIdToBookingAddress.postcode,
+      dropoffAddress: updatedOrder.dropoffAddress ? {
+        label: updatedOrder.dropoffAddress.label,
+        postcode: updatedOrder.dropoffAddress.postcode,
       } : null,
-      pickupProperty: null,
-      dropoffProperty: null,
-      Driver: updatedOrder.Driver ? {
+      pickupProperty: updatedOrder.pickupProperty ? {
+        floors: updatedOrder.pickupProperty.floors,
+        accessType: updatedOrder.pickupProperty.accessType,
+      } : null,
+      dropoffProperty: updatedOrder.dropoffProperty ? {
+        floors: updatedOrder.dropoffProperty.floors,
+        accessType: updatedOrder.dropoffProperty.accessType,
+      } : null,
+      driver: updatedOrder.driver ? {
         User: {
-          name: updatedOrder.Driver.User.name,
-          email: updatedOrder.Driver.User.email,
+          name: updatedOrder.driver.User.name,
+          email: updatedOrder.driver.User.email,
         },
       } : null,
       createdAt: updatedOrder.createdAt.toISOString(),

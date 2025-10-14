@@ -96,7 +96,7 @@ describe('Stripe Webhook Handlers', () => {
 
     test('should reject invalid webhook signature', async () => {
       mockConstructWebhookEvent.mockImplementation(() => {
-        throw new Stripe.errors.StripeSignatureVerificationError('Invalid signature');
+        throw new Stripe.errors.StripeSignatureVerificationError('Invalid signature' as any);
       });
 
       const { req, res } = createMocks({

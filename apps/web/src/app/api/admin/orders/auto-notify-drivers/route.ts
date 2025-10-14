@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       include: {
         pickupAddress: true,
         dropoffAddress: true,
-        items: true,
+        BookingItem: true,
       },
       orderBy: {
         createdAt: 'asc'

@@ -60,7 +60,7 @@ export async function POST(
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
-          User: {
+          driver: {
             select: { id: true, name: true, email: true }
           },
           Booking: {
@@ -93,7 +93,7 @@ export async function POST(
         );
       }
 
-      const oldDriverName = route.User?.name || 'Unknown';
+      const oldDriverName = (route as any).driver?.name || 'Unknown';
       const oldDriverId = route.driverId;
       const completedDrops = route.completedDrops || 0;
       const totalDrops = route.totalDrops || 0;
@@ -128,8 +128,8 @@ export async function POST(
         });
 
         // Recalculate and update earnings for completed drops
-        if (completedDrops > 0 && route.Booking && route.Booking.length > 0) {
-          for (const booking of route.Booking) {
+        if (completedDrops > 0 && (route as any).Booking && (route as any).Booking.length > 0) {
+          for (const booking of (route as any).Booking) {
             if (booking.Assignment && booking.Assignment.DriverEarnings) {
               for (const earning of booking.Assignment.DriverEarnings) {
                 // Update earnings to reflect only completed drops
@@ -163,8 +163,8 @@ export async function POST(
         }
 
         // Update all associated bookings to remove driver assignment
-        if (route.Booking && route.Booking.length > 0) {
-          for (const booking of route.Booking) {
+        if ((route as any).Booking && (route as any).Booking.length > 0) {
+          for (const booking of (route as any).Booking) {
             await tx.booking.update({
               where: { id: booking.id },
               data: {
@@ -197,7 +197,7 @@ export async function POST(
         });
 
         if (driverAvailability) {
-          const bookingsCount = route.Booking?.length || 0;
+          const bookingsCount = (route as any).Booking?.length || 0;
           await tx.driverAvailability.update({
             where: { driverId: oldDriverId },
             data: {
@@ -254,7 +254,7 @@ export async function POST(
       console.log('✅ Route unassigned successfully:', {
         routeId,
         oldDriver: oldDriverName,
-        bookingsAffected: route.Booking?.length || 0,
+        bookingsAffected: (route as any).Booking?.length || 0,
         completedDrops,
         totalDrops,
         earningsAdjusted: !!earningsData,
@@ -267,7 +267,7 @@ export async function POST(
         data: {
           routeId,
           previousDriver: oldDriverName,
-          bookingsAffected: route.Booking?.length || 0,
+          bookingsAffected: (route as any).Booking?.length || 0,
           completedDrops,
           totalDrops,
           earningsData,

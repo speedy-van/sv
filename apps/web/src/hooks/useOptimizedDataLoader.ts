@@ -24,7 +24,7 @@ export function useOptimizedDataLoader<T>(
   const [error, setError] = useState<string | null>(null);
   
   const abortControllerRef = useRef<AbortController | null>(null);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cacheRef = useRef<Map<string, { data: T; timestamp: number }>>(new Map());
   
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
