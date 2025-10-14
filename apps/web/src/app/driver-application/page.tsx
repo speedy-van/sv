@@ -131,9 +131,10 @@ export default function DriverApplicationPage() {
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  // Force dark theme colors
+  const bgColor = '#111827';
+  const cardBg = '#1F2937';
+  const borderColor = '#374151';
 
   const [formData, setFormData] = useState<DriverApplication>({
     firstName: '',
@@ -731,9 +732,9 @@ export default function DriverApplicationPage() {
                     top="100%"
                     left={0}
                     width="100%"
-                    bg="white"
+                    bg="#1F2937"
                     border="1px solid"
-                    borderColor="gray.200"
+                    borderColor="#374151"
                     borderRadius="md"
                     boxShadow="lg"
                     zIndex={10}
@@ -1351,7 +1352,7 @@ export default function DriverApplicationPage() {
   return (
     <Box
       minH="100vh"
-      bg="bg.canvas"
+      bg="#111827"
       py={{ base: 8, md: 12 }}
       position="relative"
       overflow="hidden"

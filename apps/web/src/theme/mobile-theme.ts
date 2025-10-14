@@ -134,18 +134,18 @@ const colors = {
     900: '#1D4044',
   },
 
-  // Neon accent colors
+  // Neon accent colors - Cyan to match driver portal
   neon: {
-    50: '#E6F7FF',
-    100: '#B3E5FF',
-    200: '#80D4FF',
-    300: '#4DC2FF',
-    400: '#1AB0FF',
-    500: '#00C2FF', // Primary neon blue
-    600: '#0099CC',
-    700: '#007399',
-    800: '#004D66',
-    900: '#002633',
+    50: '#ECFEFF',
+    100: '#CFFAFE',
+    200: '#A5F3FC',
+    300: '#67E8F9',
+    400: '#22D3EE',
+    500: '#06B6D4', // Primary cyan (matches driver portal)
+    600: '#0891B2',
+    700: '#0E7490',
+    800: '#155E75',
+    900: '#164E63',
   },
 
   // Success colors
@@ -190,19 +190,19 @@ const colors = {
     900: '#171923',
   },
 
-  // Background colors
+  // Background colors - Dark theme to match driver portal
   bg: {
-    canvas: '#0F1114', // Main background
-    card: '#1A1D23', // Card background
-    surface: '#242930', // Surface background
+    canvas: '#111827', // Main background (gray.900)
+    card: '#1F2937', // Card background (gray.800)
+    surface: '#1F2937', // Surface background (same as card for consistency)
     overlay: 'rgba(0, 0, 0, 0.8)',
   },
 
   // Border colors
   border: {
-    primary: '#2D3748',
-    secondary: '#4A5568',
-    neon: '#00C2FF',
+    primary: '#374151', // gray.700
+    secondary: '#4B5563', // gray.600
+    neon: '#06B6D4', // Cyan to match driver portal
   },
 
   // Text colors

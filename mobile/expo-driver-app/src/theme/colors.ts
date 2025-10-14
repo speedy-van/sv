@@ -6,49 +6,49 @@
  */
 
 export const colors = {
-  // Core Neon Colors
+  // Core Action Colors (Matching Driver Portal)
   neon: {
-    50: '#E6F7FF',
-    100: '#B3E5FF',
-    200: '#80D4FF',
-    300: '#4DC2FF',
-    400: '#1AB0FF',
-    500: '#00C2FF', // Primary neon blue
-    600: '#0099CC',
-    700: '#007099',
-    800: '#004766',
-    900: '#001E33',
-    blue: '#00C2FF',
-    purple: '#B026FF',
+    50: '#ECFEFF',
+    100: '#CFFAFE',
+    200: '#A5F3FC',
+    300: '#67E8F9',
+    400: '#22D3EE',
+    500: '#06B6D4', // Primary cyan (matches portal)
+    600: '#0891B2',
+    700: '#0E7490',
+    800: '#155E75',
+    900: '#164E63',
+    blue: '#3B82F6', // Secondary blue (matches portal)
+    purple: '#8B5CF6',
   },
 
-  // Brand Colors (Speedy Van Green)
+  // Brand Colors (Speedy Van Green - Matching Portal)
   brand: {
-    50: '#E6FFF7',
-    100: '#B3FFE5',
-    200: '#80FFD4',
-    300: '#4DFFC2',
-    400: '#1AFFB0',
-    500: '#00D18F', // Primary brand green
-    600: '#00B385',
-    700: '#009973',
-    800: '#007F61',
-    900: '#00654F',
+    50: '#ECFDF5',
+    100: '#D1FAE5',
+    200: '#A7F3D0',
+    300: '#6EE7B7',
+    400: '#34D399',
+    500: '#10B981', // Primary green (matches portal)
+    600: '#059669',
+    700: '#047857',
+    800: '#065F46',
+    900: '#064E3B',
   },
 
-  // Dark Surface Colors
+  // Dark Surface Colors (Matching Portal)
   dark: {
-    50: '#F8F9FA',
-    100: '#E9ECEF',
-    200: '#DEE2E6',
-    300: '#CED4DA',
-    400: '#ADB5BD',
-    500: '#6C757D',
-    600: '#495057',
-    700: '#343A40',
-    800: '#212529',
-    900: '#0D0D0D', // Primary dark background
-    950: '#000000',
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937', // Secondary dark (matches portal)
+    900: '#111827', // Primary dark background (matches portal)
+    950: '#030712',
   },
 
   // Semantic Colors
@@ -113,32 +113,32 @@ export const colors = {
     inverse: '#0D0D0D',
   },
 
-  // Background Colors
+  // Background Colors (Matching Portal)
   background: {
-    primary: '#0D0D0D',
-    secondary: '#1A1A1A',
-    tertiary: '#262626',
-    elevated: '#333333',
-    card: '#1A1A1A',
-    input: '#262626',
+    primary: '#111827',    // Main dark background (matches portal)
+    secondary: '#1F2937',  // Secondary dark (matches portal)
+    tertiary: '#374151',   // Tertiary dark
+    elevated: '#4B5563',   // Elevated elements
+    card: '#1F2937',       // Card background (matches portal)
+    input: '#374151',      // Input background
   },
 
-  // Border Colors
+  // Border Colors (Matching Portal)
   border: {
-    primary: '#404040',
-    secondary: '#262626',
-    neon: '#00C2FF',
-    brand: '#00D18F',
+    primary: '#374151',    // Default border (matches portal)
+    secondary: '#4B5563',  // Light border
+    neon: '#06B6D4',       // Cyan border (matches portal)
+    brand: '#10B981',      // Green border (matches portal)
   },
 };
 
-// Gradient presets
+// Gradient presets (Matching Portal)
 export const gradients = {
-  neon: ['#00C2FF', '#B026FF'],
-  brand: ['#00D18F', '#00C2FF'],
-  dark: ['#0D0D0D', '#1A1A1A', '#0D0D0D'],
-  success: ['#22C55E', '#16A34A'],
-  error: ['#EF4444', '#DC2626'],
+  neon: ['#06B6D4', '#3B82F6'],      // Cyan to blue
+  brand: ['#10B981', '#06B6D4'],     // Green to cyan
+  dark: ['#111827', '#1F2937', '#111827'],  // Portal dark gradient
+  success: ['#10B981', '#059669'],   // Green gradient
+  error: ['#EF4444', '#DC2626'],     // Red gradient
 };
 
 // Shadow presets
