@@ -289,10 +289,18 @@ struct ProfileTabContent: View {
     }
 }
 
-// MARK: - Notifications Tab
+// MARK: - Notifications Tab (FIXED - Editable Toggles)
 
 struct NotificationsTabContent: View {
     @ObservedObject var viewModel: SettingsViewModel
+    
+    // Local state for editing
+    @State private var editedJobAlerts: Bool = false
+    @State private var editedPushNotifications: Bool = false
+    @State private var editedEmailNotifications: Bool = false
+    @State private var editedSmsNotifications: Bool = false
+    @State private var editedWeeklyReports: Bool = false
+    @State private var editedMarketingEmails: Bool = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -301,10 +309,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "Job Alerts",
                         subtitle: "Receive notifications for new job opportunities",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.jobAlerts ?? false },
-                            set: { viewModel.notificationPreferences?.jobAlerts = $0 }
-                        )
+                        isOn: $editedJobAlerts
                     )
                     
                     Divider().padding(.leading, 60)
@@ -312,10 +317,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "Push Notifications",
                         subtitle: "Instant notifications on your device",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.pushNotifications ?? false },
-                            set: { viewModel.notificationPreferences?.pushNotifications = $0 }
-                        )
+                        isOn: $editedPushNotifications
                     )
                     
                     Divider().padding(.leading, 60)
@@ -323,10 +325,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "Email Notifications",
                         subtitle: "Job updates via email",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.emailNotifications ?? false },
-                            set: { viewModel.notificationPreferences?.emailNotifications = $0 }
-                        )
+                        isOn: $editedEmailNotifications
                     )
                     
                     Divider().padding(.leading, 60)
@@ -334,10 +333,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "SMS Notifications",
                         subtitle: "Text messages for urgent updates",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.smsNotifications ?? false },
-                            set: { viewModel.notificationPreferences?.smsNotifications = $0 }
-                        )
+                        isOn: $editedSmsNotifications
                     )
                     
                     Divider().padding(.leading, 60)
@@ -345,10 +341,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "Weekly Reports",
                         subtitle: "Summary of weekly performance",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.weeklyReports ?? false },
-                            set: { viewModel.notificationPreferences?.weeklyReports = $0 }
-                        )
+                        isOn: $editedWeeklyReports
                     )
                     
                     Divider().padding(.leading, 60)
@@ -356,10 +349,7 @@ struct NotificationsTabContent: View {
                     NotificationToggle(
                         title: "Marketing Emails",
                         subtitle: "Promotional offers and updates",
-                        isOn: Binding(
-                            get: { viewModel.notificationPreferences?.marketingEmails ?? false },
-                            set: { viewModel.notificationPreferences?.marketingEmails = $0 }
-                        )
+                        isOn: $editedMarketingEmails
                     )
                 }
                 .background(Color(.systemBackground))
@@ -369,7 +359,7 @@ struct NotificationsTabContent: View {
                 
                 Button {
                     Task {
-                        await viewModel.updateNotificationPreferences()
+                        await savePreferences()
                     }
                 } label: {
                     HStack {
@@ -393,6 +383,41 @@ struct NotificationsTabContent: View {
             }
         }
         .padding(.vertical)
+        .onAppear {
+            // Initialize local state with preferences data
+            if let prefs = viewModel.notificationPreferences {
+                editedJobAlerts = prefs.jobAlerts
+                editedPushNotifications = prefs.pushNotifications
+                editedEmailNotifications = prefs.emailNotifications
+                editedSmsNotifications = prefs.smsNotifications
+                editedWeeklyReports = prefs.weeklyReports
+                editedMarketingEmails = prefs.marketingEmails
+            }
+        }
+        .onChange(of: viewModel.notificationPreferences) { newPrefs in
+            // Update local state when preferences change
+            if let prefs = newPrefs {
+                editedJobAlerts = prefs.jobAlerts
+                editedPushNotifications = prefs.pushNotifications
+                editedEmailNotifications = prefs.emailNotifications
+                editedSmsNotifications = prefs.smsNotifications
+                editedWeeklyReports = prefs.weeklyReports
+                editedMarketingEmails = prefs.marketingEmails
+            }
+        }
+    }
+    
+    private func savePreferences() async {
+        // Update viewModel.notificationPreferences with edited values
+        viewModel.notificationPreferences?.jobAlerts = editedJobAlerts
+        viewModel.notificationPreferences?.pushNotifications = editedPushNotifications
+        viewModel.notificationPreferences?.emailNotifications = editedEmailNotifications
+        viewModel.notificationPreferences?.smsNotifications = editedSmsNotifications
+        viewModel.notificationPreferences?.weeklyReports = editedWeeklyReports
+        viewModel.notificationPreferences?.marketingEmails = editedMarketingEmails
+        
+        // Call the update function
+        await viewModel.updateNotificationPreferences()
     }
 }
 
