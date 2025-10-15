@@ -524,6 +524,9 @@ export async function POST(request: NextRequest) {
             name: item.name,
             quantity: item.quantity || 1,
             volumeM3: item.volumeFactor || 0,
+            category: item.category || 'general',
+            estimatedVolume: item.volumeFactor || 0,
+            estimatedWeight: 0,
           },
         });
       }
