@@ -383,7 +383,22 @@ export async function PUT(request: NextRequest) {
 
       // Update vehicle
       if (vehicle) {
+        console.log('🚗 Updating vehicle...');
         try {
+          // Prepare vehicle data with proper date formatting
+          const vehicleData: any = { ...vehicle };
+          
+          // Convert motExpiry to ISO-8601 format if provided
+          if (vehicleData.motExpiry) {
+            try {
+              vehicleData.motExpiry = new Date(vehicleData.motExpiry).toISOString();
+              console.log('✅ MOT expiry converted to ISO-8601:', vehicleData.motExpiry);
+            } catch (dateError) {
+              console.error('❌ Invalid motExpiry date format:', vehicleData.motExpiry);
+              delete vehicleData.motExpiry; // Remove invalid date
+            }
+          }
+
           // First try to find existing vehicle
           const existingVehicle = await prisma.driverVehicle.findFirst({
             where: { driverId: driver.id },
@@ -392,19 +407,21 @@ export async function PUT(request: NextRequest) {
           if (existingVehicle) {
             await prisma.driverVehicle.update({
               where: { id: existingVehicle.id },
-              data: vehicle,
+              data: vehicleData,
             });
+            console.log('✅ Vehicle updated');
           } else {
             await prisma.driverVehicle.create({
               data: {
                 id: `vehicle_${driver.id}_${Date.now()}`,
                 driverId: driver.id,
-                ...vehicle,
+                ...vehicleData,
               } as any,
             });
+            console.log('✅ Vehicle created');
           }
         } catch (error) {
-          console.error('Error updating vehicle:', error);
+          console.error('❌ Error updating vehicle:', error);
           // Continue execution - vehicle update is not critical
         }
       }

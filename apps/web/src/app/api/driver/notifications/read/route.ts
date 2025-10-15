@@ -1,17 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { assertDriver } from '@/lib/guards';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { authenticateBearerToken } from '@/lib/bearer-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
-    assertDriver(session!);
+    console.log('📖 Mark Notifications as Read API - Starting request');
+    
+    // Try Bearer token authentication first (for mobile app)
+    const bearerAuth = await authenticateBearerToken(request);
+    let userId: string;
+    let userRole: string;
+    
+    if (bearerAuth.success) {
+      userId = bearerAuth.user.id;
+      userRole = bearerAuth.user.role;
+      console.log('🔑 Bearer token authenticated for user:', userId);
+    } else {
+      // Fallback to NextAuth session (for web app)
+      const session = await getServerSession(authOptions);
+      if (!session?.user) {
+        console.log('❌ Mark Notifications as Read API - No session found');
+        return NextResponse.json(
+          { error: 'Unauthorized - Please login' },
+          { status: 401 }
+        );
+      }
+      userId = session.user.id;
+      userRole = (session.user as any)?.role;
+      console.log('🌐 NextAuth session authenticated for user:', userId);
+    }
+
+    // Check if user has driver role
+    if (userRole !== 'driver') {
+      console.log('❌ Mark Notifications as Read API - Invalid role:', userRole);
+      return NextResponse.json(
+        { error: 'Forbidden - Driver access required' },
+        { status: 403 }
+      );
+    }
+
     // Get driver record
     const driver = await prisma.driver.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
     });
 
     if (!driver) {
