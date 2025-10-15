@@ -9,7 +9,7 @@
     "clean:cache": "powershell -Command \"Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force .next/server; Set-Content -Path .next/server/pages-manifest.json -Value '{}'; Set-Content -Path .next/server/app-paths-manifest.json -Value '{}'\"",
     "build": "next build",
     "postbuild": "next-sitemap",
-    "start": "next start -p 3000",
+    "start": "next start -p ${PORT:-3000}",
     "postinstall": "prisma generate --schema=../../packages/shared/prisma/schema.prisma",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
