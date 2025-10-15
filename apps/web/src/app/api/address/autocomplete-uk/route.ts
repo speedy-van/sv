@@ -85,9 +85,10 @@ async function searchWithGooglePlaces(query: string, sessionToken?: string): Pro
   const token = sessionToken || generateSessionToken();
   
   // Google Places Autocomplete with strict UK restrictions
+  // Removed types restriction to support partial postcodes (ML3, W1S, etc.) and full addresses
+  // The components=country:gb ensures UK-only results
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?` +
-    `input=${encodeURIComponent(query)}` +
-    `&types=address` +
+    `input=${encodeURIComponent(query.trim())}` +
     `&components=country:gb` +
     `&language=en` +
     `&sessiontoken=${token}` +
