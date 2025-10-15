@@ -90,6 +90,13 @@ export interface MultiDropEligibility {
     reason?: string;
   };
   
+  largeItemsConstraint: {
+    passed: boolean;
+    largeItemCount: number;
+    maxLargeItems: number;
+    reason?: string;
+  };
+  
   // Recommendations
   alternativeOptions: Array<{
     type: 'SINGLE_ORDER' | 'RETURN_JOURNEY' | 'SPLIT_LOAD';
@@ -122,6 +129,7 @@ export class IntelligentRouteOptimizer {
   private readonly AVERAGE_SPEED_MPH = 50; // average speed on UK roads
   private readonly MULTI_DROP_MAX_DISTANCE = 200; // miles
   private readonly MULTI_DROP_MAX_LOAD = 0.70; // 70% capacity
+  private readonly MULTI_DROP_MAX_LARGE_ITEMS = 8; // max large items allowed
   
   // Time Estimates (minutes)
   private readonly BASE_LOAD_TIME_PER_M3 = 4; // minutes per cubic meter
@@ -151,9 +159,13 @@ export class IntelligentRouteOptimizer {
     const loadConstraint = this.checkLoadConstraint(loadAnalysis);
     const distanceConstraint = this.checkDistanceConstraint(routeAnalysis);
     const timeConstraint = this.checkTimeConstraint(routeAnalysis);
+    const largeItemsConstraint = this.checkLargeItemsConstraint(booking);
     
-    // Step 4: Determine eligibility
-    const eligible = loadConstraint.passed && distanceConstraint.passed && timeConstraint.passed;
+    // Step 4: Determine eligibility (ALL constraints must pass)
+    const eligible = loadConstraint.passed && 
+                    distanceConstraint.passed && 
+                    timeConstraint.passed && 
+                    largeItemsConstraint.passed;
     
     // Step 5: Calculate confidence score
     const confidence = this.calculateConfidenceScore(loadAnalysis, routeAnalysis);
@@ -161,7 +173,7 @@ export class IntelligentRouteOptimizer {
     // Step 6: Generate reason if not eligible
     let reason: string | undefined;
     if (!eligible) {
-      reason = this.generateIneligibilityReason(loadConstraint, distanceConstraint, timeConstraint);
+      reason = this.generateIneligibilityReason(loadConstraint, distanceConstraint, timeConstraint, largeItemsConstraint);
     }
     
     // Step 7: Generate alternative options
@@ -174,6 +186,7 @@ export class IntelligentRouteOptimizer {
       loadConstraint,
       distanceConstraint,
       timeConstraint,
+      largeItemsConstraint,
       alternativeOptions,
     };
   }
@@ -326,6 +339,28 @@ export class IntelligentRouteOptimizer {
   }
   
   /**
+   * Check large items constraint (≤ 8 large items for multi-drop)
+   */
+  private checkLargeItemsConstraint(booking: BookingRequest): MultiDropEligibility['largeItemsConstraint'] {
+    const largeItemCount = this.countLargeItems(booking);
+    const maxLargeItems = this.MULTI_DROP_MAX_LARGE_ITEMS;
+    const passed = largeItemCount <= maxLargeItems;
+    
+    let reason: string | undefined;
+    if (!passed) {
+      reason = `Too many large items for multi-drop (${largeItemCount} > ${maxLargeItems}). Large/bulky items require dedicated van space and handling time. Recommend single order pricing.`;
+      console.log(`🚛 ${reason}`);
+    }
+    
+    return {
+      passed,
+      largeItemCount,
+      maxLargeItems,
+      reason,
+    };
+  }
+  
+  /**
    * Calculate confidence score (0-100)
    * Higher score = more confident that multi-drop is a good fit
    */
@@ -363,13 +398,15 @@ export class IntelligentRouteOptimizer {
   private generateIneligibilityReason(
     loadConstraint: MultiDropEligibility['loadConstraint'],
     distanceConstraint: MultiDropEligibility['distanceConstraint'],
-    timeConstraint: MultiDropEligibility['timeConstraint']
+    timeConstraint: MultiDropEligibility['timeConstraint'],
+    largeItemsConstraint: MultiDropEligibility['largeItemsConstraint']
   ): string {
     const reasons: string[] = [];
     
     if (!loadConstraint.passed) reasons.push(loadConstraint.reason!);
     if (!distanceConstraint.passed) reasons.push(distanceConstraint.reason!);
     if (!timeConstraint.passed) reasons.push(timeConstraint.reason!);
+    if (!largeItemsConstraint.passed) reasons.push(largeItemsConstraint.reason!);
     
     return reasons.join(' ');
   }
@@ -574,6 +611,34 @@ export class IntelligentRouteOptimizer {
     ];
     
     return twoWorkerItems.some(item => name.includes(item));
+  }
+  
+  /**
+   * Check if item is considered large/bulky
+   * Based on volume > 1.0 m³ OR weight > 30 kg
+   */
+  private isLargeItem(item: BookingRequest['items'][0]): boolean {
+    // Use actual volume if available
+    const volume = item.volume || this.estimateItemVolume(item.category, item.name);
+    const weight = item.weight || this.estimateItemWeight(item.category, item.name);
+    
+    // Item is large if volume > 1.0 m³ OR weight > 30 kg
+    return volume > 1.0 || weight > 30;
+  }
+  
+  /**
+   * Count total number of large items in booking
+   */
+  private countLargeItems(booking: BookingRequest): number {
+    let largeItemCount = 0;
+    
+    for (const item of booking.items) {
+      if (this.isLargeItem(item)) {
+        largeItemCount += item.quantity;
+      }
+    }
+    
+    return largeItemCount;
   }
 
   /**

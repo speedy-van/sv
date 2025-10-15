@@ -228,7 +228,7 @@ export async function POST(
       unloadingMinutes: computedUnloadingMinutes,
       drivingMinutes: computedDrivingMinutes,
       waitingMinutes: computedWaitingMinutes,
-      customerPaymentPence: Math.round(booking.totalGBP * 100),
+      customerPaymentPence: booking.totalGBP, // FIXED: totalGBP is already in pence
       urgencyLevel: (booking.urgency as 'standard' | 'express' | 'premium') || 'standard',
       serviceType: 'standard' as const,
       onTimeDelivery: computedSlaDelayMinutes === 0,

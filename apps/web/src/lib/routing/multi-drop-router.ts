@@ -581,12 +581,42 @@ export class AdvancedMultiDropRouter {
     const totalVolume = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.quantity || 1)), 0);
     const totalItems = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
+    // Count large/bulky items (volume > 1.0 m³ OR weight > 30 kg)
+    const largeItems = items.reduce((count, item) => {
+      const itemVolume = (item.volume || 0);
+      const itemWeight = (item.weight || 0);
+      const itemQuantity = (item.quantity || 1);
+      
+      // Item is large if volume > 1.0 m³ OR weight > 30 kg
+      if (itemVolume > 1.0 || itemWeight > 30) {
+        return count + itemQuantity;
+      }
+      return count;
+    }, 0);
+
+    // Multi-drop restriction: max 8 large items
+    const MAX_LARGE_ITEMS_FOR_MULTI_DROP = 8;
+    if (largeItems > MAX_LARGE_ITEMS_FOR_MULTI_DROP) {
+      console.log(`🚛 Multi-drop disabled: too many large items (${largeItems} > ${MAX_LARGE_ITEMS_FOR_MULTI_DROP})`);
+      return false;
+    }
+
     // Multi-drop routes need more buffer for partial unloading/loading
     const multiDropBuffer = Math.max(0.8, 1 - (dropCount * 0.1)); // Reduce effective capacity for multi-drop
 
     const weightOk = totalWeight <= (vanSpecs.maxWeightKg * multiDropBuffer);
     const volumeOk = totalVolume <= (vanSpecs.maxVolumeM3 * multiDropBuffer);
     const itemsOk = totalItems <= (vanSpecs.maxItems * multiDropBuffer);
+
+    // Check if load percentage indicates full load (≥70%)
+    const weightPercentage = totalWeight / vanSpecs.maxWeightKg;
+    const volumePercentage = totalVolume / vanSpecs.maxVolumeM3;
+    const loadPercentage = Math.max(weightPercentage, volumePercentage);
+    
+    if (loadPercentage >= 0.70) {
+      console.log(`🚛 Multi-drop disabled: full load detected (${(loadPercentage * 100).toFixed(1)}% ≥ 70%)`);
+      return false;
+    }
 
     return weightOk && volumeOk && itemsOk;
   }

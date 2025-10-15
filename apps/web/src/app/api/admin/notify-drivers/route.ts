@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       driverId: 'temp_driver',
       bookingId: booking.id,
       assignmentId: 'temp_assignment',
-      customerPaymentPence: booking.totalGBP * 100, // Convert GBP to pence
+      customerPaymentPence: booking.totalGBP, // FIXED: totalGBP is already in pence
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
       dropCount: 1,

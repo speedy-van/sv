@@ -322,9 +322,57 @@ export default function WhoAndPaymentStep({
 
     const VAN_FIT_VOLUME = 15; // m³
     const VAN_FIT_WEIGHT = 1000; // kg
+    
+    // Check if load percentage indicates full load (≥70%)
+    const volumePercentage = totalVolume / VAN_FIT_VOLUME;
+    const weightPercentage = totalWeight / VAN_FIT_WEIGHT;
+    const loadPercentage = Math.max(volumePercentage, weightPercentage);
+    
+    if (loadPercentage >= 0.70) {
+      console.log(`🚛 Economy (multi-drop) disabled: full load detected (${(loadPercentage * 100).toFixed(1)}% ≥ 70%)`);
+      return false;
+    }
+
+    // Count large/bulky items (volume > 1.0 m³ OR weight > 30 kg)
+    const largeItems = formData.step1.items.reduce((count, item) => {
+      const itemVolume = item.volume || 0;
+      const itemWeight = item.weight || 0;
+      const itemQuantity = item.quantity || 1;
+      
+      // Item is large if volume > 1.0 m³ OR weight > 30 kg
+      if (itemVolume > 1.0 || itemWeight > 30) {
+        return count + itemQuantity;
+      }
+      return count;
+    }, 0);
+
+    // Multi-drop restriction: max 8 large items
+    const MAX_LARGE_ITEMS_FOR_MULTI_DROP = 8;
+    if (largeItems > MAX_LARGE_ITEMS_FOR_MULTI_DROP) {
+      console.log(`🚛 Economy (multi-drop) disabled: too many large items (${largeItems} > ${MAX_LARGE_ITEMS_FOR_MULTI_DROP})`);
+      return false;
+    }
+
+    // Check if house moving package (property type = 'house' and significant load)
+    const isHousePackage = (formData.step1.pickupProperty?.type === 'house' || formData.step1.dropoffProperty?.type === 'house') 
+                          && loadPercentage >= 0.50;
+    
+    if (isHousePackage) {
+      console.log(`🏠 Economy (multi-drop) disabled: house moving package detected`);
+      return false;
+    }
+
+    // Check distance constraint (< 200 miles for multi-drop)
+    const distance = formData.step1.pricing?.distance || 0; // Distance in miles from pricing calculation
+    const MULTI_DROP_MAX_DISTANCE = 200; // miles
+    
+    if (distance > MULTI_DROP_MAX_DISTANCE) {
+      console.log(`🛣️ Economy (multi-drop) disabled: route too long (${distance.toFixed(1)} miles > ${MULTI_DROP_MAX_DISTANCE} miles)`);
+      return false;
+    }
 
     return totalVolume <= VAN_FIT_VOLUME && totalWeight <= VAN_FIT_WEIGHT;
-  }, [formData.step1.pickupDate, formData.step1.items]);
+  }, [formData.step1.pickupDate, formData.step1.items, formData.step1.pickupProperty, formData.step1.dropoffProperty, formData.step1.pricing]);
 
   // Get next available economy date if current date is not suitable
   const getNextEconomyDate = useCallback(() => {
@@ -1449,35 +1497,73 @@ export default function WhoAndPaymentStep({
               )}
 
               {/* Economy Option Unavailable Message - Show when constraints not met */}
-              {!isEconomyAvailable() && !getNextEconomyDate() && formData.step1.items.length > 0 && (
-                <Card bg="gray.800" borderRadius="xl" border="2px" borderColor="rgba(251, 146, 60, 0.6)" p={4} shadow="0 0 20px rgba(251, 146, 60, 0.3)">
-                  <VStack spacing={3} align="center">
-                    <Text fontSize="md" fontWeight="bold" color="orange.300" textAlign="center">
-                      🚫 Economy Option Not Available
-                    </Text>
-                    <VStack spacing={2} align="center">
-                      <Text fontSize="sm" color="gray.300" textAlign="center">
-                        Your booking doesn't qualify for economy pricing because:
+              {!isEconomyAvailable() && !getNextEconomyDate() && formData.step1.items.length > 0 && (() => {
+                // Calculate reasons dynamically for better UX
+                const totalVolume = formData.step1.items.reduce((sum, item) => sum + (item.volume * item.quantity), 0);
+                const totalWeight = formData.step1.items.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
+                const VAN_FIT_VOLUME = 15;
+                const VAN_FIT_WEIGHT = 1000;
+                const volumePercentage = totalVolume / VAN_FIT_VOLUME;
+                const weightPercentage = totalWeight / VAN_FIT_WEIGHT;
+                const loadPercentage = Math.max(volumePercentage, weightPercentage);
+                const distance = formData.step1.pricing?.distance || 0;
+                const largeItemsCount = formData.step1.items.reduce((count, item) => {
+                  if ((item.volume || 0) > 1.0 || (item.weight || 0) > 30) {
+                    return count + item.quantity;
+                  }
+                  return count;
+                }, 0);
+                
+                return (
+                  <Card bg="gray.800" borderRadius="xl" border="2px" borderColor="rgba(251, 146, 60, 0.6)" p={4} shadow="0 0 20px rgba(251, 146, 60, 0.3)">
+                    <VStack spacing={3} align="center">
+                      <Text fontSize="md" fontWeight="bold" color="orange.300" textAlign="center">
+                        🚫 Economy (Multi-Drop) Option Not Available
                       </Text>
-                      <VStack spacing={1} align="start">
-                        {!isEconomyAvailable() && formData.step1.items.length > 0 && (
-                          <Text fontSize="xs" color="orange.300">
-                            • Exceeds van-fit capacity (15m³ / 1000kg limit)
-                          </Text>
-                        )}
-                        {formData.step1.pickupDate && new Date(formData.step1.pickupDate) > new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
-                          <Text fontSize="xs" color="orange.300">
-                            • Selected date is more than 7 days in the future
-                          </Text>
-                        )}
+                      <VStack spacing={2} align="center">
+                        <Text fontSize="sm" color="gray.300" textAlign="center">
+                          Your booking doesn't qualify for multi-drop pricing because:
+                        </Text>
+                        <VStack spacing={1} align="start">
+                          {loadPercentage >= 0.70 && (
+                            <Text fontSize="xs" color="orange.300">
+                              • Full load detected ({(loadPercentage * 100).toFixed(0)}% capacity - requires dedicated van)
+                            </Text>
+                          )}
+                          {(totalVolume > VAN_FIT_VOLUME || totalWeight > VAN_FIT_WEIGHT) && loadPercentage < 0.70 && (
+                            <Text fontSize="xs" color="orange.300">
+                              • Exceeds van-fit capacity (15m³ / 1000kg limit)
+                            </Text>
+                          )}
+                          {largeItemsCount > 8 && (
+                            <Text fontSize="xs" color="orange.300">
+                              • Too many large items ({largeItemsCount} {'>'}  8 - requires dedicated space)
+                            </Text>
+                          )}
+                          {distance > 200 && (
+                            <Text fontSize="xs" color="orange.300">
+                              • Route too long ({distance.toFixed(0)} miles {'>'} 200 miles - no time for additional stops)
+                            </Text>
+                          )}
+                          {(formData.step1.pickupProperty?.type === 'house' || formData.step1.dropoffProperty?.type === 'house') && loadPercentage >= 0.50 && (
+                            <Text fontSize="xs" color="orange.300">
+                              • House moving package detected - requires dedicated service
+                            </Text>
+                          )}
+                          {formData.step1.pickupDate && new Date(formData.step1.pickupDate) > new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
+                            <Text fontSize="xs" color="orange.300">
+                              • Selected date is more than 7 days in the future
+                            </Text>
+                          )}
+                        </VStack>
+                        <Text fontSize="sm" color="gray.300" textAlign="center">
+                          Choose Standard or Priority service for your booking.
+                        </Text>
                       </VStack>
-                      <Text fontSize="sm" color="gray.300" textAlign="center">
-                        Choose Standard or Priority service for your booking.
-                      </Text>
                     </VStack>
-                  </VStack>
-                </Card>
-              )}
+                  </Card>
+                );
+              })()}
             </VStack>
           ) : (
             <Box p={6} bg={isCalculatingPricing ? "blue.700" : "gray.700"} borderRadius="lg" borderWidth="2px" borderColor={isCalculatingPricing ? "rgba(59, 130, 246, 0.6)" : "rgba(251, 146, 60, 0.6)"} shadow={isCalculatingPricing ? "0 0 20px rgba(59, 130, 246, 0.3)" : "0 0 20px rgba(251, 146, 60, 0.3)"}>
