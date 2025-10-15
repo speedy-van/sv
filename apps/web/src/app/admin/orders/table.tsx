@@ -702,7 +702,7 @@ export default function OrdersClient() {
                     </Td>
                     <Td>
                       <HStack>
-                        {order.driver?.user.name ? (
+                        {order.driver?.user?.name ? (
                           <>
                             <Icon as={FaTruck} color="blue.500" boxSize={3} />
                             <Text fontSize="sm">{order.driver.user.name}</Text>

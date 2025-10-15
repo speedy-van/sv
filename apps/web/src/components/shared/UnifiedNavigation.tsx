@@ -31,8 +31,8 @@ export function UnifiedNavigation({
 }: UnifiedNavigationProps) {
   // If role is passed, use it as userRole for backward compatibility
   const effectiveUserRole = userRole || (role as UserRole) || 'guest';
-  const bg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bg = useColorModeValue('gray.900', 'gray.900');
+  const borderColor = useColorModeValue('gray.700', 'gray.700');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef<HTMLButtonElement>(null);
   const isMobile = useBreakpointValue({ base: true, md: false });

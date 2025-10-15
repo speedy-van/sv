@@ -97,7 +97,7 @@ async function notifyAvailableDrivers(bookingData: {
       
       try {
         await pusher.trigger(channelName, 'new-job', notification);
-        console.log(`✅ Notification sent to driver ${driver.id} (${driver.User.name})`);
+        console.log(`✅ Notification sent to driver ${driver.id} (${driver.User?.name || 'Unknown'})`);
       } catch (error) {
         console.error(`❌ Failed to notify driver ${driver.id}:`, error);
       }

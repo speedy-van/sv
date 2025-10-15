@@ -33,8 +33,8 @@ const AdminShell: React.FC<AdminShellProps> = ({
   actions,
   showDispatchMode = false,
 }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = useColorModeValue('gray.900', 'gray.900');
+  const borderColor = useColorModeValue('gray.700', 'gray.700');
 
   return (
     <Box minH="100vh" bg="bg.canvas">
