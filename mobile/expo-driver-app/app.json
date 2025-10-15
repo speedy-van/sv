@@ -23,21 +23,24 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.speedyvan.driverapp",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Speedy Van needs your location to show your position to customers during deliveries.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Speedy Van needs your location in the background to provide real-time tracking to customers during active deliveries.",
-        "NSLocationAlwaysUsageDescription": "Speedy Van needs your location to track deliveries in the background.",
-        "UIBackgroundModes": [
-          "location",
-          "fetch",
-          "remote-notification",
-          "processing"
-        ],
+        "NSLocationWhenInUseUsageDescription": "Speedy Van uses your location while you're using the app to show your position to customers during active deliveries and help you navigate to pickup and drop-off addresses.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Speedy Van uses your location in the background to provide real-time tracking to customers during active deliveries, ensuring they can see your estimated arrival time and current position throughout the delivery.",
+        "NSLocationAlwaysUsageDescription": "Speedy Van uses your location in the background to provide continuous real-time tracking to customers during active deliveries, even when the app is not in the foreground.",
+        "NSCameraUsageDescription": "Speedy Van uses your camera to take delivery proof photos and update your profile picture.",
+        "NSPhotoLibraryUsageDescription": "Speedy Van allows you to upload a profile photo from your library if you prefer not to take a new picture.",
+        "NSPhotoLibraryAddUsageDescription": "Speedy Van saves delivery proof photos to your photo library so you can keep a record of completed deliveries.",
         "BGTaskSchedulerPermittedIdentifiers": [
           "com.speedyvan.driverapp.refresh",
           "com.speedyvan.driverapp.processing"
         ],
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "backgroundModes": [
+        "location",
+        "fetch",
+        "remote-notification",
+        "processing"
+      ]
     },
     "android": {
       "icon": "./assets/icon.png",
@@ -51,15 +54,13 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE",
-        "android.permission.VIBRATE",
-        "android.permission.WAKE_LOCK",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_LOCATION"
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "VIBRATE",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "softwareKeyboardLayoutMode": "pan",
       "userInterfaceStyle": "automatic",
@@ -73,15 +74,28 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Speedy Van to use your location for real-time tracking during deliveries.",
-          "locationAlwaysPermission": "Allow Speedy Van to track your location in the background during active jobs.",
-          "locationWhenInUsePermission": "Allow Speedy Van to use your location while using the app."
+          "locationAlwaysAndWhenInUsePermission": "Speedy Van uses your location in the background to provide real-time tracking to customers during active deliveries, ensuring they can see your estimated arrival time and current position throughout the delivery.",
+          "locationAlwaysPermission": "Speedy Van uses your location in the background to provide continuous real-time tracking to customers during active deliveries, even when the app is not in the foreground.",
+          "locationWhenInUsePermission": "Speedy Van uses your location while you're using the app to show your position to customers during active deliveries and help you navigate to pickup and drop-off addresses."
         }
       ],
       [
         "expo-notifications",
         {
           "color": "#1E40AF"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Speedy Van uses your camera to take delivery proof photos and update your profile picture."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Speedy Van allows you to upload a profile photo from your library if you prefer not to take a new picture.",
+          "savePhotosPermission": "Speedy Van saves delivery proof photos to your photo library so you can keep a record of completed deliveries."
         }
       ]
     ],

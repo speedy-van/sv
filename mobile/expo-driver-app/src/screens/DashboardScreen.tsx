@@ -230,9 +230,9 @@ export default function DashboardScreen() {
           if (!status.location && !locationAlertShownRef.current) {
             locationAlertShownRef.current = true;
             Alert.alert(
-              'Location Permission Required',
-              'Location permission is required. Please enable GPS to go online and receive jobs.',
-              [{ text: 'OK', onPress: () => { locationAlertShownRef.current = false; } }]
+              'Location Access Needed',
+              'Speedy Van needs access to your location to show nearby drivers and deliver jobs.',
+              [{ text: 'Continue', onPress: () => { locationAlertShownRef.current = false; } }]
             );
           }
         });

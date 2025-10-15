@@ -74,7 +74,8 @@ async function sendDriverApplicationNotification(
               applicationId: application.id,
               userId: application.userId,
               driverName: `${application.firstName} ${application.lastName}`,
-              email: application.email,
+              driverEmail: application.email, // Changed from 'email' to 'driverEmail'
+              email: application.email, // Keep for backward compatibility
               phone: application.phone,
               address: `${application.addressLine1}${application.addressLine2 ? ', ' + application.addressLine2 : ''}, ${application.city}, ${application.postcode}`,
               postcode: application.postcode,

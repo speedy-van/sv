@@ -47,9 +47,9 @@ export default function CustomerTrackingIntegration({
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
-          'Location Permission Required',
-          'Please enable location access to track your progress and notify customers.',
-          [{ text: 'OK' }]
+          'Location Access Needed',
+          'Speedy Van needs access to your location to track your progress and notify customers.',
+          [{ text: 'Continue' }]
         );
         return;
       }
@@ -63,7 +63,7 @@ export default function CustomerTrackingIntegration({
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required for tracking.');
+        Alert.alert('Location Access Needed', 'Speedy Van needs access to your location for tracking.');
         return;
       }
 
