@@ -36,7 +36,54 @@ export async function POST(
     console.log('🔄 Admin reassigning route to different driver:', { routeId, driverId, reason });
 
     return await withPrisma(async (prisma) => {
-      // Check if route exists
+      // Check if this is a single booking (starts with "booking-")
+      if (routeId.startsWith('booking-')) {
+        const bookingId = routeId.replace('booking-', '');
+        
+        // Handle single booking reassignment
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: {
+            driver: {
+              include: {
+                User: { select: { name: true, email: true } }
+              }
+            }
+          }
+        });
+
+        if (!booking) {
+          return NextResponse.json(
+            { error: 'Booking not found' },
+            { status: 404 }
+          );
+        }
+
+        // Update booking driver assignment
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: { driverId: driverId }
+        });
+
+        // Log audit trail
+        await logAudit(
+          session.user.id,
+          'booking_driver_reassigned',
+          bookingId,
+          {
+            targetType: 'booking',
+            before: { driverId: booking.driverId, driverName: booking.driver?.User?.name },
+            after: { driverId: driverId, reason }
+          }
+        );
+
+        return NextResponse.json({
+          success: true,
+          message: 'Booking driver reassigned successfully'
+        });
+      }
+
+      // Check if route exists (for multi-drop routes)
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
