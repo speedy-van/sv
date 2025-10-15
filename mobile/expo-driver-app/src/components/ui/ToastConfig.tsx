@@ -77,24 +77,32 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   successToast: {
-    backgroundColor: colors.success[50],
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     borderLeftWidth: 4,
     borderLeftColor: colors.success[500],
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   errorToast: {
-    backgroundColor: colors.error[50],
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
     borderLeftWidth: 4,
     borderLeftColor: colors.error[500],
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
   },
   infoToast: {
-    backgroundColor: colors.info[50],
+    backgroundColor: 'rgba(0, 191, 255, 0.15)',
     borderLeftWidth: 4,
-    borderLeftColor: colors.info[500],
+    borderLeftColor: '#00BFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 191, 255, 0.3)',
   },
   warningToast: {
-    backgroundColor: colors.warning[50],
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
     borderLeftWidth: 4,
     borderLeftColor: colors.warning[500],
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
   },
   neonToast: {
     backgroundColor: colors.background.secondary,
@@ -114,12 +122,12 @@ const styles = StyleSheet.create({
   toastTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   toastMessage: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#CBD5E1',
   },
   neonText: {
     color: colors.text.primary,

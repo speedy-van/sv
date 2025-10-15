@@ -6,19 +6,19 @@
  */
 
 export const colors = {
-  // Core Action Colors (Matching Driver Portal)
+  // Core Action Colors (Matching Login Screen)
   neon: {
     50: '#ECFEFF',
     100: '#CFFAFE',
     200: '#A5F3FC',
     300: '#67E8F9',
     400: '#22D3EE',
-    500: '#06B6D4', // Primary cyan (matches portal)
-    600: '#0891B2',
+    500: '#00BFFF', // Primary neon blue (matches login screen)
+    600: '#1E90FF',
     700: '#0E7490',
     800: '#155E75',
     900: '#164E63',
-    blue: '#3B82F6', // Secondary blue (matches portal)
+    blue: '#00BFFF', // Neon blue (matches login screen)
     purple: '#8B5CF6',
   },
 
@@ -113,30 +113,31 @@ export const colors = {
     inverse: '#0D0D0D',
   },
 
-  // Background Colors (Matching Portal)
+  // Background Colors (Matching Login Screen)
   background: {
-    primary: '#111827',    // Main dark background (matches portal)
-    secondary: '#1F2937',  // Secondary dark (matches portal)
-    tertiary: '#374151',   // Tertiary dark
-    elevated: '#4B5563',   // Elevated elements
-    card: '#1F2937',       // Card background (matches portal)
-    input: '#374151',      // Input background
+    primary: '#0A1929',    // Main dark background (matches login gradient start)
+    secondary: '#1E3A8A',  // Secondary dark (matches login gradient mid)
+    tertiary: '#2563EB',   // Tertiary (matches login gradient end)
+    elevated: '#1E3A8A',   // Elevated elements
+    card: 'rgba(255, 255, 255, 0.1)',  // Card background (matches login inputs)
+    input: 'rgba(255, 255, 255, 0.1)', // Input background (matches login)
   },
 
-  // Border Colors (Matching Portal)
+  // Border Colors (Matching Login Screen)
   border: {
-    primary: '#374151',    // Default border (matches portal)
-    secondary: '#4B5563',  // Light border
-    neon: '#06B6D4',       // Cyan border (matches portal)
-    brand: '#10B981',      // Green border (matches portal)
+    primary: 'rgba(0, 191, 255, 0.3)',  // Default border (matches login)
+    secondary: 'rgba(255, 255, 255, 0.1)', // Light border
+    neon: '#00BFFF',       // Neon blue border (matches login)
+    brand: '#10B981',      // Green border
   },
 };
 
-// Gradient presets (Matching Portal)
+// Gradient presets (Matching Login Screen)
 export const gradients = {
-  neon: ['#06B6D4', '#3B82F6'],      // Cyan to blue
-  brand: ['#10B981', '#06B6D4'],     // Green to cyan
-  dark: ['#111827', '#1F2937', '#111827'],  // Portal dark gradient
+  primary: ['#0A1929', '#1E3A8A', '#2563EB'],  // Main gradient (matches login)
+  neon: ['#00BFFF', '#1E90FF'],      // Neon blue gradient (matches login button)
+  brand: ['#10B981', '#059669'],     // Green gradient
+  dark: ['#0A1929', '#1E3A8A'],      // Dark gradient
   success: ['#10B981', '#059669'],   // Green gradient
   error: ['#EF4444', '#DC2626'],     // Red gradient
 };
@@ -165,9 +166,9 @@ export const shadows = {
     elevation: 8,
   },
   neon: {
-    shadowColor: '#00C2FF',
+    shadowColor: '#00BFFF',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
     elevation: 10,
   },

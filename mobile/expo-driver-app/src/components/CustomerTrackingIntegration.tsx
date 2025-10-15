@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { showToast } from '../utils/toast';
 
 interface CustomerTrackingIntegrationProps {
   drop: {
@@ -136,11 +137,7 @@ export default function CustomerTrackingIntegration({
           text: 'Start Navigation',
           onPress: () => {
             startLocationTracking();
-            Alert.alert(
-              'Navigation Started',
-              'Location tracking active. Customer will be notified of your progress.',
-              [{ text: 'OK' }]
-            );
+            showToast.success('Navigation Started', 'Location tracking active. Customer will be notified of your progress.');
           },
         },
       ]
@@ -158,11 +155,7 @@ export default function CustomerTrackingIntegration({
           onPress: () => {
             setHasArrived(true);
             onArrivalNotification(drop.id);
-            Alert.alert(
-              'Arrival Confirmed',
-              'Customer has been notified of your arrival.',
-              [{ text: 'OK' }]
-            );
+            showToast.success('Arrival Confirmed', 'Customer has been notified of your arrival.');
           },
         },
       ]
@@ -180,11 +173,7 @@ export default function CustomerTrackingIntegration({
           onPress: () => {
             stopLocationTracking();
             onDeliveryComplete(drop.id);
-            Alert.alert(
-              'Delivery Confirmed',
-              'Delivery completed successfully. Customer has been notified.',
-              [{ text: 'OK' }]
-            );
+            showToast.success('Delivery Confirmed', 'Delivery completed successfully. Customer has been notified.');
           },
         },
       ]

@@ -265,7 +265,7 @@ export default function ProfileScreen() {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Camera permission is required to take photos.');
+        Alert.alert('Camera Access Needed', 'Speedy Van uses your camera to update your profile picture.', [{ text: 'Continue' }]);
         return;
       }
 
@@ -291,7 +291,7 @@ export default function ProfileScreen() {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Photo library permission is required to select photos.');
+        Alert.alert('Photo Access Needed', 'Speedy Van allows you to upload a profile photo from your library.', [{ text: 'Continue' }]);
         return;
       }
 

@@ -69,11 +69,11 @@ export default function MainTabNavigator() {
           
           return icon;
         },
-        tabBarActiveTintColor: '#1E40AF',
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarActiveTintColor: '#00BFFF',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarStyle: {
-          backgroundColor: '#1F2937',
-          borderTopColor: '#374151',
+          backgroundColor: '#0A1929',
+          borderTopColor: 'rgba(0, 191, 255, 0.3)',
           height: 60,
         },
         headerShown: true,

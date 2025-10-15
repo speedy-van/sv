@@ -4,20 +4,37 @@
  */
 
 export const DesignSystem = {
-  // Colors (Matching iOS exactly)
+  // Colors (Matching Login Screen exactly)
   colors: {
-    primary: '#1E40AF',
+    // Primary neon blue from login screen
+    primary: '#00BFFF',
     primaryDark: '#1E3A8A',
-    primaryLight: '#3B82F6',
+    primaryLight: '#2563EB',
+    
+    // Gradient backgrounds (matching login)
+    gradientStart: '#0A1929',
+    gradientMid: '#1E3A8A',
+    gradientEnd: '#2563EB',
+    
+    // Status colors
     secondary: '#10B981',
     success: '#10B981',
     warning: '#F59E0B',
     error: '#EF4444',
-    background: '#111827',
-    surface: '#1F2937',
+    
+    // Backgrounds
+    background: '#0A1929',
+    surface: 'rgba(255, 255, 255, 0.1)',
+    surfaceDark: 'rgba(0, 0, 0, 0.2)',
+    
+    // Text colors (matching login)
     text: '#FFFFFF',
-    textSecondary: '#E5E5E5',
-    border: '#374151',
+    textSecondary: '#CBD5E1',
+    textTertiary: '#94A3B8',
+    
+    // Borders
+    border: 'rgba(0, 191, 255, 0.3)',
+    borderLight: 'rgba(255, 255, 255, 0.1)',
   },
 
   // Typography (Matching iOS exactly)

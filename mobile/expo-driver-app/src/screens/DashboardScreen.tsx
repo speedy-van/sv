@@ -26,6 +26,7 @@ import { getUser, saveUser, savePendingOffer, getPendingOffers, removePendingOff
 import PermissionWarningModal from '../components/PermissionWarningModal';
 import { Linking } from 'react-native';
 import { colors } from '../theme/colors';
+import { showToast } from '../utils/toast';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -288,7 +289,7 @@ export default function DashboardScreen() {
               Alert.alert(
                 'Profile Error',
                 'Your driver profile could not be loaded. Please contact support.',
-                [{ text: 'OK' }]
+                [{ text: 'Continue' }]
               );
               return;
             }
@@ -297,7 +298,7 @@ export default function DashboardScreen() {
             Alert.alert(
               'Connection Error',
               'Unable to load your driver profile. Please check your connection and try again.',
-              [{ text: 'OK' }]
+              [{ text: 'Continue' }]
             );
             return;
           }
@@ -310,7 +311,7 @@ export default function DashboardScreen() {
           Alert.alert(
             'Account Error',
             'Your driver account is not properly configured. Please contact support.',
-            [{ text: 'OK' }]
+            [{ text: 'Continue' }]
           );
           return;
         }
@@ -393,7 +394,7 @@ export default function DashboardScreen() {
           Alert.alert(
             'Route Removed',
             data.reason || 'A route has been removed from your assignments',
-            [{ text: 'OK' }]
+            [{ text: 'Continue' }]
           );
         });
 
@@ -410,7 +411,7 @@ export default function DashboardScreen() {
               Alert.alert(
                 'Performance Update',
                 `Your acceptance rate has decreased to ${data.acceptanceRate}%\nReason: ${data.reason === 'job_declined' ? 'Job declined' : 'Assignment expired'}`,
-                [{ text: 'OK' }]
+                [{ text: 'Continue' }]
               );
             }
           }
@@ -637,11 +638,7 @@ export default function DashboardScreen() {
       }
       
       setIsOnline(true);
-      Alert.alert(
-        'Status Updated',
-        'You are now online and will receive new route matches.',
-        [{ text: 'OK' }]
-      );
+      showToast.success('Status Updated', 'You are now online and available for new routes.');
       
       // Update driver status via API
       try {
@@ -654,11 +651,7 @@ export default function DashboardScreen() {
       }
     } else {
       setIsOnline(false);
-      Alert.alert(
-        'Status Updated',
-        'You are now offline. You will not receive new routes until you go back online.',
-        [{ text: 'OK' }]
-      );
+      showToast.info('Status Updated', 'You are now offline. You will not receive new routes until you go back online.');
       
       // Update driver status via API
       try {
@@ -758,12 +751,8 @@ export default function DashboardScreen() {
       // Refresh routes
       fetchAvailableRoutes();
 
-      // Show success alert
-      Alert.alert(
-        'Job Declined',
-        `Your acceptance rate is now ${response?.acceptanceRate || acceptanceRate}%\n\nThe job has been offered to another driver.`,
-        [{ text: 'OK' }]
-      );
+      // Show success toast
+      showToast.info('Job Declined', `Your acceptance rate is now ${response?.acceptanceRate || acceptanceRate}%. The job has been offered to another driver.`);
 
     } catch (error: any) {
       console.error('❌ Error declining job:', error);
@@ -771,11 +760,7 @@ export default function DashboardScreen() {
       // Close modal anyway
       setShowMatchModal(false);
       
-      Alert.alert(
-        'Decline Failed',
-        error?.message || 'Failed to decline job. Please try again.',
-        [{ text: 'OK' }]
-      );
+      showToast.error('Decline Failed', error?.message || 'Failed to decline job. Please try again.');
     }
   };
 

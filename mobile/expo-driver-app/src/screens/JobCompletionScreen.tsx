@@ -27,6 +27,7 @@ import SignatureCanvas from 'react-native-signature-canvas';
 import { useNavigation } from '@react-navigation/native';
 import { DarkColors as colors, Spacing as spacing, Typography as typography } from '../theme';
 import apiService from '../services/api.service';
+import { showToast } from '../utils/toast';
 
 const { width } = Dimensions.get('window');
 
@@ -54,13 +55,13 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
   // Take Photo
   const takePhoto = async () => {
     if (photos.length >= 5) {
-      Alert.alert('Maximum Photos', 'You can only upload up to 5 photos');
+      showToast.warning('Maximum Photos', 'You can only upload up to 5 photos');
       return;
     }
 
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Camera permission is required to take photos');
+      showToast.warning('Camera Access Needed', 'Speedy Van uses your camera to take delivery proof photos.');
       return;
     }
 
@@ -78,13 +79,13 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
   // Pick from Gallery
   const pickImage = async () => {
     if (photos.length >= 5) {
-      Alert.alert('Maximum Photos', 'You can only upload up to 5 photos');
+      showToast.warning('Maximum Photos', 'You can only upload up to 5 photos');
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Gallery permission is required');
+      showToast.warning('Photo Access Needed', 'Speedy Van uses your photo library to let you upload delivery proof photos.');
       return;
     }
 
@@ -145,18 +146,10 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
                 notes: deliveryNotes,
               });
 
-              Alert.alert(
-                'Job Completed!',
-                `You earned £${response.earnings.toFixed(2)}`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => navigation.goBack(),
-                  },
-                ]
-              );
+              showToast.success('Job Completed!', `You earned £${response.earnings.toFixed(2)}`);
+              setTimeout(() => navigation.goBack(), 2000);
             } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to complete job');
+              showToast.error('Error', error.message || 'Failed to complete job');
             } finally {
               setIsSubmitting(false);
             }
