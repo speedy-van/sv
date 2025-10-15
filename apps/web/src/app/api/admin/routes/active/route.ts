@@ -29,9 +29,33 @@ export async function GET(request: NextRequest) {
     // Get active routes
     const routes = await prisma.route.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        driverId: true,
+        vehicleId: true,
+        startTime: true,
+        endTime: true,
+        optimizedDistanceKm: true,
+        actualDistanceKm: true,
+        totalOutcome: true,
+        estimatedDuration: true,
+        actualDuration: true,
+        status: true,
+        completedDrops: true,
+        routeNotes: true,
+        performanceMultiplier: true,
+        bonusesTotal: true,
+        penaltiesTotal: true,
+        driverPayout: true,
         Booking: {
-          include: {
+          select: {
+            id: true,
+            reference: true,
+            status: true,
+            deliverySequence: true,
+            actualPickupTime: true,
+            actualDeliveryTime: true,
+            estimatedPickupTime: true,
             pickupAddress: true,
             dropoffAddress: true,
             BookingItem: true,

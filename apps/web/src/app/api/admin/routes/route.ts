@@ -74,7 +74,24 @@ export async function GET(request: NextRequest) {
     try {
       routes = await prisma.route.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          driverId: true,
+          vehicleId: true,
+          startTime: true,
+          endTime: true,
+          optimizedDistanceKm: true,
+          actualDistanceKm: true,
+          totalOutcome: true,
+          estimatedDuration: true,
+          actualDuration: true,
+          status: true,
+          completedDrops: true,
+          routeNotes: true,
+          performanceMultiplier: true,
+          bonusesTotal: true,
+          penaltiesTotal: true,
+          driverPayout: true,
           driver: { select: { id: true, name: true, email: true } },
           drops: {
             select: {

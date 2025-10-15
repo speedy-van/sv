@@ -82,7 +82,24 @@ export async function GET(request: NextRequest) {
           in: ['planned', 'assigned', 'in_progress']
         }
       },
-      include: {
+      select: {
+        id: true,
+        driverId: true,
+        vehicleId: true,
+        startTime: true,
+        endTime: true,
+        optimizedDistanceKm: true,
+        actualDistanceKm: true,
+        totalOutcome: true,
+        estimatedDuration: true,
+        actualDuration: true,
+        status: true,
+        completedDrops: true,
+        routeNotes: true,
+        performanceMultiplier: true,
+        bonusesTotal: true,
+        penaltiesTotal: true,
+        driverPayout: true,
         drops: {
           include: {
             User: {
