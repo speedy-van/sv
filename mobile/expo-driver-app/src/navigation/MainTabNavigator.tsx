@@ -70,7 +70,12 @@ export default function MainTabNavigator() {
           return icon;
         },
         tabBarActiveTintColor: '#1E40AF',
-        tabBarInactiveTintColor: 'gray',
+        tabBarInactiveTintColor: '#6B7280',
+        tabBarStyle: {
+          backgroundColor: '#1F2937',
+          borderTopColor: '#374151',
+          height: 60,
+        },
         headerShown: true,
       })}
     >

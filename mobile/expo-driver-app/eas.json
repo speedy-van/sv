@@ -41,6 +41,9 @@
       "ios": {
         "buildConfiguration": "Release",
         "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },
@@ -50,6 +53,10 @@
         "appleId": "ahmadalwakai@gmx.com",
         "ascAppId": "6753916830",
         "appleTeamId": "BXK52CMHR2"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
       }
     }
   }

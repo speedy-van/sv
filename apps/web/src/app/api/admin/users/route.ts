@@ -138,7 +138,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   try {
     const loginUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://speedy-van.co.uk'}/admin`;
     const welcomeEmailData = {
-      adminEmail: email,
+      adminEmail: normalizedEmail, // Use normalized email for consistency
       adminName: name,
       adminRole: adminRole,
       loginUrl: loginUrl,
@@ -157,7 +157,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     
     if (emailResult.success) {
       console.log('✅ Admin welcome email sent successfully:', {
-        to: email,
+        to: normalizedEmail,
         messageId: emailResult.messageId,
         provider: emailResult.provider
       });
