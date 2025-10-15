@@ -9,7 +9,7 @@ import '@/styles/video-background.css';
 import '@/styles/charts.css';
 import '@/styles/responsive-fixes.css';
 import '@/styles/mobile-viewport-fixes.css';
-// import "mapbox-gl/dist/mapbox-gl.css"; // Removed to fix CSS error
+import "mapbox-gl/dist/mapbox-gl.css";
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
 import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';

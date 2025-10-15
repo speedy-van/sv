@@ -1189,6 +1189,81 @@ textarea:focus-visible {
   box-shadow: 0 10px 35px rgba(251, 191, 36, 0.8) !important;
 }
 
+/* Custom Mapbox animations for Speedy Van service map */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced popup styles for city markers */
+.mapboxgl-popup-content {
+  background: rgba(0, 194, 255, 0.95) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  min-width: 150px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(0, 194, 255, 0.95) !important;
+}
+
+/* Service coverage indicators */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 194, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 194, 255, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 194, 255, 0.3);
+  }
+}
+
+.mapboxgl-marker {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Major city markers (larger pulsing effect) */
+.mapboxgl-marker[data-population*="500000"] {
+  animation: pulse 2s infinite, glow 3s ease-in-out infinite;
+}
+
+/* Neon border pulse animation for service map */
+@keyframes neon-pulse {
+  0% {
+    opacity: 0.4;
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 0.8;
+    filter: blur(12px);
+  }
+}
+
 
 
 

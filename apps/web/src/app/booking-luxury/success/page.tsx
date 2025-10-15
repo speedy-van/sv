@@ -51,6 +51,42 @@ export default function BookingSuccessPage() {
   const sessionId = searchParams?.get('session_id');
   const bookingRef = searchParams?.get('booking_ref');
 
+  // Load Trustpilot script
+  useEffect(() => {
+    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
+
+    // Only load if Business Unit ID is configured
+    if (!businessUnitId) {
+      console.warn('⚠️ Trustpilot Business Unit ID not configured');
+      return;
+    }
+
+    // Check if script is already loaded
+    if (document.querySelector('script[src*="trustpilot.com/bootstrap"]')) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
+    script.async = true;
+    script.onload = () => {
+      console.log('✅ Trustpilot widget script loaded successfully');
+    };
+    script.onerror = () => {
+      console.warn('⚠️ Failed to load Trustpilot widget script');
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup - remove script on unmount
+      const existingScript = document.querySelector('script[src*="trustpilot.com/bootstrap"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     // Add a safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
@@ -374,15 +410,65 @@ export default function BookingSuccessPage() {
           >
             Download Invoice
           </Button>
-          <Button 
-            as={Link} 
-            href="/customer" 
-            size={{ base: "md", md: "lg" }} 
+          <Button
+            as={Link}
+            href="/customer"
+            size={{ base: "md", md: "lg" }}
             colorScheme="blue"
           >
             View My Bookings
           </Button>
         </HStack>
+
+        {/* Trustpilot Review Widget */}
+        {process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID && (
+          <Box
+            mt={8}
+            p={6}
+            bg="gray.50"
+            borderRadius="lg"
+            border="1px solid"
+            borderColor="gray.200"
+            textAlign="center"
+          >
+            <VStack spacing={4}>
+              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
+                How was your booking experience?
+              </Text>
+              <Text fontSize="sm" color="gray.600" mb={2}>
+                Help us improve by leaving a review
+              </Text>
+
+              {/* Trustpilot Micro Review Count Widget */}
+              <Box
+                className="trustpilot-widget"
+                data-locale="en-GB"
+                data-template-id="56278e9abfbbba0bdcd568bc"
+                data-businessunit-id="68b0fc8a6ad677c356e83f14"
+                data-style-height="52px"
+                data-style-width="100%"
+                data-theme="light"
+                sx={{
+                  '& a': {
+                    textDecoration: 'none',
+                    color: 'inherit',
+                  },
+                  '& .trustpilot-widget': {
+                    display: 'inline-block',
+                  }
+                }}
+              >
+                <a
+                  href="https://uk.trustpilot.com/review/speedy-van.co.uk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Trustpilot
+                </a>
+              </Box>
+            </VStack>
+          </Box>
+        )}
       </VStack>
     </Container>
   );
