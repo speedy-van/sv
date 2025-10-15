@@ -189,14 +189,29 @@ export class PostcodeValidator {
 
   /**
    * Check if a string looks like a UK postcode (loose validation)
+   * Supports partial postcodes like ML3, W1S, SW1A as well as full postcodes
    */
   static isPostcodeLike(text: string): boolean {
     const cleaned = text.trim().toUpperCase().replace(/\s+/g, '');
     
-    // Check if it contains postcode-like patterns
-    return /^[A-Z]{1,2}\d[A-Z\d]?[A-Z\d]{2,3}$/.test(cleaned) ||
-           /^(GIR|SAN)/.test(cleaned) ||
-           this.POSTCODE_AREAS.some(area => cleaned.startsWith(area));
+    // Empty string is not postcode-like
+    if (!cleaned) return false;
+    
+    // Check complete postcode pattern: SW1A 1AA, M1 1AA, etc.
+    if (/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/.test(cleaned)) return true;
+    
+    // Check partial postcode pattern (outward code only): ML3, W1S, SW1A, etc.
+    if (/^[A-Z]{1,2}\d[A-Z\d]?$/.test(cleaned)) return true;
+    
+    // Check special cases
+    if (/^(GIR|SAN)/.test(cleaned)) return true;
+    
+    // Check if starts with valid postcode area (at least 2-3 characters)
+    if (cleaned.length >= 2) {
+      return this.POSTCODE_AREAS.some(area => cleaned.startsWith(area));
+    }
+    
+    return false;
   }
 
   /**

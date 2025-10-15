@@ -374,11 +374,15 @@ export class DualProviderService {
 
     const isPostcode = PostcodeValidator.isPostcodeLike(query);
     
+    // URL encode the query to handle spaces and special characters properly
+    const encodedQuery = encodeURIComponent(query.trim());
+    
     const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
-    url.searchParams.set('input', query);
+    url.searchParams.set('input', query.trim());
     url.searchParams.set('key', this.config.google.apiKey);
     url.searchParams.set('components', 'country:GB');
-    url.searchParams.set('types', isPostcode ? 'address' : 'address');
+    // Support both postal_code and address types for better autocomplete on partial postcodes
+    url.searchParams.set('types', isPostcode ? 'postal_code|address' : 'address');
     url.searchParams.set('language', 'en-GB');
     url.searchParams.set('region', 'uk');
 
