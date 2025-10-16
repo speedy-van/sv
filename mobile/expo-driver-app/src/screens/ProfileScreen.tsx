@@ -12,6 +12,7 @@ import {
   Modal,
   Switch,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -688,6 +689,36 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* Legal & Support Links */}
+      <View style={styles.legalSection}>
+        <TouchableOpacity 
+          style={styles.legalButton}
+          onPress={() => Linking.openURL('https://speedy-van.co.uk/privacy-policy')}
+        >
+          <Ionicons name="shield-checkmark" size={20} color="#60A5FA" />
+          <Text style={styles.legalButtonText}>Privacy Policy</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.legalButton}
+          onPress={() => Linking.openURL('https://speedy-van.co.uk/terms')}
+        >
+          <Ionicons name="document-text" size={20} color="#60A5FA" />
+          <Text style={styles.legalButtonText}>Terms of Service</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.legalButton}
+          onPress={() => Linking.openURL(`mailto:${COMPANY_INFO.SUPPORT_EMAIL}`)}
+        >
+          <Ionicons name="mail" size={20} color="#60A5FA" />
+          <Text style={styles.legalButtonText}>Contact Support</Text>
+          <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.actionButtons}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="#EF4444" />
@@ -978,6 +1009,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginLeft: 8,
+  },
+  legalSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  legalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  legalButtonText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#111827',
+    marginLeft: 12,
+    fontWeight: '500',
   },
   logoutButton: {
     backgroundColor: '#FFFFFF',

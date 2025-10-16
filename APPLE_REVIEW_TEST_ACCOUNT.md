@@ -1,194 +1,83 @@
-# Apple App Review - Test Driver Account
+# Apple App Store Review - Test Account
 
-## ✅ Test Account Successfully Created!
+## Driver Test Account Credentials
 
-This document contains the test driver account credentials for Apple App Review.
-
----
-
-## 🔑 Test Driver Credentials
-
-**Email:** `zadfad41@gmail.com`  
-**Password:** `112233`
+**Email:** zadfad41@gmail.com  
+**Password:** 112233
 
 ---
 
-## 📱 How to Test on iOS
+## How to Test the App
 
-1. **Open the Speedy Van Driver App**
-2. **Tap "Login"**
-3. **Enter Credentials:**
-   - Email: `zadfad41@gmail.com`
-   - Password: `112233`
-4. **Tap "Sign In"**
-5. **You should be logged in successfully!**
+### 1. Login
+- Open the Speedy Van Driver app
+- Enter the credentials above
+- Tap "Sign In"
 
----
+### 2. Features to Review
 
-## ✅ Test Results
+#### ✅ Dashboard
+- View earnings, completed jobs, and rating
+- Toggle online/offline status
+- See available routes and jobs
 
-### Login Test (Completed: October 14, 2025)
+#### ✅ Routes
+- View assigned routes
+- Accept new route matches
+- Navigate through multi-drop deliveries
+- Complete individual drops
+- Upload proof of delivery photos
 
-```
-✅ Login Successful!
-   Token: RECEIVED (68 chars)
-   User ID: XYgJzjVjfn1hOH4z
-   Email: zadfad41@gmail.com
-   Name: Apple Test Driver
-   Role: driver
-   Driver ID: xRLLVY7d0zwTCC9A
-   Status: active
-   Onboarding: approved
-   Rating: 5.0
-```
+#### ✅ Earnings
+- View daily, weekly, and monthly earnings
+- See detailed breakdown of completed jobs
+- Track performance metrics
 
----
+#### ✅ Profile
+- View driver information
+- Update profile details
+- Access Privacy Policy and Terms
+- Contact support
 
-## 📋 Account Details
+#### ✅ Real-Time Features
+- Receive instant notifications for new routes
+- Live tracking updates during deliveries
+- Real-time earnings updates
 
-| Field | Value |
-|-------|-------|
-| **Email** | zadfad41@gmail.com |
-| **Password** | 112233 |
-| **Name** | Apple Test Driver |
-| **Role** | driver |
-| **Status** | active |
-| **Onboarding Status** | approved ✅ |
-| **Rating** | 5.0 ⭐ |
-| **Vehicle Type** | van |
-| **Base Postcode** | G1 1AA |
+### 3. Permissions Testing
 
----
+The app will request the following permissions:
 
-## 🚗 Driver Features to Test
+- **Location (Always):** Required for real-time customer tracking during deliveries
+- **Camera:** For delivery proof photos
+- **Photo Library:** To upload profile photos and save delivery proofs
+- **Notifications:** For new job alerts and route updates
 
-The test driver account has full access to:
+All permissions are essential for the app's core delivery functionality.
 
-1. **Dashboard**
-   - View active orders
-   - See earnings summary
-   - Check ratings
+### 4. Offline Mode
 
-2. **Jobs Management**
-   - View available jobs
-   - Accept/decline jobs
-   - Track job progress
-   - Complete deliveries
-
-3. **Multi-Drop Routes**
-   - View assigned routes
-   - Navigate between drops
-   - Complete each drop
-   - Update delivery status
-
-4. **Real-time Tracking**
-   - Location sharing
-   - Live tracking updates
-   - GPS navigation
-
-5. **Earnings**
-   - View daily/weekly earnings
-   - See breakdown of payments
-   - Track tips and bonuses
-
-6. **Profile & Settings**
-   - Update personal info
-   - Manage vehicle details
-   - Configure notifications
-   - View driver stats
+- Disable internet connection to see offline error screen
+- App will display "No Internet Connection" message
+- Tap "Retry Connection" when internet is restored
 
 ---
 
-## 🔧 Technical Details
+## Support Contact
 
-### API Endpoint
-```
-POST https://speedy-van.co.uk/api/driver/auth/login
-Content-Type: application/json
-
-{
-  "email": "zadfad41@gmail.com",
-  "password": "112233"
-}
-```
-
-### Response (Success)
-```json
-{
-  "success": true,
-  "token": "[JWT_TOKEN]",
-  "user": {
-    "id": "XYgJzjVjfn1hOH4z",
-    "email": "zadfad41@gmail.com",
-    "name": "Apple Test Driver",
-    "role": "driver"
-  },
-  "driver": {
-    "id": "xRLLVY7d0zwTCC9A",
-    "userId": "XYgJzjVjfn1hOH4z",
-    "status": "active",
-    "onboardingStatus": "approved",
-    "basePostcode": "G1 1AA",
-    "vehicleType": "van",
-    "rating": 5,
-    "strikes": 0
-  }
-}
-```
+**Email:** support@speedy-van.co.uk  
+**Phone:** +44 7901846297  
+**Website:** https://speedy-van.co.uk
 
 ---
 
-## 📝 Notes for Apple Reviewers
+## Notes for Reviewer
 
-1. **Account is Pre-Approved**
-   - No need to go through driver onboarding
-   - Fully activated and ready to use
-   - All features immediately accessible
+This is a **professional delivery driver app** for Speedy Van's courier network. Drivers use this app to:
+- Accept delivery jobs
+- Navigate to pickup and drop-off locations  
+- Provide real-time tracking to customers
+- Upload proof of delivery
+- Track their earnings
 
-2. **Test Data**
-   - This is a dedicated test account
-   - Separate from production drivers
-   - Safe for testing all features
-
-3. **Real Backend**
-   - Connected to production API
-   - Real-time data synchronization
-   - Full feature availability
-
-4. **Support Contact**
-   - Email: support@speedy-van.co.uk
-   - Phone: 07901846297
-
----
-
-## 🔒 Security & Privacy
-
-- Password is hashed with bcrypt (12 rounds)
-- JWT tokens for secure authentication
-- HTTPS-only communication
-- Secure data transmission
-
----
-
-## ✅ Ready for Apple Review!
-
-This test account is **fully functional** and ready for Apple App Review testing.
-
-**Created:** October 14, 2025  
-**Status:** Active ✅  
-**Tested:** Login Successful ✅
-
----
-
-## 🎯 Quick Start for Reviewers
-
-1. Install "Speedy Van Driver" app from TestFlight
-2. Open the app
-3. Login with:
-   - **Email:** zadfad41@gmail.com
-   - **Password:** 112233
-4. Explore all driver features
-5. Test job acceptance and delivery flow
-
-**That's it! Happy testing! 🚀**
-
+All features are fully functional in production and connected to live backend APIs.

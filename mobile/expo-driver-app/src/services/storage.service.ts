@@ -203,6 +203,7 @@ export interface PendingOffer {
   orderId: string;
   bookingReference: string;
   orderNumber: string;
+  routeNumber?: string; // ✅ Route number for multi-drop routes (e.g., RT1A2B3C4D)
   matchType: 'order' | 'route';
   jobCount: number;
   assignmentId: string;

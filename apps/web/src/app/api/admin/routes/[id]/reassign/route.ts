@@ -261,17 +261,27 @@ export async function POST(
           });
         }
 
+        // Get route number for display
+        const routeNumber = result.updatedRoute.id; // Route ID is the route number (e.g., RT1A2B3C4D)
+        const firstBooking = (result.updatedRoute as any).Booking?.[0];
+        const displayReference = result.bookingsCount > 1 
+          ? routeNumber // For multi-drop, show route number
+          : (firstBooking?.reference || routeNumber); // For single order, show booking reference
+
         // Notify the new driver with "route-matched" event
         await pusher.trigger(`driver-${driverId}`, 'route-matched', {
           type: 'full-route',
           routeId: result.updatedRoute.id,
+          routeNumber: routeNumber, // ✅ Route number (RT1A2B3C4D)
+          bookingReference: displayReference, // ✅ Display reference
+          orderNumber: displayReference, // ✅ Alias for consistency
           bookingsCount: result.bookingsCount,
           dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
           totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           assignedAt: new Date().toISOString(),
-          message: `Route with ${result.bookingsCount} jobs has been reassigned to you`,
+          message: `Route ${displayReference} with ${result.bookingsCount} jobs has been reassigned to you`,
           drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
             pickupAddress: drop.pickupAddress,

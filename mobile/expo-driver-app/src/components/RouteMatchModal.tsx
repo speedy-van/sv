@@ -18,6 +18,7 @@ interface RouteMatchModalProps {
   routeCount: number;
   matchType?: 'route' | 'order';  // Optional: Distinguish between route and order
   orderNumber?: string;  // Order/route reference number (same as Admin/Customer sees)
+  routeNumber?: string;  // Route number (e.g., RT1A2B3C4D) - for multi-drop routes
   bookingReference?: string;  // Booking reference (e.g., SV-12345)
   expiresAt?: string;  // ISO timestamp of expiry time
   expiresInSeconds?: number;  // Seconds until expiry (fallback if expiresAt not available)
@@ -33,6 +34,7 @@ export default function RouteMatchModal({
   routeCount,
   matchType = 'order',  // Default to 'order' for backward compatibility
   orderNumber,
+  routeNumber,
   bookingReference,
   expiresAt,
   expiresInSeconds = 1800, // Default 30 minutes
@@ -452,12 +454,15 @@ export default function RouteMatchModal({
             🎉 New {matchType === 'order' ? 'Order' : 'Route'} Matched!
           </Text>
 
-          {/* Order Number - Critical for tracking */}
-          {(orderNumber || bookingReference) && (
+          {/* Order/Route Number - Critical for tracking */}
+          {(routeNumber || orderNumber || bookingReference) && (
             <View style={styles.orderNumberContainer}>
               <Ionicons name="pricetag" size={18} color="#3B82F6" />
               <Text style={styles.orderNumber}>
-                {matchType === 'order' ? 'Order' : 'Route'} #{bookingReference || orderNumber || 'N/A'}
+                {matchType === 'route' && routeNumber 
+                  ? `Route #${routeNumber}` 
+                  : `Order #${bookingReference || orderNumber || 'N/A'}`
+                }
               </Text>
             </View>
           )}

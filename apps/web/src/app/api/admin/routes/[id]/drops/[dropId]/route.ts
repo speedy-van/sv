@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getPusherServer } from '@/lib/pusher';
 
 /**
  * DELETE /api/admin/routes/[id]/drops/[dropId]
@@ -119,6 +120,28 @@ export async function DELETE(
         }
       }
     });
+
+    // Send real-time notification to driver
+    if (route.driverId) {
+      try {
+        const pusher = getPusherServer();
+        
+        await pusher.trigger(`driver-${route.driverId}`, 'drop-removed', {
+          routeId: routeId,
+          routeNumber: routeId, // Route ID is the route number
+          dropId: dropId,
+          message: `A drop has been removed from route ${routeId} by admin`,
+          reason: 'Admin removed drop from route',
+          remainingDrops: updatedRoute.drops.length,
+          removedAt: new Date().toISOString(),
+        });
+
+        console.log(`✅ Drop removal notification sent to driver ${route.driverId}`);
+      } catch (notificationError) {
+        console.error('❌ Error sending drop removal notification:', notificationError);
+        // Don't fail the request if notification fails
+      }
+    }
 
     return NextResponse.json({
       route: updatedRoute,

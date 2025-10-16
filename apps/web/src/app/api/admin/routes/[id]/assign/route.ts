@@ -159,7 +159,7 @@ export async function POST(
           where: { id: routeId },
           data: {
             driverId: driverId,
-            status: 'assigned',
+            status: 'active',
             isModifiedByAdmin: true,
             adminNotes: reason || 'Assigned by admin',
           },
@@ -257,25 +257,29 @@ export async function POST(
       try {
         const pusher = getPusherServer();
 
-        // Get first booking reference for display
+        // Get route number and booking references for display
+        const routeNumber = result.updatedRoute.id; // Route ID is the route number (e.g., RT1A2B3C4D)
         const firstBooking = (result.updatedRoute as any).Booking?.[0];
-        const bookingReference = firstBooking?.reference || `ROUTE-${result.updatedRoute.id.slice(-8).toUpperCase()}`;
+        const displayReference = result.bookingsCount > 1 
+          ? routeNumber // For multi-drop, show route number
+          : (firstBooking?.reference || routeNumber); // For single order, show booking reference
 
         // Notify the driver with "route-matched" event - THIS IS THE KEY EVENT
         await pusher.trigger(`driver-${driverId}`, 'route-matched', {
           type: result.bookingsCount > 1 ? 'multi-drop' : 'single-order',
           routeId: result.updatedRoute.id,
-          bookingReference: bookingReference,  // ✅ CRITICAL: Same ID as Admin/Customer sees
-          orderNumber: bookingReference,  // ✅ Alias for consistency
+          routeNumber: routeNumber, // ✅ CRITICAL: Route number (RT1A2B3C4D)
+          bookingReference: displayReference, // ✅ CRITICAL: Display reference (route or booking)
+          orderNumber: displayReference, // ✅ Alias for consistency
           bookingsCount: result.bookingsCount,
-          jobCount: result.bookingsCount,  // For mobile app compatibility
+          jobCount: result.bookingsCount, // For mobile app compatibility
           dropCount: (result.updatedRoute as any).drops.length,
           dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
           totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           assignedAt: new Date().toISOString(),
-          message: `New ${result.bookingsCount > 1 ? 'route' : 'order'} ${bookingReference} assigned to you`,
+          message: `New ${result.bookingsCount > 1 ? 'route' : 'order'} ${displayReference} assigned to you`,
           drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
             pickupAddress: drop.pickupAddress,

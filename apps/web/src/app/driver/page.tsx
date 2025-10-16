@@ -170,6 +170,45 @@ export default function DriverDashboard() {
           });
         });
 
+        // 🚫 Listen for route-cancelled event (admin cancelled route)
+        channel.bind('route-cancelled', (data: any) => {
+          console.log('🚫 ROUTE CANCELLED by Admin (Web):', data);
+          
+          // Play notification sound
+          playNotificationSound();
+          
+          // Refresh dashboard data
+          refetch();
+          
+          // Show toast
+          toast({
+            title: 'Route Cancelled',
+            description: data.message || `Route ${data.routeNumber || data.routeId} has been cancelled by admin`,
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+            position: 'top-right',
+          });
+        });
+
+        // 📦 Listen for drop-removed event (admin removed drop from route)
+        channel.bind('drop-removed', (data: any) => {
+          console.log('📦 DROP REMOVED by Admin (Web):', data);
+          
+          // Refresh dashboard data
+          refetch();
+          
+          // Show toast
+          toast({
+            title: 'Route Updated',
+            description: `A drop has been removed from route ${data.routeNumber || data.routeId}. ${data.remainingDrops || 0} drops remaining.`,
+            status: 'info',
+            duration: 8000,
+            isClosable: true,
+            position: 'top-right',
+          });
+        });
+
         // 📬 Listen for notification event
         channel.bind('notification', (data: any) => {
           console.log('📬 NOTIFICATION via Pusher (Web):', data);
@@ -617,13 +656,18 @@ export default function DriverDashboard() {
                     <Text fontSize="lg" fontWeight="semibold">
                       {notificationData.type === 'single-order' 
                         ? '📦 Single Order' 
-                        : '🚚 Full Route'}
+                        : '🚚 Multi-Drop Route'}
                     </Text>
-                    <Text mt={2}>
+                    <Text mt={2} fontWeight="bold" color="cyan.300">
                       {notificationData.type === 'single-order'
-                        ? `Job Reference: ${notificationData.bookingReference}`
-                        : `${notificationData.bookingsCount} jobs assigned to you`}
+                        ? `Order #${notificationData.orderNumber || notificationData.bookingReference}`
+                        : `Route #${notificationData.routeNumber || notificationData.orderNumber}`}
                     </Text>
+                    {notificationData.type !== 'single-order' && (
+                      <Text mt={1} fontSize="sm">
+                        {notificationData.bookingsCount} jobs assigned to you
+                      </Text>
+                    )}
                   </Box>
                   {notificationData.totalEarnings && (
                     <Box bg="whiteAlpha.200" p={3} borderRadius="md">

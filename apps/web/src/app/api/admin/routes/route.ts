@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { createUniqueReference } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
 
@@ -360,61 +361,103 @@ export async function POST(request: NextRequest) {
       driverId, 
       vehicleId, 
       dropIds, 
+      bookingIds, // Support both dropIds and bookingIds
       startTime, 
       serviceTier,
       isAutomatic = false 
     } = body;
 
-    // Validate drops exist and are available
-    const drops = await prisma.drop.findMany({
-      where: {
-        id: { in: dropIds },
-        status: 'pending',
-      }
-    });
+    // Use bookingIds if provided, otherwise use dropIds
+    const idsToUse = bookingIds || dropIds;
 
-    if (drops.length !== dropIds.length) {
+    if (!idsToUse || idsToUse.length === 0) {
       return NextResponse.json(
-        { error: 'Some drops are not available' },
+        { error: 'No bookings or drops provided' },
         { status: 400 }
       );
     }
 
-    // Calculate route metrics
-    const totalWeight = drops.reduce((sum, d) => sum + (d.weight || 0), 0);
-    const totalVolume = drops.reduce((sum, d) => sum + (d.volume || 0), 0);
-    const totalOutcome = drops.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
+    // Validate bookings exist and are available
+    const bookings = await prisma.booking.findMany({
+      where: {
+        id: { in: idsToUse },
+        status: 'CONFIRMED',
+        route: null, // Not already in a route
+      },
+      select: {
+        id: true,
+        totalGBP: true,
+        baseDistanceMiles: true,
+      }
+    });
 
-    // Create route
-    const routeId = `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (bookings.length === 0) {
+      return NextResponse.json(
+        { error: 'No available bookings found' },
+        { status: 400 }
+      );
+    }
+
+    if (bookings.length !== idsToUse.length) {
+      return NextResponse.json(
+        { 
+          error: `Only ${bookings.length} of ${idsToUse.length} bookings are available`,
+          availableCount: bookings.length 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Calculate route metrics from bookings
+    const totalOutcome = bookings.reduce((sum, b) => sum + Number(b.totalGBP), 0);
+
+    // Calculate total distance from bookings (baseDistanceMiles)
+    const totalDistanceMiles = bookings.reduce((sum, b) => sum + (Number(b.baseDistanceMiles) || 0), 0);
+    const totalDistanceKm = totalDistanceMiles * 1.60934; // Convert miles to km
+
+    // Generate unique route number (e.g., RT1A2B3C4D)
+    const routeNumber = await createUniqueReference('route');
+    console.log('✅ Generated route number:', routeNumber);
+    console.log('✅ Calculated total distance:', { 
+      miles: totalDistanceMiles.toFixed(2), 
+      km: totalDistanceKm.toFixed(2) 
+    });
+
+    // Create route with auto-generated route number
     const route = await prisma.route.create({
       data: {
-        id: routeId,
+        id: routeNumber, // Use route number as ID for easy reference
         driverId: driverId || null,
         vehicleId: vehicleId || null,
-        status: driverId ? 'assigned' : 'planned',
-        startTime: new Date(startTime),
+        status: driverId ? 'assigned' : 'pending_assignment',
+        startTime: startTime ? new Date(startTime) : new Date(),
         serviceTier: serviceTier || 'standard',
-        totalDrops: drops.length,
+        totalDrops: bookings.length,
         completedDrops: 0,
         totalOutcome,
-        maxCapacityWeight: totalWeight,
-        maxCapacityVolume: totalVolume,
+        optimizedDistanceKm: totalDistanceKm, // Add calculated distance
         routeNotes: isAutomatic ? 'System-generated route' : 'Manually created route',
         updatedAt: new Date()
       },
       include: {
-        driver: { select: { id: true, name: true, email: true } },
-        drops: true,
+        driver: true,
+        Booking: {
+          select: {
+            id: true,
+            reference: true,
+            customerName: true,
+            totalGBP: true,
+          }
+        },
       }
     });
 
-    // Update drops to link to route
-    await prisma.drop.updateMany({
-      where: { id: { in: dropIds } },
+    // Update bookings to link to route
+    await prisma.booking.updateMany({
+      where: { id: { in: idsToUse } },
       data: {
         routeId: route.id,
-        status: 'assigned',
+        status: 'CONFIRMED', // Keep as confirmed but now assigned to route
       }
     });
 
@@ -425,14 +468,14 @@ export async function POST(request: NextRequest) {
       { 
         targetType: 'route', 
         targetId: route.id,
-        after: { routeId: route.id, dropCount: drops.length, isAutomatic }
+        after: { routeId: route.id, bookingCount: bookings.length, isAutomatic }
       }
     );
 
     return NextResponse.json({
       success: true,
       route,
-      message: `Route created successfully with ${drops.length} drops`,
+      message: `Route created successfully with ${bookings.length} booking(s)`,
     });
 
   } catch (error) {

@@ -10,6 +10,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -199,6 +200,29 @@ export default function DashboardScreen() {
     }
   };
 
+  // Check internet connection
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const connected = state.isConnected && state.isInternetReachable !== false;
+      setIsOnline(connected);
+      
+      if (!connected) {
+        showToast.error(
+          'No internet connection. Please check your network settings and try again.',
+          'Connection Lost'
+        );
+        console.log('❌ Internet connection lost');
+      } else {
+        console.log('✅ Internet connection restored');
+        // Refresh data when connection is restored
+        fetchStats();
+        fetchAvailableRoutes();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     fetchStats();
     fetchAcceptanceRate();
@@ -338,8 +362,9 @@ export default function DashboardScreen() {
             id: data.assignmentId || data.bookingId || `offer_${Date.now()}`,
             bookingId: data.bookingId || data.orderId,
             orderId: data.orderId || data.bookingId,
-            bookingReference: data.bookingReference || data.orderNumber || 'N/A',
-            orderNumber: data.orderNumber || data.bookingReference || 'N/A',
+            bookingReference: data.bookingReference || data.orderNumber || data.routeNumber || 'N/A',
+            orderNumber: data.orderNumber || data.routeNumber || data.bookingReference || 'N/A',
+            routeNumber: data.routeNumber || data.orderNumber || 'N/A', // ✅ Add routeNumber
             matchType: data.matchType || (data.type === 'single-order' ? 'order' : 'route'),
             jobCount: routeCount,
             assignmentId: data.assignmentId || data.bookingId,
@@ -415,6 +440,34 @@ export default function DashboardScreen() {
               );
             }
           }
+        });
+
+        // Listen for route-cancelled events (admin cancelled route)
+        pusherService.addEventListener('route-cancelled', (data: any) => {
+          console.log('🚫 ROUTE CANCELLED by Admin:', data);
+          
+          // Refresh available routes
+          fetchAvailableRoutes();
+          
+          // Show notification
+          showToast.error(
+            data.message || `Route ${data.routeNumber || data.routeId} has been cancelled by admin`,
+            'Route Cancelled'
+          );
+        });
+
+        // Listen for drop-removed events (admin removed drop from route)
+        pusherService.addEventListener('drop-removed', (data: any) => {
+          console.log('📦 DROP REMOVED by Admin:', data);
+          
+          // Refresh available routes to update route details
+          fetchAvailableRoutes();
+          
+          // Show notification
+          showToast.info(
+            `A drop has been removed from route ${data.routeNumber || data.routeId}. ${data.remainingDrops || 0} drops remaining.`,
+            'Route Updated'
+          );
         });
 
         // Listen for job-removed events (for expired/declined jobs)
@@ -785,6 +838,37 @@ export default function DashboardScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background.primary} />
       
+      {/* No Internet Overlay */}
+      {!isOnline && (
+        <View style={styles.offlineOverlay}>
+          <View style={styles.offlineCard}>
+            <Ionicons name="cloud-offline" size={80} color={colors.error} />
+            <Text style={styles.offlineTitle}>No Internet Connection</Text>
+            <Text style={styles.offlineMessage}>
+              Please check your network settings and try again.
+              The app requires an active internet connection to function.
+            </Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={async () => {
+                const state = await NetInfo.fetch();
+                const connected = state.isConnected && state.isInternetReachable !== false;
+                if (connected) {
+                  setIsOnline(true);
+                  showToast.success('Connection restored', 'You are back online');
+                  fetchStats();
+                  fetchAvailableRoutes();
+                } else {
+                  showToast.error('Still offline', 'Please check your internet connection');
+                }
+              }}
+            >
+              <Text style={styles.retryButtonText}>Retry Connection</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -1122,6 +1206,7 @@ export default function DashboardScreen() {
         routeCount={currentPendingOffer?.jobCount || newRouteCount}
         matchType={currentPendingOffer?.matchType}
         orderNumber={currentPendingOffer?.orderNumber}
+        routeNumber={currentPendingOffer?.routeNumber}
         bookingReference={currentPendingOffer?.bookingReference}
         expiresAt={currentPendingOffer?.expiresAt}
         expiresInSeconds={currentPendingOffer?.expiresAt ? undefined : 1800}
@@ -1514,5 +1599,57 @@ const styles = StyleSheet.create({
   documentText: {
     fontSize: 13,
     color: '#FFFFFF',  // White text
+  },
+  offlineOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(17, 24, 39, 0.98)',  // Almost opaque dark overlay
+    zIndex: 9999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  offlineCard: {
+    backgroundColor: '#1F2937',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    maxWidth: 350,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  offlineTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 20,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  offlineMessage: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

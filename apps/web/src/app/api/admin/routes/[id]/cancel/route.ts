@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getPusherServer } from '@/lib/pusher';
 
 export async function POST(
   request: NextRequest,
@@ -72,6 +73,27 @@ export async function POST(
         status: 'cancelled',
       },
     });
+
+    // Send real-time notification to driver
+    if (route.driverId) {
+      try {
+        const pusher = getPusherServer();
+        
+        await pusher.trigger(`driver-${route.driverId}`, 'route-cancelled', {
+          routeId: routeId,
+          routeNumber: routeId, // Route ID is the route number
+          message: `Route ${routeId} has been cancelled by admin`,
+          reason: 'Admin cancelled the route',
+          bookingsCount: route.Booking?.length || 0,
+          cancelledAt: new Date().toISOString(),
+        });
+
+        console.log(`✅ Route cancellation notification sent to driver ${route.driverId}`);
+      } catch (notificationError) {
+        console.error('❌ Error sending route cancellation notification:', notificationError);
+        // Don't fail the request if notification fails
+      }
+    }
 
     return NextResponse.json({
       route: updatedRoute,

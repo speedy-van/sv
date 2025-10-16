@@ -37,7 +37,19 @@ export async function POST(request: NextRequest) {
         routeId: null,
         ...(serviceTier && { serviceTier }),
       },
-      include: {
+      select: {
+        id: true,
+        customerId: true,
+        pickupAddress: true,
+        deliveryAddress: true,
+        timeWindowStart: true,
+        timeWindowEnd: true,
+        quotedPrice: true,
+        weight: true,
+        volume: true,
+        serviceTier: true,
+        status: true,
+        // Remove estimatedDuration to avoid database error
         Booking: {
           select: {
             customerName: true,

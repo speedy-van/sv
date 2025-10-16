@@ -8,7 +8,7 @@ export interface ReferenceData {
 // In-memory cache to avoid duplicates (for single instance)
 const generatedReferences = new Set<string>();
 
-export async function generateReference(type: 'booking' | 'driver' | 'customer' | 'admin'): Promise<string> {
+export async function generateReference(type: 'booking' | 'driver' | 'customer' | 'admin' | 'route'): Promise<string> {
   const prefix = getPrefix(type);
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -31,6 +31,8 @@ function getPrefix(type: string): string {
   switch (type) {
     case 'booking':
       return 'SV';
+    case 'route':
+      return 'RT';
     case 'driver':
       return 'SV';
     case 'customer':
@@ -85,6 +87,6 @@ function getTypeFromPrefix(prefix: string): 'booking' | 'driver' | 'customer' | 
   }
 }
 
-export async function createUniqueReference(type: 'booking' | 'driver' | 'customer' | 'admin'): Promise<string> {
+export async function createUniqueReference(type: 'booking' | 'driver' | 'customer' | 'admin' | 'route'): Promise<string> {
   return await generateReference(type);
 }
