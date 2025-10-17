@@ -469,3 +469,12 @@ Cmd + . (Stop)
 
 For questions: support@speedy-van.co.uk
 
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+

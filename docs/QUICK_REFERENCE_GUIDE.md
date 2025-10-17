@@ -509,19 +509,20 @@ const rateLimit = rateLimit({
 ## 📞 Support Contacts
 
 ### Development Team
-- **Lead Developer**: [Name] - [Email]
-- **Frontend Developer**: [Name] - [Email]
-- **Backend Developer**: [Name] - [Email]
 
-### Operations Team
-- **DevOps Engineer**: [Name] - [Email]
-- **System Administrator**: [Name] - [Email]
-- **Database Administrator**: [Name] - [Email]
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+
+### Support Contacts
+- **Email:** support@speedy-van.co.uk
+- **Phone:** +44 7901 846297
+- **Address:** 140 Charles Street, Glasgow City, G21 2QB
 
 ### Emergency Contacts
-- **On-call Engineer**: [Phone]
-- **System Manager**: [Phone]
-- **CTO**: [Phone]
+- **Support Line:** +44 7901 846297
+- **Email (24/7):** support@speedy-van.co.uk
 
 ## 📚 Additional Resources
 

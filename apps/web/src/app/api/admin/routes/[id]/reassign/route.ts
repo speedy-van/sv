@@ -94,9 +94,6 @@ export async function POST(
               email: true
             }
           },
-          drops: {
-            orderBy: { createdAt: 'asc' }
-          },
           Booking: {
             include: {
               Assignment: true,
@@ -165,9 +162,6 @@ export async function POST(
                 name: true,
                 email: true
               } 
-            },
-            drops: {
-              orderBy: { createdAt: 'asc' }
             },
             Booking: true,
           },
@@ -304,18 +298,12 @@ export async function POST(
           bookingReference: displayReference, // ✅ Display reference
           orderNumber: displayReference, // ✅ Alias for consistency
           bookingsCount: result.bookingsCount,
-          dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
           totalEarnings: totalEarnings, // ✅ Calculated driver earnings
           formattedEarnings: `£${(totalEarnings / 100).toFixed(2)}`,
           assignedAt: new Date().toISOString(),
           message: `Route ${displayReference} with ${result.bookingsCount} jobs has been reassigned to you${totalEarnings > 0 ? ` - Earn £${(totalEarnings / 100).toFixed(2)}` : ''}`,
-          drops: (result.updatedRoute as any).drops.map((drop: any) => ({
-            id: drop.id,
-            pickupAddress: drop.pickupAddress,
-            deliveryAddress: drop.deliveryAddress,
-          })),
         });
 
         // Also send job-assigned event for backward compatibility
@@ -376,7 +364,6 @@ export async function POST(
             email: newUser.email || '',
           },
           bookingsCount: result.bookingsCount,
-          dropsCount: (result.updatedRoute as any).drops.length,
           reassignedAt: new Date().toISOString(),
         }
       });

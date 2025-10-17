@@ -292,5 +292,14 @@ Execute the Quick Start Guide above to submit.
 
 *Last updated: October 17, 2025*  
 *Version: 1.0.1*  
-*Prepared by: Speedy Van Development Team*
+*Prepared by: Speedy Van Technical Team*
+
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
 

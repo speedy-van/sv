@@ -303,4 +303,15 @@ For questions about QA & Acceptance testing:
 
 **Last Updated**: December 2024  
 **Version**: 1.0.0  
-**Maintainer**: Development Team
+**Maintainer**: Speedy Van Technical Team
+
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+
+**Support:** support@speedy-van.co.uk | +44 7901 846297

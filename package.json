@@ -3,7 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Enterprise-grade Speedy Van delivery platform monorepo",
+  "description": "Enterprise-grade Speedy Van delivery platform monorepo - Lead Developer: Mr. Ahmad Alwakai",
+  "author": "Speedy Van Technical Team <support@speedy-van.co.uk>",
   "packageManager": "pnpm@10.17.0",
   "workspaces": [
     "apps/web",

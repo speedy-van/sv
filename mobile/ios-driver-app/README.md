@@ -232,11 +232,22 @@ Password: password123
 ## Contact Information
 
 - **Support**: support@speedy-van.co.uk
-- **Phone**: 07901846297
+- **Phone**: +44 7901 846297
 - **Company**: Speedy Van
-- **Address**: Office 2.18, 1 Barrack Street, Hamilton, ML3 0DG, Scotland
+- **Address**: 140 Charles Street, Glasgow City, G21 2QB
 
 ## License
 
 Proprietary - Speedy Van Ltd. All rights reserved.
+
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+
+**Support:** support@speedy-van.co.uk | +44 7901 846297
 

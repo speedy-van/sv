@@ -182,8 +182,19 @@ git push origin main
 
 ## ملاحظات مهمة
 
-1. **تأكد من إضافة جميع متغيرات البيئة** قبل النشر
+1. **تأكد من إضافة جميع متغيرات البيئة** قبل النشر                                                                           
 2. **اختبر جميع الوظائف** بعد النشر
 3. **راقب الأداء** في الأيام الأولى
-4. **احتفظ بنسخ احتياطية** من قاعدة البيانات
+4. **احتفظ بنسخ احتياطية** من قاعدة البيانات     
 5. **وثق جميع التغييرات** للمراجعة المستقبلية
+
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+
+**Support:** support@speedy-van.co.uk | +44 7901 846297

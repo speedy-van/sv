@@ -251,9 +251,20 @@ npx eas build --platform android
 
 ---
 
-**Ready to test!** Just run `npx expo start` and scan the QR code with Expo Go! 📱
+**Ready to test!** Just run `npx expo start` and scan the QR code with Expo Go! 📱                                                                            
 
 **Total Setup Time**: 5 minutes ⏱️
 **Expo Go Testing**: Works perfectly! ✅
 **Production Ready**: Yes! 🎉
+
+---
+
+## 👥 Development Team
+
+* **Lead Developer:** *Mr. Ahmad Alwakai*
+* **Team:** *Speedy Van Technical Team* (internal full-stack engineers, backend specialists, and mobile developers)
+* **Core Stack:** Next.js, Node.js, TypeScript, Prisma, PostgreSQL, Expo (React Native), Chakra UI
+* **Infrastructure:** Neon (PostgreSQL), Render (hosting), Stripe (payments), Pusher (real-time), ZeptoMail (email)
+
+**Support:** support@speedy-van.co.uk | +44 7901 846297
 
