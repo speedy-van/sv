@@ -382,6 +382,35 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
             </Text>
           </HStack>
 
+          {/* Confidence Score */}
+          {data.confidence !== undefined && (
+            <Box mt={3}>
+              <HStack justify="space-between" mb={2}>
+                <HStack spacing={1}>
+                  <Text fontSize="xs" color="gray.400">
+                    Price Confidence
+                  </Text>
+                  <Tooltip label="Based on real-time market data, availability, and demand">
+                    <Icon as={FaInfoCircle} color="gray.400" boxSize={3} />
+                  </Tooltip>
+                </HStack>
+                <Badge
+                  colorScheme={data.confidence > 0.8 ? 'green' : data.confidence > 0.6 ? 'yellow' : 'orange'}
+                  fontSize="xs"
+                >
+                  {(data.confidence * 100).toFixed(0)}%
+                </Badge>
+              </HStack>
+              <Progress
+                value={data.confidence * 100}
+                max={100}
+                size="sm"
+                colorScheme={data.confidence > 0.8 ? 'green' : data.confidence > 0.6 ? 'yellow' : 'orange'}
+                borderRadius="full"
+              />
+            </Box>
+          )}
+
           {/* Route Type Badge */}
           {data.routeType && (
             <Box mt={3} textAlign="center">

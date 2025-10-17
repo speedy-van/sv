@@ -700,6 +700,22 @@ export const EnhancedPricingInputSchema = ComprehensivePricingInputSchema.extend
 // ============================================================================
 
 export const EnhancedPricingResultSchema = ComprehensivePricingResultSchema.extend({
+  // Dynamic pricing multipliers (Phase 2)
+  dynamicMultipliers: z.object({
+    demand: z.number().min(0).max(3),
+    supply: z.number().min(0).max(2),
+    market: z.number().min(0).max(2),
+    customer: z.number().min(0).max(2),
+    time: z.number().min(0).max(2),
+    weather: z.number().min(0).max(2)
+  }).optional(),
+  
+  // Confidence score (0-1)
+  confidence: z.number().min(0).max(1).optional(),
+  
+  // Valid until timestamp
+  validUntil: z.string().datetime().optional(),
+  
   operationalCompliance: z.object({
     datasetFieldsUsed: z.number().min(22),
     operationalRulesApplied: z.number(),

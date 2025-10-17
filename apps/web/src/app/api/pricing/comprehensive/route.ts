@@ -17,6 +17,7 @@ import {
   EnhancedPricingInputSchema,
   EnhancedPricingResultSchema
 } from '@/lib/pricing/comprehensive-schemas';
+import { DynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
 import { DynamicAvailabilityEngine, type FullStructuredAddress, type BookingCapacity } from '@/lib/availability/dynamic-availability-engine';
 import { planCapacityConstrainedRoute, type BookingRequest } from '@/lib/capacity/capacity-constrained-vrp';
 import { calculateCapacityMetrics } from '@/lib/dataset/uk-removal-dataset-loader';
@@ -159,10 +160,39 @@ export async function POST(request: NextRequest) {
     // Create Stripe Payment Intent with parity check
     const stripeResult = await createStripePaymentIntent(pricingResult, correlationId);
 
-    // Update result with Stripe data and availability
+    // Calculate dynamic pricing multipliers and confidence score
+    const dynamicPricingEngine = DynamicPricingEngine.getInstance();
+    const dynamicPricing = await dynamicPricingEngine.calculateDynamicPrice({
+      pickupAddress: {
+        address: validatedRequest.pickup.full,
+        postcode: validatedRequest.pickup.postcode,
+        coordinates: validatedRequest.pickup.coordinates
+      },
+      dropoffAddress: {
+        address: validatedRequest.dropoffs[0].full,
+        postcode: validatedRequest.dropoffs[0].postcode,
+        coordinates: validatedRequest.dropoffs[0].coordinates
+      },
+      scheduledDate: new Date(validatedRequest.scheduledDate),
+      serviceType: validatedRequest.serviceLevel.toUpperCase() as 'ECONOMY' | 'STANDARD' | 'PREMIUM',
+      customerSegment: validatedRequest.customerSegment === 'bronze' ? 'INDIVIDUAL' : 'BUSINESS',
+      loyaltyTier: validatedRequest.customerSegment.toUpperCase() as 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM',
+      items: validatedRequest.items.map((item: any) => ({
+        category: item.name,
+        quantity: item.quantity,
+        weight: item.weight_override,
+        volume: item.volume_override,
+        fragile: false
+      }))
+    });
+
+    // Update result with Stripe data, availability, and dynamic pricing
     const finalResult = {
       ...pricingResult,
       availability,
+      dynamicMultipliers: dynamicPricing.dynamicMultipliers,
+      confidence: dynamicPricing.confidence,
+      validUntil: dynamicPricing.validUntil.toISOString(),
       stripeMetadata: {
         ...pricingResult.stripeMetadata,
         paymentIntentId: stripeResult.paymentIntent.id,
