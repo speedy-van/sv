@@ -31,12 +31,20 @@ import {
   Wrap,
   WrapItem,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 // Images rendered with Chakra <Image>
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import logger from '@/lib/logger';
 
-import { FaMapMarkerAlt, FaTrash, FaSearch, FaPlus, FaMinus, FaHome, FaCouch, FaArrowRight, FaChevronLeft, FaChevronRight, FaBed, FaUtensils, FaTv, FaBox, FaCar, FaBicycle, FaMusic, FaBook, FaChair } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaTrash, FaSearch, FaPlus, FaMinus, FaHome, FaCouch, FaArrowRight, FaChevronLeft, FaChevronRight, FaBed, FaUtensils, FaTv, FaBox, FaCar, FaBicycle, FaMusic, FaBook, FaChair, FaRobot, FaBolt, FaForward, FaCalendarAlt, FaCheck } from 'react-icons/fa';
 
 import type { FormData, Item, Address } from '../hooks/useBookingForm';
 import { SmartSearchBox } from './SmartSearchBox';
@@ -442,6 +450,12 @@ export default function WhereAndWhatStep({
   const [dateCardWaveActive, setDateCardWaveActive] = useState(false);
   const [trendingText, setTrendingText] = useState('');
   const toast = useToast();
+  
+  // AI Estimate Modal state
+  const { isOpen: isAIModalOpen, onOpen: onAIModalOpen, onClose: onAIModalClose } = useDisclosure();
+  const [aiPropertyType, setAiPropertyType] = useState('1 Bedroom');
+  const [aiMoveType, setAiMoveType] = useState('House Move');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   // Using dataset-backed imagery with graceful fallbacks
   
   const { step1 } = formData;
@@ -2534,6 +2548,100 @@ export default function WhereAndWhatStep({
     });
   };
 
+  // Handle AI-generated items
+  const handleGenerateAIList = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const response = await fetch('/api/ai/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyType: aiPropertyType,
+          moveType: aiMoveType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate AI suggestions');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.items) {
+        // Convert AI items to our Item format
+        const aiItems: Item[] = data.items.map((aiItem: any, index: number) => {
+          // Try to find matching item in catalog
+          const catalogMatch = COMPREHENSIVE_CATALOG.find(
+            item => item.name.toLowerCase() === aiItem.name.toLowerCase()
+          );
+          
+          if (catalogMatch) {
+            return {
+              id: catalogMatch.id,
+              name: catalogMatch.name,
+              description: catalogMatch.name,
+              category: catalogMatch.category,
+              size: 'medium',
+              quantity: aiItem.quantity || 1,
+              weight: catalogMatch.weight,
+              volume: catalogMatch.volume,
+              unitPrice: Math.max(20, Math.round(catalogMatch.weight * 0.5 + catalogMatch.volume * 20)),
+              totalPrice: (aiItem.quantity || 1) * Math.max(20, Math.round(catalogMatch.weight * 0.5 + catalogMatch.volume * 20)),
+              image: catalogMatch.imageUrl || '',
+              workers_required: catalogMatch.workers_required || 1,
+              dismantling_required: catalogMatch.dismantling_required || 'No',
+              fragility_level: catalogMatch.fragility_level || 'Standard',
+            };
+          }
+          
+          // If not in catalog, create a generic item
+          return {
+            id: `ai-item-${index}`,
+            name: aiItem.name,
+            description: aiItem.name,
+            category: aiItem.category || 'other',
+            size: 'medium',
+            quantity: aiItem.quantity || 1,
+            weight: 10,
+            volume: 0.5,
+            unitPrice: 25,
+            totalPrice: (aiItem.quantity || 1) * 25,
+            image: '',
+            workers_required: 1,
+            dismantling_required: 'No',
+            fragility_level: 'Standard',
+          };
+        });
+        
+        // Add all AI items to the list
+        updateFormData('step1', {
+          items: [...step1.items, ...aiItems],
+        });
+        
+        onAIModalClose();
+        
+        toast({
+          title: 'AI List Generated!',
+          description: `Added ${aiItems.length} items to your move`,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('AI generation error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate AI suggestions. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   // Images removed - no image helper function needed
 
   return (
@@ -3470,6 +3578,50 @@ export default function WhereAndWhatStep({
                   </Button>
                 </WrapItem>
               </Wrap>
+
+              {/* Quick Actions: Quick Quote & AI Estimate */}
+              <HStack spacing={3} w="full" justify="center" mt={4}>
+                <Button
+                  size="lg"
+                  colorScheme="yellow"
+                  leftIcon={<Icon as={FaBolt} />}
+                  _hover={{ 
+                    transform: 'translateY(-2px)',
+                    shadow: 'lg'
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  fontWeight="bold"
+                  onClick={() => {
+                    toast({
+                      title: 'Quick Quote',
+                      description: 'Quick quote feature coming soon!',
+                      status: 'info',
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }}
+                >
+                  ⚡ Quick Quote
+                </Button>
+                
+                <Button
+                  size="lg"
+                  colorScheme="purple"
+                  leftIcon={<Icon as={FaRobot} />}
+                  rightIcon={<Icon as={FaForward} />}
+                  onClick={onAIModalOpen}
+                  _hover={{ 
+                    transform: 'translateY(-2px)',
+                    shadow: 'lg'
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  fontWeight="bold"
+                >
+                  ⏭️ Skip Items & Use AI Estimate
+                </Button>
+              </HStack>
 
               <Divider borderColor="gray.600" />
 
@@ -4467,6 +4619,111 @@ export default function WhereAndWhatStep({
         </Card>
 
       </VStack>
+      
+      {/* AI Estimate Modal */}
+      <Modal isOpen={isAIModalOpen} onClose={onAIModalClose} size="xl" isCentered>
+        <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(10px)" />
+        <ModalContent bg="gray.800" borderColor="purple.500" borderWidth="2px">
+          <ModalHeader color="white" borderBottomWidth="1px" borderColor="gray.700">
+            <HStack spacing={3}>
+              <Icon as={FaRobot} color="purple.400" boxSize={6} />
+              <Text>AI-Powered Item Estimation</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody py={6}>
+            <VStack spacing={6}>
+              <Alert status="info" bg="blue.900" borderRadius="md">
+                <AlertIcon color="blue.300" />
+                <Box>
+                  <AlertTitle color="white" fontSize="sm">Smart Estimation</AlertTitle>
+                  <AlertDescription color="gray.300" fontSize="xs">
+                    Our AI will generate a realistic list of items based on your property type and move type.
+                  </AlertDescription>
+                </Box>
+              </Alert>
+              
+              <FormControl>
+                <FormLabel color="white" fontWeight="semibold">
+                  <HStack spacing={2}>
+                    <Icon as={FaHome} color="purple.400" />
+                    <Text>Property Type</Text>
+                  </HStack>
+                </FormLabel>
+                <Select
+                  value={aiPropertyType}
+                  onChange={(e) => setAiPropertyType(e.target.value)}
+                  bg="gray.700"
+                  color="white"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: 'purple.400' }}
+                  _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)' }}
+                >
+                  <option value="Studio">Studio</option>
+                  <option value="1 Bedroom">1 Bedroom</option>
+                  <option value="2 Bedroom">2 Bedroom</option>
+                  <option value="3 Bedroom">3 Bedroom</option>
+                  <option value="4+ Bedroom">4+ Bedroom</option>
+                  <option value="Office">Office</option>
+                  <option value="Storage Unit">Storage Unit</option>
+                </Select>
+              </FormControl>
+              
+              <FormControl>
+                <FormLabel color="white" fontWeight="semibold">
+                  <HStack spacing={2}>
+                    <Icon as={FaCalendarAlt} color="purple.400" />
+                    <Text>Move Type</Text>
+                  </HStack>
+                </FormLabel>
+                <Select
+                  value={aiMoveType}
+                  onChange={(e) => setAiMoveType(e.target.value)}
+                  bg="gray.700"
+                  color="white"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: 'purple.400' }}
+                  _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)' }}
+                >
+                  <option value="House Move">House Move (Full)</option>
+                  <option value="Apartment Move">Apartment Move</option>
+                  <option value="Office Move">Office Move</option>
+                  <option value="Student Move">Student Move</option>
+                  <option value="Partial Move">Partial Move (Few Items)</option>
+                  <option value="Storage Move">Storage Move</option>
+                </Select>
+              </FormControl>
+              
+              <Alert status="warning" bg="orange.900" borderRadius="md">
+                <AlertIcon color="orange.300" />
+                <Box>
+                  <AlertDescription color="gray.300" fontSize="xs">
+                    You can review and edit the AI-generated list after it's created.
+                  </AlertDescription>
+                </Box>
+              </Alert>
+            </VStack>
+          </ModalBody>
+          <ModalFooter borderTopWidth="1px" borderColor="gray.700">
+            <HStack spacing={3}>
+              <Button variant="ghost" onClick={onAIModalClose} color="white">
+                Cancel
+              </Button>
+              <Button
+                colorScheme="purple"
+                onClick={handleGenerateAIList}
+                isLoading={isGeneratingAI}
+                loadingText="Generating..."
+                leftIcon={<Icon as={FaRobot} />}
+                rightIcon={<Icon as={FaCheck} />}
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+              >
+                Generate AI List
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 } 
