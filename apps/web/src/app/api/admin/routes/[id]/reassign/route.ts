@@ -283,7 +283,8 @@ export async function POST(
           : (firstBooking?.reference || routeNumber); // For single order, show booking reference
 
         // Notify the new driver with "route-matched" event
-        await pusher.trigger(`driver-${newUser.driver.id}`, 'route-matched', {
+        // Note: Pusher channel uses User.id, not Driver.id
+        await pusher.trigger(`driver-${newUserId}`, 'route-matched', {
           type: 'full-route',
           routeId: result.updatedRoute.id,
           routeNumber: routeNumber, // ✅ Route number (RT1A2B3C4D)
@@ -304,7 +305,8 @@ export async function POST(
         });
 
         // Also send job-assigned event for backward compatibility
-        await pusher.trigger(`driver-${newUser.driver.id}`, 'job-assigned', {
+        // Note: Pusher channel uses User.id, not Driver.id
+        await pusher.trigger(`driver-${newUserId}`, 'job-assigned', {
           type: 'route',
           routeId: result.updatedRoute.id,
           bookingsCount: result.bookingsCount,
