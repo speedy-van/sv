@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { prisma } from '@/lib/prisma';
 import { validateEmailForSending } from '@/lib/email/email-validation';
 
 export async function POST(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     // Check admin authentication
     const authHeader = request.headers.get('authorization');

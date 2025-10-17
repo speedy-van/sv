@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { prisma } from '@/lib/prisma';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 

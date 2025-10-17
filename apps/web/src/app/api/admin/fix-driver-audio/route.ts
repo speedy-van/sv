@@ -1,5 +1,6 @@
 // Fix driver audio notifications - comprehensive solution
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { prisma } from '@/lib/prisma';
 import Pusher from 'pusher';
 
@@ -13,6 +14,10 @@ const pusher = new Pusher({
 });
 
 export async function POST(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const { action, driverId } = await request.json();
 

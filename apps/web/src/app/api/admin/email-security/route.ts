@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { validateEmailSecurityConfig, performEmailSecurityAudit, getEmailSecurityConfig } from '@/lib/email/security-config';
 import { emailSuppressionList, bounceTracker, emailRateLimiter } from '@/lib/email/email-validation';
 
 export async function GET(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     // Check admin authentication
     const authHeader = request.headers.get('authorization');
@@ -80,6 +85,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     const { action, data } = body;

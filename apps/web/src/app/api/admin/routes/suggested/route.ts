@@ -5,12 +5,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { prisma } from '@/lib/prisma';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date'); // ISO date string

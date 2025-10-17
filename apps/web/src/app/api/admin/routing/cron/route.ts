@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { routeManager } from '@/lib/orchestration/RouteManager';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,10 @@ export const maxDuration = 60; // 60 seconds max execution time
  * Runs auto-routing process
  */
 export async function POST(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     // Verify cron secret to prevent unauthorized access
     const authHeader = request.headers.get('authorization');
@@ -77,6 +82,10 @@ export async function POST(request: NextRequest) {
  * Check cron job status and next run time
  */
 export async function GET(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const config = await routeManager.getConfig();
     const history = await routeManager.getAutoRoutingHistory(10);

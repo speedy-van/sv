@@ -1,9 +1,14 @@
 // Admin tracking diagnostics - check real-time connections and data flow
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 
 export async function GET(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     console.log('🔍 Starting admin tracking diagnostics...');
 
@@ -215,6 +220,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const { action } = await request.json();
 

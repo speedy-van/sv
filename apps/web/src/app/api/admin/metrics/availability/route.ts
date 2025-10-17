@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/api/admin-auth';
 import { availabilityMetrics } from '@/lib/observability/availability-metrics';
 import { logger } from '@/lib/logger';
 
@@ -9,6 +10,10 @@ import { logger } from '@/lib/logger';
  * Requires admin authentication (to be added)
  */
 export async function GET(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   const requestId = `metrics_${Date.now()}`;
   
   try {
@@ -62,6 +67,10 @@ export async function GET(request: NextRequest) {
  * Clear old metrics (housekeeping)
  */
 export async function DELETE(request: NextRequest) {
+  // Authentication check
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   const requestId = `metrics_cleanup_${Date.now()}`;
   
   try {
