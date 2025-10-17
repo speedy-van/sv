@@ -282,6 +282,19 @@ export async function POST(
           ? routeNumber // For multi-drop, show route number
           : (firstBooking?.reference || routeNumber); // For single order, show booking reference
 
+        // Calculate driver earnings for the reassigned route
+        let totalEarnings = 0;
+        try {
+          const { calculateRouteEarnings } = await import('@/lib/services/driver-earnings-service');
+          const earningsResult = await calculateRouteEarnings(result.updatedRoute.id);
+          totalEarnings = earningsResult.totalEarnings;
+          console.log(`💰 Reassigned route earnings: £${(totalEarnings / 100).toFixed(2)}`);
+        } catch (earningsError) {
+          console.error('⚠️ Failed to calculate route earnings:', earningsError);
+          // Fallback to driverPayout if available
+          totalEarnings = result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0;
+        }
+
         // Notify the new driver with "route-matched" event
         // Note: Pusher channel uses User.id, not Driver.id
         await pusher.trigger(`driver-${newUserId}`, 'route-matched', {
@@ -294,9 +307,10 @@ export async function POST(
           dropsCount: (result.updatedRoute as any).drops.length,
           totalDistance: result.updatedRoute.optimizedDistanceKm,
           estimatedDuration: result.updatedRoute.estimatedDuration,
-          totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
+          totalEarnings: totalEarnings, // ✅ Calculated driver earnings
+          formattedEarnings: `£${(totalEarnings / 100).toFixed(2)}`,
           assignedAt: new Date().toISOString(),
-          message: `Route ${displayReference} with ${result.bookingsCount} jobs has been reassigned to you`,
+          message: `Route ${displayReference} with ${result.bookingsCount} jobs has been reassigned to you${totalEarnings > 0 ? ` - Earn £${(totalEarnings / 100).toFixed(2)}` : ''}`,
           drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
             pickupAddress: drop.pickupAddress,

@@ -497,6 +497,18 @@ export async function POST(request: NextRequest) {
         });
 
         if (driver) {
+          // Calculate driver earnings for the route
+          let totalEarnings = 0;
+          try {
+            const { calculateRouteEarnings } = require('@/lib/services/driver-earnings-service');
+            const earningsResult = await calculateRouteEarnings(route.id);
+            totalEarnings = earningsResult.totalEarnings;
+            console.log(`💰 Route earnings calculated: £${(totalEarnings / 100).toFixed(2)}`);
+          } catch (earningsError) {
+            console.error('⚠️ Failed to calculate route earnings:', earningsError);
+            // Continue without earnings data
+          }
+
           // Send push notification via Pusher
           const { getPusherServer } = require('@/lib/pusher');
           const pusher = getPusherServer();
@@ -514,9 +526,10 @@ export async function POST(request: NextRequest) {
               dropsCount: bookings.length,
               totalDistance: totalDistanceKm,
               estimatedDuration: null,
-              totalEarnings: 0, // Will be calculated by pricing engine
+              totalEarnings: totalEarnings, // ✅ Actual calculated earnings
+              formattedEarnings: `£${(totalEarnings / 100).toFixed(2)}`,
               assignedAt: new Date().toISOString(),
-              message: `New ${bookings.length > 1 ? 'route' : 'order'} ${routeNumber} assigned to you`,
+              message: `New ${bookings.length > 1 ? 'route' : 'order'} ${routeNumber} assigned to you${totalEarnings > 0 ? ` - Earn £${(totalEarnings / 100).toFixed(2)}` : ''}`,
               drops: [], // Will be populated from bookings
             });
             
