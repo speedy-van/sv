@@ -35,6 +35,7 @@ import {
 // Images rendered with Chakra <Image>
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import logger from '@/lib/logger';
+import { PricingCard } from './PricingCard';
 
 import { FaMapMarkerAlt, FaTrash, FaSearch, FaPlus, FaMinus, FaHome, FaCouch, FaArrowRight, FaChevronLeft, FaChevronRight, FaBed, FaUtensils, FaTv, FaBox, FaCar, FaBicycle, FaMusic, FaBook, FaChair } from 'react-icons/fa';
 
@@ -4133,116 +4134,32 @@ export default function WhereAndWhatStep({
 
                 <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
                   {/* Economy Multi-Drop */}
-                  <Card 
-                    bg={pricingTiers?.economy?.available ? "green.900" : "gray.900"} 
-                    borderColor={pricingTiers?.economy?.available ? "green.500" : "gray.600"}
-                    border="1px solid"
-                    opacity={pricingTiers?.economy?.available ? 1 : 0.6}
-                  >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Economy</Text>
-                          <Badge colorScheme={pricingTiers?.economy?.available ? "green" : "gray"}>
-                            Multi-Drop
-                          </Badge>
-                        </HStack>
-                        
-                        {pricingTiers?.economy?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="green.400">
-                            £{pricingTiers.economy.price}
-                          </Text>
-                        )}
-                        
-                        {pricingTiers?.economy?.availability ? (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
-                              {pricingTiers.economy.availability.route_type === 'economy' && 
-                               pricingTiers.economy.availability.next_available_date === new Date().toISOString().split('T')[0]
-                                ? "Available tomorrow"
-                                : `Next available: ${new Date(pricingTiers.economy.availability.next_available_date).toLocaleDateString()}`
-                              }
-                            </Text>
-                            <Tooltip label={pricingTiers.economy.availability.explanation}>
-                              <Text fontSize="xs" color="green.300">
-                                {Math.round(pricingTiers.economy.availability.fill_rate || 0)}% route efficiency
-                              </Text>
-                            </Tooltip>
-                          </VStack>
-                        ) : (
-                          <Text fontSize="sm" color="gray.400">
-                            Route optimization required
-                          </Text>
-                        )}
-                      </VStack>
-                    </CardBody>
-                  </Card>
+                  <PricingCard
+                    serviceLevel="economy"
+                    tier={pricingTiers?.economy}
+                    isLoading={isLoadingAvailability}
+                    isBestValue={pricingTiers?.economy?.price && pricingTiers?.express?.price ? 
+                      pricingTiers.economy.price < pricingTiers.express.price : false}
+                    savings={pricingTiers?.economy?.price && pricingTiers?.express?.price ?
+                      pricingTiers.express.price - pricingTiers.economy.price : undefined}
+                  />
 
                   {/* Standard Service */}
-                  <Card 
-                    bg="blue.900" 
-                    borderColor="blue.500"
-                    border="1px solid"
-                  >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Standard</Text>
-                          <Badge colorScheme="blue">Priority Slot</Badge>
-                        </HStack>
-                        
-                        {pricingTiers?.standard?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="blue.400">
-                            £{pricingTiers.standard.price}
-                          </Text>
-                        )}
-                        
-                        {pricingTiers?.standard?.availability && (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
-                              Available tomorrow
-                            </Text>
-                            <Text fontSize="xs" color="blue.300">
-                              {pricingTiers.standard.availability.explanation}
-                            </Text>
-                          </VStack>
-                        )}
-                      </VStack>
-                    </CardBody>
-                  </Card>
+                  <PricingCard
+                    serviceLevel="standard"
+                    tier={pricingTiers?.standard}
+                    isLoading={isLoadingAvailability}
+                    isMostPopular={true}
+                    savings={pricingTiers?.standard?.price && pricingTiers?.express?.price ?
+                      pricingTiers.express.price - pricingTiers.standard.price : undefined}
+                  />
 
                   {/* Express Service */}
-                  <Card 
-                    bg="purple.900" 
-                    borderColor="purple.500"
-                    border="1px solid"
-                  >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Express</Text>
-                          <Badge colorScheme="purple">Dedicated Van</Badge>
-                        </HStack>
-                        
-                        {pricingTiers?.express?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="purple.400">
-                            £{pricingTiers.express.price}
-                          </Text>
-                        )}
-                        
-                        {pricingTiers?.express?.availability && (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
-                              Available tomorrow
-                            </Text>
-                            <Text fontSize="xs" color="purple.300">
-                              {pricingTiers.express.availability.explanation}
-                            </Text>
-                          </VStack>
-                        )}
-                      </VStack>
-                    </CardBody>
-                  </Card>
+                  <PricingCard
+                    serviceLevel="express"
+                    tier={pricingTiers?.express}
+                    isLoading={isLoadingAvailability}
+                  />
                 </SimpleGrid>
 
                 {availabilityData && (
