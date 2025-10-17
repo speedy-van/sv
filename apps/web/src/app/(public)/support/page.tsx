@@ -16,6 +16,9 @@ import {
 import { FiPhone, FiMail, FiMessageCircle, FiMapPin, FiClock } from 'react-icons/fi';
 import Link from 'next/link';
 
+// Force dynamic rendering to avoid serialization issues with Icon components
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = buildMetadata({
   title: 'Support & Help Center | Speedy Van',
   description: 'Get help with Speedy Van delivery services. Contact our support team 24/7.',
