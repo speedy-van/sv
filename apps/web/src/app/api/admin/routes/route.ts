@@ -409,10 +409,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate route metrics from bookings
-    const totalOutcome = bookings.reduce((sum, b) => sum + Number(b.totalGBP), 0);
+    const totalOutcome = bookings.reduce((sum: number, b: any) => sum + Number(b.totalGBP), 0);
 
     // Calculate total distance from bookings (baseDistanceMiles)
-    const totalDistanceMiles = bookings.reduce((sum, b) => sum + (Number(b.baseDistanceMiles) || 0), 0);
+    const totalDistanceMiles = bookings.reduce((sum: number, b: any) => sum + (Number(b.baseDistanceMiles) || 0), 0);
     const totalDistanceKm = totalDistanceMiles * 1.60934; // Convert miles to km
 
     // Generate unique route number (e.g., RT1A2B3C4D)
@@ -423,13 +423,30 @@ export async function POST(request: NextRequest) {
       km: totalDistanceKm.toFixed(2) 
     });
 
+    // Get driver userId if driverId is provided
+    let driverUserId: string | null = null;
+    if (driverId) {
+      const driver = await prisma.driver.findUnique({
+        where: { id: driverId },
+        select: { userId: true }
+      });
+      if (driver) {
+        driverUserId = driver.userId;
+      } else {
+        return NextResponse.json(
+          { error: 'Driver not found' },
+          { status: 404 }
+        );
+      }
+    }
+
     // Create route with auto-generated route number
     const route = await prisma.route.create({
       data: {
         id: routeNumber, // Use route number as ID for easy reference
-        driverId: driverId || null,
+        driverId: driverUserId, // ✅ Route.driverId references User.id
         vehicleId: vehicleId || null,
-        status: driverId ? 'assigned' : 'pending_assignment',
+        status: driverUserId ? 'assigned' : 'pending_assignment',
         startTime: startTime ? new Date(startTime) : new Date(),
         serviceTier: serviceTier || 'standard',
         totalDrops: bookings.length,
@@ -461,6 +478,69 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Send notification to driver if assigned
+    if (driverId) {
+      try {
+        console.log(`📲 Sending route assignment notification to driver ${driverId}...`);
+        
+        // Get driver details for notification
+        const driver = await prisma.driver.findUnique({
+          where: { id: driverId },
+          include: {
+            User: {
+              select: {
+                name: true,
+                email: true,
+              }
+            }
+          }
+        });
+
+        if (driver) {
+          // Send push notification via Pusher
+          const { getPusherServer } = require('@/lib/pusher');
+          const pusher = getPusherServer();
+          if (pusher && pusher.trigger) {
+            await pusher.trigger(`driver-${driverId}`, 'route-assigned', {
+              routeId: route.id,
+              routeNumber: routeNumber,
+              totalDrops: bookings.length,
+              totalValue: totalOutcome,
+              message: `New route ${routeNumber} assigned to you with ${bookings.length} drop(s)`,
+              timestamp: new Date().toISOString(),
+            });
+            console.log('✅ Pusher notification sent');
+          }
+
+          // Send SMS notification if phone number available
+          const userWithPhone = await prisma.user.findUnique({
+            where: { id: driver.userId },
+            select: { phone: true }
+          });
+
+          if (userWithPhone?.phone) {
+            const smsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/notifications/sms/send`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                phone: userWithPhone.phone,
+                message: `New Route Assigned! Route ${routeNumber} with ${bookings.length} drop(s). Total: £${(totalOutcome / 100).toFixed(2)}`,
+              }),
+            });
+            
+            if (smsResponse.ok) {
+              console.log('✅ SMS notification sent');
+            }
+          } else {
+            console.log('⚠️ No phone number available for driver - SMS skipped');
+          }
+        }
+      } catch (notificationError) {
+        console.error('⚠️ Failed to send notifications (non-critical):', notificationError);
+        // Don't fail the request if notifications fail
+      }
+    }
+
     await logAudit(
       (session.user as any).id,
       'create_route',
@@ -468,14 +548,14 @@ export async function POST(request: NextRequest) {
       { 
         targetType: 'route', 
         targetId: route.id,
-        after: { routeId: route.id, bookingCount: bookings.length, isAutomatic }
+        after: { routeId: route.id, bookingCount: bookings.length, isAutomatic, driverId }
       }
     );
 
     return NextResponse.json({
       success: true,
       route,
-      message: `Route created successfully with ${bookings.length} booking(s)`,
+      message: `Route created successfully with ${bookings.length} booking(s)${driverId ? ' and driver notified' : ''}`,
     });
 
   } catch (error) {

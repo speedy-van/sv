@@ -374,7 +374,7 @@ export default function AuthErrorPage() {
                   If you're experiencing issues or have questions about your
                   account access, our support team is here to help. You can
                   contact us through our support portal or by emailing
-                  support@speedyvan.com.
+                  support@speedy-van.co.uk.
                 </Text>
 
                 <HStack spacing={4}>

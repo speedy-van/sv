@@ -524,6 +524,13 @@ export default function RoutesScreen() {
       fetchRoutes();
     });
     
+    // Event 2.5: Route assigned by admin
+    pusherService.addEventListener('route-assigned', (data: any) => {
+      console.log('🎯 Route assigned event:', data);
+      // Refresh routes list to show new assigned route
+      fetchRoutes();
+    });
+    
     // Event 3: Acceptance rate updated
     pusherService.addEventListener('acceptance-rate-updated', (data: any) => {
       console.log('📉 Acceptance rate updated:', data);
@@ -543,6 +550,7 @@ export default function RoutesScreen() {
       console.log('🧹 Cleaning up Pusher listeners for routes');
       pusherService.removeEventListener('route-removed');
       pusherService.removeEventListener('route-offer');
+      pusherService.removeEventListener('route-assigned');
       pusherService.removeEventListener('acceptance-rate-updated');
       pusherService.removeEventListener('schedule-updated');
     };

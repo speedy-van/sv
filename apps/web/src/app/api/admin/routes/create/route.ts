@@ -96,14 +96,31 @@ export async function POST(request: NextRequest) {
   const totalValue = bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0);
 
     // Create route
-    // Get the driver ID to use (either provided driver or system driver for unassigned)
-    const routeDriverId = driverId || (await getOrCreateSystemDriver()).id;
+    // Get the driver userId to use (either provided driver's userId or system driver for unassigned)
+    let routeDriverUserId: string;
+    if (driverId) {
+      // If driverId provided, get the corresponding userId
+      const driver = await prisma.driver.findUnique({
+        where: { id: driverId },
+        select: { userId: true }
+      });
+      if (!driver) {
+        return NextResponse.json(
+          { error: 'Driver not found' },
+          { status: 404 }
+        );
+      }
+      routeDriverUserId = driver.userId;
+    } else {
+      // Use system driver for unassigned routes
+      routeDriverUserId = (await getOrCreateSystemDriver()).id;
+    }
 
     const route = await prisma.route.create({
       data: {
         id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         status: driverId ? 'assigned' : 'planned',
-        driver: { connect: { id: routeDriverId } },
+        driver: { connect: { id: routeDriverUserId } }, // ✅ Route.driverId references User.id
         startTime: new Date(),
     optimizedDistanceKm: totalDistance * 1.609,
     estimatedDuration: Math.round(totalDuration),

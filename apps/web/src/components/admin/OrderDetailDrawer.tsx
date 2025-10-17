@@ -535,14 +535,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       const data = await response.json();
       console.log('✅ Drivers loaded:', data);
       
-      if (data.success && data.data && data.data.drivers) {
-        setAvailableDrivers(data.data.drivers);
-        console.log(`📋 Set ${data.data.drivers.length} drivers in state`);
+      if (data.success && data.drivers) {
+        setAvailableDrivers(data.drivers);
+        console.log(`📋 Set ${data.drivers.length} drivers in state`);
         
-        if (data.data.drivers.length === 0) {
+        if (data.drivers.length === 0) {
           toast({
             title: 'No Drivers Available',
-            description: `No active drivers found. Total in system: ${data.data.total || 0}`,
+            description: `No active drivers found. Total in system: ${data.total || 0}`,
             status: 'warning',
             duration: 5000,
             isClosable: true,

@@ -99,7 +99,14 @@ export async function POST(
           },
           Booking: {
             include: {
-              Assignment: true
+              Assignment: true,
+              driver: {
+                include: {
+                  User: {
+                    select: { name: true, email: true }
+                  }
+                }
+              }
             }
           },
         },
@@ -110,49 +117,46 @@ export async function POST(
       }
 
       const oldDriverId = route.driverId;
-      const oldDriverName = (route as any).driver?.name || 'Unknown';
+      const oldDriverName = route.driver?.name || 'Unknown';
 
-      // Check if new driver exists
-      const newDriver = await prisma.driver.findUnique({
-        where: { id: driverId },
+      // driverId from frontend is actually userId (see route.ts line 244)
+      const newUserId = driverId;
+
+      // Check if new user exists and is a driver
+      const newUser = await prisma.user.findUnique({
+        where: { id: newUserId },
         include: {
-          User: {
-            select: { name: true, email: true }
-          },
-          DriverAvailability: true
+          driver: {
+            include: {
+              DriverAvailability: true
+            }
+          }
         }
       });
 
-      if (!newDriver) {
+      if (!newUser || !newUser.driver) {
         return NextResponse.json({ error: 'Driver not found' }, { status: 404 });
       }
 
-      // Check if driver is available
-      if (!newDriver.DriverAvailability) {
-        return NextResponse.json(
-          { error: 'Driver availability not found' },
-          { status: 400 }
-        );
-      }
-
-      // Check driver status
-      const validStatuses = ['AVAILABLE', 'online', 'available'];
-      if (!validStatuses.includes(newDriver.DriverAvailability.status)) {
-        return NextResponse.json(
-          { error: `Driver is not available for assignments (status: ${newDriver.DriverAvailability.status})` },
-          { status: 400 }
-        );
+      // Check driver status (optional - admin can override)
+      if (newUser.driver.DriverAvailability) {
+        const validStatuses = ['AVAILABLE', 'online', 'available'];
+        if (!validStatuses.includes(newUser.driver.DriverAvailability.status)) {
+          console.log(`⚠️ Warning: Driver status is ${newUser.driver.DriverAvailability.status}, but admin is forcing reassignment`);
+        }
+      } else {
+        console.log(`⚠️ Warning: Driver has no availability record, but admin is forcing reassignment`);
       }
 
       // Use transaction to ensure data consistency
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx: any) => {
         // Update route with new driver
         const updatedRoute = await tx.route.update({
           where: { id: routeId },
           data: {
-            driverId,
+            driverId: newUserId, // ✅ Route.driverId references User.id
             isModifiedByAdmin: true,
-            adminNotes: `Driver reassigned from ${oldDriverName} to ${newDriver.User?.name || 'Unknown'} by admin. Reason: ${reason || 'Not specified'}`,
+            adminNotes: `Driver reassigned from ${oldDriverName} to ${newUser.name || 'Unknown'} by admin. Reason: ${reason || 'Not specified'}`,
           },
           include: {
             driver: { 
@@ -170,13 +174,13 @@ export async function POST(
         });
 
         // Update all bookings in the route
-        const bookingIds = route.Booking.map(b => b.id);
+        const bookingIds = route.Booking.map((b: any) => b.id);
         
         if (bookingIds.length > 0) {
           await tx.booking.updateMany({
             where: { id: { in: bookingIds } },
             data: {
-              driverId: driverId,
+              driverId: newUser.driver!.id, // Non-null assertion: we checked driver exists
               status: 'CONFIRMED',
               updatedAt: new Date(),
             },
@@ -214,12 +218,12 @@ export async function POST(
             }
 
             // Create new assignment
-            const assignmentId = `assignment_${Date.now()}_${booking.id}_${driverId}`;
+            const assignmentId = `assignment_${Date.now()}_${booking.id}_${newUser.driver!.id}`;
             await tx.assignment.create({
               data: {
                 id: assignmentId,
                 bookingId: booking.id,
-                driverId: driverId,
+                driverId: newUser.driver!.id, // Non-null assertion: we checked driver exists
                 status: 'accepted',
                 claimedAt: new Date(),
                 updatedAt: new Date(),
@@ -240,7 +244,7 @@ export async function POST(
                   action: 'job_assigned',
                   routeId: routeId,
                 },
-                notes: `Job assigned to driver ${newDriver.User?.name || 'Unknown'} as part of reassigned route ${routeId}`,
+                notes: `Job assigned to driver ${newUser.name || 'Unknown'} as part of reassigned route ${routeId}`,
                 createdBy: (session.user as any).id,
               }
             });
@@ -253,7 +257,7 @@ export async function POST(
       console.log('🎉 Route reassignment completed:', {
         routeId: result.updatedRoute.id,
         oldDriver: oldDriverName,
-        newDriver: newDriver.User?.name || 'Unknown',
+        newDriver: newUser.name || 'Unknown',
         bookingsCount: result.bookingsCount
       });
 
@@ -279,7 +283,7 @@ export async function POST(
           : (firstBooking?.reference || routeNumber); // For single order, show booking reference
 
         // Notify the new driver with "route-matched" event
-        await pusher.trigger(`driver-${driverId}`, 'route-matched', {
+        await pusher.trigger(`driver-${newUser.driver.id}`, 'route-matched', {
           type: 'full-route',
           routeId: result.updatedRoute.id,
           routeNumber: routeNumber, // ✅ Route number (RT1A2B3C4D)
@@ -300,7 +304,7 @@ export async function POST(
         });
 
         // Also send job-assigned event for backward compatibility
-        await pusher.trigger(`driver-${driverId}`, 'job-assigned', {
+        await pusher.trigger(`driver-${newUser.driver.id}`, 'job-assigned', {
           type: 'route',
           routeId: result.updatedRoute.id,
           bookingsCount: result.bookingsCount,
@@ -312,7 +316,7 @@ export async function POST(
         await pusher.trigger('admin-notifications', 'route-reassigned', {
           routeId: result.updatedRoute.id,
           oldDriver: oldDriverName,
-          newDriver: newDriver.User?.name || 'Unknown',
+          newDriver: newUser.name || 'Unknown',
           bookingsCount: result.bookingsCount,
           reassignedAt: new Date().toISOString(),
         });
@@ -334,8 +338,8 @@ export async function POST(
           details: {
             oldDriverId: oldDriverId,
             oldDriverName: oldDriverName,
-            newDriverId: driverId,
-            newDriverName: newDriver.User?.name || 'Unknown',
+            newDriverId: newUserId,
+            newDriverName: newUser.name || 'Unknown',
             bookingsCount: result.bookingsCount,
             reason: reason || 'Reassigned by admin',
             reassignedAt: new Date().toISOString(),
@@ -346,14 +350,14 @@ export async function POST(
       return NextResponse.json({
         success: true,
         route: result.updatedRoute,
-        message: `Route with ${result.bookingsCount} jobs reassigned successfully to ${newDriver.User?.name || 'Unknown'}`,
+        message: `Route with ${result.bookingsCount} jobs reassigned successfully to ${newUser.name || 'Unknown'}`,
         data: {
           routeId: result.updatedRoute.id,
           oldDriver: oldDriverName,
           newDriver: {
-            id: newDriver.id,
-            name: newDriver.User?.name || 'Unknown',
-            email: newDriver.User?.email || '',
+            id: newUser.driver.id,
+            name: newUser.name || 'Unknown',
+            email: newUser.email || '',
           },
           bookingsCount: result.bookingsCount,
           dropsCount: (result.updatedRoute as any).drops.length,

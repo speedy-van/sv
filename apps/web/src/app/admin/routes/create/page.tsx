@@ -68,6 +68,12 @@ interface Driver {
   id: string;
   name: string;
   status: string;
+  isAvailable?: boolean;
+  availabilityReason?: string;
+  DriverAvailability?: {
+    status: string;
+    lastSeenAt?: Date | string;
+  };
 }
 
 export default function CreateRoutePage() {
@@ -562,15 +568,20 @@ export default function CreateRoutePage() {
                       _hover={{ borderColor: 'gray.500' }}
                       size="lg"
                     >
-                      {drivers.filter(d => d.status === 'online').map(driver => (
+                      {drivers.map(driver => (
                         <option key={driver.id} value={driver.id}>
-                          {driver.name} - {driver.status}
+                          {driver.name} - {(driver as any).availabilityReason || driver.status}
                         </option>
                       ))}
                     </Select>
-                    {drivers.filter(d => d.status === 'online').length === 0 && (
+                    {drivers.length === 0 && (
                       <Text color="orange.300" fontSize="xs" mt={1}>
-                        ⚠️ No drivers currently online. Route will be created unassigned.
+                        ⚠️ No drivers available. Route will be created unassigned.
+                      </Text>
+                    )}
+                    {drivers.length > 0 && (
+                      <Text color="green.300" fontSize="xs" mt={1}>
+                        ✅ {drivers.length} driver{drivers.length > 1 ? 's' : ''} available for assignment
                       </Text>
                     )}
                   </FormControl>

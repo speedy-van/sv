@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
 
       const route = await prisma.route.create({
         data: {
-          driverId: assignedDriver?.id || null,
+          driverId: assignedDriver?.userId || null, // ✅ Route.driverId references User.id
           status: assignedDriver ? 'assigned' : 'planned',
           startTime: dropGroup[0].timeWindowStart,
           timeWindowStart: dropGroup[0].timeWindowStart,

@@ -25,6 +25,20 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const routeId = params.id;
+
+    // Check if this is a single booking (starts with "booking-")
+    if (routeId.startsWith('booking-')) {
+      const bookingId = routeId.replace('booking-', '');
+      
+      // Redirect to booking/order endpoint
+      return NextResponse.json({ 
+        error: 'This is a single booking. Please use /api/admin/orders endpoint instead.',
+        bookingId,
+        redirectUrl: `/admin/orders?code=${bookingId}`
+      }, { status: 400 });
+    }
+
     const route = await prisma.route.findUnique({
       where: { id: params.id },
       include: {
@@ -148,7 +162,7 @@ export async function PATCH(
         });
 
         // Update route totals
-        const newTotalOutcome = dropsToAdd.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
+        const newTotalOutcome = dropsToAdd.reduce((sum: number, d: any) => sum + Number(d.quotedPrice), 0);
         
         updatedRoute = await prisma.route.update({
           where: { id: params.id },
@@ -193,7 +207,7 @@ export async function PATCH(
           }
         });
 
-        const removedOutcome = dropsToRemove.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
+        const removedOutcome = dropsToRemove.reduce((sum: number, d: any) => sum + Number(d.quotedPrice), 0);
         
         updatedRoute = await prisma.route.update({
           where: { id: params.id },
@@ -285,8 +299,48 @@ export async function DELETE(
 
     const { searchParams } = new URL(request.url);
     const reason = searchParams.get('reason') || 'Cancelled by admin';
+    const routeId = params.id;
 
-    // Get route before deletion
+    // Check if this is a single booking (starts with "booking-")
+    if (routeId.startsWith('booking-')) {
+      const bookingId = routeId.replace('booking-', '');
+      
+      // Handle single booking cancellation
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId }
+      });
+
+      if (!booking) {
+        return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+      }
+
+      // Update booking status to cancelled
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: {
+          status: 'CANCELLED',
+          // Note: We don't have a cancellationReason field, so we could add it to admin notes if needed
+        }
+      });
+
+      await logAudit(
+        (session.user as any).id,
+        'cancel_booking',
+        bookingId,
+        { 
+          targetType: 'booking', 
+          targetId: bookingId,
+          after: { reason }
+        }
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: 'Booking cancelled successfully'
+      });
+    }
+
+    // Get route before deletion (for multi-drop routes)
     const route = await prisma.route.findUnique({
       where: { id: params.id },
       include: { drops: true }

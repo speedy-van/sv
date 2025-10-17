@@ -98,8 +98,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform the data for frontend
-    const transformedDrivers = availableDrivers.map(driver => {
-      const activeJobs = driver.Assignment.filter(assignment => 
+    const transformedDrivers = availableDrivers.map((driver: any) => {
+      const activeJobs = driver.Assignment.filter((assignment: any) => 
         assignment.status === 'accepted' || assignment.status === 'claimed'
       );
 
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
           } : null,
           hasRecord: hasAvailabilityRecord,
         },
-        activeJobs: activeJobs.map(assignment => ({
+        activeJobs: activeJobs.map((assignment: any) => ({
           id: assignment.id,
           status: assignment.status,
           claimedAt: assignment.claimedAt,
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Sort by availability (available drivers first, then by rating)
-    const sortedDrivers = transformedDrivers.sort((a, b) => {
+    const sortedDrivers = transformedDrivers.sort((a: any, b: any) => {
       if (a.isAvailable && !b.isAvailable) return -1;
       if (!a.isAvailable && b.isAvailable) return 1;
       return new Date(b.DriverAvailability.lastSeenAt || 0).getTime() - new Date(a.DriverAvailability.lastSeenAt || 0).getTime();
@@ -159,11 +159,11 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Available drivers summary:', {
       totalDrivers: sortedDrivers.length,
-      availableCount: sortedDrivers.filter(d => d.isAvailable).length,
-      busyCount: sortedDrivers.filter(d => !d.isAvailable).length,
-      onlineCount: sortedDrivers.filter(d => d.DriverAvailability.status === 'online').length,
-      unknownStatusCount: sortedDrivers.filter(d => d.DriverAvailability.status === 'unknown').length,
-      sampleDrivers: sortedDrivers.slice(0, 3).map(d => ({
+      availableCount: sortedDrivers.filter((d: any) => d.isAvailable).length,
+      busyCount: sortedDrivers.filter((d: any) => !d.isAvailable).length,
+      onlineCount: sortedDrivers.filter((d: any) => d.DriverAvailability.status === 'online').length,
+      unknownStatusCount: sortedDrivers.filter((d: any) => d.DriverAvailability.status === 'unknown').length,
+      sampleDrivers: sortedDrivers.slice(0, 3).map((d: any) => ({
         name: d.name,
         isAvailable: d.isAvailable,
         status: d.DriverAvailability.status,
@@ -174,17 +174,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        drivers: sortedDrivers,
-        total: sortedDrivers.length,
-        available: sortedDrivers.filter(d => d.isAvailable).length,
-        busy: sortedDrivers.filter(d => !d.isAvailable).length,
-        online: sortedDrivers.filter(d => d.DriverAvailability.status === 'online').length,
-        summary: {
-          totalActive: sortedDrivers.length,
-          readyForAssignment: sortedDrivers.filter(d => d.isAvailable).length,
-          currentlyBusy: sortedDrivers.filter(d => !d.isAvailable).length,
-        }
+      drivers: sortedDrivers,
+      total: sortedDrivers.length,
+      available: sortedDrivers.filter((d: any) => d.isAvailable).length,
+      busy: sortedDrivers.filter((d: any) => !d.isAvailable).length,
+      online: sortedDrivers.filter((d: any) => d.DriverAvailability.status === 'online').length,
+      summary: {
+        totalActive: sortedDrivers.length,
+        readyForAssignment: sortedDrivers.filter((d: any) => d.isAvailable).length,
+        currentlyBusy: sortedDrivers.filter((d: any) => !d.isAvailable).length,
       }
     });
 

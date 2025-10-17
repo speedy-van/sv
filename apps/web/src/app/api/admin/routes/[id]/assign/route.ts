@@ -160,11 +160,11 @@ export async function POST(
 
       // Use transaction to ensure data consistency
       const result = await prisma.$transaction(async (tx) => {
-        // Update route with driver assignment
+        // Update route with driver assignment (use userId from Driver model)
         const updatedRoute = await tx.route.update({
           where: { id: routeId },
           data: {
-            driverId: driverId,
+            driverId: driver.userId, // ✅ Route.driverId references User.id
             status: 'active',
             isModifiedByAdmin: true,
             adminNotes: reason || 'Assigned by admin',

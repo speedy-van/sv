@@ -243,7 +243,32 @@ class PusherService {
       this.notifyListeners('route-removed', data);
     });
 
-    // 6. ROUTE OFFER - New route after auto-reassignment
+    // 6. ROUTE ASSIGNED - Route directly assigned by admin
+    this.driverChannel.bind('route-assigned', (data: any) => {
+      console.log('🎯 ROUTE ASSIGNED EVENT:', data);
+      audioService.playRouteMatchSound();
+      
+      // Route assigned is always a multi-drop route
+      const jobCount = data.totalDrops || data.dropCount || data.jobCount || 1;
+      const routeNumber = data.routeNumber || data.routeId || 'N/A';
+      const totalValue = data.totalValue || 0;
+      
+      this.notifyListeners('route-assigned', {
+        ...data,
+        matchType: 'route',
+        jobCount
+      });
+      
+      // Show critical notification for route assignment
+      notificationService.showRouteMatchNotification(
+        'New Route Assigned!',
+        `Route ${routeNumber} - ${jobCount} stops - £${(totalValue / 100).toFixed(2)}`,
+        'route',
+        { jobCount, routeNumber, totalValue, ...data }
+      );
+    });
+
+    // 7. ROUTE OFFER - New route after auto-reassignment
     this.driverChannel.bind('route-offer', (data: any) => {
       console.log('🛣️ ROUTE OFFER EVENT:', data);
       audioService.playRouteMatchSound();
@@ -371,7 +396,7 @@ class PusherService {
       // No notification - just update UI with blue ticks
     });
 
-    console.log('✅ All 18 driver events bound successfully');
+    console.log('✅ All 19 driver events bound successfully');
   }
 
   /**
