@@ -386,6 +386,9 @@ export const LuxuryPostcodeAddressAutocomplete: React.FC<LuxuryPostcodeAddressAu
           borderRadius="xl" 
           border="1px solid rgba(255, 255, 255, 0.2)"
           overflow="hidden"
+          // ✅ Mobile-safe positioning for newer iPhones (15-17 Pro Max)
+          position="relative"
+          mb={{ base: "env(safe-area-inset-bottom, 20px)", md: 0 }}
         >
           <Box p={{ base: 6, md: 8 }}>
             <VStack spacing={6} align="stretch">
@@ -541,6 +544,15 @@ export const LuxuryPostcodeAddressAutocomplete: React.FC<LuxuryPostcodeAddressAu
                       _focus={{ 
                         borderColor: 'blue.500', 
                         boxShadow: '0 0 0 1px #3182ce' 
+                      }}
+                      // ✅ Mobile-safe dropdown for newer iPhones
+                      maxH={{ base: "50vh", md: "auto" }}
+                      overflowY="auto"
+                      sx={{
+                        // Ensure dropdown is above keyboard on iOS
+                        '@supports (-webkit-touch-callout: none)': {
+                          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+                        }
                       }}
                     >
                       {availableAddresses.map((address, index) => {

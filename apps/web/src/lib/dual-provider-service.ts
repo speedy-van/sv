@@ -381,10 +381,12 @@ export class DualProviderService {
     url.searchParams.set('input', query.trim());
     url.searchParams.set('key', this.config.google.apiKey);
     url.searchParams.set('components', 'country:GB');
-    // Support both postal_code and address types for better autocomplete on partial postcodes
-    url.searchParams.set('types', isPostcode ? 'postal_code|address' : 'address');
+    // ✅ Use 'address' type to get full addresses with street numbers
+    url.searchParams.set('types', 'address'); // Focus on complete addresses
     url.searchParams.set('language', 'en-GB');
     url.searchParams.set('region', 'uk');
+    // ✅ Enable strict bounds to get more accurate UK results
+    url.searchParams.set('strictbounds', 'true');
 
     if (this.config.mapbox.proximity) {
       url.searchParams.set('location', this.config.mapbox.proximity);
@@ -443,11 +445,13 @@ export class DualProviderService {
     url.searchParams.set('country', this.config.mapbox.country);
     url.searchParams.set('limit', '10');
     url.searchParams.set('language', 'en');
+    url.searchParams.set('autocomplete', 'true'); // ✅ Enable autocomplete for better partial address matching
 
     if (isPostcode) {
-      url.searchParams.set('types', 'postcode,address,place');
+      // ✅ Use place_type instead of types for more accurate results
+      url.searchParams.set('types', 'address'); // Focus on addresses for postcode queries
     } else {
-      url.searchParams.set('types', 'address,poi,place');
+      url.searchParams.set('types', 'address'); // ✅ Focus on addresses, not POIs
     }
 
     if (this.config.mapbox.proximity) {
