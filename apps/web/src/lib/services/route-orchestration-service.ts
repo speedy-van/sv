@@ -754,10 +754,8 @@ export class RouteOrchestrationService {
         where: { id: routeId },
         include: {
           drops: true,
-        driver: {
-          include: { driver: true }
-        },
-        Vehicle: true
+          driver: true,
+          Vehicle: true
         }
       });
 

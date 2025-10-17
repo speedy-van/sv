@@ -225,15 +225,7 @@ export class PayoutProcessingService {
             User: true
           }
         },
-        driver: {
-          include: {
-            driver: {
-              include: {
-                DriverProfile: true
-              }
-            }
-          }
-        },
+        driver: true,
         Vehicle: true
       }
     });

@@ -90,7 +90,13 @@ export async function POST(
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
-          driver: { select: { name: true, email: true } },
+          driver: { 
+            select: { 
+              id: true,
+              name: true,
+              email: true
+            } 
+          },
           drops: {
             orderBy: { createdAt: 'asc' }
           },
@@ -164,7 +170,13 @@ export async function POST(
             adminNotes: reason || 'Assigned by admin',
           },
           include: {
-            driver: { select: { name: true, email: true } },
+            driver: { 
+              select: { 
+                id: true,
+                name: true,
+                email: true
+              } 
+            },
             drops: {
               orderBy: { createdAt: 'asc' }
             },

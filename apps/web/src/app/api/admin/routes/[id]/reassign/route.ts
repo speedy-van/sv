@@ -88,7 +88,11 @@ export async function POST(
         where: { id: routeId },
         include: {
           driver: {
-            select: { name: true, email: true }
+            select: { 
+              id: true,
+              name: true,
+              email: true
+            }
           },
           drops: {
             orderBy: { createdAt: 'asc' }
@@ -151,7 +155,13 @@ export async function POST(
             adminNotes: `Driver reassigned from ${oldDriverName} to ${newDriver.User?.name || 'Unknown'} by admin. Reason: ${reason || 'Not specified'}`,
           },
           include: {
-            driver: { select: { name: true, email: true } },
+            driver: { 
+              select: { 
+                id: true,
+                name: true,
+                email: true
+              } 
+            },
             drops: {
               orderBy: { createdAt: 'asc' }
             },
