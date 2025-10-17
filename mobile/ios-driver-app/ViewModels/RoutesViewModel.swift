@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class RoutesViewModel: ObservableObject {
@@ -9,6 +10,41 @@ class RoutesViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let routeService = RouteService.shared
+    private let pusherService = PusherService.shared
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        setupPusherListeners()
+    }
+    
+    // MARK: - Pusher Integration
+    
+    private func setupPusherListeners() {
+        // Listen for route-matched events
+        NotificationCenter.default.publisher(for: NSNotification.Name("RouteMatched"))
+            .sink { [weak self] notification in
+                guard let self = self else { return }
+                Task {
+                    await self.fetchRoutes()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for route-removed events
+        NotificationCenter.default.publisher(for: NSNotification.Name("RouteRemoved"))
+            .sink { [weak self] notification in
+                guard let self = self,
+                      let routeId = notification.userInfo?["routeId"] as? String else { return }
+                
+                // Remove route from list immediately
+                self.routes.removeAll { $0.id == routeId }
+                
+                if self.activeRoute?.id == routeId {
+                    self.activeRoute = nil
+                }
+            }
+            .store(in: &cancellables)
+    }
     
     // MARK: - Fetch Routes
     

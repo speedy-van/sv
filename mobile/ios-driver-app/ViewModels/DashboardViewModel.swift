@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class DashboardViewModel: ObservableObject {
@@ -18,6 +19,36 @@ class DashboardViewModel: ObservableObject {
     
     private let network = NetworkService.shared
     private let jobService = JobService.shared
+    private let pusherService = PusherService.shared
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        setupPusherListeners()
+    }
+    
+    // MARK: - Pusher Integration
+    
+    private func setupPusherListeners() {
+        // Listen for acceptance rate updates
+        NotificationCenter.default.publisher(for: NSNotification.Name("AcceptanceRateUpdated"))
+            .sink { [weak self] notification in
+                guard let self = self else { return }
+                Task {
+                    await self.fetchStats()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Connect Pusher
+    
+    func connectPusher(driverId: String) {
+        pusherService.connect(driverId: driverId)
+    }
+    
+    func disconnectPusher() {
+        pusherService.disconnect()
+    }
     
     // MARK: - Fetch Availability
     
