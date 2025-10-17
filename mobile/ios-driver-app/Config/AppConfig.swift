@@ -88,6 +88,7 @@ extension AppConfig {
         // Routes (Multi-Drop)
         case routes
         case routeDetail(String)
+        case routeEarnings(String)
         case acceptRoute(String)
         case declineRoute(String)
         case completeRouteDrop(String)
@@ -146,6 +147,7 @@ extension AppConfig {
             // Routes
             case .routes: return "/api/driver/routes"
             case .routeDetail(let id): return "/api/driver/routes/\(id)"
+            case .routeEarnings(let id): return "/api/driver/routes/\(id)/earnings"
             case .acceptRoute(let id): return "/api/driver/routes/\(id)/accept"
             case .declineRoute(let id): return "/api/driver/routes/\(id)/decline"
             case .completeRouteDrop(let id): return "/api/driver/routes/\(id)/complete-drop"
@@ -174,7 +176,7 @@ extension AppConfig {
             case .trackingHistory: return "/api/driver/tracking"
             
             // Notifications
-            case .registerDevice: return "/api/driver/notifications/register"
+            case .registerDevice: return "/api/driver/push-subscription"
             case .notifications: return "/api/driver/notifications"
             case .markNotificationRead: return "/api/driver/notifications/read"
             }

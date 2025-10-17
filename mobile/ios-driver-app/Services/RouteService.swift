@@ -32,6 +32,13 @@ class RouteService {
         return response.data
     }
     
+    // MARK: - Fetch Route Earnings
+    
+    func fetchRouteEarnings(routeId: String) async throws -> RouteEarningsResponse {
+        let response: RouteEarningsResponse = try await network.request(.routeEarnings(routeId))
+        return response
+    }
+    
     // MARK: - Accept Route
     
     func acceptRoute(routeId: String) async throws -> Route {
