@@ -88,7 +88,8 @@ export async function POST(
     }
 
     // Check if route is assigned to this driver
-    if (route.driverId !== driver.id && route.status !== 'planned') {
+    // Note: route.driverId is User.id, not Driver.id
+    if (route.driverId !== userId && route.status !== 'planned') {
       return NextResponse.json(
         { error: 'You are not assigned to this route' },
         { status: 403 }
@@ -235,10 +236,11 @@ export async function POST(
           const nextDriver = eligibleDrivers[0];
           
           // Update route assignment
+          // Note: route.driverId should be User.id, not Driver.id
           await prisma.route.update({
             where: { id: routeId },
             data: {
-              driverId: nextDriver.id,
+              driverId: nextDriver.userId,
               status: 'assigned',
               updatedAt: new Date()
             }

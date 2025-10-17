@@ -301,13 +301,13 @@ export async function GET(request: NextRequest) {
         driverName: route.driver?.name || 'Unassigned',
         driverEmail: route.driver?.email,
         totalDrops: route.totalDrops || (route as any).drops?.length || 0,
-        completedDrops: route.completedDrops,
+        completedDrops: route.completedDrops || 0,
         startTime: route.startTime,
-        totalOutcome: route.totalOutcome,
+        totalOutcome: Number(route.totalOutcome) || 0,
         serviceTier: route.serviceTier,
         drops: (route as any).drops || [],
         bookings: route.Booking || [],
-        progress: route.totalDrops > 0 ? (route.completedDrops / route.totalDrops * 100) : 0,
+        progress: route.totalDrops > 0 ? ((route.completedDrops || 0) / route.totalDrops * 100) : 0,
         createdAt: route.createdAt,
         updatedAt: route.updatedAt,
       })),
@@ -501,6 +501,26 @@ export async function POST(request: NextRequest) {
           const { getPusherServer } = require('@/lib/pusher');
           const pusher = getPusherServer();
           if (pusher && pusher.trigger) {
+            // Send route-matched event (critical for iOS app)
+            await pusher.trigger(`driver-${driverId}`, 'route-matched', {
+              type: bookings.length > 1 ? 'multi-drop' : 'single-order',
+              routeId: route.id,
+              routeNumber: routeNumber,
+              bookingReference: routeNumber,
+              orderNumber: routeNumber,
+              bookingsCount: bookings.length,
+              jobCount: bookings.length,
+              dropCount: bookings.length,
+              dropsCount: bookings.length,
+              totalDistance: totalDistanceKm,
+              estimatedDuration: null,
+              totalEarnings: 0, // Will be calculated by pricing engine
+              assignedAt: new Date().toISOString(),
+              message: `New ${bookings.length > 1 ? 'route' : 'order'} ${routeNumber} assigned to you`,
+              drops: [], // Will be populated from bookings
+            });
+            
+            // Also send route-assigned for backward compatibility
             await pusher.trigger(`driver-${driverId}`, 'route-assigned', {
               routeId: route.id,
               routeNumber: routeNumber,
@@ -509,7 +529,8 @@ export async function POST(request: NextRequest) {
               message: `New route ${routeNumber} assigned to you with ${bookings.length} drop(s)`,
               timestamp: new Date().toISOString(),
             });
-            console.log('✅ Pusher notification sent');
+            
+            console.log('✅ Pusher notifications sent (route-matched + route-assigned)');
           }
 
           // Send SMS notification if phone number available
