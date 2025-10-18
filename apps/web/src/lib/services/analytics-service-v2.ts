@@ -245,7 +245,7 @@ export class AnalyticsService {
         const activeHours = 40 + Math.random() * 20; // 40-60 hours
 
         return {
-          driverId: driver.userId,
+          driverId: driver.id, // ✅ Fixed: Use driver.id instead of driver.userId
           driverName: driver.User?.name || 'Unknown Driver',
           totalBookings,
           totalRevenue,
