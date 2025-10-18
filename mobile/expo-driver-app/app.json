@@ -33,14 +33,14 @@
           "com.speedyvan.driverapp.refresh",
           "com.speedyvan.driverapp.processing"
         ],
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "backgroundModes": [
-        "location",
-        "fetch",
-        "remote-notification",
-        "processing"
-      ]
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification",
+          "processing"
+        ]
+      }
     },
     "android": {
       "icon": "./assets/icon.png",
