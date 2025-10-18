@@ -6,6 +6,10 @@ import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 import { ROUTES } from '@/lib/routing';
 
+// Force dynamic rendering for customer pages (fixes DYNAMIC_SERVER_USAGE error)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function CustomerLayout({
   children,
 }: {
@@ -35,10 +39,10 @@ export default async function CustomerLayout({
   console.log('✅ Customer Layout - Access granted for customer user');
 
   return (
-    <div suppressHydrationWarning>
+    <>
       <UnifiedNavigation role="customer" isAuthenticated={true}>
         <UnifiedErrorBoundary role="customer">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>
-    </div>
+    </>
   );
 }

@@ -5,6 +5,10 @@ import { redirect } from 'next/navigation';
 import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 
+// Force dynamic rendering for driver pages (fixes DYNAMIC_SERVER_USAGE error)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function DriverLayout({
   children,
 }: {
@@ -32,10 +36,10 @@ export default async function DriverLayout({
   console.log('✅ Driver Layout - Access granted for approved driver');
 
   return (
-    <div suppressHydrationWarning>
+    <>
       <UnifiedNavigation role="driver" isAuthenticated={true}>
         <UnifiedErrorBoundary role="driver">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>
-    </div>
+    </>
   );
 }
