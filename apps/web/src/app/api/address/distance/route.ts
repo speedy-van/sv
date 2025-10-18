@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     const pickup: { lat: number; lng: number } = { lat: pickupLat, lng: pickupLng };
     const dropoff: { lat: number; lng: number } = { lat: dropoffLat, lng: dropoffLng };
 
-    // Calculate distance using dual provider service
+    // Calculate distance using dual provider service (external API - not manual calculation)
+    // This uses Google/Mapbox APIs, not manual Haversine formula - DEPRECATED but allowed for external APIs
     const result = await dualProviderService.calculateDistance(pickup, dropoff, preferredProvider);
 
     if (result) {
