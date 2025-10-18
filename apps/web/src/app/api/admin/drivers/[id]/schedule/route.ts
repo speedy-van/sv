@@ -118,7 +118,7 @@ export async function GET(
         dropoffAddress: 'N/A',
       };
 
-      if (booking.status === 'completed') {
+      if (booking.status === 'COMPLETED') {
         completed.push(item);
       } else if (booking.scheduledAt >= todayStart && booking.scheduledAt < todayEnd) {
         today.push(item);

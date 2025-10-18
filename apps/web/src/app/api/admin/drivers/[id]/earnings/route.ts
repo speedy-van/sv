@@ -51,7 +51,7 @@ export async function GET(
     const routes = await prisma.route.findMany({
       where: {
         driverId,
-        status: 'completed',
+        status: 'COMPLETED',
         ...(startDate && { updatedAt: { gte: startDate } }),
       },
       include: {
@@ -74,7 +74,7 @@ export async function GET(
     const bookings = await prisma.booking.findMany({
       where: {
         driverId,
-        status: 'completed',
+        status: 'COMPLETED',
         routeId: null,
         ...(startDate && { updatedAt: { gte: startDate } }),
       },
@@ -110,7 +110,7 @@ export async function GET(
         amount,
         commission,
         netEarning,
-        status: 'completed',
+        status: 'COMPLETED',
       });
     });
 
@@ -131,7 +131,7 @@ export async function GET(
         amount,
         commission,
         netEarning,
-        status: 'completed',
+        status: 'COMPLETED',
       });
     });
 
