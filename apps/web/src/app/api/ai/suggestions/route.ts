@@ -19,16 +19,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use OpenAI API with DeepSeek model (via OPENAI_API_KEY env variable)
-    const apiKey = process.env.OPENAI_API_KEY;
-    
-    if (!apiKey) {
-      console.error('❌ OPENAI_API_KEY not configured');
-      return NextResponse.json(
-        { success: false, error: 'AI service not configured' },
-        { status: 500 }
-      );
-    }
+    // Use DeepSeek API directly
+    const apiKey = 'sk-dbc85858f63d44aebc7e9ef9ae2a48da';
 
     const prompt = `You are a moving company assistant. Generate a realistic list of items for a ${propertyType} ${moveType}.
 
@@ -67,15 +59,14 @@ Example for "1 Bedroom" "House Move":
   {"name": "Medium Box", "category": "boxes", "quantity": 15}
 ]`;
 
-    const baseUrl = process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || 'https://api.openai.com/v1';
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-mini', // Using the available model from env
+        model: 'deepseek-chat', // Using DeepSeek model
         messages: [
           {
             role: 'system',
@@ -93,7 +84,7 @@ Example for "1 Bedroom" "House Move":
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ OpenAI API error:', errorText);
+      console.error('❌ DeepSeek API error:', errorText);
       return NextResponse.json(
         { success: false, error: 'AI service error' },
         { status: 500 }
