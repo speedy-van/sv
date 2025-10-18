@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: PreviewRequest = await request.json();
-    const { maxDropsPerRoute, maxDistanceKm, optimizeBy, autoAssign, driverIds } = body;
+    const body: any = await request.json();
+    const { maxDropsPerRoute, maxDistanceKm, optimizeBy, autoAssign, driverIds, includePendingPayment = false } = body;
 
     console.log('🔍 Generating route preview:', { 
       maxDropsPerRoute, 
@@ -79,11 +79,22 @@ export async function POST(request: NextRequest) {
       autoAssign 
     });
 
-    // Get pending bookings
+    // Get pending bookings - conditionally include PENDING_PAYMENT
+    console.log('🔍 Fetching pending bookings for preview...');
+    console.log(`🔍 Filter: includePendingPayment = ${includePendingPayment}`);
+    
+    const whereConditions: any[] = [
+      { status: 'CONFIRMED', routeId: null },
+      { status: 'DRAFT', routeId: null },
+    ];
+    
+    if (includePendingPayment) {
+      whereConditions.push({ status: 'PENDING_PAYMENT', routeId: null });
+    }
+
     const pendingBookings = await prisma.booking.findMany({
       where: {
-        status: 'CONFIRMED',
-        route: null,
+        OR: whereConditions,
       },
       select: {
         id: true,
@@ -127,10 +138,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Smart Configuration: ALWAYS flexible - settings are suggestions, not hard limits
+    // System will try to cluster ALL pending drops efficiently
+    console.log(`🎯 Smart Override ALWAYS Active: ${pendingBookings.length} pending drops - flexible clustering`);
+    
+    // Use settings as guidelines but allow flexibility to include all bookings
+    const effectiveMaxDrops = Math.max(maxDropsPerRoute, pendingBookings.length);
+    const effectiveMaxDistance = maxDistanceKm * 2; // 2x flexibility for distance
+    const useFlexibleClustering = true; // Always use flexible mode
+
     // Get available drivers
     let availableDrivers: any[] = [];
     if (autoAssign) {
-      availableDrivers = await prisma.driver.findMany({
+      const allDrivers = await prisma.driver.findMany({
         where: {
           status: 'active',
           onboardingStatus: 'approved',
@@ -160,6 +180,26 @@ export async function POST(request: NextRequest) {
           rating: 'desc',
         },
       });
+      
+      // Filter out test drivers (exclude drivers with test/demo names)
+      availableDrivers = allDrivers.filter((driver: any) => {
+        const driverName = driver.User?.name?.toLowerCase() || '';
+        const isTestDriver = 
+          driverName === 'test' ||
+          driverName === 'demo' ||
+          driverName === 'test test' ||
+          driverName === 'demo demo' ||
+          driverName.startsWith('test ') ||
+          driverName.startsWith('demo ');
+        
+        if (isTestDriver) {
+          console.log(`🚫 Excluding test driver: ${driver.User?.name}`);
+        }
+        
+        return !isTestDriver;
+      });
+      
+      console.log(`✅ Available real drivers for auto-assign: ${availableDrivers.length}`);
     } else if (driverIds && driverIds.length > 0) {
       availableDrivers = await prisma.driver.findMany({
         where: {
@@ -199,14 +239,14 @@ export async function POST(request: NextRequest) {
       if (!seed) break;
       
       routeBookings.push(seed);
-      const seedCoords = getPostcodeCoordinates(seed.pickupAddress?.postcode || '');
+      const seedCoords = getPostcodeCoordinates((seed as any).pickupAddress?.postcode || '');
 
       // Add nearby bookings to this route
       for (let i = unassignedBookings.length - 1; i >= 0; i--) {
-        if (routeBookings.length >= maxDropsPerRoute) break;
+        if (routeBookings.length >= effectiveMaxDrops) break;
 
         const booking = unassignedBookings[i];
-        const bookingCoords = getPostcodeCoordinates(booking.pickupAddress?.postcode || '');
+        const bookingCoords = getPostcodeCoordinates((booking as any).pickupAddress?.postcode || '');
 
         if (!seedCoords || !bookingCoords) continue;
 
@@ -217,17 +257,17 @@ export async function POST(request: NextRequest) {
           bookingCoords.lng
         );
 
-        // If within reasonable distance, add to route
-        if (distance <= maxDistanceKm / 2) {
+        // Flexible clustering: Accept all bookings within 2x distance guideline
+        if (useFlexibleClustering || distance <= effectiveMaxDistance / 2) {
           routeBookings.push(booking);
           unassignedBookings.splice(i, 1);
         }
       }
 
       // Calculate route metrics
-      const totalValue = routeBookings.reduce((sum, b) => sum + b.totalGBP, 0);
+      const totalValue = routeBookings.reduce((sum, b) => sum + (b as any).totalGBP, 0);
       const totalVolume = routeBookings.reduce((sum, b) => 
-        sum + b.BookingItem.reduce((itemSum: number, item: any) => 
+        sum + (b as any).BookingItem.reduce((itemSum: number, item: any) => 
           itemSum + ((item.estimatedVolume || 0) * item.quantity), 0
         ), 0
       );

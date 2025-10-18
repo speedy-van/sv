@@ -36,11 +36,13 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
     console.log('🔍 Job details API called:', {
-      jobId: params.id,
+      jobId: id,
       url: request.url
     });
 
@@ -64,7 +66,7 @@ export async function GET(
     }
 
     const userId = session.user.id;
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     console.log('✅ Driver authenticated:', { userId, userRole, bookingId });
 
@@ -213,7 +215,7 @@ export async function GET(
     const earningsResult = await driverEarningsService.calculateEarnings({
       driverId: driver.id,
       bookingId: booking.id,
-      assignmentId: booking.Assignment?.id || `temp_${booking.id}`,
+      assignmentId: booking.Assignment[0]?.id || `temp_${booking.id}`,
       customerPaymentPence: booking.totalGBP,
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
@@ -253,20 +255,20 @@ export async function GET(
       reference: booking.reference,
       status: booking.status,
       
-      // Assignment info
-      assignment: booking.Assignment ? {
-        id: booking.Assignment.id,
-        status: booking.Assignment.status,
-        acceptedAt: booking.Assignment.claimedAt,
-        expiresAt: booking.Assignment.expiresAt,
-        events: booking.Assignment.JobEvent ? booking.Assignment.JobEvent.map((event: any) => ({
+      // Assignment info (booking.Assignment is an array)
+      assignment: booking.Assignment && booking.Assignment[0] ? {
+        id: booking.Assignment[0].id,
+        status: booking.Assignment[0].status,
+        acceptedAt: booking.Assignment[0].claimedAt,
+        expiresAt: booking.Assignment[0].expiresAt,
+        events: booking.Assignment[0].JobEvent ? booking.Assignment[0].JobEvent.map((event: any) => ({
           step: event.step,
           completedAt: event.createdAt,
           notes: event.notes,
           payload: event.payload
         })) : [],
-        currentStep: booking.Assignment.JobEvent && booking.Assignment.JobEvent.length > 0 
-          ? booking.Assignment.JobEvent[booking.Assignment.JobEvent.length - 1].step 
+        currentStep: booking.Assignment[0].JobEvent && booking.Assignment[0].JobEvent.length > 0 
+          ? booking.Assignment[0].JobEvent[booking.Assignment[0].JobEvent.length - 1].step 
           : 'navigate_to_pickup'
       } : null,
       

@@ -8,10 +8,10 @@ import { QuoteService } from '@/lib/services/quote-service';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quoteId = params.id;
+    const { id: quoteId } = await params;
     
     if (!quoteId) {
       return NextResponse.json(
@@ -48,10 +48,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quoteId = params.id;
+    const { id: quoteId } = await params;
     const body = await request.json();
     
     if (body.action === 'refresh') {

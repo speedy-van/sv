@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 // GET /api/booking-luxury/[id]/track - Get booking tracking information
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     // Find the booking with tracking information
     const booking = await prisma.booking.findUnique({

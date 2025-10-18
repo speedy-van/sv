@@ -36,11 +36,11 @@ export async function POST(req: Request) {
     let newAcceptanceRate = 100;
 
     await prisma.$transaction(async tx => {
-      const offer = await tx.assignment.findUnique({ where: { bookingId } });
-      if (!offer || offer.driverId !== driver.id || offer.status !== 'invited')
+      const offer = await tx.assignment.findFirst({ where: { bookingId, driverId: driver.id, status: 'invited' } });
+      if (!offer)
         throw new Error('offer_invalid');
       await tx.assignment.update({
-        where: { bookingId },
+        where: { id: offer.id },
         data: { status: 'declined' },
       });
       await tx.booking.update({
@@ -164,7 +164,7 @@ export async function POST(req: Request) {
           // Offer to the best available driver (highest acceptance rate)
           const nextDriver = eligibleDrivers[0];
           
-          // Create new assignment
+          // Create new assignment for next driver
           await prisma.assignment.create({
             data: {
               id: `assign_${bookingId}_${nextDriver.id}_${Date.now()}`,

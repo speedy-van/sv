@@ -28,11 +28,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch bookings with full details
+    // Fetch bookings with full details (exclude test bookings)
     const bookings = await prisma.booking.findMany({
       where: {
         id: { in: bookingIds },
         status: 'CONFIRMED',
+        // Only exclude obvious test/demo accounts - be more specific
+        NOT: [
+          { reference: { startsWith: 'test_' } },
+          { reference: { startsWith: 'TEST_' } },
+          { reference: { startsWith: 'demo_' } },
+          { customerName: { equals: 'test', mode: 'insensitive' } },
+          { customerName: { equals: 'demo', mode: 'insensitive' } },
+          { customerName: { equals: 'test user', mode: 'insensitive' } },
+          { customerName: { equals: 'demo user', mode: 'insensitive' } },
+          { customerName: { startsWith: 'test ', mode: 'insensitive' } },
+          { customerName: { startsWith: 'demo ', mode: 'insensitive' } },
+        ],
       },
       include: {
         pickupAddress: true,
@@ -55,10 +67,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`🎯 Smart AI Route Generation: Processing ${bookings.length} live bookings with flexible clustering`);
+
     // Use DeepSeek API to generate optimal route
     const apiKey = 'sk-dbc85858f63d44aebc7e9ef9ae2a48da';
     
     const prompt = `You are an expert logistics optimizer. Given the following delivery bookings, generate an optimal multi-drop route.
+
+IMPORTANT: The system uses FLEXIBLE configuration - you MUST include ALL provided bookings in the route. 
+Settings are guidelines only. Focus on optimal sequence rather than excluding bookings.
 
 Bookings:
 ${bookings.map((b, idx) => `

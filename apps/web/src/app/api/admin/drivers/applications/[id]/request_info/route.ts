@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // POST /api/admin/drivers/applications/[id]/request_info - Request additional information
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -16,7 +16,7 @@ export async function POST(
     }
     const user = authResult;
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { rejectionReason } = body;
 

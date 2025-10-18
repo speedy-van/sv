@@ -96,7 +96,7 @@ model AdminNotification {
 
 model Assignment {
   id             String           @id @default(cuid())
-  bookingId      String           @unique
+  bookingId      String
   driverId       String
   round          Int              @default(1)
   score          Int?
@@ -115,6 +115,7 @@ model Assignment {
   JobEvent       JobEvent[]
 
   @@index([status])
+  @@index([bookingId, status])
 }
 
 model AuditLog {
@@ -187,6 +188,12 @@ model Booking {
   totalGBP                                                   Int
   weatherSurchargeGBP                                        Int
   status                                                     BookingStatus         @default(DRAFT)
+  distanceMeters                                             Int?                  @default(0)
+  durationSeconds                                            Int?                  @default(0)
+  pickupLat                                                  Float?
+  pickupLng                                                  Float?
+  dropoffLat                                                 Float?
+  dropoffLng                                                 Float?
   crewSize                                                   CrewSize              @default(TWO)
   currentStep                                                BookingStep           @default(STEP_1_WHERE_AND_WHAT)
   isStepCompleted                                            Boolean               @default(false)
@@ -213,7 +220,7 @@ model Booking {
   suggestedRouteIds                                          String[]              @default([])
   potentialSavings                                           Float?
   multiDropDiscount                                          Float?
-  Assignment                                                 Assignment?
+  Assignment                                                 Assignment[]
   customer                                                   User?                 @relation(fields: [customerId], references: [id])
   driver                                                     Driver?               @relation(fields: [driverId], references: [id])
   dropoffAddress                                             BookingAddress        @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])

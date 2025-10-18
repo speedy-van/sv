@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,40 +14,34 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Try to find as route first
     let route = await prisma.route.findUnique({
       where: { id },
       include: {
         driver: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                phone: true,
-              },
-            },
+          select: {
+            name: true,
+            email: true,
+            phone: true,
           },
         },
         drops: {
           include: {
-            booking: {
+            Booking: {
               select: {
                 id: true,
-                bookingReference: true,
-                pickupAddress: true,
-                dropoffAddress: true,
+                reference: true,
                 customerName: true,
                 customerPhone: true,
                 status: true,
-                totalPrice: true,
+                totalGBP: true,
               },
             },
           },
           orderBy: {
-            sequence: 'asc',
+            createdAt: 'asc',
           },
         },
       },
@@ -60,7 +54,7 @@ export async function GET(
         include: {
           driver: {
             include: {
-              user: {
+              User: {
                 select: {
                   name: true,
                   email: true,
@@ -79,7 +73,7 @@ export async function GET(
       // Convert booking to route format
       return NextResponse.json({
         id: booking.id,
-        routeNumber: booking.bookingReference,
+        routeNumber: booking.reference,
         status: booking.status,
         driver: booking.driver,
         drops: [
@@ -88,29 +82,27 @@ export async function GET(
             sequence: 1,
             booking: {
               id: booking.id,
-              bookingReference: booking.bookingReference,
-              pickupAddress: booking.pickupAddress,
-              dropoffAddress: booking.dropoffAddress,
+              reference: booking.reference,
               customerName: booking.customerName,
               customerPhone: booking.customerPhone,
               status: booking.status,
             },
             status: booking.status,
-            estimatedArrival: booking.pickupTime,
+            estimatedArrival: booking.scheduledAt,
           },
         ],
         totalDistance: 0,
         estimatedDuration: 0,
-        totalValue: booking.totalPrice,
+        totalValue: booking.totalGBP,
         createdAt: booking.createdAt,
-        startedAt: booking.pickupTime,
+        startedAt: booking.scheduledAt,
         completedAt: booking.status === 'COMPLETED' ? booking.updatedAt : null,
       });
     }
 
     // Calculate total value from drops
     const totalValue = route.drops.reduce(
-      (sum, drop) => sum + (drop.booking.totalPrice || 0),
+      (sum, drop) => sum + (drop.Booking?.totalGBP || 0),
       0
     );
 

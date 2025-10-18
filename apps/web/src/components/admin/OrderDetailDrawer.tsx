@@ -37,7 +37,17 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  Circle,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  Card,
+  CardBody,
+  SimpleGrid,
 } from '@chakra-ui/react';
+import { keyframes } from '@emotion/react';
+import { differenceInHours, differenceInDays } from 'date-fns';
 import {
   FiMapPin,
   FiClock,
@@ -53,8 +63,96 @@ import {
   FiX,
   FiSave,
   FiTrash2,
+  FiNavigation,
+  FiTrendingUp,
 } from 'react-icons/fi';
 import PaymentConfirmationButton from './PaymentConfirmationButton';
+
+// Flashing animations
+const pulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+`;
+
+const fastPulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+`;
+
+// Priority calculation
+function calculatePriority(scheduledAt: string) {
+  const now = new Date();
+  const scheduled = new Date(scheduledAt);
+  const hoursUntil = differenceInHours(scheduled, now);
+  const daysUntil = differenceInDays(scheduled, now);
+
+  if (hoursUntil >= 0 && hoursUntil <= 48) {
+    return {
+      level: 'urgent',
+      color: 'red.500',
+      bgColor: 'red.50',
+      label: 'URGENT - Tomorrow',
+      animation: `${fastPulseAnimation} 1.5s ease-in-out infinite`,
+    };
+  }
+  if (hoursUntil > 48 && hoursUntil <= 72) {
+    return {
+      level: 'high',
+      color: 'orange.500',
+      bgColor: 'orange.50',
+      label: 'Day After Tomorrow',
+      animation: `${pulseAnimation} 2s ease-in-out infinite`,
+    };
+  }
+  if (daysUntil > 3 && daysUntil <= 7) {
+    return {
+      level: 'medium',
+      color: 'yellow.500',
+      bgColor: 'yellow.50',
+      label: 'This Week',
+      animation: `${pulseAnimation} 2.5s ease-in-out infinite`,
+    };
+  }
+  if (daysUntil > 7 && daysUntil <= 14) {
+    return {
+      level: 'low',
+      color: 'green.400',
+      bgColor: 'green.50',
+      label: 'Next Week',
+      animation: `${pulseAnimation} 3s ease-in-out infinite`,
+    };
+  }
+  return {
+    level: 'future',
+    color: 'green.600',
+    bgColor: 'green.50',
+    label: 'Scheduled',
+    animation: `${pulseAnimation} 3.5s ease-in-out infinite`,
+  };
+}
+
+// Calculate estimated driver earnings
+function calculateDriverEarnings(order: any) {
+  const distanceMiles = order.distanceMeters 
+    ? order.distanceMeters / 1609.34 
+    : order.baseDistanceMiles || 0;
+  const durationMinutes = order.durationSeconds 
+    ? order.durationSeconds / 60 
+    : order.estimatedDurationMinutes || 0;
+  
+  const baseFare = 25.00;
+  const mileageFee = distanceMiles * 0.55;
+  const timeFee = durationMinutes * 0.15;
+  const total = baseFare + mileageFee + timeFee;
+  
+  return {
+    base: baseFare,
+    mileage: mileageFee,
+    time: timeFee,
+    total,
+    formatted: `£${total.toFixed(2)}`
+  };
+}
 
 interface OrderDetail {
   id: string;
@@ -680,15 +778,42 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       <DrawerOverlay />
       <DrawerContent bg={bgColor}>
         <DrawerCloseButton />
-        <DrawerHeader borderBottom={`1px solid ${borderColor}`}>
-          <VStack align="start" spacing={2}>
-            <Text fontSize="lg" fontWeight="bold">
-              Order Details
-            </Text>
-            {orderCode && (
-              <Text fontSize="sm" color="gray.600">
-                #{orderCode}
-              </Text>
+        <DrawerHeader borderBottom={`1px solid ${borderColor}`} pb={4}>
+          <VStack align="stretch" spacing={3}>
+            <HStack justify="space-between">
+              <HStack spacing={3}>
+                {order && (
+                  <Circle
+                    size="16px"
+                    bg={calculatePriority(order.scheduledAt).color}
+                    animation={calculatePriority(order.scheduledAt).animation}
+                  />
+                )}
+                <Text fontSize="lg" fontWeight="bold">
+                  Order Details
+                </Text>
+              </HStack>
+              {orderCode && (
+                <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
+                  #{orderCode}
+                </Badge>
+              )}
+            </HStack>
+            {order && (
+              <Badge 
+                colorScheme={
+                  calculatePriority(order.scheduledAt).level === 'urgent' ? 'red' :
+                  calculatePriority(order.scheduledAt).level === 'high' ? 'orange' :
+                  calculatePriority(order.scheduledAt).level === 'medium' ? 'yellow' :
+                  'green'
+                }
+                fontSize="xs"
+                px={2}
+                py={1}
+                w="fit-content"
+              >
+                {calculatePriority(order.scheduledAt).label}
+              </Badge>
             )}
           </VStack>
         </DrawerHeader>
@@ -1085,39 +1210,107 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               )}
 
               {/* Order Details */}
-              <VStack align="stretch" spacing={3}>
+              <VStack align="stretch" spacing={4}>
                 <Text fontWeight="bold" fontSize="md">
                   Booking Details
                 </Text>
-                <HStack justify="space-between">
-                  <Text>Total Amount</Text>
-                  <Text fontWeight="bold" fontSize="lg" color="green.600">
-                    {formatCurrency(order.totalGBP)}
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <HStack spacing={1}>
-                    {getStatusIcon(
-                      !!(order.baseDistanceMiles || order.distanceMeters), 
-                      true
-                    )}
-                    <Text>Distance</Text>
-                  </HStack>
-                  <Text color={
-                    (order.baseDistanceMiles || order.distanceMeters) ? "gray.700" : "red.600"
-                  }>
-                    {order.baseDistanceMiles 
-                      ? `${order.baseDistanceMiles.toFixed(1)} miles`
-                      : order.distanceMeters
-                        ? formatDistance(order.distanceMeters)
-                        : 'NOT CALCULATED'
-                    }
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text>Duration</Text>
-                  <Text>{formatDuration(order.durationSeconds)}</Text>
-                </HStack>
+                
+                {/* Price Overview Card */}
+                <Card bg="green.50" borderColor="green.200" borderWidth={1}>
+                  <CardBody>
+                    <SimpleGrid columns={2} spacing={4}>
+                      <Stat>
+                        <StatLabel fontSize="xs" color="gray.600">Customer Paid</StatLabel>
+                        <StatNumber fontSize="2xl" color="green.600">
+                          {formatCurrency(order.totalGBP)}
+                        </StatNumber>
+                      </Stat>
+                      <Stat>
+                        <StatLabel fontSize="xs" color="gray.600">
+                          Est. Driver Earnings
+                        </StatLabel>
+                        <StatNumber fontSize="2xl" color="blue.600">
+                          {calculateDriverEarnings(order).formatted}
+                        </StatNumber>
+                        <StatHelpText fontSize="xs">
+                          Base + Mileage + Time
+                        </StatHelpText>
+                      </Stat>
+                    </SimpleGrid>
+                  </CardBody>
+                </Card>
+                
+                {/* Trip Metrics Card */}
+                <Card bg="blue.50" borderColor="blue.200" borderWidth={1}>
+                  <CardBody>
+                    <SimpleGrid columns={2} spacing={4}>
+                      <VStack align="start" spacing={1}>
+                        <HStack spacing={1}>
+                          {getStatusIcon(!!(order.baseDistanceMiles || order.distanceMeters), true)}
+                          <Text fontSize="xs" color="gray.600">Distance</Text>
+                        </HStack>
+                        <Text fontWeight="bold" fontSize="lg" color={
+                          (order.baseDistanceMiles || order.distanceMeters) ? "blue.600" : "red.600"
+                        }>
+                          {order.baseDistanceMiles 
+                            ? `${order.baseDistanceMiles.toFixed(1)} mi`
+                            : order.distanceMeters
+                              ? `${(order.distanceMeters / 1609.34).toFixed(1)} mi`
+                              : 'NOT CALCULATED'
+                          }
+                        </Text>
+                      </VStack>
+                      <VStack align="start" spacing={1}>
+                        <HStack spacing={1}>
+                          <FiClock />
+                          <Text fontSize="xs" color="gray.600">Duration</Text>
+                        </HStack>
+                        <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                          {formatDuration(order.durationSeconds)}
+                        </Text>
+                      </VStack>
+                    </SimpleGrid>
+                  </CardBody>
+                </Card>
+                
+                {/* Driver Earnings Breakdown */}
+                {(order.distanceMeters || order.baseDistanceMiles) && order.durationSeconds && (
+                  <Card bg="purple.50" borderColor="purple.200" borderWidth={1}>
+                    <CardBody>
+                      <VStack align="stretch" spacing={2}>
+                        <HStack spacing={2}>
+                          <FiTrendingUp />
+                          <Text fontSize="sm" fontWeight="bold" color="purple.700">
+                            Driver Earnings Breakdown
+                          </Text>
+                        </HStack>
+                        <Divider borderColor="purple.200" />
+                        <HStack justify="space-between" fontSize="xs">
+                          <Text color="gray.600">Base Fare:</Text>
+                          <Text fontWeight="medium">£{calculateDriverEarnings(order).base.toFixed(2)}</Text>
+                        </HStack>
+                        <HStack justify="space-between" fontSize="xs">
+                          <Text color="gray.600">Mileage Fee:</Text>
+                          <Text fontWeight="medium">£{calculateDriverEarnings(order).mileage.toFixed(2)}</Text>
+                        </HStack>
+                        <HStack justify="space-between" fontSize="xs">
+                          <Text color="gray.600">Time Fee:</Text>
+                          <Text fontWeight="medium">£{calculateDriverEarnings(order).time.toFixed(2)}</Text>
+                        </HStack>
+                        <Divider borderColor="purple.200" />
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" fontWeight="bold" color="purple.700">Total Driver Gets:</Text>
+                          <Text fontSize="md" fontWeight="bold" color="purple.700">
+                            {calculateDriverEarnings(order).formatted}
+                          </Text>
+                        </HStack>
+                        <Text fontSize="xs" color="gray.500" fontStyle="italic">
+                          * Actual earnings calculated at job completion
+                        </Text>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                )}
                 <HStack justify="space-between">
                   <Text>Scheduled Date</Text>
                   <Text>

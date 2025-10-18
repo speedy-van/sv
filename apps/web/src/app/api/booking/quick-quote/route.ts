@@ -92,16 +92,59 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Estimate distance between postcodes
- * TODO: Replace with Google Maps Distance Matrix API
+ * Estimate distance between postcodes using Mapbox API
  */
 async function estimateDistance(
   pickupPostcode: string,
   deliveryPostcode: string
 ): Promise<number> {
-  // Simplified estimation - in production, use Google Maps API
-  // For now, return a random distance between 5-50 miles
-  return Math.floor(Math.random() * 45) + 5;
+  try {
+    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    
+    if (!mapboxToken) {
+      console.warn('Mapbox token not configured, using fallback');
+      return 20; // Fallback to 20 miles
+    }
+
+    // Geocode both postcodes
+    const pickupGeo = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(pickupPostcode)}.json?country=gb&types=postcode&limit=1&access_token=${mapboxToken}`
+    );
+    const dropoffGeo = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(deliveryPostcode)}.json?country=gb&types=postcode&limit=1&access_token=${mapboxToken}`
+    );
+
+    if (!pickupGeo.ok || !dropoffGeo.ok) {
+      throw new Error('Geocoding failed');
+    }
+
+    const pickupData = await pickupGeo.json();
+    const dropoffData = await dropoffGeo.json();
+
+    if (!pickupData.features?.length || !dropoffData.features?.length) {
+      throw new Error('Postcodes not found');
+    }
+
+    const pickupCoords = pickupData.features[0].center;
+    const dropoffCoords = dropoffData.features[0].center;
+
+    // Calculate distance using Haversine formula
+    const R = 3959; // Earth radius in miles
+    const dLat = (dropoffCoords[1] - pickupCoords[1]) * Math.PI / 180;
+    const dLon = (dropoffCoords[0] - pickupCoords[0]) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(pickupCoords[1] * Math.PI / 180) * Math.cos(dropoffCoords[1] * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+
+    return Math.round(distance * 10) / 10; // Round to 1 decimal
+  } catch (error) {
+    console.error('Distance estimation error:', error);
+    // Fallback: estimate based on first part of postcode
+    return 20; // Default 20 miles
+  }
 }
 
 /**

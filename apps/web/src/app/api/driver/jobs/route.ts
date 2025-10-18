@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     // Transform assigned jobs
     const transformedAssignedJobs = assignedJobs.map(assignment => {
-      const booking = assignment.Booking;
+      const booking = assignment.Booking as any; // Type assertion for new fields (distanceMeters, durationSeconds)
       const pickup = booking.pickupAddress;
       const dropoff = booking.dropoffAddress;
       // Map assignment status to display status
@@ -142,37 +142,24 @@ export async function GET(request: NextRequest) {
                      assignment.status === 'invited' ? 'available' : // Invited jobs show as available with Accept/Decline buttons
                      'assigned';
       
-      return {
-        id: booking.id,
-        reference: booking.reference,
-        customer: booking.customer?.name || booking.customerName || 'Unknown Customer',
-        customerPhone: booking.customerPhone || booking.customerEmail || 'No contact info',
-        date: booking.scheduledAt.toISOString().split('T')[0],
-        time: booking.scheduledAt.toTimeString().split(' ')[0].slice(0, 5),
-        from: pickup?.label || 'Pickup Address',
-        to: dropoff?.label || 'Dropoff Address',
-        distance: pickup && dropoff 
-          ? `${calculateDistance( // DEPRECATED - internal use only
-              pickup.lat || 0,
-              pickup.lng || 0,
-              dropoff.lat || 0,
-              dropoff.lng || 0
-            )} miles`
-          : 'Unknown',
-        vehicleType: 'Van', // Default vehicle type
-        items: booking.BookingItem?.map((item: any) => `${item.quantity || 1}x ${item.name || 'Unknown Item'}`).join(', ') || 'No items',
-        estimatedEarnings: penceToPounds(Number(booking.totalGBP) || 0),
-        status: status,
-        priority: 'normal',
-        duration: '2-4 hours',
-        crew: '1 person'
-      };
-    });
-
-    // Transform available jobs
-    const transformedAvailableJobs = availableJobs.map(booking => {
-      const pickup = booking.pickupAddress;
-      const dropoff = booking.dropoffAddress;
+      // ✅ Use saved distance/duration first, fallback to calculation
+      const distanceMiles = booking.distanceMeters 
+        ? (booking.distanceMeters / 1609.34).toFixed(1)
+        : booking.baseDistanceMiles 
+          ? booking.baseDistanceMiles.toFixed(1)
+          : (pickup && dropoff && pickup.lat && pickup.lng && dropoff.lat && dropoff.lng)
+            ? calculateDistance(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng).toFixed(1)
+            : '0';
+      
+      const durationMinutes = booking.durationSeconds 
+        ? Math.round(booking.durationSeconds / 60)
+        : booking.estimatedDurationMinutes || 120; // Default 2 hours
+      
+      const durationHours = Math.floor(durationMinutes / 60);
+      const durationMins = durationMinutes % 60;
+      const durationText = durationHours > 0 
+        ? `${durationHours}h ${durationMins}m`
+        : `${durationMins}m`;
       
       return {
         id: booking.id,
@@ -183,20 +170,62 @@ export async function GET(request: NextRequest) {
         time: booking.scheduledAt.toTimeString().split(' ')[0].slice(0, 5),
         from: pickup?.label || 'Pickup Address',
         to: dropoff?.label || 'Dropoff Address',
-        distance: pickup && dropoff 
-          ? `${calculateDistance( // DEPRECATED - internal use only
-              pickup.lat || 0,
-              pickup.lng || 0,
-              dropoff.lat || 0,
-              dropoff.lng || 0
-            )} miles`
-          : 'Unknown',
+        distance: `${distanceMiles} miles`,
+        distanceMeters: booking.distanceMeters || 0,
+        durationSeconds: booking.durationSeconds || 0,
+        vehicleType: 'Van', // Default vehicle type
+        items: booking.BookingItem?.map((item: any) => `${item.quantity || 1}x ${item.name || 'Unknown Item'}`).join(', ') || 'No items',
+        estimatedEarnings: penceToPounds(Number(booking.totalGBP) || 0),
+        status: status,
+        priority: 'normal',
+        duration: durationText,
+        crew: '1 person'
+      };
+    });
+
+    // Transform available jobs
+    const transformedAvailableJobs = availableJobs.map(bookingData => {
+      const booking = bookingData as any; // Type assertion for new fields (distanceMeters, durationSeconds)
+      const pickup = booking.pickupAddress;
+      const dropoff = booking.dropoffAddress;
+      
+      // ✅ Use saved distance/duration first, fallback to calculation
+      const distanceMiles = booking.distanceMeters 
+        ? (booking.distanceMeters / 1609.34).toFixed(1)
+        : booking.baseDistanceMiles 
+          ? booking.baseDistanceMiles.toFixed(1)
+          : (pickup && dropoff && pickup.lat && pickup.lng && dropoff.lat && dropoff.lng)
+            ? calculateDistance(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng).toFixed(1)
+            : '0';
+      
+      const durationMinutes = booking.durationSeconds 
+        ? Math.round(booking.durationSeconds / 60)
+        : booking.estimatedDurationMinutes || 120; // Default 2 hours
+      
+      const durationHours = Math.floor(durationMinutes / 60);
+      const durationMins = durationMinutes % 60;
+      const durationText = durationHours > 0 
+        ? `${durationHours}h ${durationMins}m`
+        : `${durationMins}m`;
+      
+      return {
+        id: booking.id,
+        reference: booking.reference,
+        customer: booking.customer?.name || booking.customerName || 'Unknown Customer',
+        customerPhone: booking.customerPhone || booking.customerEmail || 'No contact info',
+        date: booking.scheduledAt.toISOString().split('T')[0],
+        time: booking.scheduledAt.toTimeString().split(' ')[0].slice(0, 5),
+        from: pickup?.label || 'Pickup Address',
+        to: dropoff?.label || 'Dropoff Address',
+        distance: `${distanceMiles} miles`,
+        distanceMeters: booking.distanceMeters || 0,
+        durationSeconds: booking.durationSeconds || 0,
         vehicleType: 'Van', // Default vehicle type
         items: booking.BookingItem?.map((item: any) => `${item.quantity || 1}x ${item.name || 'Unknown Item'}`).join(', ') || 'No items',
         estimatedEarnings: penceToPounds(Number(booking.totalGBP) || 0),
         status: 'available',
         priority: 'normal',
-        duration: '2-4 hours',
+        duration: durationText,
         crew: '1 person'
       };
     });

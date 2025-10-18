@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { logAudit } from '@/lib/audit';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -174,22 +175,10 @@ export async function POST(req: Request) {
             });
 
             // Create or update assignment
-            await prisma.assignment.upsert({
-              where: { bookingId: orderId },
-              update: {
-                driverId: targetDriverId,
-                status: 'invited',
-                round: 1,
-                updatedAt: new Date(),
-              },
-              create: {
-                id: `assignment_${orderId}`,
-                bookingId: orderId,
-                driverId: targetDriverId,
-                status: 'invited',
-                round: 1,
-                updatedAt: new Date(),
-              },
+            await upsertAssignment(prisma, orderId, {
+              driverId: targetDriverId,
+              status: 'invited',
+              round: 1,
             });
 
             // Log audit

@@ -16,13 +16,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('📦 Admin fetching pending drops for route creation');
+    // Get filter parameter
+    const { searchParams } = new URL(request.url);
+    const includePendingPayment = searchParams.get('includePendingPayment') === 'true';
 
-    // Get all bookings that are confirmed but don't have a route yet
+    console.log('📦 Admin fetching pending drops for route creation');
+    console.log(`🔍 Filter: includePendingPayment = ${includePendingPayment}`);
+
+    // Debug: Check ALL bookings in different states
+    const allBookings = await prisma.booking.findMany({
+      select: { 
+        id: true, 
+        reference: true, 
+        customerName: true, 
+        routeId: true, 
+        status: true,
+        scheduledAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+    console.log(`\n📊 ===== BOOKING DEBUG INFO =====`);
+    console.log(`Total bookings (last 20): ${allBookings.length}`);
+    console.log(`Status breakdown:`, allBookings.reduce((acc: any, b) => {
+      acc[b.status] = (acc[b.status] || 0) + 1;
+      return acc;
+    }, {}));
+    console.log(`Bookings with routeId: ${allBookings.filter(b => b.routeId).length}`);
+    console.log(`Bookings without routeId: ${allBookings.filter(b => !b.routeId).length}`);
+    console.log(`Sample bookings:`);
+    allBookings.slice(0, 5).forEach(b => {
+      console.log(`  - ${b.reference} | ${b.status} | routeId: ${b.routeId || 'null'} | customer: ${b.customerName}`);
+    });
+    console.log(`================================\n`);
+
+    // Get all bookings that don't have a route yet
+    // Conditionally include PENDING_PAYMENT based on admin preference
+    const whereConditions: any[] = [
+      { status: 'CONFIRMED', routeId: null },
+      { status: 'DRAFT', routeId: null },
+    ];
+    
+    // Only add PENDING_PAYMENT if admin enabled it
+    if (includePendingPayment) {
+      whereConditions.push({ status: 'PENDING_PAYMENT', routeId: null });
+    }
+
     const pendingBookings = await prisma.booking.findMany({
       where: {
-        status: 'CONFIRMED',
-        route: null, // Not yet assigned to any route
+        OR: whereConditions,
       },
       select: {
         id: true,
@@ -65,10 +107,19 @@ export async function GET(request: NextRequest) {
       take: 100, // Limit to first 100 for performance
     });
 
-    console.log(`✅ Found ${pendingBookings.length} pending bookings`);
+    console.log(`✅ Found ${pendingBookings.length} pending bookings (after filtering)`);
+    
+    if (pendingBookings.length === 0) {
+      console.log(`⚠️ WARNING: No pending bookings found!`);
+      console.log(`Possible reasons:`);
+      console.log(`  1. All bookings have routeId assigned`);
+      console.log(`  2. No bookings with status CONFIRMED/PENDING/DRAFT`);
+      console.log(`  3. Database is empty`);
+      console.log(`Check the debug info above for details.`);
+    }
 
     // Transform bookings into drop format
-    const drops = pendingBookings.map((booking) => {
+    const drops = pendingBookings.map((booking: any) => {
       const totalVolume = booking.BookingItem.reduce((sum: number, item: any) => 
         sum + ((item.estimatedVolume || 0) * item.quantity), 0
       );

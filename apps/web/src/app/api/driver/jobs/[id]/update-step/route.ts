@@ -7,11 +7,13 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
     console.log('🔄 Job step update API called:', {
-      jobId: params.id,
+      jobId: id,
       url: request.url
     });
 
@@ -35,7 +37,7 @@ export async function POST(
     }
 
     const userId = session.user.id;
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     console.log('✅ Driver authenticated:', { userId, userRole, bookingId });
 
@@ -69,9 +71,9 @@ export async function POST(
       );
     }
 
-    // Check if driver has access to this job
+    // Check if driver has access to this job (Assignment is an array)
     const isAssignedToDriver = booking.driverId === driver.id;
-    const hasAssignment = booking.Assignment && booking.Assignment.driverId === driver.id;
+    const hasAssignment = booking.Assignment && booking.Assignment[0]?.driverId === driver.id;
 
     if (!isAssignedToDriver && !hasAssignment) {
       console.log('❌ Access denied for job:', bookingId);
@@ -99,29 +101,46 @@ export async function POST(
       notes: notes.substring(0, 50) + (notes.length > 50 ? '...' : '')
     });
 
-    // Get or create assignment
-    let assignment = booking.Assignment;
+    // Get or create assignment (Assignment is an array from Prisma)
+    let assignment = booking.Assignment?.[0];
     
     if (!assignment) {
-      // Create assignment if it doesn't exist
-      assignment = await prisma.assignment.create({
-        data: {
-          id: `assignment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          bookingId: bookingId,
-          driverId: driver.id,
-          status: 'accepted',
-          claimedAt: new Date(),
-          updatedAt: new Date(),
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
-        }
+      // ✅ Use findFirst then update/create instead of upsert
+      const existingAssignment = await prisma.assignment.findFirst({
+        where: { bookingId: bookingId }
       });
+
+      if (existingAssignment) {
+        assignment = await prisma.assignment.update({
+          where: { id: existingAssignment.id },
+          data: {
+            driverId: driver.id,
+            status: 'accepted',
+            claimedAt: new Date(),
+            updatedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
+          }
+        });
+      } else {
+        assignment = await prisma.assignment.create({
+          data: {
+            id: `assignment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            bookingId: bookingId,
+            driverId: driver.id,
+            status: 'accepted',
+            claimedAt: new Date(),
+            updatedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
+          }
+        });
+      }
     }
 
     // Create job event
     const jobEvent = await prisma.jobEvent.create({
       data: {
         id: `je_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        assignmentId: assignment.id,
+        assignmentId: assignment!.id,
         step: step as any, // Cast to JobStep enum
         notes: notes,
         createdBy: driver.id,

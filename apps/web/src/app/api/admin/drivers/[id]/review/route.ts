@@ -5,7 +5,7 @@ import { logAudit } from '@/lib/audit';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -14,7 +14,7 @@ export async function POST(
     }
     const user = authResult;
 
-    const driverId = params.id;
+    const { id: driverId } = await params;
     const { action, reviewNotes, documentId } = await request.json();
 
     if (!action || !['approve', 'reject', 'request_changes'].includes(action)) {
@@ -124,7 +124,7 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -133,7 +133,7 @@ export async function GET(
     }
     const user = authResult;
 
-    const driverId = params.id;
+    const { id: driverId } = await params;
 
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },

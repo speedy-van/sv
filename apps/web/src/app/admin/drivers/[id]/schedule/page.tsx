@@ -35,7 +35,7 @@ interface DriverSchedule {
 export default function DriverSchedulePage() {
   const params = useParams();
   const router = useRouter();
-  const driverId = params.id as string;
+  const driverId = params?.id as string;
   
   const [schedule, setSchedule] = useState<DriverSchedule | null>(null);
   const [loading, setLoading] = useState(true);

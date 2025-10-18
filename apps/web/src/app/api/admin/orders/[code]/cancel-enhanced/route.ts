@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
@@ -73,8 +74,8 @@ export async function POST(
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
       // If there's an active assignment, cancel it
-      if (booking.Assignment) {
-        const assignment = booking.Assignment;
+      const assignment = getActiveAssignment(booking.Assignment);
+      if (assignment) {
         
         // Create job event for cancellation - using job_completed step
         await tx.jobEvent.create({

@@ -45,7 +45,7 @@ interface DriverEarnings {
 export default function DriverEarningsPage() {
   const params = useParams();
   const router = useRouter();
-  const driverId = params.id as string;
+  const driverId = params?.id as string;
   
   const [earnings, setEarnings] = useState<DriverEarnings | null>(null);
   const [loading, setLoading] = useState(true);

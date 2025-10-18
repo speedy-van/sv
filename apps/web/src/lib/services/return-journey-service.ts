@@ -109,11 +109,11 @@ export class ReturnJourneyService {
 
     // Step 3: Calculate deviation distance
     const deviationDistance = this.calculateDeviationDistance(request);
-    const returnDistance = this.calculateDistance( // DEPRECATED - internal use only
+    const returnDistanceCalc = this.calculateDistance( // DEPRECATED - internal use only
       request.originalDropoff.coordinates,
       request.originalPickup.coordinates
     );
-    const deviationPercentage = deviationDistance / returnDistance;
+    const deviationPercentage = deviationDistance / returnDistanceCalc;
     const deviationAcceptable = deviationPercentage < 0.20; // < 20% deviation
 
     // Step 4: Calculate return journey discount
@@ -129,9 +129,15 @@ export class ReturnJourneyService {
     const discount = standardPrice * discountPercentage;
     const returnJourneyPrice = standardPrice - discount;
 
-    // Step 5: Calculate driver earnings
-    // Driver gets 70% of return journey price (same as regular bookings)
-    const driverEarnings = returnJourneyPrice * 0.70;
+    // Step 5: Calculate driver earnings using proper formula
+    // Use the same calculation as regular bookings (Base + Mileage + Time)
+    const estimatedDuration = Math.round((returnDistanceCalc / 30) * 60); // 30 mph average
+    
+    // Calculate driver earnings properly
+    const baseFare = 2500; // £25
+    const mileageFee = Math.round(returnDistanceCalc * 55); // £0.55/mile
+    const timeFee = Math.round(estimatedDuration * 15); // £0.15/min
+    const driverEarnings = (baseFare + mileageFee + timeFee) / 100; // Convert to pounds
 
     // Step 6: Calculate match score (0-100)
     const matchScore = this.calculateMatchScore(request, deviationPercentage);

@@ -8,10 +8,10 @@ export const dynamic = 'force-dynamic';
 // POST /api/admin/drivers/applications/[id]/approve - Approve driver application
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('🔧 [APPROVE DEBUG] Starting approval process for ID:', params.id);
+    console.log('🔧 [APPROVE DEBUG] Starting approval process for ID:', (await params).id);
     
     const authResult = await requireAdmin(request);
     if (authResult instanceof NextResponse) {
@@ -19,7 +19,7 @@ export async function POST(
     }
     const user = authResult;
 
-    const { id } = params;
+    const { id } = await params;
     console.log('🔧 [APPROVE DEBUG] Application ID:', id);
     
     const body = await request.json();
@@ -136,7 +136,7 @@ export async function POST(
     console.error('❌ [APPROVE ERROR] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : 'No stack trace',
-      applicationId: params.id,
+      applicationId: (await params).id,
     });
     return NextResponse.json(
       { 

@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Try Bearer token authentication first (for mobile app)
@@ -42,7 +42,7 @@ export async function GET(
       userId = (session.user as any).id;
     }
 
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     // ✅ Get driver record FIRST (needed for earnings calculation)
     const driver = await prisma.driver.findUnique({
@@ -91,8 +91,8 @@ export async function GET(
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    // Check if the driver is assigned to this job
-    const isAssigned = booking.Assignment?.Driver?.User?.id === userId;
+    // Check if the driver is assigned to this job (Assignment is an array)
+    const isAssigned = booking.Assignment?.[0]?.Driver?.User?.id === userId;
 
     if (!isAssigned) {
       return NextResponse.json(
@@ -145,7 +145,7 @@ export async function GET(
     const earningsResult = await driverEarningsService.calculateEarnings({
       driverId: driver.id,
       bookingId: booking.id,
-      assignmentId: booking.Assignment?.id || `temp_${booking.id}`,
+      assignmentId: booking.Assignment?.[0]?.id || `temp_${booking.id}`,
       customerPaymentPence: booking.totalGBP,
       distanceMiles: distance,
       durationMinutes: booking.estimatedDurationMinutes || 60,
@@ -236,14 +236,14 @@ export async function GET(
       crewRecommendation,
       specialRequirements: '',
       status: booking.status,
-      assignment: booking.Assignment
+      assignment: booking.Assignment && booking.Assignment[0]
         ? {
-            id: booking.Assignment.id,
-            status: booking.Assignment.status,
-            claimedAt: booking.Assignment.claimedAt,
+            id: booking.Assignment[0].id,
+            status: booking.Assignment[0].status,
+            claimedAt: booking.Assignment[0].claimedAt,
             driver: {
-              id: booking.Assignment.Driver?.id,
-              name: booking.Assignment.Driver?.User?.name || 'Unknown',
+              id: booking.Assignment[0].Driver?.id,
+              name: booking.Assignment[0].Driver?.User?.name || 'Unknown',
             },
           }
         : null,
@@ -264,7 +264,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Try Bearer token authentication first (for mobile app)
@@ -286,7 +286,7 @@ export async function PUT(
       userId = (session.user as any).id;
     }
 
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     const { action } = await request.json();
 
     // Get the booking and assignment
@@ -318,8 +318,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    // Check if the driver is assigned to this job
-    const isAssigned = booking.Assignment?.Driver?.User?.id === userId;
+    // Check if the driver is assigned to this job (Assignment is an array)
+    const isAssigned = booking.Assignment?.[0]?.Driver?.User?.id === userId;
     if (!isAssigned) {
       return NextResponse.json(
         { error: 'Access denied - You are not assigned to this job' },
@@ -355,9 +355,9 @@ export async function PUT(
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    // Update the assignment
+    // Update the assignment (Assignment is an array)
     const updatedAssignment = await prisma.assignment.update({
-      where: { id: booking.Assignment!.id },
+      where: { id: booking.Assignment![0].id },
       data: updateData,
     });
 
@@ -365,7 +365,7 @@ export async function PUT(
     await prisma.jobEvent.create({
       data: {
         id: `je_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        assignmentId: booking.Assignment!.id,
+        assignmentId: booking.Assignment![0].id,
         step:
           action === 'accept'
             ? 'navigate_to_pickup'

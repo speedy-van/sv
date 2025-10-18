@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { prisma } from '@/lib/prisma';
 import { penceToPounds } from '@/lib/utils/currency';
 
@@ -27,24 +28,40 @@ function deg2rad(deg: number): number {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check driver authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please login' },
-        { status: 401 }
-      );
-    }
+    // Try Bearer token authentication first (for mobile app)
+    const bearerAuth = await authenticateBearerToken(request);
+    let userId: string;
 
-    const userRole = (session.user as any)?.role;
-    if (userRole !== 'driver') {
-      return NextResponse.json(
-        { error: 'Forbidden - Driver access required' },
-        { status: 403 }
-      );
-    }
+    if (bearerAuth.success) {
+      userId = bearerAuth.user.id;
+      if (bearerAuth.user.role !== 'driver') {
+        return NextResponse.json(
+          { error: 'Forbidden - Driver access required' },
+          { status: 403 }
+        );
+      }
+      console.log('🔑 Bearer token authenticated for dashboard:', userId);
+    } else {
+      // Fallback to NextAuth session (for web app)
+      const session = await getServerSession(authOptions);
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Please login' },
+          { status: 401 }
+        );
+      }
 
-    const userId = session.user.id;
+      const userRole = (session.user as any)?.role;
+      if (userRole !== 'driver') {
+        return NextResponse.json(
+          { error: 'Forbidden - Driver access required' },
+          { status: 403 }
+        );
+      }
+
+      userId = session.user.id;
+      console.log('🌐 NextAuth session authenticated for dashboard:', userId);
+    }
 
     // Get driver record
     const driver = await prisma.driver.findUnique({

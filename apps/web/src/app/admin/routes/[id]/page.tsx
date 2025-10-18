@@ -45,7 +45,7 @@ interface RouteDetails {
 export default function RouteDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const routeId = params.id as string;
+  const routeId = params?.id as string;
   
   const [route, setRoute] = useState<RouteDetails | null>(null);
   const [loading, setLoading] = useState(true);

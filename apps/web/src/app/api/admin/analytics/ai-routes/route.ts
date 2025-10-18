@@ -30,11 +30,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         drops: true,
-        driver: {
-          include: {
-            user: true,
-          },
-        },
+        driver: true,
       },
     });
 
@@ -53,18 +49,12 @@ export async function GET(request: NextRequest) {
 
     // Calculate AI metrics
     const totalAiRoutes = aiRoutes.length;
-    const completedAiRoutes = aiRoutes.filter(r => r.status === 'COMPLETED').length;
+    const completedAiRoutes = aiRoutes.filter(r => r.status === 'completed').length;
     const successRate = totalAiRoutes > 0 ? (completedAiRoutes / totalAiRoutes) * 100 : 0;
 
-    // Calculate average efficiency
+    // Calculate average efficiency (using drops per route as efficiency metric)
     const avgAiEfficiency = aiRoutes.length > 0
-      ? aiRoutes.reduce((sum, r) => {
-          const drops = r.drops || [];
-          const avgScore = drops.length > 0
-            ? drops.reduce((s, d) => s + (d.optimizationScore || 0), 0) / drops.length
-            : 0;
-          return sum + avgScore;
-        }, 0) / aiRoutes.length
+      ? aiRoutes.reduce((sum, r) => sum + (r.drops?.length || 0), 0) / aiRoutes.length
       : 0;
 
     // Calculate average drops per route
@@ -118,12 +108,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get top performing AI routes
+    // Get top performing AI routes (sorted by number of drops)
     const topAiRoutes = aiRoutes
-      .filter((r: any) => r.status === 'COMPLETED')
+      .filter((r: any) => r.status === 'completed')
       .map((r: any) => ({
         id: r.id,
-        routeNumber: r.routeNumber,
         drops: r.drops?.length || 0,
         efficiency: r.drops && r.drops.length > 0
           ? r.drops.reduce((sum: number, d: any) => sum + (d.optimizationScore || 0), 0) / r.drops.length
@@ -152,7 +141,7 @@ export async function GET(request: NextRequest) {
           manualRoutes: manualRoutes.length,
           aiSuccessRate: Math.round(successRate * 10) / 10,
           manualSuccessRate: manualRoutes.length > 0
-            ? Math.round((manualRoutes.filter((r: any) => r.status === 'COMPLETED').length / manualRoutes.length) * 1000) / 10
+            ? Math.round((manualRoutes.filter((r: any) => r.status === 'completed').length / manualRoutes.length) * 1000) / 10
             : 0,
           efficiencyImprovement: avgManualDrops > 0
             ? Math.round(((avgAiDrops - avgManualDrops) / avgManualDrops) * 1000) / 10

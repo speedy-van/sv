@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 interface AssignmentRules {
   radius: number;
@@ -175,15 +176,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create assignment record
-    await prisma.assignment.create({
-      data: {
-        id: `assignment_${jobId}_${bestDriver.driverId}`,
-        bookingId: jobId,
-        driverId: bestDriver.driverId,
-        status: 'invited',
-        updatedAt: new Date(),
-      },
+    // Create or update assignment record
+    await upsertAssignment(prisma, jobId, {
+      driverId: bestDriver.driverId,
+      status: 'invited',
     });
 
     // Log the assignment with detailed reasoning

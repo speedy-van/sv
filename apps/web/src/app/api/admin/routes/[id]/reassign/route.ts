@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { logAudit } from '@/lib/audit';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 10;
@@ -14,7 +15,7 @@ export const maxDuration = 10;
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +23,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const routeId = params.id;
+    const { id: routeId } = await params;
     const body = await request.json();
     const { driverId, reason } = body;
 
@@ -165,7 +166,11 @@ export async function POST(
             drops: {
               orderBy: { createdAt: 'asc' }
             },
-            Booking: true,
+            Booking: {
+              include: {
+                Assignment: true
+              }
+            },
           },
         });
 
@@ -184,10 +189,11 @@ export async function POST(
 
           // Update assignments for all bookings in the route
           for (const booking of route.Booking) {
-            // Cancel old assignment
-            if (booking.Assignment) {
+            // Cancel old assignment (get the active one from the array)
+            const activeAssignment = getActiveAssignment(booking.Assignment);
+            if (activeAssignment) {
               await tx.assignment.update({
-                where: { id: booking.Assignment.id },
+                where: { id: activeAssignment.id },
                 data: {
                   status: 'cancelled',
                   updatedAt: new Date(),
@@ -199,7 +205,7 @@ export async function POST(
                 where: { id: booking.id },
                 data: { 
                   Assignment: { 
-                    disconnect: { id: booking.Assignment.id } 
+                    disconnect: { id: activeAssignment.id } 
                   } 
                 },
               });
@@ -209,7 +215,7 @@ export async function POST(
               await tx.jobEvent.create({
                 data: {
                   id: removalEventId,
-                  assignmentId: booking.Assignment.id,
+                  assignmentId: activeAssignment.id,
                   step: 'job_completed',
                   payload: {
                     removedBy: 'admin',
@@ -223,15 +229,25 @@ export async function POST(
               });
             }
 
-            // Create new assignment
-            const assignmentId = `assignment_${Date.now()}_${booking.id}_${driverId}`;
+            // Delete any existing non-cancelled assignments to prevent conflicts
+            // This ensures clean state before creating new assignment
+            await tx.assignment.deleteMany({
+              where: {
+                bookingId: booking.id,
+                status: { notIn: ['cancelled', 'declined', 'completed'] }
+              }
+            });
+
+            // Create new assignment for the new driver
+            const assignmentId = `assignment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${booking.id}`;
             await tx.assignment.create({
               data: {
                 id: assignmentId,
                 bookingId: booking.id,
                 driverId: driverId,
-                status: 'accepted',
-                claimedAt: new Date(),
+                status: 'invited',
+                round: 1,
+                expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
                 updatedAt: new Date(),
               }
             });

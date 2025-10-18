@@ -1073,68 +1073,87 @@ export default function WhoAndPaymentStep({
               </HStack>
             </VStack>
 
-            {/* Stripe Payment Button */}
-            {!paymentSuccess ? (
-              <StripePaymentButton
-                amount={step2.promotionDetails?.finalAmount || formData.step1.pricing.total}
-                bookingData={{
-                  customer: {
-                    name: `${step2.customerDetails.firstName || ''} ${step2.customerDetails.lastName || ''}`.trim(),
-                    email: step2.customerDetails.email || '',
-                    phone: step2.customerDetails.phone || '',
-                  },
-                  pickupAddress: formData.step1.pickupAddress,
-                  dropoffAddress: formData.step1.dropoffAddress,
-                  items: formData.step1.items,
-                  pricing: formData.step1.pricing,
-                  serviceType: formData.step1.serviceType,
-                  scheduledDate: formData.step1.pickupDate,
-                  scheduledTime: formData.step1.pickupTimeSlot,
-                  pickupDetails: formData.step1.pickupProperty,
-                  dropoffDetails: formData.step1.dropoffProperty,
-                  notes: step2.specialInstructions || '',
-                  bookingId: step2.bookingId, // Pass the booking ID
-                  economyPrice,
-                  standardPrice,
-                  priorityPrice,
-                }}
-                onSuccess={(sessionId, paymentIntentId) => {
-                  updatePaymentStatus('success');
-                  updateFormData('step2', {
-                    paymentMethod: {
-                      type: 'stripe',
-                      stripeDetails: {
-                        sessionId,
-                        paymentIntentId,
-                      },
-                    },
-                  });
-                }}
-                onError={(error) => {
-                  console.error('❌ Payment failed:', error);
-                  updatePaymentStatus('failed');
-                }}
-                disabled={
-                  !step2.termsAccepted || 
-                  !step2.privacyAccepted || 
-                  !step2.customerDetails.firstName ||
-                  !step2.customerDetails.lastName ||
-                  !step2.customerDetails.email ||
-                  !formData.step1.pricing.total ||
-                  formData.step1.pricing.total <= 0
+            {/* Action Buttons Row */}
+            <HStack spacing={4} w="full" justify="space-between">
+              {/* Back to Step 1 Button */}
+              <Button
+                size="lg"
+                colorScheme="gray"
+                variant="outline"
+                onClick={() => window.history.back()}
+                leftIcon={<Icon as={FaBolt} />}
+                borderWidth="2px"
+                _hover={{ bg: 'gray.700', borderColor: 'gray.500' }}
+              >
+                {formData.step1.items.length === 0 
+                  ? 'Add Items'
+                  : 'Back to Step 1'
                 }
-              />
-            ) : (
-              <Alert status="success" borderRadius="xl" p={4}>
-                <AlertIcon />
-                <Box>
-                  <AlertTitle fontSize="lg">🎉 Payment Successful!</AlertTitle>
-                  <AlertDescription fontSize="md">
-                    Your payment has been processed successfully. You will be redirected to the confirmation page.
-                  </AlertDescription>
-                </Box>
-              </Alert>
-            )}
+              </Button>
+
+              {/* Stripe Payment Button */}
+              {!paymentSuccess ? (
+                <StripePaymentButton
+                  amount={step2.promotionDetails?.finalAmount || formData.step1.pricing.total}
+                  bookingData={{
+                    customer: {
+                      name: `${step2.customerDetails.firstName || ''} ${step2.customerDetails.lastName || ''}`.trim(),
+                      email: step2.customerDetails.email || '',
+                      phone: step2.customerDetails.phone || '',
+                    },
+                    pickupAddress: formData.step1.pickupAddress,
+                    dropoffAddress: formData.step1.dropoffAddress,
+                    items: formData.step1.items,
+                    pricing: formData.step1.pricing,
+                    serviceType: formData.step1.serviceType,
+                    scheduledDate: formData.step1.pickupDate,
+                    scheduledTime: formData.step1.pickupTimeSlot,
+                    pickupDetails: formData.step1.pickupProperty,
+                    dropoffDetails: formData.step1.dropoffProperty,
+                    notes: step2.specialInstructions || '',
+                    bookingId: step2.bookingId,
+                    economyPrice,
+                    standardPrice,
+                    priorityPrice,
+                  }}
+                  onSuccess={(sessionId, paymentIntentId) => {
+                    updatePaymentStatus('success');
+                    updateFormData('step2', {
+                      paymentMethod: {
+                        type: 'stripe',
+                        stripeDetails: {
+                          sessionId,
+                          paymentIntentId,
+                        },
+                      },
+                    });
+                  }}
+                  onError={(error) => {
+                    console.error('❌ Payment failed:', error);
+                    updatePaymentStatus('failed');
+                  }}
+                  disabled={
+                    !step2.termsAccepted || 
+                    !step2.privacyAccepted || 
+                    !step2.customerDetails.firstName ||
+                    !step2.customerDetails.lastName ||
+                    !step2.customerDetails.email ||
+                    !formData.step1.pricing.total ||
+                    formData.step1.pricing.total <= 0
+                  }
+                />
+              ) : (
+                <Alert status="success" borderRadius="xl" p={4} flex={1}>
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle fontSize="lg">🎉 Payment Successful!</AlertTitle>
+                    <AlertDescription fontSize="md">
+                      Your payment has been processed successfully. You will be redirected to the confirmation page.
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
+            </HStack>
           </VStack>
         </VStack>
       </Card>
@@ -1611,20 +1630,6 @@ export default function WhoAndPaymentStep({
                     })()}
                   </Text>
                 </VStack>
-                <HStack spacing={3}>
-                  <Button
-                    size="sm"
-                    colorScheme="orange"
-                    variant="outline"
-                    onClick={() => window.history.back()}
-                    leftIcon={<Icon as={FaBolt} />}
-                  >
-                    {formData.step1.items.length === 0 
-                      ? 'Add Items'
-                      : 'Go Back to Step 1'
-                    }
-                  </Button>
-                </HStack>
               </VStack>
             </Box>
           )}

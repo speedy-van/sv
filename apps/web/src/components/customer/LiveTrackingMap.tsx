@@ -161,6 +161,7 @@ export default function LiveTrackingMap({
   const fetchTrackingData = useCallback(async () => {
     try {
       setError(null);
+      console.log('📡 Fetching tracking data for:', bookingReference);
       const response = await fetch(`/api/track/${bookingReference}?tracking=true&realtime=true`);
       
       if (!response.ok) {
@@ -191,7 +192,7 @@ export default function LiveTrackingMap({
 
     try {
       const mapboxgl = window.mapboxgl;
-      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '';
+      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
 
       // Calculate bounds to fit all locations
       const bounds = new mapboxgl.LngLatBounds();

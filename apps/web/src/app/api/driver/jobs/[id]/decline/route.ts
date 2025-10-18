@@ -18,7 +18,7 @@ const pusher = new Pusher({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Try Bearer token authentication first (for mobile app)
@@ -40,7 +40,7 @@ export async function POST(
       userId = (session.user as any).id;
     }
 
-    const jobId = params.id;
+    const { id: jobId } = await params;
     // Get driver data
     const driver = await prisma.driver.findUnique({
       where: { userId },
@@ -213,18 +213,37 @@ export async function POST(
           // Offer to the best available driver (highest acceptance rate)
           const nextDriver = eligibleDrivers[0];
           
-          // Create new assignment
-          await prisma.assignment.create({
-            data: {
-              id: `assign_${jobId}_${nextDriver.id}_${Date.now()}`,
-              bookingId: jobId,
-              driverId: nextDriver.id,
-              status: 'invited',
-              round: 1,
-              expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-              updatedAt: new Date()
-            }
+          // ✅ Find existing assignment or create new one
+          const existingAssignment = await prisma.assignment.findFirst({
+            where: { bookingId: jobId }
           });
+
+          if (existingAssignment) {
+            // Update existing assignment
+            await prisma.assignment.update({
+              where: { id: existingAssignment.id },
+              data: {
+                driverId: nextDriver.id,
+                status: 'invited',
+                round: 1,
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+                updatedAt: new Date()
+              }
+            });
+          } else {
+            // Create new assignment
+            await prisma.assignment.create({
+              data: {
+                id: `assign_${jobId}_${nextDriver.id}_${Date.now()}`,
+                bookingId: jobId,
+                driverId: nextDriver.id,
+                status: 'invited',
+                round: 1,
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+                updatedAt: new Date()
+              }
+            });
+          }
 
           // Notify next driver
           await pusher.trigger(`driver-${nextDriver.id}`, 'job-offer', {
