@@ -12,6 +12,7 @@ class TrackingViewModel: ObservableObject {
     
     private let jobService = JobService.shared
     private let locationService = LocationService.shared
+    private let stateMachine = JobStateMachine.shared
     
     // MARK: - Start Tracking Job
     
@@ -55,6 +56,17 @@ class TrackingViewModel: ObservableObject {
             return false
         }
         
+        // Convert JobProgressStep to JobStatus
+        let targetStatus = stepToStatus(step)
+        let currentStatus = stepToStatus(currentStep)
+        
+        // Validate state transition
+        guard stateMachine.canTransition(from: currentStatus, to: targetStatus) else {
+            errorMessage = stateMachine.getTransitionErrorMessage(from: currentStatus, to: targetStatus)
+            print("❌ \(errorMessage ?? "")")
+            return false
+        }
+        
         isUpdating = true
         errorMessage = nil
         
@@ -80,6 +92,9 @@ class TrackingViewModel: ObservableObject {
                 currentStep = step
                 print("✅ Progress updated to: \(step.displayName)")
                 
+                // Save state locally for offline support
+                stateMachine.saveJobState(jobId: job.id, state: targetStatus)
+                
                 // If completed, stop tracking
                 if step == .completed {
                     stopTracking()
@@ -95,6 +110,13 @@ class TrackingViewModel: ObservableObject {
         } catch {
             errorMessage = "Failed to update progress: \(error.localizedDescription)"
             print("❌ \(errorMessage ?? "")")
+            
+            // Queue for offline sync if network error
+            if let networkError = error as? NetworkError,
+               case .networkError = networkError {
+                stateMachine.queueStateTransition(jobId: job.id, from: currentStatus, to: targetStatus)
+                print("📥 Queued state transition for offline sync")
+            }
         }
         
         isUpdating = false
@@ -131,6 +153,19 @@ class TrackingViewModel: ObservableObject {
         case .inTransit: return "Heading to dropoff location"
         case .unloading: return "Unloading items"
         case .completed: return "Job completed"
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func stepToStatus(_ step: JobProgressStep) -> JobStatus {
+        switch step {
+        case .enRoute: return .enRoute
+        case .arrived: return .arrived
+        case .loading: return .loading
+        case .inTransit: return .inTransit
+        case .unloading: return .unloading
+        case .completed: return .completed
         }
     }
 }

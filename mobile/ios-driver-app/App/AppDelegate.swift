@@ -61,7 +61,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     ) {
         print("📬 Received notification while in foreground")
         
-        // Show notification even when app is active
+        let userInfo = notification.request.content.userInfo
+        
+        // Handle push notification → in-app flow
+        NotificationHandler.shared.handlePushNotification(userInfo)
+        
+        // Show notification banner
         completionHandler([.banner, .sound, .badge])
     }
     
@@ -74,14 +79,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         print("📬 User tapped notification: \(userInfo)")
         
-        // Handle notification action (e.g., open specific job)
-        if let jobId = userInfo["jobId"] as? String {
-            NotificationCenter.default.post(
-                name: NSNotification.Name("OpenJob"),
-                object: nil,
-                userInfo: ["jobId": jobId]
-            )
-        }
+        // Handle push notification → in-app flow
+        NotificationHandler.shared.handlePushNotification(userInfo)
         
         completionHandler()
     }

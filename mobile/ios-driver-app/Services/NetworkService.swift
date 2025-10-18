@@ -44,7 +44,10 @@ class NetworkService {
         _ endpoint: AppConfig.Endpoint,
         method: HTTPMethod = .get,
         body: Encodable? = nil,
-        requiresAuth: Bool = true
+        requiresAuth: Bool = true,
+        headers: [String: String]? = nil,
+        retryCount: Int = 0,
+        maxRetries: Int = 3
     ) async throws -> T {
         var request = URLRequest(url: endpoint.url)
         request.httpMethod = method.rawValue
@@ -56,6 +59,17 @@ class NetworkService {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
+        // Add custom headers (including Idempotency-Key)
+        if let headers = headers {
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        
+        // Add correlation ID for tracing
+        let correlationId = UUID().uuidString
+        request.setValue(correlationId, forHTTPHeaderField: "X-Correlation-ID")
+        
         // Add request body
         if let body = body {
             request.httpBody = try encoder.encode(body)
@@ -64,8 +78,20 @@ class NetworkService {
         // Log request
         logRequest(request, body: body)
         
-        // Perform request
-        let (data, response) = try await URLSession.shared.data(for: request)
+        // Perform request with error handling
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            // Network error - retry with exponential backoff
+            if retryCount < maxRetries {
+                let delay = pow(2.0, Double(retryCount)) + Double.random(in: 0...1.0)
+                print("⏳ Network error, retrying in \(String(format: "%.1f", delay))s... (attempt \(retryCount + 1)/\(maxRetries))")
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                return try await request(endpoint, method: method, body: body, requiresAuth: requiresAuth, headers: headers, retryCount: retryCount + 1, maxRetries: maxRetries)
+            }
+            throw NetworkError.networkError(error)
+        }
         
         // Log response
         logResponse(response, data: data)
@@ -101,6 +127,13 @@ class NetworkService {
             throw NetworkError.notFound
             
         case 500...599:
+            // Server error - retry for 502, 503, 504
+            if [502, 503, 504].contains(httpResponse.statusCode) && retryCount < maxRetries {
+                let delay = pow(2.0, Double(retryCount)) + Double.random(in: 0...1.0)
+                print("⏳ Server error \(httpResponse.statusCode), retrying in \(String(format: "%.1f", delay))s... (attempt \(retryCount + 1)/\(maxRetries))")
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                return try await request(endpoint, method: method, body: body, requiresAuth: requiresAuth, headers: headers, retryCount: retryCount + 1, maxRetries: maxRetries)
+            }
             throw NetworkError.serverError(httpResponse.statusCode)
             
         default:

@@ -119,6 +119,7 @@ extension AppConfig {
         case registerDevice
         case notifications
         case markNotificationRead
+        case logNotificationEvent
         
         var path: String {
             switch self {
@@ -177,6 +178,7 @@ extension AppConfig {
             case .registerDevice: return "/api/driver/notifications/register"
             case .notifications: return "/api/driver/notifications"
             case .markNotificationRead: return "/api/driver/notifications/read"
+            case .logNotificationEvent: return "/api/driver/notifications/log"
             }
         }
         
