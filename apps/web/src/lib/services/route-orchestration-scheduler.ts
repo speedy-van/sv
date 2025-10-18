@@ -2319,7 +2319,14 @@ class RouteOrchestrationScheduler {
       const bookingIndex = sequence[i];
       const booking = bookings[bookingIndex];
 
-      totalValue += booking.totalGBP || 0;
+      // Safely add booking value
+      const bookingValue = Number(booking.totalGBP || 0);
+      if (Number.isFinite(bookingValue) && bookingValue >= 0 && bookingValue <= Number.MAX_SAFE_INTEGER) {
+        totalValue += bookingValue;
+      } else {
+        console.warn(`⚠️ Invalid totalGBP for booking: ${booking.totalGBP}`);
+      }
+      
       totalWeight += this.estimateBookingWeight(booking);
       totalVolume += this.estimateBookingVolume(booking);
 
