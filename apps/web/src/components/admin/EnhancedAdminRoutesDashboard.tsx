@@ -101,6 +101,10 @@ interface Route {
   optimizedDistanceKm: number | null;
   serviceTier: string;
   drops: any[];
+  acceptedAt?: Date | null;
+  declinedAt?: Date | null;
+  acceptanceStatus?: string | null;
+  delayStatus?: string | null;
 }
 
 type RouteGenerationMode = 'manual' | 'semi' | 'automatic';
@@ -866,9 +870,21 @@ const EnhancedAdminRoutesDashboard = () => {
                       </Flex>
                     </Td>
                     <Td>
-                      <Badge colorScheme={getStatusColor(route.status)}>
-                        {route.status}
-                      </Badge>
+                      <Flex gap={2} align="center">
+                        <Badge colorScheme={getStatusColor(route.status)}>
+                          {route.status}
+                        </Badge>
+                        {route.delayStatus && (
+                          <Text fontSize="lg">
+                            {route.delayStatus === 'on_time' ? '🟢' : route.delayStatus === 'slight_delay' ? '🟡' : '🔴'}
+                          </Text>
+                        )}
+                        {route.acceptanceStatus && route.acceptanceStatus !== 'pending' && (
+                          <Text fontSize="sm">
+                            {route.acceptanceStatus === 'accepted' ? '✅' : '❌'}
+                          </Text>
+                        )}
+                      </Flex>
                     </Td>
                     <Td>
                       <Box>

@@ -1449,6 +1449,10 @@ model Route {
   totalDurationMinutes     Int?
   breakTimeAllocated       Int              @default(0)
   emergencyContact         String?
+  acceptedAt               DateTime?
+  declinedAt               DateTime?
+  acceptanceStatus         String?          @default("pending")
+  delayStatus              String?          @default("on_time")
   Booking                  Booking[]
   drops                    Drop[]
   PayoutLedger             PayoutLedger[]

@@ -122,6 +122,8 @@ export async function POST(
         data: {
           driverId: userId,
           status: 'assigned',
+          acceptedAt: new Date(),
+          acceptanceStatus: 'accepted',
           updatedAt: new Date()
         }
       });

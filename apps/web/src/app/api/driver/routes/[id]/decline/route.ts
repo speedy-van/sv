@@ -107,6 +107,8 @@ export async function POST(
         data: {
           driverId: { set: null },
           status: 'planned',
+          declinedAt: new Date(),
+          acceptanceStatus: 'declined',
           updatedAt: new Date()
         }
       });

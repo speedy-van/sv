@@ -19,6 +19,18 @@ export interface PopularItem {
 // Most popular items with existing images (Full House packages in logical order)
 export const POPULAR_ITEMS: PopularItem[] = [
   {
+    id: 'full-house-studio',
+    name: 'Studio Package',
+    category: 'full-house',
+    description: 'Complete studio apartment removal',
+    size: 'medium',
+    weight: 800,
+    volume: 8.0,
+    unitPrice: 250,
+    image: '/items/full-house/studio.png',
+    popularity: 101
+  },
+  {
     id: 'full-house-1bed',
     name: '1 Bedroom House Package',
     category: 'full-house',
@@ -167,6 +179,18 @@ export const POPULAR_ITEMS: PopularItem[] = [
 // Category-specific popular items (for when category is selected)
 export const CATEGORY_POPULAR_ITEMS: Record<string, PopularItem[]> = {
   'full-house': [
+    {
+      id: 'full-house-studio',
+      name: 'Studio Package',
+      category: 'full-house',
+      description: 'Complete studio apartment removal',
+      size: 'medium',
+      weight: 800,
+      volume: 8.0,
+      unitPrice: 250,
+      image: '/items/full-house/studio.png',
+      popularity: 101
+    },
     {
       id: 'full-house-1bed',
       name: '1 Bedroom House Package',

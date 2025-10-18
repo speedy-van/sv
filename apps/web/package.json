@@ -88,6 +88,7 @@
     "dotenv": "^17.2.1",
     "expo-server-sdk": "^4.0.0",
     "framer-motion": "^12.23.22",
+    "fuse.js": "^7.1.0",
     "glob": "^11.0.3",
     "ioredis": "^5.8.0",
     "jspdf": "^3.0.1",
