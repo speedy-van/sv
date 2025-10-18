@@ -194,6 +194,16 @@ export async function POST(
                 }
               });
 
+              // Disconnect the old assignment from the booking to prevent Prisma relation cache conflict
+              await tx.booking.update({
+                where: { id: booking.id },
+                data: { 
+                  Assignment: { 
+                    disconnect: { id: booking.Assignment.id } 
+                  } 
+                },
+              });
+
               // Create job event for removal
               const removalEventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_removed`;
               await tx.jobEvent.create({
