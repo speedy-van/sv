@@ -142,13 +142,10 @@ describe('Driver Earnings Integration Flow', () => {
 
       expect(result.success).toBe(true);
       
-      // Should hit the cap
-      const maxDriverEarnings = maxJob.customerPaymentPence * 0.70; // 70% cap (updated from 75%)
-      expect(result.breakdown.cappedNetEarnings).toBeLessThanOrEqual(maxDriverEarnings);
-      
-      if (result.breakdown.capApplied) {
-        expect(result.warnings).toContain('Earnings capped at 70% of customer payment');
-      }
+      // No percentage cap anymore - driver gets full calculated earnings
+      // Driver earnings based on work done, not customer payment
+      expect(result.breakdown.netEarnings).toBeGreaterThan(0);
+      expect(result.breakdown.netEarnings).toBe(result.breakdown.grossEarnings - result.breakdown.helperShare);
     });
 
     it('should reject invalid input', async () => {

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -15,7 +15,7 @@ export async function GET(
       return authResult;
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
 
     // Fetch all messages for this chat session
     const messages = await prisma.message.findMany({
@@ -63,7 +63,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -71,7 +71,7 @@ export async function POST(
       return authResult;
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
     const { message } = await request.json();
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {

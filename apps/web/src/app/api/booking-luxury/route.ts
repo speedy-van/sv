@@ -473,6 +473,86 @@ export async function POST(request: NextRequest) {
       itemsSurchargeGBP: poundsToPence(pricingResult.itemsPrice),
     };
 
+    // Calculate distance and duration from coordinates
+    let pickupLat = rawPickupAddress.coordinates?.lat || 0;
+    let pickupLng = rawPickupAddress.coordinates?.lng || 0;
+    let dropoffLat = rawDropoffAddress.coordinates?.lat || 0;
+    let dropoffLng = rawDropoffAddress.coordinates?.lng || 0;
+    
+    // ✅ FALLBACK: If coordinates are missing, geocode the addresses
+    if (pickupLat === 0 || pickupLng === 0) {
+      console.warn('⚠️ Pickup coordinates missing, attempting geocoding...');
+      try {
+        const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+        if (mapboxToken) {
+          const pickupQuery = encodeURIComponent(
+            `${bookingData.pickupAddress.street || ''} ${bookingData.pickupAddress.postcode || ''}`.trim()
+          );
+          const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${pickupQuery}.json?country=gb&limit=1&access_token=${mapboxToken}`;
+          const geoResponse = await fetch(geocodeUrl);
+          const geoData = await geoResponse.json();
+          
+          if (geoData.features && geoData.features.length > 0) {
+            pickupLat = geoData.features[0].center[1];
+            pickupLng = geoData.features[0].center[0];
+            console.log(`✅ Geocoded pickup: ${pickupLat}, ${pickupLng}`);
+          }
+        }
+      } catch (geoError) {
+        console.error('❌ Geocoding failed for pickup:', geoError);
+      }
+    }
+    
+    if (dropoffLat === 0 || dropoffLng === 0) {
+      console.warn('⚠️ Dropoff coordinates missing, attempting geocoding...');
+      try {
+        const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+        if (mapboxToken) {
+          const dropoffQuery = encodeURIComponent(
+            `${bookingData.dropoffAddress.street || ''} ${bookingData.dropoffAddress.postcode || ''}`.trim()
+          );
+          const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${dropoffQuery}.json?country=gb&limit=1&access_token=${mapboxToken}`;
+          const geoResponse = await fetch(geocodeUrl);
+          const geoData = await geoResponse.json();
+          
+          if (geoData.features && geoData.features.length > 0) {
+            dropoffLat = geoData.features[0].center[1];
+            dropoffLng = geoData.features[0].center[0];
+            console.log(`✅ Geocoded dropoff: ${dropoffLat}, ${dropoffLng}`);
+          }
+        }
+      } catch (geoError) {
+        console.error('❌ Geocoding failed for dropoff:', geoError);
+      }
+    }
+    
+    // Calculate distance using Haversine formula
+    let distanceMeters = 0;
+    let durationSeconds = 0;
+    
+    if (pickupLat && pickupLng && dropoffLat && dropoffLng) {
+      const R = 6371000; // Earth radius in meters
+      const dLat = (dropoffLat - pickupLat) * Math.PI / 180;
+      const dLon = (dropoffLng - pickupLng) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(pickupLat * Math.PI / 180) * Math.cos(dropoffLat * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      distanceMeters = Math.round(R * c);
+      
+      // Estimate duration: distance/speed + stops
+      // Average 30 mph = 13.4 m/s, plus 15 min for loading/unloading
+      durationSeconds = Math.round((distanceMeters / 13.4) + (15 * 60));
+      
+      console.log('📏 Calculated distance/duration:', {
+        distanceMeters,
+        distanceMiles: (distanceMeters / 1609.34).toFixed(2),
+        durationSeconds,
+        durationMinutes: Math.round(durationSeconds / 60)
+      });
+    }
+
     // Create the main booking with unified step tracking
     const booking = await prisma.booking.create({
       data: {
@@ -484,7 +564,13 @@ export async function POST(request: NextRequest) {
         urgency: bookingData.urgency || 'scheduled',
         estimatedDurationMinutes: Math.round(pricingResult.estimatedDuration), // From pricing engine
         crewSize: 'TWO', // Default crew size
-        baseDistanceMiles: 0, // Will be calculated
+        baseDistanceMiles: distanceMeters > 0 ? Math.round((distanceMeters / 1609.34) * 10) / 10 : 0,
+        distanceMeters: distanceMeters, // ✅ NOW SAVED!
+        durationSeconds: durationSeconds, // ✅ NOW SAVED!
+        pickupLat: pickupLat,
+        pickupLng: pickupLng,
+        dropoffLat: dropoffLat,
+        dropoffLng: dropoffLng,
         distanceCostGBP: amountsInPence.distanceCostGBP,
         accessSurchargeGBP: amountsInPence.accessSurchargeGBP,
         weatherSurchargeGBP: amountsInPence.weatherSurchargeGBP,

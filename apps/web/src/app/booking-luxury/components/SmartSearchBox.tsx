@@ -77,18 +77,33 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
   useEffect(() => {
     const loadCatalogItems = async () => {
       try {
+        console.log('🔄 Loading Home Furniture Pricing Catalog...');
+        
         // Try to load from COMPREHENSIVE_CATALOG first
         if (COMPREHENSIVE_CATALOG.length > 0) {
           setCatalogItems(COMPREHENSIVE_CATALOG);
+          console.log('✅ Loaded catalog from COMPREHENSIVE_CATALOG:', COMPREHENSIVE_CATALOG.length, 'items');
+          console.log('📋 Sample items:', COMPREHENSIVE_CATALOG.slice(0, 3).map(item => ({
+            name: item.name,
+            category: item.category,
+            keywords: item.keywords
+          })));
           return;
         }
 
-        // Fallback: Use COMPREHENSIVE_CATALOG instead of old dataset
-        console.log('Using COMPREHENSIVE_CATALOG instead of old dataset file');
-        setCatalogItems(COMPREHENSIVE_CATALOG);
+        // Fallback: Try to load via API
+        console.log('🔄 COMPREHENSIVE_CATALOG empty, trying API...');
+        const response = await fetch('/api/catalog/items');
+        if (response.ok) {
+          const data = await response.json();
+          setCatalogItems(data.items || []);
+          console.log('✅ Loaded catalog via API:', data.items?.length || 0, 'items');
+        } else {
+          console.log('❌ API failed, using empty catalog');
+          setCatalogItems([]);
+        }
       } catch (error) {
-        console.warn('Failed to load catalog items:', error);
-        // Keep empty array as fallback
+        console.error('❌ Failed to load catalog:', error);
         setCatalogItems([]);
       }
     };
@@ -159,6 +174,12 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
 
   // Local search function using loaded catalog items
   const searchLocalItems = (query: string, limit: number = 12) => {
+    console.log('🔍 Searching in catalog:', {
+      query,
+      catalogLength: catalogItems.length,
+      firstItem: catalogItems[0]
+    });
+
     if (!query || query.length < 1) {
       // Return popular items when no query
       return catalogItems.slice(0, limit).map(item => ({
@@ -173,21 +194,35 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
 
     const queryLower = query.toLowerCase();
     const results = catalogItems.filter(item => {
-      // Search in name
-      if (item.name.toLowerCase().includes(queryLower)) return true;
+      if (!item) return false;
       
-      // Search in keywords
-      if (item.keywords && Array.isArray(item.keywords)) {
-        return item.keywords.some((keyword: string) => 
-          keyword.toLowerCase().includes(queryLower)
-        );
+      // ✅ Search in NAME (Home Furniture items)
+      if (item.name?.toLowerCase?.()?.includes(queryLower)) {
+        console.log('✅ Found by name:', item.name);
+        return true;
       }
       
-      // Search in category
-      if (item.category && item.category.toLowerCase().includes(queryLower)) return true;
+      // ✅ Search in KEYWORDS (Home Furniture keywords)
+      if (item.keywords && Array.isArray(item.keywords)) {
+        const keywordMatch = item.keywords.some((keyword: string) => 
+          keyword?.toLowerCase?.()?.includes(queryLower)
+        );
+        if (keywordMatch) {
+          console.log('✅ Found by keyword:', item.name, item.keywords);
+        }
+        return keywordMatch;
+      }
+      
+      // ✅ Search in CATEGORY (Home Furniture categories)
+      if (item.category?.toLowerCase?.()?.includes(queryLower)) {
+        console.log('✅ Found by category:', item.name, item.category);
+        return true;
+      }
       
       return false;
     }).slice(0, limit);
+
+    console.log('🎯 Search results:', results.length, 'items found');
 
     return results.map(item => ({
       id: item.id,

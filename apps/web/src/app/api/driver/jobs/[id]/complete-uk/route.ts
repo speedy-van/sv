@@ -32,10 +32,10 @@ interface CompleteJobRequest {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const assignmentId = params.id;
+    const { id: assignmentId } = await params;
     const body: CompleteJobRequest = await request.json();
 
     // 1. Get assignment details

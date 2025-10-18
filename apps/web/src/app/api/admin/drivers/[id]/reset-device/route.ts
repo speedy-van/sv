@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check admin authentication
@@ -17,7 +17,7 @@ export async function POST(
     
     const adminUser = authResult;
     const { reason } = await request.json();
-    const driverId = params.id;
+    const { id: driverId } = await params;
 
     // Get driver with current status
     const driver = await prisma.driver.findUnique({

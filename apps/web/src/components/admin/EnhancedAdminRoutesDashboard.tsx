@@ -62,7 +62,9 @@ import {
   Alert,
   AlertIcon,
   Icon,
+  Circle,
 } from '@chakra-ui/react';
+import { keyframes } from '@emotion/react';
 import {
   FiPlus,
   FiRefreshCw,
@@ -84,9 +86,93 @@ import {
   FiPause,
   FiUserX,
 } from 'react-icons/fi';
-import { format } from 'date-fns';
+import { format, differenceInHours, differenceInDays } from 'date-fns';
 import DispatchModeToggle from './DispatchModeToggle';
 import SmartRouteGeneratorModal from './SmartRouteGeneratorModal';
+
+// Flashing animation for priority indicators
+const pulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+`;
+
+const fastPulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+`;
+
+// Priority calculation based on start time
+function calculateRoutePriority(startTime: Date): {
+  level: 'urgent' | 'high' | 'medium' | 'low' | 'future';
+  color: string;
+  bgColor: string;
+  label: string;
+  animation: string;
+  sortOrder: number;
+} {
+  const now = new Date();
+  const start = new Date(startTime);
+  const hoursUntil = differenceInHours(start, now);
+  const daysUntil = differenceInDays(start, now);
+
+  // Tomorrow (within 24-48 hours)
+  if (hoursUntil >= 0 && hoursUntil <= 48) {
+    return {
+      level: 'urgent',
+      color: 'red.500',
+      bgColor: 'red.50',
+      label: 'Tomorrow',
+      animation: `${fastPulseAnimation} 1.5s ease-in-out infinite`,
+      sortOrder: 1
+    };
+  }
+  
+  // Day after tomorrow (48-72 hours)
+  if (hoursUntil > 48 && hoursUntil <= 72) {
+    return {
+      level: 'high',
+      color: 'orange.500',
+      bgColor: 'orange.50',
+      label: 'Day After',
+      animation: `${pulseAnimation} 2s ease-in-out infinite`,
+      sortOrder: 2
+    };
+  }
+  
+  // This week (3-7 days)
+  if (daysUntil > 3 && daysUntil <= 7) {
+    return {
+      level: 'medium',
+      color: 'yellow.500',
+      bgColor: 'yellow.50',
+      label: 'This Week',
+      animation: `${pulseAnimation} 2.5s ease-in-out infinite`,
+      sortOrder: 3
+    };
+  }
+  
+  // Next week (7-14 days)
+  if (daysUntil > 7 && daysUntil <= 14) {
+    return {
+      level: 'low',
+      color: 'green.400',
+      bgColor: 'green.50',
+      label: 'Next Week',
+      animation: `${pulseAnimation} 3s ease-in-out infinite`,
+      sortOrder: 4
+    };
+  }
+  
+  // Future (14+ days)
+  return {
+    level: 'future',
+    color: 'green.600',
+    bgColor: 'green.50',
+    label: 'Future',
+    animation: `${pulseAnimation} 3.5s ease-in-out infinite`,
+    sortOrder: 5
+  };
+}
 
 interface Route {
   id: string;
@@ -510,18 +596,38 @@ const EnhancedAdminRoutesDashboard = () => {
 
   // Filter routes based on active tab
   const getFilteredRoutes = () => {
+    let filtered: Route[];
+    
     switch (activeTab) {
       case 0: // All Routes
-        return routes;
+        filtered = routes;
+        break;
       case 1: // Active Now
-        return routes.filter(r => r.status === 'active');
+        filtered = routes.filter(r => r.status === 'active');
+        break;
       case 2: // In Progress
-        return routes.filter(r => r.status === 'active' && r.driverId);
+        filtered = routes.filter(r => r.status === 'active' && r.driverId);
+        break;
       case 3: // Completed
-        return routes.filter(r => r.status === 'completed');
+        filtered = routes.filter(r => r.status === 'completed');
+        break;
       default:
-        return routes;
+        filtered = routes;
     }
+    
+    // ✅ Sort by priority (urgent first) then by start time
+    return filtered.sort((a, b) => {
+      const priorityA = calculateRoutePriority(a.startTime);
+      const priorityB = calculateRoutePriority(b.startTime);
+      
+      // Sort by priority level first (urgent → future)
+      if (priorityA.sortOrder !== priorityB.sortOrder) {
+        return priorityA.sortOrder - priorityB.sortOrder;
+      }
+      
+      // Then by start time (earliest first)
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
   };
 
   if (isLoading) {
@@ -859,7 +965,14 @@ const EnhancedAdminRoutesDashboard = () => {
                 {getFilteredRoutes().map((route) => (
                   <Tr key={route.id} _hover={{ bg: 'gray.750' }}>
                     <Td color="white" fontFamily="mono" fontSize="sm">
-                      {route.id.substring(0, 8)}
+                      <HStack spacing={2}>
+                        <Circle
+                          size="12px"
+                          bg={calculateRoutePriority(route.startTime).color}
+                          animation={calculateRoutePriority(route.startTime).animation}
+                        />
+                        <Text>{route.id.substring(0, 8)}</Text>
+                      </HStack>
                     </Td>
                     <Td>
                       <Flex align="center" gap={2}>

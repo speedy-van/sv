@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 // POST /api/booking-luxury/[id]/cancel - Cancel booking with reason
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     const { reason } = await request.json();
 
     // Find the booking

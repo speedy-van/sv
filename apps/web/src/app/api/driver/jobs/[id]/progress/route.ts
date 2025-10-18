@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authenticate - support both bearer token and session
@@ -42,7 +42,7 @@ export async function PUT(
       console.log('✅ Authenticated via session for user:', userId);
     }
 
-    const assignmentId = params.id;
+    const { id: assignmentId } = await params;
 
     // Get driver
     const driver = await prisma.driver.findUnique({

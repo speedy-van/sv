@@ -46,7 +46,9 @@ import {
   ModalBody,
   ModalFooter,
   Textarea,
+  Circle,
 } from '@chakra-ui/react';
+import { keyframes } from '@emotion/react';
 import ClientInput from '@/components/admin/ClientInput';
 import {
   FaSearch,
@@ -68,13 +70,97 @@ import {
   FaTrash,
   FaUserSlash,
 } from 'react-icons/fa';
-import { formatDistanceToNow, format, differenceInMinutes } from 'date-fns';
+import { formatDistanceToNow, format, differenceInMinutes, differenceInDays, differenceInHours } from 'date-fns';
 import {
   AdminShell,
   ViewToggle,
   type ViewType,
   OrderDetailDrawer,
 } from '@/components/admin';
+
+// Flashing animation for priority indicators
+const pulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+`;
+
+const fastPulseAnimation = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+`;
+
+// Priority calculation based on scheduled date
+function calculatePriority(scheduledAt: string): {
+  level: 'urgent' | 'high' | 'medium' | 'low' | 'future';
+  color: string;
+  bgColor: string;
+  label: string;
+  animation: string;
+  sortOrder: number;
+} {
+  const now = new Date();
+  const scheduled = new Date(scheduledAt);
+  const hoursUntil = differenceInHours(scheduled, now);
+  const daysUntil = differenceInDays(scheduled, now);
+
+  // Tomorrow (within 24-48 hours)
+  if (hoursUntil >= 0 && hoursUntil <= 48) {
+    return {
+      level: 'urgent',
+      color: 'red.500',
+      bgColor: 'red.50',
+      label: 'Tomorrow',
+      animation: `${fastPulseAnimation} 1.5s ease-in-out infinite`,
+      sortOrder: 1
+    };
+  }
+  
+  // Day after tomorrow (48-72 hours)
+  if (hoursUntil > 48 && hoursUntil <= 72) {
+    return {
+      level: 'high',
+      color: 'orange.500',
+      bgColor: 'orange.50',
+      label: 'Day After',
+      animation: `${pulseAnimation} 2s ease-in-out infinite`,
+      sortOrder: 2
+    };
+  }
+  
+  // This week (3-7 days)
+  if (daysUntil > 3 && daysUntil <= 7) {
+    return {
+      level: 'medium',
+      color: 'yellow.500',
+      bgColor: 'yellow.50',
+      label: 'This Week',
+      animation: `${pulseAnimation} 2.5s ease-in-out infinite`,
+      sortOrder: 3
+    };
+  }
+  
+  // Next week (7-14 days)
+  if (daysUntil > 7 && daysUntil <= 14) {
+    return {
+      level: 'low',
+      color: 'green.400',
+      bgColor: 'green.50',
+      label: 'Next Week',
+      animation: `${pulseAnimation} 3s ease-in-out infinite`,
+      sortOrder: 4
+    };
+  }
+  
+  // Future (14+ days)
+  return {
+    level: 'future',
+    color: 'green.600',
+    bgColor: 'green.50',
+    label: 'Future',
+    animation: `${pulseAnimation} 3.5s ease-in-out infinite`,
+    sortOrder: 5
+  };
+}
 
 interface Order {
   id: string;
@@ -162,6 +248,18 @@ export default function OrdersClient() {
   const [selectedOrderForRemoval, setSelectedOrderForRemoval] = useState<Order | null>(null);
   const [removalType, setRemovalType] = useState<'single' | 'all'>('single');
   const [removalReason, setRemovalReason] = useState('');
+  
+  // Driver Assignment State
+  const {
+    isOpen: isAssignOpen,
+    onOpen: onAssignOpen,
+    onClose: onAssignClose,
+  } = useDisclosure();
+  const [selectedOrderForAssign, setSelectedOrderForAssign] = useState<Order | null>(null);
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [assignReason, setAssignReason] = useState('');
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
 
   const loadOrders = useCallback(
     async (refresh = false) => {
@@ -299,6 +397,20 @@ export default function OrdersClient() {
             .includes(searchQuery.toLowerCase())
       );
     }
+
+    // ✅ Sort by priority (urgent first) then by scheduled date
+    filtered.sort((a, b) => {
+      const priorityA = calculatePriority(a.scheduledAt);
+      const priorityB = calculatePriority(b.scheduledAt);
+      
+      // Sort by priority level first (urgent → future)
+      if (priorityA.sortOrder !== priorityB.sortOrder) {
+        return priorityA.sortOrder - priorityB.sortOrder;
+      }
+      
+      // Then by scheduled date (earliest first)
+      return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+    });
 
     return filtered;
   }, [orders, searchQuery, orderTypeFilter]);
@@ -473,6 +585,132 @@ export default function OrdersClient() {
     onRemoveOpen();
   };
 
+  const handleOpenAssignModal = async (order: Order) => {
+    setSelectedOrderForAssign(order);
+    setSelectedDriverId('');
+    setAssignReason('');
+    
+    // Load available drivers
+    try {
+      const response = await fetch('/api/admin/drivers?status=available');
+      const data = await response.json();
+      if (data.drivers) {
+        setAvailableDrivers(data.drivers);
+      }
+    } catch (error) {
+      console.error('Error loading drivers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load available drivers',
+        status: 'error',
+        duration: 3000,
+      });
+    }
+    
+    onAssignOpen();
+  };
+
+  const handleAssignDriver = async () => {
+    if (!selectedOrderForAssign || !selectedDriverId) return;
+
+    setIsAssigning(true);
+    try {
+      const isReassign = !!selectedOrderForAssign.driver;
+      const response = await fetch(
+        `/api/admin/orders/${selectedOrderForAssign.reference}/assign-driver`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            driverId: selectedDriverId,
+            reason: assignReason || (isReassign ? 'Reassigned by admin' : 'Assigned by admin')
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success || response.ok) {
+        toast({
+          title: 'Success',
+          description: isReassign 
+            ? `Order ${selectedOrderForAssign.reference} reassigned successfully. Driver will be notified.` 
+            : `Order ${selectedOrderForAssign.reference} assigned to driver. Notification sent.`,
+          status: 'success',
+          duration: 3000,
+        });
+        
+        onAssignClose();
+        loadOrders(true);
+      } else {
+        throw new Error(data.error || 'Failed to assign driver');
+      }
+    } catch (error) {
+      console.error('Error assigning driver:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to assign driver',
+        status: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleCancelOrder = async (order: Order) => {
+    const confirmCancel = window.confirm(
+      `Are you sure you want to cancel order #${order.reference}?\n\n` +
+      `This will:\n` +
+      `- Cancel the order\n` +
+      `- Notify the driver (if assigned)\n` +
+      `- Update the customer\n` +
+      `- Free up the driver's capacity\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmCancel) return;
+
+    const reason = window.prompt('Please provide a reason for cancellation:', 'Cancelled by admin');
+    
+    try {
+      const response = await fetch(
+        `/api/admin/orders/${order.reference}/cancel-enhanced`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reason: reason || 'Cancelled by admin',
+            notifyCustomer: true
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success || response.ok) {
+        toast({
+          title: 'Success',
+          description: `Order #${order.reference} has been cancelled. All notifications sent.`,
+          status: 'success',
+          duration: 4000,
+        });
+        
+        loadOrders(true);
+      } else {
+        throw new Error(data.error || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to cancel order',
+        status: 'error',
+        duration: 5000,
+      });
+    }
+  };
+
   const handleRemoveOrder = async () => {
     if (!selectedOrderForRemoval) return;
 
@@ -630,9 +868,16 @@ export default function OrdersClient() {
                       />
                     </Td>
                     <Td>
-                      <Text fontWeight="bold" color="blue.600">
-                        #{order.reference || 'N/A'}
-                      </Text>
+                      <HStack spacing={2}>
+                        <Circle
+                          size="12px"
+                          bg={calculatePriority(order.scheduledAt).color}
+                          animation={calculatePriority(order.scheduledAt).animation}
+                        />
+                        <Text fontWeight="bold" color="blue.600">
+                          #{order.reference || 'N/A'}
+                        </Text>
+                      </HStack>
                     </Td>
                     <Td>
                       <VStack align="start" spacing={1}>
@@ -799,6 +1044,13 @@ export default function OrdersClient() {
                           >
                             Email Customer
                           </MenuItem>
+                          <MenuItem
+                            icon={<FaTruck />}
+                            onClick={() => handleOpenAssignModal(order)}
+                            color="blue.500"
+                          >
+                            {order.driver ? 'Reassign Driver' : 'Assign Driver'}
+                          </MenuItem>
                           {order.driver && (
                             <MenuItem
                               icon={<FaUserSlash />}
@@ -806,6 +1058,15 @@ export default function OrdersClient() {
                               color="red.500"
                             >
                               Remove Assignment
+                            </MenuItem>
+                          )}
+                          {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
+                            <MenuItem
+                              icon={<FaTrash />}
+                              onClick={() => handleCancelOrder(order)}
+                              color="red.600"
+                            >
+                              Cancel Order
                             </MenuItem>
                           )}
                         </MenuList>
@@ -1238,6 +1499,68 @@ export default function OrdersClient() {
         onClose={onDetailClose}
         orderCode={selectedOrderCode}
       />
+
+      {/* Assign/Reassign Driver Modal */}
+      <Modal isOpen={isAssignOpen} onClose={onAssignClose} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {selectedOrderForAssign?.driver ? 'Reassign Driver' : 'Assign Driver'}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <Box>
+                <Text fontWeight="bold" mb={2}>Order:</Text>
+                <Text>#{selectedOrderForAssign?.reference}</Text>
+                {selectedOrderForAssign?.driver && (
+                  <Text fontSize="sm" color="gray.600" mt={1}>
+                    Current Driver: {selectedOrderForAssign.driver.user?.name}
+                  </Text>
+                )}
+              </Box>
+
+              <Box>
+                <Text fontWeight="bold" mb={2}>Select Driver:</Text>
+                <Select
+                  placeholder="Choose a driver..."
+                  value={selectedDriverId}
+                  onChange={(e) => setSelectedDriverId(e.target.value)}
+                >
+                  {availableDrivers.map((driver) => (
+                    <option key={driver.id} value={driver.id}>
+                      {driver.User?.name || driver.name} - {driver.status}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+
+              <Box>
+                <Text fontWeight="bold" mb={2}>Reason (Optional):</Text>
+                <Textarea
+                  placeholder="e.g., Original driver unavailable, Better route match, etc."
+                  value={assignReason}
+                  onChange={(e) => setAssignReason(e.target.value)}
+                  rows={3}
+                />
+              </Box>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onAssignClose}>
+              Cancel
+            </Button>
+            <Button 
+              colorScheme="blue" 
+              onClick={handleAssignDriver}
+              isLoading={isAssigning}
+              isDisabled={!selectedDriverId}
+            >
+              {selectedOrderForAssign?.driver ? 'Reassign' : 'Assign'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Remove Assignment Modal */}
       <Modal isOpen={isRemoveOpen} onClose={onRemoveClose} size="lg">

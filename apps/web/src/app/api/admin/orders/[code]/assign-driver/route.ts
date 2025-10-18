@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
+import { upsertAssignment, getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 10;
@@ -157,8 +158,8 @@ export async function POST(
         console.log('💾 Transaction started successfully');
         try {
         // If there's an existing assignment, update it
-        if (booking.Assignment) {
-          const existingAssignment = booking.Assignment;
+        const existingAssignment = getActiveAssignment(booking.Assignment);
+        if (existingAssignment) {
           
           // Create job event for removal/reassignment
           const removalEventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}_removed`;
@@ -231,16 +232,11 @@ export async function POST(
           const assignmentId = `assignment_${Date.now()}_${booking.id}_${driverId}`;
           console.log('📝 Creating new assignment with ID:', assignmentId);
           
-          const newAssignment = await tx.assignment.create({
-            data: {
-              id: assignmentId,
-              bookingId: booking.id,
-              driverId: driverId,
-              status: 'invited',
-              round: 1,
-              expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
-              updatedAt: new Date(),
-            }
+          const newAssignment = await upsertAssignment(tx, booking.id, {
+            driverId: driverId,
+            status: 'invited',
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
+            round: 1,
           });
 
           // Do NOT update booking.driverId yet - driver must accept first

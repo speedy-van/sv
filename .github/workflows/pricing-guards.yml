@@ -124,18 +124,33 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Unified Pricing System
     needs: pricing-system-guards
+    
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+      NODE_ENV: test
 
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.17.0
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
-        cache: 'npm'
+        node-version: '20'
+        cache: 'pnpm'
 
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
+
+    - name: Generate Prisma Client
+      run: cd packages/shared && pnpm prisma generate
+
+    - name: Build packages
+      run: pnpm run build:packages
 
     - name: Run unified pricing tests
       run: |
@@ -143,13 +158,13 @@ jobs:
         
         # Run specific pricing tests
         if [ -f "__tests__/pricing-unification.test.ts" ]; then
-          npm test -- __tests__/pricing-unification.test.ts
+          pnpm test -- __tests__/pricing-unification.test.ts
         else
           echo "⚠️ WARNING: Unified pricing tests not found!"
         fi
         
         # Run type checking
-        npm run type-check
+        pnpm run typecheck
         
         echo "✅ All tests passed!"
 
@@ -158,8 +173,8 @@ jobs:
         echo "🌐 Validating API endpoints..."
         
         # Start the application in test mode
-        npm run build
-        timeout 30s npm start &
+        pnpm run build
+        timeout 30s pnpm start &
         SERVER_PID=$!
         
         # Wait for server to start

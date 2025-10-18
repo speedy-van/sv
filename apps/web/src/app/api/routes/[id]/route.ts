@@ -9,10 +9,10 @@ import { RouteOrchestrationService } from '@/lib/services/route-orchestration-se
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await params;
     
     if (!routeId) {
       return NextResponse.json(
@@ -49,10 +49,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await params;
     const body = await request.json();
     
     if (!routeId) {

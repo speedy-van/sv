@@ -4,23 +4,25 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('📄 Invoice API called with ID/Reference:', params.id);
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
+    console.log('📄 Invoice API called with ID/Reference:', id);
     
     // Try to find booking by ID first (UUID format), then by reference (SV format)
     let booking;
     
     // Check if it's a UUID (booking ID) or reference (SV12345)
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
-    const isReference = /^SV\d+$/i.test(params.id);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isReference = /^SV\d+$/i.test(id);
     
     if (isUUID) {
       console.log('🔍 Searching by booking ID (UUID)');
       booking = await prisma.booking.findUnique({
         where: {
-          id: params.id,
+          id: id,
         },
         select: {
         id: true,
@@ -54,7 +56,7 @@ export async function GET(
       console.log('🔍 Searching by booking reference (SV format)');
       booking = await prisma.booking.findFirst({
         where: {
-          reference: params.id,
+          reference: id,
         },
         select: {
           id: true,
@@ -85,16 +87,16 @@ export async function GET(
         },
       });
     } else {
-      console.log('❌ Invalid ID/Reference format:', params.id);
+      console.log('❌ Invalid ID/Reference format:', id);
       return NextResponse.json({ error: 'Invalid booking ID or reference format' }, { status: 400 });
     }
 
     if (!booking) {
-      console.log('❌ Booking not found for:', params.id);
+      console.log('❌ Booking not found for:', id);
       return NextResponse.json({ 
         error: 'Invoice not found', 
         debug: { 
-          searchTerm: params.id, 
+          searchTerm: id, 
           searchType: isUUID ? 'UUID' : isReference ? 'Reference' : 'Invalid',
           timestamp: new Date().toISOString()
         }

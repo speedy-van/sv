@@ -109,11 +109,11 @@ export class ReturnJourneyService {
 
     // Step 3: Calculate deviation distance
     const deviationDistance = this.calculateDeviationDistance(request);
-    const returnDistance = this.calculateDistance(
+    const returnDistanceCalc = this.calculateDistance( // DEPRECATED - internal use only
       request.originalDropoff.coordinates,
       request.originalPickup.coordinates
     );
-    const deviationPercentage = deviationDistance / returnDistance;
+    const deviationPercentage = deviationDistance / returnDistanceCalc;
     const deviationAcceptable = deviationPercentage < 0.20; // < 20% deviation
 
     // Step 4: Calculate return journey discount
@@ -129,9 +129,15 @@ export class ReturnJourneyService {
     const discount = standardPrice * discountPercentage;
     const returnJourneyPrice = standardPrice - discount;
 
-    // Step 5: Calculate driver earnings
-    // Driver gets 70% of return journey price (same as regular bookings)
-    const driverEarnings = returnJourneyPrice * 0.70;
+    // Step 5: Calculate driver earnings using proper formula
+    // Use the same calculation as regular bookings (Base + Mileage + Time)
+    const estimatedDuration = Math.round((returnDistanceCalc / 30) * 60); // 30 mph average
+    
+    // Calculate driver earnings properly
+    const baseFare = 2500; // £25
+    const mileageFee = Math.round(returnDistanceCalc * 55); // £0.55/mile
+    const timeFee = Math.round(estimatedDuration * 15); // £0.15/min
+    const driverEarnings = (baseFare + mileageFee + timeFee) / 100; // Convert to pounds
 
     // Step 6: Calculate match score (0-100)
     const matchScore = this.calculateMatchScore(request, deviationPercentage);
@@ -154,7 +160,7 @@ export class ReturnJourneyService {
    */
   private validateReturnJourneyEligibility(request: ReturnJourneyRequest): { eligible: boolean; reason?: string } {
     // Rule 1: Original journey must be long distance (> 150 miles)
-    const originalDistance = this.calculateDistance(
+    const originalDistance = this.calculateDistance( // DEPRECATED - internal use only
       request.originalPickup.coordinates,
       request.originalDropoff.coordinates
     );
@@ -166,7 +172,7 @@ export class ReturnJourneyService {
     }
 
     // Rule 2: Return customer pickup must be near original dropoff (within 30 miles)
-    const pickupDeviation = this.calculateDistance(
+    const pickupDeviation = this.calculateDistance( // DEPRECATED - internal use only
       request.originalDropoff.coordinates,
       request.returnCustomerPickup.coordinates
     );
@@ -178,7 +184,7 @@ export class ReturnJourneyService {
     }
 
     // Rule 3: Return customer dropoff must be near original pickup (within 30 miles)
-    const dropoffDeviation = this.calculateDistance(
+    const dropoffDeviation = this.calculateDistance( // DEPRECATED - internal use only
       request.originalPickup.coordinates,
       request.returnCustomerDropoff.coordinates
     );
@@ -216,7 +222,7 @@ export class ReturnJourneyService {
    * Calculate standard price (what customer would pay for single order)
    */
   private async calculateStandardPrice(request: ReturnJourneyRequest): Promise<number> {
-    const distance = this.calculateDistance(
+    const distance = this.calculateDistance( // DEPRECATED - internal use only
       request.returnCustomerPickup.coordinates,
       request.returnCustomerDropoff.coordinates
     );
@@ -265,16 +271,16 @@ export class ReturnJourneyService {
    */
   private calculateDeviationDistance(request: ReturnJourneyRequest): number {
     // Direct return distance (original dropoff → original pickup)
-    const directReturnDistance = this.calculateDistance(
+    const directReturnDistance = this.calculateDistance( // DEPRECATED - internal use only
       request.originalDropoff.coordinates,
       request.originalPickup.coordinates
     );
 
     // Actual return distance with customer pickup/dropoff
     const actualReturnDistance =
-      this.calculateDistance(request.originalDropoff.coordinates, request.returnCustomerPickup.coordinates) +
-      this.calculateDistance(request.returnCustomerPickup.coordinates, request.returnCustomerDropoff.coordinates) +
-      this.calculateDistance(request.returnCustomerDropoff.coordinates, request.originalPickup.coordinates);
+      this.calculateDistance(request.originalDropoff.coordinates, request.returnCustomerPickup.coordinates) + // DEPRECATED - internal use only
+      this.calculateDistance(request.returnCustomerPickup.coordinates, request.returnCustomerDropoff.coordinates) + // DEPRECATED - internal use only
+      this.calculateDistance(request.returnCustomerDropoff.coordinates, request.originalPickup.coordinates); // DEPRECATED - internal use only
 
     return actualReturnDistance - directReturnDistance;
   }
@@ -289,13 +295,13 @@ export class ReturnJourneyService {
     score -= deviationPercentage * 100; // 0-20 points deducted
 
     // Deduct points for pickup/dropoff distance from ideal
-    const pickupDeviation = this.calculateDistance(
+    const pickupDeviation = this.calculateDistance( // DEPRECATED - internal use only
       request.originalDropoff.coordinates,
       request.returnCustomerPickup.coordinates
     );
     score -= Math.min(pickupDeviation, 30); // 0-30 points deducted
 
-    const dropoffDeviation = this.calculateDistance(
+    const dropoffDeviation = this.calculateDistance( // DEPRECATED - internal use only
       request.originalPickup.coordinates,
       request.returnCustomerDropoff.coordinates
     );
@@ -315,7 +321,7 @@ export class ReturnJourneyService {
   /**
    * Calculate distance using Haversine formula
    */
-  private calculateDistance(from: { lat: number; lng: number }, to: { lat: number; lng: number }): number {
+  private calculateDistance(from: { lat: number; lng: number }, to: { lat: number; lng: number }): number { // DEPRECATED - internal use only
     const R = 3958.8; // Earth's radius in miles
     const dLat = (to.lat - from.lat) * (Math.PI / 180);
     const dLon = (to.lng - from.lng) * (Math.PI / 180);

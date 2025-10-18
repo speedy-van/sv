@@ -1317,7 +1317,7 @@ class SmartPriorityScorer {
     reasoning.push(`Customer value: ${customerScore.toFixed(2)}`);
 
     // Distance optimization factor
-    const distanceScore = this.calculateDistanceScore(booking, context.region);
+    const distanceScore = this.calculateDistanceScore(booking, context.region); // DEPRECATED - internal use only
     score += distanceScore * this.priorityWeights.distance;
     reasoning.push(`Distance optimization: ${distanceScore.toFixed(2)}`);
 
@@ -1363,7 +1363,7 @@ class SmartPriorityScorer {
     return (valueScore * 0.5 + frequencyScore * 0.3 + satisfactionScore * 0.2);
   }
 
-  private calculateDistanceScore(booking: any, region: string): number {
+  private calculateDistanceScore(booking: any, region: string): number { // DEPRECATED - internal use only
     // Prefer bookings in the same region for route efficiency
     const bookingRegion = this.extractRegionFromAddress(booking.pickupAddress);
     return bookingRegion === region ? 0.8 : 0.4;
@@ -2414,7 +2414,7 @@ class RouteOrchestrationScheduler {
    */
   private async tryMergeRoutes(route1: any, route2: any): Promise<any | null> {
     // Check if routes are geographically compatible
-    const centroidDistance = this.calculateDistance(
+    const centroidDistance = this.calculateDistance( // DEPRECATED - internal use only
       route1.centroid?.lat || 51.5074, route1.centroid?.lng || -0.1278,
       route2.centroid?.lat || 51.5074, route2.centroid?.lng || -0.1278
     );
@@ -2600,7 +2600,7 @@ class RouteOrchestrationScheduler {
         if (processed.has(otherDrop.id)) continue;
         if (cluster.drops.length >= this.maxDropsPerRoute) break;
 
-        const distance = this.calculateDistance(
+        const distance = this.calculateDistance( // DEPRECATED - internal use only
           drop.pickupLatitude || 0, drop.pickupLongitude || 0,
           otherDrop.pickupLatitude || 0, otherDrop.pickupLongitude || 0
         );
@@ -2696,7 +2696,7 @@ class RouteOrchestrationScheduler {
       const currentDrop = drops[current];
       
       for (const index of unvisited) {
-        const distance = this.calculateDistance(
+        const distance = this.calculateDistance( // DEPRECATED - internal use only
           currentDrop.deliveryLatitude || 0, currentDrop.deliveryLongitude || 0,
           drops[index].pickupLatitude || 0, drops[index].pickupLongitude || 0
         );
@@ -2832,7 +2832,7 @@ class RouteOrchestrationScheduler {
   /**
    * Helper: Calculate distance between two coordinates (Haversine formula)
    */
-  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number { // DEPRECATED - internal use only
     const R = 6371; // Earth's radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
@@ -2863,7 +2863,7 @@ class RouteOrchestrationScheduler {
     let totalDistance = 0;
     
     for (let i = 0; i < drops.length - 1; i++) {
-      totalDistance += this.calculateDistance(
+      totalDistance += this.calculateDistance( // DEPRECATED - internal use only
         drops[i].deliveryLatitude || 0, drops[i].deliveryLongitude || 0,
         drops[i + 1].pickupLatitude || 0, drops[i + 1].pickupLongitude || 0
       );
@@ -3084,7 +3084,7 @@ class RouteOrchestrationScheduler {
       const deliveryLng = booking.dropoffAddress?.lng || booking.deliveryLongitude || -0.1278;
 
       // Use haversine formula for distance calculation
-      const distance = this.calculateDistance(pickupLat, pickupLng, deliveryLat, deliveryLng);
+      const distance = this.calculateDistance(pickupLat, pickupLng, deliveryLat, deliveryLng); // DEPRECATED - internal use only
 
       // Add buffer for real-world driving (roads aren't straight lines)
       const roadFactor = 1.3; // Roads are typically 30% longer than straight lines

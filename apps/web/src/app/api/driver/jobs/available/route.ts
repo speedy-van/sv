@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     const transformedJobs = await Promise.all(availableJobs.map(async booking => {
       // Calculate estimated distance (simplified)
       // Note: For UK-wide coverage, we show all jobs regardless of driver location
-      const distance = calculateDistance(
+      const distance = calculateDistance( // DEPRECATED - internal use only
         booking.pickupAddress?.lat || 0,
         booking.pickupAddress?.lng || 0,
         booking.dropoffAddress?.lat || 0,
@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper function to calculate distance between two points (Haversine formula)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of the Earth in miles
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);

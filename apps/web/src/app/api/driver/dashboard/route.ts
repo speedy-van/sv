@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { prisma } from '@/lib/prisma';
 import { penceToPounds } from '@/lib/utils/currency';
 
@@ -8,7 +9,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Helper function to calculate distance between two points (Haversine formula)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of the Earth in miles
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
@@ -27,24 +28,40 @@ function deg2rad(deg: number): number {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check driver authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please login' },
-        { status: 401 }
-      );
-    }
+    // Try Bearer token authentication first (for mobile app)
+    const bearerAuth = await authenticateBearerToken(request);
+    let userId: string;
 
-    const userRole = (session.user as any)?.role;
-    if (userRole !== 'driver') {
-      return NextResponse.json(
-        { error: 'Forbidden - Driver access required' },
-        { status: 403 }
-      );
-    }
+    if (bearerAuth.success) {
+      userId = bearerAuth.user.id;
+      if (bearerAuth.user.role !== 'driver') {
+        return NextResponse.json(
+          { error: 'Forbidden - Driver access required' },
+          { status: 403 }
+        );
+      }
+      console.log('🔑 Bearer token authenticated for dashboard:', userId);
+    } else {
+      // Fallback to NextAuth session (for web app)
+      const session = await getServerSession(authOptions);
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Please login' },
+          { status: 401 }
+        );
+      }
 
-    const userId = session.user.id;
+      const userRole = (session.user as any)?.role;
+      if (userRole !== 'driver') {
+        return NextResponse.json(
+          { error: 'Forbidden - Driver access required' },
+          { status: 403 }
+        );
+      }
+
+      userId = session.user.id;
+      console.log('🌐 NextAuth session authenticated for dashboard:', userId);
+    }
 
     // Get driver record
     const driver = await prisma.driver.findUnique({
@@ -182,7 +199,7 @@ export async function GET(request: NextRequest) {
         const dropoffLng = dropoff?.lng;
 
         if (pickupLat && pickupLng && dropoffLat && dropoffLng) {
-          distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
+          distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng); // DEPRECATED - internal use only
         }
       } catch (distanceError) {
         console.warn('Error calculating distance:', distanceError instanceof Error ? distanceError.message : String(distanceError));
@@ -240,7 +257,7 @@ export async function GET(request: NextRequest) {
       let distance = booking.baseDistanceMiles || 0;
       if (!distance && pickup && dropoff) {
         try {
-          distance = calculateDistance(
+          distance = calculateDistance( // DEPRECATED - internal use only
             pickup.lat || 0,
             pickup.lng || 0,
             dropoff.lat || 0,

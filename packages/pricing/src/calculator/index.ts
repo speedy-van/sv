@@ -26,7 +26,7 @@ export class PricingCalculator {
    */
   async calculatePrice(request: PricingRequest): Promise<PricingResult> {
     // Get distance and duration
-    const distanceMatrix = await this.calculateDistance(
+    const distanceMatrix = await this.calculateDistance( // DEPRECATED - internal pricing system only
       request.pickupLocation,
       request.deliveryLocation
     );
@@ -43,7 +43,7 @@ export class PricingCalculator {
 
     // Calculate individual price components
     const basePrice = this.calculateBasePrice(vehicleCapacity);
-    const distancePrice = this.calculateDistancePrice(distanceMatrix.distance, vehicleCapacity);
+    const distancePrice = this.calculateDistancePrice(distanceMatrix.distance, vehicleCapacity); // DEPRECATED - internal pricing system only
     const itemsPrice = this.calculateItemsPrice(request.items);
     const timePrice = this.calculateTimePrice(distanceMatrix.duration, vehicleCapacity);
     const urgencyPrice = this.calculateUrgencyPrice(
@@ -132,7 +132,7 @@ export class PricingCalculator {
   /**
    * Calculate distance-based pricing
    */
-  private calculateDistancePrice(distance: number, vehicleCapacity: VehicleCapacity): number {
+  private calculateDistancePrice(distance: number, vehicleCapacity: VehicleCapacity): number { // DEPRECATED - internal pricing system only
     return distance * vehicleCapacity.pricePerKm;
   }
 
@@ -324,7 +324,7 @@ export class PricingCalculator {
   /**
    * Calculate distance and duration between two points
    */
-  private async calculateDistance(
+  private async calculateDistance( // DEPRECATED - internal pricing system only
     pickup: { latitude: number; longitude: number },
     delivery: { latitude: number; longitude: number }
   ): Promise<DistanceMatrix> {

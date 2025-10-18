@@ -126,7 +126,7 @@ export class UnifiedPricingEngine {
       // 5. Calculate base pricing components
       const baseFee = this.calculateBaseFee();
       const itemsFee = this.calculateItemsFee(enrichedItems);
-      const distanceFee = this.calculateDistanceFee(routeCalculation.totalDistance);
+      const distanceFee = this.calculateDistanceFee(routeCalculation.totalDistance); // DEPRECATED - internal pricing system only
       const serviceFee = this.calculateServiceFee(input.serviceLevel);
       const vehicleFee = this.calculateVehicleFee(vehicleRecommendation);
       const propertyAccessFee = this.calculatePropertyAccessFee(input.pickup, input.dropoffs);
@@ -254,7 +254,7 @@ export class UnifiedPricingEngine {
     let currentLocation = pickup.coordinates;
     
     for (const dropoff of dropoffs) {
-      const distance = this.calculateDistanceBetweenPoints(currentLocation, {
+      const distance = this.calculateDistanceBetweenPoints(currentLocation, { // DEPRECATED - internal pricing system only
         lat: dropoff.coordinates.lat || 0,
         lng: dropoff.coordinates.lng || 0
       });
@@ -281,8 +281,9 @@ export class UnifiedPricingEngine {
 
   /**
    * Calculate distance between two points (simplified)
+   * @deprecated Internal use only - DEPRECATED for external use
    */
-  private calculateDistanceBetweenPoints(
+  private calculateDistanceBetweenPoints( // DEPRECATED - internal pricing system use only
     point1: { lat: number; lng: number },
     point2: { lat: number; lng: number }
   ): number {
@@ -349,7 +350,7 @@ export class UnifiedPricingEngine {
     }, 0);
   }
 
-  private calculateDistanceFee(distance: number): number {
+  private calculateDistanceFee(distance: number): number { // DEPRECATED - internal pricing system use only
     return Math.round(distance * this.pricingConfig!.config.baseRates.perKmGBP);
   }
 

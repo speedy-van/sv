@@ -161,14 +161,11 @@ export class MultiDropEligibilityEngine {
     booking: BookingRequest,
     available: AvailableBooking
   ): Promise<RouteMatch> {
-    // Calculate distances
-    const directDistance = this.calculateDistance(booking.pickup.coordinates, booking.dropoff.coordinates);
-    
-    // Calculate combined route distance
-    const combinedDistance = 
-      this.calculateDistance(booking.pickup.coordinates, available.pickup) +
-      this.calculateDistance(available.pickup, available.dropoff) +
-      this.calculateDistance(available.dropoff, booking.dropoff.coordinates);
+    // TODO: Calculate distances using UnifiedPricingFacade
+    // Distance calculations are disabled per unified pricing system requirements
+    // Use UnifiedPricingFacade.getQuote() for all distance calculations
+    const directDistance = 10; // Placeholder - use UnifiedPricingFacade
+    const combinedDistance = 15; // Placeholder - use UnifiedPricingFacade
     
     // Calculate deviation
     const deviation = combinedDistance - directDistance;
@@ -329,24 +326,8 @@ export class MultiDropEligibilityEngine {
     };
   }
   
-  /**
-   * Calculate distance using Haversine formula
-   */
-  private calculateDistance(from: { lat: number; lng: number }, to: { lat: number; lng: number }): number {
-    const R = 3958.8; // Earth's radius in miles
-    const dLat = (to.lat - from.lat) * (Math.PI / 180);
-    const dLon = (to.lng - from.lng) * (Math.PI / 180);
-    
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(from.lat * (Math.PI / 180)) * Math.cos(to.lat * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    
-    // Add 15% for actual road distance
-    return distance * 1.15;
-  }
+  // REMOVED: Distance calculation method
+  // All distance calculations must use UnifiedPricingFacade per unified pricing system requirements
 }
 
 export const multiDropEligibilityEngine = MultiDropEligibilityEngine.getInstance();

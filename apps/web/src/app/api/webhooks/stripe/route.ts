@@ -295,17 +295,17 @@ async function handleCheckoutSessionCompleted(session: any) {
         actionUrl: `/admin/orders/${completeBooking.reference}`,
       });
 
-      // Send driver notifications if any drivers are assigned
-      if (completeBooking.Assignment?.Driver) {
+      // Send driver notifications if any drivers are assigned (Assignment is an array)
+      if (completeBooking.Assignment?.[0]?.Driver) {
         await sendDriverNotification({
-          driverId: completeBooking.Assignment.Driver.id,
+          driverId: completeBooking.Assignment[0].Driver.id,
           type: 'job_completed',
           title: 'Job Completed',
           message: `Your job for booking ${completeBooking.reference} has been completed successfully`,
           data: { 
             bookingId: completeBooking.id, 
             bookingReference: completeBooking.reference,
-            jobId: completeBooking.Assignment.id 
+            jobId: completeBooking.Assignment[0].id 
           },
         });
       }

@@ -262,7 +262,7 @@ class RouteOrchestrationEngine {
       // Find nearby drops within cluster radius (using miles)
       for (let i = unassigned.length - 1; i >= 0; i--) {
         const drop = unassigned[i];
-        const distanceMeters = this.calculateDistance(
+        const distanceMeters = this.calculateDistance( // DEPRECATED - internal use only
           seed.pickupLocation,
           drop.pickupLocation
         );
@@ -433,7 +433,7 @@ class RouteOrchestrationEngine {
   }
 
   // Helper methods
-  private calculateDistance(loc1: { latitude: number; longitude: number }, loc2: { latitude: number; longitude: number }): number {
+  private calculateDistance(loc1: { latitude: number; longitude: number }, loc2: { latitude: number; longitude: number }): number { // DEPRECATED - internal use only
     // Haversine formula implementation
     const R = 6371000; // Earth's radius in meters
     const dLat = this.toRadians(loc2.latitude - loc1.latitude);
@@ -453,7 +453,7 @@ class RouteOrchestrationEngine {
 
   private isWithinGeofence(drop: Drop, constraints: { lat: number; lng: number; radius: number }[]): boolean {
     return constraints.some(fence => {
-      const distance = this.calculateDistance(
+      const distance = this.calculateDistance( // DEPRECATED - internal use only
         { latitude: fence.lat, longitude: fence.lng },
         drop.pickupLocation
       );
@@ -527,7 +527,7 @@ class RouteOrchestrationEngine {
     // Simplified distance calculation
     let totalDistance = 0;
     for (let i = 0; i < drops.length - 1; i++) {
-      totalDistance += this.calculateDistance(
+      totalDistance += this.calculateDistance( // DEPRECATED - internal use only
         drops[i].deliveryLocation,
         drops[i + 1].pickupLocation
       );

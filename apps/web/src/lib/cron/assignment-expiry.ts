@@ -187,17 +187,35 @@ async function checkAndExpireAssignments() {
             if (availableDrivers.length > 0) {
               const nextDriver = availableDrivers[0];
               
-              await prisma.assignment.create({
-                data: {
-                  id: `assign_${assignment.bookingId}_${nextDriver.id}_${Date.now()}`,
-                  bookingId: assignment.bookingId,
-                  driverId: nextDriver.id,
-                  status: 'invited',
-                  round: (assignment.round || 1) + 1,
-                  expiresAt: new Date(Date.now() + 30 * 60 * 1000),
-                  updatedAt: now
-                }
+              // ✅ Find existing assignment or create new one (bookingId is not unique)
+              const existingAssignment = await prisma.assignment.findFirst({
+                where: { bookingId: assignment.bookingId }
               });
+
+              if (existingAssignment) {
+                await prisma.assignment.update({
+                  where: { id: existingAssignment.id },
+                  data: {
+                    driverId: nextDriver.id,
+                    status: 'invited',
+                    round: (assignment.round || 1) + 1,
+                    expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+                    updatedAt: now
+                  }
+                });
+              } else {
+                await prisma.assignment.create({
+                  data: {
+                    id: `assign_${assignment.bookingId}_${nextDriver.id}_${Date.now()}`,
+                    bookingId: assignment.bookingId,
+                    driverId: nextDriver.id,
+                    status: 'invited',
+                    round: (assignment.round || 1) + 1,
+                    expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+                    updatedAt: now
+                  }
+                });
+              }
 
               await pusher.trigger(`driver-${nextDriver.id}`, 'route-matched', {
                 type: 'single-order',

@@ -119,13 +119,32 @@ function convertToCatalogItem(item: UKDatasetItem): CatalogItem {
 // In a real implementation, this would be loaded from the JSON file at build time or runtime
 export let COMPREHENSIVE_CATALOG: CatalogItem[] = [];
 
-// Initialize catalog on module load (server-side only)
+// ✅ Initialize catalog on server-side only (fs not available in browser)
 if (typeof window === 'undefined') {
   try {
     COMPREHENSIVE_CATALOG = loadUKDataset().map(convertToCatalogItem);
+    console.log('✅ Catalog loaded on server:', COMPREHENSIVE_CATALOG.length, 'items');
   } catch (error) {
     console.error('Failed to load catalog:', error);
     COMPREHENSIVE_CATALOG = [];
+  }
+}
+
+// Client-side function to load catalog via API
+export async function loadCatalogClientSide(): Promise<CatalogItem[]> {
+  if (typeof window === 'undefined') {
+    return COMPREHENSIVE_CATALOG;
+  }
+  
+  try {
+    const response = await fetch('/api/catalog/items');
+    if (!response.ok) throw new Error('Failed to fetch catalog');
+    
+    const data = await response.json();
+    return data.items || [];
+  } catch (error) {
+    console.error('Failed to load catalog on client:', error);
+    return [];
   }
 }
 

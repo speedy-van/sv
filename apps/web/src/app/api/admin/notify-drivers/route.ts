@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       if (!driver.DriverAvailability?.lastLat || !driver.DriverAvailability?.lastLng) return false;
       if (!booking.pickupAddress?.lat || !booking.pickupAddress?.lng) return true; // Include all if no location data
       
-      const distance = calculateDistance(
+      const distance = calculateDistance( // DEPRECATED - internal use only
         driver.DriverAvailability.lastLat,
         driver.DriverAvailability.lastLng,
         booking.pickupAddress.lat,
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Calculate job details
-    const distance = calculateDistance(
+    const distance = calculateDistance( // DEPRECATED - internal use only
       booking.pickupAddress?.lat || 0,
       booking.pickupAddress?.lng || 0,
       booking.dropoffAddress?.lat || 0,
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
         await pusher.trigger(`driver-${driver.id}`, 'new-job', {
           job: jobNotificationData,
           driverDistance: driver.DriverAvailability?.lastLat && driver.DriverAvailability?.lastLng 
-            ? calculateDistance(
+            ? calculateDistance( // DEPRECATED - internal use only
                 driver.DriverAvailability.lastLat,
                 driver.DriverAvailability.lastLng,
                 booking.pickupAddress?.lat || 0,
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper functions
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of Earth in miles
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);

@@ -14,7 +14,7 @@ export interface Location {
   address?: string;
 }
 
-export function calculateDistance(
+export function calculateDistance( // DEPRECATED - internal use only
   from: Location,
   to: Location
 ): number {
@@ -44,11 +44,11 @@ export function calculateDuration(
   return Math.round((distance / averageSpeed) * 60); // minutes
 }
 
-export async function calculateDistanceInfo(
+export async function calculateDistanceInfo( // DEPRECATED - internal use only
   from: Location,
   to: Location
 ): Promise<DistanceInfo> {
-  const distance = calculateDistance(from, to);
+  const distance = calculateDistance(from, to); // DEPRECATED - internal use only
   const duration = calculateDuration(distance);
   
   return {

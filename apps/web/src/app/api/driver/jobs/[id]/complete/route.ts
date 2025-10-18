@@ -19,9 +19,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const jobId = params.id;
+  const { id: jobId } = await params;
   try {
     const session = await getServerSession(authOptions);
     
@@ -266,11 +266,10 @@ export async function POST(
         baseAmountPence: breakdown.baseFare,
         surgeAmountPence: breakdown.perDropFee + breakdown.mileageFee,
         tipAmountPence: 0,
-        feeAmountPence: 0, // No platform fee - driver gets 100%
+        feeAmountPence: 0, // No platform fee - driver gets full calculated amount
         netAmountPence: breakdown.netEarnings,
         grossEarningsPence: breakdown.grossEarnings,
-        platformFeePence: 0, // No platform fee
-        cappedNetEarningsPence: breakdown.cappedNetEarnings,
+        platformFeePence: 0, // No platform fee or percentage deduction
         rawNetEarningsPence: breakdown.netEarnings,
         currency: 'gbp',
         calculatedAt: completedAt,
@@ -286,7 +285,7 @@ export async function POST(
     // Prepare response with detailed breakdown for mobile apps
     const pricingResponse = {
       netDriverEarnings: netEarningsPence,
-      platformFee: 0, // No platform fee - driver gets 100%
+      platformFee: 0, // No platform fee - driver gets full calculated earnings
       breakdown: {
         baseFare: breakdown.baseFare,
         perDropFee: breakdown.perDropFee,
@@ -299,8 +298,6 @@ export async function POST(
         grossEarnings: breakdown.grossEarnings,
         helperShare: breakdown.helperShare,
         netEarnings: breakdown.netEarnings,
-        cappedNetEarnings: breakdown.cappedNetEarnings,
-        capApplied: breakdown.capApplied,
       },
       // Legacy compatibility for older app versions
       basePay: breakdown.baseFare,

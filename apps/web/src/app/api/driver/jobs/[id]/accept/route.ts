@@ -9,10 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('🚗 Driver Job Accept API - Starting request for job:', params.id);
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
+    console.log('🚗 Driver Job Accept API - Starting request for job:', id);
     
     // Try Bearer token authentication first (for mobile app)
     const bearerAuth = await authenticateBearerToken(request);
@@ -70,7 +72,7 @@ export async function POST(
       );
     }
 
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     // Check if the booking exists and is available
     const booking = await prisma.booking.findUnique({
@@ -143,17 +145,33 @@ export async function POST(
           }
         });
       } else {
-        // Create new assignment
-        await tx.assignment.create({
-          data: {
-            id: `assign_${bookingId}_${driver.id}`,
-            driverId: driver.id,
-            bookingId: bookingId,
-            status: 'accepted',
-            claimedAt: new Date(),
-            updatedAt: new Date()
-          }
+        // Find existing assignment or create new one
+        const existingAssignment = await tx.assignment.findFirst({
+          where: { bookingId: bookingId }
         });
+        
+        if (existingAssignment) {
+          await tx.assignment.update({
+            where: { id: existingAssignment.id },
+            data: {
+              driverId: driver.id,
+              status: 'accepted',
+              claimedAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+        } else {
+          await tx.assignment.create({
+            data: {
+              id: `assign_${bookingId}_${driver.id}_${Date.now()}`,
+              driverId: driver.id,
+              bookingId: bookingId,
+              status: 'accepted',
+              claimedAt: new Date(),
+              updatedAt: new Date()
+            }
+          });
+        }
       }
 
       // Update the booking to assign it to the driver

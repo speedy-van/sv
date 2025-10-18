@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== 'admin') {
@@ -16,7 +16,7 @@ export async function POST(
   try {
     // Mock report execution (in real implementation, execute the report query)
     const executionResult = {
-      reportId: params.id,
+      reportId: (await params).id,
       status: 'completed',
       executionTime: Math.floor(Math.random() * 5000) + 1000, // 1-6 seconds
       rowsProcessed: Math.floor(Math.random() * 10000) + 1000,
@@ -25,7 +25,7 @@ export async function POST(
       executedBy: session.user.id,
     };
 
-    await logAudit(session.user.id, 'run_report', params.id, { targetType: 'analytics_report', before: null, after: { reportId: params.id, executionResult } });
+    await logAudit(session.user.id, 'run_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id, executionResult } });
 
     return Response.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,7 +24,7 @@ export async function POST(
       );
     }
 
-    const driverId = params.id;
+    const { id: driverId } = await params;
     const body = await request.json();
     const { reason, type = 'all' } = body; // type can be 'all', 'orders', or 'routes'
 
@@ -81,9 +82,10 @@ export async function POST(
             });
 
             // Cancel assignment if exists
-            if (booking.Assignment) {
+            const activeAssignment = getActiveAssignment(booking.Assignment);
+            if (activeAssignment) {
               await tx.assignment.update({
-                where: { id: booking.Assignment.id },
+                where: { id: activeAssignment.id },
                 data: {
                   status: 'cancelled',
                   updatedAt: new Date()
@@ -141,13 +143,14 @@ export async function POST(
                 });
 
                 // Cancel assignment
-                const assignment = await tx.assignment.findUnique({
-                  where: { bookingId: booking.id }
+                const assignment = await tx.assignment.findFirst({
+                  where: { bookingId: booking.id },
+                  orderBy: { createdAt: 'desc' }
                 });
 
                 if (assignment) {
                   await tx.assignment.update({
-                    where: { bookingId: booking.id },
+                    where: { id: assignment.id },
                     data: {
                       status: 'cancelled',
                       updatedAt: new Date()

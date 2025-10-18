@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,10 @@ export async function GET(
     let routeProgress = 0;
     let eta = null;
     let currentLocation = null;
+    
+    // Get active assignment and last event (needed for multiple places)
+    const activeAssignment = getActiveAssignment(booking.Assignment);
+    const lastEvent = activeAssignment?.JobEvent?.[0];
 
     if (trackingPings.length > 0) {
       const latestPing = trackingPings[0];
@@ -86,7 +91,6 @@ export async function GET(
       };
 
       // Calculate route progress based on booking status and job events
-      const lastEvent = booking.Assignment?.JobEvent[0];
       if (lastEvent) {
         switch (lastEvent.step) {
           case 'navigate_to_pickup':
@@ -158,7 +162,7 @@ export async function GET(
         routeProgress,
         currentLocation,
         eta,
-        lastEvent: booking.Assignment?.JobEvent[0] || null,
+        lastEvent: lastEvent || null,
         trackingPings: trackingPings.map(ping => ({
           id: ping.id,
           lat: ping.lat,

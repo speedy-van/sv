@@ -105,13 +105,10 @@ export interface DriverEarningsBreakdown {
   subtotal: number;              // Before bonuses/penalties
   grossEarnings: number;         // After bonuses/penalties
   helperShare: number;           // Amount for helper
-  netEarnings: number;           // Final driver payout
-  cappedNetEarnings: number;     // After applying cap
+  netEarnings: number;           // Final driver payout (no percentage cap applied)
   
   // Metadata
-  capApplied: boolean;
   floorApplied: boolean;
-  earningsCap: number;
   earningsFloor: number;
 }
 
@@ -163,8 +160,7 @@ export interface DriverEarningsConfig {
   lateDeliveryPenaltyPence: number;
   lowRatingPenaltyPence: number;
   
-  // Caps and floors
-  maxEarningsPercentOfBooking: number; // e.g., 100% = 1.0 (driver gets full amount)
+  // Earnings floor only (no cap based on customer payment)
   minEarningsPerJob: number;           // Minimum payout in pence
   
   // Helper share
@@ -210,7 +206,7 @@ const DEFAULT_CONFIG: DriverEarningsConfig = {
   lateDeliveryPenaltyPence: 1000,  // £10.00
   lowRatingPenaltyPence: 500,      // £5.00
   
-  maxEarningsPercentOfBooking: 0.70,  // 70% - ensures platform profitability
+  // No percentage-based cap - driver gets calculated earnings
   minEarningsPerJob: 2000,            // £20.00 minimum
   
   defaultHelperSharePercentage: 0.20, // 20% for helper
@@ -321,28 +317,16 @@ export class DriverEarningsService {
         : 0;
       const helperShare = Math.round(grossEarnings * helperSharePercentage);
       
-      // Calculate net earnings (driver gets full amount minus helper share only)
+      // Calculate net earnings (driver gets full calculated amount minus helper share only)
+      // NO PERCENTAGE CAP - driver earns based on work, not customer payment
       let netEarnings = grossEarnings - helperShare;
       
-      // Apply earnings cap (percentage of customer payment)
-      const earningsCap = Math.round(
-        input.customerPaymentPence * this.config.maxEarningsPercentOfBooking
-      );
-      const capApplied = netEarnings > earningsCap;
-      const cappedNetEarnings = Math.min(netEarnings, earningsCap);
-      
-      // Apply earnings floor
+      // Apply earnings floor only (minimum guarantee)
       const earningsFloor = this.config.minEarningsPerJob;
-      const floorApplied = cappedNetEarnings < earningsFloor;
+      const floorApplied = netEarnings < earningsFloor;
       if (floorApplied) {
         netEarnings = earningsFloor;
         warnings.push(`Earnings below minimum (£${earningsFloor / 100}), floor applied`);
-      } else {
-        netEarnings = cappedNetEarnings;
-      }
-      
-      if (capApplied) {
-        warnings.push(`Earnings capped at ${this.config.maxEarningsPercentOfBooking * 100}% of booking value`);
       }
       
       // FIXED: Daily Cap Enforcement (UK Compliance - £500/day)
@@ -401,10 +385,7 @@ export class DriverEarningsService {
         grossEarnings,
         helperShare,
         netEarnings,
-        cappedNetEarnings,
-        capApplied,
         floorApplied,
-        earningsCap,
         earningsFloor,
       };
       
@@ -454,11 +435,10 @@ export class DriverEarningsService {
           result.breakdown.subtotal - result.breakdown.baseFare
         ),
         tipAmountPence: 0, // Tips handled separately
-        feeAmountPence: 0, // No platform fee - driver gets full amount
+        feeAmountPence: 0, // No platform fee - driver gets full calculated amount
         netAmountPence: result.breakdown.netEarnings,
         grossEarningsPence: result.breakdown.grossEarnings,
-        platformFeePence: 0, // No platform fee
-        cappedNetEarningsPence: result.breakdown.cappedNetEarnings,
+        platformFeePence: 0, // No platform fee or percentage deduction
         rawNetEarningsPence: result.breakdown.netEarnings,
         currency: 'gbp',
         calculatedAt: new Date(),
@@ -623,8 +603,8 @@ export class DriverEarningsService {
       return true;
     }
     
-    // Require approval if cap was applied and difference is significant
-    if (breakdown.capApplied && (breakdown.grossEarnings - breakdown.cappedNetEarnings) > 5000) {
+    // Require approval if earnings are unusually high (over £200)
+    if (breakdown.netEarnings > 20000) { // £200
       return true;
     }
     
@@ -735,7 +715,7 @@ export async function calculateRouteEarnings(
       onTimeDelivery: true, // Assume on-time for estimation
     });
     
-    totalEarnings += earnings.breakdown.cappedNetEarnings;
+    totalEarnings += earnings.breakdown.netEarnings;
     breakdowns.push(earnings.breakdown);
   }
   

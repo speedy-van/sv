@@ -6,9 +6,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
+    
     const session = await auth();
     assertRole(session!, ['customer']);
     const customerId = session.user.id;
@@ -16,7 +19,7 @@ export async function GET(
     // Get the booking/invoice
     const booking = await prisma.booking.findFirst({
       where: {
-        id: params.id,
+        id: id,
         customerId,
       },
       select: {
