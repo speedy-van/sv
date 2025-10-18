@@ -36,7 +36,8 @@ export default function CustomerTrackingIntegration({
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
-  const [distanceToDestination, setDistanceToDestination] = useState<number | null>(null);
+  // Distance calculation removed - use UnifiedPricingFacade instead
+  // const [distanceToDestination, setDistanceToDestination] = useState<number | null>(null);
 
   // Request location permissions
   useEffect(() => {
@@ -81,8 +82,8 @@ export default function CustomerTrackingIntegration({
           setLocation(newLocation);
           onLocationUpdate(newLocation.coords.latitude, newLocation.coords.longitude);
           
-          // Calculate distance to destination
-          calculateDistanceToDestination(newLocation.coords.latitude, newLocation.coords.longitude);
+          // Distance calculation removed - use UnifiedPricingFacade instead
+          // calculateDistanceToDestination(newLocation.coords.latitude, newLocation.coords.longitude);
         }
       );
 
@@ -98,34 +99,18 @@ export default function CustomerTrackingIntegration({
     setIsTracking(false);
   };
 
-  // Calculate distance to destination
-  const calculateDistanceToDestination = (lat: number, lng: number) => {
-    // This would typically use a geocoding service to get coordinates from the address
-    // For now, we'll use a mock calculation
-    const destinationLat = 55.8642; // Mock Glasgow coordinates
-    const destinationLng = -4.2518;
-    
-    const distance = calculateDistance(lat, lng, destinationLat, destinationLng);
-    setDistanceToDestination(distance);
-
-    // Check if arrived (within 100 meters)
-    if (distance <= 0.1 && !hasArrived) {
-      setHasArrived(true);
-      onArrivalNotification(drop.id);
-    }
-  };
-
-  // Calculate distance between two points (Haversine formula)
-  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+  // DEPRECATED: Manual distance calculation removed per unified pricing system requirements
+  // TODO: Integrate UnifiedPricingFacade for distance/pricing calculations
+  // 
+  // Previous implementation used Haversine formula which is now blocked.
+  // Use UnifiedPricingFacade.getQuote() for all distance and pricing needs.
+  //
+  // Example integration:
+  // import { UnifiedPricingFacade } from '@speedy-van/unified-pricing';
+  // const pricingDetails = await UnifiedPricingFacade.getQuote({
+  //   origin: { lat, lng },
+  //   destination: { lat: destinationLat, lng: destinationLng }
+  // });
 
   const handleStartNavigation = () => {
     Alert.alert(
@@ -195,17 +180,8 @@ export default function CustomerTrackingIntegration({
         <Text style={styles.customerName}>{drop.customerName}</Text>
         <Text style={styles.address}>{drop.deliveryAddress}</Text>
         
-        {distanceToDestination !== null && (
-          <View style={styles.distanceInfo}>
-            <Ionicons name="navigate" size={16} color="#6B7280" />
-            <Text style={styles.distanceText}>
-              {distanceToDestination < 1 
-                ? `${Math.round(distanceToDestination * 1000)}m away`
-                : `${distanceToDestination.toFixed(1)}km away`
-              }
-            </Text>
-          </View>
-        )}
+        {/* Distance display removed - integrate UnifiedPricingFacade for distance info */}
+        {/* TODO: Fetch distance from UnifiedPricingFacade and display here */}
 
         {hasArrived && (
           <View style={styles.arrivedIndicator}>
