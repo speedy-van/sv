@@ -22,7 +22,7 @@ export async function GET(
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             name: true,
             email: true,
@@ -51,22 +51,22 @@ export async function GET(
     const routes = await prisma.route.findMany({
       where: {
         driverId,
-        status: 'COMPLETED',
-        ...(startDate && { completedAt: { gte: startDate } }),
+        status: 'completed',
+        ...(startDate && { updatedAt: { gte: startDate } }),
       },
       include: {
         drops: {
           include: {
-            booking: {
+            Booking: {
               select: {
-                totalPrice: true,
+                totalGBP: true,
               },
             },
           },
         },
       },
       orderBy: {
-        completedAt: 'desc',
+        updatedAt: 'desc',
       },
     });
 
@@ -74,7 +74,7 @@ export async function GET(
     const bookings = await prisma.booking.findMany({
       where: {
         driverId,
-        status: 'COMPLETED',
+        status: 'completed',
         routeId: null,
         ...(startDate && { updatedAt: { gte: startDate } }),
       },
@@ -83,7 +83,7 @@ export async function GET(
       },
     });
 
-    const commissionRate = driver.commissionRate || 0.15; // Default 15%
+    const commissionRate = 0.15; // Default 15% commission rate
 
     // Process earnings
     const earnings: any[] = [];
@@ -93,7 +93,7 @@ export async function GET(
     // Process routes
     routes.forEach((route) => {
       const amount = route.drops.reduce(
-        (sum, drop) => sum + (drop.booking.totalPrice || 0),
+        (sum: number, drop: any) => sum + (drop.Booking?.totalGBP ? drop.Booking.totalGBP / 100 : 0),
         0
       );
       const commission = amount * commissionRate;
@@ -105,18 +105,18 @@ export async function GET(
       earnings.push({
         id: route.id,
         type: 'route',
-        reference: route.routeNumber,
-        date: route.completedAt || route.createdAt,
+        reference: route.id,
+        date: route.updatedAt,
         amount,
         commission,
         netEarning,
-        status: 'COMPLETED',
+        status: 'completed',
       });
     });
 
     // Process bookings
     bookings.forEach((booking) => {
-      const amount = booking.totalPrice;
+      const amount = booking.totalGBP / 100; // Convert pence to pounds
       const commission = amount * commissionRate;
       const netEarning = amount - commission;
 
@@ -126,12 +126,12 @@ export async function GET(
       earnings.push({
         id: booking.id,
         type: 'booking',
-        reference: booking.bookingReference,
+        reference: booking.reference,
         date: booking.updatedAt,
         amount,
         commission,
         netEarning,
-        status: 'COMPLETED',
+        status: 'completed',
       });
     });
 

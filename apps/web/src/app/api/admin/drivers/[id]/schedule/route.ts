@@ -20,7 +20,7 @@ export async function GET(
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
       include: {
-        user: {
+        User: {
           select: {
             name: true,
             email: true,
@@ -47,9 +47,9 @@ export async function GET(
       include: {
         drops: {
           include: {
-            booking: {
+            Booking: {
               select: {
-                totalPrice: true,
+                totalGBP: true,
               },
             },
           },
@@ -67,7 +67,7 @@ export async function GET(
         routeId: null, // Only single jobs (not part of a route)
       },
       orderBy: {
-        pickupTime: 'desc',
+        scheduledAt: 'desc',
       },
     });
 
@@ -78,22 +78,22 @@ export async function GET(
 
     routes.forEach((route) => {
       const totalValue = route.drops.reduce(
-        (sum, drop) => sum + (drop.booking.totalPrice || 0),
+        (sum: number, drop: any) => sum + (drop.Booking?.totalGBP ? drop.Booking.totalGBP / 100 : 0),
         0
       );
 
       const item = {
         id: route.id,
         type: 'route',
-        reference: route.routeNumber,
+        reference: route.id,
         status: route.status,
         startTime: route.createdAt,
-        endTime: route.completedAt,
+        endTime: route.endTime,
         drops: route.drops.length,
         value: totalValue,
       };
 
-      if (route.status === 'COMPLETED') {
+      if (route.status === 'completed') {
         completed.push(item);
       } else if (route.createdAt >= todayStart && route.createdAt < todayEnd) {
         today.push(item);
@@ -109,20 +109,20 @@ export async function GET(
       const item = {
         id: booking.id,
         type: 'booking',
-        reference: booking.bookingReference,
+        reference: booking.reference,
         status: booking.status,
-        startTime: booking.pickupTime,
+        startTime: booking.scheduledAt,
         endTime: booking.status === 'COMPLETED' ? booking.updatedAt : null,
-        value: booking.totalPrice,
-        pickupAddress: booking.pickupAddress,
-        dropoffAddress: booking.dropoffAddress,
+        value: booking.totalGBP / 100,
+        pickupAddress: 'N/A',
+        dropoffAddress: 'N/A',
       };
 
-      if (booking.status === 'COMPLETED') {
+      if (booking.status === 'completed') {
         completed.push(item);
-      } else if (booking.pickupTime >= todayStart && booking.pickupTime < todayEnd) {
+      } else if (booking.scheduledAt >= todayStart && booking.scheduledAt < todayEnd) {
         today.push(item);
-      } else if (booking.pickupTime >= todayEnd) {
+      } else if (booking.scheduledAt >= todayEnd) {
         upcoming.push(item);
       } else {
         today.push(item);

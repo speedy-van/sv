@@ -69,11 +69,11 @@ export async function GET(request: NextRequest) {
 
     // Calculate average drops per route
     const avgAiDrops = aiRoutes.length > 0
-      ? aiRoutes.reduce((sum, r) => sum + (r.drops?.length || 0), 0) / aiRoutes.length
+      ? aiRoutes.reduce((sum: number, r: any) => sum + (r.drops?.length || 0), 0) / aiRoutes.length
       : 0;
 
     const avgManualDrops = manualRoutes.length > 0
-      ? manualRoutes.reduce((sum, r) => sum + (r.drops?.length || 0), 0) / manualRoutes.length
+      ? manualRoutes.reduce((sum: number, r: any) => sum + (r.drops?.length || 0), 0) / manualRoutes.length
       : 0;
 
     // Calculate estimated time savings
@@ -94,11 +94,11 @@ export async function GET(request: NextRequest) {
       const nextDate = new Date(date);
       nextDate.setDate(nextDate.getDate() + 1);
 
-      const dayAiRoutes = aiRoutes.filter(r => 
+      const dayAiRoutes = aiRoutes.filter((r: any) => 
         r.createdAt >= date && r.createdAt < nextDate
       );
 
-      const dayManualRoutes = manualRoutes.filter(r =>
+      const dayManualRoutes = manualRoutes.filter((r: any) =>
         r.createdAt >= date && r.createdAt < nextDate
       );
 
@@ -107,10 +107,10 @@ export async function GET(request: NextRequest) {
         aiRoutes: dayAiRoutes.length,
         manualRoutes: dayManualRoutes.length,
         aiEfficiency: dayAiRoutes.length > 0
-          ? dayAiRoutes.reduce((sum, r) => {
+          ? dayAiRoutes.reduce((sum: number, r: any) => {
               const drops = r.drops || [];
               const avgScore = drops.length > 0
-                ? drops.reduce((s, d) => s + (d.optimizationScore || 0), 0) / drops.length
+                ? drops.reduce((s: number, d: any) => s + (d.optimizationScore || 0), 0) / drops.length
                 : 0;
               return sum + avgScore;
             }, 0) / dayAiRoutes.length
@@ -120,18 +120,18 @@ export async function GET(request: NextRequest) {
 
     // Get top performing AI routes
     const topAiRoutes = aiRoutes
-      .filter(r => r.status === 'COMPLETED')
-      .map(r => ({
+      .filter((r: any) => r.status === 'COMPLETED')
+      .map((r: any) => ({
         id: r.id,
         routeNumber: r.routeNumber,
         drops: r.drops?.length || 0,
         efficiency: r.drops && r.drops.length > 0
-          ? r.drops.reduce((sum, d) => sum + (d.optimizationScore || 0), 0) / r.drops.length
+          ? r.drops.reduce((sum: number, d: any) => sum + (d.optimizationScore || 0), 0) / r.drops.length
           : 0,
         driver: r.driver?.user?.name || 'Unassigned',
         completedAt: r.completedAt,
       }))
-      .sort((a, b) => b.efficiency - a.efficiency)
+      .sort((a: any, b: any) => b.efficiency - a.efficiency)
       .slice(0, 10);
 
     return NextResponse.json({
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
           manualRoutes: manualRoutes.length,
           aiSuccessRate: Math.round(successRate * 10) / 10,
           manualSuccessRate: manualRoutes.length > 0
-            ? Math.round((manualRoutes.filter(r => r.status === 'COMPLETED').length / manualRoutes.length) * 1000) / 10
+            ? Math.round((manualRoutes.filter((r: any) => r.status === 'COMPLETED').length / manualRoutes.length) * 1000) / 10
             : 0,
           efficiencyImprovement: avgManualDrops > 0
             ? Math.round(((avgAiDrops - avgManualDrops) / avgManualDrops) * 1000) / 10
