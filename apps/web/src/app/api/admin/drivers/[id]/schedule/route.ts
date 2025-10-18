@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@speedy-van/shared/prisma';
+import { withPrisma } from '@/lib/prisma';
 
-export async function GET(
+export const GET = withPrisma(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params }: { params: { id: string } },
+  prisma
+) => {
   try {
     const session = await getServerSession(authOptions);
 
@@ -147,5 +148,5 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
