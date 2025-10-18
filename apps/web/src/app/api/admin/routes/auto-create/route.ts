@@ -114,7 +114,10 @@ export async function POST(request: NextRequest) {
     const createdRoutes = [];
     for (let i = 0; i < routes.length; i++) {
       const dropGroup = routes[i];
-      const totalOutcome = dropGroup.reduce((sum: number, d: any) => sum + Number(d.quotedPrice || 0), 0);
+      const totalOutcome = dropGroup.reduce((sum: number, d: any) => {
+        const price = Number(d.quotedPrice || 0);
+        return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+      }, 0);
       const totalWeight = dropGroup.reduce((sum: number, d: any) => sum + (d.weight || 0), 0);
       const totalVolume = dropGroup.reduce((sum: number, d: any) => sum + (d.volume || 0), 0);
       const assignedDriver = autoAssignDrivers && availableDrivers[i] ? availableDrivers[i] : null;

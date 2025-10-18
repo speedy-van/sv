@@ -2768,7 +2768,10 @@ class RouteOrchestrationScheduler {
           optimizedSequence,
           totalDistance: this.calculateRouteDistance(routeDrops),
           estimatedDuration: routeDrops.reduce((sum, drop) => sum + (Math.ceil((drop.timeWindowEnd.getTime() - drop.timeWindowStart.getTime()) / (1000 * 60)) || 30), 0),
-          totalValue: routeDrops.reduce((sum, drop) => sum + (Number(drop.quotedPrice) || 0), 0),
+          totalValue: routeDrops.reduce((sum, drop) => {
+            const price = Number(drop.quotedPrice || 0);
+            return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+          }, 0),
           serviceTier,
           timeWindowStart: this.getEarliestTimeWindow(routeDrops),
           timeWindowEnd: this.getLatestTimeWindow(routeDrops),

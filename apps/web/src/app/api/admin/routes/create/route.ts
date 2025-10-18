@@ -81,7 +81,10 @@ export async function POST(request: NextRequest) {
     console.log(`📦 [Create Route] Found ${bookings.length} bookings to assign to route`);
 
     // Calculate simple route metrics from bookings (no complex pricing needed)
-    const totalValue = bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0);
+    const totalValue = bookings.reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0);
     
     // Estimate distance based on bookings (8-10 miles per drop average)
     const estimatedDistancePerDrop = 8.5; // miles

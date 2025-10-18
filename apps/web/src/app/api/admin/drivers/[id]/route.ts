@@ -136,7 +136,10 @@ export async function GET(
     const onTimeJobs =
       driver.Booking?.filter(b => b.status === 'COMPLETED').length || 0; // Simplified - no completedAt field
     const totalEarnings =
-      driver.Booking?.reduce((sum, b) => sum + (b.totalGBP || 0), 0) || 0;
+      driver.Booking?.reduce((sum, b) => {
+        const value = Number(b.totalGBP || 0);
+        return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+      }, 0) || 0;
 
     const avgRating =
       driver.DriverRating.length > 0

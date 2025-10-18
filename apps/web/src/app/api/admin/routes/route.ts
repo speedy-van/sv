@@ -408,8 +408,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate route metrics from bookings
-    const totalOutcome = bookings.reduce((sum, b) => sum + Number(b.totalGBP), 0);
+    // Calculate route metrics from bookings (with validation)
+    const totalOutcome = bookings.reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0);
 
     // Calculate total distance from bookings (baseDistanceMiles)
     const totalDistanceMiles = bookings.reduce((sum, b) => sum + (Number(b.baseDistanceMiles) || 0), 0);

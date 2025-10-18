@@ -148,7 +148,10 @@ export async function GET(request: NextRequest) {
       const onTimeJobs =
         driver.Booking?.filter(b => b.status === 'COMPLETED').length || 0; // Simplified - no completedAt field
       const totalEarnings =
-        driver.Booking?.reduce((sum, b) => sum + (b.totalGBP || 0), 0) || 0;
+        driver.Booking?.reduce((sum, b) => {
+          const value = Number(b.totalGBP || 0);
+          return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+        }, 0) || 0;
 
       // Calculate performance metrics
       const acceptanceRate =

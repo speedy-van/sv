@@ -120,7 +120,10 @@ export async function PUT(
       data: {
         optimizedDistanceKm: (routeAnalysis as any).route.distance * 1.609,
         estimatedDuration: Math.round((routeAnalysis as any).route.totalTime),
-        totalOutcome: bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0),
+        totalOutcome: bookings.reduce((sum, b) => {
+          const value = Number(b.totalGBP || 0);
+          return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+        }, 0),
         updatedAt: new Date(),
       },
     });

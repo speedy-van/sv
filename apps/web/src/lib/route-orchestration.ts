@@ -414,7 +414,10 @@ class RouteOrchestrationEngine {
   private calculateRouteMetrics(routes: RouteProposal[], originalDrops: Drop[]): RouteMetrics {
     const totalDrops = originalDrops.length;
     const assignedDrops = routes.flatMap(r => r.drops).length;
-    const totalValue = routes.reduce((sum, r) => sum + r.totalValue, 0);
+    const totalValue = routes.reduce((sum, r) => {
+      const value = Number(r.totalValue || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0);
     const totalDuration = routes.reduce((sum, r) => sum + r.estimatedDuration, 0);
     
     return {

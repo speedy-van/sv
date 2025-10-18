@@ -154,7 +154,10 @@ class AutoRouteScheduler {
         const assignedDriver = i < availableDrivers.length ? availableDrivers[i] : null;
 
         try {
-          const totalOutcome = dropGroup.reduce((sum, d) => sum + Number(d.quotedPrice || 0), 0);
+          const totalOutcome = dropGroup.reduce((sum, d) => {
+            const price = Number(d.quotedPrice || 0);
+            return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+          }, 0);
           const totalWeight = dropGroup.reduce((sum, d) => sum + (d.weight || 0), 0);
           const totalVolume = dropGroup.reduce((sum, d) => sum + (d.volume || 0), 0);
 

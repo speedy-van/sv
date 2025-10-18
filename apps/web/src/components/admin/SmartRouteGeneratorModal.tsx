@@ -402,11 +402,17 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     );
   };
 
-  // Calculate summary stats
+  // Calculate summary stats (with validation)
   const totalPendingVolume = pendingDrops.reduce((sum, drop) => sum + drop.volume, 0);
-  const totalPendingValue = pendingDrops.reduce((sum, drop) => sum + drop.quotedPrice, 0);
+  const totalPendingValue = pendingDrops.reduce((sum, drop) => {
+    const price = Number(drop.quotedPrice || 0);
+    return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+  }, 0);
   const onlineDrivers = availableDrivers.filter(d => d.DriverAvailability?.status === 'online' || d.isAvailable).length;
-  const totalPendingRoutesValue = pendingRoutes.reduce((sum, route) => sum + (route.totalOutcome || 0), 0);
+  const totalPendingRoutesValue = pendingRoutes.reduce((sum, route) => {
+    const value = Number(route.totalOutcome || 0);
+    return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+  }, 0);
   const totalPendingRoutesDrops = pendingRoutes.reduce((sum, route) => sum + (route.totalDrops || 0), 0);
 
   return (

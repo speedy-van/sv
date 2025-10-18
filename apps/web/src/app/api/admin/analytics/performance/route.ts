@@ -35,12 +35,21 @@ export async function GET(request: NextRequest) {
     const singleOrders = bookings.filter(b => b.orderType === 'single');
     const multiDropOrders = bookings.filter(b => b.orderType === 'multi-drop');
 
-    // Calculate statistics
+    // Calculate statistics (with validation)
     const totalOrders = bookings.length;
-    const totalRevenue = bookings.reduce((sum, b) => sum + b.totalGBP, 0) / 100;
+    const totalRevenue = bookings.reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0) / 100;
 
-    const singleOrderRevenue = singleOrders.reduce((sum, b) => sum + b.totalGBP, 0) / 100;
-    const multiDropRevenue = multiDropOrders.reduce((sum, b) => sum + b.totalGBP, 0) / 100;
+    const singleOrderRevenue = singleOrders.reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0) / 100;
+    const multiDropRevenue = multiDropOrders.reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0) / 100;
 
     const totalSavings = multiDropOrders
       .filter(b => b.potentialSavings)
@@ -108,7 +117,10 @@ export async function GET(request: NextRequest) {
         orders: dayBookings.length,
         routes: dayRoutes.length,
         multiDropOrders: dayBookings.filter(b => b.orderType === 'multi-drop').length,
-        revenue: dayBookings.reduce((sum, b) => sum + b.totalGBP, 0) / 100,
+        revenue: dayBookings.reduce((sum, b) => {
+          const value = Number(b.totalGBP || 0);
+          return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+        }, 0) / 100,
         averageStops: dayRoutes.length > 0
           ? dayRoutes.reduce((sum, r) => sum + r.Booking.length, 0) / dayRoutes.length
           : 0,
