@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 interface Drop {
   id: string;
@@ -67,7 +67,7 @@ export default function RouteDetailsPage() {
       setRoute(data);
     } catch (error) {
       console.error('Error loading route details:', error);
-      toast.error('Failed to load route details');
+      console.error('Failed to load route details');
     } finally {
       setLoading(false);
     }

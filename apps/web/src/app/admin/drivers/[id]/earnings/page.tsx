@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 interface EarningItem {
   id: string;
@@ -68,7 +68,7 @@ export default function DriverEarningsPage() {
       setEarnings(data);
     } catch (error) {
       console.error('Error loading earnings:', error);
-      toast.error('Failed to load driver earnings');
+      console.error('Failed to load driver earnings');
     } finally {
       setLoading(false);
     }

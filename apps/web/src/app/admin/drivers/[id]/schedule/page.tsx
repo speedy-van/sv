@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 interface ScheduleItem {
   id: string;
@@ -58,7 +58,7 @@ export default function DriverSchedulePage() {
       setSchedule(data);
     } catch (error) {
       console.error('Error loading schedule:', error);
-      toast.error('Failed to load driver schedule');
+      console.error('Failed to load driver schedule');
     } finally {
       setLoading(false);
     }
