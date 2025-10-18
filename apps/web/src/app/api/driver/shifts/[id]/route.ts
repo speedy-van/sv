@@ -6,8 +6,11 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // ✅ Await params first (Next.js 15 requirement)
+  const { id } = await params;
+  
   const authResult = await requireDriver(request);
   if (authResult instanceof NextResponse) {
     return authResult;
@@ -25,7 +28,7 @@ export async function PUT(
       where: { userId },
       include: {
         DriverShift: {
-          where: { id: params.id },
+          where: { id: id },
         },
       },
     });
@@ -94,7 +97,7 @@ export async function PUT(
     }
 
     const shift = await prisma.driverShift.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     });
 
@@ -113,8 +116,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // ✅ Await params first (Next.js 15 requirement)
+  const { id } = await params;
+  
   const authResult = await requireDriver(request);
   if (authResult instanceof NextResponse) {
     return authResult;
@@ -129,7 +135,7 @@ export async function DELETE(
       where: { userId },
       include: {
         DriverShift: {
-          where: { id: params.id },
+          where: { id: id },
         },
       },
     });
@@ -140,7 +146,7 @@ export async function DELETE(
 
     // Soft delete by setting isActive to false
     await prisma.driverShift.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isActive: false },
     });
 

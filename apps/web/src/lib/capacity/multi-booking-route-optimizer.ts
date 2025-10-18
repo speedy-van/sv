@@ -377,7 +377,7 @@ export async function validateDailyCapAndRequireApproval(
       const pricingResponse = await driverEarningsService.calculateEarnings(pricingRequest);
       route.pricingPreview = pricingResponse;
 
-      const netPence = pricingResponse.breakdown.cappedNetEarnings;
+      const netPence = pricingResponse.breakdown.netEarnings;
       route.estimatedDriverPay_pence = netPence;
       route.requiresAdminApproval = pricingResponse.requiresAdminApproval;
       route.status = pricingResponse.requiresAdminApproval ? 'pending_review' : 'approved';
@@ -606,7 +606,7 @@ async function buildMultiBookingRoute(
 /**
  * Calculate distance between two locations (haversine formula)
  */
-export function calculateDistance(
+export function calculateDistance( // DEPRECATED - internal use only
   loc1: Location,
   loc2: Location
 ): number {

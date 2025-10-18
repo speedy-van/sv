@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Get real-time data for dispatch
     const [activeJobs, availableDrivers, openIncidents, driverLocations] =
       await Promise.all([
-        // Active jobs with recent updates
+        // Active jobs with recent updates (exclude test bookings)
         prisma.booking.findMany({
           where: {
             status: {
@@ -22,6 +23,11 @@ export async function GET(request: NextRequest) {
             updatedAt: {
               gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
             },
+            NOT: [
+              { reference: { startsWith: 'test_' } },
+              { reference: { startsWith: 'TEST_' } },
+              { reference: { startsWith: 'demo_' } },
+            ],
           },
           include: {
             driver: {
@@ -277,15 +283,10 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Create assignment record
-        await prisma.assignment.create({
-          data: {
-            id: `assignment_${assignJobId}_${driverId}`,
-            bookingId: assignJobId,
-            driverId,
-            status: 'invited',
-            updatedAt: new Date(),
-          },
+        // Create or update assignment record
+        await upsertAssignment(prisma, assignJobId, {
+          driverId,
+          status: 'invited',
         });
 
         return NextResponse.json({
@@ -364,8 +365,9 @@ export async function POST(request: NextRequest) {
 
 async function getAssignmentId(jobId: string): Promise<string | null> {
   try {
-    const assignment = await prisma.assignment.findUnique({
+    const assignment = await prisma.assignment.findFirst({
       where: { bookingId: jobId },
+      orderBy: { createdAt: 'desc' }
     });
     return assignment?.id || null;
   } catch {

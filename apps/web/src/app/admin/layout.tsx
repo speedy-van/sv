@@ -6,6 +6,10 @@ import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 import { ROUTES } from '@/lib/routing';
 
+// Force dynamic rendering for admin pages (fixes DYNAMIC_SERVER_USAGE error)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AdminLayout({
   children,
 }: {
@@ -36,10 +40,10 @@ export default async function AdminLayout({
   console.log('✅ Admin Layout - Access granted for admin user');
 
   return (
-    <div suppressHydrationWarning>
+    <>
       <UnifiedNavigation role="admin" isAuthenticated={true}>
         <UnifiedErrorBoundary role="admin">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>
-    </div>
+    </>
   );
 }

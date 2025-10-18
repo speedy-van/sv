@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Try Bearer token authentication first (for mobile app)
@@ -30,7 +30,7 @@ export async function POST(
       userId = (session.user as any).id;
     }
 
-    const jobId = params.id;
+    const { id: jobId } = await params;
     // Get driver data
     const driver = await prisma.driver.findUnique({
       where: { userId },
@@ -114,18 +114,36 @@ export async function POST(
         throw new Error('Driver already has an active job');
       }
 
-      // Create assignment with atomic operation
-      const assignment = await tx.assignment.create({
-        data: {
-          id: `assignment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          bookingId: jobId,
-          driverId: driver.id,
-          status: 'claimed',
-          expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes to accept
-          score: job.totalGBP, // Store the job amount as score
-          updatedAt: new Date(),
-        },
+      // Find existing assignment or create new one
+      const existingAssignment = await tx.assignment.findFirst({
+        where: { bookingId: jobId }
       });
+      
+      let assignment;
+      if (existingAssignment) {
+        assignment = await tx.assignment.update({
+          where: { id: existingAssignment.id },
+          data: {
+            driverId: driver.id,
+            status: 'claimed',
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes to accept
+            score: job.totalGBP, // Store the job amount as score
+            updatedAt: new Date(),
+          }
+        });
+      } else {
+        assignment = await tx.assignment.create({
+          data: {
+            id: `assignment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            bookingId: jobId,
+            driverId: driver.id,
+            status: 'claimed',
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes to accept
+            score: job.totalGBP, // Store the job amount as score
+            updatedAt: new Date(),
+          }
+        });
+      }
 
       // Update booking to assign driver
       await tx.booking.update({

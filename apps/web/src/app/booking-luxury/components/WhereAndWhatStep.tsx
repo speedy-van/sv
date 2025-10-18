@@ -2329,11 +2329,11 @@ export default function WhereAndWhatStep({
   ];
 
   const convertanyToUIItem = (item: any) => ({
-    id: item.id,
-    name: item.name,
-    price: item.price.toString(),
-    category: item.category,
-    image: item.image || datasetFallbackImage,
+    id: item?.id || `item-${Date.now()}`,
+    name: item?.name || 'Unnamed Item',
+    price: item?.price?.toString?.() || '0',
+    category: item?.category || 'Miscellaneous',
+    image: item?.image || datasetFallbackImage,
   });
 
   const normalizeCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -2344,19 +2344,25 @@ export default function WhereAndWhatStep({
     if (searchQuery.trim().length >= 1) {
       const query = searchQuery.trim().toLowerCase();
       items = items.filter((item) => {
-        const lowerName = item.name.toLowerCase();
-        const lowerCategory = item.category.toLowerCase();
+        // ✅ Safe filtering with optional chaining
+        const lowerName = item?.name?.toLowerCase?.() || '';
+        const lowerCategory = item?.category?.toLowerCase?.() || '';
+        const keywords = item?.keywords || [];
         return (
           lowerName.includes(query) ||
           lowerCategory.includes(query) ||
-          item.keywords.some((keyword: string) => keyword.includes(query))
+          (Array.isArray(keywords) && keywords.some((keyword: string) => 
+            keyword?.toLowerCase?.()?.includes(query) || false
+          ))
         );
       });
     }
 
     if (selectedCategory && selectedCategory !== 'All') {
       const normalizedSelected = normalizeCategory(selectedCategory);
-      items = items.filter((item) => normalizeCategory(item.category).includes(normalizedSelected));
+      items = items.filter((item) => 
+        item?.category && normalizeCategory(item.category).includes(normalizedSelected)
+      );
     }
 
     return items;
@@ -2364,10 +2370,12 @@ export default function WhereAndWhatStep({
 
   const filteredGroupedItems = useMemo(() => {
     const groups = filteredanys.reduce<Record<string, any[]>>((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
+      // ✅ Safe category access
+      const category = item?.category || 'Miscellaneous';
+      if (!acc[category]) {
+        acc[category] = [];
       }
-      acc[item.category].push(item);
+      acc[category].push(item);
       return acc;
     }, {});
 
@@ -2375,7 +2383,7 @@ export default function WhereAndWhatStep({
       .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
       .map(([category, items]) => ({
         category,
-        items: items.sort((a, b) => a.name.localeCompare(b.name)),
+        items: items.sort((a, b) => (a?.name || '').localeCompare(b?.name || '')),
       }));
   }, [filteredanys]);
 
@@ -2572,7 +2580,7 @@ export default function WhereAndWhatStep({
         const aiItems: Item[] = data.items.map((aiItem: any, index: number) => {
           // Try to find matching item in catalog
           const catalogMatch = COMPREHENSIVE_CATALOG.find(
-            item => item.name.toLowerCase() === aiItem.name.toLowerCase()
+            item => item?.name?.toLowerCase?.() === aiItem?.name?.toLowerCase?.()
           );
           
           if (catalogMatch) {
@@ -3579,47 +3587,28 @@ export default function WhereAndWhatStep({
                 </WrapItem>
               </Wrap>
 
-              {/* Quick Actions: Quick Quote & AI Estimate */}
-              <HStack spacing={3} w="full" justify="center" mt={4}>
-                <Button
-                  size="lg"
-                  colorScheme="yellow"
-                  leftIcon={<Icon as={FaBolt} />}
-                  _hover={{ 
-                    transform: 'translateY(-2px)',
-                    shadow: 'lg'
-                  }}
-                  borderRadius="lg"
-                  px={6}
-                  fontWeight="bold"
-                  onClick={() => {
-                    toast({
-                      title: 'Quick Quote',
-                      description: 'Quick quote feature coming soon!',
-                      status: 'info',
-                      duration: 3000,
-                      isClosable: true,
-                    });
-                  }}
-                >
-                  ⚡ Quick Quote
-                </Button>
-                
+              {/* Smart AI Action */}
+              <HStack spacing={3} w="full" justify="center" mt={6}>
                 <Button
                   size="lg"
                   colorScheme="purple"
-                  leftIcon={<Icon as={FaRobot} />}
-                  rightIcon={<Icon as={FaForward} />}
+                  bgGradient="linear(to-r, purple.500, pink.500)"
+                  leftIcon={<Icon as={FaRobot} boxSize={5} />}
                   onClick={onAIModalOpen}
                   _hover={{ 
+                    bgGradient: 'linear(to-r, purple.600, pink.600)',
                     transform: 'translateY(-2px)',
-                    shadow: 'lg'
+                    shadow: '0 0 20px rgba(168, 85, 247, 0.4)'
                   }}
-                  borderRadius="lg"
-                  px={6}
-                  fontWeight="bold"
+                  borderRadius="xl"
+                  px={8}
+                  py={6}
+                  height="auto"
                 >
-                  ⏭️ Skip Items & Use AI Estimate
+                  <VStack spacing={1}>
+                    <Text fontWeight="bold" fontSize="md">🤖 Smart AI Selection</Text>
+                    <Text fontSize="xs" opacity={0.9}>Let AI pick items for you</Text>
+                  </VStack>
                 </Button>
               </HStack>
 
@@ -4620,28 +4609,47 @@ export default function WhereAndWhatStep({
 
       </VStack>
       
-      {/* AI Estimate Modal */}
+      {/* AI Estimate Modal - Enhanced */}
       <Modal isOpen={isAIModalOpen} onClose={onAIModalClose} size="xl" isCentered>
-        <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(10px)" />
-        <ModalContent bg="gray.800" borderColor="purple.500" borderWidth="2px">
-          <ModalHeader color="white" borderBottomWidth="1px" borderColor="gray.700">
-            <HStack spacing={3}>
-              <Icon as={FaRobot} color="purple.400" boxSize={6} />
-              <Text>AI-Powered Item Estimation</Text>
-            </HStack>
+        <ModalOverlay bg="blackAlpha.900" backdropFilter="blur(10px)" />
+        <ModalContent 
+          bg="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)"
+          borderWidth="2px"
+          borderColor="purple.400"
+          boxShadow="0 0 40px rgba(168, 85, 247, 0.3)"
+        >
+          <ModalHeader color="white" borderBottomWidth="1px" borderColor="purple.700" pb={4}>
+            <VStack align="start" spacing={2}>
+              <HStack spacing={3}>
+                <Icon as={FaRobot} color="purple.400" boxSize={7} />
+                <Text fontSize="xl" fontWeight="bold">🤖 Smart AI Item Selection</Text>
+              </HStack>
+              <Text fontSize="sm" color="gray.400" fontWeight="normal">
+                Let AI intelligently select only the essential items for your move
+              </Text>
+            </VStack>
           </ModalHeader>
-          <ModalCloseButton color="white" />
-          <ModalBody py={6}>
-            <VStack spacing={6}>
-              <Alert status="info" bg="blue.900" borderRadius="md">
-                <AlertIcon color="blue.300" />
-                <Box>
-                  <AlertTitle color="white" fontSize="sm">Smart Estimation</AlertTitle>
-                  <AlertDescription color="gray.300" fontSize="xs">
-                    Our AI will generate a realistic list of items based on your property type and move type.
-                  </AlertDescription>
-                </Box>
-              </Alert>
+          <ModalCloseButton color="white" _hover={{ bg: 'gray.700' }} />
+          <ModalBody py={8}>
+            <VStack spacing={8}>
+              {/* Smart Info Card */}
+              <Card bg="purple.900" borderColor="purple.700" borderWidth={1} w="full">
+                <CardBody>
+                  <VStack align="start" spacing={3}>
+                    <HStack spacing={2}>
+                      <Icon as={FaRobot} color="purple.300" />
+                      <Text color="white" fontSize="sm" fontWeight="bold">How AI Selection Works:</Text>
+                    </HStack>
+                    <VStack align="start" spacing={1} pl={6}>
+                      <Text color="gray.300" fontSize="xs">✓ Analyzes your property type</Text>
+                      <Text color="gray.300" fontSize="xs">✓ Considers move type context</Text>
+                      <Text color="gray.300" fontSize="xs">✓ Selects only essential items (5-12 items max)</Text>
+                      <Text color="gray.300" fontSize="xs">✓ Avoids duplicates and unnecessary items</Text>
+                      <Text color="gray.300" fontSize="xs">✓ You can edit the list after generation</Text>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
               
               <FormControl>
                 <FormLabel color="white" fontWeight="semibold">
@@ -4694,31 +4702,68 @@ export default function WhereAndWhatStep({
                 </Select>
               </FormControl>
               
-              <Alert status="warning" bg="orange.900" borderRadius="md">
-                <AlertIcon color="orange.300" />
+              {/* Smart Preview */}
+              <Card bg="gray.900" borderColor="gray.700" borderWidth={1} w="full">
+                <CardBody>
+                  <VStack align="start" spacing={2}>
+                    <Text color="white" fontSize="sm" fontWeight="bold">Expected Result:</Text>
+                    <Text color="gray.400" fontSize="xs">
+                      {aiPropertyType === 'Studio' && '~5-8 essential items'}
+                      {aiPropertyType === '1 Bedroom' && '~6-10 essential items'}
+                      {aiPropertyType === '2 Bedroom' && '~8-12 essential items'}
+                      {aiPropertyType === '3 Bedroom' && '~10-12 essential items'}
+                      {aiPropertyType === '4+ Bedroom' && '~10-12 essential items'}
+                      {aiPropertyType === 'Office' && '~5-8 office items'}
+                      {aiPropertyType === 'Storage Unit' && '~4-6 storage items'}
+                    </Text>
+                    <Text color="purple.300" fontSize="xs" fontStyle="italic">
+                      ✓ Only furniture & essential items • No decorations
+                    </Text>
+                  </VStack>
+                </CardBody>
+              </Card>
+              
+              <Alert status="info" bg="blue.900" borderRadius="md" borderColor="blue.700" borderWidth={1}>
+                <AlertIcon color="blue.300" />
                 <Box>
                   <AlertDescription color="gray.300" fontSize="xs">
-                    You can review and edit the AI-generated list after it's created.
+                    💡 You can always add or remove items after AI generation. This just gives you a smart starting point.
                   </AlertDescription>
                 </Box>
               </Alert>
             </VStack>
           </ModalBody>
-          <ModalFooter borderTopWidth="1px" borderColor="gray.700">
-            <HStack spacing={3}>
-              <Button variant="ghost" onClick={onAIModalClose} color="white">
+          <ModalFooter 
+            borderTopWidth="1px" 
+            borderColor="purple.700"
+            bg="gray.900"
+          >
+            <HStack spacing={3} w="full" justify="space-between">
+              <Button 
+                variant="ghost" 
+                onClick={onAIModalClose} 
+                color="white"
+                _hover={{ bg: 'gray.700' }}
+              >
                 Cancel
               </Button>
               <Button
-                colorScheme="purple"
+                size="lg"
+                bgGradient="linear(to-r, purple.500, pink.500)"
+                color="white"
                 onClick={handleGenerateAIList}
                 isLoading={isGeneratingAI}
-                loadingText="Generating..."
+                loadingText="AI Thinking..."
                 leftIcon={<Icon as={FaRobot} />}
                 rightIcon={<Icon as={FaCheck} />}
-                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                _hover={{ 
+                  bgGradient: 'linear(to-r, purple.600, pink.600)',
+                  transform: 'translateY(-2px)',
+                  shadow: '0 0 20px rgba(168, 85, 247, 0.5)'
+                }}
+                px={8}
               >
-                Generate AI List
+                Generate Smart List
               </Button>
             </HStack>
           </ModalFooter>

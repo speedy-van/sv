@@ -106,7 +106,7 @@ export class CrossProviderValidator {
     }
 
     // Compare coordinates
-    const coordinateDistance = this.calculateDistance(
+    const coordinateDistance = this.calculateDistance( // DEPRECATED - internal use only
       targetAddress.coordinates,
       bestMatch.coordinates
     );
@@ -187,7 +187,7 @@ export class CrossProviderValidator {
 
     for (const candidate of candidates) {
       // Calculate composite matching score
-      const coordinateDistance = this.calculateDistance(target.coordinates, candidate.coordinates);
+      const coordinateDistance = this.calculateDistance(target.coordinates, candidate.coordinates); // DEPRECATED - internal use only
       const addressSimilarity = this.calculateStringSimilarity(target.fullAddress, candidate.fullAddress);
       
       // Normalize coordinate score (closer = higher score)
@@ -209,7 +209,7 @@ export class CrossProviderValidator {
   /**
    * Calculate distance between two coordinates using Haversine formula
    */
-  private calculateDistance(coord1: Coordinates, coord2: Coordinates): number {
+  private calculateDistance(coord1: Coordinates, coord2: Coordinates): number { // DEPRECATED - internal use only
     const R = 6371e3; // Earth's radius in meters
     const φ1 = (coord1.lat * Math.PI) / 180;
     const φ2 = (coord2.lat * Math.PI) / 180;

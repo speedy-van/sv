@@ -23,7 +23,6 @@ interface PayoutBreakdown {
   timePay: number;
   stopBonus: number;
   total: number;
-  capApplied?: boolean;
   adminApprovalRequired?: boolean;
   breakdown?: any;
   // Legacy fields for compatibility

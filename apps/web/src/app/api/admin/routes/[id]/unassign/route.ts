@@ -38,7 +38,7 @@ function calculatePartialRouteEarnings(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -50,7 +50,7 @@ export async function POST(
       );
     }
 
-    const { id: routeId } = params;
+    const { id: routeId } = await params;
     const { reason } = await request.json();
 
     console.log('🔄 Admin unassigning driver from route:', { routeId, reason });
@@ -162,26 +162,28 @@ export async function POST(
           }
         }
 
-        // Update all associated bookings to remove driver assignment
+        // Update all associated bookings - keep them in route but remove driver only
         if ((route as any).Booking && (route as any).Booking.length > 0) {
           for (const booking of (route as any).Booking) {
             await tx.booking.update({
               where: { id: booking.id },
               data: {
                 driverId: null,
-                routeId: null,
+                // Keep routeId - bookings stay in the route (pending_assignment)
+                // routeId: null,  ← Don't remove - keep in route!
                 status: 'CONFIRMED'
               }
             });
 
             // Update assignment if exists
-            const assignment = await tx.assignment.findUnique({
-              where: { bookingId: booking.id }
+            const assignment = await tx.assignment.findFirst({
+              where: { bookingId: booking.id },
+              orderBy: { createdAt: 'desc' }
             });
 
             if (assignment) {
               await tx.assignment.update({
-                where: { bookingId: booking.id },
+                where: { id: assignment.id },
                 data: {
                   status: 'cancelled',
                   updatedAt: new Date()
@@ -191,21 +193,30 @@ export async function POST(
           }
         }
 
-        // Update driver availability
-        const driverAvailability = await tx.driverAvailability.findUnique({
+        // Update driver availability - moved outside transaction to avoid TX issues
+        // Will be handled after transaction commits
+      });
+
+      // Update driver availability after transaction
+      try {
+        const driverAvailability = await prisma.driverAvailability.findUnique({
           where: { driverId: oldDriverId }
         });
 
         if (driverAvailability) {
           const bookingsCount = (route as any).Booking?.length || 0;
-          await tx.driverAvailability.update({
+          await prisma.driverAvailability.update({
             where: { driverId: oldDriverId },
             data: {
               currentCapacityUsed: Math.max(0, driverAvailability.currentCapacityUsed - bookingsCount)
             }
           });
+          console.log('✅ Driver availability updated');
         }
-      });
+      } catch (availError) {
+        console.warn('⚠️ Could not update driver availability (non-critical):', availError);
+        // Don't fail the request
+      }
 
       // Send real-time notifications to update schedules
       try {

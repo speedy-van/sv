@@ -268,7 +268,7 @@ export class DualProviderService {
   /**
    * Calculate distance between two coordinates
    */
-  async calculateDistance(
+  async calculateDistance( // DEPRECATED - internal use only
     pickup: Coordinates,
     dropoff: Coordinates,
     preferredProvider?: Provider

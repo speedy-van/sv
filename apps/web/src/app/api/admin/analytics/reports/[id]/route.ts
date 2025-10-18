@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // GET - Get specific report
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== 'admin') {
@@ -17,7 +17,7 @@ export async function GET(
   try {
     // Mock report data (in real implementation, fetch from database)
     const mockReport = {
-      id: params.id,
+      id: (await params).id,
       name: 'Sample Report',
       description: 'Sample report description',
       metrics: ['revenue', 'orders'],
@@ -32,7 +32,7 @@ export async function GET(
       createdBy: session.user.id,
     };
 
-    await logAudit((session.user as any).id, 'read_report', params.id, { targetType: 'analytics_report', before: null, after: { reportId: params.id } });
+    await logAudit((session.user as any).id, 'read_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id } });
 
     return Response.json({ report: mockReport });
   } catch (error) {
@@ -44,7 +44,7 @@ export async function GET(
 // PATCH - Update report
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== 'admin') {
@@ -66,7 +66,7 @@ export async function PATCH(
 
     // Mock update (in real implementation, update database)
     const updatedReport = {
-      id: params.id,
+      id: (await params).id,
       name: name || 'Updated Report',
       description: description || '',
       metrics: metrics || ['revenue'],
@@ -84,7 +84,7 @@ export async function PATCH(
       createdBy: session.user.id,
     };
 
-    await logAudit(session.user.id, 'update_report', params.id, { targetType: 'analytics_report', before: { reportId: params.id }, after: { reportId: params.id, changes: body } });
+    await logAudit(session.user.id, 'update_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: { reportId: (await params).id, changes: body } });
 
     return Response.json({ report: updatedReport });
   } catch (error) {
@@ -96,7 +96,7 @@ export async function PATCH(
 // DELETE - Delete report
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== 'admin') {
@@ -105,7 +105,7 @@ export async function DELETE(
 
   try {
     // Mock deletion (in real implementation, delete from database)
-    await logAudit(session.user.id, 'delete_report', params.id, { targetType: 'analytics_report', before: { reportId: params.id }, after: null });
+    await logAudit(session.user.id, 'delete_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: null });
 
     return Response.json({ success: true });
   } catch (error) {

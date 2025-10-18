@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 // GET /api/booking-luxury/[id] - Get booking details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     // Find the booking with all related data
     const booking = await prisma.booking.findUnique({
@@ -111,11 +111,11 @@ export async function GET(
 // PUT /api/booking-luxury/[id] - Update booking
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     const updates = await request.json();
 
     // Find the booking
@@ -193,11 +193,11 @@ export async function PUT(
 // DELETE /api/booking-luxury/[id] - Cancel booking
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
 
     // Find the booking
     const booking = await prisma.booking.findUnique({

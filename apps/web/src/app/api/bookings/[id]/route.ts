@@ -10,10 +10,10 @@ import { BookingService } from '@/lib/services/booking-service';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     
     if (!bookingId) {
       return NextResponse.json(
@@ -50,10 +50,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     const body = await request.json();
     
     if (!bookingId) {
@@ -91,10 +91,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const bookingId = params.id;
+    const { id: bookingId } = await params;
     const body = await request.json();
     
     if (!bookingId) {

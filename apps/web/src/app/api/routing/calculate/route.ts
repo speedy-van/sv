@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // This would integrate with Mapbox Directions API or similar
     // For demo purposes, we'll calculate a simple distance and estimated time
 
-    const distance = calculateDistance(pickup, dropoff);
+    const distance = calculateDistance(pickup, dropoff); // DEPRECATED - internal use only
     const duration = calculateDuration(distance);
 
     // Generate mock route coordinates (straight line for demo)
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Calculate distance between two points using Haversine formula
-function calculateDistance(
+function calculateDistance( // DEPRECATED - internal use only
   pickup: { lat: number; lng: number },
   dropoff: { lat: number; lng: number }
 ): number {

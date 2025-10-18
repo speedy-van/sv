@@ -276,24 +276,39 @@ async function assignBookingToDriver(
       }
     });
 
-    // Create assignment
-    const assignment = await tx.assignment.upsert({
-      where: { bookingId },
-      update: {
-        driverId,
-        status: 'invited',
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
-        updatedAt: assignedAt
-      },
-      create: {
-        id: `assignment_${bookingId}_${driverId}`,
+    // Check for existing assignment
+    const existingAssignment = await tx.assignment.findFirst({
+      where: { 
         bookingId,
-        driverId,
-        status: 'invited',
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
-        updatedAt: assignedAt
-      }
+        status: { in: ['invited', 'claimed'] }
+      },
+      orderBy: { createdAt: 'desc' }
     });
+
+    let assignment;
+    if (existingAssignment) {
+      // Update existing assignment
+      assignment = await tx.assignment.update({
+        where: { id: existingAssignment.id },
+        data: {
+          driverId,
+          status: 'invited',
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
+          updatedAt: assignedAt
+        }
+      });
+    } else {
+      // Create new assignment
+      assignment = await tx.assignment.create({
+        data: {
+          bookingId,
+          driverId,
+          status: 'invited',
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes to accept
+          updatedAt: assignedAt
+        }
+      });
+    }
 
     // Create audit log
     await tx.auditLog.create({

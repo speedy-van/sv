@@ -9,10 +9,10 @@ export const dynamic = 'force-dynamic';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('🔧 [APPROVE DEBUG] Starting approval process for ID:', params.id);
+    console.log('🔧 [APPROVE DEBUG] Starting approval process for ID:', (await params).id);
     
     // Check admin authentication
     const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export async function PATCH(
       );
     }
 
-    const applicationId = params.id;
+    const { id: applicationId } = await params;
     const adminUserId = (session.user as any).id;
     console.log('🔧 [APPROVE DEBUG] Admin user ID:', adminUserId);
 
@@ -278,7 +278,7 @@ export async function PATCH(
     console.error('❌ Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : 'No stack trace',
-      applicationId: params.id,
+      applicationId: (await params).id,
       errorType: error?.constructor?.name || 'Unknown',
       timestamp: new Date().toISOString(),
     });
@@ -308,7 +308,7 @@ export async function PATCH(
       {
         error: errorMessage,
         details: errorDetails,
-        applicationId: params.id,
+        applicationId: (await params).id,
         timestamp: new Date().toISOString(),
       },
       { status: 500 }

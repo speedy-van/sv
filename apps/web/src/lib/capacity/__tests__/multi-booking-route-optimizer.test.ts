@@ -11,7 +11,7 @@
 
 import {
   planMultiBookingRoutes,
-  calculateDistance,
+  calculateDistance, // DEPRECATED - internal use only
   type ExtendedBookingRequest,
   type Location,
 } from '../multi-booking-route-optimizer';
@@ -328,7 +328,7 @@ describe('Multi-Booking Route Optimizer', () => {
         lng: -1.8904,
       };
       
-      const distance = calculateDistance(loc1, loc2);
+      const distance = calculateDistance(loc1, loc2); // DEPRECATED - internal use only
       
       // London to Birmingham is roughly 160-180 km
       expect(distance).toBeGreaterThan(150);
@@ -344,7 +344,7 @@ describe('Multi-Booking Route Optimizer', () => {
         address: 'Unknown B',
       };
       
-      const distance = calculateDistance(loc1, loc2);
+      const distance = calculateDistance(loc1, loc2); // DEPRECATED - internal use only
       
       // Should return default 10km
       expect(distance).toBe(10);

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check admin authentication
@@ -20,7 +20,7 @@ export async function PATCH(
       );
     }
 
-    const applicationId = params.id;
+    const { id: applicationId } = await params;
     const adminUserId = (session.user as any).id;
     const body = await request.json();
     const { additionalInfoRequired, nextSteps } = body;

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/drivers/applications/[id] - Get driver application details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -15,7 +15,7 @@ export async function GET(
       return authResult;
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Get driver application with all details
     const application = await prisma.driverApplication.findUnique({
@@ -217,7 +217,7 @@ export async function GET(
 // PUT /api/admin/drivers/applications/[id] - Update driver application status
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -226,7 +226,7 @@ export async function PUT(
     }
     const user = authResult;
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
 

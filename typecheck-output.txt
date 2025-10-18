@@ -1,0 +1,39 @@
+
+> speedy-van-monorepo@1.0.0 typecheck /home/ubuntu/sv
+> turbo run type-check
+
+
+Attention:
+Turborepo now collects completely anonymous telemetry regarding usage.
+This information is used to shape the Turborepo roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://turborepo.com/docs/telemetry
+
+turbo 2.5.8
+
+• Packages in scope: @speedy-van/app, @speedy-van/pricing, @speedy-van/shared, @speedy-van/utils, speedy-van-driver
+• Running type-check in 5 packages
+• Remote caching disabled
+@speedy-van/shared:type-check: cache miss, executing e1db5d9e72f47257
+@speedy-van/shared:type-check: 
+@speedy-van/shared:type-check: > @speedy-van/shared@1.0.0 type-check /home/ubuntu/sv/packages/shared
+@speedy-van/shared:type-check: > tsc --noEmit
+@speedy-van/shared:type-check: 
+@speedy-van/utils:type-check: cache miss, executing 5ae8ac61a85b2c6f
+@speedy-van/utils:type-check: 
+@speedy-van/utils:type-check: > @speedy-van/utils@1.0.0 type-check /home/ubuntu/sv/packages/utils
+@speedy-van/utils:type-check: > tsc --noEmit
+@speedy-van/utils:type-check: 
+@speedy-van/utils:type-check: src/api/index.ts(1,48): error TS2307: Cannot find module '@speedy-van/shared' or its corresponding type declarations.
+@speedy-van/utils:type-check: src/auth/index.ts(2,26): error TS2307: Cannot find module '@speedy-van/shared' or its corresponding type declarations.
+@speedy-van/utils:type-check:  ELIFECYCLE  Command failed with exit code 2.
+@speedy-van/utils:type-check: ERROR: command finished with error: command (/home/ubuntu/sv/packages/utils) /home/ubuntu/.local/share/pnpm/.tools/pnpm/10.17.0/bin/pnpm run type-check exited (2)
+@speedy-van/utils#type-check: command (/home/ubuntu/sv/packages/utils) /home/ubuntu/.local/share/pnpm/.tools/pnpm/10.17.0/bin/pnpm run type-check exited (2)
+
+ Tasks:    1 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    4.078s 
+Failed:    @speedy-van/utils#type-check
+
+ ERROR  run failed: command  exited (2)
+ ELIFECYCLE  Command failed with exit code 2.

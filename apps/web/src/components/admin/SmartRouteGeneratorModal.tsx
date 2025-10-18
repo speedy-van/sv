@@ -154,11 +154,13 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
   const [optimizeBy, setOptimizeBy] = useState<'distance' | 'time' | 'area'>('distance');
   const [autoAssign, setAutoAssign] = useState(true);
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
+  const [includePendingPayment, setIncludePendingPayment] = useState(true); // Include PENDING_PAYMENT bookings
   
   // Data
   const [pendingDrops, setPendingDrops] = useState<PendingDrop[]>([]);
   const [availableDrivers, setAvailableDrivers] = useState<AvailableDriver[]>([]);
   const [proposedRoutes, setProposedRoutes] = useState<ProposedRoute[]>([]);
+  const [pendingRoutes, setPendingRoutes] = useState<any[]>([]); // Routes without drivers
   
   // Loading states
   const [isLoadingDrops, setIsLoadingDrops] = useState(false);
@@ -170,7 +172,8 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
   const fetchPendingDrops = useCallback(async () => {
     setIsLoadingDrops(true);
     try {
-      const response = await fetch('/api/admin/routes/pending-drops');
+      const url = `/api/admin/routes/pending-drops?includePendingPayment=${includePendingPayment}`;
+      const response = await fetch(url);
       const data = await response.json();
       if (data.success) {
         setPendingDrops(data.drops || []);
@@ -186,7 +189,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     } finally {
       setIsLoadingDrops(false);
     }
-  }, [toast]);
+  }, [toast, includePendingPayment]);
 
   // Fetch available drivers
   const fetchAvailableDrivers = useCallback(async () => {
@@ -214,14 +217,28 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     }
   }, [toast]);
 
+  // Fetch pending routes (routes without drivers)
+  const fetchPendingRoutes = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/routes?status=pending_assignment');
+      const data = await response.json();
+      if (data.success) {
+        setPendingRoutes(data.routes || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending routes:', error);
+    }
+  }, []);
+
   // Load data when modal opens
   useEffect(() => {
     if (isOpen) {
       console.log('📂 Modal opened - loading data...');
       fetchPendingDrops();
       fetchAvailableDrivers();
+      fetchPendingRoutes();
     }
-  }, [isOpen, fetchPendingDrops, fetchAvailableDrivers]);
+  }, [isOpen, fetchPendingDrops, fetchAvailableDrivers, fetchPendingRoutes]);
 
   // Generate preview
   const generatePreview = async () => {
@@ -236,6 +253,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
           optimizeBy,
           autoAssign,
           driverIds: autoAssign ? [] : selectedDriverIds,
+          includePendingPayment, // Include PENDING_PAYMENT filter
         }),
       });
 
@@ -270,34 +288,79 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     setStep('creating');
     
     try {
-      const response = await fetch('/api/admin/routes/auto-create', {
+      // Get selected booking IDs from pending drops
+      const bookingIds = pendingDrops.map(drop => drop.id);
+      
+      // Determine driver assignment strategy
+      let finalDriverId = undefined;
+      
+      if (selectedDriverIds.length > 0) {
+        // Admin manually selected a driver - use it
+        finalDriverId = selectedDriverIds[0];
+        console.log('👤 Using admin-selected driver:', finalDriverId);
+      } else if (autoAssign && availableDrivers.length > 0) {
+        // Auto-assign: Find best available driver (least workload)
+        const onlineDrivers = availableDrivers.filter(d => 
+          d.DriverAvailability?.status === 'online' || d.isAvailable
+        );
+        
+        if (onlineDrivers.length > 0) {
+          // Sort by least active routes
+          const bestDriver = onlineDrivers.sort((a, b) => 
+            (a.activeRoutes || 0) - (b.activeRoutes || 0)
+          )[0];
+          
+          finalDriverId = bestDriver.id;
+          console.log('🤖 Auto-assigned best available driver:', bestDriver.name, `(${bestDriver.activeRoutes || 0} active routes)`);
+        }
+      }
+      
+      // Use /create endpoint instead of smart-generate (404 issue workaround)
+      const response = await fetch('/api/admin/routes/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          maxDropsPerRoute,
-          maxDistanceKm: maxDistanceMiles, // Send as maxDistanceKm for API compatibility
-          optimizeBy,
-          autoAssign,
-          driverIds: autoAssign ? [] : selectedDriverIds,
+          bookingIds,
+          driverId: finalDriverId,
+          startTime: new Date().toISOString(),
+          isAutomatic: true,
         }),
       });
 
       const data = await response.json();
+      console.log('📊 Create route response:', data);
+      
       if (data.success) {
+        const routeInfo = data.data?.route ? `Route with ${pendingDrops.length} drops` : 'Route';
+        
+        // Get driver assignment info
+        let driverInfo = 'Pending assignment';
+        if (finalDriverId) {
+          const assignedDriver = availableDrivers.find(d => d.id === finalDriverId);
+          if (assignedDriver) {
+            driverInfo = selectedDriverIds.length > 0 
+              ? `Assigned to ${assignedDriver.name} (your choice)`
+              : `Auto-assigned to ${assignedDriver.name} (best available)`;
+          }
+        }
+        
         toast({
-          title: 'Success!',
-          description: `${data.routesCreated || 0} routes created successfully`,
+          title: '🎉 Route Created Successfully!',
+          description: `${routeInfo} created. ${pendingDrops.length} bookings updated to CONFIRMED. ${driverInfo}`,
           status: 'success',
-          duration: 5000,
+          duration: 7000,
+          isClosable: true,
         });
         onSuccess();
         handleClose();
       } else {
+        console.error('❌ Route creation failed:', data);
         toast({
           title: 'Creation Failed',
-          description: data.message || 'Failed to create routes',
+          description: data.details || data.error || 'Failed to create routes',
           status: 'error',
-          duration: 5000,
+          duration: 7000,
+          isClosable: true,
         });
         setStep('preview');
       }
@@ -343,6 +406,8 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
   const totalPendingVolume = pendingDrops.reduce((sum, drop) => sum + drop.volume, 0);
   const totalPendingValue = pendingDrops.reduce((sum, drop) => sum + drop.quotedPrice, 0);
   const onlineDrivers = availableDrivers.filter(d => d.DriverAvailability?.status === 'online' || d.isAvailable).length;
+  const totalPendingRoutesValue = pendingRoutes.reduce((sum, route) => sum + (route.totalOutcome || 0), 0);
+  const totalPendingRoutesDrops = pendingRoutes.reduce((sum, route) => sum + (route.totalDrops || 0), 0);
 
   return (
     <Modal 
@@ -360,7 +425,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
             <Box>
               <Text fontSize="xl" fontWeight="bold">Smart Route Generator</Text>
               <Text fontSize="sm" fontWeight="normal" color="gray.400">
-                Automatically cluster pending drops into optimized routes
+                Automatically cluster ALL pending drops into optimized routes (flexible mode)
               </Text>
             </Box>
             <Badge 
@@ -389,7 +454,10 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                   <Icon as={FiPackage} mr={2} /> Pending Drops ({pendingDrops.length})
                 </Tab>
                 <Tab _selected={{ bg: 'gray.800', color: 'purple.300' }}>
-                  <Icon as={FiTruck} mr={2} /> Available Drivers ({onlineDrivers})
+                  <Icon as={FiTruck} mr={2} /> Pending Routes ({pendingRoutes.length})
+                </Tab>
+                <Tab _selected={{ bg: 'gray.800', color: 'purple.300' }}>
+                  <Icon as={FiUser} mr={2} /> Available Drivers ({onlineDrivers})
                 </Tab>
                 <Tab _selected={{ bg: 'gray.800', color: 'purple.300' }}>
                   <Icon as={FiSettings} mr={2} /> Settings
@@ -503,6 +571,125 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                   )}
                 </TabPanel>
 
+                {/* Pending Routes Panel - Routes without drivers */}
+                <TabPanel>
+                  {pendingRoutes.length === 0 ? (
+                    <Alert status="info" borderRadius="md">
+                      <AlertIcon />
+                      <AlertTitle>No Pending Routes</AlertTitle>
+                      <AlertDescription>
+                        There are no routes waiting for driver assignment.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <VStack spacing={4} align="stretch">
+                      <Alert status="warning" borderRadius="md" bg="orange.900" borderColor="orange.600">
+                        <AlertIcon color="orange.300" />
+                        <VStack align="start" spacing={1}>
+                          <Text color="white" fontSize="sm" fontWeight="bold">
+                            {pendingRoutes.length} Routes Awaiting Driver Assignment
+                          </Text>
+                          <Text color="gray.300" fontSize="xs">
+                            These routes have {totalPendingRoutesDrops} total drops worth £{(totalPendingRoutesValue / 100).toFixed(2)}. 
+                            Assign drivers from Routes Dashboard.
+                          </Text>
+                        </VStack>
+                      </Alert>
+                      
+                      {/* Summary Stats */}
+                      <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+                        <Stat bg="gray.800" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.500">
+                          <StatLabel color="gray.400">Total Routes</StatLabel>
+                          <StatNumber color="orange.300">{pendingRoutes.length}</StatNumber>
+                          <StatHelpText color="gray.500">Waiting for drivers</StatHelpText>
+                        </Stat>
+                        <Stat bg="gray.800" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.500">
+                          <StatLabel color="gray.400">Total Drops</StatLabel>
+                          <StatNumber color="orange.300">{totalPendingRoutesDrops}</StatNumber>
+                          <StatHelpText color="gray.500">Across all routes</StatHelpText>
+                        </Stat>
+                        <Stat bg="gray.800" p={4} borderRadius="md" borderWidth="1px" borderColor="orange.500">
+                          <StatLabel color="gray.400">Total Value</StatLabel>
+                          <StatNumber color="orange.300">£{(totalPendingRoutesValue / 100).toFixed(2)}</StatNumber>
+                          <StatHelpText color="gray.500">Revenue potential</StatHelpText>
+                        </Stat>
+                      </Grid>
+
+                      <Grid templateColumns="repeat(auto-fill, minmax(320px, 1fr))" gap={4}>
+                        {pendingRoutes.map((route) => (
+                          <Card 
+                            key={route.id}
+                            bg="gray.800"
+                            borderWidth="2px"
+                            borderColor="orange.500"
+                            cursor="pointer"
+                            transition="all 0.2s"
+                            _hover={{ 
+                              borderColor: 'orange.300',
+                              transform: 'translateY(-2px)',
+                              shadow: 'lg'
+                            }}
+                          >
+                            <CardBody>
+                              <HStack justify="space-between" mb={3}>
+                                <Badge colorScheme="orange" fontSize="sm" px={2} py={1}>
+                                  {route.id.substring(0, 10)}
+                                </Badge>
+                                <Badge colorScheme="red" fontSize="xs">
+                                  NO DRIVER
+                                </Badge>
+                              </HStack>
+
+                              <VStack align="stretch" spacing={3}>
+                                <HStack>
+                                  <Icon as={FiPackage} color="orange.400" />
+                                  <Text color="white" fontSize="sm" fontWeight="bold">
+                                    {route.totalDrops || 0} drops
+                                  </Text>
+                                </HStack>
+
+                                <HStack>
+                                  <Icon as={FiMapPin} color="orange.400" />
+                                  <Text color="white" fontSize="sm">
+                                    {((route.optimizedDistanceKm || 0) / 1.609).toFixed(1)} miles
+                                  </Text>
+                                </HStack>
+
+                                <HStack>
+                                  <Icon as={FiClock} color="orange.400" />
+                                  <Text color="white" fontSize="sm">
+                                    ~{route.estimatedDuration || 0} minutes
+                                  </Text>
+                                </HStack>
+
+                                <Divider borderColor="gray.700" />
+
+                                <HStack justify="space-between">
+                                  <Text color="gray.400" fontSize="sm">Total Value:</Text>
+                                  <Text color="white" fontWeight="bold">
+                                    £{((route.totalOutcome || 0) / 100).toFixed(2)}
+                                  </Text>
+                                </HStack>
+
+                                <Text color="gray.400" fontSize="xs" fontStyle="italic">
+                                  {route.adminNotes || 'Route awaiting assignment'}
+                                </Text>
+                              </VStack>
+                            </CardBody>
+                          </Card>
+                        ))}
+                      </Grid>
+
+                      <Alert status="info" borderRadius="md">
+                        <AlertIcon />
+                        <Text fontSize="sm">
+                          💡 Tip: Go to "Available Drivers" tab, select a driver, then return to Routes Dashboard to assign them.
+                        </Text>
+                      </Alert>
+                    </VStack>
+                  )}
+                </TabPanel>
+
                 {/* Available Drivers Panel */}
                 <TabPanel>
                   {isLoadingDrivers ? (
@@ -590,9 +777,21 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                 {/* Settings Panel */}
                 <TabPanel>
                   <VStack spacing={6} align="stretch">
+                    <Alert status="info" borderRadius="md" bg="blue.900" borderColor="blue.600">
+                      <AlertIcon color="blue.300" />
+                      <VStack align="start" spacing={1}>
+                        <Text color="white" fontSize="sm" fontWeight="bold">
+                          Flexible Mode Active
+                        </Text>
+                        <Text color="gray.300" fontSize="xs">
+                          Settings below are guidelines. System will cluster ALL pending drops optimally.
+                        </Text>
+                      </VStack>
+                    </Alert>
+                    
                     <Box>
                       <Text color="white" fontSize="lg" fontWeight="bold" mb={4}>
-                        Route Configuration
+                        Route Configuration (Guidelines)
                       </Text>
                       
                       <Grid templateColumns="repeat(2, 1fr)" gap={6}>
@@ -610,7 +809,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                             _hover={{ borderColor: 'gray.600' }}
                           />
                           <Text fontSize="xs" color="gray.500" mt={1}>
-                            Recommended: 8-12 drops per route
+                            Guideline only - system will adapt to fit all drops
                           </Text>
                         </FormControl>
 
@@ -628,7 +827,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                             _hover={{ borderColor: 'gray.600' }}
                           />
                           <Text fontSize="xs" color="gray.500" mt={1}>
-                            Maximum total route distance
+                            Guideline only - flexible up to 2x for clustering
                           </Text>
                         </FormControl>
 
@@ -661,33 +860,103 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                       </Text>
                       
                       <VStack spacing={4} align="stretch">
+                        <VStack spacing={3} align="stretch">
+                          <Box>
+                            <Text color="white" fontWeight="medium" mb={2}>Driver Selection Mode</Text>
+                            <Text color="gray.400" fontSize="xs" mb={3}>
+                              Choose how to assign drivers to the created route
+                            </Text>
+                          </Box>
+
+                          <Checkbox 
+                            isChecked={autoAssign}
+                            onChange={(e) => {
+                              setAutoAssign(e.target.checked);
+                              if (e.target.checked) {
+                                setSelectedDriverIds([]);
+                              }
+                            }}
+                            colorScheme="purple"
+                          >
+                            <VStack align="start" spacing={0}>
+                              <Text color="white" fontWeight="medium">Smart Auto-Assignment</Text>
+                              <Text color="gray.400" fontSize="xs">
+                                System automatically picks the best available driver (least workload, highest rating)
+                              </Text>
+                            </VStack>
+                          </Checkbox>
+
+                          {!autoAssign ? (
+                            <Alert status="info" borderRadius="md">
+                              <AlertIcon />
+                              <VStack align="start" spacing={1}>
+                                <Text fontWeight="bold" fontSize="sm">Manual Driver Selection</Text>
+                                <Text fontSize="xs">
+                                  Go to "Available Drivers" tab to choose a specific driver.
+                                  {selectedDriverIds.length > 0 && (
+                                    <Text as="span" color="purple.300" fontWeight="bold">
+                                      {` ✓ ${availableDrivers.find(d => d.id === selectedDriverIds[0])?.name} selected`}
+                                    </Text>
+                                  )}
+                                  {selectedDriverIds.length === 0 && (
+                                    <Text as="span" color="orange.300">
+                                      {` No driver selected - route will be created as pending_assignment`}
+                                    </Text>
+                                  )}
+                                </Text>
+                              </VStack>
+                            </Alert>
+                          ) : (
+                            <Alert status="success" borderRadius="md" bg="green.900" borderColor="green.600">
+                              <AlertIcon color="green.300" />
+                              <VStack align="start" spacing={1}>
+                                <Text fontWeight="bold" fontSize="sm" color="white">Auto-Assignment Active</Text>
+                                <Text fontSize="xs" color="gray.300">
+                                  System will select: {availableDrivers.filter(d => d.DriverAvailability?.status === 'online' || d.isAvailable).length > 0 
+                                    ? `Best driver from ${availableDrivers.filter(d => d.DriverAvailability?.status === 'online' || d.isAvailable).length} available`
+                                    : 'No drivers available - route will be pending_assignment'}
+                                </Text>
+                              </VStack>
+                            </Alert>
+                          )}
+                        </VStack>
+                      </VStack>
+                    </Box>
+
+                    <Divider borderColor="gray.700" />
+
+                    <Box>
+                      <Text color="white" fontSize="lg" fontWeight="bold" mb={4}>
+                        Booking Filters
+                      </Text>
+                      
+                      <VStack spacing={4} align="stretch">
                         <Checkbox 
-                          isChecked={autoAssign}
+                          isChecked={includePendingPayment}
                           onChange={(e) => {
-                            setAutoAssign(e.target.checked);
-                            if (e.target.checked) {
-                              setSelectedDriverIds([]);
-                            }
+                            setIncludePendingPayment(e.target.checked);
+                            // Refetch drops when filter changes
+                            setTimeout(() => {
+                              fetchPendingDrops();
+                            }, 100);
                           }}
                           colorScheme="purple"
                         >
                           <VStack align="start" spacing={0}>
-                            <Text color="white" fontWeight="medium">Auto-assign available drivers</Text>
+                            <Text color="white" fontWeight="medium">Include Pending Payment Orders</Text>
                             <Text color="gray.400" fontSize="xs">
-                              System will automatically assign routes to online drivers based on workload
+                              Include bookings with PENDING_PAYMENT status (awaiting payment confirmation)
                             </Text>
                           </VStack>
                         </Checkbox>
 
-                        {!autoAssign && (
-                          <Alert status="info" borderRadius="md">
-                            <AlertIcon />
-                            <AlertDescription fontSize="sm">
-                              Go to the "Available Drivers" tab to select specific drivers for manual assignment.
-                              {selectedDriverIds.length > 0 && ` ${selectedDriverIds.length} driver(s) selected.`}
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                        <Alert status="info" borderRadius="md" size="sm">
+                          <AlertIcon boxSize={4} />
+                          <AlertDescription fontSize="xs">
+                            By default, only CONFIRMED and DRAFT bookings are included. 
+                            Enable this to also include PENDING_PAYMENT orders.
+                          </AlertDescription>
+                        </Alert>
                       </VStack>
                     </Box>
                   </VStack>

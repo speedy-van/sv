@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -15,7 +15,7 @@ export async function GET(
     }
     const user = authResult;
 
-    const driverId = params.id;
+    const { id: driverId } = await params;
 
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
@@ -254,7 +254,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -263,7 +263,7 @@ export async function PUT(
     }
     const user = authResult;
 
-    const driverId = params.id;
+    const { id: driverId } = await params;
     const { status, autoAssignLimit, notes } = await request.json();
 
     // Get current driver data for audit

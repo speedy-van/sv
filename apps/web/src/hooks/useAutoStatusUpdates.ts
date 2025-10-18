@@ -69,7 +69,7 @@ export const useAutoStatusUpdates = (config: AutoStatusConfig) => {
   }, [config.autoAdvanceSteps, getCurrentStepIndex]);
 
   // Calculate distance between two coordinates (Haversine formula)
-  const calculateDistance = useCallback((
+  const calculateDistance = useCallback(( // DEPRECATED - internal use only
     lat1: number, lon1: number, 
     lat2: number, lon2: number
   ): number => {
@@ -150,7 +150,7 @@ export const useAutoStatusUpdates = (config: AutoStatusConfig) => {
 
       // Check proximity to pickup
       if (pickupLocation && config.currentStep === 'navigate_to_pickup') {
-        const distanceToPickup = calculateDistance(
+        const distanceToPickup = calculateDistance( // DEPRECATED - internal use only
           location.latitude,
           location.longitude,
           pickupLocation.latitude,
@@ -172,7 +172,7 @@ export const useAutoStatusUpdates = (config: AutoStatusConfig) => {
 
       // Check proximity to dropoff
       if (dropoffLocation && config.currentStep === 'en_route_to_dropoff') {
-        const distanceToDropoff = calculateDistance(
+        const distanceToDropoff = calculateDistance( // DEPRECATED - internal use only
           location.latitude,
           location.longitude,
           dropoffLocation.latitude,
@@ -200,7 +200,7 @@ export const useAutoStatusUpdates = (config: AutoStatusConfig) => {
     config.proximityRadius,
     config.jobId,
     config.currentStep,
-    calculateDistance,
+    calculateDistance, // DEPRECATED - internal use only
     shouldAutoAdvanceToStep,
     updateJobStep
   ]);
@@ -366,7 +366,7 @@ export const useAutoStatusUpdates = (config: AutoStatusConfig) => {
     // Utilities
     getCurrentStepIndex,
     shouldAutoAdvanceToStep,
-    calculateDistance,
+    calculateDistance, // DEPRECATED - internal use only
 
     // Config state
     isConfigReady,

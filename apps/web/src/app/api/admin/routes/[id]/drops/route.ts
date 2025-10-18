@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // GET drops for a route
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const routeId = params.id;
+    const { id: routeId } = await params;
 
     const drops = await prisma.drop.findMany({
       where: { routeId },
@@ -50,7 +50,7 @@ export async function GET(
 // POST - Add drop to route
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -58,7 +58,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const routeId = params.id;
+    const { id: routeId } = await params;
     const body = await request.json();
 
     const {

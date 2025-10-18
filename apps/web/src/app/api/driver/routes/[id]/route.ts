@@ -8,9 +8,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // ✅ Await params first (Next.js 15 requirement)
+    const { id } = await params;
     // Try Bearer token authentication first (for mobile app)
     const bearerAuth = await authenticateBearerToken(request);
     let userId: string;
@@ -47,7 +49,7 @@ export async function GET(
     }
 
     const route = await prisma.route.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         drops: {
           include: {

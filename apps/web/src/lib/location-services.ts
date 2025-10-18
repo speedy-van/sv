@@ -531,7 +531,7 @@ export class AddressAutocompleteService {
 }
 
 // Distance calculation utilities
-export const calculateDistance = (
+export const calculateDistance = ( // DEPRECATED - internal use only
   point1: LocationCoordinates,
   point2: LocationCoordinates
 ): number => {
@@ -583,7 +583,7 @@ export const getRouteInfo = async (
       };
     } else {
       // Fallback to straight-line distance
-      const distance = calculateDistance(origin, destination);
+      const distance = calculateDistance(origin, destination); // DEPRECATED - internal use only
       return {
         distance,
         duration: distance * 2, // Rough estimate: 2 minutes per km in city
@@ -592,7 +592,7 @@ export const getRouteInfo = async (
   } catch (error) {
     console.error('Route calculation failed:', error);
     // Fallback to straight-line distance
-    const distance = calculateDistance(origin, destination);
+    const distance = calculateDistance(origin, destination); // DEPRECATED - internal use only
     return {
       distance,
       duration: distance * 2,

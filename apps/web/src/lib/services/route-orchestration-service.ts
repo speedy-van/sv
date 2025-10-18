@@ -1184,7 +1184,7 @@ export class RouteOrchestrationService {
       if (currentRoute.stops.length > 1) {
         // Add distance between stops (simplified calculation)
         const prevStop = currentRoute.stops[currentRoute.stops.length - 2];
-        const distance = this.calculateDistanceBetweenStops(prevStop, stop);
+        const distance = this.calculateDistanceBetweenStops(prevStop, stop); // DEPRECATED - internal use only
         currentRoute.totalDistance += distance;
         currentRoute.totalDuration += distance * 2; // 2 minutes per km driving
       }
@@ -1283,7 +1283,7 @@ export class RouteOrchestrationService {
   /**
    * Calculate distance between two stops
    */
-  private static calculateDistanceBetweenStops(stop1: RouteStop, stop2: RouteStop): number {
+  private static calculateDistanceBetweenStops(stop1: RouteStop, stop2: RouteStop): number { // DEPRECATED - internal use only
     // Haversine formula for distance calculation
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.degreesToRadians(stop2.location.lat - stop1.location.lat);

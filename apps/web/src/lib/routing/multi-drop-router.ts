@@ -232,8 +232,8 @@ export class AdvancedMultiDropRouter {
       }
       
       // Priority 2: Distance from pickup (nearest neighbor)
-      const distanceA = this.calculateDistance(pickup.coordinates, a.coordinates);
-      const distanceB = this.calculateDistance(pickup.coordinates, b.coordinates);
+      const distanceA = this.calculateDistance(pickup.coordinates, a.coordinates); // DEPRECATED - internal use only
+      const distanceB = this.calculateDistance(pickup.coordinates, b.coordinates); // DEPRECATED - internal use only
       
       return distanceA - distanceB;
     });
@@ -249,7 +249,7 @@ export class AdvancedMultiDropRouter {
     let currentLocation = pickup;
 
     for (const dropoff of dropoffs) {
-      const distance = this.calculateDistance(currentLocation.coordinates, dropoff.coordinates);
+      const distance = this.calculateDistance(currentLocation.coordinates, dropoff.coordinates); // DEPRECATED - internal use only
       const baseDuration = this.calculateBaseDuration(distance);
       const trafficMultiplier = this.getTrafficMultiplier(currentLocation, dropoff);
       const duration = Math.round(baseDuration * trafficMultiplier);
@@ -387,7 +387,7 @@ export class AdvancedMultiDropRouter {
   }
 
   // Utility methods
-  private calculateDistance(coord1: any, coord2: any): number {
+  private calculateDistance(coord1: any, coord2: any): number { // DEPRECATED - internal use only
     // Haversine formula for distance calculation
     const R = 6371; // Earth's radius in km
     const dLat = this.degToRad(coord2.lat - coord1.lat);
@@ -443,7 +443,7 @@ export class AdvancedMultiDropRouter {
   private isInCongestionZone(coordinates: any): boolean {
     // London congestion zone (simplified)
     const londonCenter = { lat: 51.5074, lng: -0.1278 };
-    const distance = this.calculateDistance(coordinates, londonCenter);
+    const distance = this.calculateDistance(coordinates, londonCenter); // DEPRECATED - internal use only
     return distance < 5; // 5km radius
   }
 
@@ -473,13 +473,13 @@ export class AdvancedMultiDropRouter {
 
   private calculateUnoptimizedDistance(pickup: RouteWaypoint, dropoffs: RouteWaypoint[]): number {
     return dropoffs.reduce((sum, dropoff) => {
-      return sum + this.calculateDistance(pickup.coordinates, dropoff.coordinates);
+      return sum + this.calculateDistance(pickup.coordinates, dropoff.coordinates); // DEPRECATED - internal use only
     }, 0);
   }
 
   private calculateUnoptimizedDuration(pickup: RouteWaypoint, dropoffs: RouteWaypoint[]): number {
     return dropoffs.reduce((sum, dropoff) => {
-      const distance = this.calculateDistance(pickup.coordinates, dropoff.coordinates);
+      const distance = this.calculateDistance(pickup.coordinates, dropoff.coordinates); // DEPRECATED - internal use only
       return sum + this.calculateBaseDuration(distance);
     }, 0);
   }
@@ -537,7 +537,7 @@ export class AdvancedMultiDropRouter {
   }
 
   private createSingleLegRoute(pickup: RouteWaypoint, dropoff: RouteWaypoint): OptimizedRoute {
-    const distance = this.calculateDistance(pickup.coordinates, dropoff.coordinates);
+    const distance = this.calculateDistance(pickup.coordinates, dropoff.coordinates); // DEPRECATED - internal use only
     const duration = this.calculateBaseDuration(distance) * this.getTrafficMultiplier(pickup, dropoff);
     
     const leg = {

@@ -160,8 +160,9 @@ export async function GET(request: NextRequest) {
 
 async function getAssignmentId(jobId: string): Promise<string | null> {
   try {
-    const assignment = await prisma.assignment.findUnique({
+    const assignment = await prisma.assignment.findFirst({
       where: { bookingId: jobId },
+      orderBy: { createdAt: 'desc' }
     });
     return assignment?.id || null;
   } catch {

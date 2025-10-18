@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export async function POST(request: NextRequest) {
   try {
@@ -171,18 +172,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create assignment record
-    const assignmentId = `assignment_${jobId}_${finalDriverId}`;
-    await prisma.assignment.create({
-      data: {
-        id: assignmentId,
-        bookingId: jobId,
-        driverId: finalDriverId,
-        status: 'accepted',
-        claimedAt: new Date(),
-        updatedAt: new Date(),
-      },
+    // Create or update assignment record
+    const assignment = await upsertAssignment(prisma, jobId, {
+      driverId: finalDriverId,
+      status: 'accepted',
+      claimedAt: new Date(),
     });
+    const assignmentId = assignment.id;
 
     // Create job event
     const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

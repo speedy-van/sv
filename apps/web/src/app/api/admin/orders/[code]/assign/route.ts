@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -141,22 +142,10 @@ export async function POST(
       });
 
       // Create or update assignment
-      await tx.assignment.upsert({
-        where: { bookingId: booking.id },
-        update: {
-          driverId: targetDriverId,
-          status: 'invited',
-          round: 1,
-          updatedAt: new Date(),
-        },
-        create: {
-          id: `assignment_${booking.id}`,
-          bookingId: booking.id,
-          driverId: targetDriverId,
-          status: 'invited',
-          round: 1,
-          updatedAt: new Date(),
-        },
+      await upsertAssignment(tx, booking.id, {
+        driverId: targetDriverId,
+        status: 'invited',
+        round: 1,
       });
 
       return updatedBooking;

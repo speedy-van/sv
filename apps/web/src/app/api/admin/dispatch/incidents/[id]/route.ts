@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const incident = await prisma.driverIncident.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         Driver: {
           include: {
@@ -65,7 +65,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -76,7 +76,7 @@ export async function PUT(
     const { action, data } = await request.json();
 
     const incident = await prisma.driverIncident.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!incident) {
@@ -91,7 +91,7 @@ export async function PUT(
     switch (action) {
       case 'resolve':
         updatedIncident = await prisma.driverIncident.update({
-          where: { id: params.id },
+          where: { id: (await params).id },
           data: {
             status: 'resolved',
             reviewedAt: new Date(),
@@ -128,7 +128,7 @@ export async function PUT(
             actorRole: (session.user as any).role || 'admin',
             action: 'incident_resolved',
             targetType: 'driverIncident',
-            targetId: params.id,
+            targetId: (await params).id,
             before: undefined,
             after: {
               status: 'resolved',
@@ -142,7 +142,7 @@ export async function PUT(
 
       case 'escalate':
         updatedIncident = await prisma.driverIncident.update({
-          where: { id: params.id },
+          where: { id: (await params).id },
           data: {
             status: 'escalated',
             reviewNotes: data.reason || null,
@@ -177,7 +177,7 @@ export async function PUT(
             actorRole: (session.user as any).role || 'admin',
             action: 'incident_escalated',
             targetType: 'driverIncident',
-            targetId: params.id,
+            targetId: (await params).id,
             before: undefined,
             after: {
               status: 'escalated',
@@ -191,7 +191,7 @@ export async function PUT(
 
       case 'update':
         updatedIncident = await prisma.driverIncident.update({
-          where: { id: params.id },
+          where: { id: (await params).id },
           data: {
             ...data,
             updatedAt: new Date(),
@@ -226,7 +226,7 @@ export async function PUT(
             actorRole: (session.user as any).role || 'admin',
             action: 'incident_updated',
             targetType: 'driverIncident',
-            targetId: params.id,
+            targetId: (await params).id,
             before: undefined,
             after: data,
             ip: request.headers.get('x-forwarded-for') || 'unknown',
@@ -243,7 +243,7 @@ export async function PUT(
         };
 
         updatedIncident = await prisma.driverIncident.update({
-          where: { id: params.id },
+          where: { id: (await params).id },
           data: {
             reviewNotes: data.note,
             updatedAt: new Date(),
@@ -278,7 +278,7 @@ export async function PUT(
             actorRole: (session.user as any).role || 'admin',
             action: 'incident_note_added',
             targetType: 'driverIncident',
-            targetId: params.id,
+            targetId: (await params).id,
             before: undefined,
             after: {
               note: data.note,
@@ -314,7 +314,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -323,7 +323,7 @@ export async function DELETE(
     }
 
     const incident = await prisma.driverIncident.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!incident) {
@@ -335,7 +335,7 @@ export async function DELETE(
 
     // Soft delete by marking as closed
     await prisma.driverIncident.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         status: 'closed',
       },
@@ -348,7 +348,7 @@ export async function DELETE(
         actorRole: (session.user as any).role || 'admin',
         action: 'incident_archived',
         targetType: 'driverIncident',
-        targetId: params.id,
+        targetId: (await params).id,
         before: undefined,
         after: {
           status: 'closed',

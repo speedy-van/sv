@@ -98,7 +98,7 @@ export const ConfusedComPattern: React.FC<ConfusedComPatternProps> = ({
     if (newStepData.pickupAddress && newStepData.dropoffAddress) {
       setIsLoading(true);
       try {
-        const distanceResult = await calculateDistance(
+        const distanceResult = await calculateDistance( // DEPRECATED - internal use only
           newStepData.pickupAddress.coordinates,
           newStepData.dropoffAddress.coordinates
         );
@@ -139,7 +139,7 @@ export const ConfusedComPattern: React.FC<ConfusedComPatternProps> = ({
     }
   };
 
-  const calculateDistance = async (pickup: { lat: number; lng: number }, dropoff: { lat: number; lng: number }) => {
+  const calculateDistance = async (pickup: { lat: number; lng: number }, dropoff: { lat: number; lng: number }) => { // DEPRECATED - internal use only
     const response = await fetch('/api/address/distance', {
       method: 'POST',
       headers: {

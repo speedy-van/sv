@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         driverId: true,
-        cappedNetEarningsPence: true,
+        netAmountPence: true,
         requiresAdminApproval: true,
       } as any,
     }) as any[];
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
       // Only count approved earnings
       if (!(earning as any).requiresAdminApproval) {
         const current = dailyEarningsMap.get(earning.driverId) || 0;
-        dailyEarningsMap.set(earning.driverId, current + (earning.cappedNetEarningsPence || 0));
+        dailyEarningsMap.set(earning.driverId, current + (earning.netAmountPence || 0));
       }
     }
 
@@ -186,8 +186,7 @@ export async function GET(request: NextRequest) {
         existingEarnings: assignment.DriverEarnings.length > 0 ? {
           id: assignment.DriverEarnings[0].id,
           requiresApproval: (assignment.DriverEarnings[0] as any).requiresAdminApproval,
-          rawNet: (assignment.DriverEarnings[0] as any).rawNetEarningsPence,
-          capped: (assignment.DriverEarnings[0] as any).cappedNetEarningsPence,
+          net: (assignment.DriverEarnings[0] as any).netAmountPence,
         } : null,
         status: assignment.DriverEarnings.length === 0 
           ? 'pending_calculation' 

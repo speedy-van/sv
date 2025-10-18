@@ -48,8 +48,12 @@ export const metadata: Metadata = buildMetadata({
   alternates: { canonical: '/about' },
 });
 
-export default function AboutPage() {
-  const consent = parseConsentCookie(cookies().get('sv_consent')?.value);
+// Force dynamic rendering (fixes DYNAMIC_SERVER_USAGE error)
+export const dynamic = 'force-dynamic';
+
+export default async function AboutPage() {
+  const cookieStore = await cookies();
+  const consent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
   return (
     <Container maxW="6xl" py={{ base: 8, md: 14 }}>
       {consent && consent.preferences?.analytics && <AnalyticsClient />}

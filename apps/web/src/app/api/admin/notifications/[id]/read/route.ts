@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -20,7 +20,7 @@ export async function PUT(
       );
     }
 
-    const notificationId = params.id;
+    const { id: notificationId } = await params;
 
     // Mark notification as read
     const updatedNotification = await prisma.adminNotification.update({

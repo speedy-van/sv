@@ -10,7 +10,7 @@ import { getPusherServer } from '@/lib/pusher';
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; dropId: string } }
+  { params }: { params: Promise<{ id: string; dropId: string }> }
 ): Promise<NextResponse> {
   try {
     // Check authentication and admin role
@@ -22,7 +22,7 @@ export async function DELETE(
       );
     }
 
-    const { id: routeId, dropId } = params;
+    const { id: routeId, dropId } = await params;
 
     // Get route
     const route = await prisma.route.findUnique({

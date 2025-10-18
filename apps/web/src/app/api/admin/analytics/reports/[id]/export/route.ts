@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== 'admin') {
@@ -28,15 +28,15 @@ export async function GET(
     if (format === 'csv') {
       content = generateCSV(reportData);
       contentType = 'text/csv';
-      filename = `report-${params.id}.csv`;
+      filename = `report-${(await params).id}.csv`;
     } else {
       content = generateExcel(reportData);
       contentType =
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      filename = `report-${params.id}.xlsx`;
+      filename = `report-${(await params).id}.xlsx`;
     }
 
-    await logAudit((session.user as any).id, 'export_report', params.id, { targetType: 'analytics_report', before: null, after: { reportId: params.id, format, filename } });
+    await logAudit((session.user as any).id, 'export_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id, format, filename } });
 
     return new Response(content, {
       headers: {

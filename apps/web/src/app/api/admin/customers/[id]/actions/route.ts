@@ -5,7 +5,7 @@ import { createAuditLog } from '@/lib/audit';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin role
@@ -15,7 +15,7 @@ export async function POST(
     }
     const user = authResult;
 
-    const customerId = params.id;
+    const { id: customerId } = await params;
     const body = await request.json();
     const { action, amount, reason, bookingId, notes } = body;
 

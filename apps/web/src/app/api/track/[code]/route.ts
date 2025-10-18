@@ -4,10 +4,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: Request,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
+  const { code } = await params;
+  
   try {
-    console.log('🔍 Tracking API called for code:', params.code);
+    console.log('🔍 Tracking API called for code:', code);
     
     const { searchParams } = new URL(request.url);
     const includeTracking = searchParams.get('tracking') === 'true';
@@ -18,7 +20,7 @@ export async function GET(
     // Try to find booking by reference
     const booking = await prisma.booking.findFirst({
       where: {
-        reference: params.code,
+        reference: code,
       },
       include: {
         driver: {
@@ -77,7 +79,7 @@ export async function GET(
     console.log('📋 Database query result:', booking ? 'Found' : 'Not found');
 
     if (!booking) {
-      console.log('❌ Booking not found for code:', params.code);
+      console.log('❌ Booking not found for code:', code);
       
       // Try to find any recent bookings to help with debugging
       const recentBookings = await prisma.booking.findMany({
@@ -90,8 +92,8 @@ export async function GET(
       
       return Response.json({
         error: 'Booking not found',
-        message: `No booking found with reference code: ${params.code}`,
-        code: params.code,
+        message: `No booking found with reference code: ${code}`,
+        code: code,
         suggestion: 'Please check your reference code and try again',
         recentBookings: recentBookings.map(b => ({
           reference: b.reference,
@@ -353,7 +355,7 @@ export async function GET(
       lastUpdated: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('❌ Error fetching tracking data for code:', params.code, error);
+    console.error('❌ Error fetching tracking data:', error);
     
     // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -361,7 +363,6 @@ export async function GET(
     return Response.json({
       error: 'Internal server error',
       message: errorMessage,
-      code: params.code,
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }

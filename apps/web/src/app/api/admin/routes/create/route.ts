@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 
 /**
  * Get or create a system driver for unassigned routes
@@ -45,8 +44,10 @@ async function getOrCreateSystemDriver() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('📦 [Create Route] Starting route creation...');
     const body = await request.json();
     const { bookingIds, driverId } = body;
+    console.log('📦 [Create Route] Received:', { bookingIds, driverId });
 
     if (!bookingIds || !Array.isArray(bookingIds) || bookingIds.length === 0) {
       return NextResponse.json(
@@ -55,11 +56,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get bookings
+    // Get bookings - accept CONFIRMED, DRAFT, and PENDING_PAYMENT
+    console.log('📦 [Create Route] Fetching bookings...');
     const bookings = await prisma.booking.findMany({
       where: {
         id: { in: bookingIds },
-        status: 'CONFIRMED',
+        status: { in: ['CONFIRMED', 'DRAFT', 'PENDING_PAYMENT'] },
         routeId: null,
       },
       include: {
@@ -76,52 +78,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-  // Analyze the route using multi-drop eligibility per booking then aggregate
-  const analyses = await Promise.all(bookings.map(async (b) => {
-    return intelligentRouteOptimizer.analyzeMultiDropEligibility({
-      pickup: {
-        coordinates: { lat: b.pickupAddress.lat || 0, lng: b.pickupAddress.lng || 0 },
-      },
-      dropoff: {
-        coordinates: { lat: b.dropoffAddress.lat || 0, lng: b.dropoffAddress.lng || 0 },
-      },
-      items: [],
-      floorLevel: 0,
-      hasLift: false,
-    } as any);
-  }));
+    console.log(`📦 [Create Route] Found ${bookings.length} bookings to assign to route`);
 
-  const totalDistance = analyses.reduce((sum, a: any) => sum + (a.route.distance || 0), 0);
-  const totalDuration = analyses.reduce((sum, a: any) => sum + (a.route.totalTime || 0), 0);
-  const totalValue = bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0);
-
-    // Create route
-    // Get the driver ID to use (either provided driver or system driver for unassigned)
-    const routeDriverId = driverId || (await getOrCreateSystemDriver()).id;
-
-    const route = await prisma.route.create({
-      data: {
-        id: `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        status: driverId ? 'assigned' : 'planned',
-        driver: { connect: { id: routeDriverId } },
-        startTime: new Date(),
-    optimizedDistanceKm: totalDistance * 1.609,
-    estimatedDuration: Math.round(totalDuration),
-    totalOutcome: totalValue,
-      },
+    // Calculate simple route metrics from bookings (no complex pricing needed)
+    const totalValue = bookings.reduce((sum, b) => sum + Number(b.totalGBP || 0), 0);
+    
+    // Estimate distance based on bookings (8-10 miles per drop average)
+    const estimatedDistancePerDrop = 8.5; // miles
+    const totalDistance = bookings.length * estimatedDistancePerDrop;
+    
+    // Estimate duration (30-45 mins per drop)
+    const estimatedDurationPerDrop = 35; // minutes
+    const totalDuration = bookings.length * estimatedDurationPerDrop;
+    
+    console.log(`📊 [Create Route] Route metrics:`, { 
+      totalValue, 
+      totalDistance: `${totalDistance} miles`, 
+      totalDuration: `${totalDuration} mins`,
+      bookingsCount: bookings.length 
     });
 
-    // Update bookings
+    // Create route
+    console.log(`📦 [Create Route] Creating route in database...`);
+    console.log(`📦 [Create Route] Driver assignment:`, driverId ? `Driver ${driverId}` : 'Unassigned (pending)');
+    
+    const route = await prisma.route.create({
+      data: {
+        id: `RT${Date.now().toString(36).toUpperCase().slice(-8)}`,
+        status: driverId ? 'assigned' : 'pending_assignment',
+        driverId: driverId || null, // Only assign if valid driverId provided
+        totalDrops: bookings.length,
+        completedDrops: 0,
+        startTime: new Date(),
+        optimizedDistanceKm: totalDistance * 1.609, // Convert miles to km
+        estimatedDuration: Math.round(totalDuration),
+        totalOutcome: totalValue,
+        adminNotes: `Auto-generated route from Smart Route Generator with ${bookings.length} bookings`,
+      },
+    });
+    
+    console.log(`✅ [Create Route] Route created: ${route.id}`);
+
+    // Update bookings - assign to route and update status
+    console.log(`📦 [Create Route] Assigning ${bookings.length} bookings to route...`);
+    
     for (let i = 0; i < bookings.length; i++) {
+      const oldStatus = bookings[i].status;
+      const booking = bookings[i];
+      
+      // Update booking
       await prisma.booking.update({
-        where: { id: bookings[i].id },
+        where: { id: booking.id },
         data: {
           routeId: route.id,
           deliverySequence: i + 1,
           orderType: bookings.length > 1 ? 'multi-drop' : 'single',
+          status: 'CONFIRMED', // Change PENDING_PAYMENT → CONFIRMED
         },
       });
+      
+      // Create Drop record for this booking
+      await prisma.drop.create({
+        data: {
+          routeId: route.id,
+          bookingId: booking.id,
+          customerId: booking.customerId!,
+          pickupAddress: `${booking.pickupAddress.label}, ${booking.pickupAddress.postcode}`,
+          deliveryAddress: `${booking.dropoffAddress.label}, ${booking.dropoffAddress.postcode}`,
+          timeWindowStart: booking.scheduledAt,
+          timeWindowEnd: new Date(booking.scheduledAt.getTime() + 4 * 60 * 60 * 1000), // 4 hours window
+          quotedPrice: Number(booking.totalGBP || 0),
+          status: 'booked',
+        },
+      });
+      
+      console.log(`  ✅ ${booking.reference}: ${oldStatus} → CONFIRMED + Drop created`);
     }
+    
+    console.log(`✅ [Create Route] All ${bookings.length} bookings updated and Drop records created`);
 
     // If driver assigned, notify them
     if (driverId) {
@@ -162,9 +196,17 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error creating route:', error);
+    console.error('❌ [Create Route] Error:', error);
+    console.error('❌ [Create Route] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to create route' },
+      { 
+        success: false, 
+        error: 'Failed to create route',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

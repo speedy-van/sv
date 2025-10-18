@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
@@ -70,11 +71,12 @@ export async function POST(
     // Use transaction to ensure data consistency
     const result = await prisma.$transaction(async (tx) => {
       // Create job event for removal (only if assignment exists)
-      if (booking.Assignment) {
+      const activeAssignment = getActiveAssignment(booking.Assignment);
+      if (activeAssignment) {
         await tx.jobEvent.create({
           data: {
             id: `event_${Date.now()}_removed`,
-            assignmentId: booking.Assignment.id,
+            assignmentId: activeAssignment.id,
             step: 'job_removed' as any,
             payload: {
               removedBy: 'admin',
@@ -88,7 +90,7 @@ export async function POST(
 
         // Update assignment status to cancelled
         await tx.assignment.update({
-          where: { id: booking.Assignment.id },
+          where: { id: activeAssignment.id },
           data: {
             status: 'cancelled',
             updatedAt: new Date(),

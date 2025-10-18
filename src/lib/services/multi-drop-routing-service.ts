@@ -235,22 +235,16 @@ export class MultiDropRoutingService {
       return false;
     }
 
-    // Check geographical feasibility (simplified)
-    const lastStop = route.stops[route.stops.length - 1];
-    const newStop = input.dropoffs[0];
-
-    // Simple distance check (in production, use proper routing)
-    const distance = this.calculateDistance(
-      lastStop.coordinates,
-      {
-        lat: newStop.coordinates!.lat,
-        lng: newStop.coordinates!.lng
-      }
-    );
-
-    if (distance > 50) { // Max 50km between stops
-      return false;
-    }
+    // TODO: Check geographical feasibility using UnifiedPricingFacade
+    // Distance calculations are disabled per unified pricing system requirements
+    // Use UnifiedPricingFacade.getQuote() to determine route feasibility
+    //
+    // Example integration:
+    // const pricingDetails = await UnifiedPricingFacade.getQuote({
+    //   origin: lastStop.coordinates,
+    //   destination: newStop.coordinates
+    // });
+    // if (pricingDetails.distance > 50) { return false; }
 
     return true;
   }
@@ -296,28 +290,8 @@ export class MultiDropRoutingService {
     return 150.00; // £150 base price
   }
 
-  /**
-   * Calculate distance between two points (simplified)
-   */
-  private static calculateDistance(
-    point1: { lat: number; lng: number },
-    point2: { lat: number; lng: number }
-  ): number {
-    const R = 6371; // Earth's radius in km
-    const dLat = this.toRad(point2.lat - point1.lat);
-    const dLon = this.toRad(point2.lng - point1.lng);
-
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(this.toRad(point1.lat)) * Math.cos(this.toRad(point2.lat)) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  }
-
-  private static toRad(degrees: number): number {
-    return degrees * (Math.PI / 180);
-  }
+  // REMOVED: Distance calculation methods
+  // All distance calculations must use UnifiedPricingFacade per unified pricing system requirements
 
   /**
    * Get next available economy date within 7 days

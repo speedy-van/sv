@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,7 +82,8 @@ export async function GET(request: NextRequest) {
     const trackingBookings = bookings.map(booking => {
       // Calculate route progress
       let routeProgress = 0;
-      const jobEvents = booking.Assignment?.JobEvent || [];
+      const activeAssignment = getActiveAssignment(booking.Assignment);
+      const jobEvents = activeAssignment?.JobEvent || [];
       const currentStep = jobEvents[0]?.step;
 
       const stepProgress: Record<string, number> = {

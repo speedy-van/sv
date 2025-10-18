@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 /**
  * Cron Job: Expire Assignments
@@ -175,17 +176,12 @@ export async function GET(request: NextRequest) {
             if (availableDrivers.length > 0) {
               const nextDriver = availableDrivers[0];
               
-              // Create new assignment for next driver
-              await prisma.assignment.create({
-                data: {
-                  id: `assign_${assignment.bookingId}_${nextDriver.id}_${Date.now()}`,
-                  bookingId: assignment.bookingId,
-                  driverId: nextDriver.id,
-                  status: 'invited',
-                  round: (assignment.round || 1) + 1,
-                  expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
-                  updatedAt: now
-                }
+              // Create or update assignment for next driver
+              await upsertAssignment(prisma, assignment.bookingId, {
+                driverId: nextDriver.id,
+                status: 'invited',
+                round: (assignment.round || 1) + 1,
+                expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
               });
 
               // Notify next driver

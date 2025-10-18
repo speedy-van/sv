@@ -156,7 +156,7 @@ export async function sendJobStatusUpdate(
   }
 }
 
-export function calculateDistance(
+export function calculateDistance( // DEPRECATED - internal use only
   lat1: number,
   lng1: number,
   lat2: number,

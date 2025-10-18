@@ -19,7 +19,10 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async tx => {
       // Ensure there's a live offer for this driver
-      const offer = await tx.assignment.findUnique({ where: { bookingId } });
+      const offer = await tx.assignment.findFirst({ 
+        where: { bookingId },
+        orderBy: { createdAt: 'desc' }
+      });
       if (
         !offer ||
         offer.driverId !== driver.id ||
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
         data: { driverId: driver.id, status: 'CONFIRMED' },
       });
       await tx.assignment.update({
-        where: { bookingId },
+        where: { id: offer.id },
         data: { status: 'accepted' },
       });
       return { bookingId, driverId: driver.id };

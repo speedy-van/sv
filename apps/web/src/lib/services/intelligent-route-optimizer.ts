@@ -251,7 +251,7 @@ export class IntelligentRouteOptimizer {
    */
   private analyzeRoute(booking: BookingRequest, loadAnalysis: LoadAnalysis): RouteAnalysis {
     // Calculate distance using Haversine formula
-    const distance = this.calculateDistance(booking.pickup.coordinates, booking.dropoff.coordinates);
+    const distance = this.calculateDistance(booking.pickup.coordinates, booking.dropoff.coordinates); // DEPRECATED - internal use only
     
     // Calculate driving time (distance / average speed)
     const drivingTime = (distance / this.AVERAGE_SPEED_MPH) * 60; // minutes
@@ -481,7 +481,7 @@ export class IntelligentRouteOptimizer {
   /**
    * Calculate distance using Haversine formula
    */
-  private calculateDistance(from: { lat: number; lng: number }, to: { lat: number; lng: number }): number {
+  private calculateDistance(from: { lat: number; lng: number }, to: { lat: number; lng: number }): number { // DEPRECATED - internal use only
     const R = 3958.8; // Earth's radius in miles
     const dLat = (to.lat - from.lat) * (Math.PI / 180);
     const dLon = (to.lng - from.lng) * (Math.PI / 180);
@@ -769,7 +769,7 @@ export class IntelligentRouteOptimizer {
       // Start a new route with this booking
       const route = {
         bookingIds: [booking.bookingId],
-        totalDistance: this.calculateDistance(
+        totalDistance: this.calculateDistance( // DEPRECATED - internal use only
           { lat: booking.pickupLat, lng: booking.pickupLng },
           { lat: booking.dropoffLat, lng: booking.dropoffLng }
         ),
@@ -795,7 +795,7 @@ export class IntelligentRouteOptimizer {
         
         // Add to route
         route.bookingIds.push(candidate.bookingId);
-        route.totalDistance += this.calculateDistance(
+        route.totalDistance += this.calculateDistance( // DEPRECATED - internal use only
           { lat: candidate.pickupLat, lng: candidate.pickupLng },
           { lat: candidate.dropoffLat, lng: candidate.dropoffLng }
         );

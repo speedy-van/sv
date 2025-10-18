@@ -11,10 +11,10 @@ import { logger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await params;
     
     logger.info(`📊 Calculating earnings preview for route ${routeId}`);
     
@@ -48,7 +48,7 @@ export async function GET(
           mileageFee: b.mileageFee,
           timeFee: b.timeFee,
           bonuses: b.bonuses,
-          netEarnings: b.cappedNetEarnings,
+          netEarnings: b.netEarnings,
         })),
         
         // Recommendations

@@ -10,10 +10,10 @@ import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-opti
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const routeId = params.id;
+    const { id: routeId } = await params;
     const body = await request.json();
     const { bookingIds, action } = body; // action: 'add', 'remove', 'reorder'
 

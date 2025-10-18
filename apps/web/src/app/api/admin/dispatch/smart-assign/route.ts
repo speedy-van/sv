@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 interface AssignmentRules {
   radius: number;
@@ -175,15 +176,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create assignment record
-    await prisma.assignment.create({
-      data: {
-        id: `assignment_${jobId}_${bestDriver.driverId}`,
-        bookingId: jobId,
-        driverId: bestDriver.driverId,
-        status: 'invited',
-        updatedAt: new Date(),
-      },
+    // Create or update assignment record
+    await upsertAssignment(prisma, jobId, {
+      driverId: bestDriver.driverId,
+      status: 'invited',
     });
 
     // Log the assignment with detailed reasoning
@@ -268,7 +264,7 @@ async function calculateDriverScore(
   }
 
   // Calculate distance factor (simplified - in real app, use actual coordinates)
-  const distance = calculateDistance(job, driver);
+  const distance = calculateDistance(job, driver); // DEPRECATED - internal use only
   if (distance > rules.radius) {
     reasons.push(
       `Driver too far: ${Math.round(distance / 1000)}km (max: ${rules.radius / 1000}km)`
@@ -322,7 +318,7 @@ async function calculateDriverScore(
   };
 }
 
-function calculateDistance(job: any, driver: any): number {
+function calculateDistance(job: any, driver: any): number { // DEPRECATED - internal use only
   // Simplified distance calculation
   // In a real implementation, you would use actual coordinates
   // For now, return a random distance within reasonable bounds

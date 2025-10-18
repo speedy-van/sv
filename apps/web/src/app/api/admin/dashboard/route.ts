@@ -321,19 +321,29 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       },
     }),
 
-    // Active jobs (assigned and in progress)
+    // Active jobs (assigned and in progress) - exclude test bookings
     prisma.booking.count({
       where: {
         status: { in: ['CONFIRMED'] },
         driverId: { not: null },
+        NOT: [
+          { reference: { startsWith: 'test_' } },
+          { reference: { startsWith: 'TEST_' } },
+          { reference: { startsWith: 'demo_' } },
+        ],
       },
     }),
 
-    // New orders (pending and unassigned)
+    // New orders (pending and unassigned) - exclude test bookings
     prisma.booking.count({
       where: {
         status: { in: ['DRAFT', 'CONFIRMED'] },
         driverId: null,
+        NOT: [
+          { reference: { startsWith: 'test_' } },
+          { reference: { startsWith: 'TEST_' } },
+          { reference: { startsWith: 'demo_' } },
+        ],
       },
     }),
 
@@ -359,11 +369,16 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       },
     }),
 
-    // Live operations - jobs in progress with SLA timers
+    // Live operations - jobs in progress with SLA timers (exclude test bookings)
     prisma.booking.findMany({
       where: {
         status: { in: ['CONFIRMED'] },
         driverId: { not: null },
+        NOT: [
+          { reference: { startsWith: 'test_' } },
+          { reference: { startsWith: 'TEST_' } },
+          { reference: { startsWith: 'demo_' } },
+        ],
       },
       include: {
         pickupAddress: true,
@@ -419,7 +434,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 
   // Process live operations data
   const processedLiveOps = liveOps.map(job => {
-    const claimedAt = job.Assignment?.claimedAt;
+    const claimedAt = job.Assignment?.[0]?.claimedAt;
     const timeSinceClaimed = claimedAt
       ? differenceInMinutes(new Date(), claimedAt)
       : 0;

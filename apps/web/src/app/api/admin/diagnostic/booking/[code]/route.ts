@@ -58,7 +58,7 @@ export async function GET(
     const isConfirmed = booking.status === 'CONFIRMED';
     const hasNoDriver = booking.driverId === null;
     const isInFuture = booking.scheduledAt > now;
-    const hasNoAssignment = !booking.Assignment;
+    const hasNoAssignment = !booking.Assignment || booking.Assignment.length === 0;
 
     const shouldAppearInJobs = isConfirmed && hasNoDriver && isInFuture && hasNoAssignment;
 
@@ -102,7 +102,7 @@ export async function GET(
         customerEmail: booking.customerEmail,
         driverName: booking.driver?.User?.name || null,
         hasAssignment: !!booking.Assignment,
-        assignmentStatus: booking.Assignment?.status || null,
+        assignmentStatus: booking.Assignment?.[0]?.status || null,
         pickupAddress: booking.pickupAddress?.label,
         dropoffAddress: booking.dropoffAddress?.label
       },
@@ -116,7 +116,7 @@ export async function GET(
           !isConfirmed && `Status is ${booking.status}, not CONFIRMED`,
           !hasNoDriver && `Already assigned to driver: ${booking.driver?.User?.name}`,
           !isInFuture && `Scheduled time is in the past: ${booking.scheduledAt}`,
-          !hasNoAssignment && `Has assignment record with status: ${booking.Assignment?.status}`
+          !hasNoAssignment && `Has assignment record with status: ${booking.Assignment?.[0]?.status}`
         ].filter(Boolean)
       },
       context: {

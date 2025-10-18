@@ -129,7 +129,7 @@ export class DynamicPricingEngine {
     let basePrice = serviceRates[request.serviceType];
 
     // Distance calculation with tiered pricing
-    const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress);
+    const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress); // DEPRECATED - internal use only
     
     // Tiered distance pricing (more economical for long distances)
     let distanceCost = 0;
@@ -594,7 +594,7 @@ export class DynamicPricingEngine {
     let basePrice = serviceRates[request.serviceType];
 
     // Distance calculation with tiered pricing
-    const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress);
+    const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress); // DEPRECATED - internal use only
     
     // Tiered distance pricing (more economical for long distances)
     let distanceCost = 0;
@@ -630,7 +630,7 @@ export class DynamicPricingEngine {
     return basePrice + itemsCost;
   }
 
-  private async calculateDistance(pickup: any, dropoff: any): Promise<number> {
+  private async calculateDistance(pickup: any, dropoff: any): Promise<number> { // DEPRECATED - internal use only
     // Use Haversine formula for accurate distance calculation
     if (!pickup.coordinates || !dropoff.coordinates) {
       console.warn('⚠️ Missing coordinates for distance calculation, using default 15 miles');

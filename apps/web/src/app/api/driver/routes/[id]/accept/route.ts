@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Try Bearer token authentication first (for mobile app)
@@ -41,7 +41,7 @@ export async function POST(
       console.log('🌐 NextAuth session authenticated for user:', userId);
     }
 
-    const routeId = params.id;
+    const { id: routeId } = await params;
 
     console.log('🚗 Driver Route Accept API - Request:', { userId, routeId });
 
@@ -122,7 +122,7 @@ export async function POST(
         data: {
           driverId: userId,
           status: 'assigned',
-          acceptedAt: new Date(),
+          // acceptedAt removed - field does not exist in database
           acceptanceStatus: 'accepted',
           updatedAt: new Date()
         }

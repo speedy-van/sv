@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,8 +25,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const route = await prisma.route.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         driver: true,
         drops: {
@@ -66,7 +68,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -74,11 +76,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { action } = body;
 
     const existingRoute = await prisma.route.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { drops: true }
     });
 
@@ -94,7 +97,7 @@ export async function PATCH(
         const { newDriverId } = body;
         
         updatedRoute = await prisma.route.update({
-          where: { id: params.id },
+          where: { id },
           data: {
             driverId: newDriverId,
             routeNotes: `${existingRoute.routeNotes || ''} | Driver reassigned by admin`,
@@ -112,7 +115,7 @@ export async function PATCH(
           undefined,
           { 
             targetType: 'route', 
-            targetId: params.id,
+            targetId: id,
             before: { driverId: existingRoute.driverId },
             after: { driverId: newDriverId }
           }
@@ -142,7 +145,7 @@ export async function PATCH(
         await prisma.drop.updateMany({
           where: { id: { in: dropIdsToAdd } },
           data: {
-            routeId: params.id,
+            routeId: id,
             status: 'assigned_to_route',
           }
         });
@@ -151,7 +154,7 @@ export async function PATCH(
         const newTotalOutcome = dropsToAdd.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
         
         updatedRoute = await prisma.route.update({
-          where: { id: params.id },
+          where: { id },
           data: {
             totalDrops: existingRoute.totalDrops + dropsToAdd.length,
             totalOutcome: Number(existingRoute.totalOutcome) + newTotalOutcome,
@@ -167,7 +170,7 @@ export async function PATCH(
           undefined,
           { 
             targetType: 'route', 
-            targetId: params.id,
+            targetId: id,
             after: { addedDrops: dropIdsToAdd.length }
           }
         );
@@ -180,7 +183,7 @@ export async function PATCH(
         const dropsToRemove = await prisma.drop.findMany({
           where: {
             id: { in: dropIdsToRemove },
-            routeId: params.id,
+            routeId: id,
           }
         });
 
@@ -196,7 +199,7 @@ export async function PATCH(
         const removedOutcome = dropsToRemove.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
         
         updatedRoute = await prisma.route.update({
-          where: { id: params.id },
+          where: { id },
           data: {
             totalDrops: existingRoute.totalDrops - dropsToRemove.length,
             totalOutcome: Number(existingRoute.totalOutcome) - removedOutcome,
@@ -212,7 +215,7 @@ export async function PATCH(
           undefined,
           { 
             targetType: 'route', 
-            targetId: params.id,
+            targetId: id,
             after: { removedDrops: dropIdsToRemove.length }
           }
         );
@@ -223,7 +226,7 @@ export async function PATCH(
         const { newStatus } = body;
         
         updatedRoute = await prisma.route.update({
-          where: { id: params.id },
+          where: { id },
           data: {
             status: newStatus,
             ...(newStatus === 'completed' && {
@@ -240,7 +243,7 @@ export async function PATCH(
           undefined,
           { 
             targetType: 'route', 
-            targetId: params.id,
+            targetId: id,
             before: { status: existingRoute.status },
             after: { status: newStatus }
           }
@@ -275,7 +278,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -283,12 +286,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const reason = searchParams.get('reason') || 'Cancelled by admin';
 
     // Get route before deletion
     const route = await prisma.route.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { drops: true }
     });
 
@@ -299,7 +303,7 @@ export async function DELETE(
     // Release all drops back to pending
     if (route.drops.length > 0) {
       await prisma.drop.updateMany({
-        where: { routeId: params.id },
+        where: { routeId: id },
         data: {
           routeId: null,
           status: 'pending',
@@ -309,7 +313,7 @@ export async function DELETE(
 
     // Mark route as cancelled instead of deleting (for audit trail)
     await prisma.route.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: 'failed',
         adminNotes: `CANCELLED: ${reason}`,
@@ -323,7 +327,7 @@ export async function DELETE(
       undefined,
       { 
         targetType: 'route', 
-        targetId: params.id,
+        targetId: id,
         before: { status: route.status, dropCount: route.drops.length },
         after: { status: 'failed', reason }
       }

@@ -16,7 +16,7 @@ async function createAdminUser() {
       console.log('⚠️ User already exists, updating password...');
 
       // Hash the new password
-      const hashedPassword = await bcrypt.hash('Aa234311Aa@@@', 12);
+      const hashedPassword = await bcrypt.hash('admin123', 12);
 
       // Update the existing user
       const updatedUser = await prisma.user.update({
@@ -40,7 +40,7 @@ async function createAdminUser() {
       console.log('🆕 Creating new admin user...');
 
       // Hash the password
-      const hashedPassword = await bcrypt.hash('Aa234311Aa@@@', 12);
+      const hashedPassword = await bcrypt.hash('admin123', 12);
 
       // Create new admin user
       const newUser = await prisma.user.create({
@@ -70,7 +70,7 @@ async function createAdminUser() {
 
     if (testUser) {
       const passwordMatch = await bcrypt.compare(
-        'Aa234311Aa@@@',
+        'admin123',
         testUser.password
       );
       console.log(
@@ -81,7 +81,7 @@ async function createAdminUser() {
       if (passwordMatch) {
         console.log('🎉 Admin user is ready for login!');
         console.log('📧 Email: ahmad22wakaa@gmail.com');
-        console.log('🔑 Password: Aa234311Aa@@@');
+        console.log('🔑 Password: admin123');
         console.log('🔗 Login URL: /admin/login');
       }
     }

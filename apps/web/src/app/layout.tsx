@@ -14,7 +14,7 @@ import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
 import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';
 import { parseConsentCookie } from '@/lib/consent';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import AnalyticsScripts from '@/components/Consent/AnalyticsScripts';
 import Providers from '@/components/Providers';
 // import MotionProvider from '@/components/MotionProvider'; // Temporarily removed due to framer-motion export * issue
@@ -84,12 +84,18 @@ export const viewport = {
   colorScheme: 'light dark',
 };
 
+// Force dynamic rendering for root layout (fixes DYNAMIC_SERVER_USAGE error)
+// Required because we use cookies() for consent tracking
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const initialConsent = parseConsentCookie(cookies().get('sv_consent')?.value);
+  const cookieStore = await cookies();
+  const initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
 
   return (
     <html lang="en" dir="ltr">

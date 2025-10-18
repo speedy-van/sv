@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
+import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 import Pusher from 'pusher';
 
 export const dynamic = 'force-dynamic';
@@ -83,9 +84,10 @@ export async function POST(
         });
 
         // Delete or update assignment
-        if (booking.Assignment) {
+        const activeAssignment = getActiveAssignment(booking.Assignment);
+        if (activeAssignment) {
           await tx.assignment.update({
-            where: { id: booking.Assignment.id },
+            where: { id: activeAssignment.id },
             data: {
               status: 'cancelled',
               updatedAt: new Date()
