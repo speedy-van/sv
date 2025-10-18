@@ -208,7 +208,7 @@ export async function POST(
                     action: 'job_removed',
                   },
                   notes: `Job removed from driver ${oldDriverName} by admin (route reassignment)`,
-                  createdBy: (session.user as any).id,
+                  createdBy: session.user.id || 'system',
                 }
               });
             }
@@ -241,7 +241,7 @@ export async function POST(
                   routeId: routeId,
                 },
                 notes: `Job assigned to driver ${newDriver.User?.name || 'Unknown'} as part of reassigned route ${routeId}`,
-                createdBy: (session.user as any).id,
+                createdBy: session.user.id || 'system',
               }
             });
           }
@@ -326,7 +326,7 @@ export async function POST(
       // Create audit log
       await prisma.auditLog.create({
         data: {
-          actorId: (session.user as any).id,
+          actorId: session.user.id || 'system',
           actorRole: 'admin',
           action: 'route_reassigned',
           targetType: 'route',
