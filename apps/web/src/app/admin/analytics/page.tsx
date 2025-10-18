@@ -63,7 +63,9 @@ import {
   FaChartLine,
   FaExclamationTriangle,
   FaFilter,
+  FaRobot,
 } from 'react-icons/fa';
+import AIRoutesAnalytics from '@/components/admin/AIRoutesAnalytics';
 import {
   LineChart,
   Line,
@@ -488,6 +490,12 @@ export default function AdminAnalyticsPage() {
             </Tab>
             <Tab>
               <HStack spacing={2}>
+                <FaRobot />
+                <Text>AI Routes</Text>
+              </HStack>
+            </Tab>
+            <Tab>
+              <HStack spacing={2}>
                 <FaMapMarkerAlt />
                 <Text>Service Areas</Text>
               </HStack>
@@ -704,6 +712,11 @@ export default function AdminAnalyticsPage() {
                   </Table>
                 </CardBody>
               </Card>
+            </TabPanel>
+
+            {/* AI Routes Tab */}
+            <TabPanel>
+              <AIRoutesAnalytics />
             </TabPanel>
 
             {/* Service Areas Tab */}

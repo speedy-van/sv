@@ -270,23 +270,25 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     setStep('creating');
     
     try {
-      const response = await fetch('/api/admin/routes/auto-create', {
+      // Get selected booking IDs from pending drops
+      const bookingIds = pendingDrops.map(drop => drop.id);
+      
+      const response = await fetch('/api/admin/routes/smart-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          maxDropsPerRoute,
-          maxDistanceKm: maxDistanceMiles, // Send as maxDistanceKm for API compatibility
-          optimizeBy,
-          autoAssign,
-          driverIds: autoAssign ? [] : selectedDriverIds,
+          bookingIds,
+          date: new Date().toISOString(),
+          driverId: selectedDriverIds.length > 0 ? selectedDriverIds[0] : undefined,
         }),
       });
 
       const data = await response.json();
       if (data.success) {
+        const routeInfo = data.route ? `Route ${data.route.routeNumber} with ${data.route.drops?.length || 0} drops` : 'Route';
         toast({
-          title: 'Success!',
-          description: `${data.routesCreated || 0} routes created successfully`,
+          title: '🎉 AI Route Generated!',
+          description: `${routeInfo} created successfully using DeepSeek AI`,
           status: 'success',
           duration: 5000,
         });

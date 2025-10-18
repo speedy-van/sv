@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
     // Create route
     const route = await prisma.route.create({
       data: {
-        driverId: driver.userId,
+        driverId: driver.id, // ✅ Fixed: Use driver.id instead of driver.userId
         vehicleId,
         startTime: new Date(startTime),
         optimizedDistanceKm: totalDistance,

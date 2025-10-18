@@ -241,7 +241,7 @@ export async function GET(request: NextRequest) {
     }
     
     const drivers = driversData.map((driver: any) => ({
-      id: driver.userId,
+      id: driver.id, // ✅ Fixed: Use driver.id instead of driver.userId
       name: driver.User?.name || 'Unknown',
       status: driver.DriverAvailability?.status || 'offline',
       currentRoutes: 0,

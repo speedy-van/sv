@@ -122,7 +122,7 @@ export async function POST(
         data: {
           driverId: userId,
           status: 'assigned',
-          acceptedAt: new Date(),
+          // acceptedAt removed - field does not exist in database
           acceptanceStatus: 'accepted',
           updatedAt: new Date()
         }
