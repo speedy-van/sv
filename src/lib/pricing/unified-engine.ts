@@ -283,7 +283,7 @@ export class UnifiedPricingEngine {
    * Calculate distance between two points (simplified)
    * @deprecated Internal use only - DEPRECATED for external use
    */
-  private calculateDistanceBetweenPoints(
+  private calculateDistanceBetweenPoints( // DEPRECATED - internal pricing system use only
     point1: { lat: number; lng: number },
     point2: { lat: number; lng: number }
   ): number {
@@ -350,8 +350,7 @@ export class UnifiedPricingEngine {
     }, 0);
   }
 
-  // DEPRECATED for external use - internal pricing calculation only
-  private calculateDistanceFee(distance: number): number {
+  private calculateDistanceFee(distance: number): number { // DEPRECATED - internal pricing system use only
     return Math.round(distance * this.pricingConfig!.config.baseRates.perKmGBP);
   }
 

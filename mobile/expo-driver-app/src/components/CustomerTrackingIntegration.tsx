@@ -82,8 +82,8 @@ export default function CustomerTrackingIntegration({
           setLocation(newLocation);
           onLocationUpdate(newLocation.coords.latitude, newLocation.coords.longitude);
           
-          // Distance calculation removed - use UnifiedPricingFacade instead
-          // calculateDistanceToDestination(newLocation.coords.latitude, newLocation.coords.longitude);
+          // Distance calculation removed - use UnifiedPricingFacade instead - DEPRECATED disabled
+          // calculateDistanceToDestination(newLocation.coords.latitude, newLocation.coords.longitude); // disabled
         }
       );
 
