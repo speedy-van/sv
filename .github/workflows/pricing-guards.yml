@@ -124,6 +124,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Unified Pricing System
     needs: pricing-system-guards
+    
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+      NODE_ENV: test
 
     steps:
     - uses: actions/checkout@v4
@@ -141,6 +145,12 @@ jobs:
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
+
+    - name: Generate Prisma Client
+      run: cd packages/shared && pnpm prisma generate
+
+    - name: Build packages
+      run: pnpm run build:packages
 
     - name: Run unified pricing tests
       run: |
