@@ -6,7 +6,7 @@ import { generateSmartSuggestions } from '@/lib/utils/smart-suggestions';
 import { penceToPounds } from '@/lib/utils/currency';
 
 // Helper function to calculate distance between two coordinates
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of the Earth in miles
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
@@ -193,7 +193,7 @@ export async function GET(
     
     let distance = 0;
     if (isValidUKCoord(pickupLat, pickupLng) && isValidUKCoord(dropoffLat, dropoffLng)) {
-      distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
+      distance = calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng); // DEPRECATED - internal use only
       
       // ✅ Validate distance - no fallback, use actual value
       if (distance > 1000) {

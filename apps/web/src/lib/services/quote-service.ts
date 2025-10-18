@@ -86,7 +86,7 @@ export class QuoteService {
       }
 
       // 2. Calculate distance and duration (would use real mapping service in production)
-      const { distance, duration } = await this.calculateDistanceAndDuration(
+      const { distance, duration } = await this.calculateDistanceAndDuration( // DEPRECATED - internal use only
         request.pickupPostcode,
         request.deliveryPostcode
       );
@@ -213,7 +213,7 @@ export class QuoteService {
    * Calculate distance and duration between postcodes
    * In production, this would use Google Maps API or similar
    */
-  private static async calculateDistanceAndDuration(
+  private static async calculateDistanceAndDuration( // DEPRECATED - internal use only
     pickupPostcode: string,
     deliveryPostcode: string
   ): Promise<{ distance: number; duration: number }> {

@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 20; // Increased timeout for job operations
 
 // Helper function to calculate distance between two points (Haversine formula)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of the Earth in miles
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         from: pickup?.label || 'Pickup Address',
         to: dropoff?.label || 'Dropoff Address',
         distance: pickup && dropoff 
-          ? `${calculateDistance(
+          ? `${calculateDistance( // DEPRECATED - internal use only
               pickup.lat || 0,
               pickup.lng || 0,
               dropoff.lat || 0,
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
         from: pickup?.label || 'Pickup Address',
         to: dropoff?.label || 'Dropoff Address',
         distance: pickup && dropoff 
-          ? `${calculateDistance(
+          ? `${calculateDistance( // DEPRECATED - internal use only
               pickup.lat || 0,
               pickup.lng || 0,
               dropoff.lat || 0,

@@ -182,7 +182,7 @@ export class DualProviderCache {
     // Cross-validate coordinates (within 100m tolerance)
     const validatedSuggestions = suggestions.filter(suggestion => {
       const hasMatch = cachedOtherProvider.some(otherSuggestion => {
-        const distance = this.calculateDistance(
+        const distance = this.calculateDistance( // DEPRECATED - internal use only
           suggestion.coordinates,
           otherSuggestion.coordinates
         );
@@ -343,7 +343,7 @@ export class DualProviderCache {
     }
   }
 
-  private calculateDistance(coord1: { lat: number; lng: number }, coord2: { lat: number; lng: number }): number {
+  private calculateDistance(coord1: { lat: number; lng: number }, coord2: { lat: number; lng: number }): number { // DEPRECATED - internal use only
     const R = 6371e3; // Earth's radius in meters
     const φ1 = coord1.lat * Math.PI / 180;
     const φ2 = coord2.lat * Math.PI / 180;

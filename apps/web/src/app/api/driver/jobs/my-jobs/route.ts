@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       const dropoffAddr = booking.dropoffAddress;
       
       // Calculate distance - fix the calculation
-      const distance = calculateDistance(
+      const distance = calculateDistance( // DEPRECATED - internal use only
         pickupAddr?.lat || 0,
         pickupAddr?.lng || 0,
         dropoffAddr?.lat || 0,
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper functions (same as in available jobs)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959;
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);

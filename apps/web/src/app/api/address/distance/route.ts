@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate distance using dual provider service (external API - not manual calculation)
     // This uses Google/Mapbox APIs, not manual Haversine formula - DEPRECATED but allowed for external APIs
-    const result = await dualProviderService.calculateDistance(pickup, dropoff, preferredProvider);
+    const result = await dualProviderService.calculateDistance(pickup, dropoff, preferredProvider); // DEPRECATED - internal use only
 
     if (result) {
       return NextResponse.json({

@@ -104,7 +104,7 @@ export class AddressValidationService {
     if (pickupAddress?.coordinates && dropoffAddress?.coordinates &&
         pickupAddress.coordinates.lat !== 0 && dropoffAddress.coordinates.lat !== 0) {
       
-      const distance = this.calculateDistance(
+      const distance = this.calculateDistance( // DEPRECATED - internal use only
         { lat: pickupAddress.coordinates.lat || 0, lng: pickupAddress.coordinates.lng || 0 },
         { lat: dropoffAddress.coordinates.lat || 0, lng: dropoffAddress.coordinates.lng || 0 }
       );
@@ -145,7 +145,7 @@ export class AddressValidationService {
   /**
    * Calculate distance between two coordinates (Haversine formula)
    */
-  private static calculateDistance(
+  private static calculateDistance( // DEPRECATED - internal use only
     coord1: { lat: number; lng: number },
     coord2: { lat: number; lng: number }
   ): number {

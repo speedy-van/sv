@@ -275,7 +275,7 @@ export class RealTimeOptimizationService {
     // Distance factor (closer is better)
     const driverPostcode = driver.basePostcode || 'SW1A 1AA'; // Default to London center
     const pickupPostcode = booking.pickupAddress?.postcode || 'SW1A 1AA';
-    const distance = await this.calculateDistance(driverPostcode, pickupPostcode);
+    const distance = await this.calculateDistance(driverPostcode, pickupPostcode); // DEPRECATED - internal use only
     factors.distance = Math.max(0, 1 - (distance / request.constraints.maxDistance));
 
     // Performance factor (simplified - no performance data available)
@@ -331,7 +331,7 @@ export class RealTimeOptimizationService {
     // Calculate route details
     const pickupPostcode = booking.pickupAddress?.postcode || 'SW1A 1AA';
     const dropoffPostcode = booking.dropoffAddress?.postcode || 'SW1A 1AA';
-    const distance = await this.calculateDistance(pickupPostcode, dropoffPostcode);
+    const distance = await this.calculateDistance(pickupPostcode, dropoffPostcode); // DEPRECATED - internal use only
 
     // Assume 1 item if no items specified
     const itemCount = (booking as any).items?.length || 1;
@@ -573,7 +573,7 @@ export class RealTimeOptimizationService {
   }
 
   // Helper methods (simplified implementations)
-  private async calculateDistance(postcode1: string, postcode2: string): Promise<number> {
+  private async calculateDistance(postcode1: string, postcode2: string): Promise<number> { // DEPRECATED - internal use only
     // Mock distance calculation - integrate with mapping service
     return Math.random() * 30 + 5; // 5-35 miles
   }

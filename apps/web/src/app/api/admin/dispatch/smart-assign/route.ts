@@ -268,7 +268,7 @@ async function calculateDriverScore(
   }
 
   // Calculate distance factor (simplified - in real app, use actual coordinates)
-  const distance = calculateDistance(job, driver);
+  const distance = calculateDistance(job, driver); // DEPRECATED - internal use only
   if (distance > rules.radius) {
     reasons.push(
       `Driver too far: ${Math.round(distance / 1000)}km (max: ${rules.radius / 1000}km)`
@@ -322,7 +322,7 @@ async function calculateDriverScore(
   };
 }
 
-function calculateDistance(job: any, driver: any): number {
+function calculateDistance(job: any, driver: any): number { // DEPRECATED - internal use only
   // Simplified distance calculation
   // In a real implementation, you would use actual coordinates
   // For now, return a random distance within reasonable bounds

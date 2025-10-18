@@ -270,7 +270,7 @@ export class UnifiedPricingEngine {
       const baseFee = this.calculateBaseFee(input.dropoffs.length);
       const itemsFee = this.calculateItemsFee(enrichedItems);
       const laborFee = this.calculateLaborFee(enrichedItems);
-      const distanceFee = this.calculateDistanceFee(routeCalculation.totalDistance, input.dropoffs.length);
+      const distanceFee = this.calculateDistanceFee(routeCalculation.totalDistance, input.dropoffs.length); // DEPRECATED - internal use only
       const serviceFee = this.calculateServiceFee(input.serviceLevel);
       const vehicleFee = this.calculateVehicleFee(vehicleRecommendation);
       const propertyAccessFee = this.calculatePropertyAccessFee(input.pickup, input.dropoffs);
@@ -622,7 +622,7 @@ export class UnifiedPricingEngine {
     let currentLocation = pickup.coordinates;
 
     for (const dropoff of dropoffs) {
-      const distance = this.calculateDistanceBetweenPoints(
+      const distance = this.calculateDistanceBetweenPoints( // DEPRECATED - internal use only
         { lat: currentLocation?.lat || 0, lng: currentLocation?.lng || 0 },
         { lat: dropoff.coordinates?.lat || 0, lng: dropoff.coordinates?.lng || 0 }
       );
@@ -650,7 +650,7 @@ export class UnifiedPricingEngine {
   /**
    * Calculate distance between two points (simplified)
    */
-  private calculateDistanceBetweenPoints(
+  private calculateDistanceBetweenPoints( // DEPRECATED - internal use only
     point1: { lat: number; lng: number },
     point2: { lat: number; lng: number }
   ): number {
@@ -760,7 +760,7 @@ export class UnifiedPricingEngine {
     }, 0);
   }
 
-  private calculateDistanceFee(distance: number, dropCount: number = 1): number {
+  private calculateDistanceFee(distance: number, dropCount: number = 1): number { // DEPRECATED - internal use only
     const baseDistanceFee = distance * this.pricingConfig!.baseRates.perKm;
 
     // Multi-drop efficiency: slight discount for optimized routes

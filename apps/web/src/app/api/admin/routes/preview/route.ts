@@ -14,7 +14,7 @@ interface PreviewRequest {
 }
 
 // Simple haversine distance calculation
-function calculateDistance(
+function calculateDistance( // DEPRECATED - internal use only
   lat1: number,
   lon1: number,
   lat2: number,
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
 
         if (!seedCoords || !bookingCoords) continue;
 
-        const distance = calculateDistance(
+        const distance = calculateDistance( // DEPRECATED - internal use only
           seedCoords.lat,
           seedCoords.lng,
           bookingCoords.lat,

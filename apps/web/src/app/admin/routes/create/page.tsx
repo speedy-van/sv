@@ -83,7 +83,7 @@ export default function CreateRoutePage() {
   const [isSuggestingRoute, setIsSuggestingRoute] = useState(false);
 
   // Haversine formula to calculate distance between two points in miles
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => { // DEPRECATED - internal use only
     const R = 3958.8; // Earth's radius in miles (changed from 6371 km)
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -205,7 +205,7 @@ export default function CreateRoutePage() {
         let nearestDistance = Infinity;
         
         remaining.forEach((booking, index) => {
-          const distance = calculateDistance(
+          const distance = calculateDistance( // DEPRECATED - internal use only
             currentLat,
             currentLng,
             booking.pickupLat!,
@@ -232,7 +232,7 @@ export default function CreateRoutePage() {
       for (let i = 0; i < optimizedRoute.length - 1; i++) {
         const current = selectedBookingsData.find(b => b.id === optimizedRoute[i])!;
         const next = selectedBookingsData.find(b => b.id === optimizedRoute[i + 1])!;
-        totalDistance += calculateDistance(
+        totalDistance += calculateDistance( // DEPRECATED - internal use only
           current.dropoffLat!,
           current.dropoffLng!,
           next.pickupLat!,
@@ -419,7 +419,7 @@ export default function CreateRoutePage() {
                         for (let i = 0; i < selectedBookingsData.length - 1; i++) {
                           const current = selectedBookingsData[i]!;
                           const next = selectedBookingsData[i + 1]!;
-                          totalDistance += calculateDistance(
+                          totalDistance += calculateDistance( // DEPRECATED - internal use only
                             current.dropoffLat!,
                             current.dropoffLng!,
                             next.pickupLat!,
@@ -455,7 +455,7 @@ export default function CreateRoutePage() {
                     if (booking && nextBooking && 
                         booking.dropoffLat && booking.dropoffLng && 
                         nextBooking.pickupLat && nextBooking.pickupLng) {
-                      distanceToNext = calculateDistance(
+                      distanceToNext = calculateDistance( // DEPRECATED - internal use only
                         booking.dropoffLat,
                         booking.dropoffLng,
                         nextBooking.pickupLat,
