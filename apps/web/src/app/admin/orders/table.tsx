@@ -476,6 +476,60 @@ export default function OrdersClient() {
     }
   };
 
+  const handleCreateRouteFromOrders = async () => {
+    if (selectedOrders.length < 2) {
+      toast({
+        title: 'Insufficient orders',
+        description: 'Please select at least 2 orders to create a route',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      // Call the route creation API with selected order IDs
+      const response = await fetch('/api/admin/routes/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingIds: selectedOrders,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: 'Route created successfully',
+          description: `Created route ${result.route?.reference || result.route?.id} with ${selectedOrders.length} orders`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        setSelectedOrders([]);
+        loadOrders(true);
+        
+        // Optionally redirect to operations page (routes tab)
+        // window.location.href = '/admin/operations';
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create route');
+      }
+    } catch (error) {
+      console.error('Error creating route:', error);
+      toast({
+        title: 'Failed to create route',
+        description: error instanceof Error ? error.message : 'An error occurred',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleViewOrder = (orderCode: string) => {
     setSelectedOrderCode(orderCode);
     onDetailOpen();
@@ -1341,6 +1395,16 @@ export default function OrdersClient() {
               title="Send floor warning emails to selected customers who didn't specify floor numbers"
             >
               Send Floor Warnings ({selectedOrders.length})
+            </Button>
+            <Button
+              leftIcon={<FaRoute />}
+              colorScheme="blue"
+              variant="solid"
+              onClick={() => handleCreateRouteFromOrders()}
+              isDisabled={selectedOrders.length < 2}
+              title="Create a multi-drop route from selected orders"
+            >
+              Create Route ({selectedOrders.length})
             </Button>
           </HStack>
         }
