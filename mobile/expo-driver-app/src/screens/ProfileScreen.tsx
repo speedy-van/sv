@@ -13,10 +13,15 @@ import {
   Switch,
   ActivityIndicator,
   Linking,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/RootNavigator';
 import { COMPANY_INFO } from '../config/api';
 import * as ImagePicker from 'expo-image-picker';
 import apiService from '../services/api.service';
@@ -46,6 +51,7 @@ interface NotificationSettings {
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<'profile' | 'vehicle' | 'notifications' | 'settings'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -670,6 +676,22 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Apple Review Demo */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>For Apple Review</Text>
+        
+        <TouchableOpacity 
+          style={[styles.settingItem, styles.demoButton]}
+          onPress={() => navigation.navigate('LocationDemo')}
+        >
+          <View style={styles.settingInfo}>
+            <Ionicons name="location" size={20} color="#3B82F6" />
+            <Text style={[styles.settingTitle, { color: '#3B82F6' }]}>Location Usage Demo</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Company Information</Text>
         
@@ -729,28 +751,34 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-      </View>
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Profile</Text>
+        </View>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        {renderTabButton('profile', 'Profile', 'person')}
-        {renderTabButton('vehicle', 'Vehicle', 'car')}
-        {renderTabButton('notifications', 'Notifications', 'notifications')}
-        {renderTabButton('settings', 'Settings', 'settings')}
-      </View>
+        {/* Tabs */}
+        <View style={styles.tabsContainer}>
+          {renderTabButton('profile', 'Profile', 'person')}
+          {renderTabButton('vehicle', 'Vehicle', 'car')}
+          {renderTabButton('notifications', 'Notifications', 'notifications')}
+          {renderTabButton('settings', 'Settings', 'settings')}
+        </View>
 
-      {/* Tab Content */}
-      {activeTab === 'profile' && renderProfileTab()}
-      {activeTab === 'vehicle' && renderVehicleTab()}
-      {activeTab === 'notifications' && renderNotificationsTab()}
-      {activeTab === 'settings' && renderSettingsTab()}
-    </View>
+        {/* Tab Content */}
+        {activeTab === 'profile' && renderProfileTab()}
+        {activeTab === 'vehicle' && renderVehicleTab()}
+        {activeTab === 'notifications' && renderNotificationsTab()}
+        {activeTab === 'settings' && renderSettingsTab()}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -1073,5 +1101,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#EF4444',
+  },
+  demoButton: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#3B82F6',
   },
 });

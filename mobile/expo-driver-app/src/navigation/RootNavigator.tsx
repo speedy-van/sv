@@ -6,6 +6,7 @@ import MainTabNavigator from './MainTabNavigator';
 import JobDetailScreen from '../screens/JobDetailScreen';
 import JobProgressScreen from '../screens/JobProgressScreen';
 import EarningsScreen from '../screens/EarningsScreen';
+import LocationDemoScreen from '../screens/LocationDemoScreen';
 import { ActivityIndicator, View } from 'react-native';
 
 export type RootStackParamList = {
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   JobDetail: { jobId: string };
   JobProgress: { jobId: string };
   Earnings: undefined;
+  LocationDemo: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -49,6 +51,11 @@ export default function RootNavigator() {
           <Stack.Screen 
             name="Earnings" 
             component={EarningsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen 
+            name="LocationDemo" 
+            component={LocationDemoScreen}
             options={{ headerShown: false }}
           />
         </>
