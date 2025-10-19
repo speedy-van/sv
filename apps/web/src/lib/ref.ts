@@ -1,74 +1,127 @@
-// Simple reference generation without database dependency
+/**
+ * Unified Reference Generation System
+ * All orders and routes use SV-NNNNNN format with sequential numbering
+ */
+
+import { prisma } from './prisma';
+
 export interface ReferenceData {
-  type: 'booking' | 'driver' | 'customer' | 'admin';
+  type: 'booking' | 'route' | 'driver' | 'customer' | 'admin';
   reference: string;
   createdAt: Date;
 }
 
-// In-memory cache to avoid duplicates (for single instance)
-const generatedReferences = new Set<string>();
+/**
+ * Generate a unified SV reference number
+ * Format: SV-NNNNNN (e.g., SV-000001, SV-000002)
+ * Both orders and routes share the same sequence
+ */
+export async function generateReference(type: 'booking' | 'route' | 'driver' | 'customer' | 'admin'): Promise<string> {
+  try {
+    // Use database transaction to ensure atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Get or create the sequence record
+      let sequence = await tx.referenceSequence.findUnique({
+        where: { id: 'sv-sequence' }
+      });
 
-export async function generateReference(type: 'booking' | 'driver' | 'customer' | 'admin' | 'route'): Promise<string> {
-  const prefix = getPrefix(type);
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  
-  const reference = `${prefix}${timestamp}${random}`;
-  
-  // Check if reference already exists in memory
-  if (generatedReferences.has(reference)) {
-    // If exists, generate a new one
-    return generateReference(type);
+      if (!sequence) {
+        // Create initial sequence if it doesn't exist
+        sequence = await tx.referenceSequence.create({
+          data: {
+            id: 'sv-sequence',
+            type: 'unified',
+            lastNumber: 0,
+            prefix: 'SV',
+          }
+        });
+      }
+
+      // Increment the counter
+      const nextNumber = sequence.lastNumber + 1;
+
+      // Update the sequence
+      await tx.referenceSequence.update({
+        where: { id: 'sv-sequence' },
+        data: {
+          lastNumber: nextNumber,
+          updatedAt: new Date(),
+        }
+      });
+
+      // Format the reference number: SV-NNNNNN
+      const reference = `${sequence.prefix}-${String(nextNumber).padStart(6, '0')}`;
+      
+      return reference;
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Failed to generate reference:', error);
+    // Fallback to timestamp-based reference if database fails
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `SV-${timestamp}${random}`;
   }
-  
-  // Add to memory cache
-  generatedReferences.add(reference);
-  
-  return reference;
 }
 
-function getPrefix(type: string): string {
-  switch (type) {
-    case 'booking':
-      return 'SV';
-    case 'route':
-      return 'RT';
-    case 'driver':
-      return 'SV';
-    case 'customer':
-      return 'SV';
-    case 'admin':
-      return 'SV';
-    default:
-      return 'SV';
-  }
-}
-
+/**
+ * Validate if a reference exists in the database
+ */
 export async function validateReference(reference: string): Promise<boolean> {
   try {
-    // Check if reference exists in memory cache
-    return generatedReferences.has(reference);
+    // Check if reference exists in Booking or Route tables
+    const [booking, route] = await Promise.all([
+      prisma.booking.findFirst({
+        where: { reference },
+        select: { id: true }
+      }),
+      prisma.route.findFirst({
+        where: { reference },
+        select: { id: true }
+      })
+    ]);
+
+    return !!(booking || route);
   } catch (error) {
     console.error('Failed to validate reference:', error);
     return false;
   }
 }
 
+/**
+ * Get reference data by reference number
+ */
 export async function getReferenceData(reference: string): Promise<ReferenceData | null> {
   try {
-    // Check if reference exists in memory cache
-    if (generatedReferences.has(reference)) {
-      // Extract type from prefix
-      const prefix = reference.substring(0, 2);
-      const type = getTypeFromPrefix(prefix);
-      
+    // Try to find in bookings first
+    const booking = await prisma.booking.findFirst({
+      where: { reference },
+      select: { id: true, createdAt: true }
+    });
+
+    if (booking) {
       return {
-        type,
+        type: 'booking',
         reference,
-        createdAt: new Date(), // We don't store actual creation time in memory
+        createdAt: booking.createdAt,
       };
     }
-    
+
+    // Try to find in routes
+    const route = await prisma.route.findFirst({
+      where: { reference },
+      select: { id: true, createdAt: true }
+    });
+
+    if (route) {
+      return {
+        type: 'route',
+        reference,
+        createdAt: route.createdAt,
+      };
+    }
+
     return null;
   } catch (error) {
     console.error('Failed to get reference data:', error);
@@ -76,17 +129,31 @@ export async function getReferenceData(reference: string): Promise<ReferenceData
   }
 }
 
-function getTypeFromPrefix(prefix: string): 'booking' | 'driver' | 'customer' | 'admin' {
-  // Since all references now start with 'SV', we default to 'booking'
-  // Type distinction is now handled by context/usage rather than prefix
-  switch (prefix) {
-    case 'SV':
-      return 'booking'; // Default to booking for SV prefixed references
-    default:
-      return 'booking';
+/**
+ * Create a unique reference (alias for generateReference)
+ */
+export async function createUniqueReference(type: 'booking' | 'route' | 'driver' | 'customer' | 'admin'): Promise<string> {
+  return await generateReference(type);
+}
+
+/**
+ * Get the next available reference number (for preview purposes)
+ */
+export async function getNextReferenceNumber(): Promise<string> {
+  try {
+    const sequence = await prisma.referenceSequence.findUnique({
+      where: { id: 'sv-sequence' }
+    });
+
+    if (!sequence) {
+      return 'SV-000001';
+    }
+
+    const nextNumber = sequence.lastNumber + 1;
+    return `${sequence.prefix}-${String(nextNumber).padStart(6, '0')}`;
+  } catch (error) {
+    console.error('Failed to get next reference number:', error);
+    return 'SV-000001';
   }
 }
 
-export async function createUniqueReference(type: 'booking' | 'driver' | 'customer' | 'admin' | 'route'): Promise<string> {
-  return await generateReference(type);
-}

@@ -567,7 +567,10 @@ class UnifiedDropService {
       return acc;
     }, {} as Record<string, number>);
 
-    const totalPrice = drops.reduce((sum, drop) => sum + parseFloat(drop.quotedPrice.toString()), 0);
+    const totalPrice = drops.reduce((sum, drop) => {
+      const price = parseFloat(drop.quotedPrice.toString());
+      return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+    }, 0);
     const averagePrice = drops.length > 0 ? totalPrice / drops.length : 0;
 
     return {

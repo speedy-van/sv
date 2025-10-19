@@ -453,7 +453,10 @@ export class RouteManager {
       // Calculate route metrics
       const totalWeight = drops.reduce((sum, d) => sum + (d.weight || 0), 0);
       const totalVolume = drops.reduce((sum, d) => sum + (d.volume || 0), 0);
-      const totalOutcome = drops.reduce((sum, d) => sum + Number(d.quotedPrice || 0), 0);
+      const totalOutcome = drops.reduce((sum, d) => {
+        const price = Number(d.quotedPrice || 0);
+        return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+      }, 0);
 
       // Create route
       const routeId = `route_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

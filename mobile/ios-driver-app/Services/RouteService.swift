@@ -1,27 +1,106 @@
 import Foundation
 
-// MARK: - Route Service (UPDATED)
+// MARK: - Route Service (ENHANCED)
 
 class RouteService {
     static let shared = RouteService()
     private let network = NetworkService.shared
     
-    private init() {}
+    // Published property to notify views of route changes
+    @Published var activeRoutes: [Route] = []
+    
+    private init() {
+        setupNotificationObservers()
+    }
+    
+    // MARK: - Notification Observers
+    
+    private func setupNotificationObservers() {
+        // Listen for route cancellation notifications
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteCancellation(_:)),
+            name: NSNotification.Name("RemoveRoute"),
+            object: nil
+        )
+        
+        // Listen for route refresh notifications
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteRefresh(_:)),
+            name: NSNotification.Name("RefreshRoute"),
+            object: nil
+        )
+    }
+    
+    @objc private func handleRouteCancellation(_ notification: Notification) {
+        guard let routeId = notification.userInfo?["routeId"] as? String else { return }
+        
+        print("🗑️ Removing cancelled route from app: \(routeId)")
+        
+        // Remove route from active routes
+        DispatchQueue.main.async {
+            self.activeRoutes.removeAll { $0.id == routeId }
+        }
+        
+        // Post notification to update UI
+        NotificationCenter.default.post(
+            name: NSNotification.Name("RoutesUpdated"),
+            object: nil
+        )
+    }
+    
+    @objc private func handleRouteRefresh(_ notification: Notification) {
+        guard let routeId = notification.userInfo?["routeId"] as? String else { return }
+        
+        print("🔄 Refreshing route details: \(routeId)")
+        
+        // Fetch updated route details
+        Task {
+            do {
+                let updatedRoute = try await fetchRouteDetails(routeId: routeId)
+                
+                DispatchQueue.main.async {
+                    if let index = self.activeRoutes.firstIndex(where: { $0.id == routeId }) {
+                        self.activeRoutes[index] = updatedRoute
+                    }
+                }
+            } catch {
+                print("❌ Failed to refresh route: \(error.localizedDescription)")
+            }
+        }
+    }
     
     // MARK: - Fetch Routes
     
-    func fetchRoutes() async throws -> [Route] {
+    /// Fetch all routes for the driver with optional filters
+    func fetchRoutes(
+        status: RouteStatus? = nil,
+        includeAnalytics: Bool = false
+    ) async throws -> [Route] {
         struct RoutesResponse: Codable {
             let success: Bool
             let data: [Route]
+            let analytics: RouteAnalytics?
         }
         
-        let response: RoutesResponse = try await network.request(.routes)
+        var endpoint = APIEndpoint.routes
+        var queryParams: [String: String] = [:]
+        
+        if let status = status {
+            queryParams["status"] = status.rawValue
+        }
+        if includeAnalytics {
+            queryParams["includeAnalytics"] = "true"
+        }
+        
+        let response: RoutesResponse = try await network.request(endpoint, queryParams: queryParams)
         return response.data
     }
     
     // MARK: - Fetch Route Details
     
+    /// Fetch detailed information for a specific route
     func fetchRouteDetails(routeId: String) async throws -> Route {
         struct RouteDetailResponse: Codable {
             let success: Bool
@@ -34,10 +113,12 @@ class RouteService {
     
     // MARK: - Accept Route
     
+    /// Accept a route assignment
     func acceptRoute(routeId: String) async throws -> Route {
         struct RouteDetailResponse: Codable {
             let success: Bool
             let data: Route
+            let message: String?
         }
         
         let response: RouteDetailResponse = try await network.request(
@@ -50,6 +131,7 @@ class RouteService {
     
     // MARK: - Decline Route
     
+    /// Decline a route assignment with reason
     func declineRoute(routeId: String, reason: String) async throws {
         struct DeclineRequest: Codable {
             let reason: String
@@ -57,6 +139,7 @@ class RouteService {
         
         struct EmptyResponse: Codable {
             let success: Bool
+            let message: String?
         }
         
         let _: EmptyResponse = try await network.request(
@@ -68,6 +151,7 @@ class RouteService {
     
     // MARK: - Complete Drop
     
+    /// Mark a drop as completed or failed
     func completeDrop(
         routeId: String,
         dropId: String,
@@ -79,7 +163,7 @@ class RouteService {
     ) async throws -> Route {
         struct DropUpdateRequest: Codable {
             let dropId: String
-            let status: DropStatus
+            let status: String
             let latitude: Double?
             let longitude: Double?
             let proofOfDelivery: String?
@@ -94,7 +178,7 @@ class RouteService {
         
         let updateRequest = DropUpdateRequest(
             dropId: dropId,
-            status: status,
+            status: status.rawValue,
             latitude: latitude,
             longitude: longitude,
             proofOfDelivery: proofOfDelivery,
@@ -113,17 +197,196 @@ class RouteService {
     
     // MARK: - Get Active Route
     
+    /// Get the currently active route for the driver
     func getActiveRoute() async throws -> Route? {
         let routes = try await fetchRoutes()
         return routes.first { $0.status == .active || $0.status == .assigned }
     }
+    
+    // MARK: - Start Route
+    
+    /// Start a route (change status to active)
+    func startRoute(routeId: String) async throws -> Route {
+        struct RouteDetailResponse: Codable {
+            let success: Bool
+            let data: Route
+        }
+        
+        let response: RouteDetailResponse = try await network.request(
+            .startRoute(routeId),
+            method: .post
+        )
+        
+        return response.data
+    }
+    
+    // MARK: - Get Route Analytics
+    
+    /// Fetch analytics for a specific route
+    func fetchRouteAnalytics(routeId: String) async throws -> RouteAnalytics {
+        struct AnalyticsResponse: Codable {
+            let success: Bool
+            let data: RouteAnalytics
+        }
+        
+        let response: AnalyticsResponse = try await network.request(.routeAnalytics(routeId))
+        return response.data
+    }
+    
+    // MARK: - Update Drop Status
+    
+    /// Update the status of a drop (for intermediate states)
+    func updateDropStatus(
+        routeId: String,
+        dropId: String,
+        status: DropStatus
+    ) async throws -> Route {
+        struct StatusUpdateRequest: Codable {
+            let dropId: String
+            let status: String
+        }
+        
+        struct RouteDetailResponse: Codable {
+            let success: Bool
+            let data: Route
+        }
+        
+        let updateRequest = StatusUpdateRequest(
+            dropId: dropId,
+            status: status.rawValue
+        )
+        
+        let response: RouteDetailResponse = try await network.request(
+            .updateDropStatus(routeId),
+            method: .patch,
+            body: updateRequest
+        )
+        
+        return response.data
+    }
+    
+    // MARK: - Get Route Earnings Preview
+    
+    /// Get earnings preview for a route
+    func getRouteEarningsPreview(routeId: String) async throws -> RouteEarnings {
+        struct EarningsResponse: Codable {
+            let success: Bool
+            let data: RouteEarnings
+        }
+        
+        let response: EarningsResponse = try await network.request(.routeEarnings(routeId))
+        return response.data
+    }
+    
+    // MARK: - Report Route Issue
+    
+    /// Report an issue with a route
+    func reportRouteIssue(
+        routeId: String,
+        issueType: String,
+        description: String
+    ) async throws {
+        struct IssueRequest: Codable {
+            let issueType: String
+            let description: String
+        }
+        
+        struct EmptyResponse: Codable {
+            let success: Bool
+        }
+        
+        let _: EmptyResponse = try await network.request(
+            .reportRouteIssue(routeId),
+            method: .post,
+            body: IssueRequest(issueType: issueType, description: description)
+        )
+    }
 }
 
-// MARK: - Drop Status
+// MARK: - Supporting Models
 
-enum DropStatus: String, Codable {
-    case pending
-    case completed
-    case failed
+struct RouteAnalytics: Codable {
+    let performanceMetrics: PerformanceMetrics
+    let efficiencyScores: EfficiencyScores
+    let timeline: [TimelineEvent]
+    let dropStats: DropStatistics
+}
+
+struct PerformanceMetrics: Codable {
+    let completionRate: Double
+    let onTimeRate: Double
+    let averageDelay: Double
+    let totalDrops: Int
+    let completedDrops: Int
+    let failedDrops: Int
+}
+
+struct EfficiencyScores: Codable {
+    let overall: Double
+    let distance: Double
+    let time: Double
+    let dropDensity: Double
+    let optimization: Double
+    let rating: String
+}
+
+struct TimelineEvent: Codable {
+    let time: Date
+    let event: String
+    let status: String
+}
+
+struct DropStatistics: Codable {
+    let total: Int
+    let byStatus: [String: Int]
+    let totalValue: Double
+    let averageValue: Double
+    let totalWeight: Double
+    let totalVolume: Double
+}
+
+struct RouteEarnings: Codable {
+    let routeId: String
+    let totalEarnings: Int // in pence
+    let baseEarnings: Int
+    let bonuses: Int
+    let penalties: Int
+    let multiDropBonus: Int
+    let earningsPerHour: Double
+    let earningsPerStop: Double
+    let breakdown: EarningsBreakdown
+}
+
+struct EarningsBreakdown: Codable {
+    let basePay: Int
+    let distanceBonus: Int
+    let efficiencyBonus: Int
+    let completionBonus: Int
+    let timeBonus: Int
+    let penalties: Int
+}
+
+// MARK: - API Endpoint Extensions
+
+extension APIEndpoint {
+    static func startRoute(_ routeId: String) -> APIEndpoint {
+        return .custom("/api/driver/routes/\(routeId)/start")
+    }
+    
+    static func routeAnalytics(_ routeId: String) -> APIEndpoint {
+        return .custom("/api/driver/routes/\(routeId)/analytics")
+    }
+    
+    static func updateDropStatus(_ routeId: String) -> APIEndpoint {
+        return .custom("/api/driver/routes/\(routeId)/update-drop-status")
+    }
+    
+    static func routeEarnings(_ routeId: String) -> APIEndpoint {
+        return .custom("/api/driver/routes/\(routeId)/earnings-preview")
+    }
+    
+    static func reportRouteIssue(_ routeId: String) -> APIEndpoint {
+        return .custom("/api/driver/routes/\(routeId)/report-issue")
+    }
 }
 

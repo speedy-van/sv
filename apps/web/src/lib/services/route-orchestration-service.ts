@@ -853,8 +853,16 @@ export class RouteOrchestrationService {
     // Calculate total duration
     const totalDuration = drops.length * 45; // 45 minutes per drop average
 
-    // Calculate total value
-    const totalValue = drops.reduce((sum, drop) => sum + (drop.quotedPrice || 0), 0);
+    // Calculate total value (safely handle large numbers)
+    const totalValue = drops.reduce((sum, drop) => {
+      const price = Number(drop.quotedPrice || 0);
+      // Safety check: if value is too large, invalid, or negative, use 0
+      if (!Number.isFinite(price) || price > Number.MAX_SAFE_INTEGER || price < 0) {
+        console.warn(`⚠️ Invalid quotedPrice for drop: ${price}`);
+        return sum;
+      }
+      return sum + price;
+    }, 0);
 
     return {
       earliestStart,

@@ -52,8 +52,7 @@ export function UnifiedNavigation({
       case 'admin':
         return [
           { label: 'Dashboard', href: ROUTES.ADMIN_DASHBOARD },
-          { label: 'Orders', href: ROUTES.ADMIN_ORDERS },
-          { label: 'Routes', href: ROUTES.ADMIN_ROUTES },
+          { label: 'Operations', href: ROUTES.ADMIN_OPERATIONS },
           { label: 'Drivers', href: ROUTES.ADMIN_DRIVERS },
           { label: 'Driver Applications', href: ROUTES.ADMIN_DRIVER_APPLICATIONS },
           { label: 'Driver Schedule', href: ROUTES.ADMIN_DRIVER_SCHEDULE },

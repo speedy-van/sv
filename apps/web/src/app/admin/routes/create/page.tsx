@@ -320,7 +320,10 @@ export default function CreateRoutePage() {
 
   const totalValue = bookings
     .filter(b => selectedBookings.includes(b.id))
-    .reduce((sum, b) => sum + b.totalGBP, 0);
+    .reduce((sum, b) => {
+      const value = Number(b.totalGBP || 0);
+      return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+    }, 0);
 
   return (
     <AdminShell title="Create Manual Route">

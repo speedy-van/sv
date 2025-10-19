@@ -64,13 +64,15 @@ export async function POST(
       },
     });
 
-    // Update all drops status
+    // Update all drops to remove route assignment and reset to pending
+    // This allows drops to be re-assigned to new routes (blue circle indicator)
     await prisma.drop.updateMany({
       where: {
         routeId: routeId,
       },
       data: {
-        status: 'cancelled',
+        routeId: null, // Remove route assignment
+        status: 'pending', // Reset to pending so they show with blue circle
       },
     });
 
@@ -85,7 +87,11 @@ export async function POST(
           message: `Route ${routeId} has been cancelled by admin`,
           reason: 'Admin cancelled the route',
           bookingsCount: route.Booking?.length || 0,
+          dropsCount: route.drops?.length || 0,
           cancelledAt: new Date().toISOString(),
+          // Signal to iOS app to remove route immediately
+          action: 'remove_route',
+          shouldRemoveFromApp: true,
         });
 
         console.log(`✅ Route cancellation notification sent to driver ${route.driverId}`);

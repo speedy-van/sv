@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true,
+        reference: true,
         driverId: true,
         vehicleId: true,
         startTime: true,
@@ -132,7 +133,10 @@ export async function GET(request: NextRequest) {
         route.drops.reduce((sum, drop) => sum + (drop.distance || 0), 0);
       
       const totalEarnings = route.driverPayout || route.totalOutcome || 
-        route.drops.reduce((sum, drop) => sum + Number(drop.quotedPrice || 0), 0);
+        route.drops.reduce((sum, drop) => {
+          const price = Number(drop.quotedPrice || 0);
+          return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+        }, 0);
 
       // Format drops
       const drops = route.drops.map(drop => ({
@@ -153,6 +157,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: route.id,
+        reference: route.reference || route.id, // Use unified SV reference
         status: route.status,
         drops: drops,
         estimatedDuration: route.estimatedDuration || 

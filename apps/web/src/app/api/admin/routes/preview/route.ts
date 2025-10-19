@@ -264,8 +264,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Calculate route metrics
-      const totalValue = routeBookings.reduce((sum, b) => sum + (b as any).totalGBP, 0);
+      // Calculate route metrics (with validation)
+      const totalValue = routeBookings.reduce((sum, b) => {
+        const value = Number((b as any).totalGBP || 0);
+        return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+      }, 0);
       const totalVolume = routeBookings.reduce((sum, b) => 
         sum + (b as any).BookingItem.reduce((itemSum: number, item: any) => 
           itemSum + ((item.estimatedVolume || 0) * item.quantity), 0

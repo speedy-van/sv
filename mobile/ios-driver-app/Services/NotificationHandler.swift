@@ -90,6 +90,20 @@ class NotificationHandler: ObservableObject {
                     object: nil,
                     userInfo: ["routeId": payload.entityId]
                 )
+            case .routeCancelled:
+                // Remove route from app immediately
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("RemoveRoute"),
+                    object: nil,
+                    userInfo: ["routeId": payload.entityId]
+                )
+            case .dropRemoved:
+                // Refresh route details
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("RefreshRoute"),
+                    object: nil,
+                    userInfo: ["routeId": payload.entityId]
+                )
             }
         }
     }
@@ -299,6 +313,8 @@ enum NotificationType: String, Codable {
     case jobUpdate = "job_update"
     case newRoute = "new_route"
     case routeUpdate = "route_update"
+    case routeCancelled = "route_cancelled"
+    case dropRemoved = "drop_removed"
 }
 
 enum NotificationAction: String {

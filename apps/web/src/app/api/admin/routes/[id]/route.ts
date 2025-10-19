@@ -150,8 +150,11 @@ export async function PATCH(
           }
         });
 
-        // Update route totals
-        const newTotalOutcome = dropsToAdd.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
+        // Update route totals (with validation)
+        const newTotalOutcome = dropsToAdd.reduce((sum, d) => {
+          const price = Number(d.quotedPrice || 0);
+          return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+        }, 0);
         
         updatedRoute = await prisma.route.update({
           where: { id },
@@ -196,7 +199,10 @@ export async function PATCH(
           }
         });
 
-        const removedOutcome = dropsToRemove.reduce((sum, d) => sum + Number(d.quotedPrice), 0);
+        const removedOutcome = dropsToRemove.reduce((sum, d) => {
+          const price = Number(d.quotedPrice || 0);
+          return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+        }, 0);
         
         updatedRoute = await prisma.route.update({
           where: { id },

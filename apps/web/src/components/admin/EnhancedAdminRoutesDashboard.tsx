@@ -176,6 +176,7 @@ function calculateRoutePriority(startTime: Date): {
 
 interface Route {
   id: string;
+  reference?: string;
   status: string;
   driverId: string | null;
   driverName: string;
@@ -310,7 +311,12 @@ const EnhancedAdminRoutesDashboard = () => {
       const schedulerData = await schedulerRes.json();
 
       if (routesData.success) {
-        setRoutes(routesData.routes);
+        // Fix totalDrops to use actual drops.length
+        const routesWithCorrectCounts = routesData.routes.map((route: any) => ({
+          ...route,
+          totalDrops: route.drops?.length || route.totalDrops || 0,
+        }));
+        setRoutes(routesWithCorrectCounts);
         setDrivers(routesData.drivers);
         setMetrics(routesData.metrics);
       }
@@ -971,7 +977,7 @@ const EnhancedAdminRoutesDashboard = () => {
                           bg={calculateRoutePriority(route.startTime).color}
                           animation={calculateRoutePriority(route.startTime).animation}
                         />
-                        <Text>{route.id.substring(0, 8)}</Text>
+                        <Text>{route.reference || route.id.substring(0, 8)}</Text>
                       </HStack>
                     </Td>
                     <Td>
@@ -1599,7 +1605,7 @@ const EnhancedAdminRoutesDashboard = () => {
                         <VStack align="start" spacing={1} flex={1}>
                           <HStack>
                             <Text color="white" fontWeight="bold" fontFamily="mono" fontSize="sm">
-                              {route.id.substring(0, 12)}...
+                              {route.reference || route.id.substring(0, 12)}
                             </Text>
                             <Badge colorScheme={getStatusColor(route.status)}>
                               {route.status}
@@ -1738,17 +1744,35 @@ const EnhancedAdminRoutesDashboard = () => {
                           size="sm"
                           colorScheme="orange"
                           leftIcon={<FiTrash />}
-                          onClick={async () => {
-                            if (!confirm(`Are you sure you want to remove Drop #${index + 1}? The driver will be notified.`)) {
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            console.log('Remove button clicked for drop:', drop.id);
+                            
+                            const confirmed = window.confirm(`Are you sure you want to remove Drop #${index + 1}?\n\nPickup: ${drop.pickupAddress}\nDelivery: ${drop.deliveryAddress}\n\nThe driver will be notified immediately.`);
+                            
+                            if (!confirmed) {
+                              console.log('User cancelled drop removal');
                               return;
                             }
 
                             try {
+                              console.log('Sending DELETE request to:', `/api/admin/routes/${selectedRoute.id}/drops/${drop.id}`);
+                              
                               const response = await fetch(`/api/admin/routes/${selectedRoute.id}/drops/${drop.id}`, {
                                 method: 'DELETE',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
                               });
 
+                              console.log('Response status:', response.status);
+
                               if (response.ok) {
+                                const result = await response.json();
+                                console.log('Drop removed successfully:', result);
+                                
                                 toast({
                                   title: 'Drop Removed',
                                   description: `Drop #${index + 1} has been removed successfully`,
@@ -1757,13 +1781,15 @@ const EnhancedAdminRoutesDashboard = () => {
                                 });
                                 
                                 // Refresh data
-                                loadData();
+                                await loadData();
                                 onRemoveDropClose();
                               } else {
                                 const error = await response.json();
+                                console.error('Error response:', error);
                                 throw new Error(error.error || 'Failed to remove drop');
                               }
                             } catch (error) {
+                              console.error('Error removing drop:', error);
                               toast({
                                 title: 'Error',
                                 description: error instanceof Error ? error.message : 'Failed to remove drop',

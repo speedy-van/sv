@@ -2319,7 +2319,14 @@ class RouteOrchestrationScheduler {
       const bookingIndex = sequence[i];
       const booking = bookings[bookingIndex];
 
-      totalValue += booking.totalGBP || 0;
+      // Safely add booking value
+      const bookingValue = Number(booking.totalGBP || 0);
+      if (Number.isFinite(bookingValue) && bookingValue >= 0 && bookingValue <= Number.MAX_SAFE_INTEGER) {
+        totalValue += bookingValue;
+      } else {
+        console.warn(`⚠️ Invalid totalGBP for booking: ${booking.totalGBP}`);
+      }
+      
       totalWeight += this.estimateBookingWeight(booking);
       totalVolume += this.estimateBookingVolume(booking);
 
@@ -2761,7 +2768,10 @@ class RouteOrchestrationScheduler {
           optimizedSequence,
           totalDistance: this.calculateRouteDistance(routeDrops),
           estimatedDuration: routeDrops.reduce((sum, drop) => sum + (Math.ceil((drop.timeWindowEnd.getTime() - drop.timeWindowStart.getTime()) / (1000 * 60)) || 30), 0),
-          totalValue: routeDrops.reduce((sum, drop) => sum + (Number(drop.quotedPrice) || 0), 0),
+          totalValue: routeDrops.reduce((sum, drop) => {
+            const price = Number(drop.quotedPrice || 0);
+            return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+          }, 0),
           serviceTier,
           timeWindowStart: this.getEarliestTimeWindow(routeDrops),
           timeWindowEnd: this.getLatestTimeWindow(routeDrops),

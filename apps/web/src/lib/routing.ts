@@ -40,6 +40,7 @@ export const ROUTES = {
   
   // Admin routes
   ADMIN_DASHBOARD: '/admin',
+  ADMIN_OPERATIONS: '/admin/operations',
   ADMIN_ORDERS: '/admin/orders',
   ADMIN_ROUTES: '/admin/routes',
   ADMIN_DRIVERS: '/admin/drivers',
@@ -88,6 +89,7 @@ export const ROUTES = {
   
   ADMIN: {
     DASHBOARD: '/admin',
+    OPERATIONS: '/admin/operations',
     ORDERS: '/admin/orders',
     DRIVERS: '/admin/drivers',
     DRIVER_APPLICATIONS: '/admin/drivers/applications',

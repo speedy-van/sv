@@ -35,6 +35,7 @@ interface Drop {
 
 interface Route {
   id: string;
+  reference?: string; // Unified SV reference number
   status: 'planned' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   drops: Drop[];
   estimatedDuration: number; // minutes
@@ -777,7 +778,7 @@ export default function RoutesScreen() {
     ).join('\n\n');
 
     Alert.alert(
-      `Route #${route.id.slice(-3)} - ${route.drops.length} Stops`,
+      `Route ${route.reference || '#' + route.id.slice(-3)} - ${route.drops.length} Stops`,
       `Total: £${route.estimatedEarnings.toFixed(2)}\nDistance: ${route.totalDistance || route.estimatedDistance} miles\nTime: ${Math.floor(route.estimatedDuration / 60)}h ${route.estimatedDuration % 60}m\nWorkers: ${route.totalWorkers || 1}\n${route.hasCameras ? '📹 Cameras Required\n' : ''}\n\nStops:\n${dropsList}`,
       [{ text: 'OK' }]
     );
@@ -896,7 +897,7 @@ export default function RoutesScreen() {
                     <Text style={styles.routeTitle}>
                       {route.drops.length} Stops Route
                     </Text>
-                    <Text style={styles.routeId}>#{route.id.slice(-8)}</Text>
+                    <Text style={styles.routeId}>{route.reference || '#' + route.id.slice(-8)}</Text>
                   </View>
                 </View>
                 <View style={styles.routeHeaderRight}>

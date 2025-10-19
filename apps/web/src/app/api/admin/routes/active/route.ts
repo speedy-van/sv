@@ -132,7 +132,10 @@ export async function GET(request: NextRequest) {
       totalStops: enrichedRoutes.reduce((sum, r: any) => sum + (r.Booking?.length || 0), 0),
       completedStops: enrichedRoutes.reduce((sum, r: any) => sum + (r.progress?.completedStops || 0), 0),
       totalDistance: enrichedRoutes.reduce((sum, r: any) => sum + (r.optimizedDistanceKm || r.actualDistanceKm || 0), 0),
-      totalRevenue: enrichedRoutes.reduce((sum, r: any) => sum + Number(r.totalOutcome || 0), 0),
+      totalRevenue: enrichedRoutes.reduce((sum, r: any) => {
+        const value = Number(r.totalOutcome || 0);
+        return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
+      }, 0),
     };
 
     return NextResponse.json({

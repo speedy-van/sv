@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { createUniqueReference } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,13 +115,20 @@ export async function POST(request: NextRequest) {
     const createdRoutes = [];
     for (let i = 0; i < routes.length; i++) {
       const dropGroup = routes[i];
-      const totalOutcome = dropGroup.reduce((sum: number, d: any) => sum + Number(d.quotedPrice || 0), 0);
+      const totalOutcome = dropGroup.reduce((sum: number, d: any) => {
+        const price = Number(d.quotedPrice || 0);
+        return (Number.isFinite(price) && price >= 0 && price <= Number.MAX_SAFE_INTEGER) ? sum + price : sum;
+      }, 0);
       const totalWeight = dropGroup.reduce((sum: number, d: any) => sum + (d.weight || 0), 0);
       const totalVolume = dropGroup.reduce((sum: number, d: any) => sum + (d.volume || 0), 0);
       const assignedDriver = autoAssignDrivers && availableDrivers[i] ? availableDrivers[i] : null;
 
+      // Generate unified SV reference number
+      const routeReference = await createUniqueReference('route');
+      
       const route = await prisma.route.create({
         data: {
+          reference: routeReference,
           driverId: assignedDriver?.id || null,
           status: assignedDriver ? 'assigned' : 'planned',
           startTime: dropGroup[0].timeWindowStart,

@@ -148,6 +148,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: booking.id,
+        bookingId: booking.id, // Add bookingId for Smart Route Generator
         reference: booking.reference,
         pickupAddress: booking.pickupAddress?.label || 'Unknown',
         deliveryAddress: booking.dropoffAddress?.label || 'Unknown',
