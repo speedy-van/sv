@@ -279,7 +279,22 @@ export async function PUT(request: NextRequest) {
         const userUpdateData: any = {};
         const driverUpdateData: any = {};
 
-        if (profile.email) userUpdateData.email = profile.email;
+        // Check if email is being updated and if it already exists
+        if (profile.email && profile.email !== '') {
+          const existingUser = await prisma.user.findFirst({
+            where: {
+              email: profile.email,
+              id: { not: userId }
+            }
+          });
+          
+          if (existingUser) {
+            console.log('⚠️ Email already exists, skipping email update');
+          } else {
+            userUpdateData.email = profile.email;
+          }
+        }
+        
         if (profile.name) userUpdateData.name = profile.name;
         if (profile.basePostcode) driverUpdateData.basePostcode = profile.basePostcode;
         if (profile.vehicleType) driverUpdateData.vehicleType = profile.vehicleType;
@@ -293,7 +308,11 @@ export async function PUT(request: NextRequest) {
             console.log('✅ User profile updated');
           } catch (err) {
             console.error('❌ Failed to update user profile:', err);
-            throw err;
+            // Don't throw error if it's just email constraint issue
+            if ((err as any).code !== 'P2002') {
+              throw err;
+            }
+            console.log('⚠️ Email constraint error handled gracefully');
           }
         }
 

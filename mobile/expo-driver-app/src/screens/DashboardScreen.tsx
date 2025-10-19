@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import RouteSearchingIndicator from '../components/RouteSearchingIndicator';
@@ -202,30 +202,48 @@ export default function DashboardScreen() {
 
   // Check internet connection
   useEffect(() => {
+    let isFirstCheck = true;
     const unsubscribe = NetInfo.addEventListener(state => {
       const connected = state.isConnected && state.isInternetReachable !== false;
-      setIsOnline(connected);
       
-      if (!connected) {
-        showToast.error(
-          'No internet connection. Please check your network settings and try again.',
-          'Connection Lost'
-        );
-        console.log('❌ Internet connection lost');
-      } else {
-        console.log('✅ Internet connection restored');
-        // Refresh data when connection is restored
-        fetchStats();
-        fetchAvailableRoutes();
+      // Only update if connection status actually changed
+      if (connected !== isOnline) {
+        setIsOnline(connected);
+        
+        // Don't show error on first check or when going online
+        if (!connected && !isFirstCheck) {
+          showToast.error(
+            'No internet connection. Please check your network settings and try again.',
+            'Connection Lost'
+          );
+          console.log('❌ Internet connection lost');
+        } else if (connected && !isFirstCheck) {
+          console.log('✅ Internet connection restored');
+          showToast.success('Connection Restored', 'You are back online');
+          // Refresh data when connection is restored
+          fetchStats();
+          fetchAvailableRoutes();
+        }
       }
+      
+      isFirstCheck = false;
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isOnline]);
+
+  // Refresh stats when screen comes into focus (e.g., after completing a job)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('📊 Dashboard focused - Refreshing stats...');
+      fetchStats();
+      fetchAcceptanceRate();
+      return () => {};
+    }, [])
+  );
 
   useEffect(() => {
-    fetchStats();
-    fetchAcceptanceRate();
+    // Only restore pending offers on mount, stats are handled by useFocusEffect
     restorePendingOffers();
     
     // Initialize audio service
@@ -357,17 +375,26 @@ export default function DashboardScreen() {
             routeCount = data.routeCount;
           }
 
-          // Create pending offer object
+          // Create pending offer object with proper ID handling
+          // Priority: routeId > bookingId > orderId > assignmentId
+          const jobId = data.routeId || data.bookingId || data.orderId || data.assignmentId;
+          
+          if (!jobId) {
+            console.error('❌ No valid job ID found in route-matched event:', data);
+            showToast.error('Invalid Job', 'Cannot process job without valid ID');
+            return;
+          }
+          
           const pendingOffer: PendingOffer = {
-            id: data.assignmentId || data.bookingId || `offer_${Date.now()}`,
-            bookingId: data.bookingId || data.orderId,
-            orderId: data.orderId || data.bookingId,
-            bookingReference: data.bookingReference || data.orderNumber || data.routeNumber || 'N/A',
-            orderNumber: data.orderNumber || data.routeNumber || data.bookingReference || 'N/A',
-            routeNumber: data.routeNumber || data.orderNumber || 'N/A', // ✅ Add routeNumber
+            id: data.assignmentId || jobId || `offer_${Date.now()}`,
+            bookingId: jobId, // Use the determined jobId
+            orderId: data.orderId || jobId,
+            bookingReference: data.bookingReference || data.orderNumber || data.routeNumber || data.routeId || 'N/A',
+            orderNumber: data.orderNumber || data.routeNumber || data.routeId || 'N/A',
+            routeNumber: data.routeNumber || data.routeId || data.orderNumber || 'N/A',
             matchType: data.matchType || (data.type === 'single-order' ? 'order' : 'route'),
             jobCount: routeCount,
-            assignmentId: data.assignmentId || data.bookingId,
+            assignmentId: data.assignmentId || jobId,
             assignedAt: data.assignedAt || new Date().toISOString(),
             expiresAt: data.expiresAt || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
             pickupAddress: data.pickupAddress,
@@ -377,6 +404,8 @@ export default function DashboardScreen() {
             customerName: data.customerName,
             receivedAt: new Date().toISOString(),
           };
+          
+          console.log('✅ Pending offer created with jobId:', jobId);
 
           // Save pending offer to storage for persistence
           savePendingOffer(pendingOffer).catch(err => {
@@ -737,50 +766,124 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleViewNow = () => {
-    console.log('📱 User tapped View Now');
+  const handleViewNow = async () => {
+    console.log('📱 User tapped View Now - Starting accept flow');
     
     // Stop the music immediately
     audioService.stopSound();
 
-    // CRITICAL FIX: Close the modal immediately when View Now is tapped
-    setShowMatchModal(false);
-    setCurrentPendingOffer(null);
-    setHasNewRoute(false);
-
+    // Validate booking ID before proceeding
     if (!currentPendingOffer?.bookingId) {
-      console.error('❌ No booking ID available');
-      Alert.alert('Error', 'Cannot view job - booking ID not found');
+      console.error('❌ No booking ID available in currentPendingOffer:', currentPendingOffer);
+      Alert.alert(
+        'Error', 
+        'Cannot view job - booking ID not found. Please try accepting the job again.',
+        [{ text: 'OK' }]
+      );
       return;
     }
 
-    // Navigate to JobDetail screen with the booking ID
-    console.log('📱 Navigating to JobDetail screen for booking:', currentPendingOffer.bookingId);
-    (navigation.navigate as any)('JobDetail', { jobId: currentPendingOffer.bookingId });
+    const jobId = currentPendingOffer.bookingId;
+    const isRoute = currentPendingOffer.matchType === 'route';
+    
+    try {
+      console.log('🔄 Accepting job/route:', jobId, 'Type:', isRoute ? 'route' : 'order');
+      
+      // Show loading state
+      setShowMatchModal(false);
+      showToast.info('Accepting...', 'Please wait while we process your acceptance');
+      
+      // Call accept API based on type
+      const endpoint = isRoute 
+        ? `/api/driver/routes/${jobId}/accept`
+        : `/api/driver/jobs/${jobId}/accept`;
+      
+      console.log('📞 Calling accept API:', endpoint);
+      const response = await apiService.post<any>(endpoint, {});
+      
+      console.log('✅ Accept response:', response);
+      
+      // Remove from pending offers storage
+      if (currentPendingOffer?.id) {
+        await removePendingOffer(currentPendingOffer.id);
+        console.log('🗑️ Removed pending offer from storage');
+      }
+      
+      // Update acceptance rate if returned
+      if (response?.acceptanceRate !== undefined) {
+        setAcceptanceRate(response.acceptanceRate);
+        console.log(`✅ Updated acceptance rate: ${response.acceptanceRate}%`);
+      }
+      
+      // Clear state
+      setCurrentPendingOffer(null);
+      setHasNewRoute(false);
+      setNewRouteCount(0);
+      
+      // Show success message
+      showToast.success('Job Accepted!', 'Redirecting to job details...');
+      
+      // Wait a moment for the toast to show
+      setTimeout(() => {
+        console.log('📱 Navigating to JobDetail screen with jobId:', jobId);
+        (navigation.navigate as any)('JobDetail', { jobId });
+      }, 500);
+      
+    } catch (error: any) {
+      console.error('❌ Error accepting job:', error);
+      
+      // Show error and reopen modal
+      setShowMatchModal(true);
+      
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to accept job';
+      Alert.alert(
+        'Accept Failed',
+        errorMessage + '. Please try again.',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => setShowMatchModal(false) },
+          { text: 'Retry', onPress: () => handleViewNow() }
+        ]
+      );
+    }
   };  const handleDecline = async () => {
     console.log('❌ Driver declined job from popup');
     
     // Stop the music when declining
     audioService.stopSound();
 
+    // Validate booking ID
     if (!currentPendingOffer?.bookingId) {
-      console.error('❌ No bookingId available for decline');
-      Alert.alert('Error', 'Cannot decline - job ID not found');
+      console.error('❌ No bookingId available for decline. Offer:', currentPendingOffer);
+      Alert.alert(
+        'Error', 
+        'Cannot decline - job ID not found. The job may have expired.',
+        [{ text: 'OK', onPress: () => {
+          setShowMatchModal(false);
+          setCurrentPendingOffer(null);
+          setHasNewRoute(false);
+        }}]
+      );
       return;
     }
 
     const jobId = currentPendingOffer.bookingId;
+    const isRoute = currentPendingOffer.matchType === 'route';
+    console.log('📞 Attempting to decline job with ID:', jobId, 'Type:', isRoute ? 'route' : 'order');
 
     try {
-      // Show loading state
-      Alert.alert('Declining...', 'Please wait', []);
+      // Close modal immediately for better UX
+      setShowMatchModal(false);
+      showToast.info('Declining...', 'Please wait while we process your decline');
 
-      // Call decline API
-      console.log('📞 Calling decline API for job:', jobId);
-      const response = await apiService.post<any>(
-        `/api/driver/jobs/${jobId}/decline`,
-        { reason: 'Declined from popup' }
-      );
+      // Call decline API based on type
+      const endpoint = isRoute 
+        ? `/api/driver/routes/${jobId}/decline`
+        : `/api/driver/jobs/${jobId}/decline`;
+      
+      console.log('📞 Calling decline API:', endpoint);
+      const response = await apiService.post<any>(endpoint, {
+        reason: 'Declined from popup'
+      });
 
       console.log('✅ Decline response:', response);
 
@@ -795,8 +898,7 @@ export default function DashboardScreen() {
         console.log(`✅ Updated acceptance rate: ${response.acceptanceRate}%`);
       }
 
-      // Close modal
-      setShowMatchModal(false);
+      // Clear state
       setCurrentPendingOffer(null);
       setHasNewRoute(false);
       setNewRouteCount(0);
@@ -805,15 +907,22 @@ export default function DashboardScreen() {
       fetchAvailableRoutes();
 
       // Show success toast
-      showToast.info('Job Declined', `Your acceptance rate is now ${response?.acceptanceRate || acceptanceRate}%. The job has been offered to another driver.`);
+      const newRate = response?.acceptanceRate !== undefined ? response.acceptanceRate : acceptanceRate;
+      showToast.success(
+        'Job Declined', 
+        `Your acceptance rate is now ${newRate}%. The job has been offered to another driver.`
+      );
 
     } catch (error: any) {
       console.error('❌ Error declining job:', error);
       
-      // Close modal anyway
-      setShowMatchModal(false);
+      // Clear state even on error
+      setCurrentPendingOffer(null);
+      setHasNewRoute(false);
+      setNewRouteCount(0);
       
-      showToast.error('Decline Failed', error?.message || 'Failed to decline job. Please try again.');
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to decline job';
+      showToast.error('Decline Failed', errorMessage);
     }
   };
 
@@ -1231,7 +1340,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111827',  // Dark background
+    backgroundColor: '#0F172A',  // Darker, more modern background
   },
   scrollView: {
     flex: 1,
@@ -1239,12 +1348,21 @@ const styles = StyleSheet.create({
   header: {
     padding: 24,
     paddingTop: 60,
+    backgroundColor: '#1E293B',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',  // White text
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
@@ -1307,9 +1425,14 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    backgroundColor: '#1F2937',  // Dark card
+    backgroundColor: '#1E293B',
     margin: '1%',
-    borderRadius: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
     padding: 20,
     borderWidth: 1,
     borderColor: '#374151',  // Dark border
@@ -1365,16 +1488,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   routeCard: {
-    backgroundColor: '#1F2937',  // Dark card
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderLeftWidth: 4,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    borderLeftWidth: 5,
     borderLeftColor: '#3B82F6',
   },
   routeCardHeader: {
@@ -1447,12 +1570,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   recentRouteCard: {
-    backgroundColor: '#1F2937',  // Dark card
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#374151',  // Dark border
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1.5,
+    borderColor: '#334155',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   recentRouteHeader: {
     flexDirection: 'row',

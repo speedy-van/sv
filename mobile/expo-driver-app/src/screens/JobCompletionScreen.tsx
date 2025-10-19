@@ -147,7 +147,12 @@ export const JobCompletionScreen: React.FC<JobCompletionScreenProps> = ({ route 
               });
 
               showToast.success('Job Completed!', `You earned £${response.earnings.toFixed(2)}`);
-              setTimeout(() => navigation.goBack(), 2000);
+              
+              // Refresh dashboard stats and earnings
+              // This will trigger a re-fetch when user returns to dashboard
+              setTimeout(() => {
+                navigation.navigate('Dashboard' as never);
+              }, 2000);
             } catch (error: any) {
               showToast.error('Error', error.message || 'Failed to complete job');
             } finally {
