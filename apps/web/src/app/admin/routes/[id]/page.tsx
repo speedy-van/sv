@@ -207,12 +207,21 @@ export default function RouteDetailsPage() {
   const loadDrivers = async () => {
     try {
       const response = await fetch('/api/admin/drivers/available');
-      const data = await response.json();
-      if (data.success) {
-        setDrivers(data.drivers || []);
+      const result = await response.json();
+      
+      console.log('Drivers API response:', result);
+      
+      if (result.success && result.data) {
+        // API returns drivers in result.data.drivers
+        setDrivers(result.data.drivers || []);
+        console.log('Loaded drivers:', result.data.drivers?.length || 0);
+      } else {
+        console.error('Invalid drivers response:', result);
+        setDrivers([]);
       }
     } catch (error) {
       console.error('Error loading drivers:', error);
+      setDrivers([]);
     }
   };
 
