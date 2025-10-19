@@ -76,8 +76,8 @@ npx prisma generate
 curl -X POST https://speedy-van.co.uk/api/driver/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "zadfad41@gmail.com",
-    "password": "112233"
+    "email": "test@example.com",
+    "password": "password"
   }'
 ```
 
@@ -97,13 +97,10 @@ curl -X POST https://speedy-van.co.uk/api/driver/auth/login \
 
 1. ✅ تشغيل migration على production
 2. ✅ اختبار driver login
-3. ✅ Build iOS app جديد (Build 23)
-4. ✅ Submit للـ App Store
 
 ## معلومات إضافية
 
 - **Production URL:** https://speedy-van.co.uk
-- **Test Account:** zadfad41@gmail.com / 112233
 - **Database:** Neon PostgreSQL
 - **Render Service:** speedy-van-web
 

@@ -206,19 +206,13 @@
 12. ✅ Pusher Notifications Configuration
 13. ✅ Admin Actions Integration
 14. ✅ Workflow Steps Documentation
-
-### 📊 **تفاصيل الحساب التجريبي:**
-- Email: `zadfad41@gmail.com`
-- Password: `112233`
-- Driver ID: `xRLLVY7d0zwTCC9A`
-- Status: Active & Approved
 - Token: Working ✅
 
 ---
 
-## 🔄 Admin Actions → iOS Notifications (Real-time)
+## 🔄 Admin Actions → Real-time Notifications
 
-| Admin Action | Pusher Event | iOS Reaction |
+| Admin Action | Pusher Event | Driver Reaction |
 |-------------|--------------|--------------|
 | **Assign Driver** | `job-assigned` | ✅ Job appears in list |
 | **Reassign Driver** | `job-removed` + `job-assigned` | ✅ Removed from old, added to new |

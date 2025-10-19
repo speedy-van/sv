@@ -101,15 +101,12 @@ export default function SEO({
       
       {/* Icons */}
       <link rel="icon" href={SEO_DEFAULTS.favicon} />
-      <link rel="apple-touch-icon" href={SEO_DEFAULTS.appleTouchIcon} />
       
       {/* Viewport for mobile optimization */}
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       
       {/* Mobile Web App Capable */}
       <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       
       {/* Schema.org JSON-LD */}
       {schemas.map((schemaItem, index) => (

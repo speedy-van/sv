@@ -3,7 +3,7 @@
 /**
  * Favicon Generator for Speedy Van
  * Generates complete favicon suite from base image
- * Supports ICO, PNG, SVG, Apple-touch, manifest, mask-icon
+ * Supports ICO, PNG, SVG, Android, Windows, manifest
  */
 
 const sharp = require('sharp');
@@ -19,8 +19,6 @@ class FaviconGenerator {
       favicon: [16, 32, 48],
       // PNG favicons
       png: [16, 32, 48, 64, 96, 128, 192, 256, 512],
-      // Apple touch icons
-      apple: [57, 60, 72, 76, 114, 120, 144, 152, 180],
       // Android/Chrome icons
       android: [36, 48, 72, 96, 144, 192, 256, 384, 512],
       // Windows tiles
@@ -64,35 +62,6 @@ class FaviconGenerator {
     console.log('✅ Generated: favicon.png');
   }
 
-  async generateAppleTouchIcons() {
-    console.log('🍎 Generating Apple Touch icons...');
-
-    for (const size of this.sizes.apple) {
-      const outputPath = path.join(
-        this.outputDir,
-        `apple-touch-icon-${size}x${size}.png`
-      );
-
-      await sharp(this.inputPath)
-        .resize(size, size, {
-          kernel: sharp.kernel.lanczos3,
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 1 },
-        })
-        .png({ quality: 100 })
-        .toFile(outputPath);
-
-      console.log(`✅ Generated: apple-touch-icon-${size}x${size}.png`);
-    }
-
-    // Generate standard apple-touch-icon.png
-    await sharp(this.inputPath)
-      .resize(180, 180)
-      .png({ quality: 100 })
-      .toFile(path.join(this.outputDir, 'apple-touch-icon.png'));
-
-    console.log('✅ Generated: apple-touch-icon.png');
-  }
 
   async generateAndroidIcons() {
     console.log('🤖 Generating Android/Chrome icons...');
@@ -247,15 +216,6 @@ class FaviconGenerator {
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
 
 <!-- Web App Manifest -->
 <link rel="manifest" href="/site.webmanifest">
@@ -265,13 +225,7 @@ class FaviconGenerator {
 <meta name="msapplication-config" content="/browserconfig.xml">
 
 <!-- Theme Colors -->
-<meta name="theme-color" content="#2563EB">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Speedy Van">
-
-<!-- Safari Pinned Tab -->
-<link rel="mask-icon" href="/favicon.svg" color="#2563EB">`;
+<meta name="theme-color" content="#2563EB">`;
 
     fs.writeFileSync(path.join(this.outputDir, 'favicon-meta.html'), metaTags);
     console.log('✅ Generated: favicon-meta.html');
@@ -286,7 +240,6 @@ class FaviconGenerator {
 
     try {
       await this.generatePngFavicons();
-      await this.generateAppleTouchIcons();
       await this.generateAndroidIcons();
       await this.generateWindowsTiles();
       this.generateSvgFavicon();

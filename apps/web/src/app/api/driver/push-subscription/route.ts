@@ -10,9 +10,7 @@ export const dynamic = 'force-dynamic';
  * POST /api/driver/push-subscription
  * 
  * Register push notification token for driver
- * Supports both:
- * - Web Push (p256dh + auth)
- * - Expo Push (platform + deviceInfo)
+ * Supports Web Push (p256dh + auth)
  */
 export async function POST(request: NextRequest) {
   try {
