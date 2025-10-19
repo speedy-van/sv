@@ -117,11 +117,17 @@ export async function POST(
       },
     });
 
-    // Mark route as modified by admin
+    // Get current drop count and update route
+    const currentDropCount = await prisma.drop.count({
+      where: { routeId }
+    });
+
+    // Mark route as modified by admin and update totalDrops
     await prisma.route.update({
       where: { id: routeId },
       data: {
         isModifiedByAdmin: true,
+        totalDrops: currentDropCount,
         adminNotes: `Drop added manually by admin on ${new Date().toISOString()}`,
       },
     });

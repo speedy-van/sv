@@ -311,7 +311,12 @@ const EnhancedAdminRoutesDashboard = () => {
       const schedulerData = await schedulerRes.json();
 
       if (routesData.success) {
-        setRoutes(routesData.routes);
+        // Fix totalDrops to use actual drops.length
+        const routesWithCorrectCounts = routesData.routes.map((route: any) => ({
+          ...route,
+          totalDrops: route.drops?.length || route.totalDrops || 0,
+        }));
+        setRoutes(routesWithCorrectCounts);
         setDrivers(routesData.drivers);
         setMetrics(routesData.metrics);
       }

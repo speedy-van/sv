@@ -84,11 +84,15 @@ export async function DELETE(
       }
     });
 
-    // Update route to mark as modified by admin
+    // Count remaining drops after removal
+    const remainingDropsCount = route.drops.length - 1;
+
+    // Update route to mark as modified by admin and update totalDrops
     const updatedRoute = await prisma.route.update({
       where: { id: routeId },
       data: {
         isModifiedByAdmin: true,
+        totalDrops: remainingDropsCount,
         adminNotes: route.adminNotes 
           ? `${route.adminNotes}\nDrop ${dropId} removed by admin on ${new Date().toISOString()}`
           : `Drop ${dropId} removed by admin on ${new Date().toISOString()}`
