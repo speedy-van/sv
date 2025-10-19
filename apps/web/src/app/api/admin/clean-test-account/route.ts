@@ -12,22 +12,24 @@ export async function DELETE(request: NextRequest) {
     
     console.log(`🧹 Cleaning test account: ${testEmail}`);
     
-    // Find the driver user
-    const driver = await prisma.driver.findUnique({
+    // Find the user first
+    const user = await prisma.user.findUnique({
       where: { email: testEmail },
       include: {
-        user: true,
+        driver: true,
       },
     });
 
-    if (!driver) {
+    if (!user || !user.driver) {
       return NextResponse.json(
-        { error: 'Test account not found' },
+        { error: 'Test account or driver not found' },
         { status: 404 }
       );
     }
 
-    console.log(`✅ Found driver: ${driver.firstName} ${driver.lastName} (ID: ${driver.id})`);
+    const driver = user.driver;
+
+    console.log(`✅ Found driver: ${user.name || user.email} (Driver ID: ${driver.id}, User ID: ${user.id})`);
 
     // Delete related data in transaction
     await prisma.$transaction(async (tx) => {
@@ -37,31 +39,23 @@ export async function DELETE(request: NextRequest) {
       });
       console.log(`   ✓ Deleted ${deletedAssignments.count} assignments`);
 
-      // Delete route assignments
-      const deletedRouteAssignments = await tx.routeAssignment.deleteMany({
+      // Delete tracking pings (location updates)
+      const deletedPings = await tx.trackingPing.deleteMany({
         where: { driverId: driver.id },
       });
-      console.log(`   ✓ Deleted ${deletedRouteAssignments.count} route assignments`);
+      console.log(`   ✓ Deleted ${deletedPings.count} tracking pings`);
 
-      // Delete driver location updates
-      const deletedLocations = await tx.driverLocation.deleteMany({
-        where: { driverId: driver.id },
-      });
-      console.log(`   ✓ Deleted ${deletedLocations.count} location updates`);
-
-      // Delete earnings
-      const deletedEarnings = await tx.earning.deleteMany({
+      // Delete driver earnings
+      const deletedEarnings = await tx.driverEarnings.deleteMany({
         where: { driverId: driver.id },
       });
       console.log(`   ✓ Deleted ${deletedEarnings.count} earnings records`);
 
-      // Delete notifications
-      if (driver.userId) {
-        const deletedNotifications = await tx.notification.deleteMany({
-          where: { userId: driver.userId },
-        });
-        console.log(`   ✓ Deleted ${deletedNotifications.count} notifications`);
-      }
+      // Delete driver notifications
+      const deletedNotifications = await tx.driverNotification.deleteMany({
+        where: { driverId: driver.id },
+      });
+      console.log(`   ✓ Deleted ${deletedNotifications.count} notifications`);
 
       // Delete driver availability
       const deletedAvailability = await tx.driverAvailability.deleteMany({
