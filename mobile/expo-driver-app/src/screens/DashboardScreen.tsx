@@ -208,7 +208,7 @@ export default function DashboardScreen() {
       
       // Only update if connection status actually changed
       if (connected !== isOnline) {
-        setIsOnline(connected);
+        setIsOnline(!!connected);
         
         // Don't show error on first check or when going online
         if (!connected && !isFirstCheck) {
@@ -951,7 +951,7 @@ export default function DashboardScreen() {
       {!isOnline && (
         <View style={styles.offlineOverlay}>
           <View style={styles.offlineCard}>
-            <Ionicons name="cloud-offline" size={80} color={colors.error} />
+            <Ionicons name="cloud-offline" size={80} color={colors.error[500]} />
             <Text style={styles.offlineTitle}>No Internet Connection</Text>
             <Text style={styles.offlineMessage}>
               Please check your network settings and try again.
@@ -1768,7 +1768,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   retryButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.neon[500],
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
