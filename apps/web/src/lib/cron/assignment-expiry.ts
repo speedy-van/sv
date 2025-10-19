@@ -5,11 +5,11 @@
  * This works on any platform (Render, Railway, Heroku, etc.)
  */
 
-import cron from 'node-cron';
+import cron, { ScheduledTask } from 'node-cron';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 
-let cronJob: cron.ScheduledTask | null = null;
+let cronJob: ScheduledTask | null = null;
 
 /**
  * Start the assignment expiry cron job

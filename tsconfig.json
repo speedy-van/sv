@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "ES6"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES6"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -22,11 +26,18 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@speedy-van/shared/*": ["packages/shared/dist/*"],
-      "@speedy-van/utils/*": ["packages/utils/dist/*"],
-      "@speedy-van/pricing/*": ["packages/pricing/dist/*"],
-  // AI agents mapping removed per cleanup
-      "@/*": ["apps/web/src/*"]
+      "@speedy-van/shared/*": [
+        "packages/shared/dist/*"
+      ],
+      "@speedy-van/utils/*": [
+        "packages/utils/dist/*"
+      ],
+      "@speedy-van/pricing/*": [
+        "packages/pricing/dist/*"
+      ],
+      "@/*": [
+        "apps/web/src/*"
+      ]
     },
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": false
@@ -40,6 +51,6 @@
   "exclude": [
     "node_modules"
   ],
-  "references": []
+  "references": [],
+  "extends": "expo/tsconfig.base"
 }
-

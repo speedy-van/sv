@@ -5,7 +5,7 @@
  * This is a critical job that ensures bookings are assigned to drivers efficiently.
  */
 
-import cron from 'node-cron';
+import cron, { ScheduledTask } from 'node-cron';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { multiDropEligibilityEngine } from '@/lib/services/multi-drop-eligibility-engine';
@@ -45,7 +45,7 @@ async function getOrCreateSystemDriver() {
   }
 }
 
-let cronJob: cron.ScheduledTask | null = null;
+let cronJob: ScheduledTask | null = null;
 
 /**
  * Start the auto route creation cron job
