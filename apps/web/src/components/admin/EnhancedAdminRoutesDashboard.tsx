@@ -176,6 +176,7 @@ function calculateRoutePriority(startTime: Date): {
 
 interface Route {
   id: string;
+  reference?: string;
   status: string;
   driverId: string | null;
   driverName: string;
@@ -971,7 +972,7 @@ const EnhancedAdminRoutesDashboard = () => {
                           bg={calculateRoutePriority(route.startTime).color}
                           animation={calculateRoutePriority(route.startTime).animation}
                         />
-                        <Text>{route.id.substring(0, 8)}</Text>
+                        <Text>{route.reference || route.id.substring(0, 8)}</Text>
                       </HStack>
                     </Td>
                     <Td>
@@ -1599,7 +1600,7 @@ const EnhancedAdminRoutesDashboard = () => {
                         <VStack align="start" spacing={1} flex={1}>
                           <HStack>
                             <Text color="white" fontWeight="bold" fontFamily="mono" fontSize="sm">
-                              {route.id.substring(0, 12)}...
+                              {route.reference || route.id.substring(0, 12)}
                             </Text>
                             <Badge colorScheme={getStatusColor(route.status)}>
                               {route.status}

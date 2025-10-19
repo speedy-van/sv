@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { createUniqueReference } from '@/lib/ref';
 
 /**
  * Get or create a system driver for unassigned routes
@@ -105,9 +106,13 @@ export async function POST(request: NextRequest) {
     console.log(`📦 [Create Route] Creating route in database...`);
     console.log(`📦 [Create Route] Driver assignment:`, driverId ? `Driver ${driverId}` : 'Unassigned (pending)');
     
+    // Generate unified SV reference number
+    const routeReference = await createUniqueReference('route');
+    console.log(`📦 [Create Route] Generated reference: ${routeReference}`);
+    
     const route = await prisma.route.create({
       data: {
-        id: `RT${Date.now().toString(36).toUpperCase().slice(-8)}`,
+        reference: routeReference,
         status: driverId ? 'assigned' : 'pending_assignment',
         driverId: driverId || null, // Only assign if valid driverId provided
         totalDrops: bookings.length,

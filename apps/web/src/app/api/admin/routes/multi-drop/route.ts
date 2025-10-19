@@ -17,6 +17,7 @@ import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { logAudit } from '@/lib/audit';
 import { driverEarningsService } from '@/lib/services/driver-earnings-service';
+import { createUniqueReference } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
 
@@ -215,9 +216,13 @@ export async function POST(request: NextRequest) {
       estimatedDuration += drop.estimatedMinutes || 30; // Default 30 min per drop
     }
 
+    // Generate unified SV reference number
+    const routeReference = await createUniqueReference('route');
+    
     // Create route
     const route = await prisma.route.create({
       data: {
+        reference: routeReference,
         driverId: driver.id, // ✅ Fixed: Use driver.id instead of driver.userId
         vehicleId,
         startTime: new Date(startTime),

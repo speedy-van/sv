@@ -1411,6 +1411,7 @@ model Refund {
 
 model Route {
   id                       String           @id @default(cuid())
+  reference                String?          @unique
   driverId                 String?
   vehicleId                String?
   vehicleSpecId            String?
@@ -2136,3 +2137,15 @@ enum VehicleType {
   large_van
   truck
 }
+
+
+model ReferenceSequence {
+  id         String   @id
+  type       String
+  lastNumber Int      @default(0)
+  prefix     String   @default("SV")
+  updatedAt  DateTime @updatedAt
+
+  @@index([type])
+}
+

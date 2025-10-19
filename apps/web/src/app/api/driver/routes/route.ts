@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true,
+        reference: true,
         driverId: true,
         vehicleId: true,
         startTime: true,
@@ -156,6 +157,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: route.id,
+        reference: route.reference || route.id, // Use unified SV reference
         status: route.status,
         drops: drops,
         estimatedDuration: route.estimatedDuration || 

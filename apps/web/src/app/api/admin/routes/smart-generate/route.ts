@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createUniqueReference } from '@/lib/ref';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -178,8 +179,8 @@ Return ONLY a JSON object with this structure:
     // Reorder bookings based on AI sequence
     const optimizedBookings = routeOptimization.sequence.map((idx: number) => bookings[idx]);
 
-    // Generate route number
-    const routeNumber = `RT${Date.now().toString(36).toUpperCase().slice(-8)}`;
+    // Generate unified SV reference number
+    const routeNumber = await createUniqueReference('route');
 
     // Calculate total outcome (safely handle large numbers)
     const totalOutcome = optimizedBookings.reduce((sum: number, b: any) => {
@@ -195,7 +196,7 @@ Return ONLY a JSON object with this structure:
     // Create route
     const route = await prisma.route.create({
       data: {
-        id: routeNumber,
+        reference: routeNumber,
         status: driverId ? 'assigned' : 'pending_assignment',
         driverId: driverId || null,
         totalDrops: optimizedBookings.length,

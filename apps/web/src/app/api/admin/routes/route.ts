@@ -418,7 +418,7 @@ export async function POST(request: NextRequest) {
     const totalDistanceMiles = bookings.reduce((sum, b) => sum + (Number(b.baseDistanceMiles) || 0), 0);
     const totalDistanceKm = totalDistanceMiles * 1.60934; // Convert miles to km
 
-    // Generate unique route number (e.g., RT1A2B3C4D)
+    // Generate unique route number (e.g., SV-000001)
     const routeNumber = await createUniqueReference('route');
     console.log('✅ Generated route number:', routeNumber);
     console.log('✅ Calculated total distance:', { 
@@ -429,7 +429,7 @@ export async function POST(request: NextRequest) {
     // Create route with auto-generated route number
     const route = await prisma.route.create({
       data: {
-        id: routeNumber, // Use route number as ID for easy reference
+        reference: routeNumber, // Use unified SV reference number
         driverId: driverId || null,
         vehicleId: vehicleId || null,
         status: driverId ? 'assigned' : 'pending_assignment',
