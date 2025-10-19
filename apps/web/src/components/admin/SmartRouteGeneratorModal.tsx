@@ -89,6 +89,7 @@ const AdminRouteClusterMap = dynamic(() => import('./RoutePreviewMap'), {
 
 interface PendingDrop {
   id: string;
+  bookingId?: string | null;
   pickupAddress: string;
   deliveryAddress: string;
   timeWindowStart: Date;
@@ -176,7 +177,13 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
       const response = await fetch(url);
       const data = await response.json();
       if (data.success) {
-        setPendingDrops(data.drops || []);
+        // Ensure all drops have bookingId for route creation
+        const dropsWithBookingIds = (data.drops || []).map((drop: any) => ({
+          ...drop,
+          bookingId: drop.bookingId || drop.id, // Use drop.id as fallback if bookingId is missing
+        }));
+        setPendingDrops(dropsWithBookingIds);
+        console.log(`📦 Loaded ${dropsWithBookingIds.length} pending drops`);
       }
     } catch (error) {
       console.error('Failed to fetch pending drops:', error);
@@ -223,7 +230,14 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
       const response = await fetch('/api/admin/routes?status=pending_assignment');
       const data = await response.json();
       if (data.success) {
-        setPendingRoutes(data.routes || []);
+        // Filter out empty routes (0 drops or invalid data)
+        const validRoutes = (data.routes || []).filter((route: any) => 
+          route.totalDrops > 0 && 
+          Number.isFinite(route.totalOutcome) &&
+          route.totalOutcome > 0
+        );
+        setPendingRoutes(validRoutes);
+        console.log(`📊 Loaded ${validRoutes.length} valid pending routes (filtered ${(data.routes?.length || 0) - validRoutes.length} empty routes)`);
       }
     } catch (error) {
       console.error('Failed to fetch pending routes:', error);
@@ -288,8 +302,23 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     setStep('creating');
     
     try {
-      // Get selected booking IDs from pending drops
-      const bookingIds = pendingDrops.map(drop => drop.id);
+      // Get selected booking IDs from pending drops (use bookingId field, not drop id)
+      const bookingIds = pendingDrops
+        .map(drop => drop.bookingId)
+        .filter((id): id is string => Boolean(id));
+      
+      if (bookingIds.length === 0) {
+        toast({
+          title: 'No Bookings Available',
+          description: 'No pending drops with valid booking IDs found. Create bookings first.',
+          status: 'warning',
+          duration: 5000,
+        });
+        setIsCreatingRoutes(false);
+        return;
+      }
+      
+      console.log(`📦 Creating routes with ${bookingIds.length} bookings`);
       
       // Determine driver assignment strategy
       let finalDriverId = undefined;
