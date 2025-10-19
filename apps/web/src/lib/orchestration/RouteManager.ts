@@ -944,59 +944,7 @@ export class RouteManager {
         }
       }
 
-      // 3. Push Notification (Expo)
-      try {
-        const pushSubscriptions = await prisma.pushSubscription.findMany({
-          where: {
-            driverId: driverId,
-            isActive: true,
-          }
-        });
-
-        if (pushSubscriptions.length > 0) {
-          let Expo: any;
-          let expo: any;
-          
-          try {
-            const expoModule = await import('expo-server-sdk');
-            Expo = expoModule.Expo;
-            expo = new Expo();
-          } catch (expoImportError) {
-            console.log('Expo SDK not installed, skipping push notifications');
-            return; // Exit if expo not available
-          }
-
-          const messages = pushSubscriptions.map((subscription) => ({
-            to: subscription.endpoint,
-            sound: 'default' as const,
-            title: '🚚 New Route Assigned',
-            body: `${route.totalDrops} stops starting at ${route.startTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
-            data: {
-              routeId: route.id,
-              type: 'new_route',
-              totalDrops: route.totalDrops,
-              startTime: route.startTime.toISOString(),
-            },
-            priority: 'high' as const,
-            badge: 1,
-          }));
-
-          const chunks = expo.chunkPushNotifications(messages);
-          
-          for (const chunk of chunks) {
-            try {
-              const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-              console.log(`✅ Push notifications sent (${ticketChunk.length} tickets)`);
-            } catch (chunkError) {
-              console.error('❌ Push notification chunk failed:', chunkError);
-            }
-          }
-        } else {
-          console.log(`No active push subscriptions for driver ${driverId}`);
-        }
-      } catch (pushError) {
-        console.error('❌ Push notification failed:', pushError);
-      }
+      // 3. Push Notification (Removed - iOS app no longer supported)
 
       // 4. Email Notification (Backup)
       if (driver.User?.email) {

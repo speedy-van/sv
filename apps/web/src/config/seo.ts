@@ -95,7 +95,6 @@ export const SEO_DEFAULTS = {
   // Additional meta
   themeColor: '#00C2FF',
   tileColor: '#00C2FF',
-  appleTouchIcon: '/apple-touch-icon.png',
   favicon: '/favicon.ico',
 };
 

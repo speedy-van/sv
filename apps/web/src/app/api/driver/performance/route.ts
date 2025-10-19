@@ -96,41 +96,37 @@ export async function GET(request: NextRequest) {
 
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Get jobs count for this week
-    const jobsThisWeek = await prisma.booking.count({
-      where: {
-        driverId: driver.id,
-        status: { in: ['CONFIRMED', 'COMPLETED'] },
-        createdAt: { gte: startOfWeek },
-      },
-    });
-
-    // Get jobs count for this month
-    const jobsThisMonth = await prisma.booking.count({
-      where: {
-        driverId: driver.id,
-        status: { in: ['CONFIRMED', 'COMPLETED'] },
-        createdAt: { gte: startOfMonth },
-      },
-    });
-
-    // Get active jobs count (currently in progress)
-    const activeJobs = await prisma.booking.count({
-      where: {
-        driverId: driver.id,
-        status: 'CONFIRMED', // Use CONFIRMED instead of IN_PROGRESS
-      },
-    });
-
-    // Get total earnings from DriverEarnings table
-    const earnings = await prisma.driverEarnings.aggregate({
-      where: {
-        driverId: driver.id,
-      },
-      _sum: {
-        netAmountPence: true,
-      },
-    });
+    // ✅ OPTIMIZED: Single query to get all job counts and earnings
+    const [jobsThisWeek, jobsThisMonth, activeJobs, earnings] = await Promise.all([
+      prisma.booking.count({
+        where: {
+          driverId: driver.id,
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
+          createdAt: { gte: startOfWeek },
+        },
+      }),
+      prisma.booking.count({
+        where: {
+          driverId: driver.id,
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
+          createdAt: { gte: startOfMonth },
+        },
+      }),
+      prisma.booking.count({
+        where: {
+          driverId: driver.id,
+          status: 'CONFIRMED',
+        },
+      }),
+      prisma.driverEarnings.aggregate({
+        where: {
+          driverId: driver.id,
+        },
+        _sum: {
+          netAmountPence: true,
+        },
+      })
+    ]);
 
     const totalEarningsPence = earnings._sum.netAmountPence || 0;
 

@@ -84,25 +84,52 @@ export async function GET(request: NextRequest) {
       console.log('✅ Driver Jobs API - Driver verified, fetching jobs');
 
       // Get driver's assigned jobs (accepted/invited)
+      // ✅ OPTIMIZED: Only fetch essential data for assigned jobs
       const assignedJobs = await prisma.assignment.findMany({
         where: {
           driverId: driver.id,
           status: { in: ['invited', 'accepted'] }
         },
-        include: {
+        select: {
+          id: true,
+          status: true,
+          claimedAt: true,
           Booking: {
-            include: {
-              pickupAddress: true,
-              dropoffAddress: true,
-              BookingItem: true,
-              customer: { select: { id: true, name: true, email: true } }
+            select: {
+              id: true,
+              reference: true,
+              status: true,
+              scheduledAt: true,
+              pickupAddress: {
+                select: {
+                  label: true,
+                  postcode: true,
+                  lat: true,
+                  lng: true
+                }
+              },
+              dropoffAddress: {
+                select: {
+                  label: true,
+                  postcode: true,
+                  lat: true,
+                  lng: true
+                }
+              },
+              customer: {
+                select: {
+                  name: true,
+                  email: true
+                }
+              }
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        take: 10 // ✅ Limit to 10 most recent jobs
       });
 
-      // Get available jobs (unassigned bookings)
+      // ✅ OPTIMIZED: Only fetch essential data for available jobs
       const availableJobs = await prisma.booking.findMany({
         where: {
           status: 'CONFIRMED',
@@ -111,14 +138,36 @@ export async function GET(request: NextRequest) {
             gte: new Date() // Future bookings only
           }
         },
-        include: {
-          pickupAddress: true,
-          dropoffAddress: true,
-          BookingItem: true,
-          customer: { select: { id: true, name: true, email: true } }
+        select: {
+          id: true,
+          reference: true,
+          status: true,
+          scheduledAt: true,
+          pickupAddress: {
+            select: {
+              label: true,
+              postcode: true,
+              lat: true,
+              lng: true
+            }
+          },
+          dropoffAddress: {
+            select: {
+              label: true,
+              postcode: true,
+              lat: true,
+              lng: true
+            }
+          },
+          customer: {
+            select: {
+              name: true,
+              email: true
+            }
+          }
         },
         orderBy: { scheduledAt: 'asc' },
-        take: 50 // Limit to prevent overwhelming the UI
+        take: 20 // ✅ Reduced from 50 to 20
       });
 
       return { driver, assignedJobs, availableJobs };
@@ -131,7 +180,7 @@ export async function GET(request: NextRequest) {
 
     // Transform assigned jobs
     const transformedAssignedJobs = assignedJobs.map(assignment => {
-      const booking = assignment.Booking as any; // Type assertion for new fields (distanceMeters, durationSeconds)
+      const booking = assignment as any; // Type assertion for new fields (distanceMeters, durationSeconds)
       const pickup = booking.pickupAddress;
       const dropoff = booking.dropoffAddress;
       // Map assignment status to display status
