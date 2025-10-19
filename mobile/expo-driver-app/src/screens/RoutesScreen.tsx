@@ -320,6 +320,7 @@ export default function RoutesScreen() {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false); // 🔒 Prevent double-tap
   const [activeFilter, setActiveFilter] = useState<'all' | 'planned' | 'assigned' | 'in_progress'>('all');
 
   const filters = [
@@ -501,8 +502,8 @@ export default function RoutesScreen() {
   useEffect(() => {
     console.log('👂 Setting up Pusher listeners for routes...');
     
-    // Event 1: Route removed (with earnings data)
-    pusherService.addEventListener('route-removed', (data: any) => {
+    // ✅ FIX: Create stable callback references for proper cleanup
+    const handleRouteRemoved = (data: any) => {
       console.log('🚫 Route removed event:', data);
       
       // Show earnings info if available
@@ -516,50 +517,70 @@ export default function RoutesScreen() {
       
       // Remove route from list
       setRoutes(prevRoutes => prevRoutes.filter(r => r.id !== data.routeId));
-    });
+    };
     
-    // Event 2: Route offer (new route assigned)
-    pusherService.addEventListener('route-offer', (data: any) => {
+    const handleRouteOffer = (data: any) => {
       console.log('🛣️ Route offer event:', data);
       // Refresh routes list
       fetchRoutes();
-    });
+    };
     
-    // Event 3: Acceptance rate updated
-    pusherService.addEventListener('acceptance-rate-updated', (data: any) => {
+    const handleAcceptanceRateUpdated = (data: any) => {
       console.log('📉 Acceptance rate updated:', data);
       // Will be handled by store
-    });
+    };
     
-    // Event 4: Schedule updated
-    pusherService.addEventListener('schedule-updated', (data: any) => {
+    const handleScheduleUpdated = (data: any) => {
       console.log('📅 Schedule updated:', data);
       if (data.type === 'route_removed') {
         setRoutes(prevRoutes => prevRoutes.filter(r => r.id !== data.routeId));
       }
-    });
+    };
     
-    // Cleanup
+    // Add event listeners with stable references
+    pusherService.addEventListener('route-removed', handleRouteRemoved);
+    pusherService.addEventListener('route-offer', handleRouteOffer);
+    pusherService.addEventListener('acceptance-rate-updated', handleAcceptanceRateUpdated);
+    pusherService.addEventListener('schedule-updated', handleScheduleUpdated);
+    
+    // ✅ FIX: Proper cleanup with specific callback references
     return () => {
-      console.log('🧹 Cleaning up Pusher listeners for routes');
-      pusherService.removeEventListener('route-removed');
-      pusherService.removeEventListener('route-offer');
-      pusherService.removeEventListener('acceptance-rate-updated');
-      pusherService.removeEventListener('schedule-updated');
+      console.log('🧹 Cleaning up Pusher listeners for RoutesScreen');
+      pusherService.removeEventListener('route-removed', handleRouteRemoved);
+      pusherService.removeEventListener('route-offer', handleRouteOffer);
+      pusherService.removeEventListener('acceptance-rate-updated', handleAcceptanceRateUpdated);
+      pusherService.removeEventListener('schedule-updated', handleScheduleUpdated);
     };
   }, []);
 
   const handleAcceptRoute = async (routeId: string) => {
+    // 🔒 Prevent double-tap - Lock BEFORE showing Alert
+    if (isProcessingAction) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    // Set processing state immediately to prevent double-tap on Alert
+    setIsProcessingAction(true);
+    
     Alert.alert(
       'Accept Route',
       'Are you sure you want to accept this full route? All stops will be assigned to you.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => {
+            // Reset if user cancels
+            setIsProcessingAction(false);
+          }
+        },
         {
           text: 'Accept',
           onPress: async () => {
             try {
               setIsLoading(true);
+              // isProcessingAction already set to true above
               console.log(`✅ Accepting route ${routeId}...`);
               
               // Call backend API
@@ -590,6 +611,7 @@ export default function RoutesScreen() {
               Alert.alert('Error', error.message || 'Could not accept route. Please try again.');
             } finally {
               setIsLoading(false);
+              setIsProcessingAction(false); // ✅ Reset processing state
             }
           },
         },
@@ -599,17 +621,34 @@ export default function RoutesScreen() {
 
   // ✅ Real decline route handler - WITH ACCEPTANCE RATE & EARNINGS
   const handleDeclineRoute = (routeId: string) => {
+    // 🔒 Prevent double-tap - Lock BEFORE showing Alert
+    if (isProcessingAction) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    // Set processing state immediately to prevent double-tap on Alert
+    setIsProcessingAction(true);
+    
     Alert.alert(
       'Decline Route',
       '⚠️ Declining will reduce your acceptance rate by 5%. Are you sure?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => {
+            // Reset if user cancels
+            setIsProcessingAction(false);
+          }
+        },
         {
           text: 'Decline',
           style: 'destructive',
           onPress: async () => {
             try {
               setIsLoading(true);
+              // isProcessingAction already set to true above
               console.log(`🚫 Declining route ${routeId}...`);
               
               const response = await apiService.post(
@@ -652,6 +691,7 @@ export default function RoutesScreen() {
               Alert.alert('Error', error.message || 'Could not decline route. Please try again.');
             } finally {
               setIsLoading(false);
+              setIsProcessingAction(false); // ✅ Reset processing state
             }
           },
         },
@@ -986,16 +1026,24 @@ export default function RoutesScreen() {
                 {route.status === 'planned' && (
                   <>
                     <TouchableOpacity
-                      style={styles.acceptButton}
+                      style={[styles.acceptButton, isProcessingAction && styles.disabledButton]}
                       onPress={() => handleAcceptRoute(route.id)}
+                      disabled={isProcessingAction}
+                      activeOpacity={0.8}
                     >
-                      <Text style={styles.acceptButtonText}>✅ Accept Route</Text>
+                      <Text style={styles.acceptButtonText}>
+                        {isProcessingAction ? '⏳ Processing...' : '✅ Accept Route'}
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.declineButton}
+                      style={[styles.declineButton, isProcessingAction && styles.disabledButton]}
                       onPress={() => handleDeclineRoute(route.id)}
+                      disabled={isProcessingAction}
+                      activeOpacity={0.7}
                     >
-                      <Text style={styles.declineButtonText}>❌ Decline</Text>
+                      <Text style={styles.declineButtonText}>
+                        {isProcessingAction ? '⏳ Processing...' : '❌ Decline'}
+                      </Text>
                     </TouchableOpacity>
                     <Text style={styles.warningText}>
                       ⚠️ Declining will affect your acceptance rate
@@ -1261,6 +1309,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#EF4444',
+  },
+  disabledButton: {
+    opacity: 0.5,
+    backgroundColor: '#9CA3AF',
   },
   warningText: {
     fontSize: 12,

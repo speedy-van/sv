@@ -23,6 +23,7 @@ export default function JobDetailScreen() {
   const navigation = useNavigation();
   const [job, setJob] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false); // 🔒 Prevent double-tap
 
   useEffect(() => {
     fetchJobDetail();
@@ -44,20 +45,39 @@ export default function JobDetailScreen() {
   };
 
   const handleAccept = async () => {
+    // 🔒 Prevent double-tap - Lock BEFORE showing Alert
+    if (isProcessing) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    // Set processing state immediately to prevent double-tap on Alert
+    setIsProcessing(true);
+    
     Alert.alert(
       'Accept Job',
       'Do you want to accept this job?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => {
+            // Reset if user cancels
+            setIsProcessing(false);
+          }
+        },
         {
           text: 'Accept',
           onPress: async () => {
             try {
+              // isProcessing already set to true above
               await jobService.acceptJob(route.params.jobId);
               Alert.alert('Success', 'Job accepted successfully');
               navigation.goBack();
             } catch (error) {
               Alert.alert('Error', 'Failed to accept job');
+            } finally {
+              setIsProcessing(false);
             }
           },
         },
@@ -66,11 +86,27 @@ export default function JobDetailScreen() {
   };
 
   const handleDecline = () => {
+    // 🔒 Prevent double-tap - Lock BEFORE showing Alert
+    if (isProcessing) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    // Set processing state immediately to prevent double-tap on Alert
+    setIsProcessing(true);
+    
     Alert.alert(
       'Decline Job',
       'Why are you declining this job?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => {
+            // Reset if user cancels
+            setIsProcessing(false);
+          }
+        },
         {
           text: 'Too far',
           onPress: () => declineJob('Too far from current location'),
@@ -89,16 +125,28 @@ export default function JobDetailScreen() {
 
   const declineJob = async (reason: string) => {
     try {
+      // isProcessing already set to true in handleDecline
       await jobService.declineJob(route.params.jobId, reason);
       Alert.alert('Success', 'Job declined');
       navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'Failed to decline job');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleStartJob = () => {
+    // 🔒 Prevent double-tap
+    if (isProcessing) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    setIsProcessing(true);
     (navigation.navigate as any)('JobProgress', { jobId: route.params.jobId });
+    // Reset after navigation
+    setTimeout(() => setIsProcessing(false), 1000);
   };
 
   const openNavigation = (lat: number, lng: number, label: string) => {
@@ -610,21 +658,42 @@ export default function JobDetailScreen() {
       {/* Action Buttons */}
       {job.assignment?.status === 'invited' && (
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.acceptButton} onPress={handleAccept}>
+          <TouchableOpacity 
+            style={[styles.acceptButton, isProcessing && styles.disabledButton]} 
+            onPress={handleAccept}
+            disabled={isProcessing}
+            activeOpacity={0.8}
+          >
             <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
-            <Text style={styles.acceptButtonText}>Accept Job</Text>
+            <Text style={styles.acceptButtonText}>
+              {isProcessing ? '⏳ Processing...' : 'Accept Job'}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.declineButton} onPress={handleDecline}>
+          <TouchableOpacity 
+            style={[styles.declineButton, isProcessing && styles.disabledButton]} 
+            onPress={handleDecline}
+            disabled={isProcessing}
+            activeOpacity={0.7}
+          >
             <Ionicons name="close-circle" size={24} color="#FFFFFF" />
-            <Text style={styles.declineButtonText}>Decline</Text>
+            <Text style={styles.declineButtonText}>
+              {isProcessing ? '⏳ Processing...' : 'Decline'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
 
       {job.assignment?.status === 'accepted' && (
-        <TouchableOpacity style={styles.startButton} onPress={handleStartJob}>
+        <TouchableOpacity 
+          style={[styles.startButton, isProcessing && styles.disabledButton]} 
+          onPress={handleStartJob}
+          disabled={isProcessing}
+          activeOpacity={0.8}
+        >
           <Ionicons name="play-circle" size={24} color="#FFFFFF" />
-          <Text style={styles.startButtonText}>Start Job</Text>
+          <Text style={styles.startButtonText}>
+            {isProcessing ? '⏳ Starting...' : 'Start Job'}
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -1048,5 +1117,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+  disabledButton: {
+    opacity: 0.5,
+    backgroundColor: '#9CA3AF',
   },
 });

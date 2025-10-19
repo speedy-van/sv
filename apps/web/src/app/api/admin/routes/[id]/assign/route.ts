@@ -304,7 +304,10 @@ export async function POST(
         // Notify the driver with "route-matched" event - THIS IS THE KEY EVENT
         await pusher.trigger(`driver-${driverId}`, 'route-matched', {
           type: result.bookingsCount > 1 ? 'multi-drop' : 'single-order',
+          matchType: result.bookingsCount > 1 ? 'route' : 'order', // ✅ FIX: Add matchType
           routeId: result.updatedRoute.id,
+          bookingId: result.updatedRoute.id, // ✅ FIX: iOS app expects bookingId
+          orderId: result.updatedRoute.id, // ✅ FIX: Alias for consistency
           routeNumber: routeNumber, // ✅ CRITICAL: Route number (RT1A2B3C4D)
           bookingReference: displayReference, // ✅ CRITICAL: Display reference (route or booking)
           orderNumber: displayReference, // ✅ Alias for consistency
@@ -316,6 +319,8 @@ export async function POST(
           estimatedDuration: result.updatedRoute.estimatedDuration,
           totalEarnings: result.updatedRoute.driverPayout ? Number(result.updatedRoute.driverPayout) : 0,
           assignedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // ✅ FIX: Add expiry time
+          expiresInSeconds: 1800, // ✅ FIX: 30 minutes
           message: `New ${result.bookingsCount > 1 ? 'route' : 'order'} ${displayReference} assigned to you`,
           drops: (result.updatedRoute as any).drops.map((drop: any) => ({
             id: drop.id,
@@ -325,10 +330,18 @@ export async function POST(
         });
 
         // Also send job-assigned event for backward compatibility
+        // ✅ FIX: Include ALL required IDs for iOS app compatibility
         await pusher.trigger(`driver-${driverId}`, 'job-assigned', {
           type: 'route',
           routeId: result.updatedRoute.id,
+          bookingId: result.updatedRoute.id, // ✅ iOS app expects bookingId
+          orderId: result.updatedRoute.id, // ✅ Alias for consistency
+          bookingReference: displayReference,
+          orderNumber: displayReference,
+          routeNumber: routeNumber,
+          matchType: result.bookingsCount > 1 ? 'route' : 'order',
           bookingsCount: result.bookingsCount,
+          jobCount: result.bookingsCount, // ✅ For mobile app compatibility
           assignedAt: new Date().toISOString(),
           message: `You have been assigned a route with ${result.bookingsCount} jobs`,
         });

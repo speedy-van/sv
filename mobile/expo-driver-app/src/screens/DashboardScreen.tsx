@@ -61,6 +61,7 @@ export default function DashboardScreen() {
   const [newRouteCount, setNewRouteCount] = useState(0);
   const previousRoutesCount = useRef(-1); // Start with -1 to detect first load
   const isFirstLoad = useRef(true);
+  const [isProcessingAction, setIsProcessingAction] = useState(false); // 🔒 Prevent double-tap
   const [stats, setStats] = useState<DriverStats>({
     totalJobs: 12,
     completedJobs: 8,
@@ -294,7 +295,161 @@ export default function DashboardScreen() {
 
     initializePermissionMonitor();
 
-    // Initialize Pusher for real-time updates
+    // ✅ FIX: Create stable callback references for Pusher event listeners
+    const handleRouteMatched = (data: any) => {
+          console.log('🎯 ROUTE MATCHED EVENT RECEIVED IN DASHBOARD:', data);
+
+          // Determine route count based on event data
+          let routeCount = 1; // default
+          if (data.type === 'single-order') {
+            routeCount = 1;
+          } else if (data.jobCount) {
+            routeCount = data.jobCount;
+          } else if (data.routeCount) {
+            routeCount = data.routeCount;
+          }
+
+          // Create pending offer object with proper ID handling
+          // Priority: routeId > bookingId > orderId > assignmentId
+          const jobId = data.routeId || data.bookingId || data.orderId || data.assignmentId;
+          
+          if (!jobId) {
+            console.error('❌ No valid job ID found in route-matched event:', data);
+            console.error('❌ Full event data:', JSON.stringify(data, null, 2));
+            showToast.error('Invalid Job', 'Cannot process job without valid ID. Event data logged to console.');
+            return;
+          }
+          
+          console.log('✅ Extracted jobId:', jobId, 'from event type:', data.type || data.matchType);
+          
+          const pendingOffer: PendingOffer = {
+            id: data.assignmentId || jobId || `offer_${Date.now()}`,
+            bookingId: jobId, // Use the determined jobId
+            orderId: data.orderId || jobId,
+            bookingReference: data.bookingReference || data.orderNumber || data.routeNumber || data.routeId || 'N/A',
+            orderNumber: data.orderNumber || data.routeNumber || data.routeId || 'N/A',
+            routeNumber: data.routeNumber || data.routeId || data.orderNumber || 'N/A',
+            matchType: data.matchType || (data.type === 'single-order' ? 'order' : 'route'),
+            jobCount: routeCount,
+            assignmentId: data.assignmentId || jobId,
+            assignedAt: data.assignedAt || new Date().toISOString(),
+            expiresAt: data.expiresAt || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+            pickupAddress: data.pickupAddress,
+            dropoffAddress: data.dropoffAddress,
+            estimatedEarnings: data.estimatedEarnings,
+            distance: data.distance,
+            customerName: data.customerName,
+            receivedAt: new Date().toISOString(),
+          };
+          
+          console.log('✅ Pending offer created with jobId:', jobId);
+
+          // Save pending offer to storage for persistence
+          savePendingOffer(pendingOffer).catch(err => {
+            console.error('❌ Failed to save pending offer:', err);
+          });
+
+          // Set current pending offer in state
+          setCurrentPendingOffer(pendingOffer);
+
+          // Trigger route match notification IMMEDIATELY
+          setHasNewRoute(true);
+          setNewRouteCount(routeCount);
+          setShowMatchModal(true);
+
+          // Refresh available routes with delay to avoid immediate API conflicts
+          setTimeout(() => {
+            fetchAvailableRoutes().catch(err => {
+              console.error('❌ Failed to refresh routes after Pusher event:', err);
+              // Don't show error to user, just log it
+            });
+          }, 2000); // Wait 2 seconds before refreshing
+        };
+        
+    const handleJobAssigned = (data: any) => {
+      console.log('📦 JOB ASSIGNED via Pusher:', data);
+      
+      // Refresh available routes
+      fetchAvailableRoutes();
+    };
+
+    const handleRouteRemoved = (data: any) => {
+          console.log('❌ ROUTE REMOVED via Pusher:', data);
+          
+          // Refresh available routes
+          fetchAvailableRoutes();
+          
+          // Show alert
+          Alert.alert(
+            'Route Removed',
+            data.reason || 'A route has been removed from your assignments',
+            [{ text: 'Continue' }]
+          );
+        };
+
+    const handleAcceptanceRateUpdated = (data: any) => {
+          console.log('📉 ACCEPTANCE RATE UPDATED via Pusher:', data);
+          
+          if (data.acceptanceRate !== undefined) {
+            setAcceptanceRate(data.acceptanceRate);
+            console.log(`✅ Updated acceptance rate: ${data.acceptanceRate}% (${data.change}%)`);
+            
+            // Show alert for significant changes
+            if (data.change && data.change < 0) {
+              Alert.alert(
+                'Performance Update',
+                `Your acceptance rate has decreased to ${data.acceptanceRate}%\nReason: ${data.reason === 'job_declined' ? 'Job declined' : 'Assignment expired'}`,
+                [{ text: 'Continue' }]
+              );
+            }
+          }
+        };
+
+    const handleRouteCancelled = (data: any) => {
+          console.log('🚫 ROUTE CANCELLED by Admin:', data);
+          
+          // Refresh available routes
+          fetchAvailableRoutes();
+          
+          // Show notification
+          showToast.error(
+            data.message || `Route ${data.routeNumber || data.routeId} has been cancelled by admin`,
+            'Route Cancelled'
+          );
+        };
+
+    const handleDropRemoved = (data: any) => {
+          console.log('📦 DROP REMOVED by Admin:', data);
+          
+          // Refresh available routes to update route details
+          fetchAvailableRoutes();
+          
+          // Show notification
+          showToast.info(
+            `A drop has been removed from route ${data.routeNumber || data.routeId}. ${data.remainingDrops || 0} drops remaining.`,
+            'Route Updated'
+          );
+        };
+
+    const handleJobRemoved = (data: any) => {
+          console.log('🗑️ JOB REMOVED via Pusher:', data);
+          
+          // Remove from pending offers
+          if (data.assignmentId || data.jobId) {
+            removePendingOffer(data.assignmentId || data.jobId).catch(err => {
+              console.error('❌ Failed to remove pending offer:', err);
+            });
+          }
+          
+          // Close modal if showing
+          setShowMatchModal(false);
+          setCurrentPendingOffer(null);
+          
+          // Refresh available routes
+          fetchAvailableRoutes();
+        };
+
+    // ✅ FIX: Initialize Pusher with proper event listener registration
     const initializePusher = async () => {
       try {
         // Get driver ID from storage
@@ -356,162 +511,16 @@ export default function DashboardScreen() {
         console.log('🔌 Initializing Pusher for driver:', driverId);
         await pusherService.initialize(driverId);
 
-        // Listen for route-matched events
-        pusherService.addEventListener('route-matched', (data: any) => {
-          console.log('🎯 ROUTE MATCHED EVENT RECEIVED IN DASHBOARD:', data);
+        // Register all event listeners with stable callback references
+        pusherService.addEventListener('route-matched', handleRouteMatched);
+        pusherService.addEventListener('job-assigned', handleJobAssigned);
+        pusherService.addEventListener('route-removed', handleRouteRemoved);
+        pusherService.addEventListener('acceptance-rate-updated', handleAcceptanceRateUpdated);
+        pusherService.addEventListener('route-cancelled', handleRouteCancelled);
+        pusherService.addEventListener('drop-removed', handleDropRemoved);
+        pusherService.addEventListener('job-removed', handleJobRemoved);
 
-          // Determine route count based on event data
-          let routeCount = 1; // default
-          if (data.type === 'single-order') {
-            routeCount = 1;
-          } else if (data.jobCount) {
-            routeCount = data.jobCount;
-          } else if (data.routeCount) {
-            routeCount = data.routeCount;
-          }
-
-          // Create pending offer object with proper ID handling
-          // Priority: routeId > bookingId > orderId > assignmentId
-          const jobId = data.routeId || data.bookingId || data.orderId || data.assignmentId;
-          
-          if (!jobId) {
-            console.error('❌ No valid job ID found in route-matched event:', data);
-            showToast.error('Invalid Job', 'Cannot process job without valid ID');
-            return;
-          }
-          
-          const pendingOffer: PendingOffer = {
-            id: data.assignmentId || jobId || `offer_${Date.now()}`,
-            bookingId: jobId, // Use the determined jobId
-            orderId: data.orderId || jobId,
-            bookingReference: data.bookingReference || data.orderNumber || data.routeNumber || data.routeId || 'N/A',
-            orderNumber: data.orderNumber || data.routeNumber || data.routeId || 'N/A',
-            routeNumber: data.routeNumber || data.routeId || data.orderNumber || 'N/A',
-            matchType: data.matchType || (data.type === 'single-order' ? 'order' : 'route'),
-            jobCount: routeCount,
-            assignmentId: data.assignmentId || jobId,
-            assignedAt: data.assignedAt || new Date().toISOString(),
-            expiresAt: data.expiresAt || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-            pickupAddress: data.pickupAddress,
-            dropoffAddress: data.dropoffAddress,
-            estimatedEarnings: data.estimatedEarnings,
-            distance: data.distance,
-            customerName: data.customerName,
-            receivedAt: new Date().toISOString(),
-          };
-          
-          console.log('✅ Pending offer created with jobId:', jobId);
-
-          // Save pending offer to storage for persistence
-          savePendingOffer(pendingOffer).catch(err => {
-            console.error('❌ Failed to save pending offer:', err);
-          });
-
-          // Set current pending offer in state
-          setCurrentPendingOffer(pendingOffer);
-
-          // Trigger route match notification IMMEDIATELY
-          setHasNewRoute(true);
-          setNewRouteCount(routeCount);
-          setShowMatchModal(true);
-
-          // Refresh available routes with delay to avoid immediate API conflicts
-          setTimeout(() => {
-            fetchAvailableRoutes().catch(err => {
-              console.error('❌ Failed to refresh routes after Pusher event:', err);
-              // Don't show error to user, just log it
-            });
-          }, 2000); // Wait 2 seconds before refreshing
-        });
-        
-        // Listen for job-assigned events (backward compatibility)
-        pusherService.addEventListener('job-assigned', (data: any) => {
-          console.log('📦 JOB ASSIGNED via Pusher:', data);
-          
-          // Refresh available routes
-          fetchAvailableRoutes();
-        });
-
-        // Listen for route-removed events
-        pusherService.addEventListener('route-removed', (data: any) => {
-          console.log('❌ ROUTE REMOVED via Pusher:', data);
-          
-          // Refresh available routes
-          fetchAvailableRoutes();
-          
-          // Show alert
-          Alert.alert(
-            'Route Removed',
-            data.reason || 'A route has been removed from your assignments',
-            [{ text: 'Continue' }]
-          );
-        });
-
-        // Listen for acceptance-rate-updated events
-        pusherService.addEventListener('acceptance-rate-updated', (data: any) => {
-          console.log('📉 ACCEPTANCE RATE UPDATED via Pusher:', data);
-          
-          if (data.acceptanceRate !== undefined) {
-            setAcceptanceRate(data.acceptanceRate);
-            console.log(`✅ Updated acceptance rate: ${data.acceptanceRate}% (${data.change}%)`);
-            
-            // Show alert for significant changes
-            if (data.change && data.change < 0) {
-              Alert.alert(
-                'Performance Update',
-                `Your acceptance rate has decreased to ${data.acceptanceRate}%\nReason: ${data.reason === 'job_declined' ? 'Job declined' : 'Assignment expired'}`,
-                [{ text: 'Continue' }]
-              );
-            }
-          }
-        });
-
-        // Listen for route-cancelled events (admin cancelled route)
-        pusherService.addEventListener('route-cancelled', (data: any) => {
-          console.log('🚫 ROUTE CANCELLED by Admin:', data);
-          
-          // Refresh available routes
-          fetchAvailableRoutes();
-          
-          // Show notification
-          showToast.error(
-            data.message || `Route ${data.routeNumber || data.routeId} has been cancelled by admin`,
-            'Route Cancelled'
-          );
-        });
-
-        // Listen for drop-removed events (admin removed drop from route)
-        pusherService.addEventListener('drop-removed', (data: any) => {
-          console.log('📦 DROP REMOVED by Admin:', data);
-          
-          // Refresh available routes to update route details
-          fetchAvailableRoutes();
-          
-          // Show notification
-          showToast.info(
-            `A drop has been removed from route ${data.routeNumber || data.routeId}. ${data.remainingDrops || 0} drops remaining.`,
-            'Route Updated'
-          );
-        });
-
-        // Listen for job-removed events (for expired/declined jobs)
-        pusherService.addEventListener('job-removed', (data: any) => {
-          console.log('🗑️ JOB REMOVED via Pusher:', data);
-          
-          // Remove from pending offers
-          if (data.assignmentId || data.jobId) {
-            removePendingOffer(data.assignmentId || data.jobId).catch(err => {
-              console.error('❌ Failed to remove pending offer:', err);
-            });
-          }
-          
-          // Close modal if showing
-          setShowMatchModal(false);
-          setCurrentPendingOffer(null);
-          
-          // Refresh available routes
-          fetchAvailableRoutes();
-        });
+        console.log('✅ All Pusher event listeners registered for DashboardScreen');
       } catch (error) {
         console.error('❌ Failed to initialize Pusher:', error);
       }
@@ -534,13 +543,30 @@ export default function DashboardScreen() {
       }
     }, 30000); // Increased to 30 seconds since we have real-time updates
 
+    // ✅ FIX: Proper cleanup with specific callback references
     return () => {
-      // Cleanup
+      // Cleanup audio service
       audioService.cleanup();
+      
+      // ✅ FIX: Remove specific event listeners before disconnecting
+      pusherService.removeEventListener('route-matched', handleRouteMatched);
+      pusherService.removeEventListener('job-assigned', handleJobAssigned);
+      pusherService.removeEventListener('route-removed', handleRouteRemoved);
+      pusherService.removeEventListener('acceptance-rate-updated', handleAcceptanceRateUpdated);
+      pusherService.removeEventListener('route-cancelled', handleRouteCancelled);
+      pusherService.removeEventListener('drop-removed', handleDropRemoved);
+      pusherService.removeEventListener('job-removed', handleJobRemoved);
+      
+      // Disconnect Pusher
       pusherService.disconnect();
+      
+      // Stop permission monitor
       permissionMonitor.stopMonitoring();
+      
+      // Clear polling interval
       clearInterval(pollInterval);
-      console.log('🧹 Dashboard unmounted - services stopped');
+      
+      console.log('🧹 DashboardScreen unmounted - all services stopped and listeners removed');
     };
   }, [isOnline]);
 
@@ -764,16 +790,41 @@ export default function DashboardScreen() {
   const handleViewNow = async () => {
     console.log('📱 User tapped View Now - Starting accept flow');
     
+    // 🔒 Prevent double-tap
+    if (isProcessingAction) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    setIsProcessingAction(true);
+    
     // Stop the music immediately
     audioService.stopSound();
 
     // Validate booking ID before proceeding
     if (!currentPendingOffer?.bookingId) {
       console.error('❌ No booking ID available in currentPendingOffer:', currentPendingOffer);
+      console.error('❌ Full currentPendingOffer:', JSON.stringify(currentPendingOffer, null, 2));
+      setIsProcessingAction(false); // ✅ Reset on error
       Alert.alert(
         'Error', 
-        'Cannot view job - booking ID not found. Please try accepting the job again.',
-        [{ text: 'OK' }]
+        'Cannot view job - booking ID not found. This job may have expired or been removed.\n\nPlease close this notification and check for new jobs.',
+        [{ 
+          text: 'Close', 
+          onPress: () => {
+            // ✅ FIX: Clear the invalid pending offer
+            setShowMatchModal(false);
+            setCurrentPendingOffer(null);
+            setHasNewRoute(false);
+            setNewRouteCount(0);
+            // Remove from storage
+            if (currentPendingOffer?.id) {
+              removePendingOffer(currentPendingOffer.id).catch(err => {
+                console.error('Failed to remove invalid pending offer:', err);
+              });
+            }
+          }
+        }]
       );
       return;
     }
@@ -802,6 +853,8 @@ export default function DashboardScreen() {
       if (currentPendingOffer?.id) {
         await removePendingOffer(currentPendingOffer.id);
         console.log('🗑️ Removed pending offer from storage');
+      } else {
+        console.warn('⚠️ No pending offer ID to remove from storage');
       }
       
       // Update acceptance rate if returned
@@ -818,30 +871,80 @@ export default function DashboardScreen() {
       // Show success message
       showToast.success('Job Accepted!', 'Redirecting to job details...');
       
-      // Wait a moment for the toast to show
+      // Navigate immediately without delay
+      console.log('📱 Navigating to JobDetail screen with jobId:', jobId);
+      (navigation.navigate as any)('JobDetail', { jobId });
+      
+      // Reset processing state after navigation starts
+      // Use a very short delay to ensure navigation has initiated
       setTimeout(() => {
-        console.log('📱 Navigating to JobDetail screen with jobId:', jobId);
-        (navigation.navigate as any)('JobDetail', { jobId });
-      }, 500);
+        setIsProcessingAction(false);
+      }, 100);
       
     } catch (error: any) {
       console.error('❌ Error accepting job:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        jobId,
+        isRoute,
+        endpoint: isRoute ? `/api/driver/routes/${jobId}/accept` : `/api/driver/jobs/${jobId}/accept`
+      });
       
-      // Show error and reopen modal
-      setShowMatchModal(true);
+      // ✅ Reset processing state on error
+      setIsProcessingAction(false);
       
       const errorMessage = error?.response?.data?.error || error?.message || 'Failed to accept job';
-      Alert.alert(
-        'Accept Failed',
-        errorMessage + '. Please try again.',
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => setShowMatchModal(false) },
-          { text: 'Retry', onPress: () => handleViewNow() }
-        ]
-      );
+      const is404 = error?.response?.status === 404;
+      
+      // ✅ FIX: If job not found (404), clear it instead of retrying
+      if (is404) {
+        setShowMatchModal(false);
+        setCurrentPendingOffer(null);
+        setHasNewRoute(false);
+        setNewRouteCount(0);
+        
+        // Remove from storage
+        if (currentPendingOffer?.id) {
+          await removePendingOffer(currentPendingOffer.id).catch(err => {
+            console.error('Failed to remove invalid pending offer:', err);
+          });
+        }
+        
+        Alert.alert(
+          'Job Not Found',
+          'This job is no longer available. It may have been assigned to another driver or removed by admin.\n\nPlease check for new job notifications.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        // Show error and reopen modal
+        setShowMatchModal(true);
+        
+        Alert.alert(
+          'Accept Failed',
+          errorMessage + '. Please try again.',
+          [
+            { text: 'Cancel', style: 'cancel', onPress: () => {
+              setShowMatchModal(false);
+              setCurrentPendingOffer(null);
+              setHasNewRoute(false);
+            }},
+            { text: 'Retry', onPress: () => handleViewNow() }
+          ]
+        );
+      }
     }
   };  const handleDecline = async () => {
     console.log('❌ Driver declined job from popup');
+    
+    // 🔒 Prevent double-tap
+    if (isProcessingAction) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
+    setIsProcessingAction(true);
     
     // Stop the music when declining
     audioService.stopSound();
@@ -849,13 +952,22 @@ export default function DashboardScreen() {
     // Validate booking ID
     if (!currentPendingOffer?.bookingId) {
       console.error('❌ No bookingId available for decline. Offer:', currentPendingOffer);
+      console.error('❌ Full currentPendingOffer:', JSON.stringify(currentPendingOffer, null, 2));
+      setIsProcessingAction(false); // ✅ Reset on error
       Alert.alert(
         'Error', 
-        'Cannot decline - job ID not found. The job may have expired.',
+        'Cannot decline - job ID not found. This job may have expired or been removed.\n\nClosing this notification...',
         [{ text: 'OK', onPress: () => {
           setShowMatchModal(false);
           setCurrentPendingOffer(null);
           setHasNewRoute(false);
+          setNewRouteCount(0);
+          // ✅ FIX: Remove invalid pending offer from storage
+          if (currentPendingOffer?.id) {
+            removePendingOffer(currentPendingOffer.id).catch(err => {
+              console.error('Failed to remove invalid pending offer:', err);
+            });
+          }
         }}]
       );
       return;
@@ -897,6 +1009,9 @@ export default function DashboardScreen() {
       setCurrentPendingOffer(null);
       setHasNewRoute(false);
       setNewRouteCount(0);
+      
+      // ✅ Reset processing state
+      setIsProcessingAction(false);
 
       // Refresh routes
       fetchAvailableRoutes();
@@ -910,14 +1025,42 @@ export default function DashboardScreen() {
 
     } catch (error: any) {
       console.error('❌ Error declining job:', error);
+      console.error('❌ Decline error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+        jobId,
+        isRoute,
+        endpoint: isRoute ? `/api/driver/routes/${jobId}/decline` : `/api/driver/jobs/${jobId}/decline`
+      });
+      
+      // ✅ Reset processing state on error
+      setIsProcessingAction(false);
       
       // Clear state even on error
       setCurrentPendingOffer(null);
       setHasNewRoute(false);
       setNewRouteCount(0);
       
+      // ✅ FIX: Remove from storage on error
+      if (currentPendingOffer?.id) {
+        await removePendingOffer(currentPendingOffer.id).catch(err => {
+          console.error('Failed to remove pending offer after decline error:', err);
+        });
+      }
+
       const errorMessage = error?.response?.data?.error || error?.message || 'Failed to decline job';
-      showToast.error('Decline Failed', errorMessage);
+      const is404 = error?.response?.status === 404;
+      
+      // ✅ FIX: Better error message for 404
+      if (is404) {
+        showToast.success(
+          'Job Removed', 
+          'This job was already removed or expired. Notification cleared.'
+        );
+      } else {
+        showToast.error('Decline Failed', errorMessage);
+      }
     }
   };
 
@@ -1315,6 +1458,7 @@ export default function DashboardScreen() {
         expiresAt={currentPendingOffer?.expiresAt}
         expiresInSeconds={currentPendingOffer?.expiresAt ? undefined : 1800}
         jobId={currentPendingOffer?.bookingId}
+        isProcessing={isProcessingAction}
         onViewNow={handleViewNow}
         onDecline={handleDecline}
       />

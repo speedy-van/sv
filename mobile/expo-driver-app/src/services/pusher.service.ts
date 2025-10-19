@@ -18,8 +18,10 @@ class PusherService {
   private pusher: any | null = null;
   private driverChannel: any = null;
   private driverId: string | null = null;
-  private listeners: Map<string, Function> = new Map();
+  private listeners: Map<string, Set<Function>> = new Map(); // ✅ FIX: Support multiple listeners per event
   private authToken: string | null = null;
+  private processedEvents: Set<string> = new Set(); // ✅ FIX: Event deduplication
+  private eventTTL = 5000; // 5 seconds
 
   /**
    * Initialize Pusher connection
@@ -375,31 +377,73 @@ class PusherService {
   }
 
   /**
-   * Add event listener
+   * Add event listener (supports multiple listeners per event)
    */
   addEventListener(event: string, callback: Function) {
-    console.log(` Adding listener for event: ${event}`);
-    this.listeners.set(event, callback);
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, new Set());
+    }
+    this.listeners.get(event)!.add(callback);
+    console.log(` Added listener for event: ${event} (total: ${this.listeners.get(event)!.size})`);
   }
 
   /**
-   * Remove event listener
+   * Remove event listener (can remove specific callback or all for event)
    */
-  removeEventListener(event: string) {
-    console.log(`  Removing listener for event: ${event}`);
-    this.listeners.delete(event);
+  removeEventListener(event: string, callback?: Function) {
+    if (!callback) {
+      // Remove all listeners for this event
+      const count = this.listeners.get(event)?.size || 0;
+      this.listeners.delete(event);
+      console.log(`  Removed all ${count} listener(s) for event: ${event}`);
+    } else {
+      // Remove specific listener
+      const eventListeners = this.listeners.get(event);
+      if (eventListeners) {
+        eventListeners.delete(callback);
+        console.log(`  Removed specific listener for event: ${event} (remaining: ${eventListeners.size})`);
+        
+        // Clean up empty sets
+        if (eventListeners.size === 0) {
+          this.listeners.delete(event);
+        }
+      }
+    }
   }
 
   /**
-   * Notify all listeners for an event
+   * Notify all listeners for an event (with deduplication)
    */
   private notifyListeners(event: string, data: any) {
-    const callback = this.listeners.get(event);
-    if (callback) {
-      console.log(` Notifying listener for event: ${event}`);
-      callback(data);
+    // ✅ FIX: Event deduplication to prevent double-handling
+    const eventId = `${event}_${data.routeId || data.bookingId || data.orderId || ''}_${Math.floor(Date.now() / 1000)}`;
+    
+    if (this.processedEvents.has(eventId)) {
+      console.log(`⚠️ Duplicate event detected: ${eventId} - ignoring`);
+      return;
+    }
+    
+    // Mark as processed
+    this.processedEvents.add(eventId);
+    
+    // Auto-remove after TTL to prevent memory leak
+    setTimeout(() => {
+      this.processedEvents.delete(eventId);
+    }, this.eventTTL);
+    
+    // Notify all listeners
+    const callbacks = this.listeners.get(event);
+    if (callbacks && callbacks.size > 0) {
+      console.log(` Notifying ${callbacks.size} listener(s) for event: ${event}`);
+      callbacks.forEach(callback => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error(`❌ Error in listener for event ${event}:`, error);
+        }
+      });
     } else {
-      console.log(`  No listener registered for event: ${event}`);
+      console.log(`  No listeners registered for event: ${event}`);
     }
   }
 
@@ -438,6 +482,7 @@ class PusherService {
     this.driverId = null;
     this.authToken = null;
     this.listeners.clear();
+    this.processedEvents.clear(); // ✅ FIX: Clear processed events cache
     
     console.log('✅ Pusher disconnected and cleaned up');
   }

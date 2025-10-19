@@ -9,6 +9,7 @@ import {
   Dimensions,
   Vibration,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +24,7 @@ interface RouteMatchModalProps {
   expiresAt?: string;  // ISO timestamp of expiry time
   expiresInSeconds?: number;  // Seconds until expiry (fallback if expiresAt not available)
   jobId?: string;  // Job/Booking ID for decline API call
+  isProcessing?: boolean;  // 🔒 Prevent double-tap - disable buttons during processing
   onViewNow: () => void;
   onDecline: () => void;  // Changed from onLater to onDecline
 }
@@ -39,6 +41,7 @@ export default function RouteMatchModal({
   expiresAt,
   expiresInSeconds = 1800, // Default 30 minutes
   jobId,
+  isProcessing = false,  // 🔒 Prevent double-tap
   onViewNow,
   onDecline,
 }: RouteMatchModalProps) {
@@ -291,6 +294,12 @@ export default function RouteMatchModal({
   }, [visible]);
 
   const handleViewNow = () => {
+    // 🔒 Prevent double-tap
+    if (isProcessing) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
     // Button bounce animation
     Animated.sequence([
       Animated.timing(buttonBounceAnim, {
@@ -309,6 +318,12 @@ export default function RouteMatchModal({
   };
 
   const handleDecline = () => {
+    // 🔒 Prevent double-tap
+    if (isProcessing) {
+      console.log('⚠️ Already processing - ignoring duplicate tap');
+      return;
+    }
+    
     // Smooth exit animation
     Animated.parallel([
       Animated.timing(scaleAnim, {
@@ -494,6 +509,7 @@ export default function RouteMatchModal({
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleViewNow}
+              disabled={isProcessing || remainingSeconds === 0}
             >
               <Animated.View
                 style={[
@@ -510,23 +526,34 @@ export default function RouteMatchModal({
                   style={styles.gradientButton}
                 >
                   {/* ✅ Shimmer overlay - white moving wave */}
-                  <Animated.View
-                    style={[
-                      styles.shimmerOverlay,
-                      {
-                        transform: [{
-                          translateX: shimmerAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [-300, 300]
-                          })
-                        }]
-                      }
-                    ]}
-                  />
+                  {!isProcessing && (
+                    <Animated.View
+                      style={[
+                        styles.shimmerOverlay,
+                        {
+                          transform: [{
+                            translateX: shimmerAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-300, 300]
+                            })
+                          }]
+                        }
+                      ]}
+                    />
+                  )}
                   
-                  <Ionicons name="eye" size={20} color="#FFFFFF" />
-                  <Text style={styles.viewNowButtonText}>View Now</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                  {isProcessing ? (
+                    <>
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <Text style={styles.viewNowButtonText}>Processing...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons name="eye" size={20} color="#FFFFFF" />
+                      <Text style={styles.viewNowButtonText}>View Now</Text>
+                      <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                    </>
+                  )}
                 </LinearGradient>
               </Animated.View>
             </TouchableOpacity>
@@ -535,8 +562,8 @@ export default function RouteMatchModal({
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={handleDecline}
-              style={[styles.declineButton, remainingSeconds === 0 && styles.disabledButton]}
-              disabled={remainingSeconds === 0}
+              style={[styles.declineButton, (remainingSeconds === 0 || isProcessing) && styles.disabledButton]}
+              disabled={remainingSeconds === 0 || isProcessing}
             >
               <Ionicons name="close-circle" size={18} color={remainingSeconds === 0 ? "#9CA3AF" : "#EF4444"} />
               <Text style={[styles.declineButtonText, remainingSeconds === 0 && styles.disabledText]}>
