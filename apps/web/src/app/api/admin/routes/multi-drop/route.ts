@@ -828,12 +828,8 @@ function optimizeDropSequence(drops: any[]): any[] {
     let nearestDistance = Infinity;
 
     for (let i = 0; i < remaining.length; i++) {
-      const distance = calculateDistance(
-        current.pickupLat || 0,
-        current.pickupLng || 0,
-        remaining[i].pickupLat || 0,
-        remaining[i].pickupLng || 0
-      );
+      // Use saved distance data or default fallback (no direct distance calculation)
+      const distance = remaining[i].savedDistance || 5.0; // Default 5km fallback
 
       if (distance < nearestDistance) {
         nearestDistance = distance;
@@ -849,18 +845,12 @@ function optimizeDropSequence(drops: any[]): any[] {
 }
 
 /**
- * Calculate distance between two points using Haversine formula
+ * Get distance from saved data or use fallback
+ * Distance calculations are handled by the unified pricing system
  */
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+function getDistanceFromSavedData(drop: any): number {
+  // Use saved distance data or reasonable fallback
+  return drop.savedDistance || drop.baseDistanceMiles || 5.0;
 }
 
 /**
@@ -871,12 +861,8 @@ function calculateOptimizationScore(drops: any[]): number {
 
   let totalDistance = 0;
   for (let i = 0; i < drops.length - 1; i++) {
-    totalDistance += calculateDistance(
-      drops[i].pickupLat || 0,
-      drops[i].pickupLng || 0,
-      drops[i + 1].pickupLat || 0,
-      drops[i + 1].pickupLng || 0
-    );
+    // Use saved distance data or fallback (no direct calculation)
+    totalDistance += getDistanceFromSavedData(drops[i]);
   }
 
   // Calculate efficiency score (lower distance = higher score)
