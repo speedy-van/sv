@@ -6,7 +6,70 @@ class RouteService {
     static let shared = RouteService()
     private let network = NetworkService.shared
     
-    private init() {}
+    // Published property to notify views of route changes
+    @Published var activeRoutes: [Route] = []
+    
+    private init() {
+        setupNotificationObservers()
+    }
+    
+    // MARK: - Notification Observers
+    
+    private func setupNotificationObservers() {
+        // Listen for route cancellation notifications
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteCancellation(_:)),
+            name: NSNotification.Name("RemoveRoute"),
+            object: nil
+        )
+        
+        // Listen for route refresh notifications
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRouteRefresh(_:)),
+            name: NSNotification.Name("RefreshRoute"),
+            object: nil
+        )
+    }
+    
+    @objc private func handleRouteCancellation(_ notification: Notification) {
+        guard let routeId = notification.userInfo?["routeId"] as? String else { return }
+        
+        print("🗑️ Removing cancelled route from app: \(routeId)")
+        
+        // Remove route from active routes
+        DispatchQueue.main.async {
+            self.activeRoutes.removeAll { $0.id == routeId }
+        }
+        
+        // Post notification to update UI
+        NotificationCenter.default.post(
+            name: NSNotification.Name("RoutesUpdated"),
+            object: nil
+        )
+    }
+    
+    @objc private func handleRouteRefresh(_ notification: Notification) {
+        guard let routeId = notification.userInfo?["routeId"] as? String else { return }
+        
+        print("🔄 Refreshing route details: \(routeId)")
+        
+        // Fetch updated route details
+        Task {
+            do {
+                let updatedRoute = try await fetchRouteDetails(routeId: routeId)
+                
+                DispatchQueue.main.async {
+                    if let index = self.activeRoutes.firstIndex(where: { $0.id == routeId }) {
+                        self.activeRoutes[index] = updatedRoute
+                    }
+                }
+            } catch {
+                print("❌ Failed to refresh route: \(error.localizedDescription)")
+            }
+        }
+    }
     
     // MARK: - Fetch Routes
     
