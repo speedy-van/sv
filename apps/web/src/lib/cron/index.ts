@@ -19,7 +19,16 @@ export function initializeCronJobs() {
   startAssignmentExpiryCron();
   
   // Start auto route creation cron (runs every hour)
-  startAutoRouteCreationCron();
+  // DISABLED: Routes should be created manually by admin via Smart Route Generator
+  // Enable this only if you want automatic route creation from pending bookings
+  const AUTO_ROUTE_CREATION_ENABLED = process.env.AUTO_ROUTE_CREATION_ENABLED === 'true';
+  
+  if (AUTO_ROUTE_CREATION_ENABLED) {
+    console.log('✅ Auto route creation is ENABLED');
+    startAutoRouteCreationCron();
+  } else {
+    console.log('⚠️ Auto route creation is DISABLED - Admin must create routes manually');
+  }
   
   console.log('✅ All cron jobs initialized');
 }
