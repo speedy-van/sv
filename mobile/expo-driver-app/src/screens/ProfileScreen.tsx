@@ -771,7 +771,7 @@ export default function ProfileScreen() {
           {renderTabButton('account', 'Account', 'person')}
           {renderTabButton('vehicle', 'Vehicle', 'car')}
           {renderTabButton('alerts', 'Alerts', 'notifications')}
-          {renderTabButton('preferences', 'Prefs', 'settings')}
+          {renderTabButton('preferences', 'Settings', 'settings')}
         </View>
 
         {/* Tab Content */}
