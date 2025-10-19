@@ -79,7 +79,7 @@ export default function MainTabNavigator() {
         headerShown: true,
       })}
     >
-             <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Home' }} />
+             <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Home', headerTitle: 'Dashboard' }} />
              <Tab.Screen name="Routes" component={RoutesScreen} options={{ title: 'Routes' }} />
              <Tab.Screen name="Earnings" component={EarningsScreen} />
              <Tab.Screen name="Notifications" component={NotificationsScreen} />

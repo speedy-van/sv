@@ -52,7 +52,7 @@ interface NotificationSettings {
 export default function ProfileScreen() {
   const { logout } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [activeTab, setActiveTab] = useState<'profile' | 'vehicle' | 'notifications' | 'settings'>('profile');
+  const [activeTab, setActiveTab] = useState<'account' | 'vehicle' | 'alerts' | 'preferences'>('account');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -676,21 +676,23 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Apple Review Demo */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>For Apple Review</Text>
-        
-        <TouchableOpacity 
-          style={[styles.settingItem, styles.demoButton]}
-          onPress={() => navigation.navigate('LocationDemo')}
-        >
-          <View style={styles.settingInfo}>
-            <Ionicons name="location" size={20} color="#3B82F6" />
-            <Text style={[styles.settingTitle, { color: '#3B82F6' }]}>Location Usage Demo</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
-        </TouchableOpacity>
-      </View>
+      {/* Location Demo - Only for development/review */}
+      {(__DEV__ || process.env.EXPO_PUBLIC_SHOW_LOCATION_DEMO === 'true') && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Developer Tools</Text>
+          
+          <TouchableOpacity 
+            style={[styles.settingItem, styles.demoButton]}
+            onPress={() => navigation.navigate('LocationDemo')}
+          >
+            <View style={styles.settingInfo}>
+              <Ionicons name="location" size={20} color="#3B82F6" />
+              <Text style={[styles.settingTitle, { color: '#3B82F6' }]}>Location Usage Demo</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Company Information</Text>
@@ -766,17 +768,17 @@ export default function ProfileScreen() {
 
         {/* Tabs */}
         <View style={styles.tabsContainer}>
-          {renderTabButton('profile', 'Profile', 'person')}
+          {renderTabButton('account', 'Account', 'person')}
           {renderTabButton('vehicle', 'Vehicle', 'car')}
-          {renderTabButton('notifications', 'Notifications', 'notifications')}
-          {renderTabButton('settings', 'Settings', 'settings')}
+          {renderTabButton('alerts', 'Alerts', 'notifications')}
+          {renderTabButton('preferences', 'Prefs', 'settings')}
         </View>
 
         {/* Tab Content */}
-        {activeTab === 'profile' && renderProfileTab()}
+        {activeTab === 'account' && renderProfileTab()}
         {activeTab === 'vehicle' && renderVehicleTab()}
-        {activeTab === 'notifications' && renderNotificationsTab()}
-        {activeTab === 'settings' && renderSettingsTab()}
+        {activeTab === 'alerts' && renderNotificationsTab()}
+        {activeTab === 'preferences' && renderSettingsTab()}
       </View>
     </KeyboardAvoidingView>
   );

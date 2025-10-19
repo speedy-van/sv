@@ -200,37 +200,32 @@ export default function DashboardScreen() {
     }
   };
 
-  // Check internet connection
+  // Check internet connection (but don't auto-toggle online status)
   useEffect(() => {
     let isFirstCheck = true;
     const unsubscribe = NetInfo.addEventListener(state => {
       const connected = state.isConnected && state.isInternetReachable !== false;
       
-      // Only update if connection status actually changed
-      if (connected !== isOnline) {
-        setIsOnline(!!connected);
-        
-        // Don't show error on first check or when going online
-        if (!connected && !isFirstCheck) {
-          showToast.error(
-            'No internet connection. Please check your network settings and try again.',
-            'Connection Lost'
-          );
-          console.log('❌ Internet connection lost');
-        } else if (connected && !isFirstCheck) {
-          console.log('✅ Internet connection restored');
-          showToast.success('Connection Restored', 'You are back online');
-          // Refresh data when connection is restored
-          fetchStats();
-          fetchAvailableRoutes();
-        }
+      // Only show notifications, don't auto-toggle online status
+      if (!connected && !isFirstCheck) {
+        showToast.error(
+          'No internet connection. Please check your network settings.',
+          'Connection Lost'
+        );
+        console.log('❌ Internet connection lost');
+      } else if (connected && !isFirstCheck) {
+        console.log('✅ Internet connection restored');
+        showToast.success('Connection Restored', 'You are back online');
+        // Refresh data when connection is restored
+        fetchStats();
+        fetchAvailableRoutes();
       }
       
       isFirstCheck = false;
     });
 
     return () => unsubscribe();
-  }, [isOnline]);
+  }, []);
 
   // Refresh stats when screen comes into focus (e.g., after completing a job)
   useFocusEffect(
