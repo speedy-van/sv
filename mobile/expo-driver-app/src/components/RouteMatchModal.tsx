@@ -535,10 +535,13 @@ export default function RouteMatchModal({
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={handleDecline}
-              style={styles.declineButton}
+              style={[styles.declineButton, remainingSeconds === 0 && styles.disabledButton]}
+              disabled={remainingSeconds === 0}
             >
-              <Ionicons name="close-circle" size={18} color="#EF4444" />
-              <Text style={styles.declineButtonText}>Decline (-5%)</Text>
+              <Ionicons name="close-circle" size={18} color={remainingSeconds === 0 ? "#9CA3AF" : "#EF4444"} />
+              <Text style={[styles.declineButtonText, remainingSeconds === 0 && styles.disabledText]}>
+                {remainingSeconds === 0 ? 'Expired' : 'Decline (affects rate)'}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -696,6 +699,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#EF4444',
     letterSpacing: 0.3,
+  },
+  disabledButton: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+    opacity: 0.6,
+  },
+  disabledText: {
+    color: '#9CA3AF',
   },
   orderNumberContainer: {
     flexDirection: 'row',

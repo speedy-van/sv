@@ -67,9 +67,9 @@ export const COLORS = {
   
   // Semantic Colors
   background: {
-    primary: '#0A1929',    // Dark blue-black
+    primary: '#0A1929',    // Dark blue-black (consistent with login)
     secondary: '#1E293B',  // Slate
-    card: '#1E3A8A',       // Deep blue
+    card: '#1F2937',       // Dark gray card (consistent across app)
     elevated: '#1E40AF',   // Blue-700
   },
   
