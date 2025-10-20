@@ -22,7 +22,6 @@
       "buildNumber": "1.0.0",
       "usesAppleSignIn": false,
       "usesIcloudStorage": false,
-      "usesNonExemptEncryption": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby jobs and help customers track their delivery in real-time.",

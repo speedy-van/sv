@@ -1,0 +1,5 @@
+# EAS Build ignore file
+# This file helps reduce build size and speed
+
+# Dependencies duplicates warning is expected in monorepo
+node_modules/../../node_modules/

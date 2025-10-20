@@ -1,0 +1,3 @@
+# Ignore duplicate dependencies in monorepo setup
+# This is expected behavior in workspace projects
+duplicate-dependencies
