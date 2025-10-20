@@ -18,8 +18,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.speedyvan.driver",
+      "bundleIdentifier": "com.speedyvan.driverapp",
+      "buildNumber": "1.0.0",
+      "usesAppleSignIn": false,
+      "usesIcloudStorage": false,
+      "usesNonExemptEncryption": false,
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby jobs and help customers track their delivery in real-time.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location even when the app is in the background to provide accurate delivery tracking to customers.",
         "NSLocationAlwaysUsageDescription": "We need your location in the background to track your delivery progress and provide real-time updates to customers.",
@@ -77,7 +82,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "7fc30f9d-100c-4f78-8d9d-37052623ee11"
       }
     }
   }

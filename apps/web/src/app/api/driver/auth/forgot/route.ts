@@ -4,12 +4,24 @@ import { logAudit } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Email is required' }, { status: 400, headers: corsHeaders });
     }
 
     console.log('🔐 Driver password reset request for:', email);
@@ -131,12 +143,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'If an account with that email exists, a password reset link has been sent.',
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error('❌ Driver forgot password error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

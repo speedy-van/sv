@@ -2,27 +2,47 @@ import { apiService } from './api';
 import { AuthResponse, User } from '../types';
 
 class AuthService {
+  private static logoutInProgress = false;
+
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
-      const response = await apiService.post<AuthResponse>('/api/driver/auth/login', {
+      console.log('🔐 AuthService.login called with:', { email });
+      const response = await apiService.post<any>('/api/driver/auth/login', {
         email,
         password,
       });
 
-      if (response.success && response.data?.token) {
-        await apiService.setToken(response.data.token);
-        return {
-          success: true,
-          token: response.data.token,
-          user: response.data.user,
-        };
+      console.log('🔐 AuthService.login response:', response);
+
+      if (response.success) {
+        const responseData = response.data;
+        console.log('🔐 Response data:', responseData);
+        
+        if (responseData.token) {
+          await apiService.setToken(responseData.token);
+          
+          // Merge user and driver data
+          const completeUser: User = {
+            ...responseData.user,
+            driver: responseData.driver || responseData.user?.driver,
+          };
+          
+          console.log('✅ Token saved, login successful. User:', completeUser);
+          return {
+            success: true,
+            token: responseData.token,
+            user: completeUser,
+          };
+        }
       }
 
+      console.error('❌ Login failed:', response.error);
       return {
         success: false,
         error: response.error || 'Login failed',
       };
     } catch (error: any) {
+      console.error('❌ AuthService.login exception:', error);
       return {
         success: false,
         error: error.message || 'Login failed',
@@ -32,11 +52,36 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await apiService.post('/api/driver/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
+      if (AuthService.logoutInProgress) {
+        console.log('ℹ️ Logout already in progress - skipping duplicate call');
+        return;
+      }
+      AuthService.logoutInProgress = true;
+
+      // Check for token first - if no token, just clear local state
+      const existingToken = await apiService.getToken();
+      if (!existingToken) {
+        console.log('ℹ️ No token found, clearing local state only');
+        await apiService.clearToken();
+        AuthService.logoutInProgress = false;
+        return;
+      }
+
+      // Only call server logout if we have a valid token
+      try {
+        const response = await apiService.post('/api/driver/auth/logout');
+        console.log('✅ Logout API response:', response);
+      } catch (apiError: any) {
+        // If API call fails, don't log as error - just continue with local cleanup
+        console.log('ℹ️ Logout API call completed (status may vary)');
+      }
+    } catch (error: any) {
+      console.log('⚠️ Logout process error:', error.message);
     } finally {
+      // Always clear the local token regardless of API call result
       await apiService.clearToken();
+      console.log('✅ Local token cleared');
+      AuthService.logoutInProgress = false;
     }
   }
 

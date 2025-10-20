@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "dev": "expo start --dev-client",
-    "prebuild": "expo prebuild"
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean"
   },
   "dependencies": {
     "@react-native-community/netinfo": "^11.4.1",
@@ -17,7 +18,8 @@
     "expo": "~54.0.13",
     "expo-av": "^16.0.7",
     "expo-constants": "^18.0.9",
-    "expo-keep-awake": "~15.0.7",
+    "expo-dev-client": "~6.0.15",
+    "expo-haptics": "~15.0.7",
     "expo-linking": "^8.0.8",
     "expo-location": "^19.0.7",
     "expo-notifications": "^0.32.12",

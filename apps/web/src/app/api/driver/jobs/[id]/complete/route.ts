@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import Pusher from 'pusher';
 // Fast mobile calculation - removed slow PerformanceTrackingService import
+
+export const dynamic = 'force-dynamic';
+
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 // Initialize Pusher
 const pusher = new Pusher({
@@ -15,24 +30,39 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
-export const dynamic = 'force-dynamic';
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: jobId } = await params;
   try {
-    const session = await getServerSession(authOptions);
+    // Try Bearer token authentication first (for mobile app)
+    const bearerAuth = await authenticateBearerToken(request);
+    let userId: string;
     
-    if (!session?.user || (session.user as any).role !== 'driver') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Driver access required' },
-        { status: 401 }
-      );
-    }
+    if (bearerAuth.success) {
+      userId = bearerAuth.user.id;
+      if (bearerAuth.user.role !== 'driver') {
+        return NextResponse.json(
+          { error: 'Forbidden - Driver access required' },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+      console.log('🔑 Bearer token authenticated for user:', userId);
+    } else {
+      // Fallback to NextAuth session (for web app)
+      const session = await getServerSession(authOptions);
+      
+      if (!session?.user || (session.user as any).role !== 'driver') {
+        return NextResponse.json(
+          { error: 'Unauthorized - Driver access required' },
+          { status: 401, headers: corsHeaders }
+        );
+      }
 
-    const userId = (session.user as any).id;
+      userId = (session.user as any).id;
+      console.log('🌐 NextAuth session authenticated for user:', userId);
+    }
     const body = await request.json();
     const {
       completionNotes,

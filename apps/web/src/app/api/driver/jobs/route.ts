@@ -9,6 +9,18 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 20; // Increased timeout for job operations
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Helper function to get distance from saved booking data or use default
 function getDistanceFromBooking(booking: any, pickup: any, dropoff: any): string {
   // Priority: saved distance data > default fallback
@@ -43,7 +55,7 @@ export async function GET(request: NextRequest) {
         console.log('❌ Driver Jobs API - No session found');
         return NextResponse.json(
           { error: 'Unauthorized - Please login' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
       userId = session.user.id;
@@ -56,7 +68,7 @@ export async function GET(request: NextRequest) {
       console.log('❌ Driver Jobs API - Invalid role:', userRole);
       return NextResponse.json(
         { error: 'Forbidden - Driver access required' },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
     console.log('🚗 Driver Jobs API - Processing for user:', userId);
@@ -295,7 +307,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: responseData
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error('❌ Driver Jobs API - Error:', error);
@@ -304,7 +316,7 @@ export async function GET(request: NextRequest) {
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

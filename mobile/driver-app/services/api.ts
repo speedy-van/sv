@@ -1,8 +1,25 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { ApiResponse } from '../types';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://speedy-van.co.uk';
+// Determine API Base URL based on environment
+const getApiBaseUrl = () => {
+  // Check if EXPO_PUBLIC_API_BASE_URL is set in .env.local
+  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_API_BASE_URL;
+  }
+
+  // Default to production if no env var is set
+  // For development, create a .env.local file with:
+  // EXPO_PUBLIC_API_BASE_URL=http://localhost:3000 (iOS Simulator)
+  // EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000 (Android Emulator)
+  return 'https://speedy-van.co.uk';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('🌐 API Base URL:', API_BASE_URL);
 
 class ApiService {
   private api: AxiosInstance;
@@ -13,13 +30,23 @@ class ApiService {
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
 
-    // Add request interceptor to include auth token
+    console.log('🚀 ApiService initialized with base URL:', API_BASE_URL);
+
+    // Add request interceptor to include auth token and prevent unnecessary logout calls
     this.api.interceptors.request.use(
       async (config) => {
         const token = await this.getToken();
+
+        // If this is a logout call and there is no token, prevent the request entirely
+        if (config.url && config.url.includes('/api/driver/auth/logout') && !token) {
+          // Return a mock successful response to prevent network call
+          return Promise.reject(new Error('LOGOUT_SKIPPED_NO_TOKEN'));
+        }
+
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -30,13 +57,35 @@ class ApiService {
       }
     );
 
-    // Add response interceptor for error handling
+    // Add response interceptor for error handling and suppress expected logout 401s
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
+        // Handle our custom logout skip error
+        if (error.message === 'LOGOUT_SKIPPED_NO_TOKEN') {
+          // Return a successful mock response for skipped logout
+          return Promise.resolve({
+            data: { success: true, message: 'Logout skipped - no token' },
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: error.config
+          });
+        }
+
+        // Ignore cancellations from request interceptor
+        if (axios.isCancel?.(error)) {
+          return Promise.reject(error);
+        }
+
         if (error.response?.status === 401) {
           // Token expired or invalid, clear it
           await this.clearToken();
+          
+          // Don't log 401 errors for logout endpoint as they're expected
+          if (!error.config?.url?.includes('/logout')) {
+            console.log('🔐 Token expired or invalid, cleared from storage');
+          }
         }
         return Promise.reject(error);
       }
@@ -70,7 +119,22 @@ class ApiService {
 
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
-      const response = await this.api.get(url, config);
+      // Add cache-busting for dashboard requests and disable caching
+      const cacheBuster = url.includes('/dashboard') ? `?t=${Date.now()}&_cb=${Math.random()}` : '';
+      const fullUrl = url + cacheBuster;
+      
+      // Add headers to prevent caching
+      const requestConfig = {
+        ...config,
+        headers: {
+          ...config?.headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      };
+      
+      const response = await this.api.get(fullUrl, requestConfig);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -85,13 +149,46 @@ class ApiService {
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
+      // Don't log logout requests to reduce noise
+      if (!url.includes('/logout')) {
+        console.log('📤 POST Request:', { 
+          url, 
+          baseURL: API_BASE_URL, 
+          fullUrl: `${API_BASE_URL}${url}`,
+          data 
+        });
+      }
+      
       const response = await this.api.post(url, data, config);
+      
+      // Don't log logout responses to reduce noise
+      if (!url.includes('/logout')) {
+        console.log('✅ POST Response:', { 
+          status: response.status, 
+          data: response.data,
+          headers: response.headers 
+        });
+      }
+      
       return {
         success: true,
-        data: response.data.data || response.data,
+        data: response.data,
         message: response.data.message,
       };
     } catch (error: any) {
+      // Don't log logout errors to reduce noise
+      if (!url.includes('/logout')) {
+        console.error('❌ POST Error FULL:', error);
+        console.error('❌ POST Error Details:', {
+          url,
+          fullUrl: `${API_BASE_URL}${url}`,
+          message: error.message,
+          code: error.code,
+          response: error.response?.data,
+          status: error.response?.status,
+          config: error.config,
+        });
+      }
       return {
         success: false,
         error: error.response?.data?.error || error.message || 'Request failed',

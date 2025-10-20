@@ -8,6 +8,18 @@ import { penceToPounds } from '@/lib/utils/currency';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Helper function to calculate distance between two points (Haversine formula)
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number { // DEPRECATED - internal use only
   const R = 3959; // Radius of the Earth in miles
@@ -37,7 +49,7 @@ export async function GET(request: NextRequest) {
       if (bearerAuth.user.role !== 'driver') {
         return NextResponse.json(
           { error: 'Forbidden - Driver access required' },
-          { status: 403 }
+          { status: 403, headers: corsHeaders }
         );
       }
       console.log('🔑 Bearer token authenticated for dashboard:', userId);
@@ -47,7 +59,7 @@ export async function GET(request: NextRequest) {
       if (!session?.user) {
         return NextResponse.json(
           { error: 'Unauthorized - Please login' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
 
@@ -55,7 +67,7 @@ export async function GET(request: NextRequest) {
       if (userRole !== 'driver') {
         return NextResponse.json(
           { error: 'Forbidden - Driver access required' },
-          { status: 403 }
+          { status: 403, headers: corsHeaders }
         );
       }
 
@@ -72,14 +84,14 @@ export async function GET(request: NextRequest) {
     if (!driver) {
       return NextResponse.json(
         { error: 'Driver profile not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
     if (driver.status !== 'active' || driver.onboardingStatus !== 'approved') {
       return NextResponse.json(
         { error: 'Driver account not active or not approved' },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -340,7 +352,7 @@ export async function GET(request: NextRequest) {
         },
         statistics: stats
       }
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error('❌ Error loading driver dashboard data:', error);
@@ -349,7 +361,7 @@ export async function GET(request: NextRequest) {
         error: 'Failed to load dashboard data',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

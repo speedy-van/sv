@@ -92,6 +92,8 @@ export default function LoginScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="emailAddress"
+              autoComplete="email"
               editable={!loading}
             />
             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -112,6 +114,9 @@ export default function LoginScreen() {
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
+              keyboardType="ascii-capable"
+              textContentType="password"
+              autoComplete="password"
               editable={!loading}
             />
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}

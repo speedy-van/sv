@@ -2,6 +2,29 @@
 
 A professional driver application for Speedy Van delivery service, built with Expo and React Native.
 
+## 🚨 IMPORTANT: Localhost Setup Required!
+
+**Before running the app**, you must configure the API URL. The app defaults to production (`https://speedy-van.co.uk`) but for development you need to use localhost.
+
+### Quick Setup (3 Commands):
+```bash
+# 1. Create .env.local (Windows)
+create-env.bat
+
+# OR (Mac/Linux)
+chmod +x create-env.sh && ./create-env.sh
+
+# 2. Start backend (in project root)
+cd ../../apps/web && npm run dev
+
+# 3. Restart Expo (in mobile/driver-app)
+npx expo start --clear
+```
+
+📖 **Troubleshooting "Network Error"?** See:
+- English: `QUICK_FIX_NETWORK_ERROR.md`
+- Arabic: `حل_سريع_لمشكلة_الشبكة.md`
+
 ## Features
 
 - ✅ **Authentication**: Secure login with Bearer token authentication
@@ -11,6 +34,11 @@ A professional driver application for Speedy Van delivery service, built with Ex
 - ✅ **Jobs Management**: View, accept, and manage delivery jobs
 - ✅ **Earnings Tracking**: Monitor daily, weekly, and total earnings
 - ✅ **Profile Management**: View and manage driver profile
+- ✅ **Password Recovery**: Forgot/reset password functionality
+- ✅ **Job Details**: Interactive map with navigation
+- ✅ **Settings**: Profile editing and privacy controls
+- ✅ **History**: Completed jobs tracking
+- ✅ **Notifications**: Real-time push notifications
 - ✅ **Apple Compliance**: Meets all iOS App Store requirements
 
 ## Technology Stack

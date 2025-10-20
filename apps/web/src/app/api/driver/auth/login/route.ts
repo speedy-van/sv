@@ -4,6 +4,18 @@ import { signIn } from 'next-auth/react';
 import { logAudit } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
@@ -11,7 +23,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
       await logAudit('anonymous', 'driver_login_failed', undefined, { targetType: 'auth', before: { email }, after: null });
       return NextResponse.json(
         { error: 'Invalid email or password' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       );
     }
 
@@ -40,7 +52,7 @@ export async function POST(request: NextRequest) {
       await logAudit(user.id, 'driver_login_failed', user.id, { targetType: 'auth', before: { email }, after: null });
       return NextResponse.json(
         { error: 'Invalid email or password' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders }
       );
     }
 
@@ -51,7 +63,7 @@ export async function POST(request: NextRequest) {
           error: 'Account not yet approved',
           onboardingStatus: user.driver?.onboardingStatus,
         },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -80,12 +92,12 @@ export async function POST(request: NextRequest) {
         rating: user.driver?.rating,
         strikes: user.driver?.strikes || 0,
       },
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error('Driver login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
