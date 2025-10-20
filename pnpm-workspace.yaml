@@ -14,3 +14,14 @@ ignoredBuiltDependencies:
   - unrs-resolver
 
 nodeLinker: hoisted
+
+# Reduce duplicate dependencies in monorepo
+hoistPattern:
+  - '*'
+  - '!expo'
+  - '!react'
+  - '!react-dom'
+  - '!react-native'
+
+publicHoistPattern:
+  - '*'

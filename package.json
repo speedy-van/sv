@@ -7,7 +7,8 @@
   "packageManager": "pnpm@10.17.0",
   "workspaces": [
     "apps/web",
-    "packages/*"
+    "packages/*",
+    "mobile/driver-app"
   ],
   "scripts": {
     "clean": "turbo run clean && rimraf node_modules .turbo pnpm-lock.yaml",
@@ -73,5 +74,9 @@
   "dependencies": {
     "node-cron": "^4.2.1",
     "zod": "^3.25.76"
+  },
+  "resolutions": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }
