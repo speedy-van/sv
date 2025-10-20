@@ -7,6 +7,18 @@ import Pusher from 'pusher';
 
 export const dynamic = 'force-dynamic';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Initialize Pusher for real-time updates
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID || '',

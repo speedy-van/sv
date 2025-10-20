@@ -16,6 +16,7 @@ class LocationService {
       const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
       
       if (foregroundStatus !== 'granted') {
+        console.log('⚠️ Location permission denied or not available (Expo Go limitation on iOS)');
         return {
           granted: false,
           foreground: false,
@@ -31,8 +32,14 @@ class LocationService {
         foreground: foregroundStatus === 'granted',
         background: backgroundStatus === 'granted',
       };
-    } catch (error) {
-      console.error('Error requesting location permissions:', error);
+    } catch (error: any) {
+      // This error is expected on Expo Go iOS due to Info.plist limitation
+      if (error.message?.includes('NSLocation')) {
+        console.log('⚠️ Location not available: Expo Go on iOS does not support custom Info.plist keys');
+        console.log('💡 Use TestFlight build or Android for full location features');
+      } else {
+        console.error('Error requesting location permissions:', error);
+      }
       return {
         granted: false,
         foreground: false,

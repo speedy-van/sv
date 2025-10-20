@@ -6,6 +6,18 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 // Helper function to check if driver has active orders
 async function hasActiveOrders(driverId: string): Promise<boolean> {
   const activeAssignments = await prisma.assignment.findMany({
@@ -46,7 +58,7 @@ export async function GET(request: NextRequest) {
         console.log('❌ Driver Profile API - Unauthorized access attempt');
         return NextResponse.json(
           { error: 'Unauthorized - Driver access required' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
       userId = (session.user as any).id;
@@ -68,7 +80,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -97,7 +109,7 @@ export async function GET(request: NextRequest) {
     if (!driver) {
       return NextResponse.json(
         { error: 'Driver record not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -204,7 +216,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: profileData,
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error('❌ Error fetching driver profile:', error);
@@ -213,7 +225,7 @@ export async function GET(request: NextRequest) {
         error: 'Failed to fetch profile data',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
@@ -238,7 +250,7 @@ export async function PUT(request: NextRequest) {
         console.log('❌ Driver Profile Update API - Unauthorized access');
         return NextResponse.json(
           { error: 'Unauthorized - Driver access required' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
       userId = (session.user as any).id;
@@ -288,7 +300,7 @@ export async function PUT(request: NextRequest) {
               error: 'Cannot disable location sharing while you have active orders',
               activeOrders: true 
             },
-            { status: 400 }
+            { status: 400, headers: corsHeaders }
           );
         }
 
@@ -331,7 +343,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Profile updated successfully',
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     console.error('❌ Error updating driver profile:', error);
@@ -340,7 +352,7 @@ export async function PUT(request: NextRequest) {
         error: 'Failed to update profile',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

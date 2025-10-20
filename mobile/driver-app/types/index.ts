@@ -12,6 +12,9 @@ export interface Driver {
   status: 'active' | 'inactive' | 'suspended';
   onboardingStatus: 'pending' | 'approved' | 'rejected';
   rating?: number;
+  strikes?: number;
+  vehicleType?: string;
+  basePostcode?: string;
 }
 
 export interface Job {
@@ -88,5 +91,28 @@ export interface PusherEvent {
   reason?: string;
   remainingDrops?: number;
   title?: string;
+  from?: string;
+  to?: string;
+  estimatedEarnings?: string;
+  date?: string;
+  time?: string;
+  distance?: string;
+  vehicleType?: string;
+  additionalStops?: number;
+}
+
+export interface JobAssignment {
+  id: string;
+  type: 'route' | 'order';
+  reference: string;
+  routeNumber?: string;
+  from: string;
+  to: string;
+  additionalStops?: number;
+  estimatedEarnings: string;
+  date: string;
+  time: string;
+  distance?: string;
+  vehicleType?: string;
 }
 

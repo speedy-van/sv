@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
@@ -94,49 +95,37 @@ export default function ProfileScreen() {
               icon="👤"
               title="Personal Information"
               subtitle="Update your profile details"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
+              onPress={() => router.push('/profile/personal-info')}
             />
             <MenuItem
               icon="🚐"
               title="Vehicle Information"
               subtitle="Manage your vehicle details"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
-            />
-            <MenuItem
-              icon="📄"
-              title="Documents"
-              subtitle="View and upload documents"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
+              onPress={() => router.push('/profile/vehicle-info')}
             />
           </View>
         </View>
 
-        {/* Settings Section */}
+        {/* Demo & Testing Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
+          <Text style={styles.sectionTitle}>Demo & Testing</Text>
           <View style={styles.menuGroup}>
             <MenuItem
+              icon="🧪"
+              title="Permissions Demo"
+              subtitle="Test location, notifications, and sounds"
+              onPress={() => router.push('/profile/permissions-demo')}
+            />
+            <MenuItem
               icon="📍"
-              title="Location Tracking"
+              title="Location Status"
               subtitle={
                 permissions.background
-                  ? 'Always allowed'
+                  ? '✓ Always allowed'
                   : permissions.foreground
-                  ? 'While using app'
-                  : 'Not allowed'
+                  ? '✓ While using app'
+                  : '⚠ Not allowed'
               }
-            />
-            <MenuItem
-              icon="🔔"
-              title="Notifications"
-              subtitle="Manage notification preferences"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
-            />
-            <MenuItem
-              icon="🌍"
-              title="Language"
-              subtitle="English"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
             />
           </View>
         </View>
@@ -146,21 +135,21 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.menuGroup}>
             <MenuItem
-              icon="❓"
-              title="Help Center"
-              subtitle="Get help and support"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
+              icon="📧"
+              title="Email Support"
+              subtitle="support@speedy-van.co.uk"
+              onPress={() => Linking.openURL('mailto:support@speedy-van.co.uk')}
             />
             <MenuItem
-              icon="📧"
-              title="Contact Support"
-              subtitle="support@speedy-van.co.uk"
-              onPress={() => Alert.alert('Coming Soon', 'This feature is under development')}
+              icon="📞"
+              title="Call Support"
+              subtitle="07901846297"
+              onPress={() => Linking.openURL('tel:07901846297')}
             />
             <MenuItem
               icon="ℹ️"
-              title="About"
-              subtitle="Version 1.0.0"
+              title="About Speedy Van Driver"
+              subtitle="Version 1.0.0 (Build 46)"
             />
           </View>
         </View>

@@ -7,6 +7,18 @@ import { authenticateBearerToken } from '@/lib/bearer-auth';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 20; // Increased from 10 to 20 seconds for route operations
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   try {
@@ -26,7 +38,7 @@ export async function GET(request: NextRequest) {
         console.log('❌ Driver Routes API - No session found');
         return NextResponse.json(
           { error: 'Unauthorized - Please login' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
       userId = session.user.id;
@@ -40,7 +52,7 @@ export async function GET(request: NextRequest) {
       console.log('❌ Driver Routes API - Invalid role:', userRole);
       return NextResponse.json(
         { error: 'Forbidden - Driver access required' },
-        { status: 403 }
+        { status: 403, headers: corsHeaders }
       );
     }
     console.log('🚗 Driver Routes API - Processing for user:', userId);
@@ -184,7 +196,7 @@ export async function GET(request: NextRequest) {
       success: true,
       routes: formattedRoutes,
       totalRoutes: formattedRoutes.length
-    });
+    }, { headers: corsHeaders });
 
   } catch (error) {
     const duration = Date.now() - startTime;
@@ -200,7 +212,7 @@ export async function GET(request: NextRequest) {
         error: 'Failed to fetch routes', 
         details: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

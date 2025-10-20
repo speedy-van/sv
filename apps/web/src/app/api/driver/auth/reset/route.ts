@@ -3,6 +3,18 @@ import bcrypt from 'bcryptjs';
 import { logAudit } from '@/lib/audit';
 import { prisma } from '@/lib/prisma';
 
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { token, password } = await request.json();
@@ -10,14 +22,14 @@ export async function POST(request: NextRequest) {
     if (!token || !password) {
       return NextResponse.json(
         { error: 'Token and new password are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     if (password.length < 8) {
       return NextResponse.json(
         { error: 'Password must be at least 8 characters long' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -40,7 +52,7 @@ export async function POST(request: NextRequest) {
       console.log('❌ Invalid or expired reset token');
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -71,12 +83,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Password has been reset successfully',
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error('❌ Driver password reset error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
