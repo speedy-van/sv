@@ -210,7 +210,7 @@ const Hero: React.FC<HeroProps> = ({
           {/* Main Title */}
           <MotionHeading
             as="h1"
-            fontSize={{ base: 'xl', md: '2xl', lg: '3xl' }}
+            fontSize={{ base: 'xl', md: '2xl', lg: '2xl' }}
             color={textColor}
             fontWeight="extrabold"
             lineHeight="shorter"
@@ -220,6 +220,7 @@ const Hero: React.FC<HeroProps> = ({
             transition="0.8s ease-out 0.4s"
             maxW="4xl"
             mx="auto"
+            mt={{ base: 0, lg: 72 }}
           >
             {title}
           </MotionHeading>

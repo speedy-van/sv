@@ -17,9 +17,7 @@ import {
   DrawerCloseButton,
   useColorModeValue,
   Link,
-  Badge,
   Divider,
-  Tooltip,
   Menu,
   MenuButton,
   MenuList,
@@ -39,9 +37,6 @@ import {
   FiSettings, 
   FiDollarSign, 
   FiMessageCircle,
-  FiShield,
-  FiStar,
-  FiClock,
   FiChevronDown,
   FiUserPlus,
   FiBookOpen,
@@ -194,13 +189,6 @@ const Header: React.FC = memo(() => {
   // The previous code had a redundant ], []); after the mobileNavItems useMemo.
   // No code is needed here; the useMemo for mobileNavItems is already properly closed above.
 
-  // Memoized trust indicators for performance
-  const trustIndicators = useMemo(() => [
-    { icon: FiShield, text: 'Fully Insured', color: 'green' as const, ariaLabel: 'We are fully insured for your protection' },
-    { icon: FiStar, text: '5-Star Rated', color: 'yellow' as const, ariaLabel: 'Rated 5 stars by our customers' },
-    { icon: FiClock, text: '24/7 Support', color: 'blue' as const, ariaLabel: 'Available 24 hours a day, 7 days a week' },
-  ], []);
-
   const MotionBox = chakra(m.div, {
     shouldForwardProp: (prop) => {
       if (typeof prop === 'string') {
@@ -280,27 +268,6 @@ const Header: React.FC = memo(() => {
               <Text fontSize="sm" color="text.secondary" fontWeight="medium" lineHeight="1.2">
                 Professional Moving Services
               </Text>
-              {/* Trust Indicators */}
-              <HStack spacing={1.5} mt={0.5}>
-                {trustIndicators.map((indicator, index) => (
-                  <Tooltip key={index} label={indicator.text} placement="bottom">
-                    <Badge
-                      size="sm"
-                      colorScheme={indicator.color}
-                      variant="subtle"
-                      fontSize="xs"
-                      px={1.5}
-                      py={0.5}
-                      borderRadius="sm"
-                    >
-                      <HStack spacing={0.5}>
-                        <indicator.icon size={10} />
-                        <Text fontSize="xs">{indicator.text}</Text>
-                      </HStack>
-                    </Badge>
-                  </Tooltip>
-                ))}
-              </HStack>
             </VStack>
           </MotionFlex>
 
@@ -521,27 +488,6 @@ const Header: React.FC = memo(() => {
                 >
                   SV
                 </Box>
-              </HStack>
-              
-              {/* Mobile Trust Indicators */}
-              <HStack spacing={2} wrap="wrap">
-                {trustIndicators.map((indicator, index) => (
-                  <Badge
-                    key={index}
-                    size="sm"
-                    colorScheme={indicator.color}
-                    variant="subtle"
-                    fontSize="xs"
-                    px={3}
-                    py={1}
-                    borderRadius="full"
-                  >
-                    <HStack spacing={1}>
-                      <indicator.icon size={12} />
-                      <Text>{indicator.text}</Text>
-                    </HStack>
-                  </Badge>
-                ))}
               </HStack>
             </VStack>
           </DrawerHeader>
