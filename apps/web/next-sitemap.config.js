@@ -106,6 +106,25 @@ module.exports = {
   additionalPaths: async config => {
     const paths = [];
 
+    // Blog posts
+    const blogPosts = [
+      'moving-to-london-guide',
+      'professional-packing-tips',
+      'cheap-man-and-van-near-me',
+      'same-day-man-and-van',
+      'student-moving-service',
+      'ultimate-london-moving-guide',
+    ];
+
+    blogPosts.forEach(post => {
+      paths.push({
+        loc: `/blog/${post}`,
+        changefreq: 'weekly',
+        priority: 0.7,
+        lastmod: new Date().toISOString(),
+      });
+    });
+
     // Major UK cities for location-based services
     const majorCities = [
       'london',
