@@ -18,6 +18,15 @@ export const metadata: Metadata = {
 
 const blogPosts = [
   {
+    id: 'moving-to-london-guide',
+    title: 'Moving to London Guide 2025: Everything You Need to Know',
+    excerpt: 'Comprehensive guide to moving to London. Learn about best neighborhoods, cost of living, transport links, and housing tips from moving experts.',
+    category: 'Moving Guide',
+    readTime: '14 min read',
+    date: '2025-01-25',
+    slug: 'moving-to-london-guide'
+  },
+  {
     id: 'ultimate-london-moving-guide',
     title: 'The Ultimate Guide to Moving in London',
     excerpt: 'Everything you need to know about moving in London, from choosing the right area to understanding transport links.',
@@ -54,13 +63,13 @@ const blogPosts = [
     slug: 'luxury-moving-services'
   },
   {
-    id: 'packing-tips-professionals',
-    title: 'Professional Packing Tips from Moving Experts',
-    excerpt: 'Expert advice on how to pack your belongings safely and efficiently for your next move.',
+    id: 'professional-packing-tips',
+    title: 'Professional Packing Tips for Moving House: Expert Guide 2025',
+    excerpt: 'Learn professional packing techniques from moving experts. Complete guide with room-by-room tips, material recommendations, and time-saving strategies.',
     category: 'Packing Tips',
-    readTime: '9 min read',
+    readTime: '12 min read',
     date: '2025-01-10',
-    slug: 'packing-tips-professionals'
+    slug: 'professional-packing-tips'
   },
   {
     id: 'van-hire-vs-removal-company',
