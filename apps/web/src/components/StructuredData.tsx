@@ -113,12 +113,25 @@ function getMovingCompanySchema() {
       reviewCount: '50000',
       bestRating: '5',
       worstRating: '1',
+      ratingExplanation: 'Based on verified customer reviews from completed moves',
     },
     sameAs: [
       'https://www.facebook.com/speedyvan',
       'https://www.instagram.com/speedyvan',
       'https://www.linkedin.com/company/speedyvan',
       'https://twitter.com/speedyvan',
+      'https://www.trustpilot.com/review/speedy-van.co.uk',
+    ],
+    slogan: 'Your Trusted Moving Partner Across the UK',
+    knowsAbout: [
+      'House Removals',
+      'Furniture Delivery',
+      'Office Relocation',
+      'Student Moves',
+      'Man and Van Services',
+      'Same Day Delivery',
+      'Packing Services',
+      'Furniture Assembly',
     ],
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
@@ -329,6 +342,7 @@ function getOrganizationSchema() {
       'https://www.instagram.com/speedyvan',
       'https://www.linkedin.com/company/speedyvan',
       'https://twitter.com/speedyvan',
+      'https://www.trustpilot.com/review/speedy-van.co.uk',
     ],
   };
 }

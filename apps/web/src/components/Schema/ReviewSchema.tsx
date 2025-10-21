@@ -1,4 +1,6 @@
-interface Review {
+import Script from 'next/script';
+
+export interface Review {
   author: string;
   rating: number;
   reviewBody: string;
@@ -43,11 +45,13 @@ export default function ReviewSchema({
   };
 
   return (
-    <script
+    <Script
+      id="review-schema"
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(reviewSchema, null, 2)
+        __html: JSON.stringify(reviewSchema)
       }}
+      strategy="afterInteractive"
     />
   );
 }
