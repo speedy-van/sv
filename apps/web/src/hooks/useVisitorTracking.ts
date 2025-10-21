@@ -101,27 +101,14 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
     };
   };
 
-  const getGeolocation = (): Promise<GeolocationPosition | null> => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => resolve(position),
-        () => resolve(null),
-        { timeout: 5000, maximumAge: 300000 } // 5 second timeout, cache for 5 minutes
-      );
-    });
-  };
+  // Geolocation removed to improve Lighthouse Best Practices score
+  // Only request geolocation when explicitly needed by user action
 
   const trackPageView = async (page: string) => {
     try {
       if (!sessionIdRef.current) return;
 
       const deviceInfo = getDeviceInfo();
-      const geoLocation = await getGeolocation();
 
       const trackingData = {
         sessionId: sessionIdRef.current,
@@ -129,8 +116,6 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
         page,
         referrer: document.referrer || undefined,
         ...deviceInfo,
-        latitude: geoLocation?.coords.latitude,
-        longitude: geoLocation?.coords.longitude,
       };
 
       await fetch('/api/visitors/track', {

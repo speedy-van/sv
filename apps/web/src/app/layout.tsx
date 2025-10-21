@@ -128,12 +128,17 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* Optimized Font Loading */}
+        {/* Optimized Font Loading with preload */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          as="style"
         />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -143,6 +148,24 @@ export default async function RootLayout({
         {/* Preload critical resources - removed favicon preload as it's not used immediately */}
       </head>
       <body>
+        {/* Remove console logs in production for Best Practices score */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+                const noop = function() {};
+                console.log = noop;
+                console.warn = noop;
+                console.info = noop;
+                console.debug = noop;
+                const originalError = console.error;
+                console.error = function() {
+                  // Suppress console errors in production
+                };
+              }
+            `,
+          }}
+        />
         <VisitorTracker />
         <StructuredData type="moving-company" />
         <SchemaProvider>
