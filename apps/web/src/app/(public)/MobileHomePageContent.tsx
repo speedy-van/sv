@@ -144,7 +144,7 @@ const testimonials = [
     quote:
       'Speedy Van moved my entire flat in under 3 hours! Professional and careful with my furniture.',
     rating: 5,
-    avatar: '/avatars/sarah.jpg',
+    avatar: '/What Our Customers Say/Sarah Mitchell.jpeg',
     service: 'Flat Removal',
   },
   {
@@ -153,7 +153,7 @@ const testimonials = [
     quote:
       'Best moving experience ever. They handled my electronics with care, and the price was exactly as quoted.',
     rating: 5,
-    avatar: '/avatars/james.jpg',
+    avatar: '/What Our Customers Say/James Thompson.jpeg',
     service: 'Electronics Move',
   },
   {
@@ -162,7 +162,7 @@ const testimonials = [
     quote:
       'From booking to delivery, everything was seamless. Punctual drivers and perfect condition delivery.',
     rating: 5,
-    avatar: '/avatars/emma.jpg',
+    avatar: '/What Our Customers Say/Emma Davies.jpeg',
     service: 'Home Removal',
   },
 ];
@@ -351,9 +351,10 @@ viewport={{ once: true }}
             whileInView={{ opacity: 1, y: 0 }}
 viewport={{ once: true }}
             {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.5 } } as any)}
+            mt={{ base: 8, md: 0 }}
           >
             <Text
-              fontSize={{ base: 'lg', md: 'xl' }}
+              fontSize={{ base: 'sm', md: 'md' }}
               color="white"
               opacity={0.95}
               maxW={{ base: '90%', md: '600px' }}
@@ -448,62 +449,6 @@ viewport={{ once: true }}
             </VStack>
           </MotionBox>
 
-          {/* Quick Stats */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
-            {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.9 } } as any)}
-            mt={6}
-          >
-            <HStack
-              spacing={{ base: 4, md: 8 }}
-              justify="center"
-              wrap="wrap"
-              divider={<Box h="30px" w="1px" bg="rgba(255,255,255,0.3)" />}
-            >
-              <VStack spacing={1}>
-                <Text
-                  fontSize={{ base: 'xl', md: '2xl' }}
-                  fontWeight="bold"
-                  color="neon.400"
-                  textShadow="0 0 10px rgba(0,194,255,0.5)"
-                >
-                  50K+
-                </Text>
-                <Text fontSize="xs" color="white" opacity={0.8}>
-                  Happy Customers
-                </Text>
-              </VStack>
-              <VStack spacing={1}>
-                <Text
-                  fontSize={{ base: 'xl', md: '2xl' }}
-                  fontWeight="bold"
-                  color="green.400"
-                  textShadow="0 0 10px rgba(0,209,143,0.5)"
-                >
-                  95%
-                </Text>
-                <Text fontSize="xs" color="white" opacity={0.8}>
-                  On-Time
-                </Text>
-              </VStack>
-              <VStack spacing={1}>
-                <Text
-                  fontSize={{ base: 'xl', md: '2xl' }}
-                  fontWeight="bold"
-                  color="yellow.400"
-                  textShadow="0 0 10px rgba(255,193,7,0.5)"
-                >
-                  £50
-                </Text>
-                <Text fontSize="xs" color="white" opacity={0.8}>
-                  From
-                </Text>
-              </VStack>
-            </HStack>
-          </MotionBox>
         </VStack>
       </Container>
     </Box>

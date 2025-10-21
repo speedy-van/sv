@@ -111,15 +111,41 @@ export default function MobileHeader() {
             {/* Call Now Button */}
             <Button
               size="sm"
-              bg="rgba(0, 194, 255, 0.2)"
+              bg="linear-gradient(135deg, #00D18F, #00C2FF)"
               color="white"
-              border="1px solid rgba(0, 194, 255, 0.3)"
-              _hover={{
-                bg: 'rgba(0, 194, 255, 0.3)',
-                transform: 'translateY(-1px)',
-              }}
+              fontWeight="bold"
+              boxShadow="0 4px 15px rgba(0,209,143,0.3)"
               leftIcon={<FaPhone />}
               onClick={() => window.open('tel:+447901846297')}
+              position="relative"
+              overflow="hidden"
+              transition="all 0.3s ease"
+              _hover={{
+                bg: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(0,209,143,0.4)',
+              }}
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: '0',
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                animation: 'waveMove 2s infinite linear',
+                pointerEvents: 'none',
+              }}
+              css={{
+                '@keyframes waveMove': {
+                  '0%': {
+                    left: '-100%',
+                  },
+                  '100%': {
+                    left: '100%',
+                  },
+                },
+              }}
             >
               Call Now
             </Button>
@@ -339,14 +365,39 @@ export default function MobileHeader() {
                     size="lg"
                     bg="linear-gradient(135deg, #00C2FF, #00D18F)"
                     color="white"
+                    fontWeight="bold"
                     w="full"
+                    boxShadow="0 4px 15px rgba(0,194,255,0.3)"
                     _hover={{
+                      bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 8px 25px rgba(0, 194, 255, 0.4)',
                     }}
                     onClick={() => {
                       window.location.href = '/booking-luxury';
                       onClose();
+                    }}
+                    position="relative"
+                    overflow="hidden"
+                    _before={{
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                      animation: 'wave 2s infinite',
+                    }}
+                    sx={{
+                      '@keyframes wave': {
+                        '0%': {
+                          left: '-100%',
+                        },
+                        '100%': {
+                          left: '100%',
+                        },
+                      },
                     }}
                   >
                     Book Your Move

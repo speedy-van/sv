@@ -193,14 +193,49 @@ const ServiceMapSection = () => {
   }, {} as Record<string, UKCity[]>);
 
   return (
-    <Box py={{ base: 12, md: 16 }} bg="bg.canvas">
+    <Box py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
-          <Box textAlign="center" maxW="3xl" mx="auto">
-            <Heading size={{ base: 'lg', md: 'xl' }} mb={4} color="white">
+          <Box 
+            textAlign="center" 
+            maxW="3xl" 
+            mx="auto"
+            p={{ base: 6, md: 8 }}
+            borderRadius="2xl"
+            borderWidth="2px"
+            borderColor="neon.500"
+            bg="rgba(0,194,255,0.05)"
+            boxShadow="0 0 30px rgba(0,194,255,0.2), inset 0 0 20px rgba(0,194,255,0.1)"
+            position="relative"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: '2xl',
+              padding: '2px',
+              background: 'linear-gradient(135deg, rgba(0,194,255,0.5), rgba(0,209,143,0.5))',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMaskComposite: 'xor',
+              maskComposite: 'exclude',
+              pointerEvents: 'none',
+            }}
+          >
+            <Heading 
+              size={{ base: 'lg', md: 'xl' }} 
+              mb={4} 
+              color="neon.400"
+              textShadow="0 0 10px rgba(0,194,255,0.6), 0 0 20px rgba(0,194,255,0.4)"
+            >
               🇬🇧 UK Service Coverage
             </Heading>
-            <Text color="gray.300" fontSize={{ base: 'md', md: 'lg' }}>
+            <Text 
+              color="neon.300" 
+              fontSize={{ base: 'md', md: 'lg' }}
+              fontWeight="medium"
+            >
               Professional moving services across {UK_CITIES.length}+ major UK cities
             </Text>
           </Box>
@@ -210,22 +245,23 @@ const ServiceMapSection = () => {
             w="100%"
             borderRadius="xl"
             overflow="hidden"
-            border="2px solid"
-            borderColor="rgba(0, 194, 255, 0.3)"
+            border="3px solid"
+            borderColor="neon.500"
             bg="rgba(0, 0, 0, 0.8)"
             position="relative"
+            boxShadow="0 0 40px rgba(0,194,255,0.3)"
             _before={{
               content: '""',
               position: 'absolute',
-              top: '-2px',
-              left: '-2px',
-              right: '-2px',
-              bottom: '-2px',
+              top: '-3px',
+              left: '-3px',
+              right: '-3px',
+              bottom: '-3px',
               background: 'linear-gradient(135deg, #00C2FF, #00D18F)',
               borderRadius: 'inherit',
               zIndex: -1,
-              opacity: 0.6,
-              filter: 'blur(8px)',
+              opacity: 0.7,
+              filter: 'blur(12px)',
               animation: 'neon-pulse 2s ease-in-out infinite alternate'
             }}
           >
@@ -262,34 +298,89 @@ const ServiceMapSection = () => {
           {/* Cities Grid */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w="100%">
             {Object.entries(citiesByCountry).map(([country, cities]) => (
-              <Box key={country}>
-                <Heading size="md" mb={3} color="white">
+              <Box 
+                key={country}
+                p={6}
+                borderRadius="xl"
+                borderWidth="2px"
+                borderColor="neon.500"
+                bg="rgba(0,194,255,0.03)"
+                boxShadow="0 0 20px rgba(0,194,255,0.15)"
+                transition="all 0.3s ease"
+                _hover={{
+                  borderColor: 'neon.400',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.3)',
+                  transform: 'translateY(-4px)',
+                }}
+              >
+                <Heading 
+                  size="md" 
+                  mb={4} 
+                  color="neon.400"
+                  textShadow="0 0 8px rgba(0,194,255,0.5)"
+                >
                   {country === 'England' && '🏴󠁧󠁢󠁥󠁮󠁧󠁿'} {country}
                   {country === 'Scotland' && '🏴󠁧󠁢󠁳󠁣󠁴󠁿'}
                   {country === 'Wales' && '🏴󠁧󠁢󠁷󠁬󠁳󠁿'}
                   {country === 'Northern Ireland' && '🇬🇧'}
                 </Heading>
-                <VStack spacing={2} align="start">
+                <VStack spacing={3} align="start">
                   {cities.slice(0, 6).map((city) => (
-                    <HStack key={city.slug} spacing={2}>
+                    <HStack 
+                      key={city.slug} 
+                      spacing={2}
+                      p={2}
+                      borderRadius="md"
+                      transition="all 0.2s ease"
+                      _hover={{
+                        bg: 'rgba(0,194,255,0.1)',
+                        transform: 'translateX(4px)',
+                      }}
+                      w="full"
+                    >
                       <Box
                         w={2}
                         h={2}
                         bg="linear-gradient(135deg, #00C2FF, #00D18F)"
                         borderRadius="50%"
-                        border="1px solid rgba(255, 255, 255, 0.3)"
-                        boxShadow="0 0 5px rgba(0, 194, 255, 0.5)"
+                        border="1px solid rgba(255, 255, 255, 0.5)"
+                        boxShadow="0 0 8px rgba(0, 194, 255, 0.7)"
+                        css={{
+                          animation: 'pulse 2s ease-in-out infinite',
+                          '@keyframes pulse': {
+                            '0%, 100%': {
+                              opacity: 1,
+                            },
+                            '50%': {
+                              opacity: 0.6,
+                            },
+                          },
+                        }}
                       />
-                      <Text fontSize="sm" color="gray.300">
+                      <Text fontSize="sm" color="neon.200" fontWeight="medium">
                         {city.name}
                       </Text>
-                      <Badge size="sm" colorScheme="blue" variant="subtle" bg="rgba(0, 194, 255, 0.1)" color="rgba(0, 194, 255, 0.9)">
+                      <Badge 
+                        size="sm" 
+                        colorScheme="blue" 
+                        variant="subtle" 
+                        bg="rgba(0, 194, 255, 0.15)" 
+                        color="neon.300"
+                        borderWidth="1px"
+                        borderColor="rgba(0, 194, 255, 0.3)"
+                        fontWeight="semibold"
+                      >
                         {city.postcode}
                       </Badge>
                     </HStack>
                   ))}
                   {cities.length > 6 && (
-                    <Text fontSize="sm" color="gray.400">
+                    <Text 
+                      fontSize="sm" 
+                      color="neon.300" 
+                      fontStyle="italic"
+                      pl={2}
+                    >
                       +{cities.length - 6} more cities
                     </Text>
                   )}
