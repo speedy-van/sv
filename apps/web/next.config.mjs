@@ -24,6 +24,12 @@ const nextConfig = {
     instrumentationHook: true,
   },
 
+  // Enable compression
+  compress: true,
+
+  // Production source maps for debugging
+  productionBrowserSourceMaps: true,
+
   // Performance optimizations for large dataset
   images: {
     // Optimize image loading for 666+ item images
@@ -33,6 +39,41 @@ const nextConfig = {
     // Increase cache for large number of images
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    minimumCacheTTL: 31536000,
+    unoptimized: false,
+  },
+
+  // Add custom headers for caching and performance
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
 
   // Minimal changes to fix ActionQueueContext issue
