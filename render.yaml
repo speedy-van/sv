@@ -52,9 +52,7 @@ services:
         sync: false
       
       # Email
-      - key: ZEPTO_API_URL
-        value: https://api.zeptomail.eu/v1.1/email
-      - key: ZEPTO_API_KEY
+      - key: RESEND_API_KEY
         sync: false
       - key: MAIL_FROM
         value: noreply@speedy-van.co.uk

@@ -5,8 +5,8 @@
 The project had **massive duplication** in email sending functionality across multiple files:
 
 ### Duplicated Files:
-1. `ZeptoMailService.ts` - ZeptoMail service with SendGrid fallback
-2. `sendgrid.ts` - Separate SendGrid service  
+1. `UnifiedEmailService.ts` - Unified email service with Resend and SendGrid fallback
+2. `sendgrid.ts` - Separate SendGrid service (deprecated)
 3. `notifications/email/send/route.ts` - API route with duplicate HTML templates
 4. `driver-application-notification/route.ts` - Driver application emails with duplicate templates
 
@@ -24,7 +24,7 @@ The project had **massive duplication** in email sending functionality across mu
 
 **Features:**
 - ✅ **Single source of truth** for all email functionality
-- ✅ **Automatic fallback system** (ZeptoMail → SendGrid)
+- ✅ **Automatic fallback system** (Resend → SendGrid)
 - ✅ **Consistent HTML templates** using base template generator
 - ✅ **Company branding integration** via EMAIL_BRANDING constants
 - ✅ **Type-safe interfaces** for all email data
@@ -44,8 +44,8 @@ The project had **massive duplication** in email sending functionality across mu
 
 ### 3. Added Deprecation Warnings
 **Files Updated:**
-- `apps/web/src/lib/email/ZeptoMailService.ts`
-- `apps/web/src/lib/sendgrid.ts`
+- `apps/web/src/lib/email/UnifiedEmailService.ts` (primary service)
+- `apps/web/src/lib/sendgrid.ts` (deprecated)
 
 **Changes:**
 - ✅ Added `@deprecated` JSDoc comments
@@ -56,8 +56,8 @@ The project had **massive duplication** in email sending functionality across mu
 
 ### Before:
 ```
-ZeptoMailService.ts:           587 lines
-sendgrid.ts:                    78 lines  
+UnifiedEmailService.ts:        1258 lines (current)
+sendgrid.ts:                    78 lines (deprecated)
 notifications/email/send:      384 lines
 driver-application:            275 lines
 Total:                       1,324 lines
@@ -122,8 +122,8 @@ await unifiedEmailService.sendNotificationEmail(to, name, templateId, data);
 
 #### Old Way:
 ```typescript
-import { zeptoMailService } from '@/lib/email/ZeptoMailService';
-await zeptoMailService.sendBookingConfirmation(data);
+import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
+await unifiedEmailService.sendOrderConfirmation(data);
 ```
 
 #### New Way:
@@ -133,7 +133,7 @@ await unifiedEmailService.sendBookingConfirmation(data);
 ```
 
 ### Backward Compatibility:
-The old services still work but show deprecation warnings. The `UnifiedEmailService` is also exported as `zeptoMailService` for immediate compatibility.
+The old services still work but show deprecation warnings. The `UnifiedEmailService` is the primary email service with Resend and SendGrid fallback.
 
 ## 🎯 Template System
 
@@ -159,7 +159,7 @@ console.log('Email service test:', result);
 ```
 
 ### Fallback Testing:
-- ZeptoMail failure automatically triggers SendGrid fallback
+- Resend failure automatically triggers SendGrid fallback
 - Both providers tested with proper error handling
 - Comprehensive logging for debugging
 

@@ -112,7 +112,7 @@ export async function POST(
       }
     }
 
-    // Send approval email via ZeptoMail
+    // Send approval email via Resend
     try {
       console.log('🔧 [APPROVE DEBUG] Sending approval email to:', updatedApplication.email);
       await UnifiedEmailService.sendDriverApplicationConfirmation({

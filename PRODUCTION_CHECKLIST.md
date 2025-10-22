@@ -47,8 +47,7 @@
 
 ### متغيرات البريد الإلكتروني (اختيارية)
 - `SENDGRID_API_KEY` - مفتاح SendGrid
-- `ZEPTO_API_KEY` - مفتاح ZeptoMail
-- `ZEPTO_API_URL` - رابط ZeptoMail API
+- `RESEND_API_KEY` - مفتاح Resend
 - `MAIL_FROM` - عنوان البريد الإلكتروني المرسل
 
 ### متغيرات الرسائل النصية (اختيارية)

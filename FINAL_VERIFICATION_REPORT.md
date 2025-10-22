@@ -239,7 +239,7 @@ Health Check: /api/health
 - ✅ NEXTAUTH_URL
 - ✅ Pusher configuration (real-time)
 - ✅ Stripe configuration (payments)
-- ✅ Email service (Zepto)
+- ✅ Email service (Resend)
 - ✅ SMS service (TheSMSWorks)
 - ✅ JWT_SECRET (auto-generated)
 - ✅ Mapbox token
@@ -586,7 +586,7 @@ Health Check: /api/health
    - Set DATABASE_URL (from Neon or Render Postgres)
    - Set PUSHER credentials
    - Set STRIPE credentials
-   - Set ZEPTO_API_KEY
+   - Set RESEND_API_KEY
    - Set THESMSWORKS credentials
    - Set NEXT_PUBLIC_MAPBOX_TOKEN
    - Set NEXT_PUBLIC_WEATHER_API_KEY

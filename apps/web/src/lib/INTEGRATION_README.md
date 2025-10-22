@@ -32,9 +32,9 @@ if (pricing?.success) {
 }
 ```
 
-### 2. ZeptoMail Email Integration
+### 2. Resend Email Integration
 
-**Location**: `src/lib/email/ZeptoMailService.ts`
+**Location**: `src/lib/email/UnifiedEmailService.ts`
 
 **Features**:
 - Booking confirmation emails
@@ -44,29 +44,29 @@ if (pricing?.success) {
 - Driver assignment notifications
 - HTML and text email templates
 - Professional email branding
+- Automatic fallback to SendGrid
 
 **Environment Variables**:
 ```env
-ZEPTO_API_URL=https://api.zeptomail.eu/v1.1/email
-ZEPTO_API_KEY=your_zepto_api_key
+RESEND_API_KEY=re_your_resend_api_key_here
 MAIL_FROM=noreply@speedy-van.co.uk
 ```
 
 **Usage**:
 ```typescript
-import { zeptoMailService } from '@/lib/email/ZeptoMailService';
+import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 
 // Send booking confirmation
-await zeptoMailService.sendBookingConfirmation({
+await unifiedEmailService.sendOrderConfirmation({
   customerName: 'John Doe',
   customerEmail: 'john@example.com',
-  bookingId: 'booking_123',
+  orderNumber: 'booking_123',
   pickupAddress: '123 Main St, London',
   dropoffAddress: '456 Oak Ave, Manchester',
   scheduledDate: '2024-12-20',
-  scheduledTime: '10:00 AM',
-  totalPrice: 150.00,
-  items: [{ name: 'Sofa', quantity: 1 }],
+  totalAmount: 150.00,
+  currency: 'GBP',
+  items: [{ name: 'Sofa', quantity: 1, price: 150.00 }],
 });
 ```
 
@@ -229,9 +229,8 @@ useEffect(() => {
 # Pricing (uses existing engine)
 # No additional env vars needed
 
-# ZeptoMail
-ZEPTO_API_URL=https://api.zeptomail.eu/v1.1/email
-ZEPTO_API_KEY=your_zepto_api_key
+# Resend
+RESEND_API_KEY=re_your_resend_api_key_here
 MAIL_FROM=noreply@speedy-van.co.uk
 
 # TheSMSWorks
@@ -297,8 +296,8 @@ All integrations include logging and monitoring:
 
 ## 📚 API Documentation
 
-### ZeptoMail API
-- [ZeptoMail API Documentation](https://www.zoho.com/zeptomail/help/api/)
+### Resend API
+- [Resend API Documentation](https://resend.com/docs)
 
 ### TheSMSWorks API
 - [TheSMSWorks API Documentation](https://thesmsworks.co.uk/api-documentation/)
@@ -311,7 +310,7 @@ All integrations include logging and monitoring:
 ### Common Issues
 
 1. **Pricing not calculating**: Check if pickup/dropoff addresses and items are selected
-2. **Email not sending**: Verify ZeptoMail API key and from email
+2. **Email not sending**: Verify Resend API key and from email
 3. **SMS not sending**: Verify TheSMSWorks credentials and phone number format
 4. **Stripe payment failing**: Check Stripe keys and webhook configuration
 

@@ -27,7 +27,7 @@ const envSchema = z.object({
   
   // Email
   SENDGRID_API_KEY: z.string().optional(),
-  ZEPTO_API_KEY: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
   
   // SMS - Voodoo SMS (replaced UK SMS WORK)
   VOODOO_SMS_API_KEY: z.string().optional(),
