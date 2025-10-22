@@ -80,7 +80,7 @@ export async function POST(
       }
     }
 
-    // Send rejection email via ZeptoMail
+    // Send rejection email via Resend
     try {
       await UnifiedEmailService.sendDriverApplicationConfirmation({
         driverName: `${updatedApplication.firstName} ${updatedApplication.lastName}`,

@@ -14,7 +14,7 @@ Before starting, ensure you have:
 4. **API Keys** for third-party services:
    - Pusher (real-time notifications)
    - Stripe (payments)
-   - Zepto Mail (email service)
+   - Resend (email service)
    - TheSMSWorks (SMS service)
    - Mapbox (maps and geocoding)
    - Weather API (optional)
@@ -116,9 +116,8 @@ STRIPE_SECRET_KEY=sk_live_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-# Email (Zepto Mail)
-ZEPTO_API_URL=https://api.zeptomail.eu/v1.1/email
-ZEPTO_API_KEY=your_zepto_api_key
+# Email (Resend)
+RESEND_API_KEY=re_your_resend_api_key_here
 MAIL_FROM=noreply@speedy-van.co.uk
 
 # SMS (TheSMSWorks)
@@ -277,10 +276,10 @@ After DNS propagation (24-48 hours):
    - Enable client events: Yes
 4. Copy credentials to Render environment variables
 
-### Email Configuration (Zepto Mail)
+### Email Configuration (Resend)
 
-1. Go to [Zepto Mail Dashboard](https://www.zoho.com/zeptomail/)
-2. Verify your sending domain
+1. Go to [Resend Dashboard](https://resend.com/)
+2. Verify your sending domain (speedy-van.co.uk)
 3. Create API key
 4. Add to Render environment variables
 

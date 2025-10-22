@@ -69,6 +69,17 @@ export interface AdminWelcomeData {
   createdAt: string;
 }
 
+export interface TrustpilotFeedbackData {
+  customerEmail: string;
+  customerName: string;
+  orderNumber: string;
+  completedDate: string;
+  serviceType: string;
+  totalAmount: number;
+  currency: string;
+  trustpilotUrl: string;
+}
+
 interface EmailResult {
   success: boolean;
   error: string | null;
@@ -78,18 +89,96 @@ interface EmailResult {
 
 // Email provider configurations
 const emailConfig = {
-  sendgrid: {
-    apiKey: process.env.SENDGRID_API_KEY,
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
     from: process.env.MAIL_FROM || 'noreply@speedy-van.co.uk'
   },
-  zeptomail: {
-    apiUrl: process.env.ZEPTO_API_URL || 'https://api.zeptomail.eu/v1.1/email',
-    apiKey: process.env.ZEPTO_API_KEY,
+  sendgrid: {
+    apiKey: process.env.SENDGRID_API_KEY,
     from: process.env.MAIL_FROM || 'noreply@speedy-van.co.uk'
   }
 };
 
-// SendGrid implementation
+// Resend implementation
+async function sendViaResend(to: string, subject: string, html: string): Promise<EmailResult> {
+  if (!emailConfig.resend.apiKey) {
+    throw new Error('Resend API key not configured');
+  }
+
+  try {
+    const payload = {
+      from: `Speedy Van <${emailConfig.resend.from}>`,
+      to: [to],
+      subject,
+      html,
+      // Add headers for better deliverability
+      headers: {
+        'X-Priority': '3',
+        'X-MSMail-Priority': 'Normal',
+        'Importance': 'Normal',
+        'X-Mailer': 'Speedy Van Email System',
+        'X-Entity-Ref-ID': `speedy-van-${Date.now()}`,
+        'List-Unsubscribe': '<mailto:unsubscribe@speedy-van.co.uk>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+      },
+      // Add reply-to for better deliverability
+      reply_to: 'support@speedy-van.co.uk',
+      // Add tags for tracking
+      tags: [
+        { name: 'service', value: 'transactional' },
+        { name: 'source', value: 'speedy-van-system' }
+      ]
+    };
+
+    console.log('📧 ===== RESEND API DEBUG =====');
+    console.log('📧 Resend payload:', {
+      to,
+      subject,
+      from: emailConfig.resend.from
+    });
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${emailConfig.resend.apiKey}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    console.log('📧 Resend response status:', response.status);
+    console.log('📧 Resend response headers:', Object.fromEntries(response.headers.entries()));
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('📧 ===== RESEND API ERROR =====');
+      console.error('📧 Status:', response.status);
+      console.error('📧 Status Text:', response.statusText);
+      console.error('📧 Error Data:', errorData);
+      console.error('📧 ===== END RESEND ERROR =====');
+      throw new Error(`Resend API error: ${response.status} - ${errorData}`);
+    }
+
+    const result = await response.json();
+    console.log('📧 ===== RESEND SUCCESS RESULT =====');
+    console.log('📧 Resend success result:', result);
+    console.log('📧 Message ID:', result.id || 'No message ID');
+    console.log('📧 ===== END RESEND SUCCESS =====');
+    
+    return {
+      success: true,
+      error: null,
+      messageId: result.id || `resend-${Date.now()}`,
+      provider: 'resend'
+    };
+  } catch (error) {
+    console.error('Resend send error:', error);
+    throw error;
+  }
+}
+
+// SendGrid implementation (fallback)
 async function sendViaSendGrid(to: string, subject: string, html: string): Promise<EmailResult> {
   if (!emailConfig.sendgrid.apiKey) {
     throw new Error('SendGrid API key not configured');
@@ -121,110 +210,36 @@ async function sendViaSendGrid(to: string, subject: string, html: string): Promi
   }
 }
 
-// ZeptoMail implementation
-async function sendViaZeptoMail(to: string, subject: string, html: string): Promise<EmailResult> {
-  if (!emailConfig.zeptomail.apiKey) {
-    throw new Error('ZeptoMail API key not configured');
-  }
-
-  try {
-    const payload = {
-      from: {
-        address: emailConfig.zeptomail.from,
-        name: 'Speedy Van'
-      },
-      to: [{
-        email_address: {
-          address: to,
-          name: to.split('@')[0] // Extract name from email
-        }
-      }],
-      subject,
-      htmlbody: html
-    };
-
-    console.log('📧 ===== ZEPTOMAIL API DEBUG =====');
-    console.log('📧 ZeptoMail payload:', {
-      to,
-      subject,
-      from: emailConfig.zeptomail.from,
-      apiUrl: emailConfig.zeptomail.apiUrl
-    });
-    console.log('📧 Full payload being sent:', JSON.stringify(payload, null, 2));
-
-    const response = await fetch(emailConfig.zeptomail.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': emailConfig.zeptomail.apiKey
-      },
-      body: JSON.stringify(payload)
-    });
-
-    console.log('📧 ZeptoMail response status:', response.status);
-    console.log('📧 ZeptoMail response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('📧 ===== ZEPTOMAIL API ERROR =====');
-      console.error('📧 Status:', response.status);
-      console.error('📧 Status Text:', response.statusText);
-      console.error('📧 Error Data:', errorData);
-      console.error('📧 ===== END ZEPTOMAIL ERROR =====');
-      throw new Error(`ZeptoMail API error: ${response.status} - ${errorData}`);
-    }
-
-    const result = await response.json();
-    console.log('📧 ===== ZEPTOMAIL SUCCESS RESULT =====');
-    console.log('📧 ZeptoMail success result:', result);
-    console.log('📧 Message ID:', result.data?.[0]?.message_id || 'No message ID');
-    console.log('📧 Request ID:', result.request_id);
-    console.log('📧 ===== END ZEPTOMAIL SUCCESS =====');
-    
-    return {
-      success: true,
-      error: null,
-      messageId: result.data?.message_id || `zm-${Date.now()}`,
-      provider: 'zeptomail'
-    };
-  } catch (error) {
-    console.error('ZeptoMail send error:', error);
-    throw error;
-  }
-}
 
 // Main email sending function with fallback
 async function sendEmail(to: string, subject: string, html: string): Promise<EmailResult> {
   const errors: string[] = [];
 
-  // Try ZeptoMail first if configured (more reliable)
-  console.log('📧 Checking ZeptoMail configuration:', {
-    hasApiKey: !!emailConfig.zeptomail.apiKey,
-    keyLength: emailConfig.zeptomail.apiKey?.length || 0,
-    keyStart: emailConfig.zeptomail.apiKey?.substring(0, 20) || 'NOT_SET',
-    isDefaultKey: emailConfig.zeptomail.apiKey === 'Zoho-enczapikey-CHANGEME',
-    apiUrl: emailConfig.zeptomail.apiUrl,
-    from: emailConfig.zeptomail.from
+  // Try Resend first if configured (primary provider)
+  console.log('📧 Checking Resend configuration:', {
+    hasApiKey: !!emailConfig.resend.apiKey,
+    keyLength: emailConfig.resend.apiKey?.length || 0,
+    keyStart: emailConfig.resend.apiKey?.substring(0, 20) || 'NOT_SET',
+    from: emailConfig.resend.from
   });
 
-  if (emailConfig.zeptomail.apiKey && emailConfig.zeptomail.apiKey !== 'Zoho-enczapikey-CHANGEME') {
+  if (emailConfig.resend.apiKey) {
     try {
-      console.log('📧 Attempting to send email via ZeptoMail...');
-      return await sendViaZeptoMail(to, subject, html);
+      console.log('📧 Attempting to send email via Resend...');
+      return await sendViaResend(to, subject, html);
     } catch (error) {
-      const errorMsg = `ZeptoMail failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      const errorMsg = `Resend failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       console.warn('⚠️', errorMsg);
-      console.error('📧 ZeptoMail error details:', error);
+      console.error('📧 Resend error details:', error);
       errors.push(errorMsg);
     }
   } else {
-    console.log('📧 ZeptoMail not configured or using default key');
-    errors.push('ZeptoMail not configured or using default key');
+    console.log('📧 Resend not configured');
+    errors.push('Resend not configured');
   }
 
   // Try SendGrid as fallback if configured and not previously failed
-  if (false && emailConfig.sendgrid.apiKey && !errors.some(err => err.includes('Unauthorized'))) {
+  if (emailConfig.sendgrid.apiKey && !errors.some(err => err.includes('Unauthorized'))) {
     try {
       console.log('📧 Attempting to send email via SendGrid...');
       return await sendViaSendGrid(to, subject, html);
@@ -419,6 +434,176 @@ function generatePasswordResetHTML(data: { email: string; resetUrl: string; driv
           <p>Speedy Van - Professional Moving Services<br>
           Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
         </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateTrustpilotFeedbackHTML(data: TrustpilotFeedbackData): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Share Your Experience - Speedy Van</title>
+      <style>
+        @media only screen and (max-width: 600px) {
+          .container { padding: 10px !important; }
+          .header { padding: 15px !important; }
+          .content { padding: 15px !important; }
+        }
+      </style>
+    </head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div class="header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 30px 20px; text-align: center;">
+          <div style="background: white; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <span style="font-size: 40px;">⭐</span>
+          </div>
+          <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Speedy Van</h1>
+          <h2 style="margin: 8px 0 0 0; color: #e8f4fd; font-weight: 300; font-size: 18px;">Your Experience Matters</h2>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content" style="padding: 40px 30px;">
+          
+          <!-- Thank You Message -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 28px; font-weight: 500;">Thank You for Choosing Speedy Van! 🙏</h2>
+            <p style="font-size: 18px; color: #5a6c7d; margin: 0; line-height: 1.5;">
+              We hope you had a great experience with our service. Your feedback helps us improve and helps other customers make informed decisions.
+            </p>
+          </div>
+
+          <!-- Service Summary -->
+          <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 25px 0;">
+            <h3 style="margin: 0 0 20px 0; color: #495057; font-size: 20px; font-weight: 600; text-align: center;">📋 Your Service Summary</h3>
+            <div style="display: grid; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #dee2e6;">
+                <span style="font-weight: 600; color: #6c757d;">Order Number:</span>
+                <span style="color: #2c3e50; font-weight: 500;">${data.orderNumber}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #dee2e6;">
+                <span style="font-weight: 600; color: #6c757d;">Service Type:</span>
+                <span style="color: #2c3e50; font-weight: 500;">${data.serviceType}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #dee2e6;">
+                <span style="font-weight: 600; color: #6c757d;">Completed Date:</span>
+                <span style="color: #2c3e50; font-weight: 500;">${new Date(data.completedDate).toLocaleDateString('en-GB', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                <span style="font-weight: 600; color: #6c757d;">Total Amount:</span>
+                <span style="color: #2c3e50; font-weight: 500;">${data.currency}${data.totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trustpilot CTA -->
+          <div style="background: linear-gradient(135deg, #00b67a 0%, #00a86b 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 15px rgba(0, 182, 122, 0.3);">
+            <h3 style="margin: 0 0 15px 0; color: white; font-size: 24px; font-weight: 600;">⭐ Share Your Experience</h3>
+            <p style="margin: 0 0 25px 0; color: white; font-size: 16px; line-height: 1.6;">
+              Help us improve our service and help other customers by sharing your experience on Trustpilot.
+            </p>
+            <div style="margin: 25px 0;">
+              <a href="${data.trustpilotUrl}" style="background: white; color: #00b67a; padding: 16px 35px; text-decoration: none; border-radius: 50px; display: inline-block; font-weight: 600; font-size: 18px; box-shadow: 0 4px 15px rgba(255,255,255,0.3); transition: all 0.3s ease;" target="_blank">
+                🏆 Leave a Review on Trustpilot
+              </a>
+            </div>
+            <p style="margin: 15px 0 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">
+              Takes less than 2 minutes • Helps other customers • Improves our service
+            </p>
+          </div>
+
+          <!-- Why Reviews Matter -->
+          <div style="background: linear-gradient(135deg, #fff3cd 0%, #fef9e7 100%); border: 2px solid #ffeaa7; border-radius: 12px; padding: 25px; margin: 25px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 20px; font-weight: 600; text-align: center;">💝 Why Your Review Matters</h3>
+            <div style="display: grid; gap: 15px;">
+              <div style="display: flex; align-items: flex-start; gap: 15px;">
+                <div style="background: #856404; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; margin-top: 2px;">1</div>
+                <div>
+                  <p style="margin: 0; color: #2c3e50; font-weight: 600;">Helps Other Customers</p>
+                  <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Your honest feedback helps future customers make informed decisions</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-start; gap: 15px;">
+                <div style="background: #856404; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; margin-top: 2px;">2</div>
+                <div>
+                  <p style="margin: 0; color: #2c3e50; font-weight: 600;">Improves Our Service</p>
+                  <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">We use your feedback to continuously improve our moving services</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-start; gap: 15px;">
+                <div style="background: #856404; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; margin-top: 2px;">3</div>
+                <div>
+                  <p style="margin: 0; color: #2c3e50; font-weight: 600;">Builds Trust</p>
+                  <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">Your review helps build trust in our professional moving services</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alternative Feedback -->
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 25px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 20px; font-weight: 600; text-align: center;">📞 Other Ways to Share Feedback</h3>
+            <div style="display: grid; gap: 15px; text-align: center;">
+              <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <span style="font-size: 20px;">📧</span>
+                <a href="mailto:support@speedy-van.co.uk" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">support@speedy-van.co.uk</a>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <span style="font-size: 20px;">📞</span>
+                <a href="tel:+447901846297" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">+44 7901846297</a>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <span style="font-size: 20px;">🌐</span>
+                <a href="https://speedy-van.co.uk/" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;" target="_blank">speedy-van.co.uk</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thank You Message -->
+          <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center;">
+            <h3 style="margin: 0 0 15px 0; color: #1976d2; font-size: 20px; font-weight: 600;">💝 Thank You for Your Trust</h3>
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.6;">
+              We truly appreciate your business and look forward to serving you again in the future. Your feedback is invaluable to us.
+            </p>
+          </div>
+
+          <!-- Signature -->
+          <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #e9ecef; text-align: center;">
+            <p style="margin: 0; font-size: 16px; color: #495057; line-height: 1.6;">
+              With sincere appreciation,<br>
+              <strong style="color: #2c3e50; font-size: 18px; font-weight: 600;">The Speedy Van Team</strong>
+            </p>
+            <p style="margin: 15px 0 0 0; font-size: 14px; color: #6c757d; font-style: italic;">
+              "Excellence in every delivery, trust in every interaction"
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #2c3e50; color: white; padding: 25px; text-align: center;">
+          <div style="margin-bottom: 15px;">
+            <a href="https://speedy-van.co.uk/" style="color: #e8f4fd; text-decoration: none; font-size: 16px; font-weight: 600;" target="_blank">
+              🌐 Visit Our Website: speedy-van.co.uk
+            </a>
+          </div>
+          <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 500;">© ${new Date().getFullYear()} Speedy Van. All rights reserved.</p>
+          <p style="margin: 0 0 10px 0; font-size: 12px; opacity: 0.9;">SPEEDY VAN REMOVALS LTD • Company No. SC865658 • Registered in Scotland</p>
+          <p style="margin: 0 0 10px 0; font-size: 12px; opacity: 0.9;">Professional Moving Services • Fully Insured • 5-Star Rated • 24/7 Support</p>
+          <p style="margin: 0; font-size: 12px; opacity: 0.8;">Office 2.18 1 Barrack St, Hamilton ML3 0HS, United Kingdom</p>
+        </div>
+
       </div>
     </body>
     </html>
@@ -1202,13 +1387,13 @@ export const unifiedEmailService = {
 
   async testConnection() {
     try {
+      const hasResend = !!emailConfig.resend.apiKey;
       const hasSendGrid = !!emailConfig.sendgrid.apiKey;
-      const hasZeptoMail = !!emailConfig.zeptomail.apiKey;
 
-      if (!hasSendGrid && !hasZeptoMail) {
+      if (!hasResend && !hasSendGrid) {
         return {
           success: false,
-          error: 'No email providers configured. Please set SENDGRID_API_KEY or ZEPTO_API_KEY environment variables.'
+          error: 'No email providers configured. Please set RESEND_API_KEY or SENDGRID_API_KEY environment variables.'
         };
       }
 
@@ -1223,8 +1408,8 @@ export const unifiedEmailService = {
         success: testResult.success,
         error: testResult.error,
         providers: {
-          sendgrid: hasSendGrid,
-          zeptomail: hasZeptoMail
+          resend: hasResend,
+          sendgrid: hasSendGrid
         }
       };
     } catch (error) {
@@ -1243,6 +1428,23 @@ export const unifiedEmailService = {
       return await sendEmail(data.adminEmail, subject, html);
     } catch (error) {
       console.error('Admin welcome email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
+  async sendTrustpilotFeedback(data: TrustpilotFeedbackData) {
+    try {
+      console.log('Sending Trustpilot feedback email to:', data.customerEmail);
+      const subject = `Share Your Experience - ${data.orderNumber}`;
+      const html = generateTrustpilotFeedbackHTML(data);
+      return await sendEmail(data.customerEmail, subject, html);
+    } catch (error) {
+      console.error('Trustpilot feedback email failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

@@ -968,33 +968,22 @@ export class RouteManager {
             </div>
           `;
 
-          // Use ZeptoMail
-          const emailResponse = await fetch(process.env.ZEPTO_API_URL || 'https://api.zeptomail.eu/v1.1/email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': process.env.ZEPTO_API_KEY || '',
-            },
-            body: JSON.stringify({
-              from: {
-                address: process.env.MAIL_FROM || 'noreply@speedy-van.co.uk',
-                name: 'Speedy Van Dispatch',
-              },
-              to: [{
-                email_address: {
-                  address: driver.User.email,
-                  name: driverName,
-                }
-              }],
+          // Use UnifiedEmailService (Resend with SendGrid fallback)
+          try {
+            const { unifiedEmailService } = await import('@/lib/email/UnifiedEmailService');
+            const emailResult = await unifiedEmailService.sendNotificationEmail({
+              to: driver.User.email,
               subject: `New Route Assigned - ${route.totalDrops} Stops`,
-              htmlbody: emailHtml,
-            }),
-          });
+              html: emailHtml
+            });
 
-          if (emailResponse.ok) {
-            console.log(`✅ Email sent to driver ${driverId} (${driver.User.email})`);
-          } else {
-            console.error('❌ Email sending failed:', await emailResponse.text());
+            if (emailResult.success) {
+              console.log(`✅ Email sent to driver ${driverId} (${driver.User.email})`);
+            } else {
+              console.error('❌ Email sending failed:', emailResult.error);
+            }
+          } catch (emailError) {
+            console.error('❌ Email service error:', emailError);
           }
         } catch (emailError) {
           console.error('❌ Email notification failed:', emailError);

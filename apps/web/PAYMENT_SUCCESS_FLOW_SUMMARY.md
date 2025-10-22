@@ -10,7 +10,7 @@ Stripe Webhook يتم تشغيله
 تحديث حالة الحجز إلى CONFIRMED
     ↓
 إرسال الإشعارات التلقائية:
-├── 📧 ZeptoMail Email Confirmation
+├── 📧 Resend Email Confirmation
 ├── 📱 TheSMSWorks SMS (UK Numbers)
 ├── 👨‍💼 Admin Notification
 └── 🚚 Driver Notification (if assigned)
@@ -18,16 +18,15 @@ Stripe Webhook يتم تشغيله
 عرض صفحة النجاح
 ```
 
-## 📧 إعدادات البريد الإلكتروني (ZeptoMail)
+## 📧 إعدادات البريد الإلكتروني (Resend)
 
 ### متغيرات البيئة المطلوبة:
 ```bash
-ZEPTO_API_URL=https://api.zeptomail.eu/v1.1/email
-ZEPTO_API_KEY=Zoho-enczapikey yA6KbHsOvgmllm5SQ0A+05GD9Ys1//xoii+0syvhdcwhK4Llj6E8gxE/JdWyLmfd34OCsqhUOtoQc9q9vopefJQ3M9EEfJTGTuv4P2uV48xh8ciEYNYhgp6oA7UVFaRIcxggAiUwT/MkWA==
+RESEND_API_KEY=re_aoZACdQW_4TEm8QeQoY7EeXgvsdCxWQVF
 MAIL_FROM=noreply@speedy-van.co.uk
 ```
 
-### خدمة ZeptoMail:
+### خدمة Resend:
 - ✅ إرسال تلقائي عند نجاح الدفع
 - ✅ قالب HTML احترافي
 - ✅ معلومات الحجز الكاملة

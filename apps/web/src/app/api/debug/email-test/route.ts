@@ -16,9 +16,8 @@ export async function GET(request: NextRequest) {
       result: testResult,
       environment: {
         hasSendGrid: !!process.env.SENDGRID_API_KEY,
-        hasZeptoMail: !!process.env.ZEPTO_API_KEY,
+        hasResend: !!process.env.RESEND_API_KEY,
         mailFrom: process.env.MAIL_FROM,
-        zeptoApiUrl: process.env.ZEPTO_API_URL,
       }
     });
   } catch (error) {
@@ -29,9 +28,8 @@ export async function GET(request: NextRequest) {
         error: error instanceof Error ? error.message : 'Unknown error',
         environment: {
           hasSendGrid: !!process.env.SENDGRID_API_KEY,
-          hasZeptoMail: !!process.env.ZEPTO_API_KEY,
+          hasResend: !!process.env.RESEND_API_KEY,
           mailFrom: process.env.MAIL_FROM,
-          zeptoApiUrl: process.env.ZEPTO_API_URL,
         }
       },
       { status: 500 }
