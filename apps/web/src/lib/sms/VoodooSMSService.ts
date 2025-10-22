@@ -1,6 +1,6 @@
 /**
  * Voodoo SMS Service - Production SMS Provider
- * Complete replacement for UK SMS WORK
+ * CORRECTED VERSION - Using proper REST API endpoints and authentication
  */
 
 export interface SMSData {
@@ -13,11 +13,12 @@ export interface SMSResponse {
   messageId?: string;
   error?: string;
   credits?: number;
+  balance?: number;
 }
 
 export class VoodooSMSService {
   private apiKey: string;
-  private baseUrl = 'https://www.voodoosms.com/vapi/server/sendSMS';
+  private baseUrl = 'https://api.voodoosms.com'; // CORRECTED: Using official REST API endpoint
 
   constructor(apiKey: string) {
     if (!apiKey) {
@@ -27,30 +28,36 @@ export class VoodooSMSService {
   }
 
   /**
-   * Normalize UK phone number to 0044 format
+   * Normalize UK phone number to international format (447...)
+   * Voodoo REST API expects numbers in international format without +
    */
   private normalizePhoneNumber(phone: string): string {
     // Remove all spaces, dashes, and brackets
     let cleaned = phone.replace(/[\s\-\(\)]/g, '');
 
-    // Convert to 0044 format
+    // Convert to 447... format (international without +)
     if (cleaned.startsWith('+44')) {
-      cleaned = '0044' + cleaned.substring(3);
-    } else if (cleaned.startsWith('44') && !cleaned.startsWith('0044')) {
-      cleaned = '0044' + cleaned.substring(2);
-    } else if (cleaned.startsWith('0') && !cleaned.startsWith('0044')) {
-      // Convert 07... to 00447...
-      cleaned = '0044' + cleaned.substring(1);
+      cleaned = cleaned.substring(1); // Remove + to get 447...
+    } else if (cleaned.startsWith('0044')) {
+      cleaned = '44' + cleaned.substring(4); // Convert 0044 to 44
+    } else if (cleaned.startsWith('0') && !cleaned.startsWith('00')) {
+      // Convert 07... to 447...
+      cleaned = '44' + cleaned.substring(1);
+    } else if (!cleaned.startsWith('44')) {
+      // Assume it's a UK number without prefix
+      cleaned = '44' + cleaned;
     }
 
     return cleaned;
   }
 
   /**
-   * Send SMS via Voodoo SMS API
+   * Send SMS via Voodoo SMS REST API
+   * Official documentation: https://help.voodoosms.com/en/articles/15-introduction-to-the-rest-api
    */
   async sendSMS(data: SMSData): Promise<SMSResponse> {
     console.log('DISABLE_SMS env:', process.env.DISABLE_SMS);
+    
     // Check if SMS is disabled
     if (process.env.DISABLE_SMS === 'true') {
       console.log('⚠️  SMS sending is disabled via DISABLE_SMS=true');
@@ -60,39 +67,40 @@ export class VoodooSMSService {
         credits: 0,
       };
     }
+
     try {
       // Normalize phone number
       const normalizedPhone = this.normalizePhoneNumber(data.to);
 
       // Validate phone format
-      if (!normalizedPhone.startsWith('0044')) {
+      if (!normalizedPhone.startsWith('44')) {
         return {
           success: false,
-          error: 'Invalid UK phone number format. Must start with 0044',
+          error: 'Invalid UK phone number format. Must be a valid UK number',
         };
       }
 
       console.log('=== VOODOO SMS REQUEST ===');
-      console.log('URL:', this.baseUrl);
+      console.log('URL:', `${this.baseUrl}/sendsms`);
       console.log('To (original):', data.to);
       console.log('To (normalized):', normalizedPhone);
       console.log('Message:', data.message);
       console.log('API Key:', this.apiKey.substring(0, 20) + '...');
 
-      // Prepare request payload for Voodoo SMS
+      // Prepare request payload for Voodoo SMS REST API
       const payload = {
-        uid: this.apiKey,
         to: normalizedPhone,
-        message: data.message,
         from: 'SpeedyVan',
+        msg: data.message, // REST API uses 'msg' not 'message'
       };
 
       console.log('Payload:', JSON.stringify(payload, null, 2));
 
-      // Send SMS (first attempt)
-      const response = await fetch(this.baseUrl, {
+      // Send SMS using proper REST API with Bearer authentication
+      const response = await fetch(`${this.baseUrl}/sendsms`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${this.apiKey}`, // CORRECTED: Using Bearer token
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
@@ -115,45 +123,32 @@ export class VoodooSMSService {
       }
 
       // Check if successful
-      if (response.ok) {
+      if (response.ok && response.status === 200) {
         console.log('✅ SMS sent successfully via Voodoo SMS');
+        
+        // Extract message ID from response
+        const messageId = result.messages?.[0]?.id || 
+                         result.id || 
+                         'voodoo_' + Date.now();
+        
         return {
           success: true,
-          messageId: result.id || result.messageId || 'voodoo_' + Date.now(),
+          messageId: messageId,
           credits: result.credits || 1,
+          balance: result.balance,
         };
       }
 
-      // First attempt failed - try retry
-      console.warn('⚠️  First attempt failed, retrying...');
-      
-      const retryResponse = await fetch(this.baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Handle errors
+      const errorMessage = result.error?.msg || 
+                          result.error || 
+                          response.statusText || 
+                          'Unknown error';
 
-      const retryText = await retryResponse.text();
-      console.log('Retry Status:', retryResponse.status);
-      console.log('Retry Response:', retryText);
-
-      if (retryResponse.ok) {
-        const retryResult = JSON.parse(retryText);
-        console.log('✅ SMS sent successfully via Voodoo SMS (retry)');
-        return {
-          success: true,
-          messageId: retryResult.id || retryResult.messageId || 'voodoo_retry_' + Date.now(),
-          credits: retryResult.credits || 1,
-        };
-      }
-
-      // Both attempts failed
-      console.error('❌ SMS send failed after retry');
+      console.error('❌ SMS send failed:', errorMessage);
       return {
         success: false,
-        error: `Failed to send SMS: ${response.statusText}`,
+        error: `Failed to send SMS: ${errorMessage}`,
       };
 
     } catch (error) {
@@ -219,6 +214,38 @@ export class VoodooSMSService {
       to: data.phoneNumber,
       message,
     });
+  }
+
+  /**
+   * Check credit balance
+   */
+  async checkBalance(): Promise<{ success: boolean; balance?: number; error?: string }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/credits`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return {
+          success: true,
+          balance: result.amount,
+        };
+      }
+
+      return {
+        success: false,
+        error: 'Failed to check balance',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   }
 }
 
