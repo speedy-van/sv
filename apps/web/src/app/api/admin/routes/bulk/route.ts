@@ -234,8 +234,8 @@ async function bulkAssignDriver(
       // Send SMS notification to driver
       if (driver.User.phone) {
         try {
-          const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
-          const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+          const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+          const smsService = getVoodooSMSService();
           
           const smsMessage = `🚚 New Route Assigned!\n\nRoute: ${route.id}\nStops: ${route.drops.length}\nStart: ${route.startTime.toLocaleString()}\n\nCheck your email for full details.\n\nSpeedy Van`;
           

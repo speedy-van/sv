@@ -480,8 +480,8 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     // Send SMS confirmation to the driver
     console.log('📱 Sending driver application confirmation SMS...');
     try {
-      const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
-      const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+      const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+      const smsService = getVoodooSMSService();
       
       const smsMessage = `Hi ${firstName}, your Speedy Van driver application has been received! We'll review it within 24-48 hours and notify you of the status. Application ID: ${application.id}. Call 07901846297 for support.`;
       

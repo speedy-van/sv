@@ -19,12 +19,59 @@ export interface SMSResponse {
 export class VoodooSMSService {
   private apiKey: string;
   private baseUrl = 'https://api.voodoosms.com'; // CORRECTED: Using official REST API endpoint
+  private recentMessages: Map<string, number> = new Map(); // Track recent messages to prevent duplicates
+  private deduplicationWindow = 60000; // 60 seconds window
 
   constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error('Voodoo SMS API key is required');
     }
     this.apiKey = apiKey;
+    
+    // Clean up old entries every 5 minutes
+    setInterval(() => this.cleanupOldEntries(), 300000);
+  }
+
+  /**
+   * Clean up old deduplication entries
+   */
+  private cleanupOldEntries(): void {
+    const now = Date.now();
+    for (const [key, timestamp] of this.recentMessages.entries()) {
+      if (now - timestamp > this.deduplicationWindow) {
+        this.recentMessages.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Generate deduplication key for a message
+   */
+  private getDeduplicationKey(to: string, message: string): string {
+    return `${to}:${message.substring(0, 50)}`; // Use phone + first 50 chars of message
+  }
+
+  /**
+   * Check if message was recently sent (within deduplication window)
+   */
+  private isDuplicate(to: string, message: string): boolean {
+    const key = this.getDeduplicationKey(to, message);
+    const lastSent = this.recentMessages.get(key);
+    
+    if (lastSent && Date.now() - lastSent < this.deduplicationWindow) {
+      console.log('⚠️  Duplicate SMS detected - skipping send:', { to, key });
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Mark message as sent for deduplication
+   */
+  private markAsSent(to: string, message: string): void {
+    const key = this.getDeduplicationKey(to, message);
+    this.recentMessages.set(key, Date.now());
   }
 
   /**
@@ -65,6 +112,16 @@ export class VoodooSMSService {
         success: true,
         messageId: 'disabled_' + Date.now(),
         credits: 0,
+      };
+    }
+
+    // Check for duplicate message (double-click protection)
+    if (this.isDuplicate(data.to, data.message)) {
+      return {
+        success: true,
+        messageId: 'duplicate_' + Date.now(),
+        credits: 0,
+        error: 'Duplicate message prevented',
       };
     }
 
@@ -125,6 +182,9 @@ export class VoodooSMSService {
       // Check if successful
       if (response.ok && response.status === 200) {
         console.log('✅ SMS sent successfully via Voodoo SMS');
+        
+        // Mark as sent for deduplication
+        this.markAsSent(data.to, data.message);
         
         // Extract message ID from response
         const messageId = result.messages?.[0]?.id || 

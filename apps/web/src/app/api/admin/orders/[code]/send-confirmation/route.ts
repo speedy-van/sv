@@ -87,8 +87,8 @@ export async function POST(
 
     // Send SMS confirmation to customer
     try {
-      const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
-      const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+      const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+      const smsService = getVoodooSMSService();
       
       const smsMessage = `✅ Order Confirmed!\n\nOrder: ${booking.reference}\nDate: ${emailData.scheduledDate}\nAmount: £${emailData.totalAmount.toFixed(2)}\n\nPickup: ${emailData.pickupAddress}\nDropoff: ${emailData.dropoffAddress}\n\nSpeedy Van`;
       

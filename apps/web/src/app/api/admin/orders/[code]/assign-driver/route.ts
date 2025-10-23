@@ -358,8 +358,8 @@ export async function POST(
       // Send SMS notification to driver
       if (driver.User.phone) {
         try {
-          const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
-          const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+          const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+          const smsService = getVoodooSMSService();
           
           const smsMessage = `🚚 New Order Assigned!\n\nOrder: ${booking.reference}\nPickup: ${booking.pickupAddress?.label || 'TBD'}\nDropoff: ${booking.dropoffAddress?.label || 'TBD'}\n\nCheck your app for full details.\n\nSpeedy Van`;
           
