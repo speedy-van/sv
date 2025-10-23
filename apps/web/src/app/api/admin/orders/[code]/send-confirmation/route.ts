@@ -85,6 +85,27 @@ export async function POST(
       );
     }
 
+    // Send SMS confirmation to customer
+    try {
+      const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+      const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+      
+      const smsMessage = `✅ Order Confirmed!\n\nOrder: ${booking.reference}\nDate: ${emailData.scheduledDate}\nAmount: £${emailData.totalAmount.toFixed(2)}\n\nPickup: ${emailData.pickupAddress}\nDropoff: ${emailData.dropoffAddress}\n\nSpeedy Van`;
+      
+      const smsResult = await smsService.sendSMS({
+        to: booking.customerPhone || booking.customerEmail, // Use phone if available, otherwise email
+        message: smsMessage
+      });
+
+      if (smsResult.success) {
+        console.log(`✅ SMS confirmation sent to customer for order ${booking.reference}`);
+      } else {
+        console.error('❌ SMS confirmation failed:', smsResult.error);
+      }
+    } catch (smsError) {
+      console.error('❌ SMS service error:', smsError);
+    }
+
     // Log audit trail
     await logAudit((session.user as any).id, 'send_confirmation_email', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue, sentBy: (session.user as any).email } });
 

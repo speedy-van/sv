@@ -142,6 +142,29 @@ export async function POST(request: NextRequest) {
       // Don't fail the application if email fails
     }
 
+    // Send SMS confirmation to the driver
+    console.log('📱 Sending driver application confirmation SMS...');
+    try {
+      const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+      const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+      
+      const smsMessage = `Hi ${application.firstName}, your Speedy Van driver application has been received! We'll review it within 24-48 hours and notify you of the status. Application ID: ${application.id}. Call 07901846297 for support.`;
+      
+      const smsResult = await smsService.sendSMS({
+        to: application.phone,
+        message: smsMessage
+      });
+
+      if (smsResult.success) {
+        console.log(`✅ Driver application confirmation SMS sent to ${application.phone}`);
+      } else {
+        console.error('❌ Driver application confirmation SMS failed:', smsResult.error);
+      }
+    } catch (smsError) {
+      console.error('❌ SMS service error for driver application:', smsError);
+      // Don't fail the application submission if SMS fails
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Application submitted successfully',

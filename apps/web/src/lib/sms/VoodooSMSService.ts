@@ -53,7 +53,7 @@ export class VoodooSMSService {
 
   /**
    * Send SMS via Voodoo SMS REST API
-   * Official documentation: https://help.voodoosms.com/en/articles/15-introduction-to-the-rest-api
+   * Using REST API with Bearer authentication
    */
   async sendSMS(data: SMSData): Promise<SMSResponse> {
     console.log('DISABLE_SMS env:', process.env.DISABLE_SMS);
@@ -96,11 +96,11 @@ export class VoodooSMSService {
 
       console.log('Payload:', JSON.stringify(payload, null, 2));
 
-      // Send SMS using proper REST API with Bearer authentication
+      // Send SMS using REST API with Bearer authentication
       const response = await fetch(`${this.baseUrl}/sendsms`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`, // CORRECTED: Using Bearer token
+          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),

@@ -104,7 +104,7 @@ export async function POST(
         where: { id: driverId },
         include: {
           User: {
-            select: { name: true, email: true }
+            select: { name: true, email: true, phone: true }
           },
           DriverAvailability: true
         }
@@ -353,6 +353,31 @@ export async function POST(
       } catch (notificationError) {
         console.error('❌ Error sending real-time notifications:', notificationError);
         // Don't fail the request if notifications fail
+      }
+
+      // Send SMS notification to driver
+      if (driver.User.phone) {
+        try {
+          const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+          const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+          
+          const smsMessage = `🚚 New Order Assigned!\n\nOrder: ${booking.reference}\nPickup: ${booking.pickupAddress?.label || 'TBD'}\nDropoff: ${booking.dropoffAddress?.label || 'TBD'}\n\nCheck your app for full details.\n\nSpeedy Van`;
+          
+          const smsResult = await smsService.sendSMS({
+            to: driver.User.phone,
+            message: smsMessage
+          });
+
+          if (smsResult.success) {
+            console.log(`✅ SMS sent to driver ${driverId} for order ${booking.reference}`);
+          } else {
+            console.error('❌ SMS sending failed:', smsResult.error);
+          }
+        } catch (smsError) {
+          console.error('❌ SMS service error:', smsError);
+        }
+      } else {
+        console.log('ℹ️ No phone number available for driver SMS notification');
       }
 
       // Create audit log

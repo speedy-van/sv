@@ -205,6 +205,7 @@ async function bulkAssignDriver(
   // Verify driver exists
   const driver = await prisma.driver.findUnique({
     where: { id: driverId },
+    include: { User: true }
   });
 
   if (!driver) {
@@ -213,7 +214,7 @@ async function bulkAssignDriver(
 
   for (const routeId of routeIds) {
     try {
-      await prisma.route.update({
+      const route = await prisma.route.update({
         where: { id: routeId },
         data: {
           driverId,
@@ -221,7 +222,39 @@ async function bulkAssignDriver(
           adminNotes: `[BULK ASSIGNMENT] ${new Date().toISOString()} - Assigned to driver ${driverId}`,
           isModifiedByAdmin: true,
         },
+        include: {
+          drops: {
+            include: {
+              Booking: true
+            }
+          }
+        }
       });
+
+      // Send SMS notification to driver
+      if (driver.User.phone) {
+        try {
+          const { VoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+          const smsService = new VoodooSMSService(process.env.VOODOO_SMS_API_KEY || '');
+          
+          const smsMessage = `🚚 New Route Assigned!\n\nRoute: ${route.id}\nStops: ${route.drops.length}\nStart: ${route.startTime.toLocaleString()}\n\nCheck your email for full details.\n\nSpeedy Van`;
+          
+          const smsResult = await smsService.sendSMS({
+            to: driver.User.phone,
+            message: smsMessage
+          });
+
+          if (smsResult.success) {
+            console.log(`✅ SMS sent to driver ${driverId} for route ${routeId}`);
+          } else {
+            console.error('❌ SMS sending failed:', smsResult.error);
+          }
+        } catch (smsError) {
+          console.error('❌ SMS service error:', smsError);
+        }
+      } else {
+        console.log('ℹ️ No phone number available for driver SMS notification');
+      }
 
       results.success.push(routeId);
     } catch (error) {

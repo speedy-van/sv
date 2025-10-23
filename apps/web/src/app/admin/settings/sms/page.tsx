@@ -67,6 +67,7 @@ export default function SendSMSPage() {
     sent: 0,
     delivered: 0,
     failed: 0,
+    balance: 0,
   });
 
   // Load recipients when type changes
@@ -75,6 +76,23 @@ export default function SendSMSPage() {
       loadRecipients(recipientType);
     }
   }, [recipientType]);
+
+  // Load SMS balance on mount
+  useEffect(() => {
+    loadBalance();
+  }, []);
+
+  const loadBalance = async () => {
+    try {
+      const response = await fetch('/api/admin/sms/balance');
+      if (!response.ok) throw new Error('Failed to load balance');
+      
+      const data = await response.json();
+      setStats(prev => ({ ...prev, balance: data.balance || 0 }));
+    } catch (error) {
+      console.error('Error loading balance:', error);
+    }
+  };
 
   const loadRecipients = async (type: string) => {
     setLoadingRecipients(true);
@@ -247,7 +265,11 @@ export default function SendSMSPage() {
       setSelectedRecipient('');
       
       // Update stats
-      setStats(prev => ({ ...prev, sent: prev.sent + 1 }));
+      setStats(prev => ({ 
+        ...prev, 
+        sent: prev.sent + 1,
+        balance: Math.max(0, prev.balance - (result.creditsUsed || 1))
+      }));
       
     } catch (error) {
       console.error('SMS sending error:', error);
@@ -283,7 +305,7 @@ export default function SendSMSPage() {
         </Box>
 
         {/* Stats */}
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
+        <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} w="full">
           <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
             <CardBody>
               <Stat>
@@ -310,6 +332,16 @@ export default function SendSMSPage() {
                 <StatLabel>Failed</StatLabel>
                 <StatNumber color="red.500">{stats.failed}</StatNumber>
                 <StatHelpText>Failed to send</StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+
+          <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
+            <CardBody>
+              <Stat>
+                <StatLabel>SMS Balance</StatLabel>
+                <StatNumber color="blue.500">{stats.balance}</StatNumber>
+                <StatHelpText>Credits remaining</StatHelpText>
               </Stat>
             </CardBody>
           </Card>

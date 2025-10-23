@@ -969,7 +969,7 @@ export default function MobileHomePageContent() {
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
+    const businessUnitId = undefined; // Trustpilot integration handled server-side
 
     // Only load if Business Unit ID is configured
     if (!businessUnitId) {
@@ -1030,7 +1030,7 @@ export default function MobileHomePageContent() {
       <MobileCTA />
 
       {/* Trustpilot Widget Section */}
-      {process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID && (
+      {false && (
         <Box
           py={{ base: 8, md: 12 }}
           bg="bg.surface"
