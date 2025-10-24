@@ -1,6 +1,6 @@
 # UK Removal Service Catalog v1.0
 
-**Author:** Manus AI  
+**Author:** Ahmad Alwakai  
 **Date:** 2025-10-05  
 **Version:** 1.0
 

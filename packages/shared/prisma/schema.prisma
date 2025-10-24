@@ -237,6 +237,7 @@ model Booking {
   Invoice                                                    Invoice[]
   Payment                                                    Payment[]
   TrackingPing                                               TrackingPing[]
+  TaxInvoice                                                 TaxInvoice[]
 
   @@index([currentStep, status])
   @@index([customerEmail, scheduledAt])
@@ -1696,6 +1697,7 @@ model User {
   Quote                                           Quote[]
   Route                                           Route[]
   SupportTicket                                   SupportTicket[]
+  TaxInvoice                                      TaxInvoice[]
 
   @@index([role])
   @@index([role], map: "idx_user_role")
@@ -1752,6 +1754,475 @@ model VisitorAction {
   @@index([action])
   @@index([sessionId])
   @@index([timestamp])
+}
+
+// Tax Invoice Model - Enhanced for UK VAT compliance
+model TaxInvoice {
+  id                String            @id @default(cuid())
+  invoiceNumber     String            @unique
+  customerId        String?
+  bookingId         String?
+  orderId           String?
+  
+  // Invoice Details
+  issueDate         DateTime          @default(now())
+  dueDate           DateTime
+  paymentDate       DateTime?
+  
+  // Financial Details
+  netAmount         Decimal           @db.Decimal(10, 2)
+  vatAmount         Decimal           @db.Decimal(10, 2)
+  grossAmount       Decimal           @db.Decimal(10, 2)
+  vatRate           Decimal           @db.Decimal(5, 4) // 0.20 for 20%
+  vatRateType       VatRateType       @default(standard)
+  
+  // VAT Details
+  vatRegistrationNumber String?
+  isVATRegistered      Boolean         @default(false)
+  isReverseCharge       Boolean         @default(false)
+  
+  // Invoice Status
+  status            InvoiceStatus     @default(DRAFT)
+  paymentStatus     PaymentStatus     @default(unpaid)
+  
+  // Metadata
+  description       String?
+  notes             String?
+  metadata          Json              @default("{}")
+  
+  // Audit Fields
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String
+  updatedBy         String?
+  
+  // Relations
+  customer          User?             @relation(fields: [customerId], references: [id])
+  booking           Booking?          @relation(fields: [bookingId], references: [id])
+  // order             Order?            @relation(fields: [orderId], references: [id])
+  taxRecords        TaxRecord[]
+  invoiceItems      InvoiceItem[]
+  payments          InvoicePayment[]
+  
+  @@index([invoiceNumber])
+  @@index([issueDate])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([vatRegistrationNumber])
+  @@index([customerId])
+}
+
+// Invoice Items Model
+model InvoiceItem {
+  id                String            @id @default(cuid())
+  invoiceId         String
+  description       String
+  quantity          Decimal           @db.Decimal(10, 3)
+  unitPrice         Decimal           @db.Decimal(10, 2)
+  netAmount         Decimal           @db.Decimal(10, 2)
+  vatAmount         Decimal           @db.Decimal(10, 2)
+  grossAmount       Decimal           @db.Decimal(10, 2)
+  vatRate           Decimal           @db.Decimal(5, 4)
+  vatRateType       VatRateType       @default(standard)
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Relations
+  invoice           TaxInvoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+}
+
+// Invoice Payments Model
+model InvoicePayment {
+  id                String            @id @default(cuid())
+  invoiceId         String
+  paymentMethod     PaymentMethod     @default(stripe)
+  paymentReference  String?
+  amount            Decimal           @db.Decimal(10, 2)
+  paymentDate       DateTime          @default(now())
+  status            PaymentStatus     @default(paid)
+  
+  // Stripe Integration
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  
+  // Metadata
+  notes             String?
+  metadata          Json              @default("{}")
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  // Relations
+  invoice           TaxInvoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@index([stripePaymentIntentId])
+}
+
+// Tax Records Model - For VAT Returns and Corporation Tax
+model TaxRecord {
+  id                String            @id @default(cuid())
+  
+  // Tax Period
+  taxYear           Int
+  taxPeriod         String            // "2024-Q1", "2024-01", etc.
+  periodStart       DateTime
+  periodEnd         DateTime
+  
+  // Tax Type
+  taxType           TaxType           @default(vat)
+  
+  // VAT Details
+  vatRegistrationNumber String?
+  totalSales        Decimal           @db.Decimal(12, 2) @default(0)
+  totalPurchases    Decimal           @db.Decimal(12, 2) @default(0)
+  vatOnSales        Decimal           @db.Decimal(12, 2) @default(0)
+  vatOnPurchases    Decimal           @db.Decimal(12, 2) @default(0)
+  netVATDue         Decimal           @db.Decimal(12, 2) @default(0)
+  
+  // VAT Rate Breakdown
+  standardRateSales Decimal           @db.Decimal(12, 2) @default(0)
+  standardRateVAT   Decimal           @db.Decimal(12, 2) @default(0)
+  reducedRateSales  Decimal           @db.Decimal(12, 2) @default(0)
+  reducedRateVAT    Decimal           @db.Decimal(12, 2) @default(0)
+  zeroRateSales     Decimal           @db.Decimal(12, 2) @default(0)
+  exemptSales       Decimal           @db.Decimal(12, 2) @default(0)
+  
+  // Corporation Tax Details
+  taxableProfit     Decimal           @db.Decimal(12, 2) @default(0)
+  corporationTax    Decimal           @db.Decimal(12, 2) @default(0)
+  taxFreeAllowance  Decimal           @db.Decimal(12, 2) @default(50000)
+  
+  // Filing Status
+  filingStatus      FilingStatus      @default(pending)
+  submissionDate    DateTime?
+  paymentStatus     PaymentStatus     @default(unpaid)
+  paymentDate       DateTime?
+  
+  // HMRC Integration
+  hmrcSubmissionId  String?
+  hmrcStatus        String?
+  
+  // Metadata
+  notes             String?
+  metadata          Json              @default("{}")
+  
+  // Audit Fields
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String
+  updatedBy         String?
+  
+  // Relations
+  invoices          TaxInvoice[]
+  expenses          TaxExpense[]
+  
+  @@unique([taxYear, taxPeriod, taxType])
+  @@index([taxYear])
+  @@index([taxPeriod])
+  @@index([filingStatus])
+  @@index([paymentStatus])
+}
+
+// Tax Expenses Model - For VAT Reclaim and Corporation Tax Deductions
+model TaxExpense {
+  id                String            @id @default(cuid())
+  taxRecordId       String?
+  
+  // Expense Details
+  description       String
+  category          ExpenseCategory
+  amount            Decimal           @db.Decimal(10, 2)
+  vatAmount         Decimal           @db.Decimal(10, 2) @default(0)
+  vatRate           Decimal           @db.Decimal(5, 4) @default(0)
+  vatRateType       VatRateType       @default(standard)
+  
+  // VAT Reclaim
+  isVATReclaimable  Boolean           @default(true)
+  vatReclaimStatus  VatReclaimStatus  @default(eligible)
+  
+  // Corporation Tax
+  isDeductible      Boolean           @default(true)
+  deductionCategory DeductionCategory @default(general)
+  
+  // Dates
+  expenseDate       DateTime
+  receiptDate       DateTime?
+  
+  // Supplier Details
+  supplierName      String?
+  supplierVATNumber String?
+  
+  // Receipt/Invoice
+  receiptNumber     String?
+  receiptUrl        String?
+  
+  // Status
+  status            ExpenseStatus     @default(pending)
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  
+  // Metadata
+  notes             String?
+  metadata          Json              @default("{}")
+  
+  // Audit Fields
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String
+  updatedBy         String?
+  
+  // Relations
+  taxRecord         TaxRecord?        @relation(fields: [taxRecordId], references: [id])
+  
+  @@index([taxRecordId])
+  @@index([expenseDate])
+  @@index([category])
+  @@index([isVATReclaimable])
+  @@index([status])
+}
+
+// Company Tax Settings Model
+model CompanyTaxSettings {
+  id                        String            @id @default(cuid())
+  
+  // Company Details
+  companyName               String
+  companyNumber             String?           @unique
+  vatRegistrationNumber     String?           @unique
+  corporationTaxUTR         String?           @unique
+  
+  // VAT Settings
+  isVATRegistered           Boolean           @default(false)
+  vatRegistrationDate       DateTime?
+  vatAccountingScheme       VatAccountingScheme @default(standard)
+  vatReturnFrequency        VatReturnFrequency @default(quarterly)
+  
+  // Corporation Tax Settings
+  accountingPeriodStart     DateTime?
+  accountingPeriodEnd       DateTime?
+  corporationTaxRate        Decimal           @db.Decimal(5, 4) @default(0.19)
+  
+  // Tax Thresholds
+  vatRegistrationThreshold  Decimal           @db.Decimal(10, 2) @default(85000)
+  corporationTaxThreshold   Decimal           @db.Decimal(10, 2) @default(50000)
+  
+  // HMRC Integration
+  hmrcClientId              String?
+  hmrcClientSecret          String?
+  hmrcAccessToken           String?
+  hmrcRefreshToken          String?
+  hmrcTokenExpiry           DateTime?
+  
+  // Notification Settings
+  emailNotifications        Boolean           @default(true)
+  notificationEmail         String?
+  deadlineReminderDays      Int               @default(14)
+  
+  // Status
+  isActive                  Boolean           @default(true)
+  
+  // Metadata
+  metadata                  Json              @default("{}")
+  
+  // Audit Fields
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+  createdBy                 String
+  updatedBy                 String?
+  
+  @@index([vatRegistrationNumber])
+  @@index([isVATRegistered])
+  @@index([isActive])
+}
+
+// Tax Deadlines Model
+model TaxDeadline {
+  id                String            @id @default(cuid())
+  
+  // Deadline Details
+  deadlineType      TaxDeadlineType
+  title             String
+  description       String?
+  
+  // Dates
+  dueDate           DateTime
+  submissionDate    DateTime?
+  paymentDate       DateTime?
+  
+  // Status
+  status            DeadlineStatus    @default(upcoming)
+  isCompleted       Boolean           @default(false)
+  
+  // Tax Period
+  taxYear           Int
+  taxPeriod         String?
+  
+  // Reminders
+  reminderSent      Boolean           @default(false)
+  reminderDate      DateTime?
+  
+  // Metadata
+  notes             String?
+  metadata          Json              @default("{}")
+  
+  // Audit Fields
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String
+  updatedBy         String?
+  
+  @@index([dueDate])
+  @@index([deadlineType])
+  @@index([status])
+  @@index([taxYear])
+}
+
+// Tax Compliance Log Model
+model TaxComplianceLog {
+  id                String            @id @default(cuid())
+  
+  // Compliance Check
+  checkType         ComplianceCheckType
+  checkDate         DateTime          @default(now())
+  
+  // Results
+  isCompliant       Boolean
+  complianceScore   Int               // 0-100
+  issues            Json              @default("[]")
+  recommendations   Json              @default("[]")
+  
+  // Details
+  description       String?
+  details           Json              @default("{}")
+  
+  // Audit Fields
+  createdAt         DateTime          @default(now())
+  createdBy         String
+  
+  @@index([checkType])
+  @@index([checkDate])
+  @@index([isCompliant])
+}
+
+// Tax management enums
+enum VatRateType {
+  standard
+  reduced
+  zero
+  exempt
+}
+
+enum PaymentMethod {
+  stripe
+  paypal
+  bank_transfer
+  cash
+  cheque
+  other
+}
+
+enum TaxType {
+  vat
+  corporation_tax
+  income_tax
+  national_insurance
+  other
+}
+
+enum FilingStatus {
+  pending
+  in_progress
+  submitted
+  accepted
+  rejected
+  amended
+}
+
+enum ExpenseCategory {
+  fuel
+  vehicle_maintenance
+  insurance
+  office_supplies
+  software
+  marketing
+  professional_services
+  travel
+  meals
+  accommodation
+  equipment
+  training
+  other
+}
+
+enum VatReclaimStatus {
+  eligible
+  ineligible
+  pending_review
+  claimed
+  rejected
+}
+
+enum DeductionCategory {
+  general
+  capital_allowance
+  staff_costs
+  vehicle_costs
+  office_costs
+  professional_fees
+  other
+}
+
+enum ExpenseStatus {
+  pending
+  verified
+  rejected
+  claimed
+}
+
+enum VatAccountingScheme {
+  standard
+  flat_rate
+  cash_accounting
+  annual_accounting
+}
+
+enum VatReturnFrequency {
+  monthly
+  quarterly
+  annually
+}
+
+enum TaxDeadlineType {
+  vat_submission
+  vat_payment
+  corporation_tax_payment
+  corporation_tax_return
+  payroll_submission
+  payroll_payment
+  other
+}
+
+enum DeadlineStatus {
+  upcoming
+  due_soon
+  overdue
+  completed
+  cancelled
+}
+
+enum ComplianceCheckType {
+  vat_registration
+  mtd_compliance
+  record_keeping
+  payment_deadlines
+  vat_rate_application
+  corporation_tax_compliance
+  overall_compliance
 }
 
 model VisitorSession {

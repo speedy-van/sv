@@ -260,5 +260,5 @@ Assuming 50% single orders, 50% multi-drop:
 ---
 
 **Analysis Date:** October 12, 2025  
-**Analyst:** Manus AI
+**Analyst:** Ahmad Alwakai
 

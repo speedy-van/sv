@@ -10,8 +10,9 @@ import {
   VStack,
   HStack,
   Icon,
-  useColorModeValue,
   Badge,
+  LinkBox,
+  LinkOverlay,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import {
@@ -21,10 +22,10 @@ import {
   FiFileText,
   FiArrowRight,
   FiDollarSign,
-  FiTruck,
   FiPackage,
   FiUserCheck,
   FiMessageSquare,
+  FiActivity,
 } from 'react-icons/fi';
 
 interface SettingsCardProps {
@@ -48,7 +49,7 @@ function SettingsCard({
   const hoverBg = 'bg.surface.hover';
 
   return (
-    <NextLink href={href}>
+    <LinkBox>
       <Card
         bg={cardBg}
         border="1px solid"
@@ -73,9 +74,11 @@ function SettingsCard({
               )}
             </HStack>
             <Box flex={1}>
-              <Heading size="md" mb={2}>
-                {title}
-              </Heading>
+              <LinkOverlay as={NextLink} href={href}>
+                <Heading size="md" mb={2}>
+                  {title}
+                </Heading>
+              </LinkOverlay>
               <Text color="text.secondary" fontSize="sm">
                 {description}
               </Text>
@@ -86,7 +89,7 @@ function SettingsCard({
           </VStack>
         </CardBody>
       </Card>
-    </NextLink>
+    </LinkBox>
   );
 }
 
@@ -155,6 +158,14 @@ export default function AdminSettings() {
       href: '/admin/settings/legal',
       icon: FiFileText,
       badge: 'GDPR',
+    },
+    {
+      title: 'Tax Management',
+      description:
+        'Comprehensive tax management system with VAT returns, Corporation Tax, compliance monitoring, and HMRC integration.',
+      href: '/admin/settings/tax',
+      icon: FiActivity,
+      badge: 'UK Compliant',
     },
   ];
 

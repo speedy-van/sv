@@ -211,5 +211,5 @@ LOVESPACE       AnyVan            Removals
 7. Shiply - Platform pricing model
 
 **Analysis Date:** October 12, 2025  
-**Analyst:** Manus AI
+**Analyst:** Ahmad Alwakai
 

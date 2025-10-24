@@ -2,7 +2,7 @@
 
 **Document Version:** 1.0  
 **Date:** October 12, 2025  
-**Prepared by:** Manus AI  
+**Prepared by:** Ahmad Alwakai  
 **Company:** Speedy Van Removals Ltd (SC865658)
 
 ---
@@ -1208,6 +1208,6 @@ For questions or assistance with implementation, contact your digital marketing 
 
 ---
 
-**Prepared by Manus AI**  
+**Prepared by Ahmad Alwakai**  
 *Professional Business Optimization Services*
 

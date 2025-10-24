@@ -476,7 +476,7 @@ All requirements met:
 
 ---
 
-**Created by**: Manus AI Assistant
+**Created by**: Ahmad Alwakai
 **Date**: October 19, 2025
 **Project**: Speedy Van Driver iOS App
 

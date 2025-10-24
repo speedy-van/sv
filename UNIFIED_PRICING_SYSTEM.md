@@ -496,7 +496,7 @@ The unified pricing system now intelligently handles both single orders and mult
 
 ---
 
-**Prepared by:** Manus AI  
+**Prepared by:** Ahmad Alwakai  
 **Date:** 12 October 2025  
 **Version:** 1.0.0
 

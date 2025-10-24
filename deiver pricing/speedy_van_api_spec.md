@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date:** October 4, 2025
-**Author:** Manus AI
+**Author:** Ahmad Alwakai
 
 ## Overview
 
