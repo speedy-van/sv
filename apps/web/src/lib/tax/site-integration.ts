@@ -81,7 +81,7 @@ export class SiteDataIntegrationService {
             lte: periodEnd
           },
           status: {
-            in: ['completed', 'confirmed', 'in_progress']
+            in: ['COMPLETED', 'CONFIRMED']
           }
         },
         include: {
@@ -93,7 +93,7 @@ export class SiteDataIntegrationService {
       });
 
       return bookings.map(booking => {
-        const totalPrice = Number(booking.totalPrice);
+        const totalPrice = Number(booking.totalGBP / 100); // Convert pence to pounds
         const vatCalculation = taxCalculator.calculateVAT(
           totalPrice,
           VatRateType.STANDARD,
@@ -103,7 +103,7 @@ export class SiteDataIntegrationService {
 
         return {
           bookingId: booking.id,
-          bookingCode: booking.bookingCode,
+          bookingCode: booking.reference,
           customerEmail: booking.customerEmail,
           customerName: booking.customerName,
           totalPrice: vatCalculation.gross,
@@ -113,7 +113,7 @@ export class SiteDataIntegrationService {
           vatRateType: vatCalculation.rateType,
           serviceDate: booking.scheduledAt,
           status: booking.status,
-          paymentStatus: booking.paymentStatus
+          paymentStatus: 'pending' // TODO: add paymentStatus to Booking model
         };
       });
 
@@ -137,10 +137,10 @@ export class SiteDataIntegrationService {
             gte: periodStart,
             lte: periodEnd
           },
-          status: 'succeeded'
+          status: 'paid'
         },
         include: {
-          booking: true
+          Booking: true
         },
         orderBy: {
           createdAt: 'asc'
@@ -150,11 +150,11 @@ export class SiteDataIntegrationService {
       return payments.map(payment => ({
         paymentId: payment.id,
         bookingId: payment.bookingId,
-        amount: Number(payment.amount),
-        paymentMethod: payment.paymentMethod,
+        amount: Number(payment.amount / 100), // Convert pence to pounds
+        paymentMethod: payment.provider,
         paymentDate: payment.createdAt,
         status: payment.status,
-        stripePaymentIntentId: payment.stripePaymentIntentId || undefined
+        stripePaymentIntentId: payment.intentId || undefined
       }));
 
     } catch (error) {
@@ -171,10 +171,10 @@ export class SiteDataIntegrationService {
       const customer = await prisma.user.findUnique({
         where: { email: customerEmail },
         include: {
-          bookings: {
+          Booking: {
             where: {
               status: {
-                in: ['completed', 'confirmed']
+                in: ['COMPLETED', 'CONFIRMED']
               }
             }
           }
@@ -185,14 +185,14 @@ export class SiteDataIntegrationService {
         return null;
       }
 
-      const totalSpent = customer.bookings.reduce(
-        (sum, booking) => sum + Number(booking.totalPrice),
+      const totalSpent = customer.Booking.reduce(
+        (sum: number, booking) => sum + Number(booking.totalGBP / 100),
         0
       );
 
-      const totalVATPaid = customer.bookings.reduce((sum, booking) => {
+      const totalVATPaid = customer.Booking.reduce((sum: number, booking) => {
         const vatCalc = taxCalculator.calculateVAT(
-          Number(booking.totalPrice),
+          Number(booking.totalGBP / 100),
           VatRateType.STANDARD,
           false,
           true
@@ -200,7 +200,7 @@ export class SiteDataIntegrationService {
         return sum + vatCalc.vat;
       }, 0);
 
-      const lastBooking = customer.bookings.sort(
+      const lastBooking = customer.Booking.sort(
         (a, b) => b.scheduledAt.getTime() - a.scheduledAt.getTime()
       )[0];
 
@@ -211,7 +211,7 @@ export class SiteDataIntegrationService {
         isVATRegistered: false, // TODO: Add VAT registration field to user model
         totalSpent,
         totalVATPaid,
-        bookingCount: customer.bookings.length,
+        bookingCount: customer.Booking.length,
         lastBookingDate: lastBooking?.scheduledAt
       };
 
@@ -287,7 +287,8 @@ export class SiteDataIntegrationService {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
         include: {
-          customer: true
+          customer: true,
+          driver: true
         }
       });
 
@@ -305,7 +306,7 @@ export class SiteDataIntegrationService {
       }
 
       // Calculate VAT breakdown
-      const totalPrice = Number(booking.totalPrice);
+      const totalPrice = Number(booking.totalGBP / 100); // Convert pence to pounds
       const vatCalculation = taxCalculator.calculateVAT(
         totalPrice,
         VatRateType.STANDARD,
@@ -334,17 +335,10 @@ export class SiteDataIntegrationService {
           grossAmount: vatCalculation.gross,
           vatRate: vatCalculation.rate,
           vatRateType: vatCalculation.rateType,
-          currency: 'GBP',
-          status: 'issued',
-          paymentStatus: booking.paymentStatus === 'paid' ? 'paid' : 'pending',
+          status: 'SENT',
+          paymentStatus: booking.paidAt ? 'paid' : 'unpaid',
           vatRegistrationNumber: taxSettings?.vatRegistrationNumber,
-          companyName: taxSettings?.companyName || 'Speedy Van',
-          companyAddress: process.env.NEXT_PUBLIC_COMPANY_ADDRESS || '',
-          customerName: booking.customerName,
-          customerEmail: booking.customerEmail,
-          customerAddress: `${booking.pickupAddress}, ${booking.pickupPostcode}`,
-          notes: `Van delivery service - ${booking.bookingCode}`,
-          paymentTerms: 'Payment due within 30 days',
+          notes: `Van delivery service - ${booking.reference}\nCustomer: ${booking.customerName} (${booking.customerEmail})`,
           createdBy: 'system'
         }
       });
@@ -353,7 +347,7 @@ export class SiteDataIntegrationService {
       await prisma.invoiceItem.create({
         data: {
           invoiceId: invoice.id,
-          description: `Van Delivery Service - ${booking.vehicleType}`,
+          description: `Van Delivery Service${booking.driver?.vehicleType ? ` - ${booking.driver.vehicleType}` : ''}`,
           quantity: 1,
           unitPrice: vatCalculation.net,
           netAmount: vatCalculation.net,
@@ -364,7 +358,7 @@ export class SiteDataIntegrationService {
         }
       });
 
-      console.log(`Created tax invoice ${invoiceNumber} for booking ${booking.bookingCode}`);
+      console.log(`Created tax invoice ${invoiceNumber} for booking ${booking.reference}`);
       return invoice.id;
 
     } catch (error) {
@@ -392,7 +386,7 @@ export class SiteDataIntegrationService {
             lte: periodEnd
           },
           status: {
-            in: ['completed', 'confirmed']
+            in: ['COMPLETED', 'CONFIRMED']
           }
         }
       });
@@ -487,19 +481,19 @@ export class SiteDataIntegrationService {
             lt: tomorrow
           },
           status: {
-            in: ['completed', 'confirmed']
+            in: ['COMPLETED', 'CONFIRMED']
           }
         }
       });
 
       const todayRevenue = todayBookingsData.reduce(
-        (sum, b) => sum + Number(b.totalPrice),
+        (sum, b) => sum + Number(b.totalGBP / 100),
         0
       );
 
       const todayVAT = todayBookingsData.reduce((sum, b) => {
         const vatCalc = taxCalculator.calculateVAT(
-          Number(b.totalPrice),
+          Number(b.totalGBP / 100),
           VatRateType.STANDARD,
           false,
           true
@@ -507,24 +501,27 @@ export class SiteDataIntegrationService {
         return sum + vatCalc.vat;
       }, 0);
 
+      // Get unpaid bookings (where paidAt is null)
       const pendingPayments = await prisma.booking.count({
         where: {
-          paymentStatus: {
-            in: ['pending', 'failed']
+          paidAt: null,
+          status: {
+            notIn: ['CANCELLED', 'DRAFT']
           }
         }
       });
 
       const pendingPaymentsData = await prisma.booking.findMany({
         where: {
-          paymentStatus: {
-            in: ['pending', 'failed']
+          paidAt: null,
+          status: {
+            notIn: ['CANCELLED', 'DRAFT']
           }
         }
       });
 
       const pendingPaymentsAmount = pendingPaymentsData.reduce(
-        (sum, b) => sum + Number(b.totalPrice),
+        (sum, b) => sum + Number(b.totalGBP / 100),
         0
       );
 
