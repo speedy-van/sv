@@ -24,6 +24,7 @@ import {
   Collapse,
   useDisclosure,
   Heading,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { m, isValidMotionProp } from 'framer-motion';
 import { chakra, shouldForwardProp } from '@chakra-ui/react';
@@ -42,13 +43,63 @@ import {
   FiHeart,
   FiAward,
   FiUsers,
+  FiCalendar,
+  FiShield,
+  FiPackage,
+  FiHome,
 } from 'react-icons/fi';
+
+// Collapsible Footer Section Component for Mobile
+interface FooterSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+const FooterSection: React.FC<FooterSectionProps> = ({ title, children, defaultOpen = false }) => {
+  const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: defaultOpen });
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  if (!isMobile) {
+    return (
+      <Box>
+        <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+          {title}
+        </Heading>
+        {children}
+      </Box>
+    );
+  }
+
+  return (
+    <Box borderBottom="1px solid" borderColor="whiteAlpha.200" py={4}>
+      <Button
+        onClick={onToggle}
+        w="full"
+        justifyContent="space-between"
+        variant="ghost"
+        color="white"
+        fontWeight="bold"
+        fontSize="md"
+        _hover={{ bg: 'whiteAlpha.100' }}
+        _active={{ bg: 'whiteAlpha.200' }}
+        rightIcon={<Icon as={isOpen ? FiChevronUp : FiChevronDown} />}
+      >
+        {title}
+      </Button>
+      <Collapse in={isOpen} animateOpacity>
+        <Box pt={4} pb={2}>
+          {children}
+        </Box>
+      </Collapse>
+    </Box>
+  );
+};
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { isOpen: isExpanded, onToggle } = useDisclosure();
   const toast = useToast();
 
   // Mount effect to prevent hydration mismatch
@@ -56,43 +107,38 @@ const Footer: React.FC = () => {
     setIsMounted(true);
   }, []);
 
-  const bgColor = useColorModeValue('white', 'gray.900');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
-  const cardBg = useColorModeValue('gray.50', 'gray.800');
-
   const footerLinks = {
     services: [
-      { label: 'House Moving', href: '/services/house-moving', icon: FiTruck },
+      { label: 'House Moving', href: '/services/house-moving', icon: FiHome },
       { label: 'Office Relocation', href: '/services/office', icon: FiUsers },
-      { label: 'Furniture Delivery', href: '/services/furniture', icon: FiTruck },
+      { label: 'Furniture Delivery', href: '/services/furniture', icon: FiPackage },
       { label: 'Student Moving', href: '/services/student', icon: FiAward },
     ],
     company: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Our Services', href: '/services' },
-      { label: 'Pricing', href: '/pricing' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'About Us', href: '/about', icon: FiUsers },
+      { label: 'Our Services', href: '/services', icon: FiTruck },
+      { label: 'Pricing', href: '/pricing', icon: FiCalendar },
+      { label: 'Contact', href: '/contact', icon: FiMail },
     ],
     support: [
-      { label: 'Help Center', href: '/help' },
-      { label: 'Track Your Move', href: '/track' },
-      { label: 'FAQ', href: '/faq' },
-      { label: 'Insurance Info', href: '/insurance' },
+      { label: 'Track Your Move', href: '/track', icon: FiMapPin },
+      { label: 'How It Works', href: '/how-it-works', icon: FiShield },
+      { label: 'Moving Checklist', href: '/checklist', icon: FiCalendar },
+      { label: 'Moving Tips', href: '/moving-tips', icon: FiHeart },
     ],
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      { label: 'Cookie Policy', href: '/cookies' },
-      { label: 'GDPR', href: '/gdpr' },
+      { label: 'Cookie Policy', href: '/legal/cookies' },
+      { label: 'Cancellation Policy', href: '/cancellation' },
     ],
   };
 
   const socialLinks = [
-    { icon: FiFacebook, href: 'https://facebook.com/speedyvan', label: 'Facebook', color: 'blue.600' },
-    { icon: FiTwitter, href: 'https://twitter.com/speedyvan', label: 'Twitter', color: 'blue.400' },
-    { icon: FiInstagram, href: 'https://instagram.com/speedyvan', label: 'Instagram', color: 'pink.500' },
-    { icon: FiLinkedin, href: 'https://linkedin.com/company/speedyvan', label: 'LinkedIn', color: 'blue.700' },
+    { icon: FiFacebook, href: 'https://facebook.com/speedyvan', label: 'Facebook', color: '#1877F2' },
+    { icon: FiTwitter, href: 'https://twitter.com/speedyvan', label: 'Twitter', color: '#1DA1F2' },
+    { icon: FiInstagram, href: 'https://instagram.com/speedyvan', label: 'Instagram', color: '#E4405F' },
+    { icon: FiLinkedin, href: 'https://linkedin.com/company/speedyvan', label: 'LinkedIn', color: '#0077B5' },
   ];
 
 
@@ -152,354 +198,427 @@ const Footer: React.FC = () => {
 
   return (
     <MotionBox
-      bg={bgColor}
-      borderTop={`1px solid ${borderColor}`}
+      as="footer"
+      bg="gray.900"
+      color="white"
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 } as any}
     >
-      <Container maxW="container.xl" py={16}>
-        <Box>
-          {/* Newsletter Section */}
-          <MotionCard
-            bg="linear-gradient(135deg, neon.400, green.400)"
-            borderRadius="2xl"
-            p={8}
-            color="white"
-            textAlign="center"
-            mb={12}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 } as any}
-          >
-            <VStack spacing={6}>
-              <VStack spacing={2}>
-                <Icon as={FiHeart} boxSize={8} color="white" />
-                <Heading size="lg">Stay Updated with Speedy Van</Heading>
-                <Text fontSize="lg" opacity={0.9}>
-                  Get the latest news, tips, and exclusive offers delivered to your inbox.
-                </Text>
-              </VStack>
-
-              <Box as="form" onSubmit={handleNewsletterSubmit} w="full" maxW="md">
-                <InputGroup size="lg">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    bg="white"
-                    color="gray.800"
-                    border="none"
-                    borderRadius="xl"
-                    _placeholder={{ color: 'gray.500' }}
-                    _focus={{ boxShadow: '0 0 0 3px rgba(255,255,255,0.3)' }}
-                  />
-                  <InputRightElement width="auto" pr={2}>
-                    <Button
-                      type="submit"
-                      colorScheme="blue"
-                      size="sm"
-                      borderRadius="lg"
-                      isLoading={isSubmitting}
-                      loadingText="Subscribing..."
-                      leftIcon={<FiSend />}
-                    >
-                      Subscribe
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-              </Box>
-
-              <Text fontSize="sm" opacity={0.8}>
-                No spam, unsubscribe at any time. We respect your privacy.
+      {/* CTA Section with Gradient */}
+      <Box
+        bg="linear-gradient(135deg, #00C2FF 0%, #00D18F 100%)"
+        py={{ base: 12, md: 16 }}
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          opacity={0.1}
+          bgImage="radial-gradient(circle at 20% 50%, white 1px, transparent 1px)"
+          bgSize="40px 40px"
+        />
+        <Container maxW="container.xl" position="relative" zIndex={1}>
+          <VStack spacing={8} textAlign="center">
+            <VStack spacing={4}>
+              <Heading
+                size={{ base: 'xl', md: '2xl' }}
+                color="white"
+                fontWeight="bold"
+                maxW="800px"
+              >
+                Ready to Move? Get Your Free Quote Today!
+              </Heading>
+              <Text fontSize={{ base: 'lg', md: 'xl' }} color="whiteAlpha.900" maxW="600px">
+                Professional, reliable, and affordable moving services across the UK.
+                Book in minutes and enjoy stress-free moving!
               </Text>
             </VStack>
-          </MotionCard>
 
-          {/* Main Footer Content */}
-          <SimpleGrid 
-            columns={{ base: 1, sm: 2, md: 3, lg: 5 }} 
-            spacing={8}
-            w="full"
-            mb={12}
-            className="footer-main-grid"
-          >
-            {/* Company Info */}
-            <Box minW={0}>
-              <HStack spacing={4} mb={6}>
-                <Box
-                  w="60px"
-                  h="60px"
-                  bg="linear-gradient(135deg, #00C2FF, #00D18F)"
-                  borderRadius="xl"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  color="white"
-                  fontSize="2xl"
-                  fontWeight="bold"
-                  boxShadow="0 8px 25px rgba(0,194,255,0.3)"
-                >
-                  SV
-                </Box>
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="xl" fontWeight="bold" color="text.primary">
-                    Speedy Van
-                  </Text>
-                  <Text fontSize="sm" color="text.secondary">
-                    Professional Moving Services
-                  </Text>
-                  <Badge colorScheme="green" variant="subtle" borderRadius="full">
-                    Trusted Nationwide
-                  </Badge>
-                </VStack>
+            <HStack spacing={4} flexWrap="wrap" justify="center">
+              <Button
+                as={Link}
+                href="/booking-luxury"
+                size="lg"
+                bg="white"
+                color="gray.900"
+                px={8}
+                py={6}
+                fontSize="lg"
+                fontWeight="bold"
+                borderRadius="xl"
+                leftIcon={<Icon as={FiTruck} boxSize={5} />}
+                _hover={{
+                  bg: 'whiteAlpha.900',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                }}
+                transition="all 0.3s ease"
+                boxShadow="0 10px 30px rgba(0,0,0,0.15)"
+              >
+                Book Now
+              </Button>
+
+              <Button
+                as={Link}
+                href="/contact"
+                size="lg"
+                variant="outline"
+                borderColor="white"
+                color="white"
+                px={8}
+                py={6}
+                fontSize="lg"
+                fontWeight="bold"
+                borderRadius="xl"
+                borderWidth="2px"
+                leftIcon={<Icon as={FiPhone} boxSize={5} />}
+                _hover={{
+                  bg: 'whiteAlpha.200',
+                  transform: 'translateY(-2px)',
+                }}
+                transition="all 0.3s ease"
+              >
+                Call Us Now
+              </Button>
+            </HStack>
+
+            <HStack spacing={6} fontSize="sm" color="whiteAlpha.900">
+              <HStack spacing={2}>
+                <Icon as={FiShield} />
+                <Text>Fully Insured</Text>
               </HStack>
-              
-              <Text fontSize="sm" color={textColor} lineHeight="tall" mb={6}>
-                Your trusted partner for professional moving services across the UK. 
-                Fast, reliable, and fully insured with over 50,000 happy customers.
-              </Text>
+              <HStack spacing={2}>
+                <Icon as={FiAward} />
+                <Text>50K+ Happy Customers</Text>
+              </HStack>
+              <HStack spacing={2} display={{ base: 'none', md: 'flex' }}>
+                <Icon as={FiHeart} />
+                <Text>5-Star Rated</Text>
+              </HStack>
+            </HStack>
+          </VStack>
+        </Container>
+      </Box>
 
-              {/* Enhanced Contact Info */}
-              <VStack align="start" spacing={3}>
-                <HStack spacing={3} p={3} bg={cardBg} borderRadius="xl" w="full">
-                  <Box
-                    w="40px"
-                    h="40px"
-                    bg="blue.100"
-                    color="blue.600"
-                    borderRadius="lg"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <FiPhone size={20} />
-                  </Box>
-                  <VStack align="start" spacing={0}>
-                    <Text fontSize="xs" color="text.secondary">Phone</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="text.primary">
-                      +44 7901846297
-                    </Text>
-                  </VStack>
-                </HStack>
-
-                <HStack spacing={3} p={3} bg={cardBg} borderRadius="xl" w="full">
-                  <Box
-                    w="40px"
-                    h="40px"
-                    bg="green.100"
-                    color="green.600"
-                    borderRadius="lg"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <FiMail size={20} />
-                  </Box>
-                  <VStack align="start" spacing={0}>
-                    <Text fontSize="xs" color="text.secondary">Email</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="text.primary">
-                      support@speedy-van.co.uk
-                    </Text>
-                  </VStack>
-                </HStack>
-
-                <HStack spacing={3} p={3} bg={cardBg} borderRadius="xl" w="full">
-                  <Box
-                    w="40px"
-                    h="40px"
-                    bg="purple.100"
-                    color="purple.600"
-                    borderRadius="lg"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <FiMapPin size={20} />
-                  </Box>
-                  <VStack align="start" spacing={0}>
-                    <Text fontSize="xs" color="text.secondary">Address</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="text.primary">
-                      Office 2.18 1 Barrack St, Hamilton ML3 0HS
-                    </Text>
-                  </VStack>
-                </HStack>
-              </VStack>
-            </Box>
-
-            {/* Services */}
-            <Box minW={0}>
-              <Text fontWeight="bold" fontSize="lg" color="text.primary" mb={6}>
-                Our Services
-              </Text>
+      {/* Main Footer Content - Dark Background */}
+      <Container maxW="container.xl" py={{ base: 12, md: 16 }}>
+        {/* Desktop: Grid Layout | Mobile: Accordion */}
+        <Box display={{ base: 'none', md: 'block' }} mb={12}>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={10}>
+            {/* Services Column */}
+            <Box>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                OUR SERVICES
+              </Heading>
               <VStack align="start" spacing={3}>
                 {footerLinks.services.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
-                    p={2}
-                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
                     _hover={{
-                      bg: cardBg,
-                      color: 'neon.500',
+                      color: '#00D18F',
                       textDecoration: 'none',
                       transform: 'translateX(4px)',
                     }}
                     transition="all 0.2s ease"
                   >
-                    <HStack spacing={3}>
-                      <Icon as={link.icon} boxSize={4} color="neon.500" />
-                      <Text fontSize="sm" fontWeight="medium">
-                        {link.label}
-                      </Text>
-                    </HStack>
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    {link.label}
                   </Link>
                 ))}
               </VStack>
             </Box>
 
-            {/* Company */}
-            <Box minW={0}>
-              <Text fontWeight="bold" fontSize="lg" color="text.primary" mb={6}>
-                Company
-              </Text>
+            {/* Company Column */}
+            <Box>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                COMPANY
+              </Heading>
               <VStack align="start" spacing={3}>
                 {footerLinks.company.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
-                    fontSize="sm"
-                    color={textColor}
-                    p={2}
-                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
                     _hover={{
-                      color: 'neon.500',
+                      color: '#00D18F',
                       textDecoration: 'none',
-                      bg: cardBg,
                       transform: 'translateX(4px)',
                     }}
                     transition="all 0.2s ease"
                   >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
                     {link.label}
                   </Link>
                 ))}
               </VStack>
             </Box>
 
-            {/* Support */}
-            <Box minW={0}>
-              <Text fontWeight="bold" fontSize="lg" color="text.primary" mb={6}>
-                Support
-              </Text>
+            {/* Support Column */}
+            <Box>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                SUPPORT
+              </Heading>
               <VStack align="start" spacing={3}>
                 {footerLinks.support.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
-                    fontSize="sm"
-                    color={textColor}
-                    p={2}
-                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
                     _hover={{
-                      color: 'neon.500',
+                      color: '#00D18F',
                       textDecoration: 'none',
-                      bg: cardBg,
                       transform: 'translateX(4px)',
                     }}
                     transition="all 0.2s ease"
                   >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
                     {link.label}
                   </Link>
                 ))}
               </VStack>
             </Box>
 
-            {/* Legal */}
-            <Box minW={0}>
-              <Text fontWeight="bold" fontSize="lg" color="text.primary" mb={6}>
-                Legal
-              </Text>
-              <VStack align="start" spacing={3}>
-                {footerLinks.legal.map((link) => (
+            {/* Contact Info Column */}
+            <Box>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                CONTACT US
+              </Heading>
+              <VStack align="start" spacing={4}>
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiPhone} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Phone
+                    </Text>
+                  </HStack>
                   <Link
-                    key={link.label}
-                    href={link.href}
-                    fontSize="sm"
-                    color={textColor}
-                    p={2}
-                    borderRadius="lg"
-                    _hover={{
-                      color: 'neon.500',
-                      textDecoration: 'none',
-                      bg: cardBg,
-                      transform: 'translateX(4px)',
-                    }}
-                    transition="all 0.2s ease"
+                    href="tel:+447901846297"
+                    fontSize="md"
+                    color="white"
+                    fontWeight="medium"
+                    _hover={{ color: '#00D18F' }}
                   >
-                    {link.label}
+                    07901846297
                   </Link>
-                ))}
+                </VStack>
+
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiMail} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Email
+                    </Text>
+                  </HStack>
+                  <Link
+                    href="mailto:support@speedy-van.co.uk"
+                    fontSize="md"
+                    color="white"
+                    fontWeight="medium"
+                    _hover={{ color: '#00D18F' }}
+                  >
+                    support@speedy-van.co.uk
+                  </Link>
+                </VStack>
+
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiMapPin} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Address
+                    </Text>
+                  </HStack>
+                  <Text fontSize="sm" color="whiteAlpha.800" lineHeight="tall">
+                    140 Charles Street,<br />
+                    Glasgow City, G21 2QB
+                  </Text>
+                </VStack>
               </VStack>
             </Box>
           </SimpleGrid>
+        </Box>
 
-          <Divider borderColor={borderColor} mb={12} />
+        {/* Mobile: Accordion Layout */}
+        <Box display={{ base: 'block', md: 'none' }} mb={8}>
+          <FooterSection title="OUR SERVICES" defaultOpen>
+            <VStack align="start" spacing={3}>
+              {footerLinks.services.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  display="flex"
+                  alignItems="center"
+                  gap={3}
+                  fontSize="md"
+                  color="whiteAlpha.800"
+                  _hover={{ color: '#00D18F' }}
+                >
+                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                  {link.label}
+                </Link>
+              ))}
+            </VStack>
+          </FooterSection>
 
-          {/* Bottom Footer */}
-          <Flex
-            justify="space-between"
-            align={isMounted ? "center" : undefined}
-            direction={{ base: 'column', md: 'row' }}
-            gap={{ base: 6, md: 0 }}
-            className="footer-bottom"
-          >
-            <VStack align={isMounted ? { base: 'center', md: 'start' } : undefined} spacing={2}>
-              <Text fontSize="sm" color={textColor}>
+          <FooterSection title="COMPANY">
+            <VStack align="start" spacing={3}>
+              {footerLinks.company.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  display="flex"
+                  alignItems="center"
+                  gap={3}
+                  fontSize="md"
+                  color="whiteAlpha.800"
+                  _hover={{ color: '#00D18F' }}
+                >
+                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                  {link.label}
+                </Link>
+              ))}
+            </VStack>
+          </FooterSection>
+
+          <FooterSection title="SUPPORT">
+            <VStack align="start" spacing={3}>
+              {footerLinks.support.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  display="flex"
+                  alignItems="center"
+                  gap={3}
+                  fontSize="md"
+                  color="whiteAlpha.800"
+                  _hover={{ color: '#00D18F' }}
+                >
+                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                  {link.label}
+                </Link>
+              ))}
+            </VStack>
+          </FooterSection>
+
+          <FooterSection title="CONTACT US">
+            <VStack align="start" spacing={4}>
+              <VStack align="start" spacing={1}>
+                <HStack spacing={2} color="#00D18F">
+                  <Icon as={FiPhone} boxSize={4} />
+                  <Text fontSize="xs" fontWeight="bold">PHONE</Text>
+                </HStack>
+                <Link href="tel:+447901846297" color="white" fontSize="md">
+                  07901846297
+                </Link>
+              </VStack>
+              <VStack align="start" spacing={1}>
+                <HStack spacing={2} color="#00D18F">
+                  <Icon as={FiMail} boxSize={4} />
+                  <Text fontSize="xs" fontWeight="bold">EMAIL</Text>
+                </HStack>
+                <Link href="mailto:support@speedy-van.co.uk" color="white" fontSize="md">
+                  support@speedy-van.co.uk
+                </Link>
+              </VStack>
+            </VStack>
+          </FooterSection>
+        </Box>
+
+        <Divider borderColor="whiteAlpha.200" my={8} />
+
+        {/* Bottom Section */}
+        <Flex
+          direction={{ base: 'column', md: 'row' }}
+          justify="space-between"
+          align="center"
+          gap={6}
+        >
+          {/* Left Side: Legal Links & Copyright */}
+          <VStack align={{ base: 'center', md: 'start' }} spacing={3} flex={1}>
+            <HStack spacing={4} flexWrap="wrap" justify={{ base: 'center', md: 'start' }}>
+              {footerLinks.legal.map((link, index) => (
+                <React.Fragment key={link.label}>
+                  <Link
+                    href={link.href}
+                    fontSize="sm"
+                    color="whiteAlpha.700"
+                    _hover={{ color: '#00D18F' }}
+                  >
+                    {link.label}
+                  </Link>
+                  {index < footerLinks.legal.length - 1 && (
+                    <Text color="whiteAlpha.400">·</Text>
+                  )}
+                </React.Fragment>
+              ))}
+            </HStack>
+
+            <VStack spacing={1} align={{ base: 'center', md: 'start' }}>
+              <Text fontSize="sm" color="whiteAlpha.700">
                 © {new Date().getFullYear()} Speedy Van. All rights reserved.
               </Text>
-              <Text fontSize="xs" color={textColor} opacity={0.8}>
-                SPEEDY VAN REMOVALS LTD · Company No. SC865658 · Registered in Scotland
+              <Text fontSize="xs" color="whiteAlpha.600">
+                SPEEDY VAN REMOVALS LTD · Company No. SC865658
               </Text>
-              <Text fontSize="xs" color={textColor} opacity={0.8}>
-                Made with ❤️ for reliable moving services across the UK
-              </Text>
-            </VStack>
-
-            {/* Enhanced Social Links */}
-            <VStack spacing={4}>
-              <Text fontSize="sm" fontWeight="medium" color="text.primary">
-                Follow Us
-              </Text>
-              <HStack spacing={4}>
-                {socialLinks.map((social, index) => (
-                  <Tooltip key={social.label} label={social.label} placement="top">
-                    <IconButton
-                      as={Link}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.label}
-                      icon={<Icon as={social.icon} boxSize={5} />}
-                      size="lg"
-                      variant="ghost"
-                      color={textColor}
-                      _hover={{
-                        color: social.color,
-                        transform: 'translateY(-2px)',
-                        bg: cardBg,
-                      }}
-                      transition="all 0.2s ease"
-                      borderRadius="xl"
-                    />
-                  </Tooltip>
-                ))}
+              <HStack spacing={1} fontSize="xs" color="whiteAlpha.600">
+                <Text>Made with</Text>
+                <Icon as={FiHeart} color="#E4405F" />
+                <Text>in the UK</Text>
               </HStack>
             </VStack>
-          </Flex>
-        </Box>
+          </VStack>
+
+          {/* Right Side: Social Media Icons */}
+          <VStack spacing={3}>
+            <Text fontSize="sm" color="white" fontWeight="bold">
+              FOLLOW US
+            </Text>
+            <HStack spacing={3}>
+              {socialLinks.map((social) => (
+                <Tooltip key={social.label} label={social.label} placement="top">
+                  <IconButton
+                    as={Link}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    icon={<Icon as={social.icon} boxSize={6} />}
+                    size="lg"
+                    variant="ghost"
+                    color="white"
+                    bg="whiteAlpha.100"
+                    _hover={{
+                      bg: social.color,
+                      transform: 'translateY(-4px) scale(1.1)',
+                      boxShadow: `0 8px 20px ${social.color}40`,
+                    }}
+                    transition="all 0.3s ease"
+                    borderRadius="lg"
+                  />
+                </Tooltip>
+              ))}
+            </HStack>
+          </VStack>
+        </Flex>
       </Container>
     </MotionBox>
   );
