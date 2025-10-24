@@ -16,6 +16,9 @@ import { prisma } from '@/lib/prisma';
 import { taxCalculator } from '@/lib/tax/calculator';
 import { taxDeadlineManager } from '@/lib/tax/deadline-manager';
 import { taxReportingSystem } from '@/lib/tax/reporting-system';
+import { siteDataIntegration } from '@/lib/tax/site-integration';
+import { aiTaxAnalyzer } from '@/lib/tax/ai-tax-analyzer';
+import { taxValidationService } from '@/lib/tax/validation-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,13 +36,35 @@ export async function GET(request: NextRequest) {
     const currentDate = new Date();
     const currentTaxPeriod = taxCalculator.getVATPeriod(currentDate, 'quarterly');
 
-    // Get VAT summary for current period
-    const vatRecord = await prisma.taxRecord.findFirst({
+    // Calculate period dates
+    const periodStart = new Date(currentDate.getFullYear(), Math.floor((currentDate.getMonth()) / 3) * 3, 1);
+    const periodEnd = new Date(periodStart);
+    periodEnd.setMonth(periodEnd.getMonth() + 3);
+    periodEnd.setDate(0); // Last day of previous month
+
+    // Get VAT summary for current period from site data
+    let vatRecord = await prisma.taxRecord.findFirst({
       where: {
         taxPeriod: currentTaxPeriod,
         taxType: 'vat'
       }
     });
+
+    // If no record exists, calculate from bookings
+    if (!vatRecord) {
+      const bookingsData = await siteDataIntegration.getBookingsForTaxPeriod(periodStart, periodEnd);
+      const totalVATCollected = bookingsData.reduce((sum, b) => sum + b.vatAmount, 0);
+      const totalSales = bookingsData.reduce((sum, b) => sum + b.netAmount, 0);
+      
+      // Create temporary record for display
+      vatRecord = {
+        netVATDue: totalVATCollected,
+        vatOnSales: totalVATCollected,
+        vatOnPurchases: 0,
+        totalSales: totalSales,
+        totalPurchases: 0
+      } as any;
+    }
 
     // Get company tax settings
     const taxSettings = await prisma.companyTaxSettings.findFirst({
@@ -135,6 +160,30 @@ export async function GET(request: NextRequest) {
       daysRemaining: Math.ceil((deadline.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     }));
 
+    // Get real-time stats from site
+    const realTimeStats = await siteDataIntegration.getRealTimeStats();
+
+    // Get AI insights if available
+    let aiInsights = null;
+    try {
+      const anomalyDetection = await aiTaxAnalyzer.detectAnomalies({
+        period: currentTaxPeriod,
+        revenue: Number(vatRecord?.totalSales || 0),
+        vatCollected: Number(vatRecord?.vatOnSales || 0),
+        vatReclaimed: Number(vatRecord?.vatOnPurchases || 0),
+        expenses: Number(vatRecord?.totalPurchases || 0),
+        transactions: recentInvoices.length
+      });
+      
+      aiInsights = {
+        anomalies: anomalyDetection.anomalies.slice(0, 3),
+        riskScore: anomalyDetection.overallRiskScore,
+        recommendations: anomalyDetection.recommendations.slice(0, 5)
+      };
+    } catch (error) {
+      console.log('AI insights unavailable:', error);
+    }
+
     // Prepare dashboard data
     const dashboardData = {
       vatSummary,
@@ -142,6 +191,8 @@ export async function GET(request: NextRequest) {
       compliance,
       recentTransactions,
       deadlines,
+      realTimeStats,
+      aiInsights,
       taxSettings: {
         isVATRegistered: taxSettings?.isVATRegistered || false,
         vatRegistrationNumber: taxSettings?.vatRegistrationNumber,
@@ -225,6 +276,39 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'Deadline marked as completed'
+        });
+
+      case 'sync_bookings':
+        // Sync bookings to tax invoices
+        const syncResult = await siteDataIntegration.batchSyncBookingsToInvoices(
+          new Date(data.periodStart),
+          new Date(data.periodEnd)
+        );
+
+        return NextResponse.json({
+          success: true,
+          data: syncResult,
+          message: `Synced ${syncResult.created} bookings to invoices`
+        });
+
+      case 'validate_vat':
+        // Validate VAT number
+        const vatValidation = await taxValidationService.validateVATNumberOnline(data.vatNumber);
+
+        return NextResponse.json({
+          success: true,
+          data: vatValidation,
+          message: vatValidation.isValid ? 'VAT number is valid' : 'VAT number validation failed'
+        });
+
+      case 'get_ai_insights':
+        // Get AI tax insights
+        const insights = await aiTaxAnalyzer.answerTaxQuery(data.query, data.context);
+
+        return NextResponse.json({
+          success: true,
+          data: { answer: insights },
+          message: 'AI insights generated'
         });
 
       default:

@@ -16,6 +16,7 @@ import { prisma } from '@/lib/prisma';
 import { taxCalculator, VatRateType } from '@/lib/tax/calculator';
 import { hmrcApiService } from '@/lib/tax/hmrc-api';
 import { taxReportingSystem } from '@/lib/tax/reporting-system';
+import { siteDataIntegration } from '@/lib/tax/site-integration';
 
 export async function GET(request: NextRequest) {
   try {
@@ -152,6 +153,9 @@ export async function POST(request: NextRequest) {
 
       case 'calculate_vat':
         return await calculateVATAmounts(data);
+
+      case 'auto_generate_return':
+        return await autoGenerateVATReturn(data, adminId);
 
       default:
         return NextResponse.json(
@@ -333,6 +337,79 @@ async function calculateVATAmounts(data: any) {
       success: true,
       data: calculation,
       message: 'VAT amounts calculated successfully'
+    });
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function autoGenerateVATReturn(data: any, adminId: string) {
+  try {
+    const { periodStart, periodEnd } = data;
+
+    // Get bookings data from site
+    const bookingsData = await siteDataIntegration.getBookingsForTaxPeriod(
+      new Date(periodStart),
+      new Date(periodEnd)
+    );
+
+    // Calculate VAT from bookings
+    const totalSales = bookingsData.reduce((sum, b) => sum + b.netAmount, 0);
+    const vatOnSales = bookingsData.reduce((sum, b) => sum + b.vatAmount, 0);
+
+    // Get expenses (if any)
+    const expenses = await prisma.taxExpense.findMany({
+      where: {
+        expenseDate: {
+          gte: new Date(periodStart),
+          lte: new Date(periodEnd)
+        },
+        isVATReclaimable: true
+      }
+    });
+
+    const totalPurchases = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const vatOnPurchases = expenses.reduce((sum, e) => sum + Number(e.vatAmount), 0);
+
+    const netVATDue = vatOnSales - vatOnPurchases;
+
+    // Generate period string
+    const period = taxCalculator.getVATPeriod(new Date(periodStart), 'quarterly');
+
+    // Create tax record
+    const taxRecord = await prisma.taxRecord.create({
+      data: {
+        taxYear: new Date(periodStart).getFullYear(),
+        taxPeriod: period,
+        periodStart: new Date(periodStart),
+        periodEnd: new Date(periodEnd),
+        taxType: 'vat',
+        totalSales,
+        totalPurchases,
+        vatOnSales,
+        vatOnPurchases,
+        netVATDue,
+        standardRateSales: totalSales,
+        standardRateVAT: vatOnSales,
+        reducedRateSales: 0,
+        reducedRateVAT: 0,
+        zeroRateSales: 0,
+        exemptSales: 0,
+        filingStatus: 'pending',
+        paymentStatus: 'unpaid',
+        createdBy: adminId
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        taxRecord,
+        bookingsCount: bookingsData.length,
+        expensesCount: expenses.length
+      },
+      message: `VAT return auto-generated from ${bookingsData.length} bookings`
     });
 
   } catch (error) {
