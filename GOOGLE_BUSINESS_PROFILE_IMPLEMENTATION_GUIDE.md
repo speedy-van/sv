@@ -41,7 +41,7 @@ export const GOOGLE_BUSINESS_PROFILE = {
     hideAddress: true,
   },
   contact: {
-    primaryPhone: '+447901846297',
+    primaryPhone: '+441202129746',
     email: 'support@speedy-van.co.uk',
   },
   description: `Speedy Van is a premium moving and delivery service...`,

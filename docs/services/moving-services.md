@@ -132,10 +132,10 @@ We serve the entire UK mainland with additional charges for distances over 100km
 ## Customer Support
 
 ### Contact Methods
-- **Phone**: +44 7901846297
+- **Phone**: +44 1202129746
 - **Email**: support@speedy-van.co.uk
 - **Live Chat**: Available on website
-- **WhatsApp**: +44 7901846297
+- **WhatsApp**: +44 1202129746
 
 ### Support Hours
 - **Monday-Friday**: 6:00 AM - 10:00 PM

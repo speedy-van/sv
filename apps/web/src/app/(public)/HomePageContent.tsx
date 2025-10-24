@@ -728,7 +728,7 @@ export default function HomePageContent() {
                   {
                     icon: FaPhone,
                     title: 'Call Us',
-                    contact: '07901846297',
+                    contact: '01202129746',
                     action: 'Call Now',
                   },
                   {

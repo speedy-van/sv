@@ -281,7 +281,7 @@ pnpm start
 ## 📞 Support
 
 ### Customer Support
-- **Phone**: 07901846297
+- **Phone**: 01202129746
 - **Email**: support@speedy-van.co.uk
 - **Hours**: 24/7 support available
 

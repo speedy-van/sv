@@ -81,7 +81,7 @@ services:
       - key: NEXT_PUBLIC_COMPANY_NAME
         value: Speedy Van
       - key: NEXT_PUBLIC_COMPANY_PHONE
-        value: +44 7901846297
+        value: +44 1202129746
       - key: NEXT_PUBLIC_COMPANY_EMAIL
         value: support@speedy-van.co.uk
       

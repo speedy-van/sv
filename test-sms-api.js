@@ -8,7 +8,7 @@ const response = await fetch('http://localhost:3000/api/admin/sms/send', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    to: '00447901846297',
+    to: '00441202129746',
     message: 'Test message',
   }),
 });

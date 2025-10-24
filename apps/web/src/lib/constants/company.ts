@@ -15,17 +15,17 @@ export const COMPANY_INFO = {
   founded: '2020',
   website: 'https://speedy-van.co.uk',
   address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
-  phone: '+44 7901846297',
+  phone: '+44 1202129746',
   email: 'support@speedy-van.co.uk',
 } as const;
 
 export const COMPANY_CONTACT = {
-  phone: '+44 7901846297',
+  phone: '+44 1202129746',
   email: 'support@speedy-van.co.uk',
   address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
-  supportPhone: '+44 7901846297',
+  supportPhone: '+44 1202129746',
   supportEmail: 'support@speedy-van.co.uk',
-  emergencyPhone: '+44 7901846297',
+  emergencyPhone: '+44 1202129746',
   hours: {
     weekdays: '8:00 AM - 6:00 PM',
     weekends: '9:00 AM - 5:00 PM',

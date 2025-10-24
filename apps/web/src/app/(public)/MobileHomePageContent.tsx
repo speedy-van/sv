@@ -441,7 +441,7 @@ viewport={{ once: true }}
                   borderRadius="xl"
                   fontWeight="semibold"
                   flex={1}
-                  onClick={() => window.open('tel:+447901846297')}
+                  onClick={() => window.open('tel:+441202129746')}
                 >
                   Call Now
                 </TouchButton>
@@ -951,7 +951,7 @@ const MobileCTA: React.FC = () => {
                   color: 'white',
                 }}
                 fullWidth
-                onClick={() => window.open('tel:+447901846297')}
+                onClick={() => window.open('tel:+441202129746')}
               >
                 Call Us
               </TouchButton>
@@ -969,11 +969,11 @@ export default function MobileHomePageContent() {
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = undefined; // Trustpilot integration handled server-side
+    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
 
     // Only load if Business Unit ID is configured
     if (!businessUnitId) {
-      console.warn('⚠️ Trustpilot Business Unit ID not configured');
+      // Trustpilot integration handled server-side or not configured
       return;
     }
 
