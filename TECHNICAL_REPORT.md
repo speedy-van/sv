@@ -1,7 +1,7 @@
 '''
 # Technical Report: Speedy Van Driver System Overhaul
 
-**Author:** Manus AI
+**Author:** Ahmad Alwakai
 **Date:** October 12, 2025
 **Version:** 1.0
 

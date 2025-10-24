@@ -900,49 +900,7 @@ export class RouteManager {
         console.error('❌ Pusher notification failed:', pusherError);
       }
 
-      // 2. SMS Notification
-      if (driverPhone) {
-        try {
-          const smsMessage = `Hi ${driverName}, you have been assigned a new route with ${route.totalDrops} stops starting at ${route.startTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}. Please check your app for details. - Speedy Van`;
-
-          // Use TheSMSWorks
-          const smsResponse = await fetch('https://api.thesmsworks.co.uk/v1/message/send', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': process.env.THESMSWORKS_JWT || '',
-            },
-            body: JSON.stringify({
-              sender: 'SpeedyVan',
-              destination: driverPhone,
-              content: smsMessage,
-              tag: `route_${routeId}`,
-            }),
-          });
-
-          if (smsResponse.ok) {
-            console.log(`✅ SMS sent to driver ${driverId} (${driverPhone})`);
-            
-            // Log SMS in database
-            await prisma.communicationLog.create({
-              data: {
-                id: `sms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                bookingId: (route as any).Booking?.[0]?.id || '',
-                channel: 'sms',
-                recipient: driverPhone,
-                messageId: smsMessage,
-                type: 'SMS',
-                status: 'SENT',
-                attemptedAt: new Date(),
-              }
-            });
-          } else {
-            console.error('❌ SMS sending failed:', await smsResponse.text());
-          }
-        } catch (smsError) {
-          console.error('❌ SMS notification failed:', smsError);
-        }
-      }
+      // SMS notification is now handled by Voodoo SMS service below
 
       // 3. Push Notification (Removed - iOS app no longer supported)
 
@@ -984,6 +942,31 @@ export class RouteManager {
             }
           } catch (emailError) {
             console.error('❌ Email service error:', emailError);
+          }
+
+          // Send SMS notification to driver
+          if (driver.User.phone) {
+            try {
+              const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
+              const smsService = getVoodooSMSService();
+              
+              const smsMessage = `🚚 New Route Assigned!\n\nRoute: ${route.id}\nStops: ${route.totalDrops}\nStart: ${route.startTime.toLocaleString()}\n\nCheck your email for full details.\n\nSpeedy Van`;
+              
+              const smsResult = await smsService.sendSMS({
+                to: driver.User.phone,
+                message: smsMessage
+              });
+
+              if (smsResult.success) {
+                console.log(`✅ SMS sent to driver ${driverId} (${driver.User.phone})`);
+              } else {
+                console.error('❌ SMS sending failed:', smsResult.error);
+              }
+            } catch (smsError) {
+              console.error('❌ SMS service error:', smsError);
+            }
+          } else {
+            console.log('ℹ️ No phone number available for driver SMS notification');
           }
         } catch (emailError) {
           console.error('❌ Email notification failed:', emailError);

@@ -1,6 +1,6 @@
 # Enterprise SEO Strategy - Speedy Van
 
-**Author:** Manus AI  
+**Author:** Ahmad Alwakai  
 **Date:** October 12, 2025  
 **Objective:** Implement world-class SEO strategy matching Fortune 500 companies
 

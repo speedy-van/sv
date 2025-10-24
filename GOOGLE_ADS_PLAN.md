@@ -1,7 +1,7 @@
 
 # Google Ads Campaign Plan: Speedy Van
 
-**Author:** Manus AI
+**Author:** Ahmad Alwakai
 **Date:** October 12, 2025
 **Objective:** Drive qualified leads, increase online bookings, and maximize ROI for Speedy Van through a full-funnel Google Ads strategy.
 

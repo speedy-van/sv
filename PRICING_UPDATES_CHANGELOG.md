@@ -361,7 +361,7 @@ Track these KPIs for 7 days post-deployment:
 
 ---
 
-**Prepared by:** Manus AI  
+**Prepared by:** Ahmad Alwakai  
 **Date:** 12 October 2025  
 **Version:** 2.0.0
 

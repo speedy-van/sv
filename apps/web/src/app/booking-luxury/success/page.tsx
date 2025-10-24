@@ -25,7 +25,7 @@ import {
 import { CheckCircleIcon, PhoneIcon, EmailIcon } from '@chakra-ui/icons';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import Link from 'next/link';
-import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
+// SMS will be sent via API endpoint
 
 interface BookingDetails {
   id: string;
@@ -45,6 +45,7 @@ export default function BookingSuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('Loading your booking details...');
+  const [smsSent, setSmsSent] = useState(false); // Prevent double SMS sending
   const searchParams = useSearchParams();
   const toast = useToast();
 
@@ -53,7 +54,7 @@ export default function BookingSuccessPage() {
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
+    const businessUnitId = undefined; // Trustpilot integration handled server-side
 
     // Only load if Business Unit ID is configured
     if (!businessUnitId) {
@@ -135,31 +136,38 @@ export default function BookingSuccessPage() {
             isClosable: true,
           });
 
-          // Send SMS confirmation automatically when success page loads
-          if (data.customer_details?.phone) {
+          // Send SMS confirmation automatically when success page loads (only once)
+          if (data.customer_details?.phone && !smsSent) {
             try {
-              const voodooSMS = getVoodooSMSService();
-              const smsResult = await voodooSMS.sendBookingConfirmation({
-                phoneNumber: data.customer_details.phone,
-                customerName: data.metadata?.customerName || data.customer_details?.name || 'Customer',
-                orderNumber: data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN',
-                pickupAddress: data.metadata?.pickupAddress || 'Pickup address not available',
-                dropoffAddress: data.metadata?.dropoffAddress || 'Dropoff address not available',
-                scheduledDate: data.metadata?.scheduledDate || new Date().toLocaleDateString('en-GB'),
-                driverName: data.metadata?.driverName,
-                driverPhone: data.metadata?.driverPhone,
+              setSmsSent(true); // Prevent double sending
+              
+              // Send SMS via API endpoint
+              const smsResponse = await fetch('/api/notifications/sms/send', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: data.customer_details.phone,
+                  message: `Hi ${data.metadata?.customerName || data.customer_details?.name || 'Customer'}, your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} is confirmed! Pickup: ${data.metadata?.pickupAddress || 'Pickup address not available'} on ${data.metadata?.scheduledDate || new Date().toLocaleDateString('en-GB')}. We'll notify you when your driver is assigned. Call 07901846297 for support.`,
+                  type: 'booking_confirmation'
+                })
               });
               
-              if (smsResult.success) {
-                // SMS sent successfully
+              if (smsResponse.ok) {
+                console.log('✅ SMS confirmation sent successfully');
               } else {
-                console.warn('⚠️ SMS confirmation failed from success page:', smsResult.error);
+                console.warn('⚠️ SMS confirmation failed from success page');
+                setSmsSent(false); // Allow retry on failure
               }
             } catch (smsError) {
               console.error('❌ Error sending SMS from success page:', smsError);
+              setSmsSent(false); // Allow retry on error
             }
-          } else {
-            // No phone number available for SMS
+          } else if (!data.customer_details?.phone) {
+            console.log('ℹ️ No phone number available for SMS');
+          } else if (smsSent) {
+            console.log('ℹ️ SMS already sent - preventing duplicate');
           }
           
           // Stop loading on success
@@ -421,7 +429,7 @@ export default function BookingSuccessPage() {
         </HStack>
 
         {/* Trustpilot Review Widget */}
-        {process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID && (
+        {false && (
           <Box
             mt={8}
             p={6}

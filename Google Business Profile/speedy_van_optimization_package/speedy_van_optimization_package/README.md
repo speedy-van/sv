@@ -269,7 +269,7 @@ Your optimized profile will become your most valuable marketing asset, generatin
 
 **Good luck with your optimization!**
 
-**Prepared by Manus AI**  
+**Prepared by Ahmad Alwakai**  
 *Professional Business Optimization Services*
 
 ---

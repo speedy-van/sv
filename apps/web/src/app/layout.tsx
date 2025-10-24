@@ -152,7 +152,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+              if (typeof window !== 'undefined' && '${process.env.NODE_ENV}' === 'production') {
                 const noop = function() {};
                 console.log = noop;
                 console.warn = noop;

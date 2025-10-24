@@ -647,7 +647,7 @@ The intelligent multi-drop and return journey system ensures:
 
 ---
 
-**Prepared by:** Manus AI  
+**Prepared by:** Ahmad Alwakai  
 **Date:** 12 October 2025  
 **Version:** 1.0.0
 

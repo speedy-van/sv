@@ -228,6 +228,6 @@ The Speedy Van Driver App meets WCAG 2.1 Level AA accessibility standards for co
 
 ---
 
-**Report Prepared By**: Manus AI  
+**Report Prepared By**: Ahmad Alwakai  
 **Review Status**: Approved for Deployment
 

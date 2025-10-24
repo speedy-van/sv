@@ -1,6 +1,6 @@
 # UK Removal Service: Comprehensive Operational Workflow
 
-**Author:** Manus AI
+**Author:** Ahmad Alwakai
 
 **Date:** 2025-10-05
 

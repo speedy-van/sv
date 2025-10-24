@@ -181,6 +181,9 @@ export async function POST(req: Request) {
               round: 1,
             });
 
+            // SMS notification will be sent via individual assignment endpoint
+            console.log(`✅ Order ${booking.reference} assigned to driver ${targetDriverId}`);
+
             // Log audit
             await logAudit((s.user as any).id, 'bulk_assign_driver', orderId, { targetType: 'booking', before: { driverId: booking.driverId, status: booking.status }, after: { driverId: targetDriverId, status: 'CONFIRMED' } });
           } catch (error) {

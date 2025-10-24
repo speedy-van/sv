@@ -223,5 +223,5 @@ createdBy: session.user.id || 'system',
 ---
 
 *Generated on: October 18, 2025*  
-*By: Manus AI Agent*
+*By: Ahmad Alwakai*
 

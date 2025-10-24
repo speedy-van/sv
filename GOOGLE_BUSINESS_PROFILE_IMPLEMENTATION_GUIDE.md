@@ -4,7 +4,7 @@
 
 **Document Version:** 1.0  
 **Date:** October 12, 2025  
-**Prepared by:** Manus AI
+**Prepared by:** Ahmad Alwakai
 
 ---
 
