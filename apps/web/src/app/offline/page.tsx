@@ -254,7 +254,7 @@ viewport={{ once: true }}
                 <HStack spacing={3} w="full">
                   <Icon as={FaPhone} color="neon.500" />
                   <Text fontSize="sm" color="text.secondary">
-                    07901846297
+                    01202129746
                   </Text>
                 </HStack>
                 

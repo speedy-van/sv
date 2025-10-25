@@ -254,7 +254,7 @@ docker run -p 3000:3000 speedy-van
 
 للاستفسارات أو المساعدة:
 - **البريد الإلكتروني**: support@speedy-van.co.uk
-- **الهاتف**: 07901846297
+- **الهاتف**: 01202129746
 - **GitHub**: https://github.com/speedy-van/sv
 
 ---

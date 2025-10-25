@@ -35,6 +35,7 @@ import {
 } from 'react-icons/fa';
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import HomeFooter from '@/components/site/HomeFooter';
 
 // Import ServiceMapSection directly
 import ServiceMapSection from '../../components/ServiceMapSection';
@@ -396,6 +397,26 @@ viewport={{ once: true }}
                 }}
                 fullWidth
                 onClick={() => (window.location.href = '/booking-luxury')}
+                position="relative"
+                overflow="hidden"
+                className="hero-cta-button"
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '0',
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                    animation: 'wave-light-move 3s ease-in-out infinite',
+                    zIndex: 1,
+                  },
+                  '& > span': {
+                    position: 'relative',
+                    zIndex: 2,
+                  },
+                }}
               >
                 Book Your Move Now
               </TouchButton>
@@ -441,7 +462,7 @@ viewport={{ once: true }}
                   borderRadius="xl"
                   fontWeight="semibold"
                   flex={1}
-                  onClick={() => window.open('tel:+447901846297')}
+                  onClick={() => window.open('tel:+441202129746')}
                 >
                   Call Now
                 </TouchButton>
@@ -458,7 +479,7 @@ viewport={{ once: true }}
 // Mobile Stats Section
 const MobileStats: React.FC = () => {
   return (
-    <Box className="mobile-stats" py={{ base: 12, md: 16 }}>
+    <Box className="mobile-stats" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -497,12 +518,42 @@ const MobileStats: React.FC = () => {
                   p={{ base: 4, md: 6 }}
                   borderRadius="xl"
                   borderWidth="2px"
-                  borderColor="border.primary"
+                  borderColor="#00C2FF"
                   bg="bg.card"
                   textAlign="center"
+                  position="relative"
+                  overflow="visible"
+                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  className="stat-card-neon"
                   _hover={{
                     borderColor: `${stat.color}.400`,
-                    boxShadow: 'lg',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                  }}
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-2px',
+                    right: '-2px',
+                    bottom: '-2px',
+                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                    backgroundSize: '300% 300%',
+                    borderRadius: 'xl',
+                    zIndex: -1,
+                    filter: 'blur(8px)',
+                    opacity: 0.6,
+                    animation: 'neon-glow 3s ease-in-out infinite',
+                  }}
+                  _after={{
+                    content: '""',
+                    position: 'absolute',
+                    width: '10px',
+                    height: '10px',
+                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                    borderRadius: 'full',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                    zIndex: 10,
+                    animation: 'light-point-move 3s linear infinite',
                   }}
                 >
                   <VStack spacing={3}>
@@ -583,14 +634,46 @@ const MobileFeatures: React.FC = () => {
                 p={{ base: 6, md: 8 }}
                 borderRadius="xl"
                 borderWidth="2px"
-                borderColor="border.primary"
+                borderColor="#00C2FF"
                 bg="bg.card"
+                position="relative"
+                overflow="visible"
+                boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                className="stat-card-neon"
                 _hover={{
                   borderColor: `${feature.color}.400`,
-                  boxShadow: 'xl',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
                   transform: 'translateY(-4px)',
                 }}
                 cursor="pointer"
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-2px',
+                    right: '-2px',
+                    bottom: '-2px',
+                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                    backgroundSize: '300% 300%',
+                    borderRadius: 'xl',
+                    zIndex: -1,
+                    filter: 'blur(8px)',
+                    opacity: 0.6,
+                    animation: 'neon-glow 3s ease-in-out infinite',
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    width: '10px',
+                    height: '10px',
+                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                    borderRadius: 'full',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                    zIndex: 10,
+                    animation: 'light-point-move 3s linear infinite',
+                  },
+                }}
               >
                 <VStack spacing={4} textAlign="center">
                   <Box
@@ -629,7 +712,7 @@ const MobileFeatures: React.FC = () => {
 // Mobile Services Section
 const MobileServices: React.FC = () => {
   return (
-    <Box className="mobile-services" py={{ base: 12, md: 16 }}>
+    <Box className="mobile-services" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -666,30 +749,47 @@ const MobileServices: React.FC = () => {
                 p={{ base: 6, md: 8 }}
                 borderRadius="xl"
                 borderWidth="2px"
-                borderColor="neon.500"
+                borderColor="#00C2FF"
                 bg="dark.800"
+                position="relative"
+                overflow="visible"
+                boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                className="stat-card-neon"
                 _hover={{
                   borderColor: 'neon.400',
-                  boxShadow: '0 0 30px rgba(0,194,255,0.3)',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
                   transform: 'translateY(-4px)',
                 }}
                 cursor="pointer"
-                position="relative"
-                overflow="hidden"
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-2px',
+                    right: '-2px',
+                    bottom: '-2px',
+                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                    backgroundSize: '300% 300%',
+                    borderRadius: 'xl',
+                    zIndex: -1,
+                    filter: 'blur(8px)',
+                    opacity: 0.6,
+                    animation: 'neon-glow 3s ease-in-out infinite',
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    width: '10px',
+                    height: '10px',
+                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                    borderRadius: 'full',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                    zIndex: 10,
+                    animation: 'light-point-move 3s linear infinite',
+                  },
+                }}
               >
-                {/* Glow effect */}
-                <Box
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  width="100%"
-                  height="100%"
-                  bg="linear-gradient(135deg, rgba(0,194,255,0.05) 0%, transparent 50%)"
-                  borderRadius="xl"
-                  opacity={0}
-                  _groupHover={{ opacity: 1 }}
-                  transition="opacity 0.3s ease"
-                />
 
                 <VStack
                   spacing={4}
@@ -793,11 +893,43 @@ const MobileTestimonials: React.FC = () => {
                 p={{ base: 6, md: 8 }}
                 borderRadius="xl"
                 borderWidth="2px"
-                borderColor="border.primary"
+                borderColor="#00C2FF"
                 bg="bg.card"
+                position="relative"
+                overflow="visible"
+                boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                className="stat-card-neon"
                 _hover={{
                   borderColor: 'neon.400',
-                  boxShadow: 'lg',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                }}
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-2px',
+                    right: '-2px',
+                    bottom: '-2px',
+                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                    backgroundSize: '300% 300%',
+                    borderRadius: 'xl',
+                    zIndex: -1,
+                    filter: 'blur(8px)',
+                    opacity: 0.6,
+                    animation: 'neon-glow 3s ease-in-out infinite',
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    width: '10px',
+                    height: '10px',
+                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                    borderRadius: 'full',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                    zIndex: 10,
+                    animation: 'light-point-move 3s linear infinite',
+                  },
                 }}
               >
                 <VStack spacing={4} align="start">
@@ -856,7 +988,7 @@ const MobileTestimonials: React.FC = () => {
 // Mobile CTA Section
 const MobileCTA: React.FC = () => {
   return (
-    <Box className="mobile-cta" py={{ base: 12, md: 16 }}>
+    <Box className="mobile-cta" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <MotionBox
           initial={{ opacity: 0, y: 20 }}
@@ -865,23 +997,43 @@ const MobileCTA: React.FC = () => {
           transition="0.6s ease-out"
           p={{ base: 8, md: 12 }}
           borderRadius="2xl"
-          bg="linear-gradient(135deg, rgba(0,194,255,0.1) 0%, rgba(0,209,143,0.1) 100%)"
+          bg="bg.card"
           borderWidth="2px"
-          borderColor="neon.500"
+          borderColor="#00C2FF"
           textAlign="center"
           position="relative"
-          overflow="hidden"
+          overflow="visible"
+          boxShadow="0 0 20px rgba(0,194,255,0.3)"
+          className="stat-card-neon"
+          sx={{
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '-2px',
+              left: '-2px',
+              right: '-2px',
+              bottom: '-2px',
+              background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+              backgroundSize: '300% 300%',
+              borderRadius: '2xl',
+              zIndex: -1,
+              filter: 'blur(8px)',
+              opacity: 0.6,
+              animation: 'neon-glow 3s ease-in-out infinite',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              width: '10px',
+              height: '10px',
+              background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+              borderRadius: 'full',
+              boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+              zIndex: 10,
+              animation: 'light-point-move 3s linear infinite',
+            },
+          }}
         >
-          {/* Background glow */}
-          <Box
-            position="absolute"
-            top="0"
-            left="0"
-            width="100%"
-            height="100%"
-            bg="radial-gradient(circle at center, rgba(0,194,255,0.1) 0%, transparent 70%)"
-            borderRadius="2xl"
-          />
 
           <VStack spacing={6} position="relative" zIndex={1}>
             <Heading
@@ -951,7 +1103,7 @@ const MobileCTA: React.FC = () => {
                   color: 'white',
                 }}
                 fullWidth
-                onClick={() => window.open('tel:+447901846297')}
+                onClick={() => window.open('tel:+441202129746')}
               >
                 Call Us
               </TouchButton>
@@ -969,11 +1121,11 @@ export default function MobileHomePageContent() {
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = undefined; // Trustpilot integration handled server-side
+    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
 
     // Only load if Business Unit ID is configured
     if (!businessUnitId) {
-      console.warn('⚠️ Trustpilot Business Unit ID not configured');
+      // Trustpilot integration handled server-side or not configured
       return;
     }
 
@@ -1028,6 +1180,9 @@ export default function MobileHomePageContent() {
 
       {/* Mobile CTA */}
       <MobileCTA />
+
+      {/* Home Footer */}
+      <HomeFooter />
 
       {/* Trustpilot Widget Section */}
       {false && (

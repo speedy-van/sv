@@ -125,7 +125,7 @@ dig TXT _dmarc.speedy-van.co.uk
 
 If you need help with DNS configuration:
 - **Email:** support@speedy-van.co.uk
-- **Phone:** +44 7901846297
+- **Phone:** +44 1202129746
 - **Website:** https://speedy-van.co.uk
 
 ---

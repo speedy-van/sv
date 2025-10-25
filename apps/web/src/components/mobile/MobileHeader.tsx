@@ -116,7 +116,7 @@ export default function MobileHeader() {
               fontWeight="bold"
               boxShadow="0 4px 15px rgba(0,209,143,0.3)"
               leftIcon={<FaPhone />}
-              onClick={() => window.open('tel:+447901846297')}
+              onClick={() => window.open('tel:+441202129746')}
               position="relative"
               overflow="hidden"
               transition="all 0.3s ease"
@@ -414,7 +414,7 @@ export default function MobileHeader() {
                       transform: 'translateY(-1px)',
                     }}
                     onClick={() => {
-                      window.open('tel:+447901846297');
+                      window.open('tel:+441202129746');
                       onClose();
                     }}
                     leftIcon={<FaPhone />}

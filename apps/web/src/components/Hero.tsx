@@ -276,8 +276,26 @@ const Hero: React.FC<HeroProps> = ({
                 whileTap={{ scale: 0.98 }}
                 w="full"
                 maxW="400px"
+                position="relative"
+                overflow="hidden"
+                className="hero-cta-button"
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '0',
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                    animation: 'wave-light-move 3s ease-in-out infinite',
+                    zIndex: 1,
+                  },
+                }}
               >
-                {ctaText}
+                <Box as="span" position="relative" zIndex={2}>
+                  {ctaText}
+                </Box>
               </MotionButton>
 
               {/* Secondary Actions */}
@@ -319,7 +337,7 @@ const Hero: React.FC<HeroProps> = ({
                   borderRadius="xl"
                   fontWeight="semibold"
                   transition="all 0.3s ease"
-                  onClick={() => window.open('tel:+447901846297')}
+                  onClick={() => window.open('tel:+441202129746')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >

@@ -282,7 +282,7 @@ eas build --platform android
 4. **إضافة Offline Support** باستخدام AsyncStorage
 
 ### معلومات الاتصال:
-- **Phone:** 07901846297
+- **Phone:** 01202129746
 - **Email:** support@speedy-van.co.uk
 - **Company:** Speedy Van
 - **Address:** 140 Charles Street, Glasgow City, G21 2QB

@@ -95,7 +95,7 @@ async function testPhoneNormalization() {
     { input: '+447123456789', expected: '447123456789' },
     { input: '00447123456789', expected: '447123456789' },
     { input: '447123456789', expected: '447123456789' },
-    { input: '07901 846 297', expected: '447901846297' },
+    { input: '01202 129 746', expected: '441202129746' },
   ];
 
   function normalizePhoneNumber(phone) {

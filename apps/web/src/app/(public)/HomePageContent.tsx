@@ -39,6 +39,7 @@ import {
 import Hero from '../../components/Hero';
 import HeroMessage from '../../components/HeroMessage';
 import ServiceMapSection from '../../components/ServiceMapSection';
+import HomeFooter from '@/components/site/HomeFooter';
 
 // Create motion components using chakra integration
 const MotionBox = chakra(motion.div, {
@@ -209,7 +210,7 @@ export default function HomePageContent() {
           <ServiceMapSection />
 
           {/* Stats Section */}
-          <Box w="full" py={{ base: 12, md: 16 }}>
+          <Box w="full" py={{ base: 12, md: 16 }} bg="bg.surface" borderRadius="2xl">
             <VStack spacing={{ base: 8, md: 12 }}>
               <MotionBox
                 initial={{ opacity: 0, y: 20 }}
@@ -253,27 +254,43 @@ export default function HomePageContent() {
                       p={{ base: 4, md: 6 }}
                       borderRadius="2xl"
                       borderWidth="2px"
-                      borderColor="border.primary"
+                      borderColor="#00C2FF"
                       bg="bg.card"
                       _hover={{
-                        shadow: 'xl',
+                        shadow: '0 0 30px rgba(0,194,255,0.5)',
                         transform: 'translateY(-4px)',
                         borderColor: `${stat.color}.400`,
                       }}
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       position="relative"
-                      overflow="hidden"
+                      overflow="visible"
+                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                      className="stat-card-neon"
                       _before={{
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(135deg, rgba(0,194,255,0.05), rgba(0,209,143,0.05))`,
-                        opacity: 0,
-                        _hover: { opacity: 1 },
-                        transition: 'opacity 0.3s ease',
+                        top: '-2px',
+                        left: '-2px',
+                        right: '-2px',
+                        bottom: '-2px',
+                        background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                        backgroundSize: '300% 300%',
+                        borderRadius: '2xl',
+                        zIndex: -1,
+                        filter: 'blur(8px)',
+                        opacity: 0.6,
+                        animation: 'neon-glow 3s ease-in-out infinite',
+                      }}
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        width: '12px',
+                        height: '12px',
+                        background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                        borderRadius: 'full',
+                        boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                        zIndex: 10,
+                        animation: 'light-point-move 3s linear infinite',
                       }}
                     >
                       <VStack spacing={3} position="relative" zIndex={1}>
@@ -358,27 +375,43 @@ export default function HomePageContent() {
                       p={{ base: 6, md: 8 }}
                       borderRadius="2xl"
                       borderWidth="2px"
-                      borderColor="border.primary"
+                      borderColor="#00C2FF"
                       bg="bg.card"
                       _hover={{
-                        shadow: 'xl',
+                        shadow: '0 0 30px rgba(0,194,255,0.5)',
                         transform: 'translateY(-6px)',
                         borderColor: `${feature.color}.400`,
                       }}
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       position="relative"
-                      overflow="hidden"
+                      overflow="visible"
+                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                      className="stat-card-neon"
                       _before={{
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(135deg, rgba(0,194,255,0.05), rgba(0,209,143,0.05))`,
-                        opacity: 0,
-                        _hover: { opacity: 1 },
-                        transition: 'opacity 0.3s ease',
+                        top: '-2px',
+                        left: '-2px',
+                        right: '-2px',
+                        bottom: '-2px',
+                        background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                        backgroundSize: '300% 300%',
+                        borderRadius: '2xl',
+                        zIndex: -1,
+                        filter: 'blur(8px)',
+                        opacity: 0.6,
+                        animation: 'neon-glow 3s ease-in-out infinite',
+                      }}
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        width: '12px',
+                        height: '12px',
+                        background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                        borderRadius: 'full',
+                        boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                        zIndex: 10,
+                        animation: 'light-point-move 3s linear infinite',
                       }}
                     >
                       <VStack spacing={4} position="relative" zIndex={1}>
@@ -418,7 +451,7 @@ export default function HomePageContent() {
           </Box>
 
           {/* Services Section */}
-          <Box w="full">
+          <Box w="full" bg="bg.surface" py={{ base: 12, md: 16 }} borderRadius="2xl">
             <VStack spacing={{ base: 8, md: 12 }}>
               <MotionBox
                 initial={{ opacity: 0, y: 20 }}
@@ -461,31 +494,48 @@ export default function HomePageContent() {
                       p={{ base: 6, md: 8 }}
                       borderRadius="2xl"
                       borderWidth="2px"
-                      borderColor="neon.500"
+                      borderColor="#00C2FF"
                       bg="dark.800"
                       _hover={{
-                        shadow: 'neon.glow',
+                        shadow: '0 0 30px rgba(0,194,255,0.5)',
                         transform: 'translateY(-8px)',
                         borderColor: 'neon.400',
                       }}
                       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                       position="relative"
-                      overflow="hidden"
+                      overflow="visible"
+                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
                       cursor="pointer"
+                      className="stat-card-neon"
+                      sx={{
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: '-2px',
+                          left: '-2px',
+                          right: '-2px',
+                          bottom: '-2px',
+                          background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                          backgroundSize: '300% 300%',
+                          borderRadius: '2xl',
+                          zIndex: -1,
+                          filter: 'blur(8px)',
+                          opacity: 0.6,
+                          animation: 'neon-glow 3s ease-in-out infinite',
+                        },
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          width: '12px',
+                          height: '12px',
+                          background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                          borderRadius: 'full',
+                          boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                          zIndex: 10,
+                          animation: 'light-point-move 3s linear infinite',
+                        },
+                      }}
                     >
-                      {/* Enhanced neon glow effect */}
-                      <Box
-                        position="absolute"
-                        top={0}
-                        left={0}
-                        width="100%"
-                        height="100%"
-                        borderRadius="2xl"
-                        bg="linear-gradient(135deg, rgba(0,194,255,0.1) 0%, transparent 50%, rgba(0,194,255,0.05) 100%)"
-                        opacity={0}
-                        _groupHover={{ opacity: 1 }}
-                        transition="opacity 0.3s ease"
-                      />
 
                       <VStack
                         spacing={{ base: 4, md: 6 }}
@@ -591,30 +641,46 @@ export default function HomePageContent() {
                       p={{ base: 6, md: 8 }}
                       borderRadius="2xl"
                       borderWidth="2px"
-                      borderColor="neon.500"
+                      borderColor="#00C2FF"
                       bg="dark.800"
                       _hover={{
-                        shadow: 'neon.glow',
+                        shadow: '0 0 30px rgba(0,194,255,0.5)',
                         transform: 'translateY(-4px)',
                       }}
                       transition="all 0.3s ease"
                       position="relative"
+                      overflow="visible"
+                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                      className="stat-card-neon"
+                      sx={{
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: '-2px',
+                          left: '-2px',
+                          right: '-2px',
+                          bottom: '-2px',
+                          background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                          backgroundSize: '300% 300%',
+                          borderRadius: '2xl',
+                          zIndex: -1,
+                          filter: 'blur(8px)',
+                          opacity: 0.6,
+                          animation: 'neon-glow 3s ease-in-out infinite',
+                        },
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          width: '12px',
+                          height: '12px',
+                          background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                          borderRadius: 'full',
+                          boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                          zIndex: 10,
+                          animation: 'light-point-move 3s linear infinite',
+                        },
+                      }}
                     >
-                      {/* Enhanced neon border glow */}
-                      <Box
-                        position="absolute"
-                        top={0}
-                        left={0}
-                        width="100%"
-                        height="100%"
-                        borderRadius="2xl"
-                        borderWidth="2px"
-                        borderColor="neon.400"
-                        opacity={0}
-                        _hover={{ opacity: 1 }}
-                        transition="opacity 0.3s ease"
-                        pointerEvents="none"
-                      />
 
                       <VStack spacing={{ base: 4, md: 6 }} align="stretch">
                         {/* Service Badge */}
@@ -728,7 +794,7 @@ export default function HomePageContent() {
                   {
                     icon: FaPhone,
                     title: 'Call Us',
-                    contact: '07901846297',
+                    contact: '01202129746',
                     action: 'Call Now',
                   },
                   {
@@ -817,32 +883,52 @@ export default function HomePageContent() {
             px={{ base: 6, md: 12 }}
             borderRadius="3xl"
             borderWidth="2px"
-            borderColor="neon.500"
-            bg="dark.800"
+            borderColor="#00C2FF"
+            bg="bg.card"
             position="relative"
-            overflow="hidden"
+            overflow="visible"
+            boxShadow="0 0 20px rgba(0,194,255,0.3)"
+            className="stat-card-neon"
+            sx={{
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: '-2px',
+                left: '-2px',
+                right: '-2px',
+                bottom: '-2px',
+                background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                backgroundSize: '300% 300%',
+                borderRadius: '3xl',
+                zIndex: -1,
+                filter: 'blur(8px)',
+                opacity: 0.6,
+                animation: 'neon-glow 3s ease-in-out infinite',
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                width: '12px',
+                height: '12px',
+                background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                borderRadius: 'full',
+                boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                zIndex: 10,
+                animation: 'light-point-move 3s linear infinite',
+              },
+            }}
           >
-            {/* Enhanced animated neon background */}
-            <Box
-              position="absolute"
-              top={0}
-              left={0}
-              width="100%"
-              height="100%"
-              bg="linear-gradient(135deg, rgba(0,194,255,0.08) 0%, rgba(0,194,255,0.03) 50%, rgba(0,194,255,0.08) 100%)"
-              opacity={0.9}
-            />
 
             <VStack
               spacing={{ base: 8, md: 10 }}
               position="relative"
               zIndex={1}
             >
-              <Heading size={{ base: 'xl', md: '2xl' }} color="white" mb={4}>
+              <Heading size={{ base: 'xl', md: '2xl' }} color="text.primary" mb={4}>
                 Ready to Move with Confidence?
               </Heading>
               <Text
-                color="gray.300"
+                color="text.secondary"
                 fontSize={{ base: 'md', md: 'xl' }}
                 maxW="3xl"
                 mx="auto"
@@ -903,6 +989,9 @@ export default function HomePageContent() {
           </MotionBox>
         </VStack>
       </Container>
+
+      {/* Home Footer */}
+      <HomeFooter />
     </Box>
   );
 }

@@ -172,7 +172,7 @@ eas build --platform ios
 
 ## 📞 Support
 
-- **Phone:** 07901846297
+- **Phone:** 01202129746
 - **Email:** support@speedy-van.co.uk
 - **Company:** Speedy Van, Glasgow, UK
 

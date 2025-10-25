@@ -60,7 +60,7 @@ const contactMethods = [
     color: 'blue',
     contact: '+44 7901846297',
     availability: '24/7 Support',
-    action: () => window.open('tel:+447901846297')
+    action: () => window.open('tel:+441202129746')
   },
   {
     title: 'Email Support',
@@ -434,7 +434,7 @@ export default function ContactPage() {
                       <HeaderButton
                         variant="glass"
                         size="lg"
-                        onClick={() => window.open('tel:+447901846297')}
+                        onClick={() => window.open('tel:+441202129746')}
                         leftIcon={<FiPhone />}
                         w="full"
                       >
@@ -588,7 +588,7 @@ export default function ContactPage() {
                 <HeaderButton
                   variant="outline"
                   size="lg"
-                  onClick={() => window.open('tel:+447901846297')}
+                  onClick={() => window.open('tel:+441202129746')}
                   borderColor="white"
                   color="white"
                   _hover={{

@@ -303,14 +303,45 @@ const ServiceMapSection = () => {
                 p={6}
                 borderRadius="xl"
                 borderWidth="2px"
-                borderColor="neon.500"
+                borderColor="#00C2FF"
                 bg="rgba(0,194,255,0.03)"
-                boxShadow="0 0 20px rgba(0,194,255,0.15)"
+                boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                position="relative"
+                overflow="visible"
+                className="stat-card-neon"
                 transition="all 0.3s ease"
                 _hover={{
                   borderColor: 'neon.400',
-                  boxShadow: '0 0 30px rgba(0,194,255,0.3)',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
                   transform: 'translateY(-4px)',
+                }}
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-2px',
+                    right: '-2px',
+                    bottom: '-2px',
+                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                    backgroundSize: '300% 300%',
+                    borderRadius: 'xl',
+                    zIndex: -1,
+                    filter: 'blur(8px)',
+                    opacity: 0.6,
+                    animation: 'neon-glow 3s ease-in-out infinite',
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    width: '12px',
+                    height: '12px',
+                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                    borderRadius: 'full',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                    zIndex: 10,
+                    animation: 'light-point-move 3s linear infinite',
+                  },
                 }}
               >
                 <Heading 
