@@ -35,6 +35,7 @@ import {
 } from 'react-icons/fa';
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import HomeFooter from '@/components/site/HomeFooter';
 
 // Import ServiceMapSection directly
 import ServiceMapSection from '../../components/ServiceMapSection';
@@ -1028,6 +1029,9 @@ export default function MobileHomePageContent() {
 
       {/* Mobile CTA */}
       <MobileCTA />
+
+      {/* Home Footer */}
+      <HomeFooter />
 
       {/* Trustpilot Widget Section */}
       {false && (

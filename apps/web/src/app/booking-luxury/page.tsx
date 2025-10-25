@@ -996,7 +996,7 @@ export default function BookingLuxuryPage() {
                       }}
                       transition="all 0.2s ease"
                       as="a"
-                      href="tel:07901846297"
+                      href="tel:01202129746"
                     >
                       079 0184 6297
                     </Button>

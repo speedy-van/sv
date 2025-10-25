@@ -319,7 +319,7 @@ const Hero: React.FC<HeroProps> = ({
                   borderRadius="xl"
                   fontWeight="semibold"
                   transition="all 0.3s ease"
-                  onClick={() => window.open('tel:+447901846297')}
+                  onClick={() => window.open('tel:+441202129746')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >

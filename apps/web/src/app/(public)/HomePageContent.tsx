@@ -39,6 +39,7 @@ import {
 import Hero from '../../components/Hero';
 import HeroMessage from '../../components/HeroMessage';
 import ServiceMapSection from '../../components/ServiceMapSection';
+import HomeFooter from '@/components/site/HomeFooter';
 
 // Create motion components using chakra integration
 const MotionBox = chakra(motion.div, {
@@ -903,6 +904,9 @@ export default function HomePageContent() {
           </MotionBox>
         </VStack>
       </Container>
+
+      {/* Home Footer */}
+      <HomeFooter />
     </Box>
   );
 }

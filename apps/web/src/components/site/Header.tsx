@@ -372,7 +372,7 @@ const Header: React.FC = memo(() => {
             <HeaderButton
               variant="neon"
               size="lg"
-              onClick={() => window.open('tel:+447901846297')}
+              onClick={() => window.open('tel:+441202129746')}
               leftIcon={<FiPhone />}
               animate={true}
               minW={{ base: '100px', lg: '120px' }}
@@ -536,7 +536,7 @@ const Header: React.FC = memo(() => {
                   fullWidth
                   size="lg"
                   onClick={() => {
-                    window.open('tel:+447901846297');
+                    window.open('tel:+441202129746');
                     toggleMenu();
                   }}
                   leftIcon={<FiPhone />}

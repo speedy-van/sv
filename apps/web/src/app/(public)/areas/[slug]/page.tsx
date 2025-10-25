@@ -63,7 +63,7 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:+447901846297"
+              href="tel:+441202129746"
               variant="outline"
               size="lg"
               leftIcon={<PhoneIcon />}
@@ -281,7 +281,7 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:+447901846297"
+              href="tel:+441202129746"
               variant="outline"
               colorScheme="white"
               size="lg"
