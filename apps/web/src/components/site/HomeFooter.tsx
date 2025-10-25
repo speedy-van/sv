@@ -8,7 +8,6 @@ import {
   HStack,
   Text,
   Link,
-  SimpleGrid,
   Flex,
   Divider,
   Icon,
@@ -84,6 +83,11 @@ const HomeFooter: React.FC = () => {
       color="white"
       width="100%"
       mt={16}
+      sx={{
+        '& *': {
+          boxSizing: 'border-box',
+        },
+      }}
     >
       {/* Trust Indicators Section */}
       <Box
@@ -130,166 +134,213 @@ const HomeFooter: React.FC = () => {
       </Box>
 
       {/* Main Footer Content */}
-      <Container maxW="container.xl" py={{ base: 12, md: 16 }}>
-        <SimpleGrid 
-          columns={{ base: 1, md: 2, lg: 4 }} 
-          spacing={10}
-          mb={12}
-        >
-          {/* Services Column */}
-          <Box>
-            <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
-              OUR SERVICES
-            </Heading>
-            <VStack align="start" spacing={3}>
-              {footerLinks.services.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  display="flex"
-                  alignItems="center"
-                  gap={3}
-                  fontSize="md"
-                  color="whiteAlpha.800"
-                  _hover={{
-                    color: '#00D18F',
-                    textDecoration: 'none',
-                    transform: 'translateX(4px)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
-                  {link.label}
-                </Link>
-              ))}
-            </VStack>
-          </Box>
-
-          {/* Company Column */}
-          <Box>
-            <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
-              COMPANY
-            </Heading>
-            <VStack align="start" spacing={3}>
-              {footerLinks.company.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  display="flex"
-                  alignItems="center"
-                  gap={3}
-                  fontSize="md"
-                  color="whiteAlpha.800"
-                  _hover={{
-                    color: '#00D18F',
-                    textDecoration: 'none',
-                    transform: 'translateX(4px)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
-                  {link.label}
-                </Link>
-              ))}
-            </VStack>
-          </Box>
-
-          {/* Support Column */}
-          <Box>
-            <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
-              SUPPORT
-            </Heading>
-            <VStack align="start" spacing={3}>
-              {footerLinks.support.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  display="flex"
-                  alignItems="center"
-                  gap={3}
-                  fontSize="md"
-                  color="whiteAlpha.800"
-                  _hover={{
-                    color: '#00D18F',
-                    textDecoration: 'none',
-                    transform: 'translateX(4px)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  <Icon as={link.icon} boxSize={4} color="#00D18F" />
-                  {link.label}
-                </Link>
-              ))}
-            </VStack>
-          </Box>
-
-          {/* Contact Info Column */}
-          <Box>
-            <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
-              CONTACT US
-            </Heading>
-            <VStack align="start" spacing={4}>
-              <VStack align="start" spacing={1}>
-                <HStack spacing={2} color="#00D18F">
-                  <Icon as={FiPhone} boxSize={4} />
-                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
-                    Phone
-                  </Text>
-                </HStack>
-                <Link
-                  href="tel:+441202129746"
-                  fontSize="md"
-                  color="white"
-                  fontWeight="medium"
-                  _hover={{ color: '#00D18F' }}
-                >
-                  01202129746
-                </Link>
+      <Box 
+        py={{ base: 12, md: 16 }} 
+        w="100%"
+        className="home-footer-main"
+      >
+        <Container maxW="1400px" px={{ base: 4, md: 8 }}>
+          <Box
+            display="flex !important"
+            flexDirection={{ base: 'column', lg: 'row' }}
+            gap={{ base: 10, lg: 16 }}
+            justifyContent="space-between"
+            mb={12}
+            w="100%"
+            className="home-footer-grid"
+            sx={{
+              display: 'flex !important',
+              '@media (min-width: 62em)': {
+                flexDirection: 'row !important',
+                display: 'flex !important',
+              },
+              '@media (min-width: 992px)': {
+                flexDirection: 'row !important',
+                display: 'flex !important',
+              },
+              '@media (min-width: 1024px)': {
+                flexDirection: 'row !important',
+                display: 'flex !important',
+              },
+              '& > div': {
+                flex: { base: 'none', lg: '1 1 0%' },
+                minWidth: { lg: '200px' },
+              },
+            }}
+            style={{
+              display: 'flex',
+            }}
+          >
+            {/* Services Column */}
+            <Box flex="1" minW={{ lg: '200px' }}>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                OUR SERVICES
+              </Heading>
+              <VStack align="start" spacing={3}>
+                {footerLinks.services.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
+                    _hover={{
+                      color: '#00D18F',
+                      textDecoration: 'none',
+                      transform: 'translateX(4px)',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    {link.label}
+                  </Link>
+                ))}
               </VStack>
+            </Box>
 
-              <VStack align="start" spacing={1}>
-                <HStack spacing={2} color="#00D18F">
-                  <Icon as={FiMail} boxSize={4} />
-                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
-                    Email
-                  </Text>
-                </HStack>
-                <Link
-                  href="mailto:support@speedy-van.co.uk"
-                  fontSize="md"
-                  color="white"
-                  fontWeight="medium"
-                  _hover={{ color: '#00D18F' }}
-                >
-                  support@speedy-van.co.uk
-                </Link>
+            {/* Company Column */}
+            <Box flex="1" minW={{ lg: '200px' }}>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                COMPANY
+              </Heading>
+              <VStack align="start" spacing={3}>
+                {footerLinks.company.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
+                    _hover={{
+                      color: '#00D18F',
+                      textDecoration: 'none',
+                      transform: 'translateX(4px)',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    {link.label}
+                  </Link>
+                ))}
               </VStack>
+            </Box>
 
-              <VStack align="start" spacing={1}>
-                <HStack spacing={2} color="#00D18F">
-                  <Icon as={FiMapPin} boxSize={4} />
-                  <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
-                    Address
-                  </Text>
-                </HStack>
-                <Text fontSize="sm" color="whiteAlpha.800" lineHeight="tall">
-                  Office 2.18, 1 Barrack street,<br />
-                  Hamilton ML3 0DG
-                </Text>
+            {/* Support Column */}
+            <Box flex="1" minW={{ lg: '200px' }}>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                SUPPORT
+              </Heading>
+              <VStack align="start" spacing={3}>
+                {footerLinks.support.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
+                    _hover={{
+                      color: '#00D18F',
+                      textDecoration: 'none',
+                      transform: 'translateX(4px)',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    {link.label}
+                  </Link>
+                ))}
               </VStack>
-            </VStack>
+            </Box>
+
+            {/* Contact Info Column */}
+            <Box flex="1" minW={{ lg: '220px' }}>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                CONTACT US
+              </Heading>
+              <VStack align="start" spacing={4}>
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiPhone} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Phone
+                    </Text>
+                  </HStack>
+                  <Link
+                    href="tel:+441202129746"
+                    fontSize="md"
+                    color="white"
+                    fontWeight="medium"
+                    _hover={{ color: '#00D18F' }}
+                  >
+                    01202129746
+                  </Link>
+                </VStack>
+
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiMail} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Email
+                    </Text>
+                  </HStack>
+                  <Link
+                    href="mailto:support@speedy-van.co.uk"
+                    fontSize="md"
+                    color="white"
+                    fontWeight="medium"
+                    _hover={{ color: '#00D18F' }}
+                  >
+                    support@speedy-van.co.uk
+                  </Link>
+                </VStack>
+
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={2} color="#00D18F">
+                    <Icon as={FiMapPin} boxSize={4} />
+                    <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
+                      Address
+                    </Text>
+                  </HStack>
+                  <Text fontSize="sm" color="whiteAlpha.800" lineHeight="tall">
+                    Office 2.18, 1 Barrack street,<br />
+                    Hamilton ML3 0DG
+                  </Text>
+                </VStack>
+              </VStack>
+            </Box>
           </Box>
-        </SimpleGrid>
 
-        <Divider borderColor="whiteAlpha.200" my={8} />
+          <Divider borderColor="whiteAlpha.200" my={8} />
 
-        {/* Bottom Section */}
-        <Flex
-          direction={{ base: 'column', md: 'row' }}
-          justify="space-between"
-          align="center"
-          gap={6}
-        >
+          {/* Bottom Section */}
+          <Box
+            display="flex !important"
+            flexDirection={{ base: 'column', md: 'row' }}
+            justifyContent="space-between"
+            alignItems="center"
+            gap={6}
+            className="home-footer-bottom"
+            sx={{
+              display: 'flex !important',
+              '@media (min-width: 48em)': {
+                flexDirection: 'row !important',
+                display: 'flex !important',
+              },
+              '@media (min-width: 768px)': {
+                flexDirection: 'row !important',
+                display: 'flex !important',
+              },
+            }}
+            style={{
+              display: 'flex',
+            }}
+          >
           {/* Left Side: Legal Links & Copyright */}
           <VStack align={{ base: 'center', md: 'start' }} spacing={3} flex={1}>
             <HStack spacing={4} flexWrap="wrap" justify={{ base: 'center', md: 'start' }}>
@@ -356,8 +407,9 @@ const HomeFooter: React.FC = () => {
               ))}
             </HStack>
           </VStack>
-        </Flex>
-      </Container>
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
 };

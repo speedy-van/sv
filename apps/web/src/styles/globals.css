@@ -1264,6 +1264,107 @@ textarea:focus-visible {
   }
 }
 
+/* Home Footer Horizontal Layout Fix */
+.home-footer-grid {
+  display: flex !important;
+}
 
+@media (min-width: 992px) {
+  .home-footer-grid {
+    flex-direction: row !important;
+  }
+  
+  .home-footer-grid > * {
+    flex: 1 1 0% !important;
+    min-width: 200px !important;
+  }
+}
 
+@media (max-width: 991px) {
+  .home-footer-grid {
+    flex-direction: column !important;
+  }
+}
 
+/* Home Footer Bottom Section Horizontal Fix */
+.home-footer-bottom {
+  display: flex !important;
+}
+
+@media (min-width: 768px) {
+  .home-footer-bottom {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-footer-bottom {
+    flex-direction: column !important;
+  }
+}
+
+/* Neon Glow Animation for Stats Cards */
+@keyframes neon-glow {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.6;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.8;
+  }
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.6;
+  }
+}
+
+/* Light Point Moving Around Card Edges - 3 seconds */
+@keyframes light-point-move {
+  0% {
+    /* Top-left corner */
+    top: 0;
+    left: 0;
+  }
+  25% {
+    /* Top-right corner */
+    top: 0;
+    left: calc(100% - 12px);
+  }
+  50% {
+    /* Bottom-right corner */
+    top: calc(100% - 12px);
+    left: calc(100% - 12px);
+  }
+  75% {
+    /* Bottom-left corner */
+    top: calc(100% - 12px);
+    left: 0;
+  }
+  100% {
+    /* Back to top-left */
+    top: 0;
+    left: 0;
+  }
+}
+
+/* White Light Wave Animation for Hero CTA Button - 3 seconds */
+@keyframes wave-light-move {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    left: 100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
