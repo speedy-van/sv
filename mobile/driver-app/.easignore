@@ -1,5 +1,56 @@
-# EAS Build ignore file
-# This file helps reduce build size and speed
+# EAS Build Ignore File
+# Reduce upload size and exclude unnecessary files
 
-# Dependencies duplicates warning is expected in monorepo
-node_modules/../../node_modules/
+# Native project folders (handled by Prebuild)
+ios/
+android/.gradle/
+android/build/
+android/app/build/
+
+# Node modules and cache (handled by EAS)
+node_modules/
+.pnpm-store/
+pnpm-lock.yaml.tmp
+
+# Build outputs
+dist/
+.expo/
+.expo-shared/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Development files
+*.log
+.DS_Store
+.vscode/
+.idea/
+.git/
+
+# Test files
+__tests__/
+*.test.ts
+*.test.tsx
+jest.config.js
+coverage/
+
+# Documentation files
+*.md
+!README.md
+
+# Build scripts
+*.sh
+*.bat
+*.ps1
+build-android.*
+
+# Large unnecessary files
+expo-log.txt
+driver\ icon.png
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

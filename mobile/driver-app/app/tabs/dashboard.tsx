@@ -403,11 +403,11 @@ export default function DashboardScreen() {
             <View style={styles.statsRow}>
               <StatsCard
                 title="Assigned"
-                value={dashboardData?.statistics.totalAssigned || dashboardData?.statistics.assignedJobs || 0}
+                value={(dashboardData?.statistics as any)?.totalAssigned || dashboardData?.statistics.assignedJobs || 0}
                 color={colors.primary}
                 subtitle={
-                  dashboardData?.statistics.assignedRoutes > 0 
-                    ? `${dashboardData.statistics.assignedJobs || 0} orders, ${dashboardData.statistics.assignedRoutes || 0} routes`
+                  (dashboardData?.statistics as any)?.assignedRoutes > 0 
+                    ? `${dashboardData.statistics.assignedJobs || 0} orders, ${(dashboardData.statistics as any).assignedRoutes || 0} routes`
                     : undefined
                 }
               />

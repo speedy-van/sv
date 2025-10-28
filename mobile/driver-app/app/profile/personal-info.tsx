@@ -100,15 +100,16 @@ export default function PersonalInfoScreen() {
                 );
               } else {
                 // Show specific error message from backend
-                const errorTitle = response.alreadyInUse ? '❌ Email Already in Use' : '❌ Error';
+                const errorData = response.data as any;
+                const errorTitle = errorData?.alreadyInUse ? '❌ Email Already in Use' : '❌ Error';
                 const errorMessage = response.error || 'Failed to send verification email';
                 
                 Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
                 
                 console.error('Email change request failed:', {
                   error: response.error,
-                  alreadyInUse: response.alreadyInUse,
-                  userType: response.userType,
+                  alreadyInUse: errorData?.alreadyInUse,
+                  userType: errorData?.userType,
                 });
               }
             } catch (error: any) {

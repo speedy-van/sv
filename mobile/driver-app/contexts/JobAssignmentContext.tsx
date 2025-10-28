@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppState, AppStateStatus, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { pusherService, PusherEvent } from '../services/pusher';
+import { pusherService } from '../services/pusher';
+import { PusherEvent } from '../types';
 import { notificationService } from '../services/notification';
 import { useAuth } from './AuthContext';
 
