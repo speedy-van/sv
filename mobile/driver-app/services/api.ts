@@ -14,7 +14,7 @@ const getApiBaseUrl = () => {
   // For development, create a .env.local file with:
   // EXPO_PUBLIC_API_BASE_URL=http://localhost:3000 (iOS Simulator)
   // EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000 (Android Emulator)
-  return 'https://speedy-van.co.uk';
+  return 'https://api.speedy-van.co.uk';
 };
 
 const API_BASE_URL = getApiBaseUrl();

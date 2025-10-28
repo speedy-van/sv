@@ -120,8 +120,21 @@
 - [x] POST /api/driver/routes/[id]/decline
 
 ### Environment Variables
+✅ **PRODUCTION URL CONFIGURED:** `https://api.speedy-van.co.uk`
+
+**Configured in:** `services/api.ts` (Line 17)
+```typescript
+return 'https://api.speedy-van.co.uk'; // Production default
+```
+
+**For Development Override:**
+Create `.env.local` file with:
 ```env
-EXPO_PUBLIC_API_URL=https://api.speedy-van.co.uk (or http://192.168.1.161:3000 for dev)
+EXPO_PUBLIC_API_BASE_URL=http://192.168.1.161:3000
+```
+
+**Pusher Credentials:**
+```env
 EXPO_PUBLIC_PUSHER_KEY=407cb06c423e6c032e9c
 EXPO_PUBLIC_PUSHER_CLUSTER=eu
 ```
