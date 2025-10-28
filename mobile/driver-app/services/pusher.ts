@@ -1,8 +1,9 @@
 import Pusher from 'pusher-js/react-native';
+import Constants from 'expo-constants';
 import { PusherEvent } from '../types';
 
-const PUSHER_KEY = process.env.EXPO_PUBLIC_PUSHER_KEY || '';
-const PUSHER_CLUSTER = process.env.EXPO_PUBLIC_PUSHER_CLUSTER || 'eu';
+const PUSHER_KEY = Constants.expoConfig?.extra?.EXPO_PUBLIC_PUSHER_KEY || process.env.EXPO_PUBLIC_PUSHER_KEY || '';
+const PUSHER_CLUSTER = Constants.expoConfig?.extra?.EXPO_PUBLIC_PUSHER_CLUSTER || process.env.EXPO_PUBLIC_PUSHER_CLUSTER || 'eu';
 
 class PusherService {
   private pusher: Pusher | null = null;
