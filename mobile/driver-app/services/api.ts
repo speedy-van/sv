@@ -21,7 +21,7 @@ const getApiBaseUrl = () => {
 
   // Priority 3: Default to production if nothing is set
   console.log('🌐 Using default production API URL');
-  return 'https://api.speedy-van.co.uk';
+  return 'https://speedy-van.co.uk';
 };
 
 const API_BASE_URL = getApiBaseUrl();
