@@ -33,7 +33,7 @@ const AdminRouteClusterMap: React.FC<AdminRouteClusterMapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    const mapboxToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
     if (!mapboxToken) {
       console.error('❌ Mapbox token not found');
       return;

@@ -86,12 +86,17 @@ export const POST = withApiHandler(async (request: NextRequest) => {
 
   const { name, email, password, adminRole, isActive } = parsed.data;
 
-  // Normalize email to avoid case/whitespace collisions
+  // Normalize email to lowercase and remove whitespace
   const normalizedEmail = email.trim().toLowerCase();
 
-  // Check if user already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
+  // Check if user already exists (case-insensitive)
+  const existingUser = await prisma.user.findFirst({
+    where: { 
+      email: {
+        equals: normalizedEmail,
+        mode: 'insensitive',
+      }
+    },
   });
 
   if (existingUser) {

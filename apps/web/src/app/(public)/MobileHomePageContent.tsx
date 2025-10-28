@@ -1121,7 +1121,7 @@ export default function MobileHomePageContent() {
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
+    const businessUnitId = ''; // Set your Trustpilot Business Unit ID here if needed
 
     // Only load if Business Unit ID is configured
     if (!businessUnitId) {

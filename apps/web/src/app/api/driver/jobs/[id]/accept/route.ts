@@ -205,17 +205,55 @@ export async function POST(
 
       const timestamp = new Date().toISOString();
 
-      // 1. Notify admin dashboard - order accepted
+      console.log('📡 Sending admin notifications for job acceptance...');
+
+      // Get booking details for richer notifications
+      const fullBooking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          pickupAddress: true,
+          dropoffAddress: true,
+        }
+      });
+
+      // 1. Notify admin-notifications channel for immediate alert (GREEN NOTIFICATION)
+      await pusher.trigger('admin-notifications', 'driver-accepted-job', {
+        type: 'job_accepted',
+        severity: 'success',
+        jobId: bookingId,
+        bookingReference: booking.reference,
+        driverId: driver.id,
+        driverName: driverUser?.name || 'Unknown Driver',
+        driverEmail: driverUser?.email,
+        estimatedEarnings: fullBooking?.totalGBP ? `£${(fullBooking.totalGBP / 100).toFixed(2)}` : 'N/A',
+        pickupAddress: fullBooking?.pickupAddress?.label || 'Unknown',
+        dropoffAddress: fullBooking?.dropoffAddress?.label || 'Unknown',
+        message: `${driverUser?.name || 'Driver'} accepted job ${booking.reference}`,
+        acceptedAt: timestamp,
+        timestamp
+      });
+
+      // 2. Notify admin-orders channel - order accepted
       await pusher.trigger('admin-orders', 'order-accepted', {
         jobId: bookingId,
         bookingReference: booking.reference,
         driverId: driver.id,
         driverName: driverUser?.name || 'Unknown Driver',
+        estimatedEarnings: fullBooking?.totalGBP ? `£${(fullBooking.totalGBP / 100).toFixed(2)}` : 'N/A',
         acceptedAt: timestamp,
         timestamp
       });
 
-      // 2. Notify admin drivers panel
+      // 3. Notify admin-routes channel (in case job is part of route planning)
+      await pusher.trigger('admin-routes', 'job-accepted', {
+        jobId: bookingId,
+        bookingReference: booking.reference,
+        driverId: driver.id,
+        driverName: driverUser?.name || 'Unknown Driver',
+        timestamp
+      });
+
+      // 4. Notify admin drivers panel
       await pusher.trigger('admin-drivers', 'driver-accepted-job', {
         driverId: driver.id,
         driverName: driverUser?.name || 'Unknown Driver',
@@ -224,7 +262,7 @@ export async function POST(
         timestamp
       });
 
-      // 3. Notify driver's other devices (sync across devices)
+      // 5. Notify driver's other devices (sync across devices)
       await pusher.trigger(`driver-${driver.id}`, 'job-accepted-confirmed', {
         jobId: bookingId,
         bookingReference: booking.reference,
@@ -232,7 +270,7 @@ export async function POST(
         timestamp
       });
 
-      // 4. Notify customer tracking page
+      // 6. Notify customer tracking page
       await pusher.trigger(`booking-${booking.reference}`, 'driver-accepted', {
         driverName: driverUser?.name || 'Unknown Driver',
         acceptedAt: timestamp,
@@ -242,6 +280,7 @@ export async function POST(
       console.log('✅ Real-time notifications sent for job acceptance');
     } catch (pusherError) {
       console.error('⚠️ Failed to send Pusher notifications:', pusherError);
+      console.error('⚠️ Error details:', pusherError instanceof Error ? pusherError.message : 'Unknown');
       // Don't fail the request if Pusher fails
     }
 

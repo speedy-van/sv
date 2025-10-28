@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,10 +20,36 @@ import { colors, typography, spacing, borderRadius, shadows } from '../../utils/
 export default function PermissionsDemoScreen() {
   const { permissions, requestPermissions, currentLocation } = useLocation();
   const [notificationPermission, setNotificationPermission] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     checkPermissions();
+    checkAuthorization();
   }, []);
+
+  const checkAuthorization = async () => {
+    // CRITICAL: This page is ONLY for Apple Test Account
+    // Production drivers should NEVER see this
+    // Redirect unauthorized users immediately
+    const user = await checkCurrentUser();
+    const isTestAccount = user?.email === 'zadfad41@gmail.com';
+    
+    if (!isTestAccount) {
+      router.replace('/tabs/profile');
+      return;
+    }
+    
+    setIsAuthorized(true);
+  };
+
+  const checkCurrentUser = async () => {
+    try {
+      const { authService } = await import('../../services/auth');
+      return await authService.getCurrentUser();
+    } catch {
+      return null;
+    }
+  };
 
   const checkPermissions = async () => {
     const notifPerms = await Notifications.getPermissionsAsync();
@@ -150,6 +177,16 @@ export default function PermissionsDemoScreen() {
     </View>
   );
 
+  // Block unauthorized users
+  if (!isAuthorized) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Verifying access...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -162,6 +199,15 @@ export default function PermissionsDemoScreen() {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+        {/* Critical Warning Banner */}
+        <View style={styles.warningBanner}>
+          <Ionicons name="warning" size={24} color="#FF6B6B" />
+          <Text style={styles.warningText}>
+            ⚠️ DEMO MODE - This page is ONLY for Apple Test Account (zadfad41@gmail.com). 
+            Production driver accounts will NOT see any demo data.
+          </Text>
+        </View>
+
         {/* Info Banner */}
         <View style={styles.infoBanner}>
           <Ionicons name="information-circle" size={24} color={colors.primary} />
@@ -172,7 +218,7 @@ export default function PermissionsDemoScreen() {
 
         {/* Test Account Info */}
         <View style={styles.testAccountCard}>
-          <Text style={styles.testAccountTitle}>🧪 Test Account Details</Text>
+          <Text style={styles.testAccountTitle}>🧪 Apple Test Account Details</Text>
           <View style={styles.testAccountRow}>
             <Text style={styles.testAccountLabel}>Email:</Text>
             <Text style={styles.testAccountValue}>zadfad41@gmail.com</Text>
@@ -260,6 +306,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
   },
   header: {
     flexDirection: 'row',
@@ -289,6 +341,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.lg,
     gap: spacing.lg,
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    backgroundColor: '#FF6B6B20',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    gap: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6B6B',
+  },
+  warningText: {
+    ...typography.caption,
+    color: colors.text.primary,
+    flex: 1,
+    fontWeight: '600',
   },
   infoBanner: {
     flexDirection: 'row',

@@ -1,35 +1,53 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../../utils/theme';
-import { Platform } from 'react-native';
+import { Platform, Pressable } from 'react-native';
+import { soundService } from '../../services/soundService';
+
+// Custom tab bar button with sound effect
+function TabBarButton(props: any) {
+  return (
+    <Pressable
+      {...props}
+      onPress={(e) => {
+        // Play tab switch sound
+        soundService.playButtonClick();
+        // Call original onPress
+        props.onPress?.(e);
+      }}
+    />
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.text.secondary,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8E8E93',
+        tabBarButton: TabBarButton, // Add sound effect to all tab buttons
+        animation: 'fade',
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-          paddingTop: 8,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          elevation: 8,
+          backgroundColor: 'rgba(30, 64, 175, 0.1)',
+          borderTopWidth: 0,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+          paddingTop: 12,
+          height: Platform.OS === 'ios' ? 90 : 70,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
+          shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.1,
-          shadowRadius: 4,
+          shadowRadius: 12,
+          elevation: 16,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
+          fontWeight: '700',
+          marginTop: 4,
+          letterSpacing: 0.2,
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 2,
         },
       }}
     >
@@ -48,6 +66,15 @@ export default function TabsLayout() {
           title: 'Jobs',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase" size={size || 24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="schedule"
+        options={{
+          title: 'Schedule',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" size={size || 24} color={color} />
           ),
         }}
       />

@@ -181,8 +181,8 @@ export interface DriverEarningsConfig {
 const DEFAULT_CONFIG: DriverEarningsConfig = {
   baseFarePerJob: 2500,        // £25.00
   perDropFee: 1200,            // £12.00 per drop
-  perMileFee: 55,              // £0.55 per mile
-  perMinuteFee: 15,            // £0.15 per minute
+  perMileFee: 85,              // £0.85 per mile (increased from £0.55 for better driver compensation)
+  perMinuteFee: 25,            // £0.25 per minute (increased from £0.15 for better driver compensation)
   
   urgencyMultipliers: {
     standard: 1.0,

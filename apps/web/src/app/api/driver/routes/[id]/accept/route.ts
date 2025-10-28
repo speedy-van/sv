@@ -181,19 +181,63 @@ export async function POST(
     // Send real-time notification to admin via Pusher
     try {
       const pusher = getPusherServer();
+      const timestamp = new Date().toISOString();
+      const estimatedEarnings = `£${(Number(route.driverPayout || 0) / 100).toFixed(2)}`;
+      
+      console.log('📡 Sending admin notifications for route acceptance...');
+
+      // 1. Notify admin-notifications channel (GREEN NOTIFICATION)
+      await pusher.trigger('admin-notifications', 'driver-accepted-route', {
+        type: 'route_accepted',
+        severity: 'success',
+        routeId: routeId,
+        routeNumber: route.id,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        driverEmail: driver.User?.email,
+        dropCount: route.drops.length,
+        estimatedEarnings,
+        message: `${driver.User?.name || 'Driver'} accepted route with ${route.drops.length} stops`,
+        acceptedAt: timestamp,
+        timestamp
+      });
+
+      // 2. Notify admin-routes channel
+      await pusher.trigger('admin-routes', 'route-accepted', {
+        routeId: routeId,
+        routeNumber: route.id,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        dropCount: route.drops.length,
+        estimatedEarnings,
+        acceptedAt: timestamp,
+        timestamp
+      });
+
+      // 3. Notify admin-channel (legacy support)
       await pusher.trigger('admin-channel', 'route-accepted', {
         routeId: routeId,
         driverId: driver.id,
         driverName: driver.User?.name || 'Unknown Driver',
         dropCount: route.drops.length,
         totalEarnings: Number(route.driverPayout || 0) / 100,
-        acceptedAt: new Date().toISOString(),
+        acceptedAt: timestamp,
         message: `Driver ${driver.User?.name} accepted route with ${route.drops.length} stops`
       });
 
-      console.log('✅ Admin notification sent via Pusher');
+      // 4. Notify admin-drivers channel
+      await pusher.trigger('admin-drivers', 'driver-accepted-route', {
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        routeId: routeId,
+        dropCount: route.drops.length,
+        timestamp
+      });
+
+      console.log('✅ Admin notifications sent via Pusher for route acceptance');
     } catch (pusherError) {
       console.warn('⚠️ Failed to send Pusher notification:', pusherError);
+      console.error('⚠️ Error details:', pusherError instanceof Error ? pusherError.message : 'Unknown');
       // Continue even if Pusher fails
     }
 

@@ -10,7 +10,7 @@ export const maxDuration = 10;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   const startTime = Date.now();
   try {
@@ -23,7 +23,7 @@ export async function POST(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
     const { driverId, reason } = await request.json();
 
     console.log('📥 Received assign-driver request:', {
@@ -199,8 +199,8 @@ export async function POST(
           const updatedBooking = await tx.booking.update({
             where: { id: booking.id },
             data: {
-              // driverId remains null until driver accepts
-              // Keep current status (CONFIRMED) - driver assignment doesn't change booking status
+              driverId: driverId, // ✅ Set driver immediately for dashboard query
+              status: 'CONFIRMED',
               updatedAt: new Date(),
             }
           });
@@ -243,8 +243,8 @@ export async function POST(
           const updatedBooking = await tx.booking.update({
             where: { id: booking.id },
             data: {
-              // driverId remains null until driver accepts
-              // Keep current status (CONFIRMED) - driver assignment doesn't change booking status
+              driverId: driverId, // ✅ Set driver immediately for dashboard query
+              status: 'CONFIRMED',
               updatedAt: new Date(),
             }
           });
@@ -287,12 +287,157 @@ export async function POST(
         driverAssigned: driver.User?.name || 'Unknown'
       });
 
+      // Calculate driver earnings FIRST (before email)
+      console.log('💰 Calculating driver earnings...');
+      const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+      const earningsResult = await driverEarningsService.calculateEarnings({
+        driverId: driverId,
+        bookingId: booking.id,
+        assignmentId: result.newAssignment.id,
+        customerPaymentPence: booking.totalGBP,
+        distanceMiles: booking.baseDistanceMiles || 0,
+        durationMinutes: booking.estimatedDurationMinutes || 60,
+        dropCount: 1,
+        urgencyLevel: 'standard',
+        onTimeDelivery: true,
+      });
+      
+      const driverEarningsPounds = (earningsResult.breakdown.netEarnings / 100).toFixed(2);
+      console.log('💰 Driver earnings calculated: £' + driverEarningsPounds);
+
+      // Send email notification to driver
+      console.log('📧 ========================================');
+      console.log('📧 PREPARING EMAIL NOTIFICATION FOR DRIVER');
+      console.log('📧 ========================================');
+      console.log('📧 Driver Name:', driver.User?.name || 'Unknown');
+      console.log('📧 Driver Email:', driver.User?.email || 'No email');
+      console.log('📧 Booking Reference:', booking.reference);
+      console.log('📧 Driver Earnings: £' + driverEarningsPounds);
+      
+      try {
+        console.log('📧 Step 1: Importing UnifiedEmailService...');
+        const { default: UnifiedEmailService } = await import('@/lib/email/UnifiedEmailService');
+        console.log('📧 Step 1: ✅ UnifiedEmailService imported successfully');
+        
+        console.log('📧 Step 2: Preparing email content...');
+        const scheduledDate = booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('en-GB', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }) : 'ASAP';
+        
+        const scheduledTime = booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : 'As soon as possible';
+
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; }
+              .header { background-color: #10B981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { padding: 20px; }
+              .job-details { background-color: #F9FAFB; padding: 16px; border-radius: 8px; margin: 16px 0; }
+              .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #E5E7EB; }
+              .label { font-weight: bold; color: #6B7280; }
+              .value { color: #1C1C1E; }
+              .earnings { background-color: #10B981; color: white; padding: 12px; text-align: center; border-radius: 8px; font-size: 20px; font-weight: bold; margin: 16px 0; }
+              .button { background-color: #007AFF; color: white; padding: 14px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 20px; font-weight: bold; }
+              .footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h2>🎉 New Job Assigned!</h2>
+              </div>
+              <div class="content">
+                <p>Hello ${driver.User?.name || 'Driver'},</p>
+                <p>Great news! You have been assigned a new delivery job:</p>
+                
+                <div class="job-details">
+                  <div class="detail-row">
+                    <span class="label">Job Reference:</span>
+                    <span class="value">#${booking.reference}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Scheduled:</span>
+                    <span class="value">${scheduledDate} at ${scheduledTime}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Pickup:</span>
+                    <span class="value">${booking.pickupAddress?.label || 'See app for details'}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="label">Drop-off:</span>
+                    <span class="value">${booking.dropoffAddress?.label || 'See app for details'}</span>
+                  </div>
+                </div>
+
+                <div class="earnings">
+                  Your Earnings: £${driverEarningsPounds}
+                </div>
+
+                <p style="text-align: center;">
+                  <a href="https://apps.apple.com/gb/app/speedy-van-driver/id6753916830" class="button">📱 Open Driver App</a>
+                </p>
+
+                <p style="margin-top: 20px; font-size: 14px; color: #6B7280;">
+                  Tap the button above to open the Speedy Van Driver App and view your new job assignment. If you don't have the app installed, the link will take you to the App Store to download it.
+                </p>
+
+                <p>Thank you,<br>Speedy Van Team</p>
+              </div>
+              <div class="footer">
+                <p>Speedy Van Driver App</p>
+                <p>If you need help, contact us at support@speedy-van.co.uk or call 01202129746</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+
+        console.log('📧 Step 3: Sending email via UnifiedEmailService...');
+        console.log('📧 To:', driver.User?.email);
+        console.log('📧 Subject:', `New Job Assigned - ${booking.reference} - Speedy Van`);
+        
+        const emailResult = await UnifiedEmailService.sendCustomEmail(
+          driver.User?.email || '',
+          `New Job Assigned - ${booking.reference} - Speedy Van`,
+          htmlContent
+        );
+
+        console.log('📧 Step 4: Email send result:', emailResult);
+        
+        if (emailResult.success) {
+          console.log('✅✅✅ EMAIL SENT SUCCESSFULLY TO DRIVER via', emailResult.provider);
+          console.log('✅ Message ID:', emailResult.messageId);
+        } else {
+          console.error('❌❌❌ FAILED TO SEND EMAIL TO DRIVER');
+          console.error('❌ Error:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌❌❌ EXCEPTION WHILE SENDING EMAIL');
+        console.error('❌ Error:', emailError);
+        console.error('❌ Stack:', emailError instanceof Error ? emailError.stack : 'No stack');
+        // Don't fail the request if email fails
+      }
+      
+      console.log('📧 ========================================');
+      console.log('📧 EMAIL SEND PROCESS COMPLETED');
+      console.log('📧 ========================================');
+
       // Send real-time notifications
       try {
         const pusher = getPusherServer();
 
-        // Notify the new driver with "route-matched" event for consistency
-        console.log('📡 Sending route-matched event to driver channel:', `driver-${driverId}`);
+        // ✅ Use already calculated driver earnings (from above)
+        // ✅ SINGLE notification to driver with CORRECT earnings
+        console.log('📡 Sending route-matched notification to driver:', `driver-${driverId}`);
         const expiresAt = result.newAssignment.expiresAt;
         const routeMatchedResult = await pusher.trigger(`driver-${driverId}`, 'route-matched', {
           type: 'single-order',
@@ -309,30 +454,22 @@ export async function POST(
           expiresInSeconds: 1800, // 30 minutes in seconds
           pickupAddress: booking.pickupAddress?.label || 'Pickup location',
           dropoffAddress: booking.dropoffAddress?.label || 'Dropoff location',
-          estimatedEarnings: booking.totalGBP || 0,
-          distance: booking.baseDistanceMiles || 0,
-          message: 'New job assigned to you - 30 minutes to accept',
+          estimatedEarnings: `£${driverEarningsPounds}`, // ✅ CORRECT formatted earnings
+          distance: booking.baseDistanceMiles && booking.baseDistanceMiles > 0 ? booking.baseDistanceMiles : undefined,
+          message: `New job assigned - £${driverEarningsPounds} estimated`,
         });
-        console.log('✅ Route-matched event sent result:', routeMatchedResult);
-
-        // Also send job-assigned event for backward compatibility
-        console.log('📡 Sending job-assigned event to driver channel:', `driver-${driverId}`);
-        const jobAssignedResult = await pusher.trigger(`driver-${driverId}`, 'job-assigned', {
-          bookingId: booking.id,
-          bookingReference: booking.reference,
-          customerName: booking.customerName,
-          assignedAt: new Date().toISOString(),
-          message: 'You have been assigned a new job',
-        });
-        console.log('✅ Job-assigned event sent result:', jobAssignedResult);
+        console.log('✅ Driver notification sent with earnings:', `£${driverEarningsPounds}`);
 
         // Notify other drivers that job is no longer available
-        await pusher.trigger('drivers-channel', 'job-assigned-to-other', {
+        // This removes the job from their available jobs list immediately
+        await pusher.trigger('drivers-broadcast', 'job-removed', {
           bookingId: booking.id,
           bookingReference: booking.reference,
           assignedTo: driver.User?.name || 'Unknown',
           message: 'This job has been assigned to another driver',
+          reason: 'assigned',
         });
+        console.log('📡 Notified other drivers about job assignment');
 
         // Notify customer about driver assignment
         await pusher.trigger(`booking-${booking.reference}`, 'driver-assigned', {

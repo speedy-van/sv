@@ -113,8 +113,10 @@ export async function GET(request: NextRequest) {
       return jobDate && jobDate >= startDate && jobDate <= endDate;
     }).map(assignment => ({
       id: assignment.id,
+      bookingId: assignment.Booking.id, // ✅ Add booking ID for mobile navigation
       type: 'job',
       title: `Job #${assignment.Booking.reference}`,
+      reference: assignment.Booking.reference, // ✅ Add reference
       start: assignment.Booking.scheduledAt,
       end: assignment.Booking.scheduledAt
         ? addDays(assignment.Booking.scheduledAt, 1)
@@ -123,6 +125,7 @@ export async function GET(request: NextRequest) {
       dropoff: assignment.Booking.dropoffAddress,
       amount: assignment.Booking.totalGBP,
       status: assignment.status,
+      bookingStatus: assignment.Booking.status, // ✅ Add booking status
     }));
 
     // Get shifts in the date range

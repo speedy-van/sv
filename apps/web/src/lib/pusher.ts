@@ -25,14 +25,18 @@ export function getPusherServer(): Pusher {
       '❌ Pusher credentials not found. Using mock Pusher for development.'
     );
 
-    // Create a mock Pusher instance
+    // Create a mock Pusher instance with enhanced logging
     _pusherServer = {
       trigger: async (channel: string, event: string, data: any) => {
-        console.log(`[Mock Pusher] Trigger: ${channel} - ${event}`, data);
+        console.log(`🔶 [MOCK PUSHER] Channel: ${channel}`);
+        console.log(`🔶 [MOCK PUSHER] Event: ${event}`);
+        console.log(`🔶 [MOCK PUSHER] Data:`, JSON.stringify(data, null, 2));
+        console.log(`🔶 [MOCK PUSHER] ⚠️ THIS IS A MOCK - NO REAL NOTIFICATION SENT!`);
         return Promise.resolve();
       },
       triggerBatch: async (batch: any[]) => {
-        console.log('[Mock Pusher] Trigger batch:', batch);
+        console.log('🔶 [MOCK PUSHER] Trigger batch:', batch);
+        console.log(`🔶 [MOCK PUSHER] ⚠️ THIS IS A MOCK - NO REAL NOTIFICATION SENT!`);
         return Promise.resolve();
       },
     } as any;
@@ -40,6 +44,8 @@ export function getPusherServer(): Pusher {
     return _pusherServer!;
   }
 
+  console.log('✅ Creating REAL Pusher instance with provided credentials');
+  
   _pusherServer = new Pusher({
     appId: PUSHER_APP_ID,
     key: PUSHER_KEY,

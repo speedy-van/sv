@@ -6,6 +6,9 @@ import EnhancedAdminRoutesDashboard from '@/components/admin/EnhancedAdminRoutes
 
 interface MultiDropRoutesSectionProps {
   onCountChange?: (count: number) => void;
+  declinedNotifications?: string[];
+  acceptedNotifications?: string[];
+  inProgressNotifications?: string[];
 }
 
 /**
@@ -20,13 +23,22 @@ interface MultiDropRoutesSectionProps {
  * - Track progress
  * - Cancel/split routes
  */
-export default function MultiDropRoutesSection({ onCountChange }: MultiDropRoutesSectionProps) {
+export default function MultiDropRoutesSection({ 
+  onCountChange, 
+  declinedNotifications,
+  acceptedNotifications,
+  inProgressNotifications
+}: MultiDropRoutesSectionProps) {
   // Note: The count will be managed by the EnhancedAdminRoutesDashboard component internally
   // We can enhance this later to expose the count via props or context
 
   return (
     <Box>
-      <EnhancedAdminRoutesDashboard />
+      <EnhancedAdminRoutesDashboard 
+        declinedNotifications={declinedNotifications}
+        acceptedNotifications={acceptedNotifications}
+        inProgressNotifications={inProgressNotifications}
+      />
     </Box>
   );
 }

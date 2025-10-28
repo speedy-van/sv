@@ -6,6 +6,9 @@ import OrdersClient from '@/app/admin/orders/table';
 
 interface SingleOrdersSectionProps {
   onCountChange?: (count: number) => void;
+  declinedNotifications?: string[];
+  acceptedNotifications?: string[];
+  inProgressNotifications?: string[];
 }
 
 /**
@@ -19,13 +22,22 @@ interface SingleOrdersSectionProps {
  * - Cancel orders
  * - Create routes from selected orders
  */
-export default function SingleOrdersSection({ onCountChange }: SingleOrdersSectionProps) {
+export default function SingleOrdersSection({ 
+  onCountChange, 
+  declinedNotifications,
+  acceptedNotifications,
+  inProgressNotifications 
+}: SingleOrdersSectionProps) {
   // Note: The count will be managed by the OrdersClient component internally
   // We can enhance this later to expose the count via props or context
 
   return (
     <Box>
-      <OrdersClient />
+      <OrdersClient 
+        declinedNotifications={declinedNotifications}
+        acceptedNotifications={acceptedNotifications}
+        inProgressNotifications={inProgressNotifications}
+      />
     </Box>
   );
 }

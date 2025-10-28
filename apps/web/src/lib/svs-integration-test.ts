@@ -144,7 +144,7 @@ export class SVSIntegrationTest {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: '07901846297',
+          to: '01202129746',
           message: 'Test message',
           sender: 'SpeedyVan',
         }),

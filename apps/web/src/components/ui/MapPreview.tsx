@@ -77,7 +77,7 @@ export const MapPreview: React.FC<MapPreviewProps> = ({
     if (!mapContainer.current || !window.mapboxgl) return;
 
     try {
-      window.mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      window.mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
       
       map.current = new window.mapboxgl.Map({
         container: mapContainer.current,
@@ -287,7 +287,7 @@ export const RoutePreviewMap: React.FC<{ route: RoutePreview; className?: string
     if (!mapContainer.current || !window.mapboxgl) return;
 
     try {
-      window.mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      window.mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
       
       const bounds = new window.mapboxgl.LngLatBounds();
       bounds.extend([route.pickup.lng, route.pickup.lat]);

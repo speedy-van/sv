@@ -111,7 +111,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     data: {
       id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
-      email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      email: (email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`).toLowerCase(),
       role: 'customer',
       password: 'temp-password', // Will be reset by customer
       emailVerified: false,

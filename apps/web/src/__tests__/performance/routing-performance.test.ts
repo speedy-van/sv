@@ -98,7 +98,7 @@ describe('Routing System - Performance Tests', () => {
           email: `perf_admin_${Date.now()}@test.com`,
           password: 'hashed',
           role: 'admin',
-          phone: '+447901846297',
+          phone: '+441202129746',
         }
       });
       adminUserId = newAdmin.id;

@@ -2,18 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
-import Pusher from 'pusher';
+import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
-
-// Initialize Pusher for real-time updates
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || '',
-  key: process.env.PUSHER_KEY || '',
-  secret: process.env.PUSHER_SECRET || '',
-  cluster: process.env.PUSHER_CLUSTER || 'eu',
-  useTLS: true,
-});
 
 /**
  * Calculate earnings for completed drops only
@@ -51,12 +42,115 @@ export async function POST(
     }
 
     const { id: routeId } = await params;
-    const { reason } = await request.json();
+    
+    // Parse request body safely
+    let reason = 'Unassigned by admin';
+    try {
+      const body = await request.json();
+      reason = body.reason || reason;
+    } catch (e) {
+      console.log('⚠️ No request body provided, using default reason');
+    }
 
     console.log('🔄 Admin unassigning driver from route:', { routeId, reason });
 
     return await withPrisma(async (prisma) => {
-      // Find the route with complete details
+      // Check if this is a single booking (starts with "booking-")
+      if (routeId.startsWith('booking-')) {
+        const bookingId = routeId.replace('booking-', '');
+        
+        console.log('🔄 Unassigning single booking:', bookingId);
+        
+        // Handle single booking unassignment
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          include: {
+            driver: {
+              include: {
+                User: {
+                  select: { id: true, name: true, email: true }
+                }
+              }
+            }
+          }
+        });
+
+        if (!booking) {
+          return NextResponse.json(
+            { error: 'Booking not found' },
+            { status: 404 }
+          );
+        }
+
+        if (!booking.driverId) {
+          return NextResponse.json(
+            { error: 'Booking is not assigned to any driver' },
+            { status: 400 }
+          );
+        }
+
+        const oldDriverId = booking.driverId;
+        const oldDriverName = (booking as any).driver?.User?.name || (booking as any).driver?.name || 'Unknown';
+
+        // Update booking - remove driver assignment
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: { 
+            driverId: null,
+            status: 'CONFIRMED'
+          }
+        });
+
+        // Cancel active assignment if exists
+        const activeAssignment = await prisma.assignment.findFirst({
+          where: { 
+            bookingId: bookingId,
+            status: { in: ['invited', 'claimed', 'accepted'] }
+          }
+        });
+
+        if (activeAssignment) {
+          await prisma.assignment.update({
+            where: { id: activeAssignment.id },
+            data: { 
+              status: 'cancelled',
+              updatedAt: new Date()
+            }
+          });
+        }
+
+        // Send Pusher notification to driver
+        try {
+          const pusher = getPusherServer();
+          console.log('📡 Sending job-removed notification to driver:', oldDriverId);
+          
+          await pusher.trigger(`driver-${oldDriverId}`, 'job-removed', {
+            bookingId: bookingId,
+            bookingReference: booking.reference,
+            reason: reason || 'Removed by admin',
+            message: `Job ${booking.reference} has been unassigned by admin`
+          });
+          console.log('✅ Sent unassign notification to driver');
+        } catch (pusherError) {
+          console.error('❌ Failed to send Pusher notification:', pusherError);
+        }
+
+        console.log('✅ Booking unassigned successfully:', {
+          bookingId,
+          oldDriver: oldDriverName
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: `Booking ${booking.reference} unassigned from ${oldDriverName} successfully`,
+          data: {
+            bookingId,
+            oldDriver: oldDriverName
+          }
+        });
+      }
+
+      // Find the route with complete details (for multi-drop routes)
       const route = await prisma.route.findUnique({
         where: { id: routeId },
         include: {
@@ -220,6 +314,9 @@ export async function POST(
 
       // Send real-time notifications to update schedules
       try {
+        const pusher = getPusherServer();
+        console.log('📡 Sending route unassign notifications...');
+        
         // Notify admin channel
         await pusher.trigger('admin-channel', 'route-unassigned', {
           routeId,
@@ -259,6 +356,7 @@ export async function POST(
         console.log('📡 Real-time notifications sent successfully');
       } catch (pusherError) {
         console.error('⚠️ Failed to send Pusher notifications:', pusherError);
+        console.error('⚠️ Error details:', pusherError instanceof Error ? pusherError.message : 'Unknown');
         // Don't fail the request if Pusher fails
       }
 
@@ -290,10 +388,15 @@ export async function POST(
 
   } catch (error) {
     console.error('❌ Error unassigning route:', error);
+    console.error('❌ Error name:', error instanceof Error ? error.name : 'Unknown');
+    console.error('❌ Error message:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
+    
     return NextResponse.json(
       { 
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to unassign route'
+        error: error instanceof Error ? error.message : 'Failed to unassign route',
+        errorType: error instanceof Error ? error.name : 'Unknown',
       },
       { status: 500 }
     );

@@ -390,7 +390,7 @@ export default function SendSMSPage() {
                   <FormLabel>Phone Number</FormLabel>
                   <Input
                     type="tel"
-                    placeholder="e.g., 00447901846297 or 01202129746"
+                    placeholder="e.g., 00441202129746 or 01202129746"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     bg="bg.input"

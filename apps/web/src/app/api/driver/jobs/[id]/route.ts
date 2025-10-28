@@ -233,7 +233,9 @@ export async function GET(
       },
       // Pricing information is not exposed to drivers for privacy reasons
       // Drivers only see their earnings, not customer payment amounts
-      crewRecommendation,
+      crewRecommendation: typeof crewRecommendation === 'string' 
+        ? crewRecommendation 
+        : 'Van with 2 crew',
       specialRequirements: '',
       status: booking.status,
       assignment: booking.Assignment && booking.Assignment[0]

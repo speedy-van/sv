@@ -167,11 +167,15 @@ interface OrderDetail {
     label: string;
     postcode: string;
     flatNumber?: string;
+    lat?: number | null;
+    lng?: number | null;
   };
   dropoffAddress?: {
     label: string;
     postcode: string;
     flatNumber?: string;
+    lat?: number | null;
+    lng?: number | null;
   };
   pickupProperty?: {
     propertyType: string;
@@ -1117,22 +1121,22 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   )}
                 </HStack>
                 
-                {order.driver ? (
+                {order.driver?.user ? (
                   <>
                     <HStack>
                       <FiTruck />
-                      <Text>{order.driver.user.name}</Text>
+                      <Text>{order.driver.user.name || 'Unknown Driver'}</Text>
                     </HStack>
                     <HStack>
                       <FiMail />
                       <Text fontSize="sm" color="gray.600">
-                        {order.driver.user.email}
+                        {order.driver.user.email || 'N/A'}
                       </Text>
                     </HStack>
                     <HStack>
                       <FiPhone />
                       <Text fontSize="sm" color="gray.600">
-                        {order.driver.user.phone}
+                        {order.driver.user.phone || 'N/A'}
                       </Text>
                     </HStack>
                   </>
@@ -1660,7 +1664,207 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     </HStack>
                   </VStack>
                 ) : (
-                  <VStack spacing={2} align="stretch">
+                  <VStack spacing={4} align="stretch">
+                    {/* Interactive Driver Location Map */}
+                    {order && order.pickupAddress && 
+                     order.pickupAddress.lat !== null && order.pickupAddress.lat !== undefined && 
+                     order.pickupAddress.lng !== null && order.pickupAddress.lng !== undefined && 
+                     !isNaN(Number(order.pickupAddress.lat)) && !isNaN(Number(order.pickupAddress.lng)) &&
+                     availableDrivers.length > 0 ? (
+                      <Box 
+                        h="450px" 
+                        bg="gray.50" 
+                        borderRadius="md" 
+                        border="1px solid" 
+                        borderColor="gray.200"
+                        position="relative"
+                        overflow="hidden"
+                      >
+                        <iframe
+                          srcDoc={`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <meta charset="utf-8">
+                              <meta name="viewport" content="width=device-width, initial-scale=1">
+                              <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+                              <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+                              <style>
+                                body { margin: 0; padding: 0; }
+                                #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+                              </style>
+                            </head>
+                            <body>
+                              <div id='map'></div>
+                              <script>
+                                mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+                                
+                                const pickupLat = ${order.pickupAddress.lat};
+                                const pickupLng = ${order.pickupAddress.lng};
+                                const dropoffLat = ${order.dropoffAddress?.lat || order.pickupAddress.lat};
+                                const dropoffLng = ${order.dropoffAddress?.lng || order.pickupAddress.lng};
+                                
+                                const drivers = ${JSON.stringify(
+                                  availableDrivers
+                                    .filter(d => 
+                                      d.DriverAvailability?.location?.lat && 
+                                      d.DriverAvailability?.location?.lng &&
+                                      !isNaN(Number(d.DriverAvailability.location.lat)) &&
+                                      !isNaN(Number(d.DriverAvailability.location.lng))
+                                    )
+                                    .map(d => ({
+                                      name: d.name,
+                                      lat: Number(d.DriverAvailability.location.lat),
+                                      lng: Number(d.DriverAvailability.location.lng),
+                                      status: d.DriverAvailability.status,
+                                      activeJobs: d.totalActiveJobs || 0,
+                                      reason: d.availabilityReason || 'Available'
+                                    }))
+                                )};
+                                
+                                const map = new mapboxgl.Map({
+                                  container: 'map',
+                                  style: 'mapbox://styles/mapbox/streets-v12',
+                                  center: [pickupLng, pickupLat],
+                                  zoom: 12,
+                                  interactive: true
+                                });
+                                
+                                // Add zoom and rotation controls
+                                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                                
+                                // Add fullscreen control
+                                map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+                                
+                                // Add pickup marker
+                                const pickupEl = document.createElement('div');
+                                pickupEl.className = 'marker';
+                                pickupEl.innerHTML = '<div style="background: #EF4444; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg); font-size: 16px;">📍</span></div>';
+                                pickupEl.style.cursor = 'pointer';
+                                
+                                new mapboxgl.Marker(pickupEl)
+                                  .setLngLat([pickupLng, pickupLat])
+                                  .setPopup(new mapboxgl.Popup({ offset: 25, maxWidth: '300px' })
+                                    .setHTML('<div style="padding: 8px;"><strong>🎯 Pickup Location</strong><br/><small>${(order.pickupAddress.label || '').replace(/'/g, "\\'")}</small></div>'))
+                                  .addTo(map);
+                                
+                                // Add dropoff marker if different
+                                ${order.dropoffAddress?.lat && order.dropoffAddress?.lng && 
+                                  (order.dropoffAddress.lat !== order.pickupAddress.lat || 
+                                   order.dropoffAddress.lng !== order.pickupAddress.lng) ? `
+                                const dropoffEl = document.createElement('div');
+                                dropoffEl.innerHTML = '<div style="background: #3B82F6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 16px;">🏁</div>';
+                                dropoffEl.style.cursor = 'pointer';
+                                
+                                new mapboxgl.Marker(dropoffEl)
+                                  .setLngLat([dropoffLng, dropoffLat])
+                                  .setPopup(new mapboxgl.Popup({ offset: 25, maxWidth: '300px' })
+                                    .setHTML('<div style="padding: 8px;"><strong>🏁 Dropoff Location</strong><br/><small>${(order.dropoffAddress?.label || '').replace(/'/g, "\\'")}</small></div>'))
+                                  .addTo(map);
+                                ` : ''}
+                                
+                                // Add driver markers with tooltips
+                                drivers.forEach(driver => {
+                                  const el = document.createElement('div');
+                                  const isOnline = driver.status === 'online';
+                                  el.innerHTML = '<div style="background: ' + (isOnline ? '#10B981' : '#9CA3AF') + '; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 16px; transition: transform 0.2s;">' + (isOnline ? '🚗' : '⭕') + '</div>';
+                                  el.style.cursor = 'pointer';
+                                  
+                                  // Hover effect
+                                  el.onmouseenter = function() {
+                                    this.firstChild.style.transform = 'scale(1.2)';
+                                  };
+                                  el.onmouseleave = function() {
+                                    this.firstChild.style.transform = 'scale(1)';
+                                  };
+                                  
+                                  const popup = new mapboxgl.Popup({ 
+                                    offset: 25,
+                                    closeButton: false,
+                                    maxWidth: '250px'
+                                  }).setHTML(
+                                    '<div style="padding: 12px; font-family: system-ui, -apple-system, sans-serif;">' +
+                                    '<div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">' + driver.name + '</div>' +
+                                    '<div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">' +
+                                    '<span style="width: 8px; height: 8px; border-radius: 50%; background: ' + (isOnline ? '#10B981' : '#9CA3AF') + ';"></span>' +
+                                    '<span style="font-size: 12px; font-weight: 500; color: ' + (isOnline ? '#10B981' : '#6B7280') + ';">' + driver.status.toUpperCase() + '</span>' +
+                                    '</div>' +
+                                    '<div style="font-size: 11px; color: #6B7280; margin-bottom: 2px;">Active Jobs: <strong>' + driver.activeJobs + '</strong></div>' +
+                                    '<div style="font-size: 11px; color: #9CA3AF;">' + driver.reason + '</div>' +
+                                    '</div>'
+                                  );
+                                  
+                                  new mapboxgl.Marker(el)
+                                    .setLngLat([driver.lng, driver.lat])
+                                    .setPopup(popup)
+                                    .addTo(map);
+                                });
+                                
+                                // Fit bounds to show all markers
+                                setTimeout(() => {
+                                  const bounds = new mapboxgl.LngLatBounds();
+                                  bounds.extend([pickupLng, pickupLat]);
+                                  ${order.dropoffAddress?.lat && order.dropoffAddress?.lng ? `bounds.extend([dropoffLng, dropoffLat]);` : ''}
+                                  drivers.forEach(d => bounds.extend([d.lng, d.lat]));
+                                  map.fitBounds(bounds, { padding: 60, duration: 1000 });
+                                }, 100);
+                              </script>
+                            </body>
+                            </html>
+                          `}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                        />
+                        <Box 
+                          position="absolute" 
+                          bottom={3} 
+                          left={3} 
+                          bg="white" 
+                          px={3} 
+                          py={2} 
+                          borderRadius="md"
+                          fontSize="xs"
+                          boxShadow="lg"
+                          border="1px solid"
+                          borderColor="gray.200"
+                        >
+                          <VStack align="start" spacing={1}>
+                            <HStack spacing={3}>
+                              <Text fontSize="11px" fontWeight="medium">📍 Pickup</Text>
+                              <Text fontSize="11px" fontWeight="medium">🏁 Dropoff</Text>
+                            </HStack>
+                            <HStack spacing={3}>
+                              <HStack spacing={1}>
+                                <Box w={2} h={2} borderRadius="full" bg="green.500" />
+                                <Text fontSize="10px">Online</Text>
+                              </HStack>
+                              <HStack spacing={1}>
+                                <Box w={2} h={2} borderRadius="full" bg="gray.400" />
+                                <Text fontSize="10px">Offline</Text>
+                              </HStack>
+                            </HStack>
+                            <Text fontSize="9px" color="gray.500" fontStyle="italic">
+                              💡 Click markers • Drag to pan • Scroll to zoom
+                            </Text>
+                          </VStack>
+                        </Box>
+                      </Box>
+                    ) : order && (!order.pickupAddress?.lat || !order.pickupAddress?.lng || 
+                                  isNaN(Number(order.pickupAddress?.lat)) || 
+                                  isNaN(Number(order.pickupAddress?.lng))) ? (
+                      <Alert status="warning" variant="left-accent">
+                        <AlertIcon />
+                        <Box>
+                          <Text fontWeight="bold" fontSize="sm">Map Unavailable</Text>
+                          <Text fontSize="xs" color="gray.600">
+                            This order doesn't have valid pickup coordinates. 
+                            Drivers with valid locations will still show distances in the dropdown below.
+                          </Text>
+                        </Box>
+                      </Alert>
+                    ) : null}
+
                     <Select
                       placeholder="👤 Click here to select a driver"
                       value={selectedDriverId}
@@ -1670,12 +1874,58 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       focusBorderColor="blue.500"
                       size="lg"
                     >
-                      {availableDrivers.map((driver) => (
-                        <option key={driver.id} value={driver.id}>
-                          {driver.name} - {driver.availabilityReason || 'Available'} 
-                          {driver.availability?.status && ` (${driver.availability.status})`}
-                        </option>
-                      ))}
+                      {availableDrivers.map((driver) => {
+                        // Calculate distance from driver to pickup
+                        let distanceText = '';
+                        
+                        // ✅ CRITICAL: Check all coordinates exist and are valid numbers
+                        if (
+                          driver.DriverAvailability?.location?.lat && 
+                          driver.DriverAvailability?.location?.lng &&
+                          order?.pickupAddress?.lat && 
+                          order?.pickupAddress?.lng &&
+                          !isNaN(driver.DriverAvailability.location.lat) &&
+                          !isNaN(driver.DriverAvailability.location.lng) &&
+                          !isNaN(order.pickupAddress.lat) &&
+                          !isNaN(order.pickupAddress.lng)
+                        ) {
+                          try {
+                            const driverLat = parseFloat(driver.DriverAvailability.location.lat);
+                            const driverLng = parseFloat(driver.DriverAvailability.location.lng);
+                            const pickupLat = Number(order.pickupAddress.lat);
+                            const pickupLng = Number(order.pickupAddress.lng);
+                            
+                            // Haversine formula for distance
+                            const R = 3959; // Earth radius in miles
+                            const dLat = (pickupLat - driverLat) * Math.PI / 180;
+                            const dLng = (pickupLng - driverLng) * Math.PI / 180;
+                            const a = 
+                              Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(driverLat * Math.PI / 180) * Math.cos(pickupLat * Math.PI / 180) *
+                              Math.sin(dLng/2) * Math.sin(dLng/2);
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                            const distance = R * c;
+                            
+                            if (!isNaN(distance) && isFinite(distance)) {
+                              distanceText = ` - ${distance.toFixed(1)} miles away`;
+                            }
+                          } catch (error) {
+                            console.warn('Error calculating distance:', error);
+                            distanceText = ' - Location unknown';
+                          }
+                        } else {
+                          // One or more coordinates are missing
+                          distanceText = ' - Location unknown';
+                        }
+                        
+                        return (
+                          <option key={driver.id} value={driver.id}>
+                            {driver.name} - {driver.availabilityReason || 'Available'}
+                            {driver.DriverAvailability?.status && ` (${driver.DriverAvailability.status})`}
+                            {distanceText}
+                          </option>
+                        );
+                      })}
                     </Select>
                     
                     {!selectedDriverId && (
@@ -1815,12 +2065,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </VStack>
               </Alert>
               
-              {order?.driver && (
+              {order?.driver?.user && (
                 <Box p={3} bg="gray.50" borderRadius="md">
                   <Text fontWeight="bold" fontSize="sm" mb={1}>Driver to Remove:</Text>
-                  <Text fontSize="sm">Name: {order.driver.user.name}</Text>
-                  <Text fontSize="sm">Email: {order.driver.user.email}</Text>
-                  <Text fontSize="sm">Phone: {order.driver.user.phone}</Text>
+                  <Text fontSize="sm">Name: {order.driver.user.name || 'Unknown'}</Text>
+                  <Text fontSize="sm">Email: {order.driver.user.email || 'N/A'}</Text>
+                  <Text fontSize="sm">Phone: {order.driver.user.phone || 'N/A'}</Text>
                 </Box>
               )}
 
@@ -1860,3 +2110,4 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 };
 
 export default OrderDetailDrawer;
+

@@ -134,8 +134,8 @@ export default function EnhancedAdminChatPage() {
   };
 
   const setupPusher = () => {
-    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
-    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu';
+    const pusherKey = '407cb06c423e6c032e9c';
+    const pusherCluster = 'eu';
 
     if (!pusherKey || pusherRef.current) return;
 

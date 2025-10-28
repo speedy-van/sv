@@ -15,10 +15,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user with customer role
+    // Find user with customer role (case-insensitive email search)
     const user = await prisma.user.findFirst({
       where: {
-        email: email.toLowerCase(),
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
         role: 'customer',
       },
     });

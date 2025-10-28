@@ -41,6 +41,9 @@ export default async function AdminLayout({
 
   return (
     <>
+      {/* Load Pusher for real-time notifications */}
+      <script src="https://js.pusher.com/8.2.0/pusher.min.js" async></script>
+      
       <UnifiedNavigation role="admin" isAuthenticated={true}>
         <UnifiedErrorBoundary role="admin">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>

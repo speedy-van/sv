@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     // Check admin authorization
@@ -21,7 +21,7 @@ export async function POST(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
 
     // Fetch booking with all related data
     const booking = await prisma.booking.findUnique({

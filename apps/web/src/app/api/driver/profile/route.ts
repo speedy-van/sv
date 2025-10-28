@@ -122,6 +122,11 @@ export async function GET(request: NextRequest) {
           firstName: true,
           lastName: true,
           phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          postcode: true,
+          county: true,
           status: true,
           applicationDate: true,
         },
@@ -151,9 +156,18 @@ export async function GET(request: NextRequest) {
       // Basic Info
       id: user.id,
       email: user.email,
+      name: user.name || `${driverApplication?.firstName || ''} ${driverApplication?.lastName || ''}`.trim(),
       firstName: driverApplication?.firstName || '',
       lastName: driverApplication?.lastName || '',
       phone: driverApplication?.phone || '',
+      address: driverApplication?.addressLine1 
+        ? `${driverApplication.addressLine1}${driverApplication.addressLine2 ? ', ' + driverApplication.addressLine2 : ''}`
+        : '',
+      addressLine1: driverApplication?.addressLine1 || '',
+      addressLine2: driverApplication?.addressLine2 || '',
+      city: driverApplication?.city || '',
+      postcode: driverApplication?.postcode || '',
+      county: driverApplication?.county || '',
       
       // ✅ CRITICAL: Include driver relation for mobile app Pusher initialization
       driver: {
@@ -257,21 +271,34 @@ export async function PUT(request: NextRequest) {
       console.log('🌐 NextAuth session authenticated for user:', userId);
     }
     const body = await request.json();
+    console.log('📝 Update request body:', body);
 
     // Simple updates only
-    const { firstName, lastName, phone, email, basePostcode, vehicleType, locationConsent } = body;
+    const { 
+      name, // ⚠️ NAME IS READ-ONLY - WILL BE IGNORED
+      firstName, 
+      lastName, 
+      phone, 
+      email, // ⚠️ EMAIL IS READ-ONLY - WILL BE IGNORED
+      address,
+      addressLine1,
+      addressLine2,
+      city,
+      postcode, 
+      county,
+      basePostcode, 
+      vehicleType, 
+      locationConsent 
+    } = body;
 
-    // Update user email if provided
-    if (email) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { email },
-      });
-    }
+    // ⚠️ SECURITY: Do NOT allow name or email updates
+    // Name and email are immutable after account creation
+    console.log('⚠️ Name and email updates are DISABLED for security');
 
     // Update driver data if provided
     const driverUpdateData: any = {};
     if (basePostcode) driverUpdateData.basePostcode = basePostcode;
+    if (postcode && !basePostcode) driverUpdateData.basePostcode = postcode; // Use postcode as basePostcode
     if (vehicleType) driverUpdateData.vehicleType = vehicleType;
 
     if (Object.keys(driverUpdateData).length > 0) {
@@ -279,6 +306,7 @@ export async function PUT(request: NextRequest) {
         where: { userId: userId },
         data: driverUpdateData,
       });
+      console.log('✅ Driver updated:', driverUpdateData);
     }
 
     // Handle location consent updates
@@ -323,15 +351,35 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update driver application data if provided
-    if (firstName || lastName || phone) {
-      const applicationUpdateData: any = {};
-      if (firstName) applicationUpdateData.firstName = firstName;
-      if (lastName) applicationUpdateData.lastName = lastName;
-      if (phone) applicationUpdateData.phone = phone;
+    const applicationUpdateData: any = {};
+    
+    // ⚠️ SECURITY: Name updates are DISABLED
+    // firstName and lastName are immutable after account creation
+    // Only allow address, phone, and postcode updates
+    
+    if (phone) applicationUpdateData.phone = phone;
+    
+    // Handle address fields
+    if (address) {
+      // If full address provided, use it for addressLine1
+      applicationUpdateData.addressLine1 = address;
+    } else {
+      if (addressLine1) applicationUpdateData.addressLine1 = addressLine1;
+      if (addressLine2 !== undefined) applicationUpdateData.addressLine2 = addressLine2;
+    }
+    
+    if (city) applicationUpdateData.city = city;
+    if (postcode) applicationUpdateData.postcode = postcode;
+    if (county) applicationUpdateData.county = county;
 
-      await prisma.driverApplication.updateMany({
+    if (Object.keys(applicationUpdateData).length > 0) {
+      const updated = await prisma.driverApplication.updateMany({
         where: { userId: userId },
         data: applicationUpdateData,
+      });
+      console.log('✅ Driver application updated:', { 
+        count: updated.count,
+        fields: Object.keys(applicationUpdateData) 
       });
     }
 

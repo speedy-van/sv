@@ -84,10 +84,10 @@ await unifiedEmailService.sendOrderConfirmation({
 - Comprehensive error handling
 
 **Supported UK Number Formats** (auto-converted to 0044):
-- `07901846297` → `00447901846297`
-- `00447901846297` → `00447901846297`
-- `+447901846297` → `00447901846297`
-- `447901846297` → `00447901846297`
+- `01202129746` → `00441202129746`
+- `00441202129746` → `00441202129746`
+- `+441202129746` → `00441202129746`
+- `441202129746` → `00441202129746`
 
 **Environment Variables**:
 ```env
@@ -102,7 +102,7 @@ const voodooSMS = getVoodooSMSService();
 
 // Send booking confirmation SMS
 await voodooSMS.sendBookingConfirmation({
-  phoneNumber: '07901846297',
+  phoneNumber: '01202129746',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   pickupAddress: '123 Main St, London',
@@ -112,7 +112,7 @@ await voodooSMS.sendBookingConfirmation({
 
 // Send payment confirmation
 await voodooSMS.sendPaymentConfirmation({
-  phoneNumber: '07901846297',
+  phoneNumber: '01202129746',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   amount: 150.00,
@@ -120,7 +120,7 @@ await voodooSMS.sendPaymentConfirmation({
 
 // Send driver assignment notification
 await voodooSMS.sendDriverAssignment({
-  phoneNumber: '07901846297',
+  phoneNumber: '01202129746',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   driverName: 'Mike Smith',
@@ -249,11 +249,11 @@ STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 The SMS service automatically normalizes UK phone numbers:
 
 ```typescript
-// All these formats are supported and normalized to +447901846297
-'07901846297'      // Mobile with leading 0
-'00447901846297'   // International with 0044
-'+447901846297'    // International with +44
-'447901846297'     // International without +
+// All these formats are supported and normalized to +441202129746
+'01202129746'      // Mobile with leading 0
+'00441202129746'   // International with 0044
+'+441202129746'    // International with +44
+'441202129746'     // International without +
 ```
 
 ## 📊 Error Handling
@@ -268,7 +268,7 @@ All integrations include comprehensive error handling:
 ## 🔧 Testing
 
 ### Test Phone Numbers
-- Use UK test numbers: `07901846297`, `00447901846297`
+- Use UK test numbers: `01202129746`, `00441202129746`
 - Test email: `test@speedy-van.co.uk`
 
 ### Test Stripe

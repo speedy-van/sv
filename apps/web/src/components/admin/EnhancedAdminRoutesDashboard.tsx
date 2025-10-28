@@ -63,6 +63,7 @@ import {
   AlertIcon,
   Icon,
   Circle,
+  Portal,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import {
@@ -196,7 +197,17 @@ interface Route {
 
 type RouteGenerationMode = 'manual' | 'semi' | 'automatic';
 
-const EnhancedAdminRoutesDashboard = () => {
+interface EnhancedAdminRoutesDashboardProps {
+  declinedNotifications?: string[];
+  acceptedNotifications?: string[];
+  inProgressNotifications?: string[];
+}
+
+const EnhancedAdminRoutesDashboard = ({ 
+  declinedNotifications = [],
+  acceptedNotifications = [],
+  inProgressNotifications = []
+}: EnhancedAdminRoutesDashboardProps) => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>({});
@@ -226,14 +237,33 @@ const EnhancedAdminRoutesDashboard = () => {
   
   const toast = useToast();
 
+  // Listen for driver selection from map
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'selectDriver' && event.data.driverId) {
+        const driverSelect = document.getElementById('driver-select') as HTMLSelectElement;
+        if (driverSelect) {
+          driverSelect.value = event.data.driverId;
+          // Trigger change event
+          driverSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, refreshInterval);
 
     // Set up Pusher for real-time route updates
     if (typeof window !== 'undefined' && (window as any).Pusher) {
-      const pusher = new (window as any).Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+      const PUSHER_KEY = '407cb06c423e6c032e9c';
+      const PUSHER_CLUSTER = 'eu';
+      const pusher = new (window as any).Pusher(PUSHER_KEY, {
+        cluster: PUSHER_CLUSTER,
       });
 
       const channel = pusher.subscribe('admin-channel');
@@ -242,24 +272,12 @@ const EnhancedAdminRoutesDashboard = () => {
       channel.bind('route-accepted', (data: any) => {
         console.log('🎉 Route accepted notification:', data);
         toast({
-          title: 'Route Accepted',
+          title: '✅ Route Accepted',
           description: `${data.driverName} accepted a route with ${data.dropCount} stops`,
           status: 'success',
-          duration: 4000,
+          duration: 5000,
           isClosable: true,
-        });
-        loadData(); // Reload routes
-      });
-
-      // Listen for route declined events
-      channel.bind('route-declined', (data: any) => {
-        console.log('⚠️ Route declined notification:', data);
-        toast({
-          title: 'Route Declined',
-          description: `${data.driverName} declined a route with ${data.dropCount} stops`,
-          status: 'warning',
-          duration: 4000,
-          isClosable: true,
+          position: 'top-right',
         });
         loadData(); // Reload routes
       });
@@ -655,6 +673,45 @@ const EnhancedAdminRoutesDashboard = () => {
           </Text>
         </Box>
         <HStack spacing={3}>
+          {/* Cleanup Button */}
+          <Button
+            leftIcon={<FiTrash />}
+            colorScheme="red"
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (window.confirm('⚠️ Delete ALL orders & routes?\n\nThis will permanently delete:\n• All bookings/orders\n• All routes\n• All assignments\n• All tracking data\n\nThis cannot be undone!')) {
+                try {
+                  const response = await fetch('/api/admin/cleanup', { method: 'DELETE' });
+                  const data = await response.json();
+                  if (data.success) {
+                    toast({
+                      title: 'Cleanup Successful',
+                      description: `Deleted ${data.deleted.bookings} bookings, ${data.deleted.routes} routes`,
+                      status: 'success',
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                    window.location.reload();
+                  } else {
+                    throw new Error(data.error);
+                  }
+                } catch (error: any) {
+                  toast({
+                    title: 'Cleanup Failed',
+                    description: error.message,
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                  });
+                }
+              }
+            }}
+            _hover={{ bg: 'red.900', borderColor: 'red.500' }}
+          >
+            Cleanup All
+          </Button>
+          
           {/* Dispatch Mode Toggle */}
           <DispatchModeToggle />
           <Select
@@ -932,7 +989,7 @@ const EnhancedAdminRoutesDashboard = () => {
       </Grid>
 
       {/* Routes Table */}
-      <Card bg="gray.800" borderColor="gray.700">
+      <Card bg="gray.800" borderColor="gray.700" overflow="visible">
         <CardHeader>
           <Tabs variant="enclosed" colorScheme="blue" onChange={(index) => setActiveTab(index)}>
             <TabList>
@@ -953,7 +1010,7 @@ const EnhancedAdminRoutesDashboard = () => {
               {activeTab === 3 && `Completed (${routes.filter(r => r.status === 'completed').length})`}
             </Heading>
           </Box>
-          <Box overflowX="auto">
+          <Box overflowX="auto" overflowY="visible">
             <Table variant="simple">
               <Thead>
                 <Tr>
@@ -968,14 +1025,52 @@ const EnhancedAdminRoutesDashboard = () => {
                 </Tr>
               </Thead>
               <Tbody>
-                {getFilteredRoutes().map((route) => (
-                  <Tr key={route.id} _hover={{ bg: 'gray.750' }}>
+                {getFilteredRoutes().map((route) => {
+                  const isDeclined = declinedNotifications.includes(route.id);
+                  const isAccepted = acceptedNotifications.includes(route.id);
+                  const isInProgress = inProgressNotifications.includes(route.id);
+                  
+                  return (
+                  <Tr 
+                    key={route.id} 
+                    _hover={{ 
+                      bg: isDeclined ? 'red.800' :
+                          isInProgress ? 'blue.800' :
+                          isAccepted ? 'green.800' :
+                          'gray.750' 
+                    }}
+                    bg={
+                      isDeclined ? 'red.900' :
+                      isInProgress ? 'blue.900' :
+                      isAccepted ? 'green.900' :
+                      'transparent'
+                    }
+                    borderLeft={
+                      isDeclined || isAccepted || isInProgress ? '4px solid' : 'none'
+                    }
+                    borderLeftColor={
+                      isDeclined ? 'red.500' :
+                      isInProgress ? 'blue.500' :
+                      isAccepted ? 'green.500' :
+                      'transparent'
+                    }
+                  >
                     <Td color="white" fontFamily="mono" fontSize="sm">
                       <HStack spacing={2}>
                         <Circle
                           size="12px"
-                          bg={calculateRoutePriority(route.startTime).color}
-                          animation={calculateRoutePriority(route.startTime).animation}
+                          bg={
+                            isDeclined ? '#E53E3E' :
+                            isInProgress ? '#3B82F6' :
+                            isAccepted ? '#10B981' :
+                            calculateRoutePriority(route.startTime).color
+                          }
+                          animation={
+                            isDeclined ? `${fastPulseAnimation} 1s ease-in-out infinite` :
+                            isInProgress ? `${pulseAnimation} 2s ease-in-out infinite` :
+                            isAccepted ? `${pulseAnimation} 2s ease-in-out infinite` :
+                            calculateRoutePriority(route.startTime).animation
+                          }
                         />
                         <Text>{route.reference || route.id.substring(0, 8)}</Text>
                       </HStack>
@@ -993,6 +1088,42 @@ const EnhancedAdminRoutesDashboard = () => {
                         <Badge colorScheme={getStatusColor(route.status)}>
                           {route.status}
                         </Badge>
+                        {/* Show RED DECLINED badge if recently declined */}
+                        {isDeclined && (
+                          <Badge 
+                            colorScheme="red" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            🚨 DECLINED
+                          </Badge>
+                        )}
+                        {/* Show GREEN ACCEPTED badge if recently accepted */}
+                        {isAccepted && (
+                          <Badge 
+                            colorScheme="green" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            ✅ ACCEPTED
+                          </Badge>
+                        )}
+                        {/* Show BLUE IN PROGRESS badge if driver started */}
+                        {isInProgress && (
+                          <Badge 
+                            colorScheme="blue" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            🚀 IN PROGRESS
+                          </Badge>
+                        )}
                         {route.delayStatus && (
                           <Text fontSize="lg">
                             {route.delayStatus === 'on_time' ? '🟢' : route.delayStatus === 'slight_delay' ? '🟡' : '🔴'}
@@ -1000,7 +1131,7 @@ const EnhancedAdminRoutesDashboard = () => {
                         )}
                         {route.acceptanceStatus && route.acceptanceStatus !== 'pending' && (
                           <Text fontSize="sm">
-                            {route.acceptanceStatus === 'accepted' ? '✅' : '❌'}
+                            {route.acceptanceStatus === 'accepted' ? '✅' : route.acceptanceStatus === 'declined' ? '🚨' : '❌'}
                           </Text>
                         )}
                       </Flex>
@@ -1027,111 +1158,121 @@ const EnhancedAdminRoutesDashboard = () => {
                       £{(Number(route.totalOutcome) / 100).toFixed(2)}
                     </Td>
                     <Td>
+                      <HStack spacing={2}>
+                        {/* Quick Assign/Reassign Button */}
+                        <Button
+                          size="sm"
+                          colorScheme={route.driverId ? 'orange' : 'green'}
+                          variant="solid"
+                          leftIcon={route.driverId ? <FiEdit /> : <FiUser />}
+                          onClick={() => {
+                            setSelectedRoute(route);
+                            onReassignOpen();
+                          }}
+                        >
+                          {route.driverId ? 'Reassign' : 'Assign'}
+                        </Button>
+                        
+                        {/* More Actions Menu */}
                       <Menu>
                         <MenuButton
                           as={IconButton}
                           icon={<FiMoreVertical />}
-                          variant="ghost"
+                          variant="outline"
+                          colorScheme="whiteAlpha"
                           size="sm"
+                          borderColor="gray.600"
+                          _hover={{ bg: 'gray.700', borderColor: 'blue.400' }}
                         />
-                        <MenuList bg="gray.800" borderColor="gray.600">
-                          <MenuItem
-                            icon={<FiMapPin />}
-                            onClick={() => {
-                              setSelectedRoute(route);
-                              // Navigate to route details
-                              window.location.href = `/admin/routes/${route.id}`;
-                            }}
-                            bg="gray.800"
-                            _hover={{ bg: 'gray.700' }}
-                            color="cyan.400"
-                          >
-                            View Route Details
-                          </MenuItem>
-                          <MenuItem
-                            icon={<FiEdit />}
-                            onClick={() => {
-                              setSelectedRoute(route);
-                              onEditOpen();
-                            }}
-                            bg="gray.800"
-                            _hover={{ bg: 'gray.700' }}
-                          >
-                            Edit Drops
-                          </MenuItem>
-                          <MenuItem
-                            icon={<FiPackage />}
-                            onClick={() => {
-                              setSelectedRoute(route);
-                              // Open remove drop modal (will create next)
-                              onRemoveDropOpen();
-                            }}
-                            bg="gray.800"
-                            _hover={{ bg: 'gray.700' }}
-                            color="orange.400"
-                          >
-                            Remove Drop
-                          </MenuItem>
-                          <MenuItem
-                            icon={<FiUsers />}
-                            onClick={() => {
-                              setSelectedRoute(route);
-                              onReassignOpen();
-                            }}
-                            bg="gray.800"
-                            _hover={{ bg: 'gray.700' }}
-                          >
-                            {route.driverId ? 'Reassign Driver' : 'Assign Driver'}
-                          </MenuItem>
-                          {route.driverId && (
-                            <>
-                              <MenuItem
-                                icon={<FiUserX />}
-                                onClick={() => handleOpenRemoveModal(route)}
-                                bg="gray.800"
-                                _hover={{ bg: 'gray.700' }}
-                                color="orange.400"
-                              >
-                                Remove Assignment
-                              </MenuItem>
-                              <MenuItem
-                                icon={<FiClock />}
-                                onClick={() => {
-                                  window.location.href = `/admin/drivers/${route.driverId}/schedule`;
-                                }}
-                                bg="gray.800"
-                                _hover={{ bg: 'gray.700' }}
-                                color="purple.400"
-                              >
-                                View Driver Schedule
-                              </MenuItem>
-                              <MenuItem
-                                icon={<FiTrendingUp />}
-                                onClick={() => {
-                                  window.location.href = `/admin/drivers/${route.driverId}/earnings`;
-                                }}
-                                bg="gray.800"
-                                _hover={{ bg: 'gray.700' }}
-                                color="green.400"
-                              >
-                                View Driver Earnings
-                              </MenuItem>
-                            </>
-                          )}
-                          <MenuItem
-                            icon={<FiTrash />}
-                            onClick={() => handleCancelRoute(route.id, 'Cancelled by admin')}
-                            bg="gray.800"
-                            _hover={{ bg: 'red.900' }}
-                            color="red.400"
-                          >
-                            Cancel Route
-                          </MenuItem>
-                        </MenuList>
-                      </Menu>
+                        <Portal>
+                          <MenuList bg="gray.800" borderColor="gray.600" zIndex={9999}>
+                            <MenuItem
+                              icon={<FiMapPin />}
+                              onClick={() => {
+                                setSelectedRoute(route);
+                                window.location.href = `/admin/routes/${route.id}`;
+                              }}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
+                              color="cyan.400"
+                            >
+                              View Route Details
+                            </MenuItem>
+                            <MenuItem
+                              icon={<FiEdit />}
+                              onClick={() => {
+                                setSelectedRoute(route);
+                                onEditOpen();
+                              }}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
+                            >
+                              Edit Drops
+                            </MenuItem>
+                            <MenuItem
+                              icon={<FiPackage />}
+                              onClick={() => {
+                                setSelectedRoute(route);
+                                onRemoveDropOpen();
+                              }}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
+                              color="orange.400"
+                            >
+                              Remove Drop
+                            </MenuItem>
+                            {route.driverId && (
+                              <>
+                                <MenuItem
+                                  icon={<FiUserX />}
+                                  onClick={() => handleOpenRemoveModal(route)}
+                                  bg="gray.800"
+                                  _hover={{ bg: 'gray.700' }}
+                                  color="orange.400"
+                                >
+                                  Remove Assignment
+                                </MenuItem>
+                                <MenuItem
+                                  icon={<FiClock />}
+                                  onClick={() => {
+                                    window.location.href = `/admin/drivers/${route.driverId}/schedule`;
+                                  }}
+                                  bg="gray.800"
+                                  _hover={{ bg: 'gray.700' }}
+                                  color="purple.400"
+                                >
+                                  View Driver Schedule
+                                </MenuItem>
+                                <MenuItem
+                                  icon={<FiTrendingUp />}
+                                  onClick={() => {
+                                    window.location.href = `/admin/drivers/${route.driverId}/earnings`;
+                                  }}
+                                  bg="gray.800"
+                                  _hover={{ bg: 'gray.700' }}
+                                  color="green.400"
+                                >
+                                  View Driver Earnings
+                                </MenuItem>
+                              </>
+                            )}
+                            <MenuItem
+                              icon={<FiTrash />}
+                              onClick={() => handleCancelRoute(route.id, 'Cancelled by admin')}
+                              bg="gray.800"
+                              _hover={{ bg: 'red.900' }}
+                              color="red.400"
+                            >
+                              Cancel Route
+                            </MenuItem>
+                          </MenuList>
+                        </Portal>
+                        </Menu>
+                      </HStack>
                     </Td>
                   </Tr>
-                ))}
+                  );
+                })}
               </Tbody>
             </Table>
           </Box>
@@ -1259,9 +1400,9 @@ const EnhancedAdminRoutesDashboard = () => {
       </Modal>
 
       {/* Assign/Reassign Driver Modal */}
-      <Modal isOpen={isReassignOpen} onClose={onReassignClose}>
+      <Modal isOpen={isReassignOpen} onClose={onReassignClose} size="xl">
         <ModalOverlay />
-        <ModalContent bg="gray.800">
+        <ModalContent bg="gray.800" maxW="900px">
           <ModalHeader color="white">
             {selectedRoute?.driverId ? 'Reassign Driver' : 'Assign Driver'}
           </ModalHeader>
@@ -1275,6 +1416,167 @@ const EnhancedAdminRoutesDashboard = () => {
                   </Text>
                 </Box>
               )}
+              
+              {/* Interactive Driver Location Map */}
+              {selectedRoute && drivers.filter(d => 
+                (d.status === 'online' || d.status === 'available') && 
+                d.DriverAvailability?.lastLat && 
+                d.DriverAvailability?.lastLng
+              ).length > 0 && (
+                <Box 
+                  h="450px" 
+                  bg="gray.900" 
+                  borderRadius="md" 
+                  border="1px solid" 
+                  borderColor="gray.700"
+                  position="relative"
+                  overflow="hidden"
+                >
+                  <iframe
+                    srcDoc={`
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+                        <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+                        <style>
+                          body { margin: 0; padding: 0; background: #1a202c; }
+                          #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+                        </style>
+                      </head>
+                      <body>
+                        <div id='map'></div>
+                        <script>
+                          mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+                          
+                          // Get all driver locations
+                          const drivers = ${JSON.stringify(
+                            drivers
+                              .filter(d => 
+                                (d.status === 'online' || d.status === 'available') &&
+                                d.DriverAvailability?.lastLat && 
+                                d.DriverAvailability?.lastLng &&
+                                !isNaN(Number(d.DriverAvailability.lastLat)) &&
+                                !isNaN(Number(d.DriverAvailability.lastLng))
+                              )
+                              .map(d => ({
+                                id: d.id,
+                                name: d.name,
+                                lat: Number(d.DriverAvailability.lastLat),
+                                lng: Number(d.DriverAvailability.lastLng),
+                                status: 'online',
+                                activeRoutes: d.activeRoutes || 0
+                              }))
+                          )};
+                          
+                          if (drivers.length === 0) {
+                            document.body.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9CA3AF; font-family: system-ui;">No online drivers with location data</div>';
+                          } else {
+                            // Calculate center from all drivers
+                            const avgLat = drivers.reduce((sum, d) => sum + d.lat, 0) / drivers.length;
+                            const avgLng = drivers.reduce((sum, d) => sum + d.lng, 0) / drivers.length;
+                            
+                            const map = new mapboxgl.Map({
+                              container: 'map',
+                              style: 'mapbox://styles/mapbox/dark-v11',
+                              center: [avgLng, avgLat],
+                              zoom: 11,
+                              interactive: true
+                            });
+                            
+                            // Add zoom and rotation controls
+                            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                            
+                            // Add fullscreen control
+                            map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+                            
+                            // Add driver markers with tooltips
+                            drivers.forEach(driver => {
+                              const el = document.createElement('div');
+                              el.innerHTML = '<div style="background: #10B981; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #1a202c; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); font-size: 18px; transition: all 0.2s; cursor: pointer;">🚗</div>';
+                              
+                              // Hover effect
+                              el.onmouseenter = function() {
+                                this.firstChild.style.transform = 'scale(1.3)';
+                                this.firstChild.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.9)';
+                              };
+                              el.onmouseleave = function() {
+                                this.firstChild.style.transform = 'scale(1)';
+                                this.firstChild.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.6)';
+                              };
+                              
+                              const popup = new mapboxgl.Popup({ 
+                                offset: 25,
+                                closeButton: false,
+                                maxWidth: '280px'
+                              }).setHTML(
+                                '<div style="padding: 14px; font-family: system-ui, -apple-system, sans-serif; background: #1a202c; color: white;">' +
+                                '<div style="font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #10B981;">🚗 ' + driver.name + '</div>' +
+                                '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">' +
+                                '<span style="width: 10px; height: 10px; border-radius: 50%; background: #10B981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);"></span>' +
+                                '<span style="font-size: 13px; font-weight: 500; color: #10B981;">ONLINE & AVAILABLE</span>' +
+                                '</div>' +
+                                '<div style="font-size: 12px; color: #9CA3AF; margin-bottom: 4px;">Active Routes: <strong style="color: white;">' + driver.activeRoutes + '</strong></div>' +
+                                '<div style="font-size: 11px; color: #6B7280; margin-top: 8px; padding-top: 8px; border-top: 1px solid #374151;">Click to select this driver</div>' +
+                                '</div>'
+                              );
+                              
+                              const marker = new mapboxgl.Marker(el)
+                                .setLngLat([driver.lng, driver.lat])
+                                .setPopup(popup)
+                                .addTo(map);
+                              
+                              // Click to select driver
+                              el.onclick = function() {
+                                window.parent.postMessage({type: 'selectDriver', driverId: driver.id}, '*');
+                              };
+                            });
+                            
+                            // Fit bounds to show all markers
+                            setTimeout(() => {
+                              if (drivers.length > 0) {
+                                const bounds = new mapboxgl.LngLatBounds();
+                                drivers.forEach(d => bounds.extend([d.lng, d.lat]));
+                                map.fitBounds(bounds, { padding: 70, duration: 1000, maxZoom: 13 });
+                              }
+                            }, 100);
+                          }
+                        </script>
+                      </body>
+                      </html>
+                    `}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                  />
+                  <Box 
+                    position="absolute" 
+                    bottom={3} 
+                    left={3} 
+                    bg="gray.800" 
+                    px={3} 
+                    py={2} 
+                    borderRadius="md"
+                    fontSize="xs"
+                    boxShadow="xl"
+                    border="1px solid"
+                    borderColor="gray.600"
+                  >
+                    <VStack align="start" spacing={1}>
+                      <HStack spacing={2}>
+                        <Box w={2} h={2} borderRadius="full" bg="green.400" boxShadow="0 0 8px rgba(16, 185, 129, 0.6)" />
+                        <Text fontSize="11px" color="green.400" fontWeight="medium">Online Drivers</Text>
+                      </HStack>
+                      <Text fontSize="9px" color="gray.400" fontStyle="italic">
+                        💡 Hover for info • Click marker to select driver
+                      </Text>
+                    </VStack>
+                  </Box>
+                </Box>
+              )}
+              
               <FormControl isRequired>
                 <FormLabel color="gray.400">Select {selectedRoute?.driverId ? 'New' : ''} Driver</FormLabel>
                 <Select
@@ -1284,11 +1586,17 @@ const EnhancedAdminRoutesDashboard = () => {
                   isDisabled={isReassigning}
                   id="driver-select"
                 >
-                  {drivers.filter(d => d.status === 'online').map(driver => (
-                    <option key={driver.id} value={driver.id}>
-                      {driver.name} - {driver.status}
-                    </option>
-                  ))}
+                  {drivers
+                    .filter(d => d.status === 'online' || d.status === 'available')
+                    .map(driver => {
+                      const statusEmoji = driver.status === 'online' ? '🟢' : '🟡';
+                      const hasLocation = driver.DriverAvailability?.lastLat && driver.DriverAvailability?.lastLng;
+                      return (
+                        <option key={driver.id} value={driver.id}>
+                          {statusEmoji} {driver.name} - {driver.activeRoutes || 0} active routes {hasLocation ? '📍' : ''}
+                        </option>
+                      );
+                    })}
                 </Select>
               </FormControl>
               <FormControl>
@@ -1601,7 +1909,7 @@ const EnhancedAdminRoutesDashboard = () => {
                     transition="all 0.2s"
                   >
                     <CardBody p={4}>
-                      <HStack justify="space-between" align="start">
+                      <HStack justify="space-between" align="start" mb={3}>
                         <VStack align="start" spacing={1} flex={1}>
                           <HStack>
                             <Text color="white" fontWeight="bold" fontFamily="mono" fontSize="sm">
@@ -1627,17 +1935,101 @@ const EnhancedAdminRoutesDashboard = () => {
                           </HStack>
                         </VStack>
 
-                        <VStack align="end" spacing={1}>
-                          <HStack>
-                            <Icon as={FiNavigation} color="blue.400" boxSize={4} />
-                            <Text color="white" fontSize="xl" fontWeight="bold">
-                              {((route.optimizedDistanceKm || 0) * 0.621371).toFixed(1)} mi
+                        <HStack spacing={2}>
+                          <VStack align="end" spacing={1}>
+                            <HStack>
+                              <Icon as={FiNavigation} color="blue.400" boxSize={4} />
+                              <Text color="white" fontSize="xl" fontWeight="bold">
+                                {((route.optimizedDistanceKm || 0) * 0.621371).toFixed(1)} mi
+                              </Text>
+                            </HStack>
+                            <Text fontSize="xs" color="gray.400">
+                              {(route.optimizedDistanceKm || 0).toFixed(1)} km
                             </Text>
-                          </HStack>
-                          <Text fontSize="xs" color="gray.400">
-                            {(route.optimizedDistanceKm || 0).toFixed(1)} km
-                          </Text>
-                        </VStack>
+                          </VStack>
+                          
+                          {/* Action Menu */}
+                          <Menu>
+                            <MenuButton
+                              as={IconButton}
+                              icon={<FiMoreVertical />}
+                              variant="ghost"
+                              colorScheme="whiteAlpha"
+                              size="sm"
+                              aria-label="Route actions"
+                            />
+                            <Portal>
+                              <MenuList bg="gray.700" borderColor="gray.600" zIndex={9999}>
+                              {route.driverId ? (
+                                <>
+                                  <MenuItem
+                                    icon={<FiEdit />}
+                                    onClick={() => {
+                                      setSelectedRoute(route);
+                                      onReassignOpen();
+                                    }}
+                                    bg="gray.700"
+                                    _hover={{ bg: 'gray.600' }}
+                                    color="white"
+                                  >
+                                    Reassign Driver
+                                  </MenuItem>
+                                  <MenuItem
+                                    icon={<FiUserX />}
+                                    onClick={() => {
+                                      setSelectedRouteForRemoval(route);
+                                      onRemoveOpen();
+                                    }}
+                                    bg="gray.700"
+                                    _hover={{ bg: 'gray.600' }}
+                                    color="white"
+                                  >
+                                    Remove Driver
+                                  </MenuItem>
+                                </>
+                              ) : (
+                                <MenuItem
+                                  icon={<FiUser />}
+                                  onClick={() => {
+                                    setSelectedRoute(route);
+                                    onReassignOpen();
+                                  }}
+                                  bg="gray.700"
+                                  _hover={{ bg: 'gray.600' }}
+                                  color="white"
+                                >
+                                  Assign Driver
+                                </MenuItem>
+                              )}
+                              <MenuItem
+                                icon={<FiMapPin />}
+                                onClick={() => {
+                                  setSelectedRoute(route);
+                                  onEditOpen();
+                                }}
+                                bg="gray.700"
+                                _hover={{ bg: 'gray.600' }}
+                                color="white"
+                              >
+                                View Details
+                              </MenuItem>
+                              <MenuItem
+                                icon={<FiTrash />}
+                                onClick={() => {
+                                  setSelectedRouteForRemoval(route);
+                                  setRemovalType('all');
+                                  onRemoveDropOpen();
+                                }}
+                                bg="gray.700"
+                                _hover={{ bg: 'red.600' }}
+                                color="red.300"
+                              >
+                                Delete Route
+                              </MenuItem>
+                            </MenuList>
+                            </Portal>
+                          </Menu>
+                        </HStack>
                       </HStack>
                     </CardBody>
                   </Card>

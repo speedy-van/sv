@@ -17,8 +17,21 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   color = colors.primary,
   icon,
 }) => {
+  // Determine glow color based on card color
+  const getGlowStyle = () => {
+    const glowColor = color;
+    return {
+      borderColor: glowColor,
+      shadowColor: glowColor,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.6,
+      shadowRadius: 18,
+      elevation: 12,
+    };
+  };
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, getGlowStyle()]}>
       {icon && <View style={styles.iconContainer}>{icon}</View>}
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
@@ -31,30 +44,37 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    ...shadows.md,
-    minHeight: 100,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 18,
+    padding: 18,
+    minHeight: 110,
     justifyContent: 'center',
+    borderWidth: 2,
   },
   iconContainer: {
-    marginBottom: spacing.sm,
+    marginBottom: 10,
   },
   content: {
-    gap: 4,
+    gap: 6,
   },
   title: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    opacity: 0.8,
   },
   value: {
-    ...typography.h2,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    ...typography.small,
-    color: colors.text.secondary,
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    opacity: 0.7,
   },
 });
 

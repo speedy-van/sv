@@ -191,8 +191,10 @@ export default function TrackingHub() {
 
     // Set up Pusher for real-time route updates
     if (typeof window !== 'undefined' && (window as any).Pusher) {
-      const pusher = new (window as any).Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+      const PUSHER_KEY = '407cb06c423e6c032e9c';
+      const PUSHER_CLUSTER = 'eu';
+      const pusher = new (window as any).Pusher(PUSHER_KEY, {
+        cluster: PUSHER_CLUSTER,
       });
 
       const channel = pusher.subscribe('admin-channel');

@@ -7,15 +7,21 @@ import {
   RefreshControl,
   TouchableOpacity,
   Alert,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
+import { pusherService } from '../../services/pusher';
 import { JobCard } from '../../components/JobCard';
 import { Job } from '../../types';
 import { colors, typography, spacing, borderRadius } from '../../utils/theme';
+import { AnimatedScreen } from '../../components/AnimatedScreen';
 
 export default function JobsScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filter, setFilter] = useState<'all' | 'assigned' | 'available'>('all');
   const [loading, setLoading] = useState(true);
@@ -25,27 +31,85 @@ export default function JobsScreen() {
     loadJobs();
   }, [filter]);
 
+  // ✅ Listen for real-time updates from Pusher
+  useEffect(() => {
+    if (!user?.driver?.id) return;
+
+    console.log('🔌 Jobs screen: Setting up Pusher listeners');
+
+    // Refresh when jobs are assigned
+    pusherService.onRouteMatched(() => {
+      console.log('🎯 Jobs screen: Route matched, refreshing...');
+      loadJobs();
+    });
+
+    pusherService.onJobAssigned(() => {
+      console.log('📦 Jobs screen: Job assigned, refreshing...');
+      loadJobs();
+    });
+
+    // Refresh when jobs are removed (broadcast)
+    pusherService.onJobRemoved(() => {
+      console.log('🚫 Jobs screen: Job removed (broadcast), refreshing...');
+      loadJobs();
+    });
+
+    // Refresh when THIS driver is removed from a job (personal)
+    pusherService.onPersonalJobRemoved(() => {
+      console.log('❌ Jobs screen: Personal job removed, refreshing...');
+      loadJobs();
+    });
+
+    return () => {
+      // Cleanup: unbind all events
+      pusherService.unbindAll();
+    };
+  }, [user?.driver?.id]);
+
+  // ✅ Refresh when app becomes active
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        console.log('📱 Jobs screen: App became active, refreshing...');
+        loadJobs();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
   const loadJobs = async () => {
     try {
-      const response = await apiService.get<{ assigned: Job[]; available: Job[] }>(
+      console.log('🔄 Jobs screen: Loading jobs with filter:', filter);
+      
+      const response = await apiService.get<{ jobs: { assigned: Job[]; available: Job[] } }>(
         '/api/driver/dashboard'
       );
-      if (response.success && response.data) {
+      
+      if (response.success && response.data?.jobs) {
         const allJobs = [
-          ...(response.data.assigned || []),
-          ...(response.data.available || []),
+          ...(response.data.jobs.assigned || []),
+          ...(response.data.jobs.available || []),
         ];
         
         let filteredJobs = allJobs;
         if (filter === 'assigned') {
-          filteredJobs = response.data.assigned || [];
+          filteredJobs = response.data.jobs.assigned || [];
         } else if (filter === 'available') {
-          filteredJobs = response.data.available || [];
+          filteredJobs = response.data.jobs.available || [];
         }
         
+        console.log('✅ Jobs screen: Loaded', filteredJobs.length, 'jobs');
         setJobs(filteredJobs);
+      } else {
+        console.warn('⚠️ Jobs screen: Invalid response:', response);
       }
     } catch (error: any) {
+      console.error('❌ Jobs screen: Error loading jobs:', error);
       Alert.alert('Error', error.message || 'Failed to load jobs');
     } finally {
       setLoading(false);
@@ -59,11 +123,12 @@ export default function JobsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Jobs</Text>
-      </View>
+    <AnimatedScreen>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Jobs</Text>
+        </View>
 
       {/* Filter Tabs */}
       <View style={styles.filterContainer}>
@@ -142,78 +207,126 @@ export default function JobsScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+      </View>
+    </AnimatedScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   header: {
-    padding: spacing.lg,
-    paddingTop: spacing.xxl + spacing.md,
-    backgroundColor: colors.surface,
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 2,
+    borderBottomColor: '#06B6D4',
+    // Light blue neon glow - iOS
+    shadowColor: '#06B6D4',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    // Light blue neon glow - Android
+    elevation: 8,
   },
   title: {
-    ...typography.h2,
-    color: colors.text.primary,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
   filterContainer: {
     flexDirection: 'row',
-    padding: spacing.md,
-    gap: spacing.sm,
-    backgroundColor: colors.surface,
+    padding: 16,
+    gap: 10,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(6, 182, 212, 0.3)',
   },
   filterTab: {
     flex: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderWidth: 2,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
   },
   filterTabActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+    // Blue neon glow effect - iOS
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    // Blue neon glow effect - Android
+    elevation: 12,
   },
   filterTabText: {
-    ...typography.bodyBold,
-    color: colors.text.secondary,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   filterTabTextActive: {
-    color: colors.text.inverse,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.lg,
+    padding: 20,
+    paddingBottom: 40,
   },
   loadingContainer: {
-    padding: spacing.xxl,
+    padding: 60,
     alignItems: 'center',
   },
   loadingText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginTop: 12,
+    opacity: 0.8,
   },
   emptyState: {
     alignItems: 'center',
-    padding: spacing.xxl,
-    gap: spacing.md,
+    padding: 60,
+    gap: 16,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 24,
+    marginTop: 20,
+    borderWidth: 3,
+    borderColor: '#F59E0B',
+    // Amber neon glow effect - iOS
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    // Amber neon glow effect - Android
+    elevation: 14,
   },
   emptyStateIcon: {
-    fontSize: 64,
+    fontSize: 72,
+    opacity: 0.5,
   },
   emptyStateTitle: {
-    ...typography.h3,
-    color: colors.text.primary,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#F59E0B',
+    textShadowColor: 'rgba(245, 158, 11, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   emptyStateText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: '#6B7280',
     textAlign: 'center',
+    lineHeight: 22,
   },
 });
 

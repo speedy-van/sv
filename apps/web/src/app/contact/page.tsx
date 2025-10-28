@@ -58,7 +58,7 @@ const contactMethods = [
     description: 'Speak directly with our team',
     icon: FiPhone,
     color: 'blue',
-    contact: '+44 7901846297',
+    contact: '+44 1202129746',
     availability: '24/7 Support',
     action: () => window.open('tel:+441202129746')
   },
@@ -438,7 +438,7 @@ export default function ContactPage() {
                         leftIcon={<FiPhone />}
                         w="full"
                       >
-                        Call Now: +44 7901846297
+                        Call Now: +44 1202129746
                       </HeaderButton>
                       <HeaderButton
                         variant="outline"

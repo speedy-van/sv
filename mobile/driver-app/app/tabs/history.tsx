@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { apiService } from '../../services/api';
+import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 
 interface HistoryJob {
   id: string;
@@ -36,19 +38,25 @@ export default function HistoryScreen() {
   const loadHistory = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `https://speedy-van.co.uk/api/driver/history?period=${selectedPeriod}`,
-        {
-          headers: {
-            'Authorization': `Bearer YOUR_TOKEN`,
-          },
-        }
-      );
+      const response = await apiService.get(`/api/driver/earnings?period=${selectedPeriod}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setJobs(data.jobs || []);
+      if (response.success && response.data) {
+        // Transform earnings data to history format
+        const historyJobs = (response.data.completedJobs || []).map((job: any) => ({
+          id: job.id || job.bookingId,
+          reference: job.reference || job.orderNumber || 'N/A',
+          customer: job.customerName || 'Unknown',
+          from: job.pickupAddress || 'Pickup',
+          to: job.dropoffAddress || 'Dropoff',
+          date: job.completedAt ? new Date(job.completedAt).toLocaleDateString('en-GB') : 'N/A',
+          distance: job.distance || '0 miles',
+          earnings: `£${((job.netEarnings || job.earnings || 0) / 100).toFixed(2)}`,
+          status: job.status === 'completed' ? 'completed' : 'cancelled',
+        }));
+        
+        setJobs(historyJobs);
+      } else {
+        console.error('Failed to load history:', response.error);
       }
     } catch (error) {
       console.error('Failed to load history:', error);
@@ -231,7 +239,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   header: {
     paddingHorizontal: 16,

@@ -9,10 +9,16 @@ import {
   ActivityIndicator,
   Linking,
   Platform,
+  AppState,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiService } from '../../services/api';
+import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
+import { JobProgressTracker, JobStep } from '../../components/JobProgressTracker';
+import { soundService } from '../../services/soundService';
 
 // Types
 interface JobDetails {
@@ -55,30 +61,112 @@ export default function JobDetailsScreen() {
   const [job, setJob] = useState<JobDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState<JobStep>('navigate_to_pickup');
+  const [completedSteps, setCompletedSteps] = useState<JobStep[]>([]);
+  const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
 
+  // Load job details and progress on mount
   useEffect(() => {
     loadJobDetails();
+    loadProgressState();
   }, [id]);
+  
+  // Setup AppState listener separately (no dependencies on progress state)
+  useEffect(() => {
+    // Listen for app state changes to save progress
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        saveProgressState();
+      }
+    };
+    
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    
+    return () => {
+      subscription?.remove();
+      // Save progress when component unmounts
+      saveProgressState();
+    };
+  }, []);
+
+  // Save progress state to AsyncStorage
+  const saveProgressState = async () => {
+    try {
+      const progressData = {
+        currentStep,
+        completedSteps,
+        timestamp: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem(`job_progress_${id}`, JSON.stringify(progressData));
+      console.log('💾 Progress saved:', progressData);
+    } catch (error) {
+      console.error('❌ Failed to save progress:', error);
+    }
+  };
+
+  // Load progress state from AsyncStorage
+  const loadProgressState = async () => {
+    try {
+      const savedProgress = await AsyncStorage.getItem(`job_progress_${id}`);
+      if (savedProgress) {
+        const progressData = JSON.parse(savedProgress);
+        setCurrentStep(progressData.currentStep || 'navigate_to_pickup');
+        setCompletedSteps(progressData.completedSteps || []);
+        console.log('📂 Progress restored:', progressData);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load progress:', error);
+    }
+  };
 
   const loadJobDetails = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`https://speedy-van.co.uk/api/driver/jobs/${id}`, {
-        headers: {
-          'Authorization': `Bearer YOUR_TOKEN`, // Get from storage
-        },
-      });
+      const response = await apiService.get(`/api/driver/jobs/${id}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setJob(data.job);
+      if (response.success && response.data) {
+        // Transform API response to match component structure
+        // API returns { success, job } so we need response.data.job
+        const apiData = response.data.job || response.data;
+        const transformedJob = {
+          id: apiData.id,
+          reference: apiData.reference,
+          customer: {
+            name: apiData.customer?.name || 'Customer',
+            phone: apiData.customer?.phone || '',
+            email: apiData.customer?.email || '',
+          },
+          pickup: {
+            address: apiData.addresses?.pickup?.line1 || 'Pickup location',
+            postcode: apiData.addresses?.pickup?.postcode || '',
+            lat: apiData.addresses?.pickup?.coordinates?.lat || 0,
+            lng: apiData.addresses?.pickup?.coordinates?.lng || 0,
+            time: apiData.schedule?.date || new Date().toISOString(),
+          },
+          dropoff: {
+            address: apiData.addresses?.dropoff?.line1 || 'Dropoff location',
+            postcode: apiData.addresses?.dropoff?.postcode || '',
+            lat: apiData.addresses?.dropoff?.coordinates?.lat || 0,
+            lng: apiData.addresses?.dropoff?.coordinates?.lng || 0,
+            time: apiData.schedule?.date || new Date().toISOString(),
+          },
+          items: apiData.items || [],
+          distance: apiData.schedule?.estimatedDuration ? `${(apiData.schedule.estimatedDuration / 10).toFixed(1)} miles` : '-',
+          duration: apiData.schedule?.estimatedDuration ? `${apiData.schedule.estimatedDuration} min` : '-',
+          earnings: apiData.pricing?.estimatedEarnings || '0',
+          status: apiData.status || 'available',
+          vehicleType: typeof apiData.crewRecommendation === 'string' 
+            ? apiData.crewRecommendation 
+            : (apiData.crewRecommendation?.vehicleType || 'Van'),
+          notes: apiData.specialRequirements || '',
+        };
+        setJob(transformedJob);
       } else {
-        Alert.alert('Error', 'Failed to load job details');
+        Alert.alert('Error', response.error || 'Failed to load job details');
         router.back();
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load job details');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to load job details');
       router.back();
     } finally {
       setLoading(false);
@@ -86,39 +174,44 @@ export default function JobDetailsScreen() {
   };
 
   const handleAccept = async () => {
+    soundService.playButtonClick();
     Alert.alert(
       'Accept Job',
       'Are you sure you want to accept this job?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Cancel', 
+          style: 'cancel',
+          onPress: () => soundService.playButtonClick(),
+        },
         {
           text: 'Accept',
           onPress: async () => {
+            soundService.playSuccess();
             try {
               setActionLoading(true);
-              const response = await fetch(
-                `https://speedy-van.co.uk/api/driver/jobs/${id}/accept`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer YOUR_TOKEN`,
-                  },
-                }
+              const response = await apiService.post(
+                `/api/driver/jobs/${id}/accept`,
+                {}
               );
 
-              if (response.ok) {
+              if (response.success) {
                 Alert.alert('Success', 'Job accepted successfully', [
                   {
                     text: 'OK',
-                    onPress: () => router.replace('/tabs/jobs'),
+                    onPress: () => {
+                      soundService.playButtonClick();
+                      router.replace('/tabs/dashboard');
+                    },
                   },
                 ]);
               } else {
-                Alert.alert('Error', 'Failed to accept job');
+                soundService.playError();
+                Alert.alert('Error', response.error || 'Failed to accept job');
               }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to accept job');
+            } catch (error: any) {
+              soundService.playError();
+              Alert.alert('Error', error.message || 'Failed to accept job');
             } finally {
               setActionLoading(false);
             }
@@ -140,19 +233,12 @@ export default function JobDetailsScreen() {
           onPress: async () => {
             try {
               setActionLoading(true);
-              const response = await fetch(
-                `https://speedy-van.co.uk/api/driver/jobs/${id}/decline`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer YOUR_TOKEN`,
-                  },
-                  body: JSON.stringify({ reason: 'Not available' }),
-                }
+              const response = await apiService.post(
+                `/api/driver/jobs/${id}/decline`,
+                { reason: 'Not available', permanent: true }
               );
 
-              if (response.ok) {
+              if (response.success) {
                 Alert.alert('Job Declined', 'You have declined this job', [
                   {
                     text: 'OK',
@@ -160,10 +246,10 @@ export default function JobDetailsScreen() {
                   },
                 ]);
               } else {
-                Alert.alert('Error', 'Failed to decline job');
+                Alert.alert('Error', response.error || 'Failed to decline job');
               }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to decline job');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to decline job');
             } finally {
               setActionLoading(false);
             }
@@ -174,6 +260,7 @@ export default function JobDetailsScreen() {
   };
 
   const handleStart = async () => {
+    soundService.playButtonClick();
     Alert.alert(
       'Start Job',
       'Are you ready to start this job?',
@@ -184,25 +271,19 @@ export default function JobDetailsScreen() {
           onPress: async () => {
             try {
               setActionLoading(true);
-              const response = await fetch(
-                `https://speedy-van.co.uk/api/driver/jobs/${id}/start`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer YOUR_TOKEN`,
-                  },
-                }
+              const response = await apiService.post(
+                `/api/driver/jobs/${id}/start`,
+                {}
               );
 
-              if (response.ok) {
+              if (response.success) {
                 Alert.alert('Success', 'Job started successfully');
                 loadJobDetails();
               } else {
-                Alert.alert('Error', 'Failed to start job');
+                Alert.alert('Error', response.error || 'Failed to start job');
               }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to start job');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to start job');
             } finally {
               setActionLoading(false);
             }
@@ -213,6 +294,7 @@ export default function JobDetailsScreen() {
   };
 
   const handleComplete = async () => {
+    soundService.playButtonClick();
     Alert.alert(
       'Complete Job',
       'Have you completed this delivery?',
@@ -223,21 +305,14 @@ export default function JobDetailsScreen() {
           onPress: async () => {
             try {
               setActionLoading(true);
-              const response = await fetch(
-                `https://speedy-van.co.uk/api/driver/jobs/${id}/complete`,
+              const response = await apiService.post(
+                `/api/driver/jobs/${id}/complete`,
                 {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer YOUR_TOKEN`,
-                  },
-                  body: JSON.stringify({
-                    completionNotes: 'Delivered successfully',
-                  }),
+                  completionNotes: 'Delivered successfully',
                 }
               );
 
-              if (response.ok) {
+              if (response.success) {
                 Alert.alert('Success', 'Job completed successfully', [
                   {
                     text: 'OK',
@@ -245,10 +320,10 @@ export default function JobDetailsScreen() {
                   },
                 ]);
               } else {
-                Alert.alert('Error', 'Failed to complete job');
+                Alert.alert('Error', response.error || 'Failed to complete job');
               }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to complete job');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to complete job');
             } finally {
               setActionLoading(false);
             }
@@ -259,8 +334,10 @@ export default function JobDetailsScreen() {
   };
 
   const handleCall = (phone: string) => {
+    soundService.playButtonClick();
     const phoneNumber = Platform.OS === 'ios' ? `telprompt:${phone}` : `tel:${phone}`;
     Linking.openURL(phoneNumber).catch(() => {
+      soundService.playError();
       Alert.alert('Error', 'Unable to make call');
     });
   };
@@ -280,6 +357,57 @@ export default function JobDetailsScreen() {
     Linking.openURL(url!).catch(() => {
       Alert.alert('Error', 'Unable to open maps');
     });
+  };
+
+  const handleStepComplete = async (step: JobStep) => {
+    try {
+      setIsUpdatingProgress(true);
+      
+      const response = await apiService.post(
+        `/api/driver/jobs/${id}/update-progress`,
+        { step, payload: { timestamp: new Date().toISOString() } }
+      );
+
+      if (response.success) {
+        // Update progress state
+        const newCompletedSteps = [...completedSteps, currentStep];
+        setCompletedSteps(newCompletedSteps);
+        setCurrentStep(step);
+        
+        // Save progress immediately after successful update
+        await saveProgressState();
+        
+        // Show success message
+        Alert.alert('Success', response.data?.message || 'Progress updated');
+        
+        // If job completed, navigate to earnings
+        if (step === 'job_completed') {
+          // Clear saved progress for this job
+          await AsyncStorage.removeItem(`job_progress_${id}`);
+          
+          Alert.alert(
+            'Job Completed! 🎉',
+            'Great work! Your earnings have been recorded.',
+            [
+              {
+                text: 'View Earnings',
+                onPress: () => router.replace('/tabs/earnings'),
+              },
+              {
+                text: 'Back to Dashboard',
+                onPress: () => router.replace('/tabs/dashboard'),
+              },
+            ]
+          );
+        }
+      } else {
+        Alert.alert('Error', response.error || 'Failed to update progress');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update progress');
+    } finally {
+      setIsUpdatingProgress(false);
+    }
   };
 
   if (loading) {
@@ -318,36 +446,52 @@ export default function JobDetailsScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Map */}
         <View style={styles.mapContainer}>
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={styles.map}
-            initialRegion={{
-              latitude: (job.pickup.lat + job.dropoff.lat) / 2,
-              longitude: (job.pickup.lng + job.dropoff.lng) / 2,
-              latitudeDelta: 0.1,
-              longitudeDelta: 0.1,
-            }}
-          >
-            <Marker
-              coordinate={{ latitude: job.pickup.lat, longitude: job.pickup.lng }}
-              title="Pickup"
-              pinColor="#4CAF50"
-            />
-            <Marker
-              coordinate={{ latitude: job.dropoff.lat, longitude: job.dropoff.lng }}
-              title="Dropoff"
-              pinColor="#F44336"
-            />
-            <Polyline
-              coordinates={[
-                { latitude: job.pickup.lat, longitude: job.pickup.lng },
-                { latitude: job.dropoff.lat, longitude: job.dropoff.lng },
-              ]}
-              strokeColor="#007AFF"
-              strokeWidth={3}
-            />
-          </MapView>
+          {job.pickup?.lat && job.dropoff?.lat ? (
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              initialRegion={{
+                latitude: (job.pickup.lat + job.dropoff.lat) / 2,
+                longitude: (job.pickup.lng + job.dropoff.lng) / 2,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1,
+              }}
+            >
+              <Marker
+                coordinate={{ latitude: job.pickup.lat, longitude: job.pickup.lng }}
+                title="Pickup"
+                pinColor="#4CAF50"
+              />
+              <Marker
+                coordinate={{ latitude: job.dropoff.lat, longitude: job.dropoff.lng }}
+                title="Dropoff"
+                pinColor="#F44336"
+              />
+              <Polyline
+                coordinates={[
+                  { latitude: job.pickup.lat, longitude: job.pickup.lng },
+                  { latitude: job.dropoff.lat, longitude: job.dropoff.lng },
+                ]}
+                strokeColor="#007AFF"
+                strokeWidth={3}
+              />
+            </MapView>
+          ) : (
+            <View style={[styles.map, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }]}>
+              <Text style={{ color: colors.text.secondary }}>Map not available</Text>
+            </View>
+          )}
         </View>
+
+        {/* Progress Tracker */}
+        {job.status !== 'available' && (
+          <JobProgressTracker
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepComplete={handleStepComplete}
+            isUpdating={isUpdatingProgress}
+          />
+        )}
 
         {/* Job Info Card */}
         <View style={styles.card}>
@@ -550,19 +694,19 @@ export default function JobDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#0F172A',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#0F172A',
   },
   errorText: {
     fontSize: 16,
