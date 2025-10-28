@@ -46,6 +46,7 @@ const HomeFooter: React.FC = () => {
       { label: 'About Us', href: '/about', icon: FiUsers },
       { label: 'Our Services', href: '/services', icon: FiTruck },
       { label: 'Pricing', href: '/pricing', icon: FiCalendar },
+      { label: 'Careers', href: '/careers', icon: FiUsers },
       { label: 'Contact', href: '/contact', icon: FiMail },
     ],
     support: [

@@ -219,7 +219,7 @@ importers:
         specifier: ^5.8.0
         version: 5.8.2
       jspdf:
-        specifier: ^3.0.1
+        specifier: ^3.0.3
         version: 3.0.3
       lodash:
         specifier: ^4.17.21
