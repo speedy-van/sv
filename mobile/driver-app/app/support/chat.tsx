@@ -49,8 +49,8 @@ export default function ChatScreen() {
       setLoading(true);
       const response = await apiService.get(`/api/driver/chat/history/${user?.driver?.id}`);
       
-      if (response.success && response.messages) {
-        setMessages(response.messages);
+      if (response.success && response.data) {
+        setMessages((response.data as any).messages || []);
         setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
@@ -64,7 +64,7 @@ export default function ChatScreen() {
     if (!user?.driver?.id) return;
 
     // Listen for admin messages
-    pusherService.channel?.bind('admin_message', (data: any) => {
+    pusherService.bind('admin_message', (data: any) => {
       console.log('📨 Received admin message:', data);
       
       const newMessage: Message = {
@@ -105,7 +105,7 @@ export default function ChatScreen() {
       if (response.success) {
         // Add message to local state
         const newMessage: Message = {
-          id: response.messageId,
+          id: (response.data as any)?.messageId || Date.now().toString(),
           content: messageText,
           sender: 'driver',
           senderName: user.name || 'You',
