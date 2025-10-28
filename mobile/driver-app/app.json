@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.speedyvan.driverapp",
-      "buildNumber": "50",
+      "buildNumber": "51",
       "usesAppleSignIn": false,
       "usesIcloudStorage": false,
       "infoPlist": {
@@ -40,7 +40,7 @@
         "backgroundColor": "#3B82F6"
       },
       "package": "com.speedyvan.driver",
-      "versionCode": 50,
+      "versionCode": 51,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -86,7 +86,10 @@
       },
       "eas": {
         "projectId": "7fc30f9d-100c-4f78-8d9d-37052623ee11"
-      }
+      },
+      "EXPO_PUBLIC_API_BASE_URL": "https://api.speedy-van.co.uk",
+      "EXPO_PUBLIC_PUSHER_KEY": "407cb06c423e6c032e9c",
+      "EXPO_PUBLIC_PUSHER_CLUSTER": "eu"
     }
   }
 }

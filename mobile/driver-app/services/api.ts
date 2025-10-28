@@ -1,19 +1,26 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { ApiResponse } from '../types';
 
 // Determine API Base URL based on environment
 const getApiBaseUrl = () => {
-  // Check if EXPO_PUBLIC_API_BASE_URL is set in .env.local
+  // Priority 1: Check app.json extra config (production builds)
+  const appConfigUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL;
+  if (appConfigUrl) {
+    console.log('📱 Using API URL from app.json:', appConfigUrl);
+    return appConfigUrl;
+  }
+
+  // Priority 2: Check if EXPO_PUBLIC_API_BASE_URL is set in .env.local (development)
   if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    console.log('🔧 Using API URL from .env.local:', process.env.EXPO_PUBLIC_API_BASE_URL);
     return process.env.EXPO_PUBLIC_API_BASE_URL;
   }
 
-  // Default to production if no env var is set
-  // For development, create a .env.local file with:
-  // EXPO_PUBLIC_API_BASE_URL=http://localhost:3000 (iOS Simulator)
-  // EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000 (Android Emulator)
+  // Priority 3: Default to production if nothing is set
+  console.log('🌐 Using default production API URL');
   return 'https://api.speedy-van.co.uk';
 };
 
