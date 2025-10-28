@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +21,7 @@ export async function POST(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
     const { reason, refundAmount, notifyCustomer } = await request.json();
 
     console.log('🚫 Admin cancelling order:', { code, reason, refundAmount, notifyCustomer });

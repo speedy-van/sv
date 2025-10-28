@@ -11,7 +11,8 @@ import Script from 'next/script';
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Set your Google Analytics ID here if needed
+const IS_PRODUCTION = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
@@ -23,7 +24,7 @@ export default function GoogleAnalytics() {
     }
   }, [pathname, searchParams]);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!IS_PRODUCTION) {
     return null;
   }
 

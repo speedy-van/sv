@@ -97,8 +97,10 @@ export default function DriverDashboard() {
 
         console.log('🔌 Initializing Pusher for driver dashboard:', driverId);
 
-        pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-          cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        const PUSHER_KEY = '407cb06c423e6c032e9c';
+        const PUSHER_CLUSTER = 'eu';
+        pusherRef.current = new Pusher(PUSHER_KEY, {
+          cluster: PUSHER_CLUSTER,
           forceTLS: true,
         });
 

@@ -173,8 +173,10 @@ export default function BonusRequestsClient() {
     fetchBonuses();
 
     // Initialize Pusher
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+    const PUSHER_KEY = '407cb06c423e6c032e9c';
+    const PUSHER_CLUSTER = 'eu';
+    const pusher = new Pusher(PUSHER_KEY, {
+      cluster: PUSHER_CLUSTER,
     });
 
     const channel = pusher.subscribe('admin-notifications');

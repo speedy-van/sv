@@ -23,7 +23,7 @@ export const GOOGLE_BUSINESS_PROFILE = {
   
   // Contact Information
   contact: {
-    primaryPhone: '+447901846297',
+    primaryPhone: '+441202129746',
     secondaryPhone: '+447770498047',
     email: 'support@speedy-van.co.uk',
     website: 'https://speedy-van.co.uk',

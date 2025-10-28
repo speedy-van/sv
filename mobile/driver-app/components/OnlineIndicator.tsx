@@ -20,6 +20,7 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
   const dotAnim1 = useRef(new Animated.Value(0)).current;
   const dotAnim2 = useRef(new Animated.Value(0)).current;
   const dotAnim3 = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible && isSearching) {
@@ -108,6 +109,22 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
           ]),
         ])
       ).start();
+
+      // White wave shimmer animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(shimmerAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(shimmerAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
     } else {
       pulseAnim.setValue(1);
       opacityAnim.setValue(1);
@@ -115,6 +132,7 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
       dotAnim1.setValue(0);
       dotAnim2.setValue(0);
       dotAnim3.setValue(0);
+      shimmerAnim.setValue(0);
     }
   }, [visible, isSearching]);
 
@@ -125,13 +143,29 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
     outputRange: ['0%', '100%'],
   });
 
+  const shimmerTranslateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
+
   return (
     <View style={styles.container}>
+      {/* White wave shimmer overlay for entire card */}
+      {isSearching && (
+        <Animated.View
+          style={[
+            styles.cardShimmerOverlay,
+            {
+              transform: [{ translateX: shimmerTranslateX }],
+            },
+          ]}
+        />
+      )}
       <View style={styles.content}>
         <View style={styles.indicatorContainer}>
           {isSearching && (
             <>
-              {/* Outer pulse ring */}
+              {/* Outer pulse ring with enhanced glow */}
               <Animated.View
                 style={[
                   styles.pulseOuter,
@@ -141,7 +175,7 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
                   },
                 ]}
               />
-              {/* Inner pulse ring */}
+              {/* Inner pulse ring with enhanced glow */}
               <Animated.View
                 style={[
                   styles.pulseInner,
@@ -156,7 +190,11 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
               />
             </>
           )}
-          <View style={[styles.dot, !isSearching && styles.dotStatic]} />
+          <View style={[
+            styles.dot, 
+            !isSearching && styles.dotStatic,
+            isSearching && styles.dotGlowing
+          ]} />
         </View>
         
         <View style={styles.textContainer}>
@@ -199,12 +237,20 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
-    ...shadows.md,
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#10B981',
+    // Green neon glow effect - iOS
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    // Green neon glow effect - Android
+    elevation: 14,
   },
   content: {
     flexDirection: 'row',
@@ -224,6 +270,11 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.success,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
+    elevation: 10,
   },
   pulseInner: {
     position: 'absolute',
@@ -231,16 +282,33 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.success,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 12,
+    elevation: 8,
   },
   dot: {
     width: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: colors.success,
-    ...shadows.sm,
+  },
+  dotGlowing: {
+    backgroundColor: colors.success,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 8,
   },
   dotStatic: {
     backgroundColor: colors.primary,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 4,
   },
   textContainer: {
     flex: 1,
@@ -253,7 +321,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.bodyBold,
-    color: colors.text.primary,
+    color: '#FFFFFF',
     fontSize: 17,
   },
   dotsContainer: {
@@ -269,11 +337,12 @@ const styles = StyleSheet.create({
   },
   subText: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   progressBarContainer: {
     height: 4,
-    backgroundColor: colors.border,
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
     marginTop: spacing.md,
     borderRadius: borderRadius.sm,
     overflow: 'hidden',
@@ -282,6 +351,18 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: colors.success,
     borderRadius: borderRadius.sm,
+  },
+  cardShimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: 120,
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    transform: [{ skewX: '-20deg' }],
+    zIndex: 10,
   },
 });
 

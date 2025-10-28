@@ -25,14 +25,19 @@ class NotificationService {
   async requestPermissions(): Promise<boolean> {
     try {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log('📱 Notification permission status:', existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== 'granted') {
+        console.log('🔔 Requesting notification permissions...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+        console.log('📱 New permission status:', finalStatus);
       }
 
-      return finalStatus === 'granted';
+      const granted = finalStatus === 'granted';
+      console.log('✅ Notifications enabled:', granted);
+      return granted;
     } catch (error) {
       console.error('❌ Error requesting notification permissions:', error);
       return false;
@@ -174,7 +179,17 @@ class NotificationService {
     data?: any
   ): Promise<void> {
     try {
-      await Notifications.scheduleNotificationAsync({
+      console.log('🔔 Attempting to show notification:', { title, body });
+      
+      // Check permissions first
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('⚠️ Notification permissions not granted:', status);
+        console.log('💡 System notifications require a standalone build (not Expo Go)');
+        return;
+      }
+
+      const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
           title,
           body,
@@ -184,8 +199,11 @@ class NotificationService {
         },
         trigger: null, // Show immediately
       });
+      
+      console.log('✅ Notification scheduled successfully:', notificationId);
     } catch (error) {
       console.error('❌ Error showing notification:', error);
+      console.log('💡 Note: System notifications work in standalone builds, not in Expo Go');
     }
   }
 

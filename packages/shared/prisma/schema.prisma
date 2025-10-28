@@ -732,6 +732,7 @@ model DriverNotification {
   title     String
   message   String
   data      Json?
+  actionUrl String?
   read      Boolean          @default(false)
   readAt    DateTime?
   createdAt DateTime         @default(now())
@@ -1000,6 +1001,25 @@ model EmailTemplate {
   @@index([status])
 }
 
+model EmailChangeRequest {
+  id            String    @id @default(cuid())
+  userId        String
+  oldEmail      String
+  newEmail      String
+  token         String    @unique
+  status        String    @default("pending")
+  requestedAt   DateTime  @default(now())
+  expiresAt     DateTime
+  verifiedAt    DateTime?
+  cancelledAt   DateTime?
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
+}
+
 model ErrorReport {
   id              String   @id @default(cuid())
   title           String
@@ -1201,8 +1221,8 @@ model PricingSettings {
   // Driver Earnings Configuration (in pence)
   baseFarePerJobPence                  Int      @default(2500)  // £25.00
   perDropFeePence                      Int      @default(1200)  // £12.00
-  perMileFeePence                      Int      @default(55)    // £0.55
-  perMinuteFeePence                    Int      @default(15)    // £0.15
+  perMileFeePence                      Int      @default(85)    // £0.85 (increased from £0.55 for better driver compensation)
+  perMinuteFeePence                    Int      @default(25)    // £0.25 (increased from £0.15 for better driver compensation)
   
   // Bonuses (in pence)
   onTimeBonusPence                     Int      @default(500)   // £5.00
@@ -1689,6 +1709,7 @@ model User {
   driver                                          Driver?
   DriverApplication                               DriverApplication?
   Drop                                            Drop[]
+  EmailChangeRequest                              EmailChangeRequest[]
   Message                                         Message[]
   PayoutLedger                                    PayoutLedger[]
   PerformanceMetrics                              PerformanceMetrics[]
@@ -2467,6 +2488,7 @@ enum MessageType {
 
 enum NotificationType {
   job_offer
+  job_assigned
   job_update
   job_cancelled
   job_completed
@@ -2476,6 +2498,7 @@ enum NotificationType {
   payout_failed
   document_expiry
   system_alert
+  earnings
   performance_update
   incident_reported
 }

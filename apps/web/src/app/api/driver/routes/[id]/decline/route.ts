@@ -196,6 +196,68 @@ export async function POST(
       });
     });
 
+    // Send immediate admin notifications
+    try {
+      const pusher = getPusherServer();
+      
+      console.log('📡 Sending admin notifications for route decline...');
+
+      // 1. Notify admin-routes channel about the decline
+      await pusher.trigger('admin-routes', 'route-declined', {
+        routeId: routeId,
+        routeNumber: route.id,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        driverEmail: driver.User?.email,
+        reason: reason || 'No reason provided',
+        dropCount: (route as any).drops.length,
+        estimatedEarnings: route.driverPayout ? `£${(Number(route.driverPayout) / 100).toFixed(2)}` : 'N/A',
+        declinedAt: new Date().toISOString(),
+        acceptanceRate: newAcceptanceRate,
+        acceptanceRateChange: -5,
+        timestamp: new Date().toISOString(),
+      });
+
+      // 2. Notify admin-notifications channel for immediate alert
+      await pusher.trigger('admin-notifications', 'driver-declined-route', {
+        type: 'route_declined',
+        severity: 'warning',
+        routeId: routeId,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        dropCount: (route as any).drops.length,
+        message: `${driver.User?.name || 'Driver'} declined route with ${(route as any).drops.length} stops`,
+        reason: reason || 'No reason provided',
+        timestamp: new Date().toISOString(),
+      });
+
+      // 3. Notify admin-drivers channel about acceptance rate change
+      await pusher.trigger('admin-drivers', 'driver-acceptance-rate-updated', {
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown',
+        acceptanceRate: newAcceptanceRate,
+        change: -5,
+        reason: 'route_declined',
+        routeId: routeId,
+        timestamp: new Date().toISOString(),
+      });
+
+      // 4. Update admin schedule
+      await pusher.trigger('admin-schedule', 'schedule-updated', {
+        type: 'route_declined',
+        routeId: routeId,
+        driverId: driver.id,
+        driverName: driver.User?.name,
+        dropCount: (route as any).drops.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('✅ Admin notifications sent successfully for route decline');
+    } catch (notificationError) {
+      console.error('⚠️ Failed to send admin notifications:', notificationError);
+      // Don't fail the request if notifications fail
+    }
+
     // Auto-reassign route to next available driver
     try {
       const availableDrivers = await prisma.driver.findMany({

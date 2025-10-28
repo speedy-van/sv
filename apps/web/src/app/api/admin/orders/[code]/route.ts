@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     // Check admin authorization
@@ -20,7 +20,7 @@ export async function GET(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
 
     // Fetch order with all related data
     const order = await prisma.booking.findUnique({
@@ -110,10 +110,14 @@ export async function GET(
       pickupAddress: order.pickupAddress ? {
         label: order.pickupAddress.label,
         postcode: order.pickupAddress.postcode,
+        lat: order.pickupAddress.lat,
+        lng: order.pickupAddress.lng,
       } : null,
       dropoffAddress: order.dropoffAddress ? {
         label: order.dropoffAddress.label,
         postcode: order.dropoffAddress.postcode,
+        lat: order.dropoffAddress.lat,
+        lng: order.dropoffAddress.lng,
       } : null,
       pickupProperty: order.pickupProperty ? {
         floors: order.pickupProperty.floors,
@@ -167,7 +171,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     // Check admin authorization
@@ -179,7 +183,7 @@ export async function PUT(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
     const updateData = await request.json();
 
     // Update the booking

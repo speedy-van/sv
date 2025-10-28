@@ -8,8 +8,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Linking,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { apiService } from '../../services/api';
+import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 
 interface Notification {
   id: string;
@@ -21,7 +25,8 @@ interface Notification {
   actionUrl?: string;
 }
 
-export default function NotificationsScreen() {
+export default function SupportScreen() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -33,16 +38,12 @@ export default function NotificationsScreen() {
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch('https://speedy-van.co.uk/api/driver/notifications', {
-        headers: {
-          'Authorization': `Bearer YOUR_TOKEN`,
-        },
-      });
+      const response = await apiService.get('/api/driver/notifications');
 
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications || []);
+      if (response.success && response.data) {
+        setNotifications(response.data.notifications || []);
+      } else {
+        console.error('Failed to load notifications:', response.error);
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -59,18 +60,17 @@ export default function NotificationsScreen() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await fetch(`https://speedy-van.co.uk/api/driver/notifications/${notificationId}/read`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer YOUR_TOKEN`,
-        },
-      });
+      const response = await apiService.post(`/api/driver/notifications/${notificationId}/read`, {});
 
-      setNotifications(
-        notifications.map((notif) =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
+      if (response.success) {
+        setNotifications(
+          notifications.map((notif) =>
+            notif.id === notificationId ? { ...notif, read: true } : notif
+          )
+        );
+      } else {
+        console.error('Failed to mark notification as read:', response.error);
+      }
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -78,16 +78,15 @@ export default function NotificationsScreen() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('https://speedy-van.co.uk/api/driver/notifications/read-all', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer YOUR_TOKEN`,
-        },
-      });
+      const response = await apiService.post('/api/driver/notifications/read-all', {});
 
-      setNotifications(
-        notifications.map((notif) => ({ ...notif, read: true }))
-      );
+      if (response.success) {
+        setNotifications(
+          notifications.map((notif) => ({ ...notif, read: true }))
+        );
+      } else {
+        Alert.alert('Error', response.error || 'Failed to mark all as read');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to mark all as read');
     }
@@ -104,14 +103,13 @@ export default function NotificationsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await fetch('https://speedy-van.co.uk/api/driver/notifications/clear', {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer YOUR_TOKEN`,
-                },
-              });
+              const response = await apiService.delete('/api/driver/notifications/clear');
 
-              setNotifications([]);
+              if (response.success) {
+                setNotifications([]);
+              } else {
+                Alert.alert('Error', response.error || 'Failed to clear notifications');
+              }
             } catch (error) {
               Alert.alert('Error', 'Failed to clear notifications');
             }
@@ -153,32 +151,51 @@ export default function NotificationsScreen() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const openChat = () => {
+    router.push('/support/chat');
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Notifications</Text>
-          {unreadCount > 0 && (
-            <Text style={styles.headerSubtitle}>{unreadCount} unread</Text>
-          )}
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>💬 Support Center</Text>
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadText}>{unreadCount} new</Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.chatButton}
+            onPress={openChat}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="chatbubbles" size={18} color="#FFFFFF" />
+            <Text style={styles.chatButtonText}>Live Chat</Text>
+          </TouchableOpacity>
         </View>
 
         {notifications.length > 0 && (
           <View style={styles.headerActions}>
             {unreadCount > 0 && (
               <TouchableOpacity
-                style={styles.headerButton}
+                style={styles.headerActionButton}
                 onPress={markAllAsRead}
               >
-                <Text style={styles.headerButtonText}>Mark all read</Text>
+                <Ionicons name="checkmark-done-outline" size={16} color="rgba(255,255,255,0.9)" />
+                <Text style={styles.headerActionText}>Mark all read</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={styles.headerIconButton}
+              style={styles.headerActionButton}
               onPress={clearAll}
             >
-              <Ionicons name="trash-outline" size={20} color="#F44336" />
+              <Ionicons name="trash-outline" size={16} color="rgba(255,255,255,0.9)" />
+              <Text style={styles.headerActionText}>Clear all</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -199,10 +216,10 @@ export default function NotificationsScreen() {
         >
           {notifications.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="notifications-off-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No Notifications</Text>
+              <Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>No Messages</Text>
               <Text style={styles.emptySubtext}>
-                You're all caught up! New notifications will appear here.
+                Support messages and notifications will appear here.
               </Text>
             </View>
           ) : (
@@ -265,52 +282,83 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   header: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: '#6366F1',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    marginBottom: 12,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
-  headerSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+  unreadBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  unreadText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   headerActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
-  headerButton: {
+  headerActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 6,
-    backgroundColor: '#f5f5f5',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    gap: 6,
   },
-  headerButtonText: {
+  headerActionText: {
     fontSize: 12,
-    color: '#007AFF',
+    color: 'rgba(255, 255, 255, 0.95)',
     fontWeight: '600',
   },
-  headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#f5f5f5',
+  chatButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    gap: 6,
+    borderRadius: 24,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  chatButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   loadingContainer: {
     flex: 1,
@@ -341,28 +389,36 @@ const styles = StyleSheet.create({
   },
   notificationCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
     marginHorizontal: 16,
     marginTop: 12,
-    padding: 16,
-    borderRadius: 12,
+    padding: 18,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F0F0F5',
+  },
+  notificationUnread: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366F1',
+    backgroundColor: '#FAFBFF',
+  },
+  notificationIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-  },
-  notificationUnread: {
-    borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
-  },
-  notificationIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
   },
   notificationContent: {
     flex: 1,
@@ -370,30 +426,36 @@ const styles = StyleSheet.create({
   notificationHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   notificationTitle: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#007AFF',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#6366F1',
     marginLeft: 8,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
   },
   notificationMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#FFFFFF',
     lineHeight: 20,
     marginBottom: 8,
   },
   notificationTimestamp: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
 });
 

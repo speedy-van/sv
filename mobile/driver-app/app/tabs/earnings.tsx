@@ -11,6 +11,7 @@ import { apiService } from '../../services/api';
 import { StatsCard } from '../../components/StatsCard';
 import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 import { formatCurrency } from '../../utils/helpers';
+import { AnimatedScreen } from '../../components/AnimatedScreen';
 
 interface EarningsData {
   today: number;
@@ -32,28 +33,54 @@ export default function EarningsScreen() {
 
   const loadEarnings = async () => {
     try {
-      const response = await apiService.get<EarningsData>('/api/driver/earnings');
-      if (response.success && response.data) {
-        setEarnings(response.data);
+      // Fetch today's earnings
+      const todayResponse = await apiService.get('/api/driver/earnings?period=today');
+      const weekResponse = await apiService.get('/api/driver/earnings?period=week');
+      const monthResponse = await apiService.get('/api/driver/earnings?period=month');
+      const allResponse = await apiService.get('/api/driver/earnings?period=all');
+      
+      if (allResponse.success && allResponse.data?.summary) {
+        const summary = allResponse.data.summary;
+        const todaySummary = todayResponse.data?.summary;
+        const weekSummary = weekResponse.data?.summary;
+        const monthSummary = monthResponse.data?.summary;
+        
+        setEarnings({
+          today: parseFloat(todaySummary?.totalEarnings || '0'),
+          week: parseFloat(weekSummary?.totalEarnings || '0'),
+          month: parseFloat(monthSummary?.totalEarnings || '0'),
+          total: parseFloat(summary.totalEarnings || '0'),
+          completedJobs: summary.totalJobs || 0,
+          averagePerJob: parseFloat(summary.averageEarningsPerJob || '0'),
+        });
+        
+        console.log('✅ Earnings loaded:', {
+          today: todaySummary?.totalEarnings,
+          total: summary.totalEarnings,
+          jobs: summary.totalJobs,
+        });
       } else {
-        // Fallback to dashboard data
-        const dashboardResponse = await apiService.get('/api/driver/dashboard');
-        if (dashboardResponse.success && dashboardResponse.data?.statistics) {
-          const stats = dashboardResponse.data.statistics;
-          setEarnings({
-            today: 0,
-            week: 0,
-            month: 0,
-            total: stats.totalEarnings || 0,
-            completedJobs: stats.totalCompleted || 0,
-            averagePerJob: stats.totalCompleted > 0 
-              ? (stats.totalEarnings || 0) / stats.totalCompleted 
-              : 0,
-          });
-        }
+        // Set to zero if no earnings yet
+        setEarnings({
+          today: 0,
+          week: 0,
+          month: 0,
+          total: 0,
+          completedJobs: 0,
+          averagePerJob: 0,
+        });
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to load earnings');
+      console.error('❌ Failed to load earnings:', error);
+      // Set to zero on error
+      setEarnings({
+        today: 0,
+        week: 0,
+        month: 0,
+        total: 0,
+        completedJobs: 0,
+        averagePerJob: 0,
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -74,11 +101,12 @@ export default function EarningsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Earnings</Text>
-        <Text style={styles.subtitle}>Track your income</Text>
+    <AnimatedScreen>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Earnings</Text>
+          <Text style={styles.subtitle}>Track your income</Text>
       </View>
 
       <ScrollView
@@ -140,104 +168,132 @@ export default function EarningsScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </AnimatedScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A',
   },
   loadingText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginTop: 12,
   },
   header: {
-    padding: spacing.lg,
-    paddingTop: spacing.xxl + spacing.md,
-    backgroundColor: colors.surface,
-    gap: 4,
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
-    ...typography.h2,
-    color: colors.text.primary,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    padding: 20,
+    gap: 20,
+    paddingBottom: 40,
   },
   totalCard: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
+    backgroundColor: '#10B981',
+    borderRadius: 24,
+    padding: 32,
     alignItems: 'center',
-    ...shadows.lg,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   totalLabel: {
-    ...typography.body,
-    color: colors.text.inverse,
+    fontSize: 15,
+    color: '#FFFFFF',
     opacity: 0.9,
-    marginBottom: spacing.sm,
+    marginBottom: 12,
+    fontWeight: '600',
   },
   totalValue: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: colors.text.inverse,
-    marginBottom: spacing.xs,
+    fontSize: 56,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    letterSpacing: -1,
   },
   totalSubtext: {
-    ...typography.caption,
-    color: colors.text.inverse,
-    opacity: 0.8,
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.85,
+    fontWeight: '500',
   },
   section: {
-    gap: spacing.md,
+    gap: 12,
   },
   sectionTitle: {
-    ...typography.h3,
-    color: colors.text.primary,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: 12,
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    gap: spacing.md,
-    ...shadows.sm,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 20,
+    padding: 20,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F0F0F5',
   },
   infoIcon: {
-    fontSize: 32,
+    fontSize: 36,
   },
   infoContent: {
     flex: 1,
-    gap: 4,
+    gap: 6,
   },
   infoTitle: {
-    ...typography.bodyBold,
-    color: colors.text.primary,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   infoText: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    fontSize: 13,
+    color: '#FFFFFF',
     lineHeight: 20,
+    fontWeight: '500',
   },
 });
 

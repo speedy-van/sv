@@ -67,6 +67,7 @@ export async function POST(
       where: { userId: userId },
       select: { 
         id: true,
+        userId: true,
         DriverAvailability: {
           select: {
             status: true,
@@ -159,34 +160,72 @@ export async function POST(
 
     // Send real-time notifications
     try {
-      // Notify customer that job has started
+      const { getPusherServer } = await import('@/lib/pusher');
+      const pusher = getPusherServer();
+      
+      const timestamp = new Date().toISOString();
+      
+      console.log('📡 Sending admin notifications for job start...');
+
+      // Get driver details
+      const driverUser = await prisma.user.findUnique({
+        where: { id: driver.userId },
+        select: { name: true, email: true }
+      });
+
+      // 1. Notify admin-notifications channel (PROGRESS STARTED)
+      await pusher.trigger('admin-notifications', 'driver-started-job', {
+        type: 'job_started',
+        severity: 'info',
+        jobId,
+        bookingReference: assignment.Booking?.reference,
+        driverId: driver.id,
+        driverName: driverUser?.name || 'Unknown Driver',
+        message: `${driverUser?.name || 'Driver'} started job ${assignment.Booking?.reference}`,
+        step: 'navigate_to_pickup',
+        timestamp,
+      });
+
+      // 2. Notify admin-orders channel
+      await pusher.trigger('admin-orders', 'order-started', {
+        jobId,
+        bookingReference: assignment.Booking?.reference,
+        driverId: driver.id,
+        driverName: driverUser?.name || 'Unknown Driver',
+        status: 'in_progress',
+        timestamp,
+      });
+
+      // 3. Notify admin-routes channel
+      await pusher.trigger('admin-routes', 'job-started', {
+        jobId,
+        bookingReference: assignment.Booking?.reference,
+        driverId: driver.id,
+        driverName: driverUser?.name || 'Unknown Driver',
+        timestamp,
+      });
+
+      // 4. Notify customer that job has started
       await pusher.trigger(`booking-${assignment.Booking?.reference}`, 'job-started', {
         driverId: driver.id,
         assignmentId: assignment.id,
         message: 'Your driver has started the job and is on the way',
-        timestamp: new Date().toISOString(),
+        timestamp,
         trackingEnabled: true,
       });
 
-      // Notify admin dashboard
-      await pusher.trigger('admin-notifications', 'job-started', {
-        jobId,
-        driverId: driver.id,
-        bookingReference: assignment.Booking?.reference,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Start live tracking channel
+      // 5. Start live tracking channel
       await pusher.trigger(`tracking-${assignment.Booking?.reference}`, 'tracking-started', {
         driverId: driver.id,
         assignmentId: assignment.id,
         status: 'in_progress',
-        timestamp: new Date().toISOString(),
+        timestamp,
       });
 
-      console.log('📡 Real-time notifications sent for job start');
+      console.log('✅ Real-time notifications sent for job start');
     } catch (pusherError) {
       console.error('⚠️ Failed to send real-time notifications:', pusherError);
+      console.error('⚠️ Error details:', pusherError instanceof Error ? pusherError.message : 'Unknown');
     }
 
     return NextResponse.json({

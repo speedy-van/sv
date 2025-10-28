@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +21,7 @@ export async function POST(
       );
     }
 
-    const { code } = params;
+    const { code } = await params;
     const { reason } = await request.json();
 
     console.log('🚗 Admin removing driver from order:', { code, reason });
@@ -77,14 +77,16 @@ export async function POST(
           data: {
             id: `event_${Date.now()}_removed`,
             assignmentId: activeAssignment.id,
-            step: 'job_removed' as any,
+            step: 'job_completed', // ✅ Use valid JobStep enum value
             payload: {
               removedBy: 'admin',
               reason: reason || 'Removed by admin',
               removedAt: new Date().toISOString(),
+              action: 'driver_removed',
             },
             notes: `Job removed from driver ${driverName} by admin`,
             createdBy: (session.user as any).id,
+            mediaUrls: [],
           }
         });
 

@@ -176,8 +176,10 @@ class ApiService {
         message: response.data.message,
       };
     } catch (error: any) {
-      // Don't log logout errors to reduce noise
-      if (!url.includes('/logout')) {
+      // Don't log logout errors or location 403s to reduce noise
+      const isLocationError = url.includes('/location') && error.response?.status === 403;
+      
+      if (!url.includes('/logout') && !isLocationError) {
         console.error('❌ POST Error FULL:', error);
         console.error('❌ POST Error Details:', {
           url,
@@ -189,6 +191,7 @@ class ApiService {
           config: error.config,
         });
       }
+      
       return {
         success: false,
         error: error.response?.data?.error || error.message || 'Request failed',

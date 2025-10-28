@@ -13,6 +13,8 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/auth';
+import { apiService } from '../../services/api';
+import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 
 interface DriverProfile {
   firstName: string;
@@ -45,22 +47,22 @@ export default function SettingsScreen() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const user = await authService.getCurrentUser();
-      if (user) {
-        const nameParts = user.name?.split(' ') || ['', ''];
+      const response = await apiService.get('/api/driver/profile');
+      
+      if (response.success && response.data) {
+        const nameParts = response.data.name?.split(' ') || ['', ''];
         setProfile({
           firstName: nameParts[0] || '',
           lastName: nameParts.slice(1).join(' ') || '',
-          email: user.email,
-          phone: '',
-          vehicleType: '',
-          basePostcode: '',
-          locationConsent: false,
+          email: response.data.email || '',
+          phone: response.data.phone || '',
+          vehicleType: response.data.vehicleType || '',
+          basePostcode: response.data.basePostcode || '',
+          locationConsent: response.data.locationConsent || false,
         });
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load profile');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -69,49 +71,45 @@ export default function SettingsScreen() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      // TODO: Replace with actual API call
-      const response = await fetch('https://speedy-van.co.uk/api/driver/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_TOKEN`,
-        },
-        body: JSON.stringify(profile),
+      const response = await apiService.put('/api/driver/profile', {
+        name: `${profile.firstName} ${profile.lastName}`.trim(),
+        phone: profile.phone,
+        vehicleType: profile.vehicleType,
+        basePostcode: profile.basePostcode,
       });
 
-      if (response.ok) {
+      if (response.success) {
         Alert.alert('Success', 'Profile updated successfully');
         setEditing(false);
         loadProfile();
       } else {
-        Alert.alert('Error', 'Failed to update profile');
+        Alert.alert('Error', response.error || 'Failed to update profile');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
   };
 
   const handleLocationConsentToggle = async (value: boolean) => {
+    const oldValue = profile.locationConsent;
     setProfile({ ...profile, locationConsent: value });
+    
     try {
-      const response = await fetch('https://speedy-van.co.uk/api/driver/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_TOKEN`,
-        },
-        body: JSON.stringify({ locationConsent: value }),
+      const response = await apiService.post('/api/driver/availability', {
+        locationConsent: value,
       });
 
-      if (!response.ok) {
-        Alert.alert('Error', 'Failed to update location consent');
-        setProfile({ ...profile, locationConsent: !value });
+      if (!response.success) {
+        // Revert on failure
+        setProfile({ ...profile, locationConsent: oldValue });
+        Alert.alert('Error', response.error || 'Failed to update location consent');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update location consent');
-      setProfile({ ...profile, locationConsent: !value });
+    } catch (error: any) {
+      // Revert on error
+      setProfile({ ...profile, locationConsent: oldValue });
+      Alert.alert('Error', error.message || 'Failed to update location consent');
     }
   };
 

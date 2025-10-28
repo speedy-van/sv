@@ -7,8 +7,10 @@ import {
   RefreshControl,
   TouchableOpacity,
   Alert,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocation } from '../../contexts/LocationContext';
 import { apiService } from '../../services/api';
@@ -16,11 +18,85 @@ import { pusherService } from '../../services/pusher';
 import { JobCard } from '../../components/JobCard';
 import { StatsCard } from '../../components/StatsCard';
 import { OnlineIndicator } from '../../components/OnlineIndicator';
-import { JobAssignmentModal } from '../../components/JobAssignmentModal';
+// JobAssignmentModal is now handled globally - no import needed
 import { DashboardData, JobAssignment, PusherEvent } from '../../types';
 import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 import { formatCurrency } from '../../utils/helpers';
 import { notificationService } from '../../services/notification';
+import { soundService } from '../../services/soundService';
+import { AnimatedScreen } from '../../components/AnimatedScreen';
+
+// Animated Section Title Component
+const AnimatedSectionTitle: React.FC = () => {
+  const [colorIndex, setColorIndex] = React.useState(0);
+  
+  const COLOR_PALETTE = [
+    '#007AFF', // Blue
+    '#10B981', // Green
+    '#8B5CF6', // Purple
+    '#F59E0B', // Orange
+    '#EF4444', // Red
+    '#EC4899', // Pink
+    '#06B6D4', // Cyan
+    '#10B981', // Green
+  ];
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setColorIndex((prev) => (prev + 1) % COLOR_PALETTE.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Text style={[styles.sectionTitle, { color: COLOR_PALETTE[colorIndex] }]}>
+      Today's Overview
+    </Text>
+  );
+};
+
+// Animated Greeting Component with White Wave Effect
+const AnimatedGreeting: React.FC<{ name: string }> = ({ name }) => {
+  const shimmerAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
+
+  return (
+    <View style={styles.greetingContainer}>
+      <Text style={styles.greeting}>Hello, {name}! 👋</Text>
+      {/* White wave overlay */}
+      <Animated.View
+        style={[
+          styles.shimmerOverlay,
+          {
+            transform: [{ translateX }],
+          },
+        ]}
+      />
+    </View>
+  );
+};
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -40,15 +116,12 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [isSearchingJobs, setIsSearchingJobs] = useState(false);
-  const [jobAssignment, setJobAssignment] = useState<JobAssignment | null>(null);
-  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  // Job assignment state is now handled globally in JobAssignmentContext
 
   useEffect(() => {
     // Clear all cached data on mount to ensure fresh data
     console.log('🧹 Clearing all cached data on dashboard mount');
     setDashboardData(null);
-    setJobAssignment(null);
-    setShowAssignmentModal(false);
     setIsOnline(false);
     setIsSearchingJobs(false);
     
@@ -57,8 +130,9 @@ export default function DashboardScreen() {
       loadDashboard(true); // Force refresh on mount
     }, 100);
     
-    // Request location permissions automatically on mount
-    requestLocationPermissionsAutomatically();
+    // ✅ DO NOT auto-request location on mount
+    // Location tracking will start when driver goes online
+    // requestLocationPermissionsAutomatically(); ← REMOVED
     
     // Initialize notification service
     notificationService.initialize();
@@ -75,6 +149,11 @@ export default function DashboardScreen() {
         console.log('🔄 App became active - refreshing dashboard data');
         loadDashboard();
       }
+      
+      // ✅ CRITICAL: Do NOT change online status when app goes to background
+      // Driver should stay online even if they switch to Maps, Phone, etc.
+      // Only explicit user toggle should change online status
+      console.log(`📱 App state changed to: ${nextAppState} (keeping online status: ${isOnline})`);
     };
 
     // Add app state change listener
@@ -84,22 +163,10 @@ export default function DashboardScreen() {
     return () => {
       subscription?.remove();
     };
-  }, []);
+  }, [isOnline]);
 
-  const requestLocationPermissionsAutomatically = async () => {
-    try {
-      // Auto-request location permissions
-      const granted = await requestPermissions();
-      if (granted) {
-        console.log('✅ Location permissions granted automatically');
-        await startTracking();
-      } else {
-        console.log('⚠️ Location permissions denied');
-      }
-    } catch (error) {
-      console.error('Error requesting location permissions:', error);
-    }
-  };
+  // ✅ Location permissions are now requested ONLY when driver goes online
+  // This prevents 403 errors when driver is offline
 
   useEffect(() => {
     console.log('🔍 Dashboard user state:', {
@@ -123,153 +190,52 @@ export default function DashboardScreen() {
 
   // Initialize isOnline when user data is loaded and force refresh dashboard
   useEffect(() => {
-    if (user?.driver?.status) {
-      // Set initial online status based on user driver status
-      const shouldBeOnline = user.driver.status === 'active';
-      if (isOnline !== shouldBeOnline) {
-        console.log('🔄 Initializing isOnline from user data:', shouldBeOnline);
-        setIsOnline(shouldBeOnline);
-      }
-      
+    if (user?.driver?.id) {
       // Force refresh dashboard data when user changes (e.g., after login)
-      if (user.driver.id) {
-        console.log('🔄 User driver data loaded - refreshing dashboard');
-        loadDashboard(true);
-      }
+      console.log('🔄 User driver data loaded - refreshing dashboard');
+      loadDashboard(true);
+      
+      // Note: Do NOT auto-set isOnline based on driver.status
+      // isOnline should ONLY be controlled by:
+      // 1. User manual toggle
+      // 2. API response from /api/driver/availability
+      // driver.status (active/inactive) is different from availability (online/offline)
     }
-  }, [user?.driver?.id, user?.driver?.status]);
+  }, [user?.driver?.id]);
 
   useEffect(() => {
-    // Initialize Pusher for real-time updates
+    // Pusher job assignment listeners are now in JobAssignmentContext (global)
+    // Dashboard only needs to refresh data when events occur
     if (user?.driver?.id && isOnline) {
+      console.log('🔌 [Dashboard] Setting up data refresh listeners');
       pusherService.initialize(user.driver.id);
 
-      // Listen for route-matched event
-      pusherService.onRouteMatched(async (data: PusherEvent) => {
-        // Only accept new assignments if driver is online
-        if (!isOnline) {
-          console.log('⚠️ Job assignment ignored - driver is offline');
-          return;
-        }
-
-        const assignment: JobAssignment = {
-          id: data.routeId || data.bookingReference || '',
-          type: data.type === 'single-order' ? 'order' : 'route',
-          reference: data.bookingReference || data.routeNumber || '',
-          routeNumber: data.routeNumber,
-          from: data.from || 'Pickup location',
-          to: data.to || 'Drop-off location',
-          additionalStops: data.bookingsCount ? data.bookingsCount - 1 : 0,
-          estimatedEarnings: data.estimatedEarnings || '0',
-          date: data.date || new Date().toISOString(),
-          time: data.time || '',
-          distance: data.distance,
-          vehicleType: data.vehicleType,
-        };
-
-        // Show popup modal
-        setJobAssignment(assignment);
-        setShowAssignmentModal(true);
-        setIsSearchingJobs(false);
-
-        // Play repeat notification sound and vibrate
-        await notificationService.showJobAssignmentNotification(
-          assignment.reference,
-          assignment.type,
-          formatCurrency(assignment.estimatedEarnings)
-        );
-        await notificationService.vibratePattern();
+      // Listen for data refresh events only
+      pusherService.onJobRemoved(async (data) => {
+        console.log('📢 [Dashboard] JOB REMOVED (broadcast) - refreshing data');
+        loadDashboard(true);
       });
 
-      // Listen for job-assigned event
-      pusherService.onJobAssigned(async (data: PusherEvent) => {
-        // Only accept new assignments if driver is online
-        if (!isOnline) {
-          console.log('⚠️ Job assignment ignored - driver is offline');
-          return;
-        }
-
-        const assignment: JobAssignment = {
-          id: data.routeId || data.bookingReference || '',
-          type: 'order',
-          reference: data.bookingReference || '',
-          from: data.from || 'Pickup location',
-          to: data.to || 'Drop-off location',
-          estimatedEarnings: data.estimatedEarnings || '0',
-          date: data.date || new Date().toISOString(),
-          time: data.time || '',
-          distance: data.distance,
-          vehicleType: data.vehicleType,
-        };
-
-        // Show popup modal
-        setJobAssignment(assignment);
-        setShowAssignmentModal(true);
-        setIsSearchingJobs(false);
-
-        // Play repeat notification sound and vibrate
-        await notificationService.showJobAssignmentNotification(
-          assignment.reference,
-          assignment.type,
-          formatCurrency(assignment.estimatedEarnings)
-        );
-        await notificationService.vibratePattern();
-      });
-
-      // Listen for route-removed event
       pusherService.onRouteRemoved(async (data) => {
-        await notificationService.showNotification(
-          'Route Removed ❌',
-          data.reason || 'A route has been removed from your assignments'
-        );
-        loadDashboard();
+        console.log('🗑️ [Dashboard] ROUTE REMOVED - refreshing data');
+        loadDashboard(true);
       });
 
-      // Listen for route-cancelled event
       pusherService.onRouteCancelled(async (data) => {
-        await notificationService.showNotification(
-          'Route Cancelled 🚫',
-          data.message || `Route ${data.routeNumber || data.routeId} has been cancelled`
-        );
-        await notificationService.playNotificationSound();
-        loadDashboard();
-      });
-
-      // Listen for drop-removed event
-      pusherService.onDropRemoved(async (data) => {
-        await notificationService.showNotification(
-          'Route Updated 📦',
-          `A drop has been removed from route ${data.routeNumber || data.routeId}`
-        );
-        loadDashboard();
-      });
-
-      // Listen for general notifications
-      pusherService.onNotification(async (data) => {
-        await notificationService.showNotification(data.title || 'Notification', data.message || '');
+        console.log('🚫 [Dashboard] ROUTE CANCELLED - refreshing data');
+        loadDashboard(true);
       });
 
       return () => {
-        pusherService.disconnect();
+        // Don't disconnect - global context needs Pusher connection
+        // Just clean up local listeners
       };
-    } else if (user?.driver?.id && !isOnline) {
-      // Disconnect Pusher when driver goes offline
-      pusherService.disconnect();
     }
   }, [user, isOnline]);
 
   const loadDashboard = async (forceRefresh = false) => {
     try {
       console.log('🔄 Loading dashboard data...', forceRefresh ? '(force refresh)' : '');
-      
-      // Clear existing data if force refresh
-      if (forceRefresh) {
-        console.log('🧹 Clearing cached dashboard data');
-        setDashboardData(null);
-        // Also clear any job assignments
-        setJobAssignment(null);
-        setShowAssignmentModal(false);
-      }
       
       const response = await apiService.get<DashboardData>('/api/driver/dashboard');
       if (response.success && response.data) {
@@ -279,17 +245,14 @@ export default function DashboardScreen() {
           availableJobs: response.data.jobs?.available?.length || 0
         });
         
+        // Modal management is now handled globally in JobAssignmentContext
+        // Dashboard just displays the data
         setDashboardData(response.data);
         
-        // Initialize isOnline based on driver status from API
-        const driverStatus = response.data.driver?.status;
-        if (driverStatus === 'active') {
-          console.log('🟢 Setting driver online (status: active)');
-          setIsOnline(true);
-        } else {
-          console.log('⚪ Setting driver offline (status:', driverStatus, ')');
-          setIsOnline(false);
-        }
+        // ✅ CRITICAL: NEVER auto-set isOnline from dashboard refresh
+        // isOnline is ONLY controlled by user toggle in handleToggleOnlineStatus()
+        // Do NOT touch isOnline here - it causes the toggle to revert!
+        
       } else {
         console.error('❌ Dashboard API error:', response.error);
         Alert.alert('Error', response.error || 'Failed to load dashboard');
@@ -310,7 +273,12 @@ export default function DashboardScreen() {
   };
 
   const handleToggleOnlineStatus = async (newStatus: boolean) => {
+    // Play button click sound
+    soundService.playButtonClick();
+    
     try {
+      console.log(`🔄 Toggling status to: ${newStatus ? 'ONLINE' : 'OFFLINE'}`);
+      
       // Update local state immediately for better UX
       setIsOnline(newStatus);
 
@@ -322,9 +290,40 @@ export default function DashboardScreen() {
       if (!response.success) {
         // Revert if API call fails
         setIsOnline(!newStatus);
+        soundService.playError();
         Alert.alert('Error', response.error || 'Failed to update status');
+        return;
       }
+
+      console.log(`✅ Status updated successfully to ${newStatus ? 'ONLINE' : 'OFFLINE'}`);
+      soundService.playSuccess();
+
+      // ✅ CRITICAL: Auto-refresh dashboard to get updated job list
+      if (newStatus) {
+        console.log('🔍 Driver went ONLINE - refreshing job list...');
+        
+        // Small delay to allow backend to process BEFORE starting tracking
+        setTimeout(async () => {
+          loadDashboard(true); // Force refresh
+          
+          // Start location tracking AFTER backend is ready (1 second delay)
+          if (permissions.granted) {
+            setTimeout(async () => {
+              await startTracking();
+              console.log('✅ Location tracking started after backend ready');
+            }, 1000);
+          }
+        }, 500);
+      } else {
+        console.log('⚪ Driver went OFFLINE - clearing job list');
+        // Stop location tracking when going offline
+        await stopTracking();
+        // Refresh to remove jobs that require online status
+        loadDashboard(true);
+      }
+
     } catch (error: any) {
+      console.error('❌ Error toggling status:', error);
       // Revert if error occurs
       setIsOnline(!newStatus);
       Alert.alert('Error', error.message || 'Failed to update status');
@@ -332,111 +331,7 @@ export default function DashboardScreen() {
   };
 
 
-  const handleViewJob = async () => {
-    if (!jobAssignment) return;
-
-    try {
-      // Stop notification sound
-      notificationService.stopRepeatSound();
-
-      // Close modal immediately
-      setShowAssignmentModal(false);
-
-      // Navigate to job details screen to view without accepting
-      // Driver can then accept from the details screen if they want
-      router.push(`/job/${jobAssignment.id}`);
-      
-      // Clear assignment
-      setJobAssignment(null);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to open job details');
-    }
-  };
-
-  const handleDeclineJob = async () => {
-    if (!jobAssignment) return;
-
-    // Stop notification sound immediately
-    notificationService.stopRepeatSound();
-
-    // Close modal immediately to prevent reappearance
-    setShowAssignmentModal(false);
-    const declinedAssignment = jobAssignment;
-    setJobAssignment(null);
-
-    Alert.alert(
-      'Decline Job',
-      'This job will not appear again unless reassigned by admin. Are you sure?',
-      [
-        { 
-          text: 'Cancel', 
-          style: 'cancel',
-          onPress: () => {
-            // If cancelled, show the modal again
-            setJobAssignment(declinedAssignment);
-            setShowAssignmentModal(true);
-            notificationService.startRepeatSound();
-          }
-        },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Call API to decline the job - marks it as declined for this driver
-              const endpoint = declinedAssignment.type === 'route' 
-                ? `/api/driver/routes/${declinedAssignment.id}/decline`
-                : `/api/driver/jobs/${declinedAssignment.id}/decline`;
-
-              const response = await apiService.post(endpoint, {
-                reason: 'Driver declined',
-                permanent: true, // Mark as permanently declined for this driver
-              });
-              
-              if (response.success) {
-                // Refresh dashboard to remove from available jobs
-                loadDashboard();
-              } else {
-                Alert.alert('Error', response.error || 'Failed to decline job');
-              }
-            } catch (error: any) {
-              Alert.alert('Error', error.message || 'Failed to decline job');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleJobExpire = async () => {
-    if (!jobAssignment) return;
-
-    // Stop notification sound
-    notificationService.stopRepeatSound();
-
-    // Close modal
-    setShowAssignmentModal(false);
-
-    // Show notification
-    Alert.alert(
-      'Job Expired',
-      'The job assignment has expired due to no response within the time limit.'
-    );
-
-    // Notify backend about expiration
-    try {
-      const endpoint = jobAssignment.type === 'route' 
-        ? `/api/driver/routes/${jobAssignment.id}/expire`
-        : `/api/driver/jobs/${jobAssignment.id}/expire`;
-
-      await apiService.post(endpoint, {});
-    } catch (error) {
-      console.error('Error notifying backend about job expiration:', error);
-    }
-
-    setJobAssignment(null);
-    loadDashboard();
-  };
+  // Job assignment handlers are now in GlobalJobAssignmentModal
 
   if (loading) {
     return (
@@ -447,11 +342,12 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <AnimatedScreen>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, {user?.name || 'Driver'}! 👋</Text>
+          <AnimatedGreeting name={user?.name || 'Driver'} />
           <Text style={styles.subtitle}>Ready for your deliveries?</Text>
         </View>
       </View>
@@ -463,12 +359,15 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Online/Offline Status Toggle */}
-        <View style={styles.statusCard}>
+        {/* Online/Offline Status Toggle with Neon Glow */}
+        <View style={[
+          styles.statusCard,
+          isOnline ? styles.statusCardOnline : styles.statusCardOffline
+        ]}>
           <View style={styles.statusHeader}>
             <View style={styles.statusInfo}>
               <Text style={styles.statusTitle}>
-                {isOnline ? '🟢 Online' : '⚪ Offline'}
+                {isOnline ? '🟢 Online' : '🔴 Offline'}
               </Text>
               <Text style={styles.statusSubtitle}>
                 {isOnline ? 'Available for new jobs' : 'Not receiving jobs'}
@@ -499,13 +398,18 @@ export default function DashboardScreen() {
 
         {/* Statistics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today's Overview</Text>
+          <AnimatedSectionTitle />
           <View style={styles.statsGrid}>
             <View style={styles.statsRow}>
               <StatsCard
-                title="Assigned Jobs"
-                value={dashboardData?.statistics.assignedJobs || 0}
+                title="Assigned"
+                value={dashboardData?.statistics.totalAssigned || dashboardData?.statistics.assignedJobs || 0}
                 color={colors.primary}
+                subtitle={
+                  dashboardData?.statistics.assignedRoutes > 0 
+                    ? `${dashboardData.statistics.assignedJobs || 0} orders, ${dashboardData.statistics.assignedRoutes || 0} routes`
+                    : undefined
+                }
               />
               <StatsCard
                 title="Available Jobs"
@@ -570,108 +474,163 @@ export default function DashboardScreen() {
       </ScrollView>
 
       {/* Job Assignment Modal */}
-      <JobAssignmentModal
-        visible={showAssignmentModal}
-        assignment={jobAssignment}
-        onView={handleViewJob}
-        onDecline={handleDeclineJob}
-        onExpire={handleJobExpire}
-      />
-    </View>
+      {/* Job Assignment Modal is now handled globally - see GlobalJobAssignmentModal in _layout.tsx */}
+      </View>
+    </AnimatedScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A',
   },
   loadingText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: '#6B7280',
+    marginTop: 12,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.lg,
-    paddingTop: spacing.xxl + spacing.md,
-    backgroundColor: colors.surface,
-    ...shadows.sm,
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: 'transparent',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  greetingContainer: {
+    overflow: 'hidden',
+    position: 'relative',
   },
   greeting: {
-    ...typography.h2,
-    color: colors.text.primary,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: 100,
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    transform: [{ skewX: '-20deg' }],
   },
   subtitle: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    marginTop: 2,
+    opacity: 0.8,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    padding: 20,
+    gap: 20,
+    paddingBottom: 40,
   },
   statusCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    ...shadows.md,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 3,
+  },
+  statusCardOnline: {
+    borderColor: '#10B981',
+    // Green neon glow effect - iOS
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 24,
+    // Green neon glow effect - Android
+    elevation: 16,
+  },
+  statusCardOffline: {
+    borderColor: '#EF4444',
+    // Red neon glow effect - iOS
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    // Red neon glow effect - Android
+    elevation: 14,
   },
   statusHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 12,
   },
   statusInfo: {
     flex: 1,
   },
   statusTitle: {
-    ...typography.h4,
-    color: colors.text.primary,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   statusSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    fontSize: 13,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    opacity: 0.8,
   },
   statusToggle: {
-    width: 56,
-    height: 32,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.border,
+    width: 60,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#E5E7EB',
     padding: 3,
     justifyContent: 'center',
   },
   statusToggleActive: {
-    backgroundColor: colors.success,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
   },
   statusToggleKnob: {
-    width: 26,
-    height: 26,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.surface,
-    ...shadows.sm,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   statusToggleKnobActive: {
     alignSelf: 'flex-end',
   },
   statusHint: {
-    ...typography.small,
-    color: colors.text.secondary,
-    marginTop: spacing.xs,
+    fontSize: 12,
+    color: '#FFFFFF',
+    marginTop: 8,
+    fontWeight: '500',
+    opacity: 0.7,
   },
   statusHintActive: {
-    color: colors.success,
+    color: '#10B981',
     fontWeight: '600',
   },
   section: {
@@ -683,39 +642,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    ...typography.h3,
-    color: colors.text.primary,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   trackingStatus: {
-    ...typography.bodyBold,
-    color: colors.text.secondary,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    opacity: 0.8,
   },
   trackingActive: {
-    color: colors.success,
+    color: '#10B981',
   },
   statsGrid: {
-    gap: spacing.md,
+    gap: 12,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: 12,
   },
   emptyState: {
     alignItems: 'center',
-    padding: spacing.xxl,
-    gap: spacing.md,
+    padding: 60,
+    gap: 16,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 24,
+    marginTop: 20,
+    borderWidth: 3,
+    borderColor: '#F59E0B',
+    // Amber neon glow effect - iOS
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    // Amber neon glow effect - Android
+    elevation: 14,
   },
   emptyStateIcon: {
-    fontSize: 64,
+    fontSize: 72,
+    opacity: 0.5,
   },
   emptyStateTitle: {
-    ...typography.h3,
-    color: colors.text.primary,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#F59E0B',
+    textShadowColor: 'rgba(245, 158, 11, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   emptyStateText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: '#FFFFFF',
     textAlign: 'center',
+    lineHeight: 22,
+    opacity: 0.8,
   },
 });
 

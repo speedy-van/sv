@@ -190,12 +190,13 @@ async function sendViaSendGrid(to: string, subject: string, html: string): Promi
   try {
     const msg = {
       to,
-      from: emailConfig.sendgrid.from,
+      from: `Speedy Van <${emailConfig.sendgrid.from}>`,
       subject,
-      html
+      html,
+      replyTo: 'support@speedy-van.co.uk'
     };
 
-    console.log('SendGrid message:', { to, from: emailConfig.sendgrid.from, subject });
+    console.log('SendGrid message:', { to, from: `Speedy Van <${emailConfig.sendgrid.from}>`, subject });
     const result = await sgMail.send(msg);
     console.log('SendGrid result:', result);
     return {
@@ -561,7 +562,7 @@ function generateTrustpilotFeedbackHTML(data: TrustpilotFeedbackData): string {
               </div>
               <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <span style="font-size: 20px;">📞</span>
-                <a href="tel:+441202129746" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">+44 7901846297</a>
+                <a href="tel:+441202129746" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">+44 1202129746</a>
               </div>
               <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <span style="font-size: 20px;">🌐</span>
@@ -776,7 +777,7 @@ function generateAdminWelcomeHTML(data: AdminWelcomeData): string {
               </div>
               <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <span style="font-size: 20px;">📞</span>
-                <a href="tel:+441202129746" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">+44 7901846297</a>
+                <a href="tel:+441202129746" style="color: #1976d2; font-weight: 600; text-decoration: none; font-size: 16px;">+44 1202129746</a>
               </div>
               <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <span style="font-size: 20px;">🌐</span>
@@ -1445,6 +1446,23 @@ export const unifiedEmailService = {
       return await sendEmail(data.customerEmail, subject, html);
     } catch (error) {
       console.error('Trustpilot feedback email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
+  // Generic email sending method (uses Resend/SendGrid with fallback)
+  async sendCustomEmail(to: string, subject: string, htmlContent: string) {
+    try {
+      console.log('📧 Sending custom email to:', to);
+      const result = await sendEmail(to, subject, htmlContent);
+      return result;
+    } catch (error) {
+      console.error('Custom email send error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

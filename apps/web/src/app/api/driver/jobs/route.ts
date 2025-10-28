@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { penceToPounds } from '@/lib/utils/currency';
+import { filterDemoData } from '@/lib/utils/demo-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -288,14 +289,34 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Combine all jobs
-    const allJobs = [...transformedAssignedJobs, ...transformedAvailableJobs];
+    // ✅ CRITICAL: Filter out demo data for production accounts
+    // Get user email from driver record
+    const driverUser = await withPrisma(async (prisma) => {
+      return await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      });
+    });
+    const userEmail = driverUser?.email || null;
+    const filteredAssignedJobs = filterDemoData(transformedAssignedJobs, userEmail, driver.id);
+    const filteredAvailableJobs = filterDemoData(transformedAvailableJobs, userEmail, driver.id);
+
+    // Log filtering
+    if (filteredAssignedJobs.length !== transformedAssignedJobs.length) {
+      console.log(`⚠️ DEMO GUARD: Filtered ${transformedAssignedJobs.length - filteredAssignedJobs.length} demo assigned jobs (production account)`);
+    }
+    if (filteredAvailableJobs.length !== transformedAvailableJobs.length) {
+      console.log(`⚠️ DEMO GUARD: Filtered ${transformedAvailableJobs.length - filteredAvailableJobs.length} demo available jobs (production account)`);
+    }
+
+    // Combine filtered jobs
+    const allJobs = [...filteredAssignedJobs, ...filteredAvailableJobs];
 
     const responseData = {
       jobs: allJobs,
       total: allJobs.length,
-      available: transformedAvailableJobs.length,
-      assigned: transformedAssignedJobs.length
+      available: filteredAvailableJobs.length,
+      assigned: filteredAssignedJobs.length
     };
 
     console.log('✅ Driver Jobs API - Successfully processed jobs:', {

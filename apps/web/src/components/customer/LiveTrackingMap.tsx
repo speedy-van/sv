@@ -169,7 +169,19 @@ export default function LiveTrackingMap({
       }
 
       const result = await response.json();
-      const data = result.data as TrackingData;
+      
+      // Transform jobTimeline to timeline format
+      const timeline = result.jobTimeline?.map((event: any) => ({
+        status: event.step,
+        title: event.label,
+        timestamp: event.timestamp,
+        completed: true,
+      })) || [];
+
+      const data = {
+        ...result,
+        timeline,
+      } as TrackingData;
       
       setTrackingData(data);
       setLastUpdate(new Date());
@@ -192,7 +204,7 @@ export default function LiveTrackingMap({
 
     try {
       const mapboxgl = window.mapboxgl;
-      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
 
       // Calculate bounds to fit all locations
       const bounds = new mapboxgl.LngLatBounds();
@@ -362,8 +374,10 @@ export default function LiveTrackingMap({
         console.log('🔌 Initializing Pusher for real-time tracking:', bookingReference);
 
         // Initialize Pusher client
-        pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
-          cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu',
+        const PUSHER_KEY = '407cb06c423e6c032e9c';
+        const PUSHER_CLUSTER = 'eu';
+        pusherRef.current = new Pusher(PUSHER_KEY, {
+          cluster: PUSHER_CLUSTER,
           forceTLS: true,
         });
 
@@ -436,6 +450,22 @@ export default function LiveTrackingMap({
             return {
               ...prev,
               eta: data.eta,
+              lastUpdated: new Date().toISOString(),
+            };
+          });
+        });
+
+        // Listen for job progress updates from driver
+        channelRef.current.bind('job-progress-updated', (data: any) => {
+          console.log('📊 Job progress updated:', data);
+
+          // Refresh tracking data to get updated timeline
+          fetchTrackingData();
+          
+          setTrackingData(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
               lastUpdated: new Date().toISOString(),
             };
           });

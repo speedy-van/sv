@@ -29,14 +29,15 @@ async function geocodeAddress(address: string, postcode: string): Promise<{lat: 
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    console.log(`🔧 Fixing coordinates for booking: ${params.code}`);
+    const { code } = await params;
+    console.log(`🔧 Fixing coordinates for booking: ${code}`);
 
     // Find the booking with its addresses
     const booking = await prisma.booking.findUnique({
-      where: { reference: params.code },
+      where: { reference: code },
       include: {
         pickupAddress: true,
         dropoffAddress: true,
@@ -124,7 +125,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      booking: params.code,
+      booking: code,
       results
     });
 

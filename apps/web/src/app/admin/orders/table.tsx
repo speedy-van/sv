@@ -203,7 +203,17 @@ interface Order {
   distanceMeters?: number;
 }
 
-export default function OrdersClient() {
+interface OrdersClientProps {
+  declinedNotifications?: string[];
+  acceptedNotifications?: string[];
+  inProgressNotifications?: string[];
+}
+
+export default function OrdersClient({ 
+  declinedNotifications = [],
+  acceptedNotifications = [],
+  inProgressNotifications = []
+}: OrdersClientProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -773,7 +783,7 @@ export default function OrdersClient() {
       if (removalType === 'single') {
         // Remove single order
         const response = await fetch(
-          `/api/admin/orders/${selectedOrderForRemoval.reference}/unassign`,
+          `/api/admin/orders/${selectedOrderForRemoval.reference}/remove-driver`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -901,12 +911,36 @@ export default function OrdersClient() {
             ) : (
               filteredOrders.map(order => {
                 const slaStatus = getSLAStatus(order);
+                const isDeclined = declinedNotifications.includes(order.id);
+                const isAccepted = acceptedNotifications.includes(order.id);
+                const isInProgress = inProgressNotifications.includes(order.id);
+                
                 return (
                   <Tr
                     key={order.id}
-                    _hover={{ bg: 'bg.surface.hover' }}
+                    _hover={{ 
+                      bg: isDeclined ? 'red.900' : 
+                          isInProgress ? 'blue.900' :
+                          isAccepted ? 'green.900' : 
+                          'bg.surface.hover' 
+                    }}
                     cursor="pointer"
                     onClick={() => handleViewOrder(order.reference)}
+                    bg={
+                      isDeclined ? 'red.950' : 
+                      isInProgress ? 'blue.950' :
+                      isAccepted ? 'green.950' : 
+                      'transparent'
+                    }
+                    borderLeft={
+                      isDeclined || isAccepted || isInProgress ? '4px solid' : 'none'
+                    }
+                    borderLeftColor={
+                      isDeclined ? 'red.500' : 
+                      isInProgress ? 'blue.500' :
+                      isAccepted ? 'green.500' : 
+                      'transparent'
+                    }
                   >
                     <Td px={4} onClick={e => e.stopPropagation()}>
                       <Checkbox
@@ -926,10 +960,25 @@ export default function OrdersClient() {
                       <HStack spacing={2}>
                         <Circle
                           size="12px"
-                          bg={calculatePriority(order.scheduledAt).color}
-                          animation={calculatePriority(order.scheduledAt).animation}
+                          bg={
+                            isDeclined ? '#E53E3E' : 
+                            isInProgress ? '#3B82F6' :
+                            isAccepted ? '#10B981' : 
+                            calculatePriority(order.scheduledAt).color
+                          }
+                          animation={
+                            isDeclined ? `${fastPulseAnimation} 1s ease-in-out infinite` : 
+                            isInProgress ? `${pulseAnimation} 2s ease-in-out infinite` :
+                            isAccepted ? `${pulseAnimation} 2s ease-in-out infinite` :
+                            calculatePriority(order.scheduledAt).animation
+                          }
                         />
-                        <Text fontWeight="bold" color="blue.600">
+                        <Text fontWeight="bold" color={
+                          isDeclined ? 'red.400' : 
+                          isInProgress ? 'blue.400' :
+                          isAccepted ? 'green.400' :
+                          'blue.600'
+                        }>
                           #{order.reference || 'N/A'}
                         </Text>
                       </HStack>
@@ -994,11 +1043,46 @@ export default function OrdersClient() {
                       </VStack>
                     </Td>
                     <Td>
-                      <Badge colorScheme={getStatusColor(order.status)}>
-                        {order.status
-                          ? String(order.status).replace('_', ' ')
-                          : 'Unknown'}
-                      </Badge>
+                      <HStack spacing={2}>
+                        <Badge colorScheme={getStatusColor(order.status)}>
+                          {order.status
+                            ? String(order.status).replace('_', ' ')
+                            : 'Unknown'}
+                        </Badge>
+                        {isDeclined && (
+                          <Badge 
+                            colorScheme="red" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            🚨 DECLINED
+                          </Badge>
+                        )}
+                        {isAccepted && (
+                          <Badge 
+                            colorScheme="green" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            ✅ ACCEPTED
+                          </Badge>
+                        )}
+                        {isInProgress && (
+                          <Badge 
+                            colorScheme="blue" 
+                            variant="solid" 
+                            animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            🚀 IN PROGRESS
+                          </Badge>
+                        )}
+                      </HStack>
                     </Td>
                     <Td>
                       <HStack>

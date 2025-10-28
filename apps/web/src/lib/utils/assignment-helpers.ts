@@ -105,17 +105,19 @@ export async function upsertAssignment(
     round?: number;
   }
 ) {
-  // Find the most recent active assignment for this booking
+  // ✅ CRITICAL FIX: Find ANY existing assignment (not just invited/claimed)
+  // This prevents duplicate assignments and P2002 errors
   const existingAssignment = await prisma.assignment.findFirst({
     where: {
       bookingId,
-      status: { in: ['invited', 'claimed'] }
+      // Don't filter by status - find ANY assignment
     },
     orderBy: { createdAt: 'desc' }
   });
 
   if (existingAssignment) {
-    // Update existing assignment
+    // ✅ Update existing assignment with new driver
+    console.log(`✅ Updating existing assignment ${existingAssignment.id} for booking ${bookingId}`);
     return await prisma.assignment.update({
       where: { id: existingAssignment.id },
       data: {
@@ -124,11 +126,15 @@ export async function upsertAssignment(
       }
     });
   } else {
-    // Create new assignment
+    // ✅ Create new assignment only if none exists
+    console.log(`✅ Creating new assignment for booking ${bookingId}`);
     return await prisma.assignment.create({
       data: {
+        id: `assignment_${Date.now()}_${bookingId}_${data.driverId}`,
         bookingId,
-        ...data
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
     });
   }

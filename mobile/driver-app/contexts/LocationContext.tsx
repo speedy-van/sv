@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { locationService } from '../services/location';
 import { Location } from '../types';
 
@@ -31,6 +32,29 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     checkPermissions();
   }, []);
+
+  // ✅ Keep tracking active even when app is backgrounded
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      console.log(`📱 Location Context - App state changed to: ${nextAppState}, tracking: ${isTracking}`);
+      
+      // ✅ CRITICAL: Do NOT stop tracking when app goes to background
+      // Background location tracking should continue for active jobs
+      // Only explicit stopTracking() call should stop tracking
+      
+      if (nextAppState === 'active' && isTracking) {
+        // Resume foreground tracking when app becomes active
+        console.log('🔄 App became active - ensuring location tracking is running');
+        refreshLocation();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [isTracking]);
 
   const checkPermissions = async () => {
     const perms = await locationService.checkPermissions();

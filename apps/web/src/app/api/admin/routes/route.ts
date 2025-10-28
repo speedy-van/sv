@@ -241,10 +241,17 @@ export async function GET(request: NextRequest) {
     }
     
     const drivers = driversData.map((driver: any) => ({
-      id: driver.id, // ✅ Fixed: Use driver.id instead of driver.userId
+      id: driver.id,
       name: driver.User?.name || 'Unknown',
       status: driver.DriverAvailability?.status || 'offline',
       currentRoutes: 0,
+      DriverAvailability: driver.DriverAvailability ? {
+        status: driver.DriverAvailability.status,
+        lastLat: driver.DriverAvailability.lastLat,
+        lastLng: driver.DriverAvailability.lastLng,
+        lastSeenAt: driver.DriverAvailability.lastSeenAt,
+      } : null,
+      activeRoutes: routes.filter((r: any) => r.driverId === driver.id).length,
     }));
 
     // Log audit (non-blocking)

@@ -38,7 +38,7 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
     postalCode: 'ML3 0HS',
     addressCountry: 'GB',
   },
-  telephone = '+447901846297',
+  telephone = '+441202129746',
   email = 'support@speedy-van.co.uk',
   website = 'https://speedy-van.co.uk',
   openingHours = ['Mo-Su 00:00-23:59'],

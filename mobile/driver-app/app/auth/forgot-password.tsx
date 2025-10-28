@@ -144,7 +144,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   scrollContent: {
     flexGrow: 1,

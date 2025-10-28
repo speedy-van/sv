@@ -73,19 +73,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update driver availability status
-    // We use a custom field or update existing status
-    // For now, we'll update the driver's status field to track online/offline
-    const updatedDriver = await prisma.driver.update({
-      where: { id: driver.id },
-      data: {
-        // Store online/offline in metadata or custom field
-        // For backward compatibility, keep status as 'active' but track availability separately
+    console.log(`🔄 Updating driver ${driver.id} to ${status}`);
+
+    // ✅ CRITICAL FIX: Update DriverAvailability table (not just Driver.updatedAt)
+    const updatedAvailability = await prisma.driverAvailability.upsert({
+      where: { driverId: driver.id },
+      create: {
+        driverId: driver.id,
+        status: status,
+        locationConsent: status === 'online', // Auto-enable location when online
+        lastSeenAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      update: {
+        status: status,
+        locationConsent: status === 'online' ? true : false, // ✅ Explicit false when offline
+        lastSeenAt: new Date(),
         updatedAt: new Date(),
       },
     });
 
-    console.log(`✅ Driver ${driver.id} is now ${status}`);
+    console.log(`✅ Driver ${driver.id} availability updated to ${status}`);
+
+    // ✅ Send Pusher notification to admin dashboard
+    try {
+      const { default: Pusher } = await import('pusher');
+      const pusher = new Pusher({
+        appId: process.env.PUSHER_APP_ID!,
+        key: process.env.PUSHER_KEY!,
+        secret: process.env.PUSHER_SECRET!,
+        cluster: process.env.PUSHER_CLUSTER!,
+        useTLS: true,
+      });
+
+      await pusher.trigger('admin-notifications', 'driver-status-changed', {
+        driverId: driver.id,
+        status: status,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('✅ Pusher notification sent to admin dashboard');
+    } catch (pusherError) {
+      console.error('⚠️ Failed to send Pusher notification:', pusherError);
+      // Don't fail the request if Pusher fails
+    }
+
+    // ✅ If driver went online, trigger job matching
+    if (status === 'online') {
+      console.log('🔍 Driver went online - will auto-refresh available jobs');
+      
+      // You can add background job matching here or trigger via queue
+      // For now, the dashboard will refresh and show available jobs
+    }
 
     return NextResponse.json(
       {
@@ -94,6 +134,8 @@ export async function POST(request: NextRequest) {
         data: {
           driverId: driver.id,
           status: status,
+          locationConsent: updatedAvailability.locationConsent,
+          lastSeenAt: updatedAvailability.lastSeenAt.toISOString(),
         },
       },
       { headers: corsHeaders }

@@ -7,17 +7,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
     const user = await requireRole(request, 'admin');
+    const { code } = await params;
 
     const { searchParams } = new URL(request.url);
     const since = searchParams.get('since'); // ISO date string for filtering
 
     // Get booking with tracking data
     const booking = await prisma.booking.findUnique({
-      where: { reference: params.code },
+      where: { reference: code },
       include: {
         driver: {
           include: {

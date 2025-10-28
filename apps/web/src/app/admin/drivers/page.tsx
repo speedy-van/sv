@@ -149,6 +149,58 @@ export default function AdminDriversPage() {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // ✅ CRITICAL: Listen for real-time driver status changes via Pusher
+  useEffect(() => {
+    const setupPusher = async () => {
+      try {
+        // ✅ Use window check for client-side env vars
+        if (typeof window === 'undefined') return;
+        
+        const PUSHER_KEY = '407cb06c423e6c032e9c'; // From your .env
+        const PUSHER_CLUSTER = 'eu'; // From your .env
+        
+        const Pusher = (await import('pusher-js')).default;
+        const pusher = new Pusher(PUSHER_KEY, {
+          cluster: PUSHER_CLUSTER,
+        });
+
+        const channel = pusher.subscribe('admin-notifications');
+        
+        channel.bind('driver-status-changed', (data: { driverId: string; status: string; timestamp: string }) => {
+          console.log('🔔 Driver status changed:', data);
+          
+          // Update driver in list
+          setDrivers(prevDrivers => 
+            prevDrivers.map(driver => 
+              driver.id === data.driverId
+                ? { ...driver, availability: data.status, lastSeen: data.timestamp }
+                : driver
+            )
+          );
+
+          // Show toast notification
+          toast({
+            title: 'Driver Status Updated',
+            description: `Driver is now ${data.status}`,
+            status: 'info',
+            duration: 3000,
+            isClosable: true,
+          });
+        });
+
+        return () => {
+          channel.unbind_all();
+          pusher.unsubscribe('admin-notifications');
+          pusher.disconnect();
+        };
+      } catch (error) {
+        console.error('❌ Failed to setup Pusher:', error);
+      }
+    };
+
+    setupPusher();
+  }, [toast]);
+
   useEffect(() => {
     fetchDrivers();
   }, []);

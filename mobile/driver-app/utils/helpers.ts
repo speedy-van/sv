@@ -25,7 +25,8 @@ export const formatDate = (dateString: string): string => {
   }
 };
 
-export const formatTime = (timeString: string): string => {
+export const formatTime = (timeString: string | undefined): string => {
+  if (!timeString) return 'N/A';
   return timeString;
 };
 

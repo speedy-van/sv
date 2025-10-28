@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { prisma } from '@/lib/prisma';
-import Pusher from 'pusher';
+import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,15 +18,6 @@ const corsHeaders = {
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
-
-// Initialize Pusher for real-time updates
-const pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID || '',
-  key: process.env.PUSHER_KEY || '',
-  secret: process.env.PUSHER_SECRET || '',
-  cluster: process.env.PUSHER_CLUSTER || 'eu',
-  useTLS: true,
-});
 
 export async function POST(
   request: NextRequest,
@@ -76,13 +67,24 @@ export async function POST(
         where: {
           bookingId: jobId,
           driverId: driver.id,
-          status: { in: ['invited', 'claimed'] }, // Accept both invited and claimed
+          status: { in: ['invited', 'claimed', 'accepted'] }, // Accept invited, claimed, and accepted
         },
       });
 
       if (!assignment) {
+        console.error('❌ No assignment found for job:', {
+          jobId,
+          driverId: driver.id,
+          message: 'Assignment not found with status: invited, claimed, or accepted'
+        });
         throw new Error('No assignment found for this job');
       }
+      
+      console.log('✅ Found assignment:', {
+        assignmentId: assignment.id,
+        status: assignment.status,
+        bookingId: assignment.bookingId
+      });
 
       // Check if assignment has expired
       if (assignment.expiresAt && assignment.expiresAt < new Date()) {
@@ -130,7 +132,36 @@ export async function POST(
 
     // Send real-time notifications
     try {
-      // 1. Remove job from driver's UI instantly
+      const pusher = getPusherServer();
+      console.log('📡 Sending admin notifications for job decline...');
+      
+      // Get booking details for better context
+      const booking = await prisma.booking.findUnique({
+        where: { id: jobId },
+        include: {
+          pickupAddress: true,
+          dropoffAddress: true,
+        }
+      });
+
+      // 1. Notify admin-notifications channel for immediate alert
+      await pusher.trigger('admin-notifications', 'driver-declined-job', {
+        type: 'job_declined',
+        severity: 'warning',
+        jobId: jobId,
+        bookingReference: booking?.reference || jobId,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        driverEmail: driver.User?.email,
+        estimatedEarnings: booking?.totalGBP ? `£${(booking.totalGBP / 100).toFixed(2)}` : 'N/A',
+        pickupAddress: booking?.pickupAddress?.label || 'Unknown',
+        dropoffAddress: booking?.dropoffAddress?.label || 'Unknown',
+        message: `${driver.User?.name || 'Driver'} declined job ${booking?.reference || jobId}`,
+        reason: 'Driver declined the assignment',
+        timestamp: new Date().toISOString(),
+      });
+
+      // 2. Remove job from driver's UI instantly
       await pusher.trigger(`driver-${driver.id}`, 'job-removed', {
         jobId,
         reason: 'declined',
@@ -138,7 +169,7 @@ export async function POST(
         timestamp: new Date().toISOString()
       });
 
-      // 2. Update acceptance rate
+      // 3. Update acceptance rate
       await pusher.trigger(`driver-${driver.id}`, 'acceptance-rate-updated', {
         acceptanceRate: newAcceptanceRate,
         change: -5,
@@ -147,7 +178,7 @@ export async function POST(
         timestamp: new Date().toISOString()
       });
 
-      // 3. Notify admin channel
+      // 4. Notify admin-drivers channel about acceptance rate change
       await pusher.trigger('admin-drivers', 'driver-acceptance-rate-updated', {
         driverId: driver.id,
         driverName: driver.User?.name || 'Unknown',
@@ -158,7 +189,7 @@ export async function POST(
         timestamp: new Date().toISOString()
       });
 
-      // 4. Update driver schedule
+      // 5. Update driver schedule
       await pusher.trigger(`driver-${driver.id}`, 'schedule-updated', {
         type: 'job_removed',
         jobId,
@@ -166,7 +197,7 @@ export async function POST(
         timestamp: new Date().toISOString()
       });
 
-      // 5. Update admin schedule
+      // 6. Update admin schedule
       await pusher.trigger('admin-schedule', 'driver-performance-updated', {
         driverId: driver.id,
         acceptanceRate: newAcceptanceRate,
@@ -174,19 +205,35 @@ export async function POST(
         timestamp: new Date().toISOString()
       });
 
-      // 6. Update admin/orders panel
+      // 7. Update admin/orders panel with detailed info
       await pusher.trigger('admin-orders', 'order-status-changed', {
         jobId,
+        bookingReference: booking?.reference,
         status: 'available',
+        previousStatus: 'assigned',
         previousDriver: driver.id,
         driverName: driver.User?.name,
         reason: 'declined',
+        estimatedEarnings: booking?.totalGBP ? `£${(booking.totalGBP / 100).toFixed(2)}` : 'N/A',
         timestamp: new Date().toISOString()
       });
 
+      // 8. Notify admin-routes channel (in case this job is part of a route)
+      await pusher.trigger('admin-routes', 'job-declined', {
+        jobId: jobId,
+        bookingReference: booking?.reference || jobId,
+        driverId: driver.id,
+        driverName: driver.User?.name || 'Unknown Driver',
+        acceptanceRate: newAcceptanceRate,
+        acceptanceRateChange: -5,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log('✅ Admin notifications sent successfully for job decline');
       console.log('📡 Real-time notifications sent successfully');
     } catch (pusherError) {
       console.error('⚠️ Failed to send Pusher notifications:', pusherError);
+      console.error('⚠️ Error details:', pusherError instanceof Error ? pusherError.message : 'Unknown');
       // Don't fail the request if Pusher fails
     }
 
@@ -258,6 +305,7 @@ export async function POST(
           }
 
           // Notify next driver
+          const pusher = getPusherServer();
           await pusher.trigger(`driver-${nextDriver.id}`, 'job-offer', {
             jobId,
             message: `New job offer (auto-reassigned)`,

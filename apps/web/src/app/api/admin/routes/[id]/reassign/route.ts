@@ -334,6 +334,23 @@ export async function POST(
           message: `You have been assigned a route with ${result.bookingsCount} jobs`,
         });
 
+        // Notify other drivers that these jobs are no longer available
+        const bookingsInRoute = await prisma.booking.findMany({
+          where: { routeId: result.updatedRoute.id },
+          select: { id: true, reference: true },
+        });
+
+        for (const booking of bookingsInRoute) {
+          await pusher.trigger('drivers-broadcast', 'job-removed', {
+            bookingId: booking.id,
+            bookingReference: booking.reference,
+            assignedTo: newDriver.User?.name || 'Unknown',
+            message: 'This job has been assigned to a route',
+            reason: 'route_reassigned',
+          });
+        }
+        console.log(`📡 Notified other drivers about ${bookingsInRoute.length} jobs removed from pool`);
+
         // Notify admin dashboard
         await pusher.trigger('admin-notifications', 'route-reassigned', {
           routeId: result.updatedRoute.id,

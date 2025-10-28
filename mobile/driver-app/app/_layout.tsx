@@ -1,9 +1,14 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '../contexts/AuthContext';
 import { LocationProvider } from '../contexts/LocationContext';
+import { JobAssignmentProvider } from '../contexts/JobAssignmentContext';
+import { GlobalJobAssignmentModal } from '../components/GlobalJobAssignmentModal';
 import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
+import { telemetryService } from '../src/lib/telemetry';
+import { soundService } from '../services/soundService';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -26,27 +31,38 @@ export default function RootLayout() {
       }
     };
 
+    // Initialize sound service
+    soundService.initialize();
+
     requestPermissions();
   }, []);
 
   return (
-    <AuthProvider>
-      <LocationProvider>
-        <StatusBar style="auto" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth/login" />
-          <Stack.Screen name="auth/forgot-password" />
-          <Stack.Screen name="auth/reset-password" />
-          <Stack.Screen name="tabs" />
-          <Stack.Screen name="job/[id]" />
-        </Stack>
-      </LocationProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <LocationProvider>
+          <JobAssignmentProvider>
+            <StatusBar style="auto" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'fade',
+                animationDuration: 300,
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="auth/login" />
+              <Stack.Screen name="auth/forgot-password" />
+              <Stack.Screen name="auth/reset-password" />
+              <Stack.Screen name="tabs" />
+              <Stack.Screen name="job/[id]" />
+            </Stack>
+            {/* Global Job Assignment Modal - appears on ALL screens */}
+            <GlobalJobAssignmentModal />
+          </JobAssignmentProvider>
+        </LocationProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
 

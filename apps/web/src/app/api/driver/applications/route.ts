@@ -414,7 +414,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
       user = await prisma.user.create({
         data: {
           name: `${firstName} ${lastName}`,
-          email,
+          email: email.toLowerCase(),
           password: hashedPassword,
           role: 'driver',
           isActive: false, // Will be activated when admin approves

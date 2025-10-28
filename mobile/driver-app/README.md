@@ -1,6 +1,6 @@
-# Speedy Van Driver iOS App
+# Speedy Van Driver App (iOS & Android)
 
-A professional driver application for Speedy Van delivery service, built with Expo and React Native.
+A professional cross-platform driver application for Speedy Van delivery service, built with Expo and React Native.
 
 ## 🚨 IMPORTANT: Localhost Setup Required!
 
@@ -21,25 +21,32 @@ cd ../../apps/web && npm run dev
 npx expo start --clear
 ```
 
-📖 **Troubleshooting "Network Error"?** See:
-- English: `QUICK_FIX_NETWORK_ERROR.md`
-- Arabic: `حل_سريع_لمشكلة_الشبكة.md`
+📖 **Troubleshooting "Network Error"?** See `QUICK_FIX_NETWORK_ERROR.md`
 
-## Features
+## Features (v2.0.0)
 
+### Core Features
 - ✅ **Authentication**: Secure login with Bearer token authentication
-- ✅ **Dashboard**: Real-time overview of jobs, earnings, and statistics
+- ✅ **Dashboard**: Real-time overview with animated UI and neon effects
 - ✅ **Location Tracking**: Live GPS tracking with foreground and background support
 - ✅ **Real-time Updates**: Pusher integration for instant notifications
 - ✅ **Jobs Management**: View, accept, and manage delivery jobs
-- ✅ **Earnings Tracking**: Monitor daily, weekly, and total earnings
-- ✅ **Profile Management**: View and manage driver profile
+- ✅ **Earnings Tracking**: Accurate driver earnings (not customer payment)
+- ✅ **Profile Management**: Enhanced UI with neon sections
 - ✅ **Password Recovery**: Forgot/reset password functionality
-- ✅ **Job Details**: Interactive map with navigation
-- ✅ **Settings**: Profile editing and privacy controls
+- ✅ **Job Details**: Interactive map with navigation and progress steps
+- ✅ **Settings**: Profile editing, email change verification, and privacy controls
 - ✅ **History**: Completed jobs tracking
-- ✅ **Notifications**: Real-time push notifications
-- ✅ **Apple Compliance**: Meets all iOS App Store requirements
+- ✅ **Notifications**: Multi-channel (Email, Push, Sound, Vibration)
+
+### NEW in v2.0.0
+- ✅ **Global Job Assignment Pop-ups**: Works on ALL screens, persists through restarts
+- ✅ **Email Notifications**: Instant emails with direct app links
+- ✅ **Schedule Tab**: View all upcoming jobs with color-coded dates
+- ✅ **Enhanced UI**: Neon glows, animations, modern design across all screens
+- ✅ **Sound Alerts**: 10-second repeat notification sounds
+- ✅ **Vibration Patterns**: Strong haptic feedback for job assignments
+- ✅ **Cross-Platform**: 100% feature parity between iOS and Android
 
 ## Technology Stack
 
@@ -225,7 +232,31 @@ Contact your administrator for test driver credentials.
 
 ## Building for Production
 
-### iOS Build
+### Quick Build Commands
+
+```bash
+# Android (Production AAB for Play Store)
+pnpm build:android
+
+# Android (Preview APK for testing)
+pnpm build:android:preview
+
+# iOS (Production for App Store)
+pnpm build:ios
+
+# Both platforms
+pnpm build:all
+```
+
+### Detailed Build Instructions
+
+**For Android v2.0.0 deployment**, see:
+- 📄 **ANDROID_V2_DEPLOYMENT_GUIDE.md** - Complete deployment guide
+- 📄 **BUILD_INSTRUCTIONS.md** - Detailed build steps
+- 📄 **ANDROID_RELEASE_NOTES.md** - Release notes for Play Store
+- 🔧 **build-android.ps1** - Automated PowerShell script (Windows)
+
+### Manual Build Process
 
 1. Install EAS CLI:
 ```bash
@@ -237,23 +268,27 @@ npm install -g eas-cli
 eas login
 ```
 
-3. Configure build:
+3. Build for your platform:
 ```bash
-eas build:configure
-```
+# Android
+eas build --platform android --profile production
 
-4. Build for iOS:
-```bash
+# iOS
 eas build --platform ios --profile production
 ```
 
 ### App Store Submission
 
-1. Build production app with EAS
+**iOS:**
+1. Build with `pnpm build:ios`
 2. Upload to App Store Connect
-3. Fill in app metadata
-4. Submit for review
-5. Wait for approval
+3. Submit for review
+
+**Android:**
+1. Build with `pnpm build:android`
+2. Upload to Google Play Console
+3. Start with Internal Testing track
+4. Promote to Production when stable
 
 ## Environment Variables
 

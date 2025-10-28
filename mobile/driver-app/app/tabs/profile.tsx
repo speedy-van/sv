@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocation } from '../../contexts/LocationContext';
 import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
+import { soundService } from '../../services/soundService';
+import { AnimatedScreen } from '../../components/AnimatedScreen';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -19,12 +21,20 @@ export default function ProfileScreen() {
   const { permissions, isTracking, stopTracking } = useLocation();
 
   const handleLogout = async () => {
+    soundService.playButtonClick();
     Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+      { 
+        text: 'Cancel', 
+        style: 'cancel',
+        onPress: () => {
+          soundService.playButtonClick();
+        },
+      },
       {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
+          soundService.playError();
           if (isTracking) {
             await stopTracking();
           }
@@ -50,7 +60,12 @@ export default function ProfileScreen() {
   }) => (
     <TouchableOpacity
       style={styles.menuItem}
-      onPress={onPress}
+      onPress={() => {
+        if (onPress) {
+          soundService.playButtonClick();
+          onPress();
+        }
+      }}
       disabled={!onPress}
     >
       <View style={styles.menuItemLeft}>
@@ -67,9 +82,10 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <AnimatedScreen>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
             {user?.name?.charAt(0).toUpperCase() || 'D'}
@@ -106,34 +122,42 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Demo & Testing Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Demo & Testing</Text>
-          <View style={styles.menuGroup}>
-            <MenuItem
-              icon="🧪"
-              title="Permissions Demo"
-              subtitle="Test location, notifications, and sounds"
-              onPress={() => router.push('/profile/permissions-demo')}
-            />
-            <MenuItem
-              icon="📍"
-              title="Location Status"
-              subtitle={
-                permissions.background
-                  ? '✓ Always allowed'
-                  : permissions.foreground
-                  ? '✓ While using app'
-                  : '⚠ Not allowed'
-              }
-            />
+        {/* Demo & Testing Section - ONLY for Apple Test Account */}
+        {user?.email === 'zadfad41@gmail.com' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Demo & Testing</Text>
+            <View style={styles.menuGroup}>
+              <MenuItem
+                icon="🧪"
+                title="Permissions Demo"
+                subtitle="Test location, notifications, and sounds"
+                onPress={() => router.push('/profile/permissions-demo')}
+              />
+              <MenuItem
+                icon="📍"
+                title="Location Status"
+                subtitle={
+                  permissions.background
+                    ? '✓ Always allowed'
+                    : permissions.foreground
+                    ? '✓ While using app'
+                    : '⚠ Not allowed'
+                }
+              />
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Support Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.menuGroup}>
+            <MenuItem
+              icon="💬"
+              title="Messages & Support"
+              subtitle="View support messages and notifications"
+              onPress={() => router.push('/tabs/notifications')}
+            />
             <MenuItem
               icon="📧"
               title="Email Support"
@@ -143,8 +167,8 @@ export default function ProfileScreen() {
             <MenuItem
               icon="📞"
               title="Call Support"
-              subtitle="07901846297"
-              onPress={() => Linking.openURL('tel:07901846297')}
+              subtitle="01202129746"
+              onPress={() => Linking.openURL('tel:01202129746')}
             />
             <MenuItem
               icon="ℹ️"
@@ -156,7 +180,7 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <View style={styles.section}>
-          <View style={styles.menuGroup}>
+          <View style={[styles.menuGroup, styles.menuGroupDanger]}>
             <MenuItem
               icon="🚪"
               title="Logout"
@@ -166,112 +190,152 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </AnimatedScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#0F172A', // Matches splash screen
   },
   header: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    paddingTop: spacing.xxl + spacing.md,
+    backgroundColor: 'transparent',
+    padding: 24,
+    paddingTop: 60,
     alignItems: 'center',
-    gap: spacing.sm,
-    ...shadows.sm,
+    gap: 12,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 12,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   avatarText: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: colors.text.inverse,
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   name: {
-    ...typography.h2,
-    color: colors.text.primary,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   email: {
-    ...typography.body,
-    color: colors.text.secondary,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    opacity: 0.8,
   },
   statusBadge: {
-    backgroundColor: colors.success,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    marginTop: spacing.xs,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 8,
   },
   statusText: {
-    ...typography.captionBold,
-    color: colors.text.inverse,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    padding: 20,
+    gap: 24,
+    paddingBottom: 40,
   },
   section: {
-    gap: spacing.md,
+    gap: 12,
   },
   sectionTitle: {
-    ...typography.h4,
-    color: colors.text.secondary,
-    paddingHorizontal: spacing.xs,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    paddingHorizontal: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    opacity: 0.8,
   },
   menuGroup: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderRadius: 16,
     overflow: 'hidden',
-    ...shadows.sm,
+    borderWidth: 2,
+    borderColor: '#06B6D4',
+    // Light blue (cyan) neon glow effect - iOS
+    shadowColor: '#06B6D4',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 18,
+    // Light blue neon glow effect - Android
+    elevation: 12,
+  },
+  menuGroupDanger: {
+    borderColor: '#EF4444',
+    // Red neon glow effect - iOS
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    // Red neon glow effect - Android
+    elevation: 14,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: spacing.md,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: '#F0F0F5',
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: 14,
     flex: 1,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 26,
   },
   menuContent: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
   menuTitle: {
-    ...typography.bodyBold,
-    color: colors.text.primary,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1C1C1E',
   },
   menuTitleDanger: {
-    color: colors.danger,
+    color: '#EF4444',
   },
   menuSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
   menuArrow: {
-    fontSize: 24,
-    color: colors.text.disabled,
+    fontSize: 22,
+    color: '#D1D5DB',
   },
 });
 

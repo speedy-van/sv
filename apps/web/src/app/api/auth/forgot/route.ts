@@ -14,10 +14,13 @@ export async function POST(request: NextRequest) {
 
     console.log('🔐 General password reset request for:', email);
 
-    // Find user by email (any role)
+    // Find user by email (any role, case-insensitive)
     const user = await prisma.user.findFirst({
       where: {
-        email: email.toLowerCase(),
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
         isActive: true,
       },
       include: {

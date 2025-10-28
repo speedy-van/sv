@@ -1,123 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 
-export const dynamic = 'force-dynamic';
+// CORS headers for mobile app compatibility
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle OPTIONS preflight request
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔔 Driver Notifications API - Starting request');
+    console.log('📬 Driver Notifications API - Starting request');
     
     // Try Bearer token authentication first (for mobile app)
     const bearerAuth = await authenticateBearerToken(request);
     let userId: string;
-    let userRole: string;
     
     if (bearerAuth.success) {
       userId = bearerAuth.user.id;
-      userRole = bearerAuth.user.role;
       console.log('🔑 Bearer token authenticated for user:', userId);
     } else {
       // Fallback to NextAuth session (for web app)
       const session = await getServerSession(authOptions);
       if (!session?.user) {
-        console.log('❌ Driver Notifications API - No session found');
+        console.log('❌ No session found');
         return NextResponse.json(
           { error: 'Unauthorized - Please login' },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
       userId = session.user.id;
-      userRole = (session.user as any)?.role;
       console.log('🌐 NextAuth session authenticated for user:', userId);
     }
 
-    // Check if user has driver role
-    if (userRole !== 'driver') {
-      console.log('❌ Driver Notifications API - Invalid role:', userRole);
-      return NextResponse.json(
-        { error: 'Forbidden - Driver access required' },
-        { status: 403 }
-      );
-    }
+    console.log('🔍 Looking for driver with userId:', userId);
 
     // Get driver record
     const driver = await prisma.driver.findUnique({
-      where: { userId },
+      where: { userId: userId },
+      select: { id: true },
     });
+
+    console.log('🔍 Driver query result:', driver);
 
     if (!driver) {
-      return NextResponse.json({ error: 'Driver not found' }, { status: 404 });
+      console.log('❌ Driver not found for userId:', userId);
+      return NextResponse.json(
+        { error: 'Driver not found' },
+        { status: 404, headers: corsHeaders }
+      );
     }
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const unreadOnly = searchParams.get('unread') === 'true';
-    const type = searchParams.get('type');
+    console.log('✅ Driver found:', driver.id);
 
-    const skip = (page - 1) * limit;
-
-    // Build where clause
-    const where: any = {
-      driverId: driver.id,
-    };
-
-    if (unreadOnly) {
-      where.read = false;
-    }
-
-    if (type) {
-      where.type = type;
-    }
-
-    // Get notifications with pagination
-    const [notifications, total] = await Promise.all([
-      prisma.driverNotification.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          type: true,
-          title: true,
-          message: true,
-          data: true,
-          read: true,
-          readAt: true,
-          createdAt: true,
-        },
-      }),
-      prisma.driverNotification.count({ where }),
-    ]);
-
-    // Get unread count
-    const unreadCount = await prisma.driverNotification.count({
+    // Fetch notifications for the driver
+    console.log('🔍 Fetching notifications for driver:', driver.id);
+    
+    const notifications = await prisma.driverNotification.findMany({
       where: {
         driverId: driver.id,
-        read: false,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 50, // Limit to last 50 notifications
     });
 
-    return NextResponse.json({
-      notifications,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-      unreadCount,
-    });
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
+    console.log('✅ Found notifications:', notifications.length);
+
     return NextResponse.json(
-      { error: 'Failed to fetch notifications' },
-      { status: 500 }
+      {
+        success: true,
+        data: {
+          notifications: notifications.map(notif => ({
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            read: notif.read,
+            timestamp: notif.createdAt.toISOString(),
+            actionUrl: notif.actionUrl || undefined,
+          })),
+        },
+      },
+      { headers: corsHeaders }
+    );
+  } catch (error) {
+    console.error('❌ Driver Notifications API error:', error);
+    console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
-

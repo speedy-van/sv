@@ -60,7 +60,7 @@ function getMovingCompanySchema() {
       'https://speedy-van.co.uk/images/gbp/london-service.png',
       'https://speedy-van.co.uk/images/gbp/speedy-van-manchester-service.png',
     ],
-    telephone: '+447901846297',
+    telephone: '+441202129746',
     email: 'support@speedy-van.co.uk',
     address: {
       '@type': 'PostalAddress',
@@ -294,7 +294,7 @@ function getMovingCompanySchema() {
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        telephone: '+447901846297',
+        telephone: '+441202129746',
         contactType: 'customer service',
         areaServed: 'GB',
         availableLanguage: ['English', 'Arabic'],
@@ -333,7 +333,7 @@ function getOrganizationSchema() {
     },
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+447901846297',
+      telephone: '+441202129746',
       contactType: 'customer service',
       email: 'support@speedy-van.co.uk',
     },
@@ -354,7 +354,7 @@ function getLocalBusinessSchema() {
     '@id': 'https://speedy-van.co.uk/#localbusiness',
     name: 'Speedy Van',
     image: 'https://speedy-van.co.uk/images/gbp/speedy-van-hero-banner.png',
-    telephone: '+447901846297',
+    telephone: '+441202129746',
     email: 'support@speedy-van.co.uk',
     address: {
       '@type': 'PostalAddress',

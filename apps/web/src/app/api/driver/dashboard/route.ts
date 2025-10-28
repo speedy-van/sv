@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 import { prisma } from '@/lib/prisma';
 import { penceToPounds } from '@/lib/utils/currency';
+import { filterDemoData, isAppleTestAccount } from '@/lib/utils/demo-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get driver's assigned jobs
+    // Get driver's assigned jobs (single bookings)
     const assignedJobs = await prisma.assignment.findMany({
       where: {
         driverId: driver.id,
@@ -112,6 +113,26 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: { createdAt: 'desc' }
+    });
+
+    // Get driver's assigned routes (multi-drop)
+    const assignedRoutes = await prisma.route.findMany({
+      where: {
+        driverId: driver.id,
+        status: { in: ['assigned', 'active', 'in_progress'] }
+      },
+      include: {
+        Booking: {
+          include: {
+            pickupAddress: true,
+            dropoffAddress: true,
+            BookingItem: true,
+            customer: { select: { id: true, name: true, email: true } }
+          },
+          orderBy: { deliverySequence: 'asc' }
+        }
+      },
+      orderBy: { startTime: 'asc' }
     });
 
     // Get available jobs (unassigned bookings)
@@ -247,6 +268,7 @@ export async function GET(request: NextRequest) {
           hour: '2-digit',
           minute: '2-digit'
         }),
+        scheduledAt: assignment.Booking.scheduledAt, // Added for sorting
         distance: `${distance} miles`,
         estimatedEarnings: estimatedEarnings,
         vehicleType: assignment.Booking.crewSize === 'ONE' ? 'Van' : 'Large Van',
@@ -320,9 +342,71 @@ export async function GET(request: NextRequest) {
       };
     }));
 
+    // Format assigned routes for frontend
+    const formattedAssignedRoutes = await Promise.all(assignedRoutes.map(async route => {
+      const bookings = route.Booking || [];
+      const totalDrops = bookings.length;
+      
+      // Get first and last stops
+      const firstStop = bookings[0];
+      const lastStop = bookings[bookings.length - 1];
+      
+      // Calculate total earnings for the route
+      const { driverEarningsService } = await import('@/lib/services/driver-earnings-service');
+      
+      // Calculate earnings for each drop in the route
+      let totalRouteEarnings = 0;
+      for (const booking of bookings) {
+        const earningsResult = await driverEarningsService.calculateEarnings({
+          driverId: driver.id,
+          bookingId: booking.id,
+          assignmentId: route.id,
+          customerPaymentPence: booking.totalGBP || 0,
+          distanceMiles: route.optimizedDistanceKm ? route.optimizedDistanceKm * 0.621371 : 0,
+          durationMinutes: route.estimatedDuration || 60,
+          dropCount: totalDrops,
+          hasHelper: false,
+          urgencyLevel: 'standard',
+          onTimeDelivery: true,
+        });
+        totalRouteEarnings += earningsResult.breakdown.netEarnings;
+      }
+      
+      return {
+        id: route.id,
+        type: 'route' as const,
+        reference: route.reference || `ROUTE-${route.id.substring(0, 8)}`,
+        from: firstStop?.pickupAddress?.label || 'First Stop',
+        to: lastStop?.dropoffAddress?.label || 'Last Stop',
+        totalStops: totalDrops,
+        completedStops: route.completedDrops || 0,
+        date: route.startTime.toISOString().split('T')[0],
+        time: route.startTime.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        distance: route.optimizedDistanceKm ? `${(route.optimizedDistanceKm * 0.621371).toFixed(1)} miles` : '0 miles',
+        estimatedEarnings: penceToPounds(totalRouteEarnings),
+        vehicleType: 'Van',
+        status: route.status,
+        routeStatus: route.status,
+        createdAt: route.createdAt,
+        scheduledAt: route.startTime,
+        bookings: bookings.map(b => ({
+          id: b.id,
+          reference: b.reference,
+          customer: b.customer?.name || b.customerName,
+          pickup: b.pickupAddress?.label,
+          dropoff: b.dropoffAddress?.label,
+        }))
+      };
+    }));
+
     // Calculate statistics
     const stats = {
       assignedJobs: assignedJobs.length,
+      assignedRoutes: assignedRoutes.length,
+      totalAssigned: assignedJobs.length + assignedRoutes.length,
       availableJobs: availableJobs.length,
       completedToday: completedTodayCount,
       totalCompleted: totalCompletedCount,
@@ -333,10 +417,41 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Driver dashboard data loaded for driver ${driver.id}:`, {
       assignedJobs: stats.assignedJobs,
+      assignedRoutes: stats.assignedRoutes,
+      totalAssigned: stats.totalAssigned,
       availableJobs: stats.availableJobs,
       completedToday: stats.completedToday,
       totalEarnings: stats.totalEarnings
     });
+
+    // ✅ CRITICAL: Filter out demo data for production accounts
+    // Only Apple Test Account (zadfad41@gmail.com) can see demo data
+    // Get user email from driver record
+    const driverUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    });
+    const userEmail = driverUser?.email || null;
+    const filteredAssignedJobs = filterDemoData(formattedAssignedJobs, userEmail, driver.id);
+    const filteredAssignedRoutes = filterDemoData(formattedAssignedRoutes, userEmail, driver.id);
+    const filteredAvailableJobs = filterDemoData(formattedAvailableJobs, userEmail, driver.id);
+
+    // Log if any jobs were filtered
+    if (filteredAssignedJobs.length !== formattedAssignedJobs.length) {
+      console.log(`⚠️ Filtered ${formattedAssignedJobs.length - filteredAssignedJobs.length} demo jobs from assigned jobs (production account)`);
+    }
+    if (filteredAssignedRoutes.length !== formattedAssignedRoutes.length) {
+      console.log(`⚠️ Filtered ${formattedAssignedRoutes.length - filteredAssignedRoutes.length} demo routes from assigned routes (production account)`);
+    }
+    if (filteredAvailableJobs.length !== formattedAvailableJobs.length) {
+      console.log(`⚠️ Filtered ${formattedAvailableJobs.length - filteredAvailableJobs.length} demo jobs from available jobs (production account)`);
+    }
+
+    // Combine and sort assigned jobs and routes by scheduled time
+    const allAssigned = [
+      ...filteredAssignedJobs.map(j => ({ ...j, type: 'order' as const })),
+      ...filteredAssignedRoutes
+    ].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 
     return NextResponse.json({
       success: true,
@@ -344,11 +459,14 @@ export async function GET(request: NextRequest) {
         driver: {
           id: driver.id,
           status: driver.status,
-          onboardingStatus: driver.onboardingStatus
+          onboardingStatus: driver.onboardingStatus,
+          isTestAccount: isAppleTestAccount(userEmail, driver.id)
         },
         jobs: {
-          assigned: formattedAssignedJobs,
-          available: formattedAvailableJobs
+          assigned: allAssigned, // Combined orders + routes, sorted by time
+          assignedOrders: filteredAssignedJobs, // Just orders
+          assignedRoutes: filteredAssignedRoutes, // Just routes
+          available: filteredAvailableJobs
         },
         statistics: stats
       }

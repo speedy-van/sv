@@ -26,10 +26,13 @@ export async function POST(request: NextRequest) {
 
     console.log('🔐 Driver password reset request for:', email);
 
-    // Find user with driver role
+    // Find user with driver role (case-insensitive email search)
     const user = await prisma.user.findFirst({
       where: {
-        email: email.toLowerCase(),
+        email: {
+          equals: email,
+          mode: 'insensitive',
+        },
         role: 'driver',
         isActive: true,
       },
