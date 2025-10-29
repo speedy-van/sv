@@ -224,36 +224,46 @@ export default function AdminCareersPage() {
 
   if (isLoading) {
     return (
-      <Box textAlign="center" py={20}>
-        <Spinner size="xl" color="blue.500" />
-        <Text mt={4}>Loading applications...</Text>
+      <Box textAlign="center" py={20} bg="bg.surface" minH="100vh">
+        <Spinner size="xl" color="neon.500" />
+        <Text mt={4} color="text.primary">Loading applications...</Text>
       </Box>
     );
   }
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <VStack align="stretch" spacing={6}>
-        {/* Header */}
-        <HStack justify="space-between" align="center">
-          <HStack>
-            <Icon as={FiBriefcase} boxSize={8} color="blue.500" />
-            <Heading size="lg">Career Applications</Heading>
-          </HStack>
-          <Badge colorScheme="blue" fontSize="md" px={3} py={1}>
-            {applications.length} Total
-          </Badge>
-        </HStack>
-
-        {/* Filter */}
-        <Card>
-          <CardBody>
+    <Box bg="bg.surface" minH="100vh" p={6}>
+      <Container maxW="container.xl">
+        <VStack align="stretch" spacing={6}>
+          {/* Header */}
+          <HStack justify="space-between" align="center">
             <HStack>
-              <Text fontWeight="bold">Filter by Status:</Text>
+              <Icon as={FiBriefcase} boxSize={8} color="neon.500" />
+              <Heading size="lg" color="text.primary">Career Applications</Heading>
+            </HStack>
+            <Badge colorScheme="blue" fontSize="md" px={3} py={1}>
+              {applications.length} Total
+            </Badge>
+          </HStack>
+
+          {/* Filter */}
+          <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
+            <CardBody>
+            <HStack>
+              <Text fontWeight="bold" color="text.primary">Filter by Status:</Text>
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 maxW="250px"
+                bg="whiteAlpha.50"
+                color="text.primary"
+                borderColor="border.primary"
+                sx={{
+                  option: {
+                    bg: 'gray.800',
+                    color: 'white',
+                  }
+                }}
               >
                 <option value="all">All Applications</option>
                 <option value="pending">Pending</option>
@@ -262,7 +272,7 @@ export default function AdminCareersPage() {
                 <option value="rejected">Rejected</option>
                 <option value="contract_sent">Contract Sent</option>
               </Select>
-              <Text color="gray.500">
+              <Text color="text.secondary">
                 ({filteredApplications.length} showing)
               </Text>
             </HStack>
@@ -270,38 +280,38 @@ export default function AdminCareersPage() {
         </Card>
 
         {/* Applications Table */}
-        <Card>
+        <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
           <CardBody p={0}>
             <Box overflowX="auto">
               <Table variant="simple">
-                <Thead bg="gray.50">
+                <Thead bg="bg.surface" borderBottom="1px solid" borderColor="border.primary">
                   <Tr>
-                    <Th>Date</Th>
-                    <Th>Name</Th>
-                    <Th>Position</Th>
-                    <Th>Email</Th>
-                    <Th>Phone</Th>
-                    <Th>Status</Th>
-                    <Th>Actions</Th>
+                    <Th color="text.primary">Date</Th>
+                    <Th color="text.primary">Name</Th>
+                    <Th color="text.primary">Position</Th>
+                    <Th color="text.primary">Email</Th>
+                    <Th color="text.primary">Phone</Th>
+                    <Th color="text.primary">Status</Th>
+                    <Th color="text.primary">Actions</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
                   {filteredApplications.length === 0 ? (
                     <Tr>
                       <Td colSpan={7} textAlign="center" py={10}>
-                        <Text color="gray.500">No applications found</Text>
+                        <Text color="text.secondary">No applications found</Text>
                       </Td>
                     </Tr>
                   ) : (
                     filteredApplications.map((app) => (
-                      <Tr key={app.id}>
-                        <Td>
+                      <Tr key={app.id} _hover={{ bg: 'whiteAlpha.50' }}>
+                        <Td color="text.secondary">
                           {new Date(app.createdAt).toLocaleDateString('en-GB')}
                         </Td>
-                        <Td fontWeight="bold">{app.fullName}</Td>
-                        <Td>{app.position}</Td>
-                        <Td>{app.email}</Td>
-                        <Td>{app.phone}</Td>
+                        <Td fontWeight="bold" color="text.primary">{app.fullName}</Td>
+                        <Td color="text.secondary">{app.position}</Td>
+                        <Td color="text.secondary">{app.email}</Td>
+                        <Td color="text.secondary">{app.phone}</Td>
                         <Td>
                           <Badge colorScheme={STATUS_COLORS[app.status]}>
                             {app.status.replace('_', ' ').toUpperCase()}
@@ -360,54 +370,56 @@ export default function AdminCareersPage() {
       {/* View Details Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Application Details</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent bg="bg.surface" borderColor="border.primary" border="1px solid">
+          <ModalHeader color="text.primary">Application Details</ModalHeader>
+          <ModalCloseButton color="text.primary" />
           <ModalBody>
             {selectedApplication && (
               <VStack align="stretch" spacing={4}>
                 <Box>
-                  <Text fontWeight="bold">Full Name:</Text>
-                  <Text>{selectedApplication.fullName}</Text>
+                  <Text fontWeight="bold" color="text.primary">Full Name:</Text>
+                  <Text color="text.secondary">{selectedApplication.fullName}</Text>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Email:</Text>
-                  <Text>{selectedApplication.email}</Text>
+                  <Text fontWeight="bold" color="text.primary">Email:</Text>
+                  <Text color="text.secondary">{selectedApplication.email}</Text>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Phone:</Text>
-                  <Text>{selectedApplication.phone}</Text>
+                  <Text fontWeight="bold" color="text.primary">Phone:</Text>
+                  <Text color="text.secondary">{selectedApplication.phone}</Text>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Position:</Text>
-                  <Text>{selectedApplication.position}</Text>
+                  <Text fontWeight="bold" color="text.primary">Position:</Text>
+                  <Text color="text.secondary">{selectedApplication.position}</Text>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Status:</Text>
+                  <Text fontWeight="bold" color="text.primary">Status:</Text>
                   <Badge colorScheme={STATUS_COLORS[selectedApplication.status]}>
                     {selectedApplication.status.replace('_', ' ').toUpperCase()}
                   </Badge>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Applied On:</Text>
-                  <Text>
+                  <Text fontWeight="bold" color="text.primary">Applied On:</Text>
+                  <Text color="text.secondary">
                     {new Date(selectedApplication.createdAt).toLocaleString('en-GB')}
                   </Text>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">Cover Letter:</Text>
+                  <Text fontWeight="bold" color="text.primary">Cover Letter:</Text>
                   <Box
                     p={4}
-                    bg="gray.50"
+                    bg="whiteAlpha.50"
+                    border="1px solid"
+                    borderColor="border.primary"
                     borderRadius="md"
                     maxH="200px"
                     overflowY="auto"
                   >
-                    <Text whiteSpace="pre-wrap">{selectedApplication.coverLetter}</Text>
+                    <Text whiteSpace="pre-wrap" color="text.secondary">{selectedApplication.coverLetter}</Text>
                   </Box>
                 </Box>
                 <Box>
-                  <Text fontWeight="bold">CV:</Text>
+                  <Text fontWeight="bold" color="text.primary">CV:</Text>
                   <Button
                     as="a"
                     href={selectedApplication.cvUrl}
@@ -415,6 +427,7 @@ export default function AdminCareersPage() {
                     leftIcon={<FiDownload />}
                     size="sm"
                     variant="outline"
+                    colorScheme="blue"
                   >
                     Download CV
                   </Button>
@@ -422,12 +435,12 @@ export default function AdminCareersPage() {
                 {selectedApplication.reviewedBy && (
                   <>
                     <Box>
-                      <Text fontWeight="bold">Reviewed By:</Text>
-                      <Text>{selectedApplication.reviewedBy}</Text>
+                      <Text fontWeight="bold" color="text.primary">Reviewed By:</Text>
+                      <Text color="text.secondary">{selectedApplication.reviewedBy}</Text>
                     </Box>
                     <Box>
-                      <Text fontWeight="bold">Reviewed At:</Text>
-                      <Text>
+                      <Text fontWeight="bold" color="text.primary">Reviewed At:</Text>
+                      <Text color="text.secondary">
                         {new Date(selectedApplication.reviewedAt!).toLocaleString(
                           'en-GB'
                         )}
@@ -437,15 +450,15 @@ export default function AdminCareersPage() {
                 )}
                 {selectedApplication.rejectionReason && (
                   <Box>
-                    <Text fontWeight="bold">Rejection Reason:</Text>
-                    <Box p={4} bg="red.50" borderRadius="md">
-                      <Text>{selectedApplication.rejectionReason}</Text>
+                    <Text fontWeight="bold" color="text.primary">Rejection Reason:</Text>
+                    <Box p={4} bg="red.900" borderColor="red.500" border="1px solid" borderRadius="md">
+                      <Text color="red.200">{selectedApplication.rejectionReason}</Text>
                     </Box>
                   </Box>
                 )}
                 {selectedApplication.contractSent && (
                   <Box>
-                    <Text fontWeight="bold" color="green.600">
+                    <Text fontWeight="bold" color="green.400">
                       ✓ Employment contract sent on:{' '}
                       {new Date(selectedApplication.contractSentAt!).toLocaleString(
                         'en-GB'
@@ -490,12 +503,12 @@ export default function AdminCareersPage() {
       {/* Reject Modal */}
       <Modal isOpen={isRejectOpen} onClose={onRejectClose}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Reject Application</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent bg="bg.surface" borderColor="border.primary" border="1px solid">
+          <ModalHeader color="text.primary">Reject Application</ModalHeader>
+          <ModalCloseButton color="text.primary" />
           <ModalBody>
             <VStack align="stretch" spacing={4}>
-              <Text>
+              <Text color="text.secondary">
                 Are you sure you want to reject this application? You can optionally
                 provide a reason that will be sent to the applicant.
               </Text>
@@ -504,6 +517,10 @@ export default function AdminCareersPage() {
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Reason for rejection (optional)"
                 rows={4}
+                bg="whiteAlpha.50"
+                color="text.primary"
+                borderColor="border.primary"
+                _placeholder={{ color: 'text.tertiary' }}
               />
             </VStack>
           </ModalBody>
@@ -516,13 +533,13 @@ export default function AdminCareersPage() {
             >
               Confirm Rejection
             </Button>
-            <Button variant="ghost" onClick={onRejectClose}>
+            <Button variant="ghost" onClick={onRejectClose} color="text.secondary">
               Cancel
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Container>
+    </Box>
   );
 }
 
