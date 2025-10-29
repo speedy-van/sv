@@ -26,6 +26,7 @@ import {
   FiUserCheck,
   FiMessageSquare,
   FiActivity,
+  FiBriefcase,
 } from 'react-icons/fi';
 
 interface SettingsCardProps {
@@ -126,6 +127,14 @@ export default function AdminSettings() {
       href: '/admin/drivers/applications',
       icon: FiUserCheck,
       badge: 'Onboarding',
+    },
+    {
+      title: 'Career Applications',
+      description:
+        'Review job applications for internal positions, approve candidates, and send employment contracts.',
+      href: '/admin/careers',
+      icon: FiBriefcase,
+      badge: 'HR',
     },
     {
       title: 'Send SMS',

@@ -114,9 +114,9 @@ SENDGRID_API_KEY=SG.uhK0ZfS2TjO9eI4eDSM3VA.Wsg9S4k37_XF8slRgc2WZi4_xVwprjjwDUnpy
 MAIL_FROM=noreply@speedy-van.co.uk
 
 # Company Contact
-NEXT_PUBLIC_COMPANY_PHONE=+44 7901846297
+NEXT_PUBLIC_COMPANY_PHONE=+44 1202129746
 NEXT_PUBLIC_COMPANY_EMAIL=support@speedy-van.co.uk
-NEXT_PUBLIC_COMPANY_ADDRESS=140 Charles Street, Glasgow City, G21 2QB
+NEXT_PUBLIC_COMPANY_ADDRESS=Office 2.18, 1 Barrack street, Hamilton ML3 0DG
 ```
 
 ### Email Service Architecture
