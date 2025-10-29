@@ -11,10 +11,10 @@ export async function generateEmploymentContract(data: ContractData): Promise<Bu
   const doc = new jsPDF();
   const { applicantName, position, startDate } = data;
 
-  const companyName = 'Speedy Van Limited';
-  const companyAddress = '140 Charles Street, Glasgow City, G21 2QB';
-  const companyPhone = '07901846297';
-  const companyEmail = 'support@speedy-van.co.uk';
+  const companyName = process.env.NEXT_PUBLIC_COMPANY_NAME || 'Speedy Van Limited';
+  const companyAddress = process.env.NEXT_PUBLIC_COMPANY_ADDRESS || 'Office 2.18, 1 Barrack street, Hamilton ML3 0DG';
+  const companyPhone = process.env.NEXT_PUBLIC_COMPANY_PHONE || '+44 1202129746';
+  const companyEmail = process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@speedy-van.co.uk';
 
   // Header
   doc.setFontSize(20);
