@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const filePath = join(uploadsDir, fileName);
 
     // Save file
-    await writeFile(filePath, buffer);
+    await writeFile(filePath, new Uint8Array(buffer));
 
     // Store in database
     const application = await prisma.careerApplication.create({

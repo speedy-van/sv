@@ -369,14 +369,14 @@ export default function CareersPage() {
                       setFormData({ ...formData, coverLetter: e.target.value })
                     }
                     placeholder="Tell us why you're interested in this position and what makes you a great fit..."
-                    rows={{ base: 4, md: 6 }}
+                    rows={6}
                     bg="whiteAlpha.50"
                     color="text.primary"
                     borderColor="border.primary"
                     _placeholder={{ color: 'text.tertiary' }}
                     size={{ base: "md", md: "md" }}
                     fontSize={{ base: "md", md: "md" }}
-                    minH={{ base: "44px", md: "40px" }}
+                    minH={{ base: "100px", md: "120px" }}
                   />
                   <Text fontSize={{ base: "xs", md: "sm" }} color="text.secondary" mt={1}>
                     {formData.coverLetter.length} / 50 characters minimum
