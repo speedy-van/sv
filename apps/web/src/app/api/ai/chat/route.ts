@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+function getGroqClient() {
+  if (!process.env.GROQ_API_KEY) {
+    return null;
+  }
+  return new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+  });
+}
 
 const chatSchema = z.object({
   message: z.string().min(1),
@@ -114,6 +119,19 @@ function extractDataFromMessage(message: string, currentData: any = {}) {
 
 export async function POST(request: NextRequest) {
   try {
+    const groq = getGroqClient();
+    
+    if (!groq) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'AI service is not configured',
+          message: 'I apologize, but the AI service is currently unavailable. Please contact support at support@speedy-van.co.uk or call 01202129746 for assistance.',
+        },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const validated = chatSchema.parse(body);
 
@@ -184,4 +202,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
