@@ -365,7 +365,8 @@ export default function AdminCareersPage() {
             </Box>
           </CardBody>
         </Card>
-      </VStack>
+        </VStack>
+      </Container>
 
       {/* View Details Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
