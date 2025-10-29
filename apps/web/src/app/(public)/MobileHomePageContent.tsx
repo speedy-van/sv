@@ -36,6 +36,7 @@ import {
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import HomeFooter from '@/components/site/HomeFooter';
+import SpeedyAIBot from '@/components/site/SpeedyAIBot';
 
 // Import ServiceMapSection directly
 import ServiceMapSection from '../../components/ServiceMapSection';
@@ -1262,6 +1263,9 @@ export default function MobileHomePageContent() {
           </Container>
         </Box>
       )}
+      
+      {/* Speedy AI Bot */}
+      <SpeedyAIBot />
     </Box>
   );
 }

@@ -171,29 +171,37 @@ export default function MobileHeader() {
         onClose={onClose}
         size="xs"
       >
-        <DrawerOverlay />
-        <DrawerContent bg="bg.card">
-          <DrawerCloseButton color="text.primary" />
-          <DrawerHeader borderBottomWidth="1px" borderColor="border.primary">
-            <Text color="text.primary" fontWeight="bold">
+        <DrawerOverlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <DrawerContent 
+          bg="linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 17, 20, 0.98) 100%)"
+          backdropFilter="blur(20px)"
+          borderLeft="1px solid"
+          borderColor="rgba(59, 130, 246, 0.3)"
+        >
+          <DrawerCloseButton color="white" _hover={{ bg: 'whiteAlpha.200' }} />
+          <DrawerHeader 
+            borderBottomWidth="1px" 
+            borderColor="rgba(59, 130, 246, 0.3)"
+            bg="rgba(30, 64, 175, 0.1)"
+          >
+            <Text color="white" fontWeight="bold" fontSize="xl">
               Menu
             </Text>
           </DrawerHeader>
 
-          <DrawerBody p={0}>
+          <DrawerBody p={0} bg="rgba(15, 17, 20, 0.95)">
             <VStack spacing={0} align="stretch">
-              {/* Main Navigation */}
               <Link
                 href="/"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiUser color="#00C2FF" />
-                  <Text color="text.primary">Home</Text>
+                  <FiUser color="#3B82F6" />
+                  <Text color="white">Home</Text>
                 </HStack>
               </Link>
               
@@ -201,13 +209,13 @@ export default function MobileHeader() {
                 href="/services"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FaTruck color="#00C2FF" />
-                  <Text color="text.primary">Services</Text>
+                  <FaTruck color="#3B82F6" />
+                  <Text color="white">Services</Text>
                 </HStack>
               </Link>
               
@@ -215,13 +223,13 @@ export default function MobileHeader() {
                 href="/pricing"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FaStar color="#00C2FF" />
-                  <Text color="text.primary">Pricing</Text>
+                  <FaStar color="#3B82F6" />
+                  <Text color="white">Pricing</Text>
                 </HStack>
               </Link>
               
@@ -229,13 +237,13 @@ export default function MobileHeader() {
                 href="/track"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiMapPin color="#00C2FF" />
-                  <Text color="text.primary">Track Move</Text>
+                  <FiMapPin color="#3B82F6" />
+                  <Text color="white">Track Move</Text>
                 </HStack>
               </Link>
               
@@ -243,13 +251,13 @@ export default function MobileHeader() {
                 href="/about"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiFileText color="#00C2FF" />
-                  <Text color="text.primary">About Us</Text>
+                  <FiFileText color="#3B82F6" />
+                  <Text color="white">About Us</Text>
                 </HStack>
               </Link>
               
@@ -257,19 +265,18 @@ export default function MobileHeader() {
                 href="/contact"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FaQuestionCircle color="#00C2FF" />
-                  <Text color="text.primary">Contact</Text>
+                  <FaQuestionCircle color="#3B82F6" />
+                  <Text color="white">Contact</Text>
                 </HStack>
               </Link>
 
-              {/* Driver Section */}
-              <Box p={3} bg="rgba(0, 194, 255, 0.05)" borderBottom="1px solid" borderColor="border.primary">
-                <Text fontSize="sm" color="text.secondary" fontWeight="semibold" mb={2}>
+              <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
                   DRIVER
                 </Text>
               </Box>
@@ -278,19 +285,18 @@ export default function MobileHeader() {
                 href="/driver-application"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiUserPlus color="#00D18F" />
-                  <Text color="text.primary">Apply to Drive</Text>
+                  <FiUserPlus color="#06B6D4" />
+                  <Text color="white">Apply to Drive</Text>
                 </HStack>
               </Link>
 
-              {/* Legal Section */}
-              <Box p={3} bg="rgba(0, 194, 255, 0.05)" borderBottom="1px solid" borderColor="border.primary">
-                <Text fontSize="sm" color="text.secondary" fontWeight="semibold" mb={2}>
+              <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
                   LEGAL
                 </Text>
               </Box>
@@ -299,13 +305,13 @@ export default function MobileHeader() {
                 href="/privacy"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiShield color="#00C2FF" />
-                  <Text color="text.primary">Privacy Policy</Text>
+                  <FiShield color="#3B82F6" />
+                  <Text color="white">Privacy Policy</Text>
                 </HStack>
               </Link>
               
@@ -313,19 +319,18 @@ export default function MobileHeader() {
                 href="/terms"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiFileText color="#00C2FF" />
-                  <Text color="text.primary">Terms of Service</Text>
+                  <FiFileText color="#3B82F6" />
+                  <Text color="white">Terms of Service</Text>
                 </HStack>
               </Link>
 
-              {/* Auth Section */}
-              <Box p={3} bg="rgba(0, 194, 255, 0.05)" borderBottom="1px solid" borderColor="border.primary">
-                <Text fontSize="sm" color="text.secondary" fontWeight="semibold" mb={2}>
+              <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
                   ACCOUNT
                 </Text>
               </Box>
@@ -334,13 +339,13 @@ export default function MobileHeader() {
                 href="/auth/login"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiLogIn color="#00C2FF" />
-                  <Text color="text.primary">Sign In</Text>
+                  <FiLogIn color="#3B82F6" />
+                  <Text color="white">Sign In</Text>
                 </HStack>
               </Link>
               
@@ -348,30 +353,29 @@ export default function MobileHeader() {
                 href="/auth/register"
                 p={4}
                 borderBottom="1px solid"
-                borderColor="border.primary"
-                _hover={{ bg: 'bg.surface' }}
+                borderColor="rgba(59, 130, 246, 0.2)"
+                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
                 onClick={onClose}
               >
                 <HStack spacing={3}>
-                  <FiUserPlus color="#00C2FF" />
-                  <Text color="text.primary">Sign Up</Text>
+                  <FiUserPlus color="#3B82F6" />
+                  <Text color="white">Sign Up</Text>
                 </HStack>
               </Link>
 
-              {/* Action Buttons */}
-              <Box p={4} bg="rgba(0, 194, 255, 0.05)">
+              <Box p={4} bg="rgba(30, 64, 175, 0.1)" borderTop="1px solid" borderColor="rgba(59, 130, 246, 0.3)">
                 <VStack spacing={3}>
                   <Button
                     size="lg"
-                    bg="linear-gradient(135deg, #00C2FF, #00D18F)"
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
                     color="white"
                     fontWeight="bold"
                     w="full"
-                    boxShadow="0 4px 15px rgba(0,194,255,0.3)"
+                    boxShadow="0 4px 15px rgba(59,130,246,0.4)"
                     _hover={{
-                      bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
+                      bg: 'linear-gradient(135deg, #06B6D4, #3B82F6)',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 25px rgba(0, 194, 255, 0.4)',
+                      boxShadow: '0 8px 25px rgba(59, 130, 246, 0.5)',
                     }}
                     onClick={() => {
                       window.location.href = '/booking-luxury';
@@ -406,12 +410,13 @@ export default function MobileHeader() {
                   <Button
                     size="md"
                     variant="outline"
-                    color="primary.500"
-                    borderColor="primary.500"
+                    color="white"
+                    borderColor="rgba(59, 130, 246, 0.5)"
                     w="full"
                     _hover={{
-                      bg: 'primary.50',
+                      bg: 'rgba(59, 130, 246, 0.2)',
                       transform: 'translateY(-1px)',
+                      borderColor: '#3B82F6',
                     }}
                     onClick={() => {
                       window.open('tel:+441202129746');
