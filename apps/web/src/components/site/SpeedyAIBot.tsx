@@ -271,7 +271,7 @@ export default function SpeedyAIBot() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              Need a quote? Ask me! 💬
+              Ask me! 💬
               <Box
                 position="absolute"
                 bottom="-4"
