@@ -18,8 +18,9 @@ import {
   Badge,
   Divider,
 } from '@chakra-ui/react';
-import { FiMessageCircle, FiX, FiSend, FiTruck, FiCheckCircle } from 'react-icons/fi';
+import { FiX, FiSend, FiCheckCircle } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import SpeedyAIIcon from './SpeedyAIIcon';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -221,29 +222,26 @@ export default function SpeedyAIBot() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <IconButton
+            <Box
+              as="button"
               aria-label="Open Speedy AI"
-              icon={<Icon as={FiMessageCircle} boxSize={6} />}
-              size="lg"
-              colorScheme="blue"
-              isRound
-              shadow="2xl"
-              w={{ base: '60px', md: '70px' }}
-              h={{ base: '60px', md: '70px' }}
               onClick={() => setIsOpen(true)}
               position="relative"
+              w={{ base: '100px', md: '120px' }}
+              h={{ base: '100px', md: '120px' }}
+              cursor="pointer"
               _hover={{
                 transform: 'scale(1.1)',
-                shadow: '2xl',
               }}
               transition="all 0.3s"
-              bgGradient="linear(to-r, blue.500, cyan.500)"
+              shadow="2xl"
             >
+              <SpeedyAIIcon size={120} animated={true} />
               {unreadCount > 0 && (
                 <Badge
                   position="absolute"
-                  top="-2"
-                  right="-2"
+                  top="0"
+                  right="0"
                   colorScheme="red"
                   borderRadius="full"
                   fontSize="xs"
@@ -252,7 +250,7 @@ export default function SpeedyAIBot() {
                   {unreadCount}
                 </Badge>
               )}
-            </IconButton>
+            </Box>
             
             <MotionBox
               position="absolute"
@@ -270,8 +268,40 @@ export default function SpeedyAIBot() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
+              overflow="hidden"
             >
-              Ask me! 💬
+              <Box
+                position="relative"
+                zIndex={2}
+                bgGradient="linear(to-r, gray.800, blue.600, gray.800)"
+                bgClip="text"
+                fontWeight="bold"
+              >
+                Ask me! 💬
+              </Box>
+              
+              {/* Animated White Wave Light Effect */}
+              <Box
+                position="absolute"
+                top="0"
+                left="-100%"
+                w="100%"
+                h="100%"
+                bgGradient="linear(to-r, transparent, rgba(255,255,255,0.8), transparent)"
+                animation="wave 2s linear infinite"
+                zIndex={1}
+                sx={{
+                  '@keyframes wave': {
+                    '0%': {
+                      left: '-100%',
+                    },
+                    '100%': {
+                      left: '100%',
+                    },
+                  },
+                }}
+              />
+              
               <Box
                 position="absolute"
                 bottom="-4"
@@ -281,6 +311,7 @@ export default function SpeedyAIBot() {
                 borderLeft="8px solid transparent"
                 borderRight="8px solid transparent"
                 borderTop="8px solid white"
+                zIndex={3}
               />
             </MotionBox>
           </MotionBox>
@@ -316,13 +347,9 @@ export default function SpeedyAIBot() {
               color="white"
             >
               <HStack spacing={3}>
-                <Avatar
-                  size="sm"
-                  name="Speedy AI"
-                  bg="white"
-                  color="blue.600"
-                  icon={<Icon as={FiTruck} />}
-                />
+                <Box borderRadius="md" overflow="hidden">
+                  <SpeedyAIIcon size={40} animated={true} />
+                </Box>
                 <Box>
                   <Text fontWeight="bold" fontSize="lg">
                     Speedy AI
@@ -375,14 +402,9 @@ export default function SpeedyAIBot() {
                   transition={{ duration: 0.3 }}
                 >
                   {message.role === 'assistant' && (
-                    <Avatar
-                      size="xs"
-                      name="AI"
-                      bg="blue.500"
-                      color="white"
-                      icon={<Icon as={FiTruck} />}
-                      mr={2}
-                    />
+                    <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
+                      <SpeedyAIIcon size={32} animated={false} />
+                    </Box>
                   )}
                   
                   <Box
@@ -403,14 +425,9 @@ export default function SpeedyAIBot() {
               
               {isLoading && (
                 <Flex justify="flex-start">
-                  <Avatar
-                    size="xs"
-                    name="AI"
-                    bg="blue.500"
-                    color="white"
-                    icon={<Icon as={FiTruck} />}
-                    mr={2}
-                  />
+                  <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
+                    <SpeedyAIIcon size={32} animated={true} />
+                  </Box>
                   <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
                     <HStack spacing={1}>
                       <Spinner size="xs" color="blue.500" />
