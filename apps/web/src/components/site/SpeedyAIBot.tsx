@@ -235,17 +235,20 @@ export default function SpeedyAIBot() {
               }}
               transition="all 0.3s"
               shadow="2xl"
+              borderRadius="full"
+              overflow="hidden"
             >
-              <SpeedyAIIcon size={120} animated={true} />
+              <SpeedyAIIcon size={120} />
               {unreadCount > 0 && (
                 <Badge
                   position="absolute"
-                  top="0"
-                  right="0"
+                  top="-2"
+                  right="-2"
                   colorScheme="red"
                   borderRadius="full"
                   fontSize="xs"
                   px={2}
+                  zIndex={10}
                 >
                   {unreadCount}
                 </Badge>
@@ -348,7 +351,7 @@ export default function SpeedyAIBot() {
             >
               <HStack spacing={3}>
                 <Box borderRadius="md" overflow="hidden">
-                  <SpeedyAIIcon size={40} animated={true} />
+                  <SpeedyAIIcon size={40} />
                 </Box>
                 <Box>
                   <Text fontWeight="bold" fontSize="lg">
@@ -403,7 +406,7 @@ export default function SpeedyAIBot() {
                 >
                   {message.role === 'assistant' && (
                     <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
-                      <SpeedyAIIcon size={32} animated={false} />
+                      <SpeedyAIIcon size={32} />
                     </Box>
                   )}
                   
@@ -426,7 +429,7 @@ export default function SpeedyAIBot() {
               {isLoading && (
                 <Flex justify="flex-start">
                   <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
-                    <SpeedyAIIcon size={32} animated={true} />
+                    <SpeedyAIIcon size={32} />
                   </Box>
                   <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
                     <HStack spacing={1}>
