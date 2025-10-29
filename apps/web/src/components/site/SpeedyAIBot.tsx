@@ -227,16 +227,26 @@ export default function SpeedyAIBot() {
               aria-label="Open Speedy AI"
               onClick={() => setIsOpen(true)}
               position="relative"
-              w={{ base: '100px', md: '120px' }}
-              h={{ base: '100px', md: '120px' }}
+              w={{ base: '70px', sm: '80px', md: '120px' }}
+              h={{ base: '70px', sm: '80px', md: '120px' }}
               cursor="pointer"
               _hover={{
-                transform: 'scale(1.1)',
+                transform: 'scale(1.05)',
+              }}
+              _active={{
+                transform: 'scale(0.95)',
               }}
               transition="all 0.3s"
               shadow="2xl"
-              borderRadius="full"
+              borderRadius="20%"
               overflow="hidden"
+              flexShrink={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              p={0}
+              border="none"
+              bg="transparent"
             >
               <SpeedyAIIcon size={120} />
               {unreadCount > 0 && (
@@ -257,21 +267,22 @@ export default function SpeedyAIBot() {
             
             <MotionBox
               position="absolute"
-              top="-12"
+              top={{ base: '-10', md: '-12' }}
               right="0"
               bg="white"
               color="gray.800"
-              px={4}
-              py={2}
+              px={{ base: 3, md: 4 }}
+              py={{ base: 1.5, md: 2 }}
               borderRadius="lg"
               shadow="lg"
-              fontSize="sm"
+              fontSize={{ base: 'xs', md: 'sm' }}
               fontWeight="medium"
               whiteSpace="nowrap"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               overflow="hidden"
+              display={{ base: 'none', sm: 'block' }}
             >
               <Box
                 position="relative"
@@ -328,38 +339,55 @@ export default function SpeedyAIBot() {
             position="fixed"
             bottom={{ base: 0, md: 8 }}
             right={{ base: 0, md: 8 }}
-            w={{ base: '100vw', md: '400px' }}
-            h={{ base: '100vh', md: '600px' }}
+            left={{ base: 0, md: 'auto' }}
+            w={{ base: '100%', md: '400px' }}
+            h={{ base: '100%', md: '600px' }}
+            maxH={{ base: '100dvh', md: '600px' }}
             bg="white"
             borderRadius={{ base: '0', md: 'xl' }}
             shadow="2xl"
             flexDirection="column"
             overflow="hidden"
             zIndex={9999}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             {/* Header */}
             <Flex
               bgGradient="linear(to-r, blue.600, cyan.500)"
-              p={4}
+              p={{ base: 3, md: 4 }}
+              pt={{ base: 'calc(env(safe-area-inset-top) + 12px)', md: 4 }}
               align="center"
               justify="space-between"
               color="white"
             >
-              <HStack spacing={3}>
-                <Box borderRadius="md" overflow="hidden">
-                  <SpeedyAIIcon size={40} />
-                </Box>
+              <HStack spacing={{ base: 2, md: 3 }}>
+                <SpeedyAIIcon size={40} />
                 <Box>
-                  <Text fontWeight="bold" fontSize="lg">
+                  <Text 
+                    fontWeight="extrabold" 
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    letterSpacing="tight"
+                    bgGradient="linear(to-r, white, cyan.100, white)"
+                    bgClip="text"
+                    textShadow="0 2px 10px rgba(255,255,255,0.3)"
+                    fontFamily="'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  >
                     Speedy AI
                   </Text>
                   <HStack spacing={1} fontSize="xs">
-                    <Box w={2} h={2} bg="green.300" borderRadius="full" />
-                    <Text>Online</Text>
+                    <Box w={2} h={2} bg="green.300" borderRadius="full" 
+                      animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+                      sx={{
+                        '@keyframes pulse': {
+                          '0%, 100%': { opacity: 1 },
+                          '50%': { opacity: 0.5 },
+                        },
+                      }}
+                    />
+                    <Text fontWeight="medium" color="whiteAlpha.900">Online</Text>
                   </HStack>
                 </Box>
               </HStack>
@@ -367,10 +395,11 @@ export default function SpeedyAIBot() {
               <IconButton
                 aria-label="Close chat"
                 icon={<FiX />}
-                size="sm"
+                size={{ base: 'md', md: 'sm' }}
                 variant="ghost"
                 color="white"
                 _hover={{ bg: 'whiteAlpha.300' }}
+                _active={{ bg: 'whiteAlpha.400' }}
                 onClick={() => setIsOpen(false)}
               />
             </Flex>
@@ -379,11 +408,13 @@ export default function SpeedyAIBot() {
             <VStack
               flex={1}
               overflowY="auto"
-              p={4}
-              spacing={4}
+              overflowX="hidden"
+              p={{ base: 3, md: 4 }}
+              spacing={{ base: 3, md: 4 }}
               bg="gray.50"
               align="stretch"
               sx={{
+                WebkitOverflowScrolling: 'touch',
                 '&::-webkit-scrollbar': {
                   width: '4px',
                 },
@@ -405,21 +436,22 @@ export default function SpeedyAIBot() {
                   transition={{ duration: 0.3 }}
                 >
                   {message.role === 'assistant' && (
-                    <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
+                    <Box mr={2} flexShrink={0}>
                       <SpeedyAIIcon size={32} />
                     </Box>
                   )}
                   
                   <Box
-                    maxW="80%"
+                    maxW={{ base: '85%', md: '80%' }}
                     bg={message.role === 'user' ? 'blue.500' : 'white'}
                     color={message.role === 'user' ? 'white' : 'gray.800'}
-                    px={4}
-                    py={3}
+                    px={{ base: 3, md: 4 }}
+                    py={{ base: 2.5, md: 3 }}
                     borderRadius="lg"
                     shadow="sm"
-                    fontSize="sm"
+                    fontSize={{ base: 'sm', md: 'sm' }}
                     whiteSpace="pre-wrap"
+                    wordBreak="break-word"
                   >
                     {message.content}
                   </Box>
@@ -428,7 +460,7 @@ export default function SpeedyAIBot() {
               
               {isLoading && (
                 <Flex justify="flex-start">
-                  <Box mr={2} borderRadius="md" overflow="hidden" flexShrink={0}>
+                  <Box mr={2} flexShrink={0}>
                     <SpeedyAIIcon size={32} />
                   </Box>
                   <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
@@ -473,16 +505,24 @@ export default function SpeedyAIBot() {
             )}
 
             {/* Input */}
-            <Flex p={4} bg="white" borderTop="1px" borderColor="gray.200">
+            <Flex 
+              p={{ base: 3, md: 4 }} 
+              pb={{ base: 'calc(env(safe-area-inset-bottom) + 12px)', md: 4 }}
+              bg="white" 
+              borderTop="1px" 
+              borderColor="gray.200"
+              gap={2}
+            >
               <Input
                 ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
-                size="md"
-                mr={2}
+                size={{ base: 'md', md: 'md' }}
+                fontSize={{ base: '16px', md: '14px' }}
                 disabled={isLoading}
+                flex={1}
                 _focus={{
                   borderColor: 'blue.500',
                   boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
@@ -495,6 +535,9 @@ export default function SpeedyAIBot() {
                 onClick={handleSendMessage}
                 isLoading={isLoading}
                 isDisabled={!inputValue.trim()}
+                size={{ base: 'md', md: 'md' }}
+                minW={{ base: '48px', md: 'auto' }}
+                _active={{ transform: 'scale(0.95)' }}
               />
             </Flex>
           </MotionFlex>
