@@ -1,5 +1,3 @@
-import nodemailer from 'nodemailer';
-
 interface EmailOptions {
   to: string | string[];
   subject: string;
@@ -12,41 +10,59 @@ interface EmailOptions {
 }
 
 /**
- * Send email using ZeptoMail SMTP
+ * Send email using Resend API
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
   const { to, subject, html, attachments } = options;
 
-  // Create transporter using ZeptoMail SMTP
-  const transporter = nodemailer.createTransporter({
-    host: process.env.ZEPTO_HOST || 'smtp.zeptomail.eu',
-    port: parseInt(process.env.ZEPTO_PORT || '587'),
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.ZEPTO_USER || 'emailapikey',
-      pass: process.env.ZEPTO_PASS || process.env.ZEPTO_API_KEY,
-    },
-  });
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  const MAIL_FROM = process.env.MAIL_FROM || 'noreply@speedy-van.co.uk';
 
-  // Email content
-  const mailOptions = {
-    from: process.env.MAIL_FROM || 'noreply@speedy-van.co.uk',
-    to: Array.isArray(to) ? to.join(', ') : to,
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured');
+  }
+
+  // Prepare email payload
+  const payload: any = {
+    from: `Speedy Van <${MAIL_FROM}>`,
+    to: Array.isArray(to) ? to : [to],
     subject,
     html,
-    attachments: attachments?.map((att) => ({
-      filename: att.filename,
-      content: att.content,
-      contentType: att.contentType,
-    })),
   };
 
+  // Add attachments if provided
+  if (attachments && attachments.length > 0) {
+    payload.attachments = attachments.map((att) => ({
+      filename: att.filename,
+      content: att.content instanceof Buffer 
+        ? att.content.toString('base64') 
+        : att.content,
+      type: att.contentType || 'application/pdf',
+    }));
+  }
+
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.messageId);
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Resend API error:', response.status, errorData);
+      throw new Error(`Resend API error: ${response.status} - ${errorData}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Email sent successfully via Resend:', result.id);
   } catch (error) {
     console.error('❌ Failed to send email:', error);
-    throw new Error('Failed to send email');
+    throw error;
   }
 }
 
