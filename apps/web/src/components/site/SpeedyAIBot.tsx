@@ -22,8 +22,8 @@ import { FiX, FiSend, FiCheckCircle } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import SpeedyAIIcon from './SpeedyAIIcon';
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
+const MotionBox = motion.create(Box);
+const MotionFlex = motion.create(Flex);
 
 interface Message {
   id: string;
