@@ -5,10 +5,19 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('📋 Career applications API called');
+
     // Check authentication
     const session = await getServerSession(authOptions);
+    console.log('🔐 Session:', session ? 'Found' : 'Not found');
+    console.log('👤 User role:', session?.user?.role);
+
     if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('❌ Unauthorized access attempt');
+      return NextResponse.json({ 
+        success: false,
+        error: 'Unauthorized' 
+      }, { status: 401 });
     }
 
     // Get query parameters
@@ -18,6 +27,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
+    console.log('📊 Query params:', { status, page, limit });
+
     // Build where clause
     const where: any = {};
     if (status && status !== 'all') {
@@ -25,6 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch applications with pagination
+    console.log('🔍 Fetching applications from database...');
     const [applications, total] = await Promise.all([
       prisma.careerApplication.findMany({
         where,
@@ -34,6 +46,9 @@ export async function GET(request: NextRequest) {
       }),
       prisma.careerApplication.count({ where }),
     ]);
+
+    console.log('✅ Found applications:', applications.length);
+    console.log('📊 Total count:', total);
 
     return NextResponse.json({
       success: true,
@@ -47,10 +62,19 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Error fetching career applications:', error);
+  } catch (error: any) {
+    console.error('❌ Error fetching career applications:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch applications' },
+      { 
+        success: false, 
+        error: 'Failed to fetch applications',
+        details: error.message 
+      },
       { status: 500 }
     );
   }

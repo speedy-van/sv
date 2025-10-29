@@ -96,21 +96,32 @@ export default function AdminCareersPage() {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
+      console.log('📋 Fetching career applications...');
+      
       const response = await fetch('/api/admin/careers');
+      console.log('📡 Response status:', response.status);
+      
       const data = await response.json();
+      console.log('📦 Response data:', data);
 
       if (data.success) {
         setApplications(data.data.applications);
+        console.log('✅ Applications loaded:', data.data.applications.length);
       } else {
-        throw new Error(data.error);
+        console.error('❌ API returned error:', data.error);
+        throw new Error(data.error || 'Failed to fetch applications');
       }
     } catch (error: any) {
+      console.error('❌ Fetch error:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to fetch applications',
+        title: 'Error Loading Applications',
+        description: error.message || 'Failed to fetch applications. Please check console for details.',
         status: 'error',
-        duration: 5000,
+        duration: 7000,
+        isClosable: true,
       });
+      // Set empty array so UI shows "no applications" instead of loading forever
+      setApplications([]);
     } finally {
       setIsLoading(false);
     }
