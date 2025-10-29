@@ -35,6 +35,16 @@ const POSITIONS = [
 ];
 
 export default function CareersPage() {
+  // Add viewport meta tag for mobile optimization
+  useEffect(() => {
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (!viewport) {
+      const meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      document.head.appendChild(meta);
+    }
+  }, []);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -169,24 +179,27 @@ export default function CareersPage() {
 
   if (submitted) {
     return (
-      <Box bg="gray.50" minH="100vh" py={20}>
-        <Container maxW="container.md">
-          <Card>
-            <CardBody textAlign="center" py={16}>
-              <Icon as={FiCheckCircle} boxSize={16} color="green.500" mb={4} />
-              <Heading size="lg" mb={4}>
+      <Box bg="bg.surface" minH="100vh" py={{ base: 8, md: 20 }}>
+        <Container maxW="container.md" px={{ base: 4, md: 6 }}>
+          <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
+            <CardBody textAlign="center" py={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
+              <Icon as={FiCheckCircle} boxSize={{ base: 12, md: 16 }} color="green.400" mb={4} />
+              <Heading size={{ base: "md", md: "lg" }} mb={4} color="text.primary">
                 Application Submitted Successfully!
               </Heading>
-              <Text color="gray.600" mb={6}>
+              <Text color="text.secondary" mb={6} fontSize={{ base: "sm", md: "md" }}>
                 Thank you for applying to join our team. We have received your application
                 and will review it carefully. You should receive a confirmation email shortly.
               </Text>
-              <Text color="gray.600" mb={6}>
+              <Text color="text.secondary" mb={6} fontSize={{ base: "sm", md: "md" }}>
                 Our HR team will get back to you within 5-7 business days.
               </Text>
               <Button
                 colorScheme="blue"
                 onClick={() => (window.location.href = '/')}
+                size={{ base: "md", md: "lg" }}
+                fontSize={{ base: "sm", md: "md" }}
+                py={{ base: 6, md: 8 }}
               >
                 Return to Homepage
               </Button>
@@ -198,15 +211,15 @@ export default function CareersPage() {
   }
 
   return (
-    <Box bg="gray.50" minH="100vh" py={20}>
-      <Container maxW="container.lg">
+    <Box bg="bg.surface" minH="100vh" py={{ base: 8, md: 20 }}>
+      <Container maxW="container.lg" px={{ base: 4, md: 6 }}>
         {/* Header Section */}
-        <VStack spacing={4} mb={12} textAlign="center">
-          <Icon as={FiBriefcase} boxSize={12} color="blue.500" />
-          <Heading size="2xl" color="blue.600">
+        <VStack spacing={{ base: 3, md: 4 }} mb={{ base: 8, md: 12 }} textAlign="center">
+          <Icon as={FiBriefcase} boxSize={{ base: 8, md: 12 }} color="neon.500" />
+          <Heading size={{ base: "xl", md: "2xl" }} color="text.primary">
             Join Our Team
           </Heading>
-          <Text fontSize="lg" color="gray.600" maxW="2xl">
+          <Text fontSize={{ base: "md", md: "lg" }} color="text.secondary" maxW="2xl">
             We're always looking for talented individuals to join the Speedy Van family.
             If you're passionate about logistics, customer service, and making a difference,
             we'd love to hear from you!
@@ -214,30 +227,37 @@ export default function CareersPage() {
         </VStack>
 
         {/* Application Form */}
-        <Card>
-          <CardBody>
+        <Card bg="bg.surface" border="1px solid" borderColor="border.primary">
+          <CardBody p={{ base: 4, md: 6 }}>
             <form onSubmit={handleSubmit}>
-              <VStack spacing={6} align="stretch">
-                <Heading size="md" color="gray.700">
+              <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+                <Heading size={{ base: "sm", md: "md" }} color="text.primary">
                   Application Form
                 </Heading>
 
                 {/* Full Name */}
                 <FormControl isInvalid={!!errors.fullName} isRequired>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Full Name</FormLabel>
                   <Input
                     value={formData.fullName}
                     onChange={(e) =>
                       setFormData({ ...formData, fullName: e.target.value })
                     }
                     placeholder="John Smith"
+                    bg="whiteAlpha.50"
+                    color="text.primary"
+                    borderColor="border.primary"
+                    _placeholder={{ color: 'text.tertiary' }}
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
                   />
-                  <FormErrorMessage>{errors.fullName}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.fullName}</FormErrorMessage>
                 </FormControl>
 
                 {/* Email */}
                 <FormControl isInvalid={!!errors.email} isRequired>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Email Address</FormLabel>
                   <Input
                     type="email"
                     value={formData.email}
@@ -245,13 +265,20 @@ export default function CareersPage() {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="john.smith@example.com"
+                    bg="whiteAlpha.50"
+                    color="text.primary"
+                    borderColor="border.primary"
+                    _placeholder={{ color: 'text.tertiary' }}
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
                   />
-                  <FormErrorMessage>{errors.email}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.email}</FormErrorMessage>
                 </FormControl>
 
                 {/* Phone */}
                 <FormControl isInvalid={!!errors.phone} isRequired>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Phone Number</FormLabel>
                   <Input
                     type="tel"
                     value={formData.phone}
@@ -259,19 +286,38 @@ export default function CareersPage() {
                       setFormData({ ...formData, phone: e.target.value })
                     }
                     placeholder="07901234567"
+                    bg="whiteAlpha.50"
+                    color="text.primary"
+                    borderColor="border.primary"
+                    _placeholder={{ color: 'text.tertiary' }}
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
                   />
-                  <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.phone}</FormErrorMessage>
                 </FormControl>
 
                 {/* Position */}
                 <FormControl isInvalid={!!errors.position} isRequired>
-                  <FormLabel>Position Applying For</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Position Applying For</FormLabel>
                   <Select
                     value={formData.position}
                     onChange={(e) =>
                       setFormData({ ...formData, position: e.target.value })
                     }
                     placeholder="Select a position"
+                    bg="whiteAlpha.50"
+                    color="text.primary"
+                    borderColor="border.primary"
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
+                    sx={{
+                      option: {
+                        bg: 'gray.800',
+                        color: 'white',
+                      }
+                    }}
                   >
                     {POSITIONS.map((position) => (
                       <option key={position} value={position}>
@@ -279,12 +325,12 @@ export default function CareersPage() {
                       </option>
                     ))}
                   </Select>
-                  <FormErrorMessage>{errors.position}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.position}</FormErrorMessage>
                 </FormControl>
 
                 {/* CV Upload */}
                 <FormControl isInvalid={!!errors.cvFile} isRequired>
-                  <FormLabel>Upload CV (PDF only, max 5MB)</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Upload CV (PDF only, max 5MB)</FormLabel>
                   <Input
                     type="file"
                     accept="application/pdf"
@@ -299,29 +345,43 @@ export default function CareersPage() {
                     variant="outline"
                     cursor="pointer"
                     w="full"
+                    borderColor="border.primary"
+                    color="text.primary"
+                    _hover={{ bg: 'whiteAlpha.100' }}
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "sm", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
+                    py={{ base: 4, md: 2 }}
                   >
                     {formData.cvFile
                       ? formData.cvFile.name
                       : 'Choose PDF file'}
                   </Button>
-                  <FormErrorMessage>{errors.cvFile}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.cvFile}</FormErrorMessage>
                 </FormControl>
 
                 {/* Cover Letter */}
                 <FormControl isInvalid={!!errors.coverLetter} isRequired>
-                  <FormLabel>Short Cover Letter</FormLabel>
+                  <FormLabel color="text.primary" fontSize={{ base: "sm", md: "md" }}>Short Cover Letter</FormLabel>
                   <Textarea
                     value={formData.coverLetter}
                     onChange={(e) =>
                       setFormData({ ...formData, coverLetter: e.target.value })
                     }
                     placeholder="Tell us why you're interested in this position and what makes you a great fit..."
-                    rows={6}
+                    rows={{ base: 4, md: 6 }}
+                    bg="whiteAlpha.50"
+                    color="text.primary"
+                    borderColor="border.primary"
+                    _placeholder={{ color: 'text.tertiary' }}
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
                   />
-                  <Text fontSize="sm" color="gray.500" mt={1}>
+                  <Text fontSize={{ base: "xs", md: "sm" }} color="text.secondary" mt={1}>
                     {formData.coverLetter.length} / 50 characters minimum
                   </Text>
-                  <FormErrorMessage>{errors.coverLetter}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.coverLetter}</FormErrorMessage>
                 </FormControl>
 
                 {/* Confirmation Checkbox */}
@@ -334,20 +394,28 @@ export default function CareersPage() {
                         confirmAccurate: e.target.checked,
                       })
                     }
+                    colorScheme="blue"
+                    color="text.primary"
+                    size={{ base: "md", md: "md" }}
+                    fontSize={{ base: "md", md: "md" }}
+                    minH={{ base: "44px", md: "40px" }}
                   >
                     I confirm that the information provided is accurate
                   </Checkbox>
-                  <FormErrorMessage>{errors.confirmAccurate}</FormErrorMessage>
+                  <FormErrorMessage fontSize={{ base: "xs", md: "sm" }}>{errors.confirmAccurate}</FormErrorMessage>
                 </FormControl>
 
                 {/* Submit Button */}
                 <Button
                   type="submit"
                   colorScheme="blue"
-                  size="lg"
+                  size={{ base: "md", md: "lg" }}
                   isLoading={isSubmitting}
                   loadingText="Submitting..."
                   w="full"
+                  fontSize={{ base: "sm", md: "md" }}
+                  py={{ base: 6, md: 8 }}
+                  minH={{ base: "48px", md: "44px" }}
                 >
                   Submit Application
                 </Button>
@@ -357,7 +425,7 @@ export default function CareersPage() {
         </Card>
 
         {/* Footer Note */}
-        <Text textAlign="center" mt={8} color="gray.600" fontSize="sm">
+        <Text textAlign="center" mt={{ base: 6, md: 8 }} color="text.secondary" fontSize={{ base: "xs", md: "sm" }}>
           Note: Driver positions are handled separately. Please visit the driver
           recruitment page or contact us directly.
         </Text>
