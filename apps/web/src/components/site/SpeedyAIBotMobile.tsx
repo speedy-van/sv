@@ -206,20 +206,21 @@ export default function SpeedyAIBotMobile() {
           style={{
             position: 'fixed',
             bottom: '20px',
-            right: '20px',
+            left: '20px',
+            right: 'auto',
             width: '70px',
             height: '70px',
             borderRadius: '50%',
             border: 'none',
             padding: '0',
             overflow: 'hidden',
-            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
             cursor: 'pointer',
             zIndex: 9998,
-            animation: 'float 3s ease-in-out infinite',
+            boxShadow: 'none',
             transition: 'transform 0.2s ease',
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
+            background: 'transparent',
           }}
           onTouchStart={(e) => {
             e.currentTarget.style.transform = 'scale(0.95)';
@@ -228,19 +229,31 @@ export default function SpeedyAIBotMobile() {
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          <div
             style={{
-              width: '100%',
+              width: '18%',
               height: '100%',
-              objectFit: 'cover',
+              display: 'right',
+              alignItems: 'right',
+              justifyContent: 'right',
             }}
           >
-            <source src="/logo/AB7D9FB6-5E70-43CC-A81F-A47E875EC79F-video.mp4" type="video/mp4" />
-          </video>
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{
+                width: '140%',
+                height: '136%',
+                objectFit: 'cover',
+                objectPosition: 'right',
+                display: 'block',
+              }}
+            >
+              <source src="/logo/AB7D9FB6-5E70-43CC-A81F-A47E875EC79F-video.mp4" type="video/mp4" />
+            </video>
+          </div>
         </button>
       )}
 
@@ -576,68 +589,21 @@ export default function SpeedyAIBotMobile() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Type your message..."
               disabled={isLoading}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                borderRadius: '24px',
-                border: '1px solid #e5e7eb',
-                fontSize: '16px',
+                height: '22px',
+                padding: '0 20px',
+                borderRadius: '28px',
+                border: '1px solid rgb(229, 229, 235)',
+                fontSize: '17px',
                 outline: 'none',
                 backgroundColor: '#f9fafb',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#3B82F6';
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
+                transition: 'border 0.2s ease-in-out',
               }}
             />
-            
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSendMessage();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              disabled={!inputValue.trim() || isLoading}
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                border: 'none',
-                background: inputValue.trim() && !isLoading
-                  ? 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)'
-                  : '#e5e7eb',
-                color: '#ffffff',
-                fontSize: '20px',
-                cursor: inputValue.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                transition: 'transform 0.2s',
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-              }}
-              onTouchStart={(e) => {
-                if (inputValue.trim() && !isLoading) {
-                  e.currentTarget.style.transform = 'scale(0.9)';
-                }
-              }}
-              onTouchCancel={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              ➤
-            </button>
           </div>
         </div>
       )}

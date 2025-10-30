@@ -16,8 +16,8 @@ const nextConfig = {
     //     },
     //   },
     // },
-    // Optimize CSS for large components
-    optimizeCss: true,
+    // Disable CSS optimizer to avoid CSS chunks being mis-tagged or inlined incorrectly in some CDNs
+    optimizeCss: false,
     // Enable faster refresh for large files
     swcMinify: true,
     // Enable instrumentation for server initialization
