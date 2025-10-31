@@ -14,7 +14,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { taxCalculator } from './calculator';
+// Removed unused import taxCalculator
 
 export interface TaxDeadline {
   id: string;
@@ -127,7 +127,7 @@ export class TaxDeadlineManager {
    */
   async checkUpcomingDeadlines(): Promise<TaxDeadline[]> {
     const upcomingDeadlines: TaxDeadline[] = [];
-    const today = new Date();
+    const today = new Date(); void today;
 
     // Get all active deadlines
     const deadlines = await prisma.taxDeadline.findMany({
@@ -308,7 +308,7 @@ export class TaxDeadlineManager {
       const priority = this.getAlertPriority(daysUntilDeadline);
 
       // Create alert record
-      const alert = await prisma.taxComplianceLog.create({
+      await prisma.taxComplianceLog.create({
         data: {
           checkType: ComplianceCheckType.PAYMENT_DEADLINES,
           isCompliant: daysUntilDeadline >= 0,
@@ -414,7 +414,7 @@ export class TaxDeadlineManager {
     const deadlines: TaxDeadline[] = [];
     
     // Corporation Tax payment deadline (9 months after accounting period end)
-    const accountingPeriodEnd = new Date(year, 11, 31); // December 31
+    const accountingPeriodEnd = new Date(year, 11, 31); void accountingPeriodEnd; // December 31
     const paymentDeadline = new Date(year + 1, 8, 31); // September 30 next year
 
     deadlines.push({
@@ -679,6 +679,7 @@ export class TaxDeadlineManager {
   }
 
   private async sendEmailNotification(to: string, subject: string, content: string): Promise<void> {
+    void content;
     // Implement email sending logic here
     console.log(`Email notification sent to ${to}: ${subject}`);
   }

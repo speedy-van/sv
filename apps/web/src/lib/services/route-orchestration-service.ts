@@ -921,9 +921,10 @@ export class RouteOrchestrationService {
    */
   private static async runOptimizationAlgorithm(
     drops: any[],
-    drivers: any[],
-    vehicles: any[]
+    _drivers: any[],
+    _vehicles: any[]
   ): Promise<any[]> {
+    void _drivers; void _vehicles;
     // This is a simplified optimization algorithm
     // In production, this would use sophisticated routing algorithms like:
     // - Vehicle Routing Problem (VRP) solvers
@@ -1104,7 +1105,7 @@ export class RouteOrchestrationService {
     // Group stops by geographical area first
     const stopsByArea = this.groupRouteStopsByArea(routeStops);
 
-    for (const [area, areaStops] of Object.entries(stopsByArea)) {
+    for (const [, areaStops] of Object.entries(stopsByArea)) {
       // Sort stops for optimal sequence (simplified - could use TSP solver)
       const sortedStops = this.sortRouteStopsForOptimization(areaStops);
 
@@ -1383,7 +1384,7 @@ export class RouteOrchestrationService {
     // Group drops by geographical area first
     const dropsByArea = this.groupDropsByArea(drops);
 
-    for (const [area, areaDrops] of Object.entries(dropsByArea)) {
+    for (const [, areaDrops] of Object.entries(dropsByArea)) {
       // Sort drops by time window and capacity requirements
       const sortedDrops = this.sortDropsForCapacityOptimization(areaDrops);
 

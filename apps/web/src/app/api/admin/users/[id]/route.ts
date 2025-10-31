@@ -49,7 +49,7 @@ export const PUT = withApiHandler(
 
     // Prevent superadmin from being deactivated by non-superadmin
     if (existingUser.adminRole === 'superadmin' && isActive === false) {
-      const session = await getServerSession();
+      const session = await getServerSession(authOptions);
       const currentUser = await prisma.user.findUnique({
         where: { id: (session?.user as any)?.id },
       });
@@ -61,15 +61,17 @@ export const PUT = withApiHandler(
       }
     }
 
+    // Build update data object, only including fields that are provided
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (adminRole !== undefined) updateData.adminRole = adminRole;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
     // Update admin user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name,
-        email,
-        adminRole,
-        isActive,
-      },
+      data: updateData,
       select: {
         id: true,
         name: true,
@@ -113,7 +115,7 @@ export const DELETE = withApiHandler(
     }
 
     // Prevent self-deletion
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (userId === (session?.user as any)?.id) {
       return httpJson(400, { error: 'Cannot delete your own account' });
     }

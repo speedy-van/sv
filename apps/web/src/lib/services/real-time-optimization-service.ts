@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import type { Driver, Booking, Route, Address } from '@prisma/client';
+import type { Driver, Booking, Route } from '@prisma/client';
 
 export interface OptimizationRequest {
   bookingId: string;
@@ -212,6 +212,7 @@ export class RealTimeOptimizationService {
   }
 
   private async findAvailableDrivers(booking: BookingWithRoute, constraints: OptimizationRequest['constraints']): Promise<Driver[]> {
+    void constraints;
     const scheduledTime = new Date(booking.scheduledAt);
     const timeBuffer = 2 * 60 * 60 * 1000; // 2 hours buffer
 
@@ -573,27 +574,32 @@ export class RealTimeOptimizationService {
   }
 
   // Helper methods (simplified implementations)
-  private async calculateDistance(postcode1: string, postcode2: string): Promise<number> { // DEPRECATED - internal use only
+  private async calculateDistance(_postcode1: string, _postcode2: string): Promise<number> { // DEPRECATED - internal use only
+    void _postcode1; void _postcode2;
     // Mock distance calculation - integrate with mapping service
     return Math.random() * 30 + 5; // 5-35 miles
   }
 
-  private calculateAvailabilityScore(driver: DriverWithRelations, scheduledTime: Date): number {
+  private calculateAvailabilityScore(driver: DriverWithRelations, _scheduledTime: Date): number {
+    void _scheduledTime;
     // Simplified availability calculation
     return driver.DriverShift.length > 0 ? 0.9 : 0.5;
   }
 
-  private calculateSkillMatch(driver: DriverWithRelations, booking: BookingWithRoute, requiredSkills: string[]): number {
+  private calculateSkillMatch(driver: DriverWithRelations, booking: BookingWithRoute, _requiredSkills: string[]): number {
+    void driver; void booking; void _requiredSkills;
     // Simplified skill matching
     return 0.8;
   }
 
   private async estimateDriverCost(driver: DriverWithRelations, booking: BookingWithRoute): Promise<number> {
+    void driver; void booking;
     // Simplified cost estimation
     return Math.random() * 100 + 50; // £50-150
   }
 
   private async getCustomerPreferenceScore(driverId: string, customerId: string): Promise<number> {
+    void driverId; void customerId;
     // Simplified customer preference
     return 0.8;
   }

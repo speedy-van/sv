@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -175,11 +178,14 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = (session.user as any).id;
+    const adminId = userId;
     const body = await request.json();
     const { action, data } = body;
 
@@ -188,13 +194,13 @@ export async function POST(request: NextRequest) {
         return await calculateCorporationTax(data);
 
       case 'update_expenses':
-        return await updateExpenses(data, adminId);
+        return await updateExpenses(data, adminId!);
 
       case 'generate_return':
-        return await generateCorporationTaxReturn(data, adminId);
+        return await generateCorporationTaxReturn(data, adminId!);
 
       case 'submit_to_hmrc':
-        return await submitCorporationTaxReturn(data, adminId);
+        return await submitCorporationTaxReturn(data, adminId!);
 
       case 'tax_planning':
         return await performTaxPlanning(data);

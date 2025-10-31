@@ -4,8 +4,6 @@
  */
 
 import { getCache } from '../cache/redis-cache';
-import { getRateLimiter } from '../rate-limiting/advanced-rate-limiter';
-import { getQueue } from '../queue/booking-queue';
 import { getPerformanceMonitor } from '../monitoring/performance-monitor';
 
 interface LoadTestConfig {
@@ -129,7 +127,7 @@ class EnhancedLoadTester {
     }
     
     // Reset metrics
-    const monitor = getPerformanceMonitor();
+    const monitor = getPerformanceMonitor(); void monitor;
     // Reset would be implemented in the monitor
     
     console.log('✅ System initialized');
@@ -192,9 +190,7 @@ class EnhancedLoadTester {
     await Promise.race([phasePromise, timeoutPromise]);
     
     // Cancel remaining promises
-    promises.forEach(promise => {
-      // In a real implementation, you'd cancel the promises
-    });
+    promises.forEach(_promise => { void _promise; });
   }
 
   private async simulateUser(config: LoadTestConfig, userId: number): Promise<void> {
@@ -239,6 +235,7 @@ class EnhancedLoadTester {
   }
 
   private async executeRequest(scenario: LoadTestScenario, userId: number): Promise<void> {
+    void userId;
     const startTime = Date.now();
     
     try {

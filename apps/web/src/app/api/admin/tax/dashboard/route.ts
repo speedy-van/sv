@@ -24,11 +24,14 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = (session.user as any).id;
+    const adminId = userId;
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'current';
 
@@ -223,11 +226,14 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = (session.user as any).id;
+    const adminId = userId;
     const body = await request.json();
     const { action, data } = body;
 
@@ -251,7 +257,7 @@ export async function POST(request: NextRequest) {
             dueDate: new Date(data.dueDate),
             taxYear: data.taxYear,
             taxPeriod: data.taxPeriod,
-            createdBy: adminId
+            createdBy: adminId!
           }
         });
 

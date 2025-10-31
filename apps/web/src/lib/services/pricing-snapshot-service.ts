@@ -6,7 +6,8 @@
  */
 
 import { prisma } from '../prisma';
-import { PricingResult, StripePaymentIntent } from '../pricing/schemas';
+import { createHash } from 'crypto';
+import { PricingResult } from '../pricing/schemas';
 
 export interface PricingSnapshotData {
   bookingId: string;
@@ -83,8 +84,9 @@ export class PricingSnapshotService {
   public static async verifyPricingMatchesStripe(
     bookingId: string,
     stripeAmountPence: number,
-    paymentIntentId?: string
+    _paymentIntentId?: string
   ): Promise<StripeIntegrityCheck> {
+    void _paymentIntentId;
 
     const snapshot = await this.getPricingSnapshot(bookingId);
 
@@ -175,9 +177,10 @@ export class PricingSnapshotService {
   public static async createStripePaymentIntent(
     bookingId: string,
     amountPence: number,
-    currency: string = 'gbp',
-    metadata: Record<string, string> = {}
+    _currency?: string,
+    _metadata?: Record<string, string>
   ): Promise<{ paymentIntentId: string; clientSecret: string; integrityCheck: StripeIntegrityCheck }> {
+    void _currency; void _metadata;
 
     // First verify integrity before creating payment intent
     const integrityCheck = await this.verifyPricingMatchesStripe(bookingId, amountPence);
@@ -215,8 +218,7 @@ export class PricingSnapshotService {
     };
 
     // Use crypto for production-grade hashing
-    const crypto = require('crypto');
-    return crypto.createHash('sha256')
+    return createHash('sha256')
       .update(JSON.stringify(hashInput))
       .digest('hex')
       .substring(0, 16);

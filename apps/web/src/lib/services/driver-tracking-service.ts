@@ -202,7 +202,6 @@ export class DriverTrackingService {
 
       // Note: route.drops relationship doesn't exist in current schema, using placeholders
       const completedDrops = 0; // route.drops?.filter(drop => drop.status === 'completed').length || 0;
-      const nextDrop = null; // route.drops?.find(drop => drop.status === 'booked' || drop.status === 'in_progress');
 
       return {
         routeId: route.id,
@@ -233,12 +232,13 @@ export class DriverTrackingService {
    */
   private static async updateRouteProgress(
     routeId: string,
-    progress: {
+    _progress: {
       completedDrops: number;
       totalDrops: number;
       estimatedCompletion: Date;
     }
   ): Promise<void> {
+    void _progress;
     // Update route with latest progress
     await (prisma as any).route.update({
       where: { id: routeId },
@@ -254,8 +254,9 @@ export class DriverTrackingService {
    */
   private static calculateETA(
     currentLocation: { lat: number; lng: number } | null,
-    destination: { address: string }
+    _destination: { address: string }
   ): Date | null {
+    void _destination;
     if (!currentLocation) return null;
 
     // Mock calculation - in production would use routing API
@@ -310,7 +311,7 @@ export class DriverTrackingService {
         where: { driverId }
       });
 
-      for (const subscription of pushSubscriptions) {
+      for (let i = 0; i < pushSubscriptions.length; i++) {
         try {
           // In production, would send actual push notification
           console.log(`Sending push notification to driver ${driverId}:`, notification.title);

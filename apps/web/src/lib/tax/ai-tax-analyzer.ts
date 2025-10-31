@@ -492,6 +492,7 @@ Format as JSON:
   }
 
   private parseForecastResponse(response: string, periods: number): TaxForecast[] {
+    void periods;
     try {
       const jsonMatch = response.match(/\[[\s\S]*\]/);
       if (jsonMatch) {

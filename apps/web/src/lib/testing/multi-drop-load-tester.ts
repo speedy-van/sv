@@ -53,7 +53,7 @@ interface LoadTestResult {
   throughput: number; // requests per second
   errorRate: number;
   errors: Record<string, number>;
-  memoryUsage: NodeJS.MemoryUsage;
+  memoryUsage: ReturnType<typeof process.memoryUsage>;
   cpuMetrics: any;
 }
 
@@ -177,6 +177,8 @@ class MultiDropLoadTester {
 
       userPromises.push(userPromise);
     }
+
+    void activeScenarioUsers;
 
     // Wait for all users to complete
     await Promise.all(userPromises);
@@ -343,7 +345,7 @@ class MultiDropLoadTester {
     let totalFailed = 0;
     let avgResponseTime = 0;
 
-    for (const [scenarioName, result] of this.results) {
+    for (const [, result] of this.results) {
       totalRequests += result.totalRequests;
       totalSuccessful += result.successfulRequests;
       totalFailed += result.failedRequests;
@@ -351,6 +353,7 @@ class MultiDropLoadTester {
     }
 
     avgResponseTime = avgResponseTime / this.results.size;
+    void totalFailed;
     const overallSuccessRate = ((totalSuccessful / totalRequests) * 100).toFixed(1);
 
     report.push(`**Total Requests**: ${totalRequests.toLocaleString()}`);

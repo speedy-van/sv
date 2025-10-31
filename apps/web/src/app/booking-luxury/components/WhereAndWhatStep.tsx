@@ -1811,7 +1811,19 @@ export default function WhereAndWhatStep({
                             pickupAddress: address as any
                           });
                         } else {
-                          updateFormData('step1', { pickupAddress: null as any });
+                          // Never set to null; reset to an empty address shape to avoid runtime errors
+                          updateFormData('step1', {
+                            pickupAddress: {
+                              address: '',
+                              city: '',
+                              postcode: '',
+                              coordinates: { lat: 0, lng: 0 },
+                              houseNumber: '',
+                              flatNumber: '',
+                              formatted_address: '',
+                              place_name: ''
+                            } as any
+                          });
                         }
                         // Pricing is now automatic via Enterprise Engine
                       }}
@@ -1877,7 +1889,18 @@ export default function WhereAndWhatStep({
                             dropoffAddress: address as any
                           });
                         } else {
-                          updateFormData('step1', { dropoffAddress: null as any });
+                          updateFormData('step1', {
+                            dropoffAddress: {
+                              address: '',
+                              city: '',
+                              postcode: '',
+                              coordinates: { lat: 0, lng: 0 },
+                              houseNumber: '',
+                              flatNumber: '',
+                              formatted_address: '',
+                              place_name: ''
+                            } as any
+                          });
                         }
                         // Pricing is now automatic via Enterprise Engine
                       }}

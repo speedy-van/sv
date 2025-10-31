@@ -230,8 +230,9 @@ export class PerformanceTrackingService {
   private async calculateBonuses(
     driverId: string,
     performance: PerformanceMetrics,
-    routeData: any
+    _routeData: any
   ) {
+    void _routeData;
     const bonuses = {
       routeExcellence: 0,
       weeklyPerformance: 0,
@@ -402,27 +403,32 @@ export class PerformanceTrackingService {
   }
 
   // Helper methods (simplified implementations)
-  private async getWeeklyPerformanceRank(driverId: string): Promise<number> {
+  private async getWeeklyPerformanceRank(_driverId: string): Promise<number> {
+    void _driverId;
     // Mock implementation - calculate actual rank in production
     return Math.random();
   }
 
-  private async calculateFuelEfficiency(driverId: string): Promise<number> {
+  private async calculateFuelEfficiency(_driverId: string): Promise<number> {
+    void _driverId;
     // Mock implementation - calculate actual fuel savings
     return Math.random() * 20;
   }
 
-  private async getBackhaulRevenue(driverId: string): Promise<number> {
+  private async getBackhaulRevenue(_driverId: string): Promise<number> {
+    void _driverId;
     // Mock implementation - get actual backhaul revenue
     return Math.random() * 100;
   }
 
-  private async getMonthlyAchievements(driverId: string): Promise<{ totalReward: number }> {
+  private async getMonthlyAchievements(_driverId: string): Promise<{ totalReward: number }> {
+    void _driverId;
     // Mock implementation - calculate monthly achievements
     return { totalReward: Math.random() * 50 };
   }
 
-  private async getQuarterlyTier(driverId: string): Promise<{ bonus: number }> {
+  private async getQuarterlyTier(_driverId: string): Promise<{ bonus: number }> {
+    void _driverId;
     // Mock implementation - calculate quarterly tier bonus
     return { bonus: Math.random() * 100 };
   }

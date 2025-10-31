@@ -9,7 +9,7 @@
  * - Real-time VAT validation
  */
 
-import { NextRequest } from 'next/server';
+// Removed unused NextRequest import
 
 export interface HMRCOAuthTokens {
   accessToken: string;
@@ -91,8 +91,9 @@ export class HMRCAPIService {
    */
   async exchangeCodeForTokens(
     code: string,
-    state: string
+    _state: string
   ): Promise<HMRCOAuthTokens> {
+    void _state;
     const clientId = process.env.HMRC_CLIENT_ID;
     const clientSecret = process.env.HMRC_CLIENT_SECRET;
     const redirectUri = process.env.HMRC_REDIRECT_URI;

@@ -1,4 +1,4 @@
-import { BookingStatus as LuxuryBookingStatus, PropertyType, Role, AdminRole, DriverStatus, User, Driver } from '@prisma/client';
+import { BookingStatus as LuxuryBookingStatus, User, Driver } from '@prisma/client';
 
 export type PrismaLuxuryBooking = {
   id: string;

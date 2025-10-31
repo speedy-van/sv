@@ -1238,7 +1238,8 @@ class CostOptimizer {
     return 'high';
   }
 
-  private createFallbackScenario(bookings: any[], constraints: any) {
+  private createFallbackScenario(bookings: any[], _constraints: any) {
+    void _constraints;
     return {
       optimalRadius: 50,
       estimatedRoutes: Math.ceil(bookings.length / 5),
@@ -2291,7 +2292,7 @@ class RouteOrchestrationScheduler {
    */
   private generateSequenceVariations(bookings: any[]): number[][] {
     const sequences: number[][] = [];
-    const indices = bookings.map((_, i) => i);
+    const _indices = bookings.map((_, i) => i); void _indices;
 
     // Add time-based sequence
     sequences.push(this.optimizeByTimePriority(bookings));
@@ -3338,7 +3339,7 @@ class RouteOrchestrationScheduler {
       }
 
       let totalVolume = 0;
-      let stackingEfficiency = 0.85; // 85% stacking efficiency
+      const stackingEfficiency = 0.85; // 85% stacking efficiency
 
       for (const item of booking.items) {
         let itemVolume = 0;

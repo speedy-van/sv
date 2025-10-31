@@ -383,8 +383,9 @@ export class AnalyticsService {
   private static generateInsights(
     operational: OperationalMetrics,
     revenue: RevenueBreakdown,
-    drivers: DriverAnalytics[]
+    _drivers: DriverAnalytics[]
   ) {
+    void _drivers;
     const insights = [];
 
     // Revenue insights

@@ -2,7 +2,8 @@
  * Authentication configuration for Speedy Van
  */
 
-import { NextAuthOptions, getServerSession } from 'next-auth';
+import type { NextAuthOptions, Session, User } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
@@ -52,7 +53,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
         role: { label: 'Role', type: 'text' }
       },
-      async authorize(credentials) {
+      async authorize(credentials: { email?: string; password?: string; role?: string } | undefined) {
         try {
           console.log('🔐 NextAuth authorize called with:', {
             email: credentials?.email,
@@ -152,7 +153,7 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: any; user?: any }) {
       // Only log when user data is being added (not on every token refresh)
       if (user && !token.role) {
         console.log('🎫 Adding user data to JWT token:', {
@@ -164,12 +165,13 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: any }) {
       // Only update session if token has role data
-      if (token && token.role) {
-        session.user.id = token.sub!;
-        session.user.role = token.role as UserRole;
-        (session.user as any).adminRole = token.adminRole;
+      if (token && (token as any).role) {
+        if (!session.user) session.user = { id: '', email: '', name: '', role: 'customer' } as any;
+        ;(session.user as any).id = (token as any).sub as string;
+        ;(session.user as any).role = (token as any).role as UserRole;
+        ;(session.user as any).adminRole = (token as any).adminRole;
         console.log('✅ Session user data set:', {
           id: session.user.id,
           role: session.user.role,
@@ -193,7 +195,7 @@ export async function requireAuth() {
     throw new Error('Authentication required');
   }
   
-  return session.user;
+  return (session as any).user;
 }
 
 export async function auth() {
@@ -203,18 +205,18 @@ export async function auth() {
 export async function requireRole(request: any, roles: string | string[]): Promise<NextResponse | { id: string; email: string; name: string; role: string }> {
   const session = await getServerSession(authOptions);
   
-  if (!session?.user) {
+  const user = (session as any)?.user;
+  const userRole = user?.role as string | undefined;
+  if (!user || !userRole) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
-
-  const userRole = (session.user as any).role;
   const requiredRoles = Array.isArray(roles) ? roles : [roles];
   
   if (!userRole || !requiredRoles.includes(userRole)) {
     return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
   }
   
-  return session.user as { id: string; email: string; name: string; role: string };
+  return user as { id: string; email: string; name: string; role: string };
 }
 
 export async function requireDriver(request: any): Promise<NextResponse | { id: string; email: string; name: string; role: string }> {

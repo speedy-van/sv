@@ -34,12 +34,7 @@ interface PricingVariables {
   congestionZone?: boolean;
 }
 
-interface PricingResult {
-  basePrice: number;
-  surcharges: number;
-  discounts: number;
-  totalPrice: number;
-}
+// Pricing result shape handled by dynamicPricingEngine
 
 const prisma = new PrismaClient();
 
@@ -214,9 +209,10 @@ export class QuoteService {
    * In production, this would use Google Maps API or similar
    */
   private static async calculateDistanceAndDuration( // DEPRECATED - internal use only
-    pickupPostcode: string,
-    deliveryPostcode: string
+    _pickupPostcode: string,
+    _deliveryPostcode: string
   ): Promise<{ distance: number; duration: number }> {
+    void _pickupPostcode; void _deliveryPostcode;
     // Mock calculation - in production use real mapping API
     const mockDistance = Math.random() * 50 + 5; // 5-55 km
     const mockDuration = mockDistance * 2 + 20; // Rough estimate in minutes

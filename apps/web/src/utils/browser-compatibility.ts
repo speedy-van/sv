@@ -51,7 +51,6 @@ export interface FeatureSupport {
  */
 export function detectBrowser(): BrowserInfo {
   const userAgent = navigator.userAgent;
-  const vendor = navigator.vendor;
   
   let name = 'Unknown';
   let version = 'Unknown';
@@ -277,7 +276,6 @@ export function addBrowserClasses(): void {
  */
 export function loadPolyfills(): Promise<void> {
   const features = detectFeatureSupport();
-  const polyfills: Promise<void>[] = [];
   
   // Simple polyfills that don't require external packages
   if (!features.promises && typeof Promise === 'undefined') {
@@ -524,7 +522,7 @@ export function setupInputHandlers(): void {
     });
     
     // Handle viewport changes on keyboard show/hide
-    let initialViewportHeight = window.innerHeight;
+    const initialViewportHeight = window.innerHeight;
     
     window.addEventListener('resize', () => {
       const currentHeight = window.innerHeight;

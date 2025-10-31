@@ -455,6 +455,8 @@ export class AnalyticsService {
    * Helper method: Calculate customer satisfaction
    */
   private static async calculateCustomerSatisfaction(startDate: Date, endDate: Date): Promise<number> {
+    void startDate;
+    void endDate;
     // In production, this would calculate from actual customer ratings
     return 4.2 + Math.random() * 0.6; // Mock: 4.2-4.8
   }
@@ -463,6 +465,8 @@ export class AnalyticsService {
    * Helper method: Calculate average driver performance
    */
   private static async calculateAverageDriverPerformance(startDate: Date, endDate: Date): Promise<number> {
+    void startDate;
+    void endDate;
     // In production, this would aggregate actual performance scores
     return 82 + Math.random() * 15; // Mock: 82-97
   }

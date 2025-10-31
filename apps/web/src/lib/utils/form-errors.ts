@@ -42,7 +42,7 @@ export function removeFormError(errors: FormErrors, field: string): FormErrors {
   return newErrors;
 }
 
-export function clearFormErrors(errors: FormErrors): FormErrors {
+export function clearFormErrors(): FormErrors {
   return {};
 }
 
@@ -64,8 +64,8 @@ export function validateEmail(email: string): boolean {
 }
 
 export function validatePhone(phone: string): boolean {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
 }
 
 export function validatePostcode(postcode: string): boolean {

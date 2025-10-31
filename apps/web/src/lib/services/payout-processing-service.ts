@@ -7,15 +7,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PerformanceTrackingService } from '@/lib/services/performance-tracking-service';
 
-// Placeholder interfaces
-interface RoutePayoutData {
-  routeId: string;
-  driverId: string;
-  totalRevenue: number;
-  totalTime: number;
-  totalDistance: number;
-  stops: number;
-}
+// Placeholder interfaces (removed unused RoutePayoutData)
 
 interface PayoutBreakdown {
   basePay: number;
@@ -99,7 +91,8 @@ export class PayoutProcessingService {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const todaysEarnings = route.driverId ? await prisma.driverEarnings.aggregate({
+      if (route.driverId) {
+        void prisma.driverEarnings.aggregate({
         where: {
           driverId: route.driverId,
           calculatedAt: {
@@ -110,7 +103,8 @@ export class PayoutProcessingService {
         _sum: {
           netAmountPence: true
         }
-      }) : { _sum: { netAmountPence: 0 } };
+      });
+      }
 
       // ✅ Calculate earnings using REAL performance-based engine
       const performanceService = PerformanceTrackingService.getInstance();
@@ -263,7 +257,8 @@ export class PayoutProcessingService {
   /**
    * Calculate backhaul bonus eligibility
    */
-  private static calculateBackhaulBonus(route: any) {
+  private static calculateBackhaulBonus(_route: any) {
+    void _route;
     // This would be determined by whether the route ended in an area
     // where there's high probability of getting a return load
     // For now, return null (no backhaul bonus)
@@ -411,8 +406,9 @@ export class PayoutProcessingService {
    */
   private static async processHelperPayout(
     routeId: string,
-    breakdown: PayoutBreakdown
+    _breakdown: PayoutBreakdown
   ): Promise<string> {
+    void _breakdown;
     // For now, create a simple record
     // In production, would have proper helper management system
     

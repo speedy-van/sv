@@ -149,7 +149,7 @@ export default function BookingSuccessPage() {
                 },
                 body: JSON.stringify({
                   to: data.customer_details.phone,
-                  message: `Hi ${data.metadata?.customerName || data.customer_details?.name || 'Customer'}, your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} is confirmed! Pickup: ${data.metadata?.pickupAddress || 'Pickup address not available'} on ${data.metadata?.scheduledDate || new Date().toLocaleDateString('en-GB')}. We'll notify you when your driver is assigned. Call 01202129746 for support.`,
+                  message: `Hi ${data.metadata?.customerName || data.customer_details?.name || 'Customer'}, your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} is confirmed! Pickup: ${data.metadata?.pickupAddress || 'Pickup address not available'} on ${data.metadata?.scheduledDate || new Date().toLocaleDateString('en-GB')}. We'll notify you when your driver is assigned. Call 01202129764 for support.`,
                   type: 'booking_confirmation'
                 })
               });
@@ -378,7 +378,7 @@ export default function BookingSuccessPage() {
                   <Icon as={PhoneIcon} color="blue.500" />
                   <VStack spacing={0} align="start">
                     <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>Call us</Text>
-                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202129746</Text>
+                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202129764</Text>
                   </VStack>
                 </HStack>
                 

@@ -106,20 +106,24 @@ export const POST = withApiHandler(async (request: NextRequest) => {
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Build create data object
+  const createData: any = {
+    id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    name,
+    email: normalizedEmail,
+    password: hashedPassword,
+    role: 'admin',
+    twoFactorEnabled: false,
+  };
+  
+  if (adminRole !== undefined) createData.adminRole = adminRole;
+  if (isActive !== undefined) createData.isActive = isActive;
+
   // Create admin user (catch unique-constraint race)
   let newUser;
   try {
     newUser = await prisma.user.create({
-      data: {
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name,
-        email: normalizedEmail,
-        password: hashedPassword,
-        role: 'admin',
-        adminRole,
-        isActive,
-        twoFactorEnabled: false,
-      },
+      data: createData,
       select: {
         id: true,
         name: true,
@@ -145,7 +149,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
     const welcomeEmailData = {
       adminEmail: normalizedEmail, // Use normalized email for consistency
       adminName: name,
-      adminRole: adminRole,
+      adminRole: adminRole || 'admin',
       loginUrl: loginUrl,
       createdBy: user.name || user.email || 'System Administrator',
       createdAt: newUser.createdAt.toLocaleDateString('en-GB', {

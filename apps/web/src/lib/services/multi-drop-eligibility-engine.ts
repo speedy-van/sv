@@ -117,6 +117,7 @@ export class MultiDropEligibilityEngine {
    * Find available bookings on similar routes
    */
   private async findAvailableBookings(booking: BookingRequest): Promise<AvailableBooking[]> {
+    void booking;
     // TODO: Query database for available bookings
     // For now, return empty array (will be implemented with database integration)
     
@@ -244,6 +245,7 @@ export class MultiDropEligibilityEngine {
    * Create decision: Single order (not eligible)
    */
   private createSingleOrderDecision(booking: BookingRequest, eligibility: MultiDropEligibility): MultiDropDecision {
+    void booking;
     return {
       showMultiDropOption: false,
       reason: eligibility.reason || 'Not eligible for multi-drop',
@@ -264,11 +266,12 @@ export class MultiDropEligibilityEngine {
    * Create decision: No match found (eligible but no available bookings)
    */
   private createNoMatchDecision(booking: BookingRequest, eligibility: MultiDropEligibility): MultiDropDecision {
+    void booking;
     // Check if return journey is available
     const hasReturnJourney = eligibility.alternativeOptions.some(opt => opt.type === 'RETURN_JOURNEY');
     
     if (hasReturnJourney) {
-      const returnJourneyOption = eligibility.alternativeOptions.find(opt => opt.type === 'RETURN_JOURNEY')!;
+      const _returnJourneyOption = eligibility.alternativeOptions.find(opt => opt.type === 'RETURN_JOURNEY')!; void _returnJourneyOption;
       
       return {
         showMultiDropOption: false,

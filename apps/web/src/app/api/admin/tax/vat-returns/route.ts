@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -133,29 +136,32 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = (session.user as any).id;
+    const adminId = userId;
     const body = await request.json();
     const { action, data } = body;
 
     switch (action) {
       case 'create_return':
-        return await createVATReturn(data, adminId);
+        return await createVATReturn(data, adminId!);
 
       case 'update_return':
-        return await updateVATReturn(data, adminId);
+        return await updateVATReturn(data, adminId!);
 
       case 'submit_to_hmrc':
-        return await submitVATReturnToHMRC(data, adminId);
+        return await submitVATReturnToHMRC(data, adminId!);
 
       case 'calculate_vat':
         return await calculateVATAmounts(data);
 
       case 'auto_generate_return':
-        return await autoGenerateVATReturn(data, adminId);
+        return await autoGenerateVATReturn(data, adminId!);
 
       default:
         return NextResponse.json(

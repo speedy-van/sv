@@ -9,7 +9,7 @@ declare global {
   type IntervalId = ReturnType<typeof setInterval>;
   
   // For legacy code that expects number
-  type TimerId = NodeJS.Timeout | number;
+  type TimerId = ReturnType<typeof setTimeout> | number;
 }
 
 export {};

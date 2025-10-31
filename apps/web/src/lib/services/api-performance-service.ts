@@ -602,15 +602,13 @@ export class APIPerformanceService {
   ) {
     return async (request: NextRequest): Promise<Response> => {
       const startTime = Date.now();
-      let cacheHit = false;
+      const cacheHit = false;
       let statusCode = 200;
       
       try {
         // Add cache hit detection to request context
-        const originalJson = Response.prototype.json;
-        let response: Response;
-        
-        response = await handler(request);
+        const originalJson = Response.prototype.json; void originalJson;
+        const response: Response = await handler(request);
         statusCode = response.status;
         
         return response;
