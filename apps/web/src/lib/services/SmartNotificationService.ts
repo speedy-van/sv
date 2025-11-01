@@ -295,7 +295,8 @@ class SmartNotificationService {
     return messages[step] || `Job step: ${step}`;
   }
 
-  private async findNearbyDrivers(lat: number, lng: number, radius: number) {
+  private async findNearbyDrivers(_lat: number, _lng: number, _radius: number) {
+    void _lat; void _lng; void _radius;
     // This would typically query the database for nearby drivers
     // Placeholder implementation
     return [];
@@ -314,7 +315,8 @@ class SmartNotificationService {
     });
   }
 
-  private async checkNotificationStatus(notification: SmartNotificationData): Promise<boolean> {
+  private async checkNotificationStatus(_notification: SmartNotificationData): Promise<boolean> {
+    void _notification;
     // Check if notification was acknowledged
     // Placeholder implementation
     return false;

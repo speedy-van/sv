@@ -11,7 +11,7 @@
  * - Multi-rate VAT handling
  */
 
-import { Decimal } from 'decimal.js';
+// Removed unused Decimal import
 
 export interface TaxCalculationResult {
   net: number;
@@ -397,8 +397,10 @@ export class AdvancedTaxCalculator {
       case 'monthly':
         return `${year}-${month.toString().padStart(2, '0')}`;
       case 'quarterly':
-        const quarter = Math.ceil(month / 3);
-        return `${year}-Q${quarter}`;
+        {
+          const quarter = Math.ceil(month / 3);
+          return `${year}-Q${quarter}`;
+        }
       case 'annually':
         return year.toString();
       default:

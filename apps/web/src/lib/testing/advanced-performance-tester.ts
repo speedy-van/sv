@@ -139,7 +139,7 @@ class AdvancedPerformanceTester {
     
     return new Promise((resolve) => {
       const requestInterval = 1000 / (config.concurrency / (config.rampUp || 1));
-      let requestsSent = 0;
+      let _requestsSent = 0;
       let requestsCompleted = 0;
       
       const sendRequest = async () => {
@@ -147,7 +147,7 @@ class AdvancedPerformanceTester {
           return;
         }
         
-        requestsSent++;
+        _requestsSent++;
         activeRequests++;
         const requestStart = Date.now();
         
@@ -218,6 +218,7 @@ class AdvancedPerformanceTester {
       setTimeout(async () => {
         clearInterval(interval);
         if (requestsCompleted > 0) {
+          void _requestsSent;
           await this.completeLoadTest(config, responses, errors, initialCache, initialMemory, resolve);
         }
       }, (config.duration + 30) * 1000);
@@ -232,7 +233,7 @@ class AdvancedPerformanceTester {
     responses: Array<{ responseTime: number; success: boolean; error?: string }>,
     errors: Record<string, number>,
     initialCache: any,
-    initialMemory: NodeJS.MemoryUsage,
+    initialMemory: ReturnType<typeof process.memoryUsage>,
     resolve: (result: LoadTestResult) => void
   ) {
     // Calculate statistics

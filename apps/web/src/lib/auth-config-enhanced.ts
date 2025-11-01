@@ -1,6 +1,6 @@
-import { NextAuthOptions } from 'next-auth'
+import type { NextAuthOptions, Session, User } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { JWT } from 'next-auth/jwt'
+import type { JWT } from 'next-auth/jwt'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '../lib/prisma'
@@ -16,7 +16,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials: any, req: any): Promise<any> {
+      async authorize(credentials: { email?: string; password?: string } | undefined): Promise<{ id: string; email: string | null; name: string | null; role: string } | null> {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -66,7 +66,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: { token: JWT; user?: User | null; account?: any | null }) {
       // Include user data in token
       if (user) {
         token.id = user.id
@@ -83,18 +83,19 @@ export const authOptions: NextAuthOptions = {
 
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       // Send properties to the client
       if (token) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.email = token.email as string
-        session.user.name = token.name as string
+        if (!session.user) session.user = { id: '', email: '', name: '', role: '' } as any
+        ;(session.user as any).id = (token as any).id as string
+        ;(session.user as any).role = (token as any).role as string
+        ;(session.user as any).email = (token as any).email as string
+        ;(session.user as any).name = (token as any).name as string
       }
 
       return session
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       // Handle post-login redirects
       if (url.startsWith('/')) return `${baseUrl}${url}`
       else if (new URL(url).origin === baseUrl) return url
@@ -109,29 +110,29 @@ export const authOptions: NextAuthOptions = {
     newUser: '/auth/new-user'
   },
   events: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }: { user: User; account?: any | null; profile?: any | null }) {
       console.log('User signed in:', { 
         userId: user.id, 
         provider: account?.provider 
       })
     },
-    async signOut({ session, token }) {
+    async signOut({ session, token }: { session: Session | null; token: JWT | null }) {
       console.log('User signed out:', { 
         userId: token?.id || session?.user?.id 
       })
     },
-    async createUser({ user }) {
+    async createUser({ user }: { user: User }) {
       console.log('New user created:', { 
         userId: user.id, 
         email: user.email 
       })
     },
-    async updateUser({ user }) {
+    async updateUser({ user }: { user: User }) {
       console.log('User updated:', { 
         userId: user.id 
       })
     },
-    async linkAccount({ user, account }) {
+    async linkAccount({ user, account }: { user: User; account: any }) {
       console.log('Account linked:', { 
         userId: user.id, 
         provider: account.provider 
@@ -140,7 +141,7 @@ export const authOptions: NextAuthOptions = {
   },
   // Enhanced error handling
   logger: {
-    error(code, metadata) {
+    error(code: string, metadata?: Record<string, unknown>) {
       // Log errors but don't expose sensitive information
       console.error('NextAuth Error:', code)
       
@@ -149,10 +150,10 @@ export const authOptions: NextAuthOptions = {
         console.error('JWT/JWE Error - Token may be corrupted or using wrong secret')
       }
     },
-    warn(code) {
+    warn(code: string) {
       console.warn('NextAuth Warning:', code)
     },
-    debug(code, metadata) {
+    debug(code: string, metadata?: Record<string, unknown>) {
       if (process.env.NODE_ENV === 'development') {
         console.debug('NextAuth Debug:', code)
       }

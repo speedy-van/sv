@@ -6,13 +6,13 @@
  */
 
 import { useSession, signIn, signOut, getSession } from 'next-auth/react';
-import { Session } from 'next-auth';
+import type { Session as NextAuthSession } from 'next-auth';
 
 /**
  * Custom hook for safe session access
  */
 export function useSafeSession(): {
-  session: Session | null;
+  session: NextAuthSession | null;
   isLoading: boolean;
   isValid: boolean;
   userRole: string | null;
@@ -23,14 +23,14 @@ export function useSafeSession(): {
   const { data: session, status } = useSession();
   
   const isLoading = status === 'loading';
-  const isValid = !!(session?.user?.id && session?.user?.email && session?.user?.role);
-  const userRole = session?.user?.role || null;
-  const userId = session?.user?.id || null;
-  const userEmail = session?.user?.email || null;
-  const userName = session?.user?.name || null;
+  const isValid = !!((session?.user as any)?.id && (session?.user as any)?.email && (session?.user as any)?.role);
+  const userRole = (session?.user as any)?.role || null;
+  const userId = (session?.user as any)?.id || null;
+  const userEmail = (session?.user as any)?.email || null;
+  const userName = (session?.user as any)?.name || null;
 
   return {
-    session,
+    session: session as any,
     isLoading,
     isValid,
     userRole,
@@ -86,10 +86,10 @@ export async function safeSignOut(): Promise<{ success: boolean; error?: string 
 /**
  * Get session with error handling
  */
-export async function getSafeSession(): Promise<Session | null> {
+export async function getSafeSession(): Promise<NextAuthSession | null> {
   try {
     const session = await getSession();
-    return session;
+    return session as unknown as NextAuthSession | null;
   } catch (error) {
     console.error('Error getting session:', error);
     return null;
@@ -144,7 +144,7 @@ export async function isClientCustomer(): Promise<boolean> {
 /**
  * Create session summary for client-side logging
  */
-export function getClientSessionSummary(session: Session | null): Record<string, any> {
+export function getClientSessionSummary(session: NextAuthSession | null): Record<string, any> {
   if (!session) {
     return { exists: false };
   }

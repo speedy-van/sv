@@ -61,7 +61,7 @@ const STEPS = [
 
 export default function BookingLuxuryPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = useState<boolean>(typeof window !== 'undefined');
   
   // Wave effects for step headers
   const [itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
@@ -108,24 +108,17 @@ export default function BookingLuxuryPage() {
       return;
     }
 
-    // Extract and validate full structured addresses
-    const extractStreetAndNumber = (address: any) => ({
-      street: address.formatted?.street || address.line1?.split(' ').slice(1).join(' ') || '',
-      number: address.formatted?.houseNumber || address.houseNumber || address.line1?.split(' ')[0] || ''
-    });
-
-    const pickupAddress = extractStreetAndNumber(formData.step1.pickupAddress);
-    const dropAddresses = [extractStreetAndNumber(formData.step1.dropoffAddress)];
+    // Normalize addresses to consistent schema
+    const pickupNorm = normalizeAddressForPricing(formData.step1.pickupAddress);
+    const dropNorm = normalizeAddressForPricing(formData.step1.dropoffAddress);
 
     // Validate all addresses have required components
-    if (!pickupAddress.street || !pickupAddress.number || !formData.step1.pickupAddress.coordinates) {
+    if (!pickupNorm?.street || !pickupNorm?.number || !pickupNorm?.coordinates) {
       console.warn('Incomplete pickup address - Enterprise Engine requires full address structure');
       return;
     }
 
-    const hasCompleteDrops = dropAddresses.every(drop =>
-      drop.street && drop.number
-    ) && formData.step1.dropoffAddress.coordinates;
+    const hasCompleteDrops = Boolean(dropNorm?.street && dropNorm?.number && dropNorm?.coordinates);
 
     if (!hasCompleteDrops) {
       console.warn('Incomplete drop addresses - Enterprise Engine requires full address structure');
@@ -146,29 +139,11 @@ export default function BookingLuxuryPage() {
             weight_override: item.weight,
             volume_override: item.volume
           })),
-          pickup: {
-            full: formData.step1.pickupAddress.formatted_address || formData.step1.pickupAddress.address,
-            line1: formData.step1.pickupAddress.address,
-            city: formData.step1.pickupAddress.city,
-            postcode: formData.step1.pickupAddress.postcode,
-            // ENTERPRISE REQUIREMENT: Full structured address
-            street: formData.step1.pickupAddress.address,
-            number: formData.step1.pickupAddress.houseNumber || '',
-            coordinates: formData.step1.pickupAddress.coordinates,
-            propertyType: 'house'
-          },
-          dropoffs: [{
-            full: formData.step1.dropoffAddress.formatted_address || formData.step1.dropoffAddress.address,
-            line1: formData.step1.dropoffAddress.address,
-            city: formData.step1.dropoffAddress.city,
-            postcode: formData.step1.dropoffAddress.postcode,
-            // ENTERPRISE REQUIREMENT: Full structured address
-            street: formData.step1.dropoffAddress.address,
-            number: formData.step1.dropoffAddress.houseNumber || '',
-            coordinates: formData.step1.dropoffAddress.coordinates,
-            propertyType: 'house'
-          }],
-          scheduledDate: formData.step1.pickupDate || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          pickup: { ...pickupNorm, propertyType: 'house' },
+          dropoffs: [{ ...dropNorm, propertyType: 'house' }],
+          scheduledDate: (formData.step1.pickupDate
+            ? new Date(`${formData.step1.pickupDate}T09:00:00.000Z`).toISOString()
+            : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
           serviceLevel: 'standard'
         })
       });
@@ -449,6 +424,31 @@ export default function BookingLuxuryPage() {
           });
           setCurrentStep(draftData.currentStep);
           setLastSaved(savedDate);
+          // Restore form data (including images for items)
+          if (draftData.step1) {
+            try {
+              const restoredItems = Array.isArray(draftData.step1.items)
+                ? draftData.step1.items.map((it: any) => ({
+                    ...it,
+                    // Ensure image is preserved if present in draft; do not inject a fallback here
+                    image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
+                  }))
+                : [];
+              updateFormData('step1', {
+                ...draftData.step1,
+                items: restoredItems,
+              });
+            } catch (e) {
+              console.warn('Failed to restore step1 from draft:', e);
+            }
+          }
+          if (draftData.step2) {
+            try {
+              updateFormData('step2', { ...draftData.step2 });
+            } catch (e) {
+              console.warn('Failed to restore step2 from draft:', e);
+            }
+          }
           setDraftRestored(true); // Mark as restored to prevent duplicates
         }
       }
@@ -535,6 +535,20 @@ export default function BookingLuxuryPage() {
     }
   };
 
+  // Normalize address from autocomplete to comprehensive pricing schema
+  const normalizeAddressForPricing = useCallback((addr: any) => {
+    if (!addr) return null;
+    const components = addr.components || {};
+    const street = addr.street || addr.address || components.street || components.route || components.road || '';
+    const number = addr.houseNumber || addr.number || components.house_number || components.street_number || '';
+    const city = addr.city || components.city || components.locality || components.post_town || '';
+    const postcode = addr.postcode || components.postcode || components.postal_code || '';
+    const full = addr.formatted_address || addr.fullAddress || addr.place_name || addr.displayText || addr.address || '';
+    const line1 = addr.line1 || street || addr.address || '';
+    const coordinates = addr.coordinates || addr.location || null;
+    return { full, line1, city, postcode, street, number, coordinates };
+  }, []);
+
   const handleStepClick = async (stepNumber: number) => {
     if (stepNumber < currentStep) {
       setCurrentStep(stepNumber);
@@ -553,17 +567,7 @@ export default function BookingLuxuryPage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // Show loading state until client-side hydration is complete
-  if (!isClient) {
-    return (
-      <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="purple.500" />
-          <Text>Loading booking form...</Text>
-        </VStack>
-      </Box>
-    );
-  }
+  // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
     <Box minH="100vh" bg={bgColor} py={{ base: 2, md: 8 }} pb={{ base: "100px", md: 8 }}>
@@ -996,9 +1000,9 @@ export default function BookingLuxuryPage() {
                       }}
                       transition="all 0.2s ease"
                       as="a"
-                      href="tel:01202129746"
+                      href="tel:01202129764"
                     >
-                      079 0184 6297
+                      01202129764
                     </Button>
                     
                     <VStack spacing={2}>
@@ -1504,51 +1508,26 @@ export default function BookingLuxuryPage() {
         </VStack>
       </Container>
 
-      {/* Sticky Bottom Navigation - Mobile Only */}
-      <Box
-        position="fixed"
-        bottom="0"
-        left="0"
-        right="0"
-        bg="gray.800"
-        borderTop="1px solid"
-        borderColor="gray.700"
-        p={{ base: 4, md: 4 }}
-        display="block"
-        zIndex="sticky"
-        shadow="lg"
-        sx={{
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      >
-        <Container maxW="6xl">
-          <VStack spacing={3}>
-            {/* Items Count Only */}
-            {formData.step1.items.length > 0 && (
-              <HStack justify="center" w="full" align="center">
-                <Text fontSize="sm" fontWeight="bold" color="blue.400">
-                  {formData.step1.items.length} items
-                </Text>
-              </HStack>
-            )}
-            
-            {/* Step 2: Clean back button */}
-            {currentStep === STEPS.length && (
-              <Button
-                leftIcon={<FaArrowLeft />}
-                onClick={handlePrevious}
-                variant="ghost"
-                size="md"
-                colorScheme="gray"
-                w="full"
-                minH="44px"
-              >
-                Back to Step 1
-              </Button>
-            )}
-          </VStack>
-        </Container>
-      </Box>
+      {/* Inline Back button (non-sticky) */}
+      {currentStep === STEPS.length && (
+        <Box mt={6} pb={6}>
+          <Container maxW="6xl">
+            <Button
+              leftIcon={<FaArrowLeft />}
+              onClick={handlePrevious}
+              variant="outline"
+              size="md"
+              colorScheme="gray"
+              w="full"
+              minH="44px"
+            >
+              Back to Step 1
+            </Button>
+          </Container>
+        </Box>
+      )}
+
+      {/* Bottom navigation removed as per request */}
     </Box>
   );
 }

@@ -180,7 +180,8 @@ export default function PricingSettingsPage() {
   useEffect(() => {
     if (status === 'loading') return;
 
-    if (!session?.user || session.user.role !== 'admin') {
+    const role = (session?.user as any)?.role as string | undefined;
+    if (!session?.user || role !== 'admin') {
       toast({
         title: 'Access Denied',
         description: 'You must be an admin to access pricing settings',
@@ -194,7 +195,7 @@ export default function PricingSettingsPage() {
   }, [session, status, router, toast]);
 
   useEffect(() => {
-    if (session?.user?.role === 'admin') {
+    if (((session?.user as any)?.role as string | undefined) === 'admin') {
       loadSettings();
     }
   }, [session]);
@@ -552,7 +553,9 @@ export default function PricingSettingsPage() {
   }
 
   // Show access denied if not admin
-  if (!session?.user || session.user.role !== 'admin') {
+  const user = (session as any)?.user;
+  const role = user?.role as string | undefined;
+  if (!user || role !== 'admin') {
     return (
       <Box p={6}>
         <VStack spacing={6} align="center">

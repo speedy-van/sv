@@ -466,7 +466,7 @@ export class UATTestRunner {
 
       // Wait for update
       await new Promise(resolve => setTimeout(resolve, 1000));
-      let updateReceived = true;
+      const updateReceived = true;
 
       // unsubscribe();
       // realtimeBookingUpdates.disconnect();

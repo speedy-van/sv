@@ -7,7 +7,8 @@
 // ✅ Graceful fallback to directory manifest (668 images)
 // 🎉 ZERO RED ERRORS - Clean console with warnings only!
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
   Box,
   VStack,
@@ -258,7 +259,7 @@ export default function WhereAndWhatStep({
   // State for item selection mode
   const [itemSelectionMode, setItemSelectionMode] = useState<'bedroom' | 'smart' | 'choose'>('choose');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Bedroom Furniture');
+  const [selectedCategory, setSelectedCategory] = useState('bedroom');
   // Using dataset-backed imagery with graceful fallbacks
   
   // 🔥 Version check log - FORCE REBUILD v3.1
@@ -272,46 +273,263 @@ export default function WhereAndWhatStep({
   const [individualItems, setIndividualItems] = useState<IndividualItem[]>([]);
   const [individualItemsLoading, setIndividualItemsLoading] = useState<boolean>(true);
   const [individualItemsError, setIndividualItemsError] = useState<string | null>(null);
+  // Category -> image URLs from public dataset
+  const [datasetCategoryImages, setDatasetCategoryImages] = useState<Record<string, string[]>>({});
+  const [datasetCategoryImagesNormalized, setDatasetCategoryImagesNormalized] = useState<Record<string, string[]>>({});
   const [fallbackMode, setFallbackMode] = useState<'dataset' | 'directory' | 'smart-search'>('dataset');
 
   const datasetFallbackImage = '/UK_Removal_Dataset/Images_Only/Bag_luggage_box/moving_boxes_uboxes_with_handles_10_premium_jpg_15kg.jpg';
 
+  // Network helper with timeout to avoid hanging fetches in dev/prod
+  const fetchWithTimeout = useCallback(
+    async (input: RequestInfo | URL, init?: RequestInit & { timeoutMs?: number }) => {
+      const controller = new AbortController();
+      const timeoutMs = init?.timeoutMs ?? 4000;
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(input, { ...init, signal: controller.signal });
+        return res;
+      } finally {
+        clearTimeout(id);
+      }
+    },
+    []
+  );
+
+  // Normalize a category key consistently (scoped helper for dataset mapping)
+  const normalizeCategoryKeySafe = useCallback((category?: string) => {
+    if (!category) return '';
+    return category
+      .replace(/\s+/g, '_')
+      .replace(/-/g, '_')
+      .trim()
+      .toLowerCase();
+  }, []);
+
+  // Load dataset images mapping once and build normalized index
+  useEffect(() => {
+    fetchWithTimeout('/api/dataset/images', { timeoutMs: 4000 })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.success && data?.data) {
+          const raw = data.data as Record<string, string[]>;
+          setDatasetCategoryImages(raw);
+          const normalized: Record<string, string[]> = {};
+          Object.entries(raw).forEach(([folder, images]) => {
+            normalized[normalizeCategoryKeySafe(folder)] = images;
+          });
+          setDatasetCategoryImagesNormalized(normalized);
+        }
+      })
+      .catch(() => void 0);
+  }, [normalizeCategoryKeySafe, fetchWithTimeout]);
+
+  // Build category list from dataset folders
+  const datasetCategories = useMemo(() => {
+    const keys = Object.keys(datasetCategoryImagesNormalized);
+    const toLabel = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return keys.map((key) => ({ key, label: toLabel(key) }));
+  }, [datasetCategoryImagesNormalized]);
+
+  // Build category groups from all folders and all images provided by API
+  const datasetGroups = useMemo(() => {
+    const toLabel = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return Object.entries(datasetCategoryImagesNormalized).map(([key, images]) => ({
+      key,
+      label: toLabel(key),
+      images, // include ALL images per folder, no truncation
+    }));
+  }, [datasetCategoryImagesNormalized]);
+
+  // Featured popular items (derive exact same pictures from dataset, no duplication)
+  const featuredPopularItems = useMemo(() => {
+    // Map desired popular items to search keywords in filenames
+    const popularSpecs: { name: string; keyHints: string[] }[] = [
+      { name: 'Sofa', keyHints: ['sofa', 'couch'] },
+      { name: 'Fridge', keyHints: ['fridge', 'refrigerator', 'freezer'] },
+      { name: 'Washing Machine', keyHints: ['washing_machine', 'washer'] },
+      { name: 'Fan', keyHints: ['fan'] },
+      { name: 'Mirror', keyHints: ['mirror'] },
+      { name: 'Bicycle', keyHints: ['bicycle', 'bike'] },
+      { name: 'TV', keyHints: ['tv', 'television'] },
+      { name: 'Mattress', keyHints: ['mattress'] },
+      { name: 'Table', keyHints: ['table'] },
+      { name: 'Chairs', keyHints: ['chair', 'chairs'] },
+      { name: 'Boxes', keyHints: ['box', 'boxes'] },
+    ];
+
+    const toLabel = (k: string) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    const items: { label: string; groupKey: string; src: string }[] = [];
+
+    for (const spec of popularSpecs) {
+      let found: { groupKey: string; src: string } | null = null;
+      for (const [groupKey, images] of Object.entries(datasetCategoryImagesNormalized)) {
+        const hit = images.find((src) => {
+          const file = src.split('/').pop() || '';
+          const lower = file.toLowerCase();
+          return spec.keyHints.some((k) => lower.includes(k));
+        });
+        if (hit) {
+          found = { groupKey, src: hit };
+          break;
+        }
+      }
+      if (found) {
+        items.push({ label: spec.name, groupKey: found.groupKey, src: found.src });
+      }
+    }
+    // De-duplicate by src
+    const seen = new Set<string>();
+    return items.filter((it) => {
+      if (seen.has(it.src)) return false;
+      seen.add(it.src);
+      return true;
+    }).map((it) => ({ ...it, groupLabel: toLabel(it.groupKey) }));
+  }, [datasetCategoryImagesNormalized]);
+
+  // Quantity helpers for dataset-image items (id derived from src)
+  const getDatasetItemId = (groupKey: string, src: string) => `img:${groupKey}:${src}`;
+  const getQuantityForDataset = (groupKey: string, src: string) => {
+    const id = getDatasetItemId(groupKey, src);
+    return step1.items.find(i => i.id === id)?.quantity || 0;
+  };
+  const incrementDatasetItem = (groupKey: string, src: string, label: string) => {
+    const id = getDatasetItemId(groupKey, src);
+    const existing = step1.items.find(i => i.id === id);
+    if (existing) {
+      const q = (existing.quantity || 0) + 1;
+      updateFormData('step1', {
+        items: step1.items.map(i => i.id === id ? { ...i, quantity: q, totalPrice: (i.unitPrice || 25) * q } : i)
+      });
+    } else {
+      updateFormData('step1', {
+        items: [
+          ...step1.items,
+          {
+            id,
+            name: label,
+            description: label,
+            category: label,
+            size: 'medium',
+            quantity: 1,
+            unitPrice: 25,
+            totalPrice: 25,
+            weight: 10,
+            volume: 1,
+            image: src,
+          },
+        ],
+      });
+    }
+  };
+  const decrementDatasetItem = (groupKey: string, src: string) => {
+    const id = getDatasetItemId(groupKey, src);
+    const existing = step1.items.find(i => i.id === id);
+    if (!existing) return;
+    const q = Math.max(0, (existing.quantity || 0) - 1);
+    if (q === 0) {
+      updateFormData('step1', { items: step1.items.filter(i => i.id !== id) });
+    } else {
+      updateFormData('step1', {
+        items: step1.items.map(i => i.id === id ? { ...i, quantity: q, totalPrice: (i.unitPrice || 25) * q } : i)
+      });
+    }
+  };
+
+  // (video background removed per request)
+
+  // (reverted) enhanced video frame logic removed per user request
+
+  // Derive a human friendly title from image src
+  const titleFromSrc = (src: string, fallback: string) => {
+    try {
+      const file = src.split('/').pop() || '';
+      const base = file.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+      // remove trailing _jpg_*kg patterns
+      const cleaned = base.replace(/_jpg.*$/i, '').replace(/_/g, ' ');
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    } catch {
+      return fallback;
+    }
+  };
+
+  // Centralized resolver with strict precedence order (keep original image, no hard fallback)
+  const resolveItemImage = useCallback((params: { category?: string; itemImage?: string; catalogImage?: string; itemId?: string; }): string => {
+    const { category, itemImage, catalogImage, itemId } = params;
+
+    // 1) Use explicit item image as-is if provided
+    if (itemImage && itemImage.trim().length > 0) return itemImage;
+
+    // 2) Use catalog image if provided
+    if (catalogImage && catalogImage.trim().length > 0) return catalogImage;
+
+    // 3) Dataset folder by normalized category (best-effort preview)
+    const norm = normalizeCategoryKeySafe(category);
+    const ds = norm ? datasetCategoryImagesNormalized[norm] : undefined;
+    if (ds && ds.length > 0) return ds[0];
+
+    // 4) Optional mapping (best-effort); do NOT enforce a boxes fallback
+    try {
+      // Lazy import to avoid increasing client bundle if unused
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const imagesLib = require('@/lib/images/item-images');
+      if (imagesLib?.getItemImageWithFallback && itemId) {
+        const im = imagesLib.getItemImageWithFallback(itemId, category);
+        if (im?.primary) return im.primary;
+      }
+    } catch {}
+
+    // 5) No fallback image; return empty to keep original picture policy
+    return '';
+  }, [datasetCategoryImagesNormalized, normalizeCategoryKeySafe]);
+
   const ItemImage: React.FC<{
     src?: string | null;
     alt: string;
-    size?: number;
-  }> = ({ src, alt, size = 120 }) => {
-    const [resolvedSrc, setResolvedSrc] = useState<string>(src && src.length > 0 ? src : datasetFallbackImage);
+    ratio?: number; // width/height, default 3/4
+  }> = ({ src, alt, ratio = 3 / 4 }) => {
+    const [resolvedSrc, setResolvedSrc] = useState<string>(src && src.length > 0 ? src : '');
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-      setResolvedSrc(src && src.length > 0 ? src : datasetFallbackImage);
+      setResolvedSrc(src && src.length > 0 ? src : '');
+      setLoaded(false);
     }, [src]);
+
+    const paddingTop = `${Math.round((1 / ratio) * 100)}%`;
 
     return (
       <Box
-        w={`${size}px`}
-        h={`${size}px`}
-        borderRadius="md"
+        position="relative"
+        w="full"
+        borderRadius="lg"
         overflow="hidden"
-        border="1px solid"
-        borderColor="gray.600"
-        bg="gray.800"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        flexShrink={0}
+        sx={{
+          '@keyframes neonPulse': {
+            '0%': {
+              boxShadow: '0 0 6px rgba(0, 255, 255, 0.45), 0 0 12px rgba(0, 255, 255, 0.25), 0 0 18px rgba(0, 255, 255, 0.15)'
+            },
+            '100%': {
+              boxShadow: '0 0 14px rgba(0, 255, 255, 0.8), 0 0 26px rgba(0, 255, 255, 0.55), 0 0 38px rgba(0, 255, 255, 0.35)'
+            }
+          },
+          animation: 'neonPulse 2s ease-in-out infinite alternate',
+          border: '1px solid rgba(0, 255, 255, 0.45)'
+        }}
       >
-        <Image
-          src={resolvedSrc}
-          alt={alt}
-          w="full"
-          h="full"
-          objectFit="cover"
-          loading="lazy"
-          onError={() =>
-            setResolvedSrc((current) => (current === datasetFallbackImage ? current : datasetFallbackImage))
-          }
-        />
+        <Box position="relative" w="full" _before={{ content: '""', display: 'block', paddingTop }}>
+          <Image
+            src={resolvedSrc}
+            alt={alt}
+            position="absolute"
+            inset={0}
+            w="full"
+            h="full"
+            objectFit="contain"
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+          />
+        </Box>
       </Box>
     );
   };
@@ -1101,7 +1319,7 @@ export default function WhereAndWhatStep({
     console.log('[DATASET] Attempting to load official UK Removal Dataset...');
 
     try {
-      const response = await fetch('/UK_Removal_Dataset/items_dataset.json');
+      const response = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', { timeoutMs: 4000 });
       if (!response.ok) {
         console.log(`[DATASET] ℹ️ Dataset file not found (${response.status}), will use fallback`);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -1186,23 +1404,20 @@ export default function WhereAndWhatStep({
 
       console.log(`[DATASET] ✅ Mapped ${mappedItems.length} items (${missingImages} without direct images)`);
 
-      // Image validation - log warnings but don't block loading
+      // Image validation - if coverage is low, prefer directory manifest with guaranteed imagery
+      const coverage = ((mappedItems.length - missingImages) / mappedItems.length) * 100;
+      const failureThreshold = Math.max(5, Math.ceil(mappedItems.length * 0.25));
+      console.log(`[DATASET] 📊 Image coverage check: ${missingImages}/${mappedItems.length} missing (threshold: ${failureThreshold})`);
+
+      if (missingImages >= failureThreshold && options?.manifestItems && options.manifestItems.length > 0) {
+        console.warn(
+          `[DATASET] ⚠️ Low image coverage (${coverage.toFixed(1)}%). Switching to directory manifest items (${options.manifestItems.length}).`
+        );
+        return options.manifestItems;
+      }
+
       if (missingImages > 0) {
-        const coverage = ((mappedItems.length - missingImages) / mappedItems.length) * 100;
-        const failureThreshold = Math.max(5, Math.ceil(mappedItems.length * 0.25));
-        
-        console.log(`[DATASET] 📊 Image coverage check: ${missingImages}/${mappedItems.length} missing (threshold: ${failureThreshold})`);
-        
-        if (missingImages >= failureThreshold) {
-          console.warn(
-            `[DATASET] ⚠️ Low image coverage: ${missingImages} of ${mappedItems.length} items lack direct image references (${coverage.toFixed(1)}% coverage). ` +
-            `Using fallback images and directory manifest for missing items.`
-          );
-        } else {
-          console.log(
-            `[DATASET] ℹ️ Image coverage: ${coverage.toFixed(1)}% (${missingImages} items using fallbacks)`
-          );
-        }
+        console.log(`[DATASET] ℹ️ Image coverage: ${coverage.toFixed(1)}% (${missingImages} items missing images)`);
       }
 
       return mappedItems;
@@ -1342,9 +1557,10 @@ export default function WhereAndWhatStep({
     try {
       console.log('[HEALTH-CHECK] 🔍 Performing dataset health check...');
 
-      const response = await fetch('/UK_Removal_Dataset/items_dataset.json', {
+      const response = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', {
         method: 'HEAD', // Just check if file exists and is accessible
-        cache: 'no-cache'
+        cache: 'no-cache',
+        timeoutMs: 3000
       });
 
       if (!response.ok) {
@@ -1353,7 +1569,7 @@ export default function WhereAndWhatStep({
       }
 
       // Quick validation by fetching a small portion
-      const testResponse = await fetch('/UK_Removal_Dataset/items_dataset.json');
+      const testResponse = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', { timeoutMs: 4000 });
       const testData = await testResponse.json();
 
       if (!testData.items || !Array.isArray(testData.items) || testData.items.length === 0) {
@@ -1378,6 +1594,40 @@ export default function WhereAndWhatStep({
         setIndividualItemsLoading(true);
         setIndividualItemsError(null);
 
+        // SHORT-CIRCUIT: If directory API already provided images per folder, construct items directly
+        if (Object.keys(datasetCategoryImagesNormalized).length > 0) {
+          const directItems: IndividualItem[] = [];
+          for (const [normKey, images] of Object.entries(datasetCategoryImagesNormalized)) {
+            const categoryName = normKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            for (const src of images) {
+              try {
+                const parsed = parseFilename(src.split('/').pop() || '');
+                const volume = Math.max(0.1, parsed.weight * 0.02);
+                const price = Math.max(20, Math.round(parsed.weight * 0.5 + volume * 20));
+                directItems.push({
+                  id: `${normKey}_${src.split('/').pop()}`,
+                  name: parsed.name,
+                  category: categoryName,
+                  image: src,
+                  weight: parsed.weight,
+                  volume,
+                  price,
+                  workersRequired: parsed.weight > 50 ? 2 : 1,
+                  dismantlingRequired: parsed.weight > 30 ? 'Yes' : 'No',
+                  fragilityLevel: parsed.weight < 10 ? 'High' : parsed.weight < 30 ? 'Medium' : 'Low',
+                  keywords: [categoryName.toLowerCase(), ...parsed.name.toLowerCase().split(' ')]
+                });
+              } catch {}
+            }
+          }
+          if (isMounted) {
+            setIndividualItems(directItems);
+            setFallbackMode('directory');
+            setIndividualItemsLoading(false);
+            return; // Do not proceed to other strategies
+          }
+        }
+
         let items: IndividualItem[] = [];
         let activeMode: 'dataset' | 'directory' | 'smart-search' = 'dataset';
 
@@ -1398,10 +1648,14 @@ export default function WhereAndWhatStep({
           items = await loadFromOfficialDataset({ manifestItems: manifestItems ?? undefined });
           
           if (items.length > 0) {
-            activeMode = 'dataset';
-            setFallbackMode('dataset');
+            // Heuristic: if returned items have high image coverage from directories, treat as directory mode
+            const withImages = items.filter((it) => typeof it.image === 'string' && it.image.includes('/UK_Removal_Dataset/Images_Only/')).length;
+            const imageCoverage = withImages / items.length;
+            const preferDirectory = imageCoverage >= 0.5;
+            activeMode = preferDirectory ? 'directory' : 'dataset';
+            setFallbackMode(activeMode);
             saveToCache(items);
-            console.log('[SUCCESS] ✅ Primary dataset loaded successfully with validated imagery');
+            console.log(`[SUCCESS] ✅ Primary ${activeMode} loaded successfully with validated imagery`);
           } else {
             console.log('[FALLBACK] ℹ️ Official dataset validation triggered fallback (expected behavior when using directory images)');
 
@@ -1475,12 +1729,35 @@ export default function WhereAndWhatStep({
       }
     };
 
-    void loadDatasetWithFallbacks();
+    // Trigger on mount and whenever directory images manifest becomes available
+    if (individualItems.length === 0 || Object.keys(datasetCategoryImagesNormalized).length > 0) {
+      void loadDatasetWithFallbacks();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [datasetCategoryImagesNormalized]);
+
+  // Safety valve: never allow the loader to spin indefinitely
+  useEffect(() => {
+    if (!individualItemsLoading) return;
+    const id = setTimeout(() => {
+      try {
+        // If still loading after 5s, unlock UI with essential items
+        if (individualItemsLoading) {
+          const essentials = createSmartSearchFallback();
+          setIndividualItems((prev) => (prev && prev.length > 0 ? prev : essentials));
+          setFallbackMode('smart-search');
+          setIndividualItemsError((prev) => prev ?? 'Smart Search Mode: Essential items available for booking');
+          setIndividualItemsLoading(false);
+        }
+      } catch {
+        setIndividualItemsLoading(false);
+      }
+    }, 5000);
+    return () => clearTimeout(id);
+  }, [individualItemsLoading]);
 
   // Function to get category name from folder name (for directory scanning)
   const getCategoryFromFolder = (folderName: string): string => {
@@ -1524,10 +1801,10 @@ export default function WhereAndWhatStep({
     name: item.name,
     price: item.price.toString(),
     category: item.category,
-    image: item.image || datasetFallbackImage,
+    image: resolveItemImage({ category: item.category, itemImage: item.image, itemId: item.id }),
   });
 
-  const normalizeCategory = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalizeForFilter = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
 
   const filteredIndividualItems = useMemo(() => {
     let items = individualItems;
@@ -1546,8 +1823,8 @@ export default function WhereAndWhatStep({
     }
 
     if (selectedCategory && selectedCategory !== 'All') {
-      const normalizedSelected = normalizeCategory(selectedCategory);
-      items = items.filter((item) => normalizeCategory(item.category).includes(normalizedSelected));
+      const normalizedSelected = normalizeForFilter(selectedCategory.replace(/_/g, ' '));
+      items = items.filter((item) => normalizeForFilter(item.category).includes(normalizedSelected));
     }
 
     return items;
@@ -1584,32 +1861,12 @@ export default function WhereAndWhatStep({
     return new Set((step1.items ?? []).map((item) => (item.id ?? '').toString()));
   }, [step1.items]);
 
-  const bedroomPackages = [
-    {
-      id: 'full-house-1bed',
-      name: '1 Bedroom',
-      items: 15,
-      price: '350',
-      category: 'Full House Packages',
-      image: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_white_hampshire_jpg_18kg.jpg',
-    },
-    {
-      id: 'full-house-2bed',
-      name: '2 Bedroom',
-      items: 25,
-      price: '550',
-      category: 'Full House Packages',
-      image: '/UK_Removal_Dataset/Images_Only/Bedroom/queen_bed_frame_modern_headboard_plank_jpg_42kg.jpg',
-    },
-    {
-      id: 'full-house-3bed',
-      name: '3 Bedroom',
-      items: 35,
-      price: '750',
-      category: 'Full House Packages',
-      image: '/UK_Removal_Dataset/Images_Only/Bedroom/super_king_bed_frame_sparkford_oak_6ft_jpg_85kg.jpg',
-    },
-  ];
+  const bedroomPackages = HOUSE_PACKAGES.map((hp) => ({
+    id: hp.id,
+    name: hp.name,
+    image: hp.imageUrl,
+    category: hp.category,
+  }));
 
   // Handlers
   const addItem = (item: any) => {
@@ -1625,7 +1882,12 @@ export default function WhereAndWhatStep({
 
     const weight = datasetItem?.weight ?? catalogItem?.weight ?? 10;
     const volume = datasetItem?.volume ?? catalogItem?.volume ?? 1;
-    const imageUrl = datasetItem?.image ?? catalogItem?.imageUrl ?? datasetFallbackImage;
+    const imageUrl = resolveItemImage({
+      category: datasetItem?.category ?? catalogItem?.category,
+      itemImage: datasetItem?.image,
+      catalogImage: catalogItem?.imageUrl,
+      itemId: datasetItem?.id ?? catalogItem?.id
+    });
     const workersRequired = catalogItem?.workers_required ?? datasetItem?.workersRequired ?? 1;
     const dismantlingRequired = catalogItem?.dismantling_required ?? datasetItem?.dismantlingRequired ?? 'No';
     const fragilityLevel = catalogItem?.fragility_level ?? datasetItem?.fragilityLevel ?? 'Standard';
@@ -1712,24 +1974,7 @@ export default function WhereAndWhatStep({
       <VStack spacing={8} align="stretch">
         
         {/* Version Banner - Hidden in production, visible in dev */}
-        {process.env.NODE_ENV === 'development' && (
-          <Box 
-            position="fixed" 
-            bottom={4} 
-            right={4} 
-            bg="rgba(0, 0, 0, 0.8)" 
-            px={3} 
-            py={2} 
-            borderRadius="md"
-            border="1px solid"
-            borderColor="green.500"
-            zIndex={9999}
-          >
-            <Text fontSize="xs" color="green.400" fontWeight="bold">
-              ✅ Dataset Fix v3 • 2025-10-07T01:00
-            </Text>
-          </Box>
-        )}
+
         
         {/* Header */}
         <VStack spacing={4} textAlign="center">
@@ -1811,7 +2056,19 @@ export default function WhereAndWhatStep({
                             pickupAddress: address as any
                           });
                         } else {
-                          updateFormData('step1', { pickupAddress: null as any });
+                          // Never set to null; reset to an empty address shape to avoid runtime errors
+                          updateFormData('step1', {
+                            pickupAddress: {
+                              address: '',
+                              city: '',
+                              postcode: '',
+                              coordinates: { lat: 0, lng: 0 },
+                              houseNumber: '',
+                              flatNumber: '',
+                              formatted_address: '',
+                              place_name: ''
+                            } as any
+                          });
                         }
                         // Pricing is now automatic via Enterprise Engine
                       }}
@@ -1877,7 +2134,18 @@ export default function WhereAndWhatStep({
                             dropoffAddress: address as any
                           });
                         } else {
-                          updateFormData('step1', { dropoffAddress: null as any });
+                          updateFormData('step1', {
+                            dropoffAddress: {
+                              address: '',
+                              city: '',
+                              postcode: '',
+                              coordinates: { lat: 0, lng: 0 },
+                              houseNumber: '',
+                              flatNumber: '',
+                              formatted_address: '',
+                              place_name: ''
+                            } as any
+                          });
                         }
                         // Pricing is now automatic via Enterprise Engine
                       }}
@@ -2040,7 +2308,7 @@ export default function WhereAndWhatStep({
               </Card>
             </VStack>                  {/* Hidden Date Input for Calendar */}
                   <Input
-                    id="hidden-date-picker"
+                    id="hidden-date-value"
                     type="date"
                     position="absolute"
                     opacity={0}
@@ -2087,42 +2355,7 @@ export default function WhereAndWhatStep({
                     ))}
                   </SimpleGrid>
 
-                  {/* Skip Time Selection Option */}
-                  <VStack spacing={3} w="full" mt={4}>
-                    <Text fontSize="md" color="rgba(255, 255, 255, 0.6)" textAlign="center">
-                      or
-                    </Text>
-                    
-                    <Card
-                      bg={!step1.pickupTimeSlot ? "orange.600" : "rgba(255, 165, 0, 0.1)"}
-                      border="2px solid"
-                      borderColor={!step1.pickupTimeSlot ? "orange.400" : "rgba(255, 165, 0, 0.3)"}
-                      borderRadius="xl"
-                      cursor="pointer"
-                      transition="all 0.3s"
-                      maxW="250px"
-                      mx="auto"
-                      _hover={{
-                        bg: !step1.pickupTimeSlot ? "orange.500" : "rgba(255, 165, 0, 0.15)",
-                        borderColor: "orange.400",
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 8px 25px rgba(255, 165, 0, 0.2)"
-                      }}
-                      onClick={() => updateFormData('step1', { pickupTimeSlot: undefined })}
-                    >
-                      <CardBody p={4} textAlign="center">
-                        <VStack spacing={2}>
-                          <Text fontSize="xl">⏭️</Text>
-                          <Text fontWeight="bold" color="white" fontSize="sm">
-                            Skip Time Selection
-                          </Text>
-                          <Text fontSize="xs" color="rgba(255, 255, 255, 0.7)">
-                            Choose time later
-                          </Text>
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                  </VStack>
+                {/* Skip Time Selection Option removed per request */}
                 </VStack>
 
                 {/* Selection Summary */}
@@ -2230,28 +2463,7 @@ export default function WhereAndWhatStep({
                 </VStack>
               </HStack>
 
-              {/* Available Categories Preview */}
-              <Card bg="gray.700" borderRadius="lg" p={4}>
-                <VStack spacing={2}>
-                  <Text fontSize="sm" color="gray.300" fontWeight="semibold">
-                    Available Categories
-                  </Text>
-                  <HStack spacing={2} flexWrap="wrap" justify="center">
-                    {Object.entries(allItemsByCategory).map(([category, items]) => (
-                      <Badge
-                        key={category}
-                        colorScheme="blue"
-                        variant="outline"
-                        fontSize="xs"
-                        px={2}
-                        py={1}
-                      >
-                        {category} ({items.length})
-                      </Badge>
-                    ))}
-                  </HStack>
-                </VStack>
-              </Card>
+              {/* Available Categories card removed as requested */}
 
               {/* Selection Modes */}
               <HStack spacing={3} flexWrap="wrap" justify="center">
@@ -2324,20 +2536,11 @@ export default function WhereAndWhatStep({
                         <CardBody p={4}>
                           <HStack spacing={3} align="center">
                             {/* Package Image */}
-                            <ItemImage src={pkg.image} alt={`${pkg.name} package`} size={80} />
+                            <Box w="80px" h="80px">
+                              <ItemImage src={pkg.image} alt={`${pkg.name} package`} ratio={1} />
+                            </Box>
                             
-                            {/* Package Details */}
-                            <VStack spacing={1} flex="1" align="start">
-                              <Text fontSize="md" color="white" fontWeight="bold">
-                                {pkg.name}
-                              </Text>
-                              <Badge colorScheme="blue" variant="solid" fontSize="xs">
-                                ~{pkg.items} items
-                              </Badge>
-                              <Text fontSize="xs" color="gray.400" noOfLines={1}>
-                                Furniture, appliances & essentials
-                              </Text>
-                            </VStack>
+
 
                             {/* Add Button */}
                             <Button
@@ -2384,20 +2587,11 @@ export default function WhereAndWhatStep({
                         <CardBody p={5} textAlign="center">
                           <VStack spacing={4}>
                             {/* Package Image */}
-                            <ItemImage src={pkg.image} alt={`${pkg.name} package`} size={140} />
+                            <Box w="140px" h="140px">
+                              <ItemImage src={pkg.image} alt={`${pkg.name} package`} ratio={1} />
+                            </Box>
                             
-                            {/* Package Details */}
-                            <VStack spacing={2}>
-                              <Text fontSize="lg" color="white" fontWeight="bold">
-                                {pkg.name}
-                              </Text>
-                              <Badge colorScheme="blue" variant="solid">
-                                ~{pkg.items} items included
-                              </Badge>
-                              <Text fontSize="xs" color="gray.400" textAlign="center">
-                                Includes furniture, appliances & essentials
-                              </Text>
-                            </VStack>
+
 
                             {/* Add Button */}
                             <Button
@@ -2459,32 +2653,39 @@ export default function WhereAndWhatStep({
                     />
                   </Box>
                   
-                  {/* Quick Categories */}
-                  <SimpleGrid columns={{ base: 2, md: 4, lg: 6 }} spacing={2} w="full">
-                    {groupedIndividualItems.slice(0, 12).map(({ category }) => (
-                      <Button
-                        key={category}
-                        size="sm"
-                        variant={selectedCategory === category ? 'solid' : 'outline'}
-                        bg={selectedCategory === category ? 'purple.600' : 'gray.700'}
-                        borderColor="gray.600"
-                        color="white"
-                        _hover={{ bg: "purple.700" }}
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setSearchQuery(category);
-                        }}
-                      >
-                        {category}
-                      </Button>
-                    ))}
-                  </SimpleGrid>
+
                 </VStack>
               )}
 
               {/* Individual Items Mode */}
               {itemSelectionMode === 'choose' && (
                 <VStack spacing={6} w="full" align="stretch">
+                  {/* Default: Featured Popular Items (single-click add using dataset images) */}
+                  {featuredPopularItems.length > 0 && (
+                    <Card bg="gray.700" border="1px solid" borderColor="gray.600">
+                      <CardBody>
+                        <VStack align="stretch" spacing={4}>
+                          <HStack justify="space-between" align="center">
+                            <Text fontWeight="bold" color="white" fontSize="lg">
+                              Popular items
+                            </Text>
+                            <Badge colorScheme="pink" variant="subtle">Quick add</Badge>
+                          </HStack>
+                          <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 4, md: 6 }}>
+                            {featuredPopularItems.map((fi) => (
+                              <Box key={`${fi.groupKey}-${fi.src}`} cursor="pointer" onClick={() => incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel)}>
+                                <ItemImage src={fi.src} alt={fi.label} ratio={3/4} />
+                                <VStack mt={2} spacing={1}>
+                                  <Text fontSize="sm" color="white" textAlign="center">{fi.label}</Text>
+                                  <Button size="xs" colorScheme="blue" onClick={(e) => { e.stopPropagation(); incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel); }}>Add</Button>
+                                </VStack>
+                              </Box>
+                            ))}
+                          </SimpleGrid>
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  )}
                   {individualItemsLoading ? (
                     <HStack justify="center" py={10}>
                       <Spinner size="xl" color="blue.400" thickness="4px" />
@@ -2552,13 +2753,13 @@ export default function WhereAndWhatStep({
                             <option style={{ color: '#1A202C', background: '#EDF2F7' }} value="All">
                               All Categories
                             </option>
-                            {groupedIndividualItems.map((group) => (
+                            {datasetCategories.map((c) => (
                               <option
-                                key={group.category}
+                                key={c.key}
                                 style={{ color: '#1A202C', background: '#EDF2F7' }}
-                                value={group.category}
+                                value={c.key}
                               >
-                                {group.category}
+                                {c.label}
                               </option>
                             ))}
                           </Select>
@@ -2574,7 +2775,7 @@ export default function WhereAndWhatStep({
                         </VStack>
                       </Flex>
 
-                      {filteredGroupedItems.length === 0 ? (
+                      {datasetGroups.length === 0 ? (
                         <Card bg="gray.700" border="1px dashed" borderColor="gray.500">
                           <CardBody>
                             <VStack spacing={2}>
@@ -2582,163 +2783,49 @@ export default function WhereAndWhatStep({
                                 No items match the current filters.
                               </Text>
                               <Text color="gray.400" fontSize="sm" textAlign="center">
-                                Try clearing the category filter or use the smart search to find specialised items.
+                                Dataset folders not found. Please verify /public/UK_Removal_Dataset/Images_Only.
                               </Text>
                             </VStack>
                           </CardBody>
                         </Card>
                       ) : (
                         <VStack spacing={4} align="stretch">
-                          {filteredGroupedItems.map((group) => (
-                            <Card key={group.category} bg="gray.700" border="1px solid" borderColor="gray.600">
+                          {(selectedCategory === 'All' ? datasetGroups : datasetGroups.filter(g => g.key === selectedCategory)).map((group) => (
+                            <Card key={group.key} bg="gray.700" border="1px solid" borderColor="gray.600">
                               <CardBody>
                                 <VStack align="stretch" spacing={4}>
-                                <HStack justify="space-between" align="center">
-                                  <HStack spacing={3}>
-                                    <Text fontWeight="bold" color="white" fontSize="lg">
-                                      {group.category}
-                                    </Text>
-                                    <Badge colorScheme="blue" variant="subtle">
-                                      {group.items.length} items
-                                    </Badge>
+                                  <HStack justify="space-between" align="center">
+                                    <HStack spacing={3}>
+                                      <Text fontWeight="bold" color="white" fontSize="lg">
+                                        {group.label}
+                                      </Text>
+                                      <Badge colorScheme="blue" variant="subtle">
+                                        {group.images.length} images
+                                      </Badge>
+                                    </HStack>
+                                    <Badge colorScheme="purple" variant="outline">UK dataset imagery</Badge>
                                   </HStack>
-                                  <Badge colorScheme="purple" variant="outline">
-                                    UK dataset imagery
-                                  </Badge>
-                                </HStack>
-
-                                <SimpleGrid columns={{ base: 1, sm: 1, md: 2, lg: 3, xl: 4 }} spacing={6} w="full">
-                                  {group.items.map((item) => {
-                                    const imageSrc = item.image && item.image.length > 0 ? item.image : datasetFallbackImage;
-
-                                    return (
-                                      <VStack key={item.id} spacing={3} align="center">
-                                        <ItemImage src={imageSrc} alt={item.name} />
-                                        <VStack spacing={2} align="center">
-                                          <Text color="white" fontWeight="semibold" fontSize="sm" textAlign="center" noOfLines={2}>
-                                            {item.name}
+                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={{ base: 4, md: 6 }}>
+                                    {group.images.map((src, idx) => (
+                                      <Box key={`${group.key}-${idx}`}>
+                                        <ItemImage src={src} alt={group.label} ratio={3/4} />
+                                        <Text mt={2} fontSize="sm" color="white" textAlign="center">
+                                          {titleFromSrc(src, group.label)}
+                                        </Text>
+                                        <HStack justify="center" mt={2} spacing={2}>
+                                          <Button size="sm" variant="outline" colorScheme="red" onClick={() => decrementDatasetItem(group.key, src)}>-</Button>
+                                          <Text color="white" minW="28px" textAlign="center" fontWeight="bold">
+                                            {getQuantityForDataset(group.key, src)}
                                           </Text>
-                                          <Text color="gray.300" fontSize="xs">
-                                            {item.weight.toFixed(1)} kg
-                                          </Text>
-                                          <Box h="8px" /> {/* Spacer between weight and buttons */}
-
-                                          {(() => {
-                                            const itemId = item.id.toString();
-                                            const isSelected = selectedItemIds.has(itemId);
-                                            const currentQuantity = step1.items.find(i => i.id === itemId)?.quantity || 0;
-
-                                            if (isSelected) {
-                                              return (
-                                                <HStack 
-                                                  spacing={4} 
-                                                  justify="center" 
-                                                  borderRadius="2xl" 
-                                                  p={4} 
-                                                  border="2px solid"
-                                                  borderColor="purple.500"
-                                                  boxShadow="0 8px 32px rgba(139, 92, 246, 0.3)"
-                                                  bgGradient="linear(to-br, blackAlpha.600, blackAlpha.400)"
-                                                  sx={{
-                                                    backdropFilter: 'blur(10px)',
-                                                  }}
-                                                >
-                                                  {/* Minus Button */}
-                                                  <Button
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      updateQuantity(itemId, Math.max(0, currentQuantity - 1));
-                                                    }}
-                                                    className="btn-enhanced-minus"
-                                                    color="white"
-                                                    borderRadius="full"
-                                                    w="56px"
-                                                    h="56px"
-                                                    fontSize="28px"
-                                                    fontWeight="black"
-                                                    border="3px solid"
-                                                    borderColor="red.300"
-                                                    transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                                  >
-                                                    −
-                                                  </Button>
-
-                                                  {/* Quantity Display */}
-                                                  <Box
-                                                    className="btn-enhanced-quantity"
-                                                    color="black"
-                                                    borderRadius="2xl"
-                                                    w="64px"
-                                                    h="64px"
-                                                    display="flex"
-                                                    alignItems="center"
-                                                    justifyContent="center"
-                                                    fontSize="24px"
-                                                    fontWeight="black"
-                                                    border="4px solid"
-                                                    borderColor="yellow.300"
-                                                    position="relative"
-                                                  >
-                                                    <Text
-                                                      sx={{
-                                                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                                                      }}
-                                                    >
-                                                      {currentQuantity}
-                                                    </Text>
-                                                  </Box>
-
-                                                  {/* Plus Button */}
-                                                  <Button
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      updateQuantity(itemId, currentQuantity + 1);
-                                                    }}
-                                                    className="btn-enhanced-plus"
-                                                    color="white"
-                                                    borderRadius="full"
-                                                    w="56px"
-                                                    h="56px"
-                                                    fontSize="28px"
-                                                    fontWeight="black"
-                                                    border="3px solid"
-                                                    borderColor="green.300"
-                                                    transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                                  >
-                                                    +
-                                                  </Button>
-                                                </HStack>
-                                              );
-                                            }
-
-                                            return (
-                                              <Button
-                                                onClick={() => addItem(item)}
-                                                className="btn-enhanced-add"
-                                                color="white"
-                                                borderRadius="full"
-                                                w="64px"
-                                                h="64px"
-                                                fontSize="32px"
-                                                fontWeight="black"
-                                                border="4px solid"
-                                                borderColor="blue.300"
-                                                transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                                position="relative"
-                                              >
-                                                <Box as="span" position="relative" zIndex={1}>+</Box>
-                                              </Button>
-                                            );
-                                          })()}
-                                        </VStack>
-                                      </VStack>
-                                    );
-                                  })}
-                                </SimpleGrid>
+                                          <Button size="sm" colorScheme="green" onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))}>+</Button>
+                                        </HStack>
+                                      </Box>
+                                    ))}
+                                  </SimpleGrid>
                                 </VStack>
                               </CardBody>
                             </Card>
-                            ))}
+                          ))}
                         </VStack>
                       )}
                     </>
@@ -2761,7 +2848,9 @@ export default function WhereAndWhatStep({
                 
                 <VStack spacing={3} w="full">
                   {step1.items.map((item) => {
-                    const imageSrc = item.image || datasetFallbackImage;
+                    const imageSrc = (item.image && item.image.trim().length > 0)
+                      ? item.image
+                      : resolveItemImage({ category: item.category, itemImage: item.image, itemId: item.id });
 
                     return (
                       <Box 
@@ -2778,7 +2867,9 @@ export default function WhereAndWhatStep({
                           display={{ base: "flex", md: "none" }}
                         >
                           <HStack spacing={3} w="full">
-                            <ItemImage src={imageSrc} alt={item.name || 'Item'} size={60} />
+                            <Box w="60px" h="60px">
+                              <ItemImage src={imageSrc} alt={item.name || 'Item'} ratio={1} />
+                            </Box>
                             
                             <VStack align="start" spacing={1} flex="1">
                               <Text color="white" fontWeight="medium" fontSize="sm">
@@ -2843,7 +2934,9 @@ export default function WhereAndWhatStep({
                           display={{ base: "none", md: "flex" }}
                         >
                           <HStack spacing={4}>
-                            <ItemImage src={imageSrc} alt={item.name || 'Item'} size={70} />
+                            <Box w="70px" h="70px">
+                              <ItemImage src={imageSrc} alt={item.name || 'Item'} ratio={1} />
+                            </Box>
                             
                             <VStack align="start" spacing={1}>
                               <Text color="white" fontWeight="medium" fontSize="md">
@@ -2932,12 +3025,16 @@ export default function WhereAndWhatStep({
                       
                       <VStack spacing={2} w="full" maxH={{ base: "150px", md: "200px" }} overflowY="auto">
                         {step1.items.map((item) => {
-                          const imageSrc = item.image || datasetFallbackImage;
+                          const imageSrc = (item.image && item.image.trim().length > 0)
+                            ? item.image
+                            : resolveItemImage({ category: item.category, itemImage: item.image, itemId: item.id });
 
                           return (
                             <HStack key={item.id} justify="space-between" w="full" p={2} bg="gray.600" borderRadius="lg">
                               <HStack spacing={{ base: 2, md: 3 }}>
-                                <ItemImage src={imageSrc} alt={item.name || 'Item'} size={40} />
+                                <Box w="40px" h="40px">
+                                  <ItemImage src={imageSrc} alt={item.name || 'Item'} ratio={1} />
+                                </Box>
                                 <VStack align="start" spacing={0}>
                                   <Text color="white" fontWeight="medium" fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>
                                     {item.name}

@@ -31,13 +31,15 @@ export async function POST(request: NextRequest) {
     } else {
       // Fallback to NextAuth session (for web app)
       const session = await getServerSession(authOptions);
-      if (!session?.user) {
+      const user = (session as any)?.user;
+      const userIdFromSession = user?.id as string | undefined;
+      if (!user || !userIdFromSession) {
         return NextResponse.json(
           { error: 'Unauthorized - Please login' },
           { status: 401, headers: corsHeaders }
         );
       }
-      userId = session.user.id;
+      userId = userIdFromSession;
     }
 
     const { newEmail } = await request.json();

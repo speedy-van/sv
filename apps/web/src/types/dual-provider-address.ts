@@ -364,7 +364,7 @@ export interface AddressCache {
   getStats(): { size: number; hits: number; misses: number; hitRate: number };
 }
 
-export interface CacheEntry<T> {
+export interface LegacyCacheEntry<T> {
   data: T;
   timestamp: number;
   ttl: number;

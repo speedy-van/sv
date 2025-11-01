@@ -457,9 +457,10 @@ export class IntelligentRouteOptimizer {
    */
   private async estimateSingleOrderPrice(
     booking: BookingRequest,
-    loadAnalysis: LoadAnalysis,
-    routeAnalysis: RouteAnalysis
+    _loadAnalysis: LoadAnalysis,
+    _routeAnalysis: RouteAnalysis
   ): Promise<number> {
+    void _loadAnalysis; void _routeAnalysis;
     // Import dynamic pricing engine
     const { dynamicPricingEngine } = await import('./dynamic-pricing-engine');
     
@@ -687,7 +688,7 @@ export class IntelligentRouteOptimizer {
     }
     
     // Check distance constraint (detour percentage)
-    const projectedDistance = currentTotalDistance + newBookingDistance;
+    const _projectedDistance = currentTotalDistance + newBookingDistance; void _projectedDistance;
     const detourPercentage = newBookingDistance / currentTotalDistance;
     if (detourPercentage > maxDetourPercentage) {
       return {

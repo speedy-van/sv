@@ -1,0 +1,36 @@
+{
+  "root": false,
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "@next/next/no-html-link-for-pages": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/types/**/*.{ts,tsx,d.ts}"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-undef": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["src/utils/**/*.{ts,tsx}", "src/lib/utils/**/*.{ts,tsx}"],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-empty-function": "off"
+      }
+    },
+    {
+      "files": ["src/lib/testing/**/*.{ts,tsx}"],
+      "env": { "node": true, "jest": true },
+      "parserOptions": { "project": "./tsconfig.json" }
+    },
+    {
+      "files": ["src/lib/tax/**/*.{ts,tsx}"],
+      "env": { "node": true },
+      "parserOptions": { "project": "./tsconfig.json" }
+    }
+  ]
+}
+

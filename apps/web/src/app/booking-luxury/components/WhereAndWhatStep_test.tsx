@@ -68,9 +68,6 @@ export default function WhereAndWhatStep({
   onNext,
 }: WhereAndWhatStepProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('popular');
-  const [selectedHomeSize, setSelectedHomeSize] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'bedroom' | 'search' | 'trending' | 'browse'>('bedroom');
 
   const toast = useToast();
   const { step1 } = formData;

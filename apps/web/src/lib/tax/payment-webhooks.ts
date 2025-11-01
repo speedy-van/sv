@@ -15,7 +15,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { taxCalculator, VatRateType } from './calculator';
-import { hmrcApiService } from './hmrc-api';
+// Removed unused hmrcApiService import
 import Stripe from 'stripe';
 
 export interface PaymentWebhookData {
@@ -561,6 +561,7 @@ export class PaymentWebhookService {
    * Handle PayPal events (placeholder)
    */
   private async handlePayPalEvent(event: any): Promise<any> {
+    void event;
     // PayPal event handling implementation
     return { success: true, message: 'PayPal event processed' };
   }
@@ -569,6 +570,7 @@ export class PaymentWebhookService {
    * Handle WorldPay events (placeholder)
    */
   private async handleWorldPayEvent(event: any): Promise<any> {
+    void event;
     // WorldPay event handling implementation
     return { success: true, message: 'WorldPay event processed' };
   }
@@ -577,6 +579,7 @@ export class PaymentWebhookService {
    * Handle Square events (placeholder)
    */
   private async handleSquareEvent(event: any): Promise<any> {
+    void event;
     // Square event handling implementation
     return { success: true, message: 'Square event processed' };
   }
@@ -592,8 +595,10 @@ export class PaymentWebhookService {
       case 'monthly':
         return new Date(year, month, 1);
       case 'quarterly':
-        const quarterStartMonth = Math.floor(month / 3) * 3;
-        return new Date(year, quarterStartMonth, 1);
+        {
+          const quarterStartMonth = Math.floor(month / 3) * 3;
+          return new Date(year, quarterStartMonth, 1);
+        }
       case 'annually':
         return new Date(year, 0, 1);
       default:
@@ -612,8 +617,10 @@ export class PaymentWebhookService {
       case 'monthly':
         return new Date(year, month + 1, 0);
       case 'quarterly':
-        const quarterEndMonth = Math.floor(month / 3) * 3 + 2;
-        return new Date(year, quarterEndMonth + 1, 0);
+        {
+          const quarterEndMonth = Math.floor(month / 3) * 3 + 2;
+          return new Date(year, quarterEndMonth + 1, 0);
+        }
       case 'annually':
         return new Date(year, 11, 31);
       default:

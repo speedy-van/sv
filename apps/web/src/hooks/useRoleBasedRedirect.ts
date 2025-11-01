@@ -34,9 +34,10 @@ export function useRoleBasedRedirect(options: UseRoleBasedRedirectOptions = {}) 
       return;
     }
 
-    if (session && allowedRoles && !allowedRoles.includes(session.user.role as UserRole)) {
+    const role = (session?.user as any)?.role as UserRole | undefined;
+    if (session && allowedRoles && (!role || !allowedRoles.includes(role))) {
       // User doesn't have required role
-      const defaultRoute = getDefaultRoute(session.user.role as UserRole);
+      const defaultRoute = getDefaultRoute(role || 'customer');
       router.push(defaultRoute);
       return;
     }
@@ -49,7 +50,7 @@ export function useRoleBasedRedirect(options: UseRoleBasedRedirectOptions = {}) 
 
     if (session && !redirectTo) {
       // Redirect to user's default route
-      const defaultRoute = getDefaultRoute(session.user.role as UserRole);
+      const defaultRoute = getDefaultRoute(((session?.user as any)?.role as UserRole) || 'customer');
       router.push(defaultRoute);
       return;
     }
@@ -58,7 +59,7 @@ export function useRoleBasedRedirect(options: UseRoleBasedRedirectOptions = {}) 
   return {
     user: session?.user,
     isLoading: status === 'loading',
-    role: session?.user?.role,
-    userRole: session?.user?.role,
+    role: (session?.user as any)?.role,
+    userRole: (session?.user as any)?.role,
   };
 }

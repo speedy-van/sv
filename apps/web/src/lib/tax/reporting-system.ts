@@ -346,6 +346,7 @@ export class TaxReportingSystem {
     includeDetailedBreakdown: boolean = true
   ): Promise<CorporationTaxReport> {
     try {
+      void includeDetailedBreakdown;
       // Get tax records for the year
       const taxRecords = await prisma.taxRecord.findMany({
         where: {
@@ -445,6 +446,7 @@ export class TaxReportingSystem {
     includeScenarios: boolean = true
   ): Promise<TaxForecast> {
     try {
+      void includeScenarios;
       // Get historical data for trend analysis
       const currentDate = new Date();
       const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 12, 1);

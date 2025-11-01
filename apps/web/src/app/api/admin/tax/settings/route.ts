@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -102,17 +105,20 @@ export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const user = (session as any)?.user;
+    const role = user?.role as string | undefined;
+    const userId = user?.id as string | undefined;
+    if (!user || !role || role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = (session.user as any).id;
+    const adminId = userId;
     const body = await request.json();
     const { action, data } = body;
 
     switch (action) {
       case 'update_settings':
-        return await updateTaxSettings(data, adminId);
+        return await updateTaxSettings(data, adminId!);
 
       case 'validate_vat_number':
         return await validateVATNumber(data.vatNumber);
@@ -121,10 +127,10 @@ export async function POST(request: NextRequest) {
         return await testHMRCConnection(data);
 
       case 'update_hmrc_credentials':
-        return await updateHMRCCredentials(data, adminId);
+        return await updateHMRCCredentials(data, adminId!);
 
       case 'generate_deadlines':
-        return await generateTaxDeadlines(data, adminId);
+        return await generateTaxDeadlines(data, adminId!);
 
       default:
         return NextResponse.json(

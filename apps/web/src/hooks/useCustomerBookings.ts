@@ -44,7 +44,8 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
   const [error, setError] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
-    if (!session?.user?.id) return;
+    const userId = (session?.user as any)?.id as string | undefined;
+    if (!userId) return;
 
     try {
       setLoading(true);
@@ -63,10 +64,11 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [(session?.user as any)?.id]);
 
   const fetchStats = useCallback(async () => {
-    if (!session?.user?.id) return;
+    const userId = (session?.user as any)?.id as string | undefined;
+    if (!userId) return;
 
     try {
       const response = await fetch('/api/customer/bookings', {
@@ -82,7 +84,7 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  }, [session?.user?.id]);
+  }, [(session?.user as any)?.id]);
 
   const refreshBookings = useCallback(async () => {
     await Promise.all([fetchBookings(), fetchStats()]);
@@ -90,7 +92,8 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
 
   const linkExistingBookings = useCallback(
     async (email: string, phone: string) => {
-      if (!session?.user?.id) {
+      const userId = (session?.user as any)?.id as string | undefined;
+      if (!userId) {
         return {
           success: false,
           message: 'User not authenticated',
@@ -131,12 +134,13 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
         };
       }
     },
-    [session?.user?.id, refreshBookings]
+    [(session?.user as any)?.id, refreshBookings]
   );
 
   const linkSpecificBooking = useCallback(
     async (bookingId: string) => {
-      if (!session?.user?.id) {
+      const userId = (session?.user as any)?.id as string | undefined;
+      if (!userId) {
         return {
           success: false,
           message: 'User not authenticated',
@@ -173,15 +177,15 @@ export function useCustomerBookings(): UseCustomerBookingsReturn {
         };
       }
     },
-    [session?.user?.id, refreshBookings]
+    [(session?.user as any)?.id, refreshBookings]
   );
 
   // Fetch bookings when session changes
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.id) {
+    if (status === 'authenticated' && (session?.user as any)?.id) {
       refreshBookings();
     }
-  }, [status, session?.user?.id, refreshBookings]);
+  }, [status, (session?.user as any)?.id, refreshBookings]);
 
   return {
     bookings,

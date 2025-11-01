@@ -307,12 +307,38 @@ export function useBookingForm() {
         return prev; // Return the same object to prevent re-render
       }
       
+      // Normalize address fields to never be null
+      let nextStepData: any = { ...prev[step], ...data };
+      if (step === 'step1') {
+        if ((data as any).pickupAddress === null) {
+          nextStepData.pickupAddress = {
+            address: '',
+            city: '',
+            postcode: '',
+            coordinates: { lat: 0, lng: 0 },
+            houseNumber: '',
+            flatNumber: '',
+            formatted_address: '',
+            place_name: ''
+          };
+        }
+        if ((data as any).dropoffAddress === null) {
+          nextStepData.dropoffAddress = {
+            address: '',
+            city: '',
+            postcode: '',
+            coordinates: { lat: 0, lng: 0 },
+            houseNumber: '',
+            flatNumber: '',
+            formatted_address: '',
+            place_name: ''
+          };
+        }
+      }
+
       const newData = {
         ...prev,
-        [step]: {
-          ...prev[step],
-          ...data,
-        },
+        [step]: nextStepData,
       };
       console.log(`Updating ${step}:`, data);
       return newData;
@@ -406,7 +432,7 @@ export function useBookingForm() {
           code: code.trim(),
           amount: formData.step1.pricing.total,
           customerEmail: formData.step2.customerDetails.email,
-          pickupPostcode: formData.step1.pickupAddress.postcode,
+          pickupPostcode: formData.step1.pickupAddress?.postcode || '',
           serviceType: formData.step1.serviceType,
         }),
       });
@@ -426,7 +452,7 @@ export function useBookingForm() {
       console.error('Promotion validation error:', error);
       return { success: false, error: 'Failed to validate promotion code' };
     }
-  }, [formData.step1.pricing.total, formData.step2.customerDetails.email, formData.step1.pickupAddress.postcode, formData.step1.serviceType]);
+  }, [formData.step1.pricing.total, formData.step2.customerDetails.email, formData.step1.pickupAddress?.postcode, formData.step1.serviceType]);
 
   // Apply promotion code
   const applyPromotionCode = useCallback(async (code: string) => {
@@ -543,8 +569,8 @@ export function useBookingForm() {
         items: items.length,
         pickup: pickupAddressText,
         dropoff: dropoffAddressText,
-        pickupPostcode: pickupAddress.postcode,
-        dropoffPostcode: dropoffAddress.postcode,
+        pickupPostcode: pickupAddress?.postcode,
+        dropoffPostcode: dropoffAddress?.postcode,
         pickupCoordinates: pickupAddress.coordinates,
         dropoffCoordinates: dropoffAddress.coordinates,
         serviceType: formData.step1.serviceType,
@@ -643,8 +669,8 @@ export function useBookingForm() {
       console.log('🔍 Sending pricing request:', { 
         correlationId, 
         itemsCount: pricingData.items.length,
-        pickup: pricingData.pickupAddress.postcode,
-        dropoff: pricingData.dropoffAddress.postcode,
+        pickup: pricingData.pickupAddress?.postcode,
+        dropoff: pricingData.dropoffAddress?.postcode,
         service: pricingData.serviceType
       });
 

@@ -13,3 +13,31 @@ jobs:
       - run: pnpm run build:packages
       - run: pnpm run typecheck
       - run: pnpm run build:apps
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10.17.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - name: Lint apps/web (non-blocking)
+        run: |
+          set +e
+          cd apps/web
+          pnpm run lint:web || true
+          echo "Lint completed (non-blocking)."
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10.17.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - name: TypeScript type checking
+        run: |
+          cd apps/web
+          pnpm run typecheck:ci

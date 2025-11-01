@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: 'AI service is not configured',
-          message: 'I apologize, but the AI service is currently unavailable. Please contact support at support@speedy-van.co.uk or call 01202129746 for assistance.',
+          message: 'I apologize, but the AI service is currently unavailable. Please contact support at support@speedy-van.co.uk or call 01202129764 for assistance.',
         },
         { status: 503 }
       );

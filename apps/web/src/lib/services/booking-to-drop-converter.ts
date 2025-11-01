@@ -72,7 +72,6 @@ export class BookingToDropConverter {
 
       // 3. Check if drop already exists for this booking (simplified check)
       // Note: In production, implement proper BookingDropMapping table
-      const bookingReference = `booking_${bookingId}`;
       
       // For now, we'll store the relationship in booking metadata
       // and check if conversion already happened
@@ -380,7 +379,7 @@ export class BookingToDropConverter {
         console.warn(`⚠️ Failed to convert Booking ${bookingId}:`, result.error);
         
         // Optionally create an alert for manual review
-        await this.createConversionAlert(bookingId, result.error || 'Unknown error');
+        await this.createConversionAlert();
       }
     } catch (error) {
       console.error('Error in handleNewBooking:', error);
@@ -390,7 +389,7 @@ export class BookingToDropConverter {
   /**
    * Create alert for failed conversions
    */
-  private static async createConversionAlert(bookingId: string, error: string): Promise<void> {
+  private static async createConversionAlert(): Promise<void> {
     try {
       // TODO: Create notification when metadata field is available
       /*

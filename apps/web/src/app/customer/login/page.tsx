@@ -71,7 +71,8 @@ export default function CustomerLogin() {
 
   // Monitor session and redirect if already authenticated
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.role === 'customer') {
+    const role = (session?.user as any)?.role as string | undefined;
+    if (status === 'authenticated' && role === 'customer') {
       console.log('✅ Customer already authenticated, redirecting to portal');
       router.push('/customer');
     }

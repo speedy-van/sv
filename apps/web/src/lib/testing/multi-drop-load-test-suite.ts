@@ -6,6 +6,8 @@
  */
 
 import { MultiDropLoadTester, LoadTestConfig, LoadTestScenario } from './multi-drop-load-tester';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class MultiDropLoadTestSuite {
   private baseUrl: string;
@@ -453,8 +455,6 @@ export class MultiDropLoadTestSuite {
    * Save test report to file
    */
   private saveReport(report: string, testType: string): void {
-    const fs = require('fs');
-    const path = require('path');
 
     const reportsDir = path.join(process.cwd(), 'load-test-reports');
     if (!fs.existsSync(reportsDir)) {

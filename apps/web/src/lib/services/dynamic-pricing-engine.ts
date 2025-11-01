@@ -126,7 +126,7 @@ export class DynamicPricingEngine {
       ENTERPRISE: 85,
     };
 
-    let basePrice = serviceRates[request.serviceType];
+    const basePrice = serviceRates[request.serviceType];
 
     // Distance calculation with tiered pricing
     const distance = await this.calculateDistance(request.pickupAddress, request.dropoffAddress); // DEPRECATED - internal use only
@@ -167,7 +167,8 @@ export class DynamicPricingEngine {
       distanceCost: '£' + distanceCost.toFixed(2),
     });
     
-    basePrice += distanceCost;
+    let totalPrice = basePrice;
+    totalPrice += distanceCost;
 
     // Items cost
     const itemsCost = request.items.reduce((total, item) => {
@@ -177,7 +178,7 @@ export class DynamicPricingEngine {
       return total + itemCost;
     }, 0);
 
-    return basePrice + itemsCost;
+    return totalPrice + itemsCost;
   }
 
   private async analyzeMarketConditions(request: DynamicPricingRequest) {
@@ -231,7 +232,7 @@ export class DynamicPricingEngine {
 
   private calculateMarketMultiplier(competitors: any): number {
     // Simplified competitive positioning
-    const avgCompetitorPrice = competitors.averagePrice || 100;
+    // TODO: refine competitor price influence if needed
     const ourPosition = competitors.ourPosition || 'middle';
     
     switch (ourPosition) {
@@ -269,7 +270,8 @@ export class DynamicPricingEngine {
     return 1.0;
   }
 
-  private async calculateWeatherMultiplier(scheduledDate: Date): Promise<number> {
+  private async calculateWeatherMultiplier(_scheduledDate: Date): Promise<number> {
+    void _scheduledDate;
     // Mock weather data - in production, integrate with weather API
     const weatherConditions = {
       temperature: 15,
@@ -344,7 +346,8 @@ export class DynamicPricingEngine {
     return Math.round(finalPrice * 100) / 100; // Round to 2 decimal places
   }
 
-  private generatePriceBreakdown(basePrice: number, multipliers: any, adjustments: any) {
+  private generatePriceBreakdown(basePrice: number, multipliers: any, _adjustments: any) {
+    void _adjustments;
     return {
       baseFare: Math.round(basePrice * 0.6),
       distanceCost: Math.round(basePrice * 0.25),
@@ -426,7 +429,7 @@ export class DynamicPricingEngine {
       ENTERPRISE: 70, // Lower than single order (85)
     };
 
-    let basePrice = serviceRates[request.serviceType];
+    const basePrice = serviceRates[request.serviceType];
 
     // Calculate this customer's share of the route distance cost
     const totalRouteDistance = multiDropInfo.totalRouteDistance;
@@ -698,7 +701,8 @@ export class DynamicPricingEngine {
     return Math.max(availableDrivers, 1);
   }
 
-  private async getCompetitorPricing(request: DynamicPricingRequest): Promise<any> {
+  private async getCompetitorPricing(_request: DynamicPricingRequest): Promise<any> {
+    void _request;
     // Mock competitor data - integrate with competitor monitoring
     return {
       averagePrice: 100,
@@ -707,7 +711,8 @@ export class DynamicPricingEngine {
     };
   }
 
-  private async getExternalFactors(date: Date): Promise<any> {
+  private async getExternalFactors(_date: Date): Promise<any> {
+    void _date;
     // Mock external factors - integrate with relevant APIs
     return {
       events: [],

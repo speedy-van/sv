@@ -145,6 +145,7 @@ class UnifiedDropService {
         booking.pickupAddress, 
         booking.dropoffAddress
       );
+      void coordinates;
 
       // 9. Create the drop
       const drop = await prisma.drop.create({
@@ -390,6 +391,7 @@ class UnifiedDropService {
    * Geocode address (mock implementation - replace with real service)
    */
   private static async geocodeAddress(address: string): Promise<{ lat: number; lng: number }> {
+    void address;
     // TODO: Implement real geocoding service (Google Maps, Mapbox, etc.)
     // For now, return London center with small random offset
     const baseLat = 51.5074;
