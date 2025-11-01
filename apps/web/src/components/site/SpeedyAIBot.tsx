@@ -67,9 +67,15 @@ export default function SpeedyAIBot() {
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [canCalculate, setCanCalculate] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isListening, setIsListening] = useState(false);
+  const [supportsSpeech, setSupportsSpeech] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const recognitionRef = useRef<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFiles, setPendingFiles] = useState<Array<{ name: string; type: string; url?: string }>>([]);
   const toast = useToast();
 
   const scrollToBottom = () => {
@@ -87,18 +93,68 @@ export default function SpeedyAIBot() {
     }
   }, [isOpen]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  // Detect Web Speech API support and init recognizer
+  useEffect(() => {
+    // Load TTS preference
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('sv_ai_tts_enabled') : null;
+      if (saved != null) {
+        setTtsEnabled(saved === 'true');
+      }
+    } catch {}
+
+    const SpeechRecognition: any =
+      (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+      null;
+    setSupportsSpeech(Boolean(SpeechRecognition));
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-GB';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = (ev: any) => {
+        setIsListening(false);
+        try {
+          const err = ev?.error || 'unknown';
+          toast({
+            title: 'Voice input error',
+            description: err === 'not-allowed'
+              ? 'Microphone permission denied. Please allow mic access in your browser settings.'
+              : err === 'service-not-allowed'
+              ? 'Speech service blocked by browser. Ensure site is on HTTPS or use Chrome/Edge/Safari.'
+              : `Speech error: ${String(err)}`,
+            status: 'error',
+            duration: 3500,
+          });
+        } catch {}
+      };
+      recognition.onresult = (event: any) => {
+        try {
+          const transcript: string = event.results[0][0].transcript;
+          if (transcript && transcript.trim()) {
+            handleSendMessage(transcript.trim());
+          }
+        } catch {}
+      };
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const handleSendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? inputValue).trim();
+    if (!text || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue,
+      content: text,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
+    if (!overrideText) setInputValue('');
     setIsLoading(true);
 
     try {
@@ -107,7 +163,7 @@ export default function SpeedyAIBot() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: inputValue,
+          message: text,
           conversationHistory: messages.slice(-6).map(m => ({
             role: m.role,
             content: m.content,
@@ -127,6 +183,14 @@ export default function SpeedyAIBot() {
         };
 
         setMessages((prev) => [...prev, aiMessage]);
+        if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          try {
+            const utter = new SpeechSynthesisUtterance(data.message);
+            utter.lang = 'en-GB';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utter);
+          } catch {}
+        }
         
         if (!isOpen) {
           setUnreadCount((prev) => prev + 1);
@@ -163,6 +227,63 @@ export default function SpeedyAIBot() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleListening = () => {
+    // Initialize recognizer lazily if needed
+    if (!recognitionRef.current) {
+      const SpeechRecognition: any =
+        (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+        null;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-GB';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onerror = () => setIsListening(false);
+        recognition.onresult = (event: any) => {
+          try {
+            const transcript: string = event.results[0][0].transcript;
+            if (transcript && transcript.trim()) {
+              handleSendMessage(transcript.trim());
+            }
+          } catch {}
+        };
+        recognitionRef.current = recognition;
+        setSupportsSpeech(true);
+      }
+    }
+
+    if (!supportsSpeech || !recognitionRef.current) {
+      toast({
+        title: 'Voice input not available',
+        description: 'Your browser does not support speech recognition. Try Chrome/Edge/Safari over HTTPS.',
+        status: 'info',
+        duration: 3000,
+      });
+      return;
+    }
+    try {
+      if (isListening) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+      }
+    } catch (e) {
+      toast({ title: 'Could not start voice input', status: 'error', duration: 2500 });
+    }
+  };
+
+  const toggleTts = () => {
+    const next = !ttsEnabled;
+    setTtsEnabled(next);
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('sv_ai_tts_enabled', String(next));
+      }
+    } catch {}
   };
 
   const calculateQuote = async (data: ExtractedData) => {
@@ -204,6 +325,48 @@ export default function SpeedyAIBot() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const onUploadClick = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const maxSize = 10 * 1024 * 1024;
+    const accepted = Array.from(files).filter(f => (
+      ['image/jpeg','image/png','image/webp','image/jpg','text/plain','application/pdf'].includes(f.type)
+    ) && f.size <= maxSize);
+    if (accepted.length === 0) {
+      toast({ title: 'Unsupported file', description: 'Upload JPG/PNG/WEBP/TXT/PDF under 10MB', status: 'warning', duration: 3000 });
+      return;
+    }
+    const previews = accepted.map(f => ({ name: f.name, type: f.type, url: f.type.startsWith('image/') ? URL.createObjectURL(f) : undefined }));
+    setPendingFiles(previews);
+    const form = new FormData();
+    form.append('message', inputValue || '');
+    accepted.forEach(f => form.append('files', f));
+    form.append('conversationHistory', JSON.stringify(messages.slice(-6).map(m => ({ role: m.role, content: m.content }))));
+    form.append('extractedData', JSON.stringify(extractedData));
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/ai/chat', { method: 'POST', body: form });
+      const data = await res.json();
+      if (data.success) {
+        const aiMessage: Message = { id: (Date.now()+1).toString(), role: 'assistant', content: data.message, timestamp: new Date() };
+        setMessages(prev => [...prev, aiMessage]);
+        if (data.extractedData) setExtractedData(prev => ({ ...prev, ...data.extractedData }));
+        setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
+        if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          try { const u = new SpeechSynthesisUtterance(data.message); u.lang='en-GB'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);} catch {}
+        }
+      } else {
+        toast({ title: 'Analysis failed', description: data.error || 'Could not analyze file', status: 'error', duration: 3000 });
+      }
+    } catch {
+      toast({ title: 'Upload error', status: 'error', duration: 3000 });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -391,17 +554,29 @@ export default function SpeedyAIBot() {
                   </HStack>
                 </Box>
               </HStack>
-              
-              <IconButton
-                aria-label="Close chat"
-                icon={<FiX />}
-                size={{ base: 'md', md: 'sm' }}
-                variant="ghost"
-                color="white"
-                _hover={{ bg: 'whiteAlpha.300' }}
-                _active={{ bg: 'whiteAlpha.400' }}
-                onClick={() => setIsOpen(false)}
-              />
+              <HStack spacing={1}>
+                <IconButton
+                  aria-label={ttsEnabled ? 'Disable voice replies' : 'Enable voice replies'}
+                  icon={<Box as="span" fontSize="lg">{ttsEnabled ? '🔊' : '🔇'}</Box>}
+                  size={{ base: 'md', md: 'sm' }}
+                  variant="ghost"
+                  color="white"
+                  _hover={{ bg: 'whiteAlpha.300' }}
+                  _active={{ bg: 'whiteAlpha.400' }}
+                  onClick={toggleTts}
+                  title={ttsEnabled ? 'Voice replies on' : 'Voice replies off'}
+                />
+                <IconButton
+                  aria-label="Close chat"
+                  icon={<FiX />}
+                  size={{ base: 'md', md: 'sm' }}
+                  variant="ghost"
+                  color="white"
+                  _hover={{ bg: 'whiteAlpha.300' }}
+                  _active={{ bg: 'whiteAlpha.400' }}
+                  onClick={() => setIsOpen(false)}
+                />
+              </HStack>
             </Flex>
 
             {/* Messages */}
@@ -528,12 +703,25 @@ export default function SpeedyAIBot() {
               borderColor="gray.200"
               gap={2}
             >
+              {!!pendingFiles.length && (
+                <HStack spacing={2} align="center">
+                  {pendingFiles.slice(0,3).map((f, idx) => (
+                    <Box key={idx} border="1px solid" borderColor="gray.200" borderRadius="md" p={1}>
+                      {f.url ? (
+                        <Box as="img" src={f.url} alt={f.name} w="36px" h="36px" objectFit="cover" borderRadius="sm" />
+                      ) : (
+                        <Text fontSize="xs" maxW="80px" noOfLines={1}>{f.name}</Text>
+                      )}
+                    </Box>
+                  ))}
+                </HStack>
+              )}
               <Input
                 ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                placeholder={isListening ? 'Listening… speak now' : 'Type your message...'}
                 size={{ base: 'md', md: 'md' }}
                 fontSize={{ base: '16px', md: '14px' }}
                 disabled={isLoading}
@@ -544,10 +732,28 @@ export default function SpeedyAIBot() {
                 }}
               />
               <IconButton
+                aria-label="Upload files"
+                icon={<Box as="span" fontSize="lg">📎</Box>}
+                colorScheme="gray"
+                variant="outline"
+                onClick={onUploadClick}
+                _active={{ transform: 'scale(0.95)' }}
+              />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display: 'none' }} />
+              <IconButton
+                aria-label={supportsSpeech ? (isListening ? 'Stop voice input' : 'Start voice input') : 'Voice not supported'}
+                icon={<Box as="span" fontSize="lg">🎤</Box>}
+                colorScheme={isListening ? 'red' : 'gray'}
+                variant={isListening ? 'solid' : 'outline'}
+                onClick={toggleListening}
+                _active={{ transform: 'scale(0.95)' }}
+                title={supportsSpeech ? undefined : 'Voice input not supported in this browser'}
+              />
+              <IconButton
                 aria-label="Send message"
                 icon={<FiSend />}
                 colorScheme="blue"
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 isLoading={isLoading}
                 isDisabled={!inputValue.trim()}
                 size={{ base: 'md', md: 'md' }}

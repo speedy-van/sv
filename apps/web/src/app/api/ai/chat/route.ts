@@ -394,12 +394,66 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const validated = chatSchema.parse(body);
+    const contentType = request.headers.get('content-type') || '';
+    let validated: z.infer<typeof chatSchema>;
+    let uploadedSummaries: Array<{ name: string; kind: 'image'|'text'|'pdf-unsupported'; note: string }> = [];
+    let extractedFromFiles: Array<{ name: string; quantity?: number }> = [];
+
+    if (contentType.includes('multipart/form-data')) {
+      const form = await request.formData();
+      const rawMessage = String(form.get('message') || '');
+      const files = form.getAll('files') as unknown as File[];
+      // If user sent only files without text, provide a placeholder to pass validation
+      const message = rawMessage && rawMessage.trim().length > 0 ? rawMessage : (files && files.length > 0 ? 'Please analyze the attached file(s).' : '');
+      const conversationHistoryRaw = String(form.get('conversationHistory') || '[]');
+      const extractedDataRaw = String(form.get('extractedData') || '{}');
+      const bodyLike = {
+        message,
+        conversationHistory: JSON.parse(conversationHistoryRaw || '[]'),
+        extractedData: JSON.parse(extractedDataRaw || '{}'),
+      };
+      validated = chatSchema.parse(bodyLike);
+
+      const maxSize = 10 * 1024 * 1024;
+      for (const f of files || []) {
+        if (!f) continue;
+        if (f.size > maxSize) { uploadedSummaries.push({ name: f.name, kind: 'text', note: 'ignored: over 10MB' }); continue; }
+        const type = f.type;
+        if (type.startsWith('image/')) {
+          const lower = f.name.toLowerCase();
+          const tokens = ['sofa','couch','bed','double','wardrobe','fridge','washing','dryer','table','chair','chairs','tv','mattress','boxes','box','mirror','bicycle'];
+          const hits = tokens.filter(t => lower.includes(t));
+          if (hits.length) extractedFromFiles.push({ name: hits.join(' ') });
+          uploadedSummaries.push({ name: f.name, kind: 'image', note: hits.length ? `inferred: ${hits.join(', ')}` : 'inferred: unknown' });
+        } else if (type === 'text/plain') {
+          const text = await f.text();
+          const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          for (const l of lines) {
+            const m = l.match(/^(\d+)\s*x?\s*(.+)$/i);
+            if (m) extractedFromFiles.push({ name: m[2].trim(), quantity: parseInt(m[1],10) });
+            else extractedFromFiles.push({ name: l });
+          }
+          uploadedSummaries.push({ name: f.name, kind: 'text', note: `parsed ${lines.length} lines` });
+        } else if (type === 'application/pdf') {
+          uploadedSummaries.push({ name: f.name, kind: 'pdf-unsupported', note: 'pdf parsing unavailable in preview' });
+        } else {
+          uploadedSummaries.push({ name: f.name, kind: 'text', note: 'ignored: unsupported type' });
+        }
+      }
+    } else {
+      const body = await request.json();
+      validated = chatSchema.parse(body);
+    }
     logMetric('started_chat', { configured: true });
 
     // Extract data from current message and merge with existing
     const extractedData = extractDataFromMessage(validated.message, validated.extractedData || {});
+    if (extractedFromFiles.length) {
+      extractedData.specialItems = [
+        ...(extractedData.specialItems || []),
+        ...extractedFromFiles.map(i => i.quantity ? `${i.quantity} x ${i.name}` : i.name)
+      ];
+    }
     const missingFields = computeMissingFields(extractedData);
     if (missingFields.length > 0) {
       logMetric('missing_data', { fields: missingFields });
@@ -435,11 +489,24 @@ export async function POST(request: NextRequest) {
       } catch {}
     }
 
+    // Build upload context if present (deterministic, model must trust it)
+    const uploadContextLines: string[] = [];
+    if (uploadedSummaries && uploadedSummaries.length) {
+      uploadContextLines.push('Uploads Summary (deterministic):');
+      uploadedSummaries.forEach(u => {
+        uploadContextLines.push(`- ${u.name} → ${u.note}`);
+      });
+    }
+
     const faqInstruction = retrieved.faqs.length > 0
       ? `\n\nWhen the user's query semantically matches any FAQ below, answer EXACTLY with the provided answer (concise, no additions).`
       : '';
+    const uploadInstruction = uploadContextLines.length
+      ? `\n\nIf uploads summary is present, you MUST acknowledge the analysis and use it. NEVER say you cannot analyze files. Keep answers short (2 sentences).`
+      : '';
+
     const messages: any[] = [
-      { role: 'system', content: SYSTEM_PROMPT + contextMessage + faqInstruction + (retrievalContext ? `\n\nContext (internal):\n${retrievalContext}` : '') },
+      { role: 'system', content: SYSTEM_PROMPT + contextMessage + faqInstruction + uploadInstruction + (retrievalContext ? `\n\nContext (internal):\n${retrievalContext}` : '') + (uploadContextLines.length ? `\n\n${uploadContextLines.join('\n')}` : '') },
       ...(validated.conversationHistory || []),
       { role: 'user', content: validated.message },
     ];
@@ -453,7 +520,13 @@ export async function POST(request: NextRequest) {
       stream: false,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || 'I apologize, I couldn\'t process that. Could you please rephrase?';
+    let aiResponse = chatCompletion.choices[0]?.message?.content || 'I apologize, I couldn\'t process that. Could you please rephrase?';
+    if (uploadedSummaries.length) {
+      const summary = uploadedSummaries.map(u => `• ${u.name}: ${u.note}`).join('\n');
+      aiResponse = `${uploadedSummaries.some(u=>u.kind==='image') ? 'Analyzed your image(s).' : 'Processed your file(s).'}\n${summary}\n\n${aiResponse}`;
+      logMetric('file_uploaded', { count: uploadedSummaries.length });
+      logMetric('file_analyzed', { itemsInferred: extractedFromFiles.length });
+    }
 
     // Determine if we have enough information for a quote
     const hasEnoughInfo = extractedData.pickupAddress && 

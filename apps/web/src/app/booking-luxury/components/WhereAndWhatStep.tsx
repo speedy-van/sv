@@ -8,6 +8,7 @@
 // 🎉 ZERO RED ERRORS - Clean console with warnings only!
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Box,
@@ -1973,6 +1974,7 @@ export default function WhereAndWhatStep({
     <Box maxW="6xl" py={8}>
       <VStack spacing={8} align="stretch">
         
+        
         {/* Version Banner - Hidden in production, visible in dev */}
 
         
@@ -2710,7 +2712,7 @@ export default function WhereAndWhatStep({
                       {/* Always show items - customers can continue booking */}
                       <Flex direction={{ base: 'column', md: 'row' }} gap={4} w="full">
                         <FormControl w={{ base: '100%', md: '45%' }}>
-                          <FormLabel color="gray.300" fontSize="sm">
+                          <FormLabel htmlFor="luxury-category-filter" color="gray.300" fontSize="sm">
                             Filter by category
                           </FormLabel>
                           <Box
@@ -2731,6 +2733,8 @@ export default function WhereAndWhatStep({
                             }}
                           >
                             <Select
+                              id="luxury-category-filter"
+                              name="luxury-category-filter"
                               value={selectedCategory}
                               onChange={(event) => setSelectedCategory(event.target.value)}
                               bg="gray.700"
@@ -3207,21 +3211,34 @@ export default function WhereAndWhatStep({
                 ✅ {step1.items.length} Items Selected
               </Badge>
 
-              {onNext && (
+              <HStack>
                 <Button
-                  colorScheme="blue"
+                  as={Link}
+                  href="/"
+                  variant="outline"
+                  colorScheme="gray"
                   size="lg"
-                  isDisabled={step1.items.length === 0}
-                  onClick={onNext}
-                  rightIcon={<Icon as={FaArrowRight} />}
-                  _disabled={{
-                    opacity: 0.5,
-                    cursor: "not-allowed"
-                  }}
+                  leftIcon={<Icon as={FaArrowLeft} />}
                 >
-                  Continue to Payment
+                  Back to Home
                 </Button>
-              )}
+
+                {onNext && (
+                  <Button
+                    colorScheme="blue"
+                    size="lg"
+                    isDisabled={step1.items.length === 0}
+                    onClick={onNext}
+                    rightIcon={<Icon as={FaArrowRight} />}
+                    _disabled={{
+                      opacity: 0.5,
+                      cursor: "not-allowed"
+                    }}
+                  >
+                    Continue to Payment
+                  </Button>
+                )}
+              </HStack>
             </HStack>
           </CardBody>
         </Card>
