@@ -116,9 +116,9 @@ export default function WhereAndWhatStep({
   ];
 
   const bedroomPackages = [
-    { id: 1, name: '1 Bedroom', items: 15, price: '350', icon: '🏠' },
-    { id: 2, name: '2 Bedroom', items: 25, price: '550', icon: '🏠' },
-    { id: 3, name: '3 Bedroom', items: 35, price: '750', icon: '🏠' },
+  { id: 1, name: '1 Bedroom', items: 15, price: '350', image: '/items/one%20bedroom.png' },
+  { id: 2, name: '2 Bedroom', items: 25, price: '550', image: '/items/2%20bedroom.png' },
+  { id: 3, name: '3 Bedroom', items: 35, price: '750', image: '/items/3%20bed%20rooms.png' },
   ];
 
   // Handlers
@@ -287,7 +287,9 @@ export default function WhereAndWhatStep({
                     >
                       <CardBody p={4} textAlign="center">
                         <VStack spacing={3}>
-                          <Text fontSize="3xl">{pkg.icon}</Text>
+                          <Box w="100%" h="120px" borderRadius="md" overflow="hidden" bg="gray.900" display="flex" alignItems="center" justifyContent="center">
+                            <Image src={pkg.image} alt={pkg.name} w="100%" h="100%" objectFit="cover" />
+                          </Box>
                           <VStack spacing={1}>
                             <Text fontSize="lg" color="white" fontWeight="bold">
                               {pkg.name}

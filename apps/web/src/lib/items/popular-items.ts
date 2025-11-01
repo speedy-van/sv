@@ -17,7 +17,7 @@ export interface PopularItem {
 }
 
 // Most popular items with existing images (Full House packages in logical order)
-export const POPULAR_ITEMS: PopularItem[] = [
+const POPULAR_ITEMS_INTERNAL: PopularItem[] = [
   {
     id: 'full-house-studio',
     name: 'Studio Package',
@@ -177,7 +177,7 @@ export const POPULAR_ITEMS: PopularItem[] = [
 ];
 
 // Category-specific popular items (for when category is selected)
-export const CATEGORY_POPULAR_ITEMS: Record<string, PopularItem[]> = {
+const CATEGORY_POPULAR_ITEMS_INTERNAL: Record<string, PopularItem[]> = {
   'full-house': [
     {
       id: 'full-house-studio',
@@ -562,12 +562,32 @@ export const CATEGORY_POPULAR_ITEMS: Record<string, PopularItem[]> = {
   ]
 };
 
+function deepFreeze<T>(obj: T): T {
+  if (obj && typeof obj === 'object') {
+    Object.getOwnPropertyNames(obj).forEach((prop) => {
+      const value: any = (obj as any)[prop];
+      if (value && (typeof value === 'object' || typeof value === 'function')) {
+        deepFreeze(value);
+      }
+    });
+    return Object.freeze(obj);
+  }
+  return obj;
+}
+
+export const POPULAR_ITEMS: ReadonlyArray<PopularItem> = deepFreeze(POPULAR_ITEMS_INTERNAL.slice());
+export const CATEGORY_POPULAR_ITEMS: Readonly<Record<string, ReadonlyArray<PopularItem>>> = deepFreeze(
+  Object.fromEntries(
+    Object.entries(CATEGORY_POPULAR_ITEMS_INTERNAL).map(([k, v]) => [k, v.slice()])
+  )
+);
+
 // Get popular items for a specific category or general popular items
 export function getPopularItems(category?: string): PopularItem[] {
   if (category && category !== 'all' && CATEGORY_POPULAR_ITEMS[category]) {
-    return CATEGORY_POPULAR_ITEMS[category];
+    return CATEGORY_POPULAR_ITEMS[category].slice() as PopularItem[];
   }
-  return POPULAR_ITEMS;
+  return (POPULAR_ITEMS as PopularItem[]).slice();
 }
 
 // Convert PopularItem to Item format for compatibility

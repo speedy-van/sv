@@ -25,6 +25,7 @@ import {
   Switch,
   SimpleGrid,
   FormLabel,
+  Portal,
 } from '@chakra-ui/react';
 import { 
   CheckIcon, 
@@ -131,6 +132,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
+  const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
   // Building type options
   const buildingTypes = [
@@ -436,11 +438,24 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     };
 
     if (showSuggestions) {
+      // Position dropdown relative to viewport to avoid ancestor clipping
+      const rect = inputRef.current?.getBoundingClientRect();
+      if (rect) {
+        setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
+      }
       document.addEventListener('mousedown', handleClickOutside);
+      const reposition = () => {
+        const r = inputRef.current?.getBoundingClientRect();
+        if (r) setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
+      };
+      window.addEventListener('scroll', reposition, true);
+      window.addEventListener('resize', reposition);
+      setTimeout(reposition, 0);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      // listeners removed by reference in caller; safe fallback
     };
   }, [showSuggestions]);
 
@@ -569,15 +584,16 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
         )}
 
         {/* Premium Suggestions Dropdown */}
-        {showSuggestions && suggestions.length > 0 && !value && (
+        {showSuggestions && suggestions.length > 0 && (
+          <Portal>
           <ScaleFade in={true} initialScale={0.95}>
             <Box
               ref={dropdownRef}
-              position="absolute"
-              top="calc(100% + 8px)"
-              left={0}
-              right={0}
-              zIndex={9999}
+              position="fixed"
+              top={`${dropdownStyle.top}px`}
+              left={`${dropdownStyle.left}px`}
+              width={`${dropdownStyle.width}px`}
+              zIndex={1400}
               bg="rgba(26, 32, 44, 0.98)"
               backdropFilter="blur(10px)"
               border="1px solid rgba(255, 255, 255, 0.1)"
@@ -598,6 +614,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                   background: 'rgba(255, 255, 255, 0.2)',
                   borderRadius: '3px',
                 },
+                WebkitOverflowScrolling: 'touch',
               }}
             >
               {suggestions.map((suggestion, index) => (
@@ -631,8 +648,9 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                         fontSize="sm" 
                         fontWeight="semibold" 
                         color="white"
-                        lineHeight="1.3"
-                        noOfLines={1}
+                        lineHeight="1.35"
+                        whiteSpace="normal"
+                        wordBreak="break-word"
                       >
                         {highlightMatch(suggestion.mainText || suggestion.displayText, inputValue)}
                       </Text>
@@ -640,9 +658,10 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                       {suggestion.secondaryText && (
                         <Text 
                           fontSize="xs" 
-                          color="rgba(255, 255, 255, 0.7)"
-                          lineHeight="1.2"
-                          noOfLines={1}
+                          color="rgba(255, 255, 255, 0.8)"
+                          lineHeight="1.25"
+                          whiteSpace="normal"
+                          wordBreak="break-word"
                         >
                           {suggestion.secondaryText}
                         </Text>
@@ -682,17 +701,19 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
               </Box>
             </Box>
           </ScaleFade>
+          </Portal>
         )}
         
         {/* No results message */}
-        {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length >= 2 && !value && (
+        {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length >= 2 && (
           <Fade in={true}>
+            <Portal>
             <Box
-              position="absolute"
-              top="calc(100% + 8px)"
-              left={0}
-              right={0}
-              zIndex={9999}
+              position="fixed"
+              top={`${dropdownStyle.top}px`}
+              left={`${dropdownStyle.left}px`}
+              width={`${dropdownStyle.width}px`}
+              zIndex={1400}
               bg="rgba(26, 32, 44, 0.98)"
               backdropFilter="blur(10px)"
               border="1px solid rgba(255, 255, 255, 0.1)"
@@ -707,6 +728,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                 </Text>
               </VStack>
             </Box>
+            </Portal>
           </Fade>
         )}
 

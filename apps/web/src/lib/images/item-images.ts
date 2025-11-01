@@ -46,16 +46,16 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'office-chair',
     name: 'Office Chair',
     category: 'office',
-    imagePath: '/items/furniture/office_chair.png',
-    fallbackImage: '/items/furniture/chair.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Office_furniture/office_chair_ergonomic_adjustable_height_jpg_22kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Office_furniture/office_chair_executive_leather_jpg_28kg.jpg',
     description: 'Ergonomic office chair'
   },
   'desk': {
     id: 'desk',
     name: 'Desk',
     category: 'office',
-    imagePath: '/items/furniture/desk.png',
-    fallbackImage: '/items/furniture/office_desk.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Office_furniture/desk_computer_l_shaped_corner_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Office_furniture/desk_executive_wooden_60inch_jpg_38kg.jpg',
     description: 'Office desk'
   },
   'filing-cabinet-4drawer': {
@@ -122,8 +122,8 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'fridge',
     name: 'Refrigerator',
     category: 'kitchen',
-    imagePath: '/items/appliances/refrigerator.png',
-    fallbackImage: '/items/appliances/fridge_freezer.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/refrigerator_large_french_door_stainless_steel_jpg_120kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/refrigerator_side_side_door_stainless_jpg_95kg.jpg',
     description: 'Kitchen refrigerator'
   },
 
@@ -174,8 +174,8 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'dining-table',
     name: 'Dining Table',
     category: 'furniture',
-    imagePath: '/items/furniture/dining_table.png',
-    fallbackImage: '/items/furniture/table.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Dining_Room_Furniture/dining_table_extendable_6_8_seats_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Dining_Room_Furniture/dining_table_round_4_6_seats_jpg_38kg.jpg',
     description: 'Dining room table'
   },
   'wardrobe': {
@@ -190,8 +190,8 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'bookshelf',
     name: 'Bookshelf',
     category: 'furniture',
-    imagePath: '/items/furniture/bookshelf.png',
-    fallbackImage: '/items/furniture/book_shelf.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/bookcase_5_shelf_wooden_standing_jpg_42kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/bookshelf_living_room_storage_sunesa_jpg_35kg.jpg',
     description: 'Book storage shelf'
   },
 
@@ -226,8 +226,8 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'washing-machine',
     name: 'Washing Machine',
     category: 'appliances',
-    imagePath: '/items/appliances/washer.png',
-    fallbackImage: '/items/appliances/appliances.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/washing_machine_front_load_12kg_jpg_75kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/washing_machine_top_load_10kg_jpg_65kg.jpg',
     description: 'Washing machine'
   },
   'dishwasher': {
@@ -242,8 +242,8 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     id: 'microwave',
     name: 'Microwave',
     category: 'appliances',
-    imagePath: '/items/appliances/microwave.png',
-    fallbackImage: '/items/appliances/appliances.png',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/microwave_countertop_1_6_cu_ft_jpg_18kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/microwave_over_range_2_1_cu_ft_jpg_25kg.jpg',
     description: 'Kitchen microwave'
   },
 
@@ -289,6 +289,168 @@ export const ITEM_IMAGES: Record<string, ItemImage> = {
     imagePath: '/items/misc/piano.png',
     fallbackImage: '/items/misc/other.png',
     description: 'Musical piano'
+  },
+
+  // UK Removal Dataset Mappings for Booking Luxury Items
+  'bed-single': {
+    id: 'bed-single',
+    name: 'Single Bed',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_white_hampshire_jpg_18kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_sussex_white_jpg_22kg.jpg',
+    description: 'Single bed frame'
+  },
+  'bed-double': {
+    id: 'bed-double',
+    name: 'Double Bed',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_cavill_fabric_grey_jpg_38kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_florence_luxury_jpg_35kg.jpg',
+    description: 'Double bed frame'
+  },
+  'mattress-single': {
+    id: 'mattress-single',
+    name: 'Single Mattress',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_white_hampshire_jpg_18kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_sussex_white_jpg_22kg.jpg',
+    description: 'Single mattress'
+  },
+  'mattress-double': {
+    id: 'mattress-double',
+    name: 'Double Mattress',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_harper_storage_mattress_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_cavill_fabric_grey_jpg_38kg.jpg',
+    description: 'Double mattress'
+  },
+  'wardrobe-small': {
+    id: 'wardrobe-small',
+    name: 'Small Wardrobe',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Wardrobes_closet/small_double_bed_frame_2_storage_drawers_jpg_28kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/single_bed_frame_white_hampshire_jpg_18kg.jpg',
+    description: 'Small wardrobe'
+  },
+  'wardrobe-large': {
+    id: 'wardrobe-large',
+    name: 'Large Wardrobe',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Wardrobes_closet/super_king_bed_frame_sparkford_oak_6ft_jpg_85kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Wardrobes_closet/king_bed_frame_classic_luxe_storage_jpg_65kg.jpg',
+    description: 'Large wardrobe'
+  },
+  'bedside-table': {
+    id: 'bedside-table',
+    name: 'Bedside Table',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/platform_bed_frame_low_enkel_no_headboard_jpg_28kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/end_table_4_tier_tribesigns_jpg_18kg.jpg',
+    description: 'Bedside table'
+  },
+  'chest-drawers': {
+    id: 'chest-drawers',
+    name: 'Chest of Drawers',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Bedroom/small_double_bed_frame_2_storage_drawers_jpg_28kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_harper_storage_mattress_jpg_45kg.jpg',
+    description: 'Chest of drawers'
+  },
+  'sofa-2seater': {
+    id: 'sofa-2seater',
+    name: '2-Seater Sofa',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/loveseat_2_seat_48inch_jarenie_jpg_32kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/loveseat_2_seat_fabric_63inch_jpg_38kg.jpg',
+    description: '2-seater sofa'
+  },
+  'sofa-3seater': {
+    id: 'sofa-3seater',
+    name: '3-Seater Sofa',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/sofa_3_seat_couch_storage_layer_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/sofa_3_seat_fabric_modern_lestar_jpg_48kg.jpg',
+    description: '3-seater sofa'
+  },
+  'armchair': {
+    id: 'armchair',
+    name: 'Armchair',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/armchair_1_seat_accent_chair_jpg_25kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/armchair_rolled_accent_set_2_jpg_42kg.jpg',
+    description: 'Armchair'
+  },
+  'coffee-table': {
+    id: 'coffee-table',
+    name: 'Coffee Table',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/coffee_table_modern_povison_living_room_jpg_25kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/coffee_table_round_lift_top_wynny_jpg_28kg.jpg',
+    description: 'Coffee table'
+  },
+  'tv-32inch': {
+    id: 'tv-32inch',
+    name: 'TV (32")',
+    category: 'electronics',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_stand_65inch_enhomee_large_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_console_entertainment_center_rosewood_jpg_85kg.jpg',
+    description: '32 inch TV'
+  },
+  'tv-42inch': {
+    id: 'tv-42inch',
+    name: 'TV (42")',
+    category: 'electronics',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_stand_farmhouse_75inch_plus_jpg_65kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_console_entertainment_center_rosewood_jpg_85kg.jpg',
+    description: '42 inch TV'
+  },
+  'tv-stand': {
+    id: 'tv-stand',
+    name: 'TV Stand',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_stand_65inch_enhomee_large_jpg_45kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/tv_console_entertainment_center_rosewood_jpg_85kg.jpg',
+    description: 'TV stand'
+  },
+  'dining-chair': {
+    id: 'dining-chair',
+    name: 'Dining Chair',
+    category: 'furniture',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Dining_Room_Furniture/dining_chair_set_4_upholstered_jpg_28kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Dining_Room_Furniture/dining_chair_set_6_wooden_jpg_35kg.jpg',
+    description: 'Dining chair'
+  },
+  'lamp-table': {
+    id: 'lamp-table',
+    name: 'Table Lamp',
+    category: 'electronics',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/table_lamp_set_2_bedside_usb_black_jpg_5kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/table_lamp_set_2_farmhouse_usb_ports_jpg_7kg.jpg',
+    description: 'Table lamp'
+  },
+  'mirror-wall': {
+    id: 'mirror-wall',
+    name: 'Wall Mirror',
+    category: 'decor',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/mirror_large_47x32_gold_living_room_jpg_15kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/mirror_silver_beveled_39x28_rectangle_jpg_12kg.jpg',
+    description: 'Wall mirror'
+  },
+  'plant-pot': {
+    id: 'plant-pot',
+    name: 'Plant Pot',
+    category: 'decor',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/plant_stand_11_tier_indoor_outdoor_jpg_25kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/plant_stand_5_tier_grow_lights_jpg_32kg.jpg',
+    description: 'Plant pot or stand'
+  },
+  'vacuum-cleaner': {
+    id: 'vacuum-cleaner',
+    name: 'Vacuum Cleaner',
+    category: 'appliances',
+    imagePath: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/vacuum_cleaner_robot_smart_navigation_jpg_8kg.jpg',
+    fallbackImage: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/vacuum_cleaner_upright_bagless_jpg_12kg.jpg',
+    description: 'Vacuum cleaner'
   }
 };
 
