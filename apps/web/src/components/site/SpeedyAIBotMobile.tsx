@@ -37,9 +37,16 @@ export default function SpeedyAIBotMobile() {
   const [isLoading, setIsLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
+  const [canCalculate, setCanCalculate] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [supportsSpeech, setSupportsSpeech] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const recognitionRef = useRef<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFiles, setPendingFiles] = useState<Array<{ name: string; type: string; url?: string }>>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,18 +62,51 @@ export default function SpeedyAIBotMobile() {
     }
   }, [isOpen]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  // Init Web Speech API
+  useEffect(() => {
+    // Load TTS preference
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('sv_ai_tts_enabled') : null;
+      if (saved != null) setTtsEnabled(saved === 'true');
+    } catch {}
+
+    const SpeechRecognition: any =
+      (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+      null;
+    setSupportsSpeech(Boolean(SpeechRecognition));
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-GB';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+      recognition.onresult = (event: any) => {
+        try {
+          const transcript: string = event.results[0][0].transcript;
+          if (transcript && transcript.trim()) {
+            handleSendMessage(transcript.trim());
+          }
+        } catch {}
+      };
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const handleSendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? inputValue).trim();
+    if (!text || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue,
+      content: text,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
+    if (!overrideText) setInputValue('');
     setIsLoading(true);
 
     try {
@@ -74,7 +114,7 @@ export default function SpeedyAIBotMobile() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: inputValue,
+          message: text,
           conversationHistory: messages.slice(-6).map(m => ({
             role: m.role,
             content: m.content,
@@ -94,14 +134,19 @@ export default function SpeedyAIBotMobile() {
         };
 
         setMessages((prev) => [...prev, aiMessage]);
+        if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          try {
+            const utter = new SpeechSynthesisUtterance(data.message);
+            utter.lang = 'en-GB';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utter);
+          } catch {}
+        }
 
         if (data.extractedData) {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
         }
-
-        if (data.shouldCalculateQuote && data.extractedData) {
-          await calculateQuote(data.extractedData);
-        }
+        setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -121,8 +166,68 @@ export default function SpeedyAIBotMobile() {
     }
   };
 
+  const toggleListening = () => {
+    // Lazy init
+    if (!recognitionRef.current) {
+      const SpeechRecognition: any =
+        (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
+        null;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-GB';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onerror = (ev: any) => {
+          setIsListening(false);
+          try {
+            const err = ev?.error || 'unknown';
+            alert(err === 'not-allowed'
+              ? 'Microphone permission denied. Allow mic access in your browser settings.'
+              : err === 'service-not-allowed'
+              ? 'Speech service blocked. Use HTTPS or Chrome/Edge/Safari.'
+              : `Speech error: ${String(err)}`);
+          } catch {}
+        };
+        recognition.onresult = (event: any) => {
+          try {
+            const transcript: string = event.results[0][0].transcript;
+            if (transcript && transcript.trim()) {
+              handleSendMessage(transcript.trim());
+            }
+          } catch {}
+        };
+        recognitionRef.current = recognition;
+        setSupportsSpeech(true);
+      }
+    }
+    if (!supportsSpeech || !recognitionRef.current) {
+      try { window.alert('Voice input not supported on this browser. Use Chrome/Edge/Safari over HTTPS.'); } catch {}
+      return;
+    }
+    try {
+      if (isListening) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+      }
+    } catch {}
+  };
+
+  const toggleTts = () => {
+    const next = !ttsEnabled;
+    setTtsEnabled(next);
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('sv_ai_tts_enabled', String(next));
+      }
+    } catch {}
+  };
+
   const calculateQuote = async (data: ExtractedData) => {
     try {
+      setCanCalculate(false);
       const response = await fetch('/api/ai/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -158,6 +263,41 @@ export default function SpeedyAIBotMobile() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const onUploadClick = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const maxSize = 10 * 1024 * 1024;
+    const accepted = Array.from(files).filter(f => (
+      ['image/jpeg','image/png','image/webp','image/jpg','text/plain','application/pdf'].includes(f.type)
+    ) && f.size <= maxSize);
+    if (accepted.length === 0) return;
+    const previews = accepted.map(f => ({ name: f.name, type: f.type, url: f.type.startsWith('image/') ? URL.createObjectURL(f) : undefined }));
+    setPendingFiles(previews);
+    const form = new FormData();
+    form.append('message', inputValue || '');
+    accepted.forEach(f => form.append('files', f));
+    form.append('conversationHistory', JSON.stringify(messages.slice(-6).map(m => ({ role: m.role, content: m.content }))));
+    form.append('extractedData', JSON.stringify(extractedData));
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/ai/chat', { method: 'POST', body: form });
+      const data = await res.json();
+      if (data.success) {
+        const aiMessage: Message = { id: (Date.now()+1).toString(), role: 'assistant', content: data.message, timestamp: new Date() };
+        setMessages(prev => [...prev, aiMessage]);
+        if (data.extractedData) setExtractedData(prev => ({ ...prev, ...data.extractedData }));
+        setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
+        if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          try { const u = new SpeechSynthesisUtterance(data.message); u.lang='en-GB'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);} catch {}
+        }
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -342,8 +482,36 @@ export default function SpeedyAIBotMobile() {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsOpen(false)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={toggleTts}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  color: '#ffffff',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background-color 0.2s',
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                }}
+                title={ttsEnabled ? 'Voice replies on' : 'Voice replies off'}
+              >
+                {ttsEnabled ? '🔊' : '🔇'}
+              </button>
+
+              <button
+                onClick={() => setIsOpen(false)}
               style={{
                 width: '40px',
                 height: '40px',
@@ -366,7 +534,8 @@ export default function SpeedyAIBotMobile() {
               }}
             >
               ×
-            </button>
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -572,6 +741,35 @@ export default function SpeedyAIBotMobile() {
             </div>
           )}
 
+          {/* Calculate Quote Now CTA - Mobile */}
+          {canCalculate && !quoteData && (
+            <div
+              style={{
+                padding: '12px 16px',
+                backgroundColor: '#ecfdf5',
+                borderTop: '1px solid #bbf7d0',
+              }}
+            >
+              <button
+                onClick={() => calculateQuote(extractedData)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                Calculate quote now
+              </button>
+            </div>
+          )}
+
           {/* Input */}
           <div
             style={{
@@ -584,6 +782,19 @@ export default function SpeedyAIBotMobile() {
               alignItems: 'center',
             }}
           >
+            {!!pendingFiles.length && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {pendingFiles.slice(0,3).map((f, idx) => (
+                  <div key={idx} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px' }}>
+                    {f.url ? (
+                      <img src={f.url} alt={f.name} style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '12px', maxWidth: '80px', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
             <input
               ref={inputRef}
               type="text"
@@ -604,6 +815,35 @@ export default function SpeedyAIBotMobile() {
                 transition: 'border 0.2s ease-in-out',
               }}
             />
+            <button
+              onClick={onUploadClick}
+              style={{
+                width: '44px', height: '44px', borderRadius: '50%', border: '1px solid #d1d5db', backgroundColor: '#ffffff', fontSize: '18px'
+              }}
+              title="Upload files"
+            >
+              📎
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display:'none' }} />
+            {/* Mic button */}
+            <button
+              onClick={toggleListening}
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                border: isListening ? '2px solid #ef4444' : '1px solid #d1d5db',
+                backgroundColor: isListening ? '#fee2e2' : '#ffffff',
+                color: isListening ? '#b91c1c' : '#374151',
+                fontSize: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title={supportsSpeech ? (isListening ? 'Stop voice input' : 'Start voice input') : 'Voice input not supported'}
+            >
+              🎤
+            </button>
           </div>
         </div>
       )}

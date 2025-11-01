@@ -74,7 +74,9 @@
   "dependencies": {
     "@opentelemetry/resources": "^2.2.0",
     "@opentelemetry/sdk-metrics": "^2.2.0",
+    "@opentelemetry/winston-transport": "^0.18.0",
     "node-cron": "^4.2.1",
+    "winston": "^3.18.3",
     "zod": "^3.25.76"
   },
   "resolutions": {

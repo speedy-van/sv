@@ -33,7 +33,7 @@ import {
 import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo } from 'react-icons/fa';
 import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhoAndPaymentStep from './components/WhoAndPaymentStep';
 import { useBookingForm } from './hooks/useBookingForm';
@@ -62,6 +62,7 @@ const STEPS = [
 export default function BookingLuxuryPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isClient, setIsClient] = useState<boolean>(typeof window !== 'undefined');
+  const router = useRouter();
   
   // Wave effects for step headers
   const [itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
@@ -609,6 +610,16 @@ export default function BookingLuxuryPage() {
               <Flex justify="space-between" align="center" wrap="wrap" gap={6}>
                 {/* LEFT: Brand + Step Navigation */}
                 <HStack spacing={8}>
+                  {currentStep === 1 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="gray"
+                      onClick={() => router.push('/')}
+                    >
+                      ← Back to Home
+                    </Button>
+                  )}
                   <HStack spacing={4}>
                     <Icon as={FaTruck} boxSize={8} color="blue.600" />
                     <VStack align="start" spacing={1}>

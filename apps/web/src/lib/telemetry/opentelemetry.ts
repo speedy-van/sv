@@ -5,6 +5,8 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import winston from 'winston';
+import { OpenTelemetryTransportV3 as OTELWinstonTransport } from '@opentelemetry/winston-transport';
 
 // Initialize OpenTelemetry SDK
 export function initializeOpenTelemetry() {
@@ -47,6 +49,21 @@ export function initializeOpenTelemetry() {
 
   // Initialize the SDK and register with the OpenTelemetry API
   sdk.start();
+
+  // Configure Winston → OpenTelemetry bridge (resolves transport module warning)
+  try {
+    const otelTransport = new OTELWinstonTransport({
+      level: process.env.LOG_LEVEL || 'info',
+    });
+    const logger = winston.createLogger({
+      level: process.env.LOG_LEVEL || 'info',
+      transports: [new winston.transports.Console(), otelTransport],
+    });
+    // Example: attach to global for use elsewhere if needed
+    (global as any).__SV_LOGGER__ = logger;
+  } catch (err) {
+    console.warn('OTel/Winston bridge initialization skipped:', err);
+  }
 
   // Gracefully shut down the SDK on process exit
   process.on('SIGTERM', () => {
