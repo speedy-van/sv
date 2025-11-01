@@ -65,6 +65,7 @@ export default function SpeedyAIBot() {
   const [isLoading, setIsLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
+  const [canCalculate, setCanCalculate] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -136,10 +137,8 @@ export default function SpeedyAIBot() {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
         }
 
-        // Calculate quote if ready
-        if (data.shouldCalculateQuote && data.extractedData) {
-          await calculateQuote(data.extractedData);
-        }
+        // Enable manual calculate button when ready
+        setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -168,6 +167,7 @@ export default function SpeedyAIBot() {
 
   const calculateQuote = async (data: ExtractedData) => {
     try {
+      setCanCalculate(false);
       const response = await fetch('/api/ai/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -476,6 +476,21 @@ export default function SpeedyAIBot() {
               
               <div ref={messagesEndRef} />
             </VStack>
+
+            {/* Calculate Quote Now CTA */}
+            {canCalculate && !quoteData && (
+              <Box bg="green.50" p={3} borderTop="1px" borderColor="green.200">
+                <Button
+                  colorScheme="green"
+                  w="full"
+                  size="sm"
+                  onClick={() => calculateQuote(extractedData)}
+                  isDisabled={isLoading}
+                >
+                  Calculate quote now
+                </Button>
+              </Box>
+            )}
 
             {/* Quote Summary (if available) */}
             {quoteData && (

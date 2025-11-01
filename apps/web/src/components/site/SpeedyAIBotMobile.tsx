@@ -37,6 +37,7 @@ export default function SpeedyAIBotMobile() {
   const [isLoading, setIsLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
+  const [canCalculate, setCanCalculate] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,10 +99,7 @@ export default function SpeedyAIBotMobile() {
         if (data.extractedData) {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
         }
-
-        if (data.shouldCalculateQuote && data.extractedData) {
-          await calculateQuote(data.extractedData);
-        }
+        setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -123,6 +121,7 @@ export default function SpeedyAIBotMobile() {
 
   const calculateQuote = async (data: ExtractedData) => {
     try {
+      setCanCalculate(false);
       const response = await fetch('/api/ai/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -568,6 +567,35 @@ export default function SpeedyAIBotMobile() {
                 }}
               >
                 Book Now
+              </button>
+            </div>
+          )}
+
+          {/* Calculate Quote Now CTA - Mobile */}
+          {canCalculate && !quoteData && (
+            <div
+              style={{
+                padding: '12px 16px',
+                backgroundColor: '#ecfdf5',
+                borderTop: '1px solid #bbf7d0',
+              }}
+            >
+              <button
+                onClick={() => calculateQuote(extractedData)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                Calculate quote now
               </button>
             </div>
           )}
