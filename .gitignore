@@ -83,3 +83,7 @@ sv/.git/objects/pack/pack-9bb9dc03679d3e05225d4961c599bcd2543bde6f.pack
 .pnpm-store/v10/files/f7/d20fc85f2c67375750884c55b1fae6edb556728a61b2d44748aff5fe8de5f9bbffd12ef882e8f27009bf3cb48344a8d30c7625add44a1c1641b6cc367fb766
 sv/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
 sv/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
+-e 
+# Environment files
+*.env
+*.env.*
