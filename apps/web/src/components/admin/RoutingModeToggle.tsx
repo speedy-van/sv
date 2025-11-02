@@ -253,7 +253,7 @@ export default function RoutingModeToggle() {
             {/* Auto Mode Details */}
             {isAutoMode && (
               <Box 
-                bg="white" 
+                bg="gray.800" 
                 p={4} 
                 borderRadius="md" 
                 borderWidth={1}

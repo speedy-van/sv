@@ -1820,7 +1820,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                           position="absolute" 
                           bottom={3} 
                           left={3} 
-                          bg="white" 
+                          bg="gray.800" 
                           px={3} 
                           py={2} 
                           borderRadius="md"
@@ -1869,7 +1869,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       placeholder="👤 Click here to select a driver"
                       value={selectedDriverId}
                       onChange={(e) => setSelectedDriverId(e.target.value)}
-                      bg={selectedDriverId ? 'green.50' : 'white'}
+                      bg={selectedDriverId ? 'green.900' : 'gray.800'}
                       borderColor={selectedDriverId ? 'green.300' : 'gray.200'}
                       focusBorderColor="blue.500"
                       size="lg"
@@ -2009,7 +2009,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
             </VStack>
           </ModalBody>
 
-          <ModalFooter bg="white" borderTop="1px solid" borderColor="gray.200" position="sticky" bottom={0}>
+          <ModalFooter bg="gray.800" borderTop="1px solid" borderColor="gray.600" position="sticky" bottom={0}>
             <HStack spacing={3} w="full" justify="space-between">
               <Button 
                 variant="outline" 

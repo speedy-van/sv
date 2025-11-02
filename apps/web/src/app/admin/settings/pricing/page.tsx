@@ -1234,7 +1234,7 @@ export default function PricingSettingsPage() {
 
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               {/* Customer Side */}
-              <Box p={4} bg="white" borderRadius="md" border="1px solid" borderColor="blue.200">
+              <Box p={4} bg="gray.800" borderRadius="md" border="1px solid" borderColor="blue.200">
                 <VStack align="stretch" spacing={2}>
                   <HStack justify="space-between">
                     <Text fontSize="sm" fontWeight="medium" color="gray.600">
@@ -1271,7 +1271,7 @@ export default function PricingSettingsPage() {
               </Box>
 
               {/* Driver Side */}
-              <Box p={4} bg="white" borderRadius="md" border="1px solid" borderColor="blue.200">
+              <Box p={4} bg="gray.800" borderRadius="md" border="1px solid" borderColor="blue.200">
                 <VStack align="stretch" spacing={2}>
                   <HStack justify="space-between">
                     <Text fontSize="sm" fontWeight="medium" color="gray.600">
@@ -1341,7 +1341,7 @@ export default function PricingSettingsPage() {
                   <Tooltip key={preset.id} label={preset.description} placement="top">
                     <Box
                       p={3}
-                      bg={selectedPreset === preset.id ? 'white' : 'white'}
+                      bg={selectedPreset === preset.id ? 'gray.800' : 'gray.700'}
                       borderRadius="md"
                       border="2px solid"
                       borderColor={selectedPreset === preset.id ? `${preset.color}.500` : 'gray.200'}

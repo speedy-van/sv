@@ -158,7 +158,7 @@ export default function LegalSettings() {
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const bgColor = useColorModeValue('white', 'gray.800');
+  const bgColor = 'gray.800';
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   const updateSettings = (section: keyof LegalSettings, updates: any) => {

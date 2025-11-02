@@ -338,19 +338,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data }) => {
           </CardHeader>
           <CardBody>
             <VStack spacing={4} align="stretch">
-              <HStack justify="space-between" p={3} bg="whiteAlpha.50" borderRadius="md">
+              <HStack justify="space-between" p={3} bg="gray.700" borderRadius="md">
                 <Text color="white">Database</Text>
                 <Badge colorScheme="green">Healthy</Badge>
               </HStack>
-              <HStack justify="space-between" p={3} bg="whiteAlpha.50" borderRadius="md">
+              <HStack justify="space-between" p={3} bg="gray.700" borderRadius="md">
                 <Text color="white">API Services</Text>
                 <Badge colorScheme="green">Healthy</Badge>
               </HStack>
-              <HStack justify="space-between" p={3} bg="whiteAlpha.50" borderRadius="md">
+              <HStack justify="space-between" p={3} bg="gray.700" borderRadius="md">
                 <Text color="white">Payment Processing</Text>
                 <Badge colorScheme="green">Healthy</Badge>
               </HStack>
-              <HStack justify="space-between" p={3} bg="whiteAlpha.50" borderRadius="md">
+              <HStack justify="space-between" p={3} bg="gray.700" borderRadius="md">
                 <Text color="white">Real-time Tracking</Text>
                 <Badge colorScheme="green">Healthy</Badge>
               </HStack>
