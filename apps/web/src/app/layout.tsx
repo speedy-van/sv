@@ -145,9 +145,111 @@ export default async function RootLayout({
           rel="stylesheet"
         />
 
+        {/* Fix CSS files incorrectly loaded as scripts (runs in head before page load) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Run immediately when head is parsed
+                if (document.readyState === 'loading') {
+                  // Fix CSS files that are incorrectly loaded as script tags
+                  const scripts = document.querySelectorAll('script[src*=".css"]');
+                  scripts.forEach((script) => {
+                    const src = script.getAttribute('src');
+                    if (src && src.endsWith('.css')) {
+                      // Check if link already exists to avoid duplicates
+                      const existingLink = document.querySelector('link[href="' + src + '"]');
+                      if (!existingLink) {
+                        // Remove the incorrect script tag
+                        script.remove();
+                        // Create a proper link tag
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = src;
+                        link.type = 'text/css';
+                        document.head.appendChild(link);
+                      } else {
+                        // Just remove the duplicate script tag
+                        script.remove();
+                      }
+                    }
+                  });
+                }
+              })();
+            `,
+          }}
+        />
+
         {/* Preload critical resources - removed favicon preload as it's not used immediately */}
       </head>
       <body>
+        {/* Fix CSS files incorrectly loaded as scripts (backup - runs after DOM load) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function fixCSSAsScripts() {
+                  // Fix CSS files that are incorrectly loaded as script tags
+                  const scripts = document.querySelectorAll('script[src*=".css"]');
+                  scripts.forEach((script) => {
+                    const src = script.getAttribute('src');
+                    if (src && src.endsWith('.css')) {
+                      // Check if link already exists to avoid duplicates
+                      const existingLink = document.querySelector('link[href="' + src + '"]');
+                      if (!existingLink) {
+                        // Remove the incorrect script tag
+                        script.remove();
+                        // Create a proper link tag
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = src;
+                        link.type = 'text/css';
+                        document.head.appendChild(link);
+                      } else {
+                        // Just remove the duplicate script tag
+                        script.remove();
+                      }
+                    }
+                  });
+                }
+                
+                // Run immediately
+                fixCSSAsScripts();
+                
+                // Run on DOM ready as backup
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', fixCSSAsScripts);
+                } else {
+                  fixCSSAsScripts();
+                }
+                
+                // Watch for dynamically added script tags (Next.js hydration)
+                if (window.MutationObserver) {
+                  const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                      mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1 && node.tagName === 'SCRIPT') {
+                          const src = node.getAttribute('src');
+                          if (src && src.endsWith('.css')) {
+                            node.remove();
+                            const link = document.createElement('link');
+                            link.rel = 'stylesheet';
+                            link.href = src;
+                            link.type = 'text/css';
+                            document.head.appendChild(link);
+                          }
+                        }
+                      });
+                    });
+                  });
+                  
+                  observer.observe(document.head, { childList: true, subtree: true });
+                  observer.observe(document.body, { childList: true, subtree: true });
+                }
+              })();
+            `,
+          }}
+        />
         {/* Remove console logs in production for Best Practices score */}
         <script
           dangerouslySetInnerHTML={{

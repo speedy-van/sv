@@ -500,8 +500,8 @@ export default function EnhancedAdminChatPage() {
                             key={conversation.id}
                             cursor="pointer"
                             onClick={() => handleConversationSelect(conversation)}
-                            bg={selectedConversation?.id === conversation.id ? 'blue.50' : 'white'}
-                            _hover={{ bg: 'gray.50' }}
+                            bg={selectedConversation?.id === conversation.id ? 'blue.900' : 'gray.800'}
+                            _hover={{ bg: 'gray.700' }}
                             borderWidth={selectedConversation?.id === conversation.id ? 2 : 1}
                             borderColor={selectedConversation?.id === conversation.id ? 'blue.500' : 'gray.200'}
                           >
@@ -659,7 +659,7 @@ export default function EnhancedAdminChatPage() {
                                 maxW="70%"
                               >
                                 <Card
-                                  bg={message.senderRole === 'admin' ? 'blue.500' : 'gray.100'}
+                                  bg={message.senderRole === 'admin' ? 'blue.500' : 'gray.700'}
                                   color={message.senderRole === 'admin' ? 'white' : 'black'}
                                 >
                                   <CardBody p={3}>
@@ -759,8 +759,8 @@ export default function EnhancedAdminChatPage() {
                             key={conversation.id}
                             cursor="pointer"
                             onClick={() => handleConversationSelect(conversation)}
-                            bg={selectedConversation?.id === conversation.id ? 'red.50' : 'white'}
-                            _hover={{ bg: 'gray.50' }}
+                            bg={selectedConversation?.id === conversation.id ? 'red.900' : 'gray.800'}
+                            _hover={{ bg: 'gray.700' }}
                           >
                             <CardBody p={3}>
                               <VStack align="start" spacing={2}>
@@ -864,7 +864,7 @@ export default function EnhancedAdminChatPage() {
                                 maxW="70%"
                               >
                                 <Card
-                                  bg={message.senderRole === 'admin' ? 'blue.500' : 'gray.100'}
+                                  bg={message.senderRole === 'admin' ? 'blue.500' : 'gray.700'}
                                   color={message.senderRole === 'admin' ? 'white' : 'black'}
                                 >
                                   <CardBody p={3}>

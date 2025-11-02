@@ -255,7 +255,7 @@ export default function AdminCareersPage() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 maxW="250px"
-                bg="whiteAlpha.50"
+                bg="gray.700"
                 color="text.primary"
                 borderColor="border.primary"
                 sx={{
@@ -304,7 +304,7 @@ export default function AdminCareersPage() {
                     </Tr>
                   ) : (
                     filteredApplications.map((app) => (
-                      <Tr key={app.id} _hover={{ bg: 'whiteAlpha.50' }}>
+                      <Tr key={app.id} _hover={{ bg: 'gray.700' }}>
                         <Td color="text.secondary">
                           {new Date(app.createdAt).toLocaleDateString('en-GB')}
                         </Td>
@@ -409,7 +409,7 @@ export default function AdminCareersPage() {
                   <Text fontWeight="bold" color="text.primary">Cover Letter:</Text>
                   <Box
                     p={4}
-                    bg="whiteAlpha.50"
+                    bg="gray.700"
                     border="1px solid"
                     borderColor="border.primary"
                     borderRadius="md"
@@ -518,7 +518,7 @@ export default function AdminCareersPage() {
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Reason for rejection (optional)"
                 rows={4}
-                bg="whiteAlpha.50"
+                bg="gray.700"
                 color="text.primary"
                 borderColor="border.primary"
                 _placeholder={{ color: 'text.tertiary' }}

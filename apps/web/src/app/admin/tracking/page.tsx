@@ -136,7 +136,7 @@ export default function TrackingHub() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const toast = useToast();
-  const bgColor = useColorModeValue('white', 'gray.800');
+  const bgColor = 'gray.800';
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

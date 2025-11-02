@@ -1,7 +1,7 @@
 // Service Worker for Speedy Van PWA
-const CACHE_NAME = 'speedy-van-v1.0.0';
-const STATIC_CACHE = 'speedy-van-static-v1.0.0';
-const DYNAMIC_CACHE = 'speedy-van-dynamic-v1.0.0';
+const CACHE_NAME = 'speedy-van-v1.0.1'; // Updated to force cache refresh
+const STATIC_CACHE = 'speedy-van-static-v1.0.1'; // Updated to force cache refresh
+const DYNAMIC_CACHE = 'speedy-van-dynamic-v1.0.1'; // Updated to force cache refresh
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
@@ -48,6 +48,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
+        // Delete ALL old caches to force refresh (fixes CSS/script tag issues)
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
@@ -58,7 +59,8 @@ self.addEventListener('activate', (event) => {
         );
       })
       .then(() => {
-        console.log('Service Worker activated');
+        console.log('Service Worker activated - all old caches cleared');
+        // Force all clients to use the new service worker immediately
         return self.clients.claim();
       })
   );
@@ -112,7 +114,35 @@ function isPageRequest(request) {
 // Handle static file requests
 async function handleStaticFile(request) {
   try {
-    // Try cache first
+    const url = new URL(request.url);
+    
+    // Ensure CSS files have correct content-type header
+    if (url.pathname.endsWith('.css')) {
+      // Always fetch CSS from network to avoid cache issues
+      const networkResponse = await fetch(request);
+      
+      if (networkResponse.ok) {
+        // Create a new response with correct content-type
+        const headers = new Headers(networkResponse.headers);
+        headers.set('Content-Type', 'text/css; charset=utf-8');
+        
+        const cssResponse = new Response(networkResponse.body, {
+          status: networkResponse.status,
+          statusText: networkResponse.statusText,
+          headers: headers
+        });
+        
+        // Cache with correct headers
+        const cache = await caches.open(STATIC_CACHE);
+        cache.put(request, cssResponse.clone());
+        
+        return cssResponse;
+      }
+      
+      return networkResponse;
+    }
+    
+    // Try cache first for other static files
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;

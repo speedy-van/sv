@@ -394,7 +394,7 @@ export default function RoutePreviewModal({
                 </Text>
                 <Box maxH="300px" overflowY="auto">
                   <Table size="sm" variant="simple">
-                    <Thead position="sticky" top={0} bg="white" zIndex={1}>
+                    <Thead position="sticky" top={0} bg="gray.800" zIndex={1}>
                       <Tr>
                         <Th width="60px">#</Th>
                         <Th width="100px">Type</Th>
