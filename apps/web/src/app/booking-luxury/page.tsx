@@ -113,16 +113,16 @@ export default function BookingLuxuryPage() {
     const pickupNorm = normalizeAddressForPricing(formData.step1.pickupAddress);
     const dropNorm = normalizeAddressForPricing(formData.step1.dropoffAddress);
 
-    // Validate all addresses have required components
-    if (!pickupNorm?.street || !pickupNorm?.number || !pickupNorm?.coordinates) {
-      console.warn('Incomplete pickup address - Enterprise Engine requires full address structure');
+    // Validate addresses have required components (street and coordinates are required, number is optional)
+    if (!pickupNorm?.street || !pickupNorm?.coordinates) {
+      console.warn('Incomplete pickup address - Enterprise Engine requires street and coordinates');
       return;
     }
 
-    const hasCompleteDrops = Boolean(dropNorm?.street && dropNorm?.number && dropNorm?.coordinates);
+    const hasCompleteDrops = Boolean(dropNorm?.street && dropNorm?.coordinates);
 
     if (!hasCompleteDrops) {
-      console.warn('Incomplete drop addresses - Enterprise Engine requires full address structure');
+      console.warn('Incomplete drop addresses - Enterprise Engine requires street and coordinates');
       return;
     }
 

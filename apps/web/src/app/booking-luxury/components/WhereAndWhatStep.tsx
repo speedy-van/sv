@@ -1561,7 +1561,7 @@ export default function WhereAndWhatStep({
       const response = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', {
         method: 'HEAD', // Just check if file exists and is accessible
         cache: 'no-cache',
-        timeoutMs: 3000
+        timeoutMs: 5000 // Increased timeout for better reliability
       });
 
       if (!response.ok) {
@@ -1570,7 +1570,9 @@ export default function WhereAndWhatStep({
       }
 
       // Quick validation by fetching a small portion
-      const testResponse = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', { timeoutMs: 4000 });
+      const testResponse = await fetchWithTimeout('/UK_Removal_Dataset/items_dataset.json', { 
+        timeoutMs: 8000 // Increased timeout for large files
+      });
       const testData = await testResponse.json();
 
       if (!testData.items || !Array.isArray(testData.items) || testData.items.length === 0) {
@@ -1582,7 +1584,12 @@ export default function WhereAndWhatStep({
       return true;
 
     } catch (error) {
-      console.error('[HEALTH-CHECK] ❌ Health check failed:', error);
+      // Handle AbortError gracefully - it's not a critical failure, just a timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('[HEALTH-CHECK] ⚠️ Health check timed out (non-critical, using fallback)');
+      } else {
+        console.error('[HEALTH-CHECK] ❌ Health check failed:', error);
+      }
       return false;
     }
   };

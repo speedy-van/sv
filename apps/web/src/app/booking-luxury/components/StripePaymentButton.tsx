@@ -35,6 +35,10 @@ interface AddressData {
   flatNumber?: string;
   formatted_address?: string;
   place_name?: string;
+  street?: string;
+  full?: string;
+  line1?: string;
+  number?: string;
 }
 
 interface ItemData {
@@ -195,13 +199,25 @@ export default function StripePaymentButton({
             phone: bookingData.customer.phone || '',
           },
           pickupAddress: {
-            street: bookingData.pickupAddress.address || bookingData.pickupAddress.formatted_address || '',
+            // Extract street from multiple possible sources
+            street: bookingData.pickupAddress.street || 
+                   bookingData.pickupAddress.address || 
+                   bookingData.pickupAddress.formatted_address ||
+                   bookingData.pickupAddress.full ||
+                   bookingData.pickupAddress.line1 ||
+                   '',
             city: bookingData.pickupAddress.city || 'Unknown City',
             postcode: bookingData.pickupAddress.postcode || '',
             country: 'UK',
           },
           dropoffAddress: {
-            street: bookingData.dropoffAddress.address || bookingData.dropoffAddress.formatted_address || '',
+            // Extract street from multiple possible sources
+            street: bookingData.dropoffAddress.street || 
+                   bookingData.dropoffAddress.address || 
+                   bookingData.dropoffAddress.formatted_address ||
+                   bookingData.dropoffAddress.full ||
+                   bookingData.dropoffAddress.line1 ||
+                   '',
             city: bookingData.dropoffAddress.city || 'Unknown City',
             postcode: bookingData.dropoffAddress.postcode || '',
             country: 'UK',

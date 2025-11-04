@@ -69,17 +69,19 @@ export default function SpeedyAIChatbot({
   
   // All Chakra hooks - must be called unconditionally and in the same order
   const toast = useToast();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const textColor = useColorModeValue('gray.800', 'gray.100');
-  const inputBg = useColorModeValue('gray.50', 'gray.700');
-  const messageBgUser = useColorModeValue('blue.500', 'blue.600');
-  const messageBgAssistant = useColorModeValue('white', 'gray.700');
-  const messagesBg = useColorModeValue('gray.50', 'gray.900');
+  // Dark theme with black background and white text
+  const bgColor = '#000000'; // Pure black background
+  const borderColor = '#333333'; // Dark gray border
+  const textColor = '#FFFFFF'; // White text
+  const inputBg = '#1a1a1a'; // Very dark gray for input
+  const messageBgUser = '#2563eb'; // Bright blue for user messages
+  const messageBgAssistant = '#1a1a1a'; // Dark gray for assistant messages
+  const messagesBg = '#0a0a0a'; // Almost black for messages area
+  const headerBg = '#111111'; // Slightly lighter black for header
   
   // Non-hook values derived from hooks
-  const messageBgUserText = 'white';
-  const messageBgAssistantText = textColor;
+  const messageBgUserText = '#FFFFFF'; // White text on user messages
+  const messageBgAssistantText = '#FFFFFF'; // White text on assistant messages
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -244,10 +246,17 @@ export default function SpeedyAIChatbot({
         bottom="20px"
         right="20px"
         size="lg"
-        colorScheme="blue"
+        bg="#2563eb"
+        color="#FFFFFF"
         borderRadius="full"
-        boxShadow="lg"
+        boxShadow="0 4px 20px rgba(37, 99, 235, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)"
         zIndex={1000}
+        _hover={{
+          bg: '#1d4ed8',
+          transform: 'scale(1.05)',
+          boxShadow: '0 6px 25px rgba(37, 99, 235, 0.6), 0 0 50px rgba(37, 99, 235, 0.4)',
+        }}
+        transition="all 0.3s ease"
       />
     );
   }
@@ -259,21 +268,31 @@ export default function SpeedyAIChatbot({
         bottom="20px"
         right="20px"
         width="300px"
-        boxShadow="xl"
+        boxShadow="0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(37, 99, 235, 0.3)"
         zIndex={1000}
         bg={bgColor}
         border="1px solid"
         borderColor={borderColor}
+        borderRadius="lg"
+        transition="all 0.3s ease"
+        _hover={{
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(37, 99, 235, 0.4)',
+        }}
       >
         <CardBody p={3}>
           <HStack justify="space-between">
             <HStack spacing={2}>
-              <Avatar size="sm" bg="blue.500" icon={<FiZap />} />
+              <Avatar 
+                size="sm" 
+                bg="#2563eb" 
+                icon={<FiZap />}
+                boxShadow="0 0 15px rgba(37, 99, 235, 0.5)"
+              />
               <VStack align="start" spacing={0}>
                 <Text fontSize="sm" fontWeight="bold" color={textColor}>
                   Speedy AI
                 </Text>
-                <Text fontSize="xs" color="gray.500">
+                <Text fontSize="xs" color="#9ca3af">
                   {language === 'ar' ? 'جاهز للمساعدة' : 'Ready to help'}
                 </Text>
               </VStack>
@@ -284,6 +303,8 @@ export default function SpeedyAIChatbot({
                 icon={<FiMaximize2 />}
                 size="sm"
                 variant="ghost"
+                color={textColor}
+                _hover={{ bg: '#1a1a1a', color: '#2563eb' }}
                 onClick={handleToggle}
               />
               <IconButton
@@ -291,6 +312,8 @@ export default function SpeedyAIChatbot({
                 icon={<FiX />}
                 size="sm"
                 variant="ghost"
+                color={textColor}
+                _hover={{ bg: '#1a1a1a', color: '#ef4444' }}
                 onClick={handleClose}
               />
             </HStack>
@@ -307,24 +330,45 @@ export default function SpeedyAIChatbot({
       right="20px"
       width="400px"
       height="600px"
-      boxShadow="2xl"
+      boxShadow="0 12px 48px rgba(0, 0, 0, 0.9), 0 0 40px rgba(37, 99, 235, 0.3)"
       zIndex={1000}
       bg={bgColor}
       border="1px solid"
       borderColor={borderColor}
+      borderRadius="xl"
       display="flex"
       flexDirection="column"
+      overflow="hidden"
+      transition="all 0.3s ease"
     >
       {/* Header */}
-      <CardBody p={0} borderBottom="1px solid" borderColor={borderColor}>
+      <CardBody 
+        p={0} 
+        borderBottom="1px solid" 
+        borderColor={borderColor}
+        bg={headerBg}
+      >
         <Flex justify="space-between" align="center" p={4}>
           <HStack spacing={3}>
-            <Avatar size="sm" bg="blue.500" icon={<FiZap />} />
+            <Avatar 
+              size="sm" 
+              bg="#2563eb" 
+              icon={<FiZap />}
+              boxShadow="0 0 20px rgba(37, 99, 235, 0.6)"
+            />
             <VStack align="start" spacing={0}>
               <Text fontSize="md" fontWeight="bold" color={textColor}>
                 Speedy AI
               </Text>
-              <Badge colorScheme="green" fontSize="xs">
+              <Badge 
+                bg="#10b981" 
+                color="#FFFFFF"
+                fontSize="xs"
+                px={2}
+                py={0.5}
+                borderRadius="full"
+                boxShadow="0 0 10px rgba(16, 185, 129, 0.5)"
+              >
                 {language === 'ar' ? 'متصل' : 'Online'}
               </Badge>
             </VStack>
@@ -336,15 +380,23 @@ export default function SpeedyAIChatbot({
               onChange={(e) => setLanguage(e.target.value as 'en' | 'ar')}
               width="80px"
               bg={inputBg}
+              color={textColor}
+              borderColor={borderColor}
+              _focus={{
+                borderColor: '#2563eb',
+                boxShadow: '0 0 0 1px #2563eb',
+              }}
             >
-              <option value="en">EN</option>
-              <option value="ar">AR</option>
+              <option value="en" style={{ background: '#000000', color: '#FFFFFF' }}>EN</option>
+              <option value="ar" style={{ background: '#000000', color: '#FFFFFF' }}>AR</option>
             </Select>
             <IconButton
               aria-label="Minimize"
               icon={<FiMinimize2 />}
               size="sm"
               variant="ghost"
+              color={textColor}
+              _hover={{ bg: '#1a1a1a', color: '#2563eb' }}
               onClick={handleToggle}
             />
             <IconButton
@@ -352,6 +404,8 @@ export default function SpeedyAIChatbot({
               icon={<FiX />}
               size="sm"
               variant="ghost"
+              color={textColor}
+              _hover={{ bg: '#1a1a1a', color: '#ef4444' }}
               onClick={handleClose}
             />
           </HStack>
@@ -364,6 +418,21 @@ export default function SpeedyAIChatbot({
         overflowY="auto"
         p={4}
         bg={messagesBg}
+        css={{
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#0a0a0a',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#333333',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#444444',
+          },
+        }}
       >
         <VStack spacing={4} align="stretch">
           {messages.map((message) => (
@@ -374,7 +443,12 @@ export default function SpeedyAIChatbot({
               justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
             >
               {message.role === 'assistant' && (
-                <Avatar size="sm" bg="blue.500" icon={<FiZap />} />
+                <Avatar 
+                  size="sm" 
+                  bg="#2563eb" 
+                  icon={<FiZap />}
+                  boxShadow="0 0 15px rgba(37, 99, 235, 0.5)"
+                />
               )}
                 <Box
                   maxWidth="70%"
@@ -390,15 +464,31 @@ export default function SpeedyAIChatbot({
                       ? messageBgUserText
                       : messageBgAssistantText
                   }
-                  boxShadow="sm"
+                  boxShadow={
+                    message.role === 'user'
+                      ? '0 4px 12px rgba(37, 99, 235, 0.3)'
+                      : '0 4px 12px rgba(0, 0, 0, 0.5)'
+                  }
+                  border={
+                    message.role === 'assistant'
+                      ? '1px solid #333333'
+                      : 'none'
+                  }
+                  transition="all 0.2s ease"
+                  _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: message.role === 'user'
+                      ? '0 6px 16px rgba(37, 99, 235, 0.4)'
+                      : '0 6px 16px rgba(0, 0, 0, 0.6)',
+                  }}
                 >
-                <Text fontSize="sm" whiteSpace="pre-wrap">
+                <Text fontSize="sm" whiteSpace="pre-wrap" lineHeight="1.6">
                   {message.content}
                 </Text>
                 <Text
                   fontSize="xs"
                   mt={1}
-                  opacity={0.7}
+                  opacity={0.6}
                   textAlign={message.role === 'user' ? 'right' : 'left'}
                 >
                   {message.timestamp.toLocaleTimeString([], {
@@ -408,20 +498,31 @@ export default function SpeedyAIChatbot({
                 </Text>
               </Box>
               {message.role === 'user' && (
-                <Avatar size="sm" bg="gray.500" icon={<FiUser />} />
+                <Avatar 
+                  size="sm" 
+                  bg="#4b5563" 
+                  icon={<FiUser />}
+                  boxShadow="0 0 10px rgba(75, 85, 99, 0.5)"
+                />
               )}
             </HStack>
           ))}
           {isLoading && (
             <HStack align="flex-start" spacing={3}>
-              <Avatar size="sm" bg="blue.500" icon={<FiZap />} />
+              <Avatar 
+                size="sm" 
+                bg="#2563eb" 
+                icon={<FiZap />}
+                boxShadow="0 0 15px rgba(37, 99, 235, 0.5)"
+              />
               <Box
                 p={3}
                 borderRadius="lg"
                 bg={messageBgAssistant}
-                boxShadow="sm"
+                border="1px solid #333333"
+                boxShadow="0 4px 12px rgba(0, 0, 0, 0.5)"
               >
-                <Spinner size="sm" />
+                <Spinner size="sm" color="#2563eb" />
               </Box>
             </HStack>
           )}
@@ -430,7 +531,12 @@ export default function SpeedyAIChatbot({
       </Box>
 
       {/* Input */}
-      <CardBody p={0} borderTop="1px solid" borderColor={borderColor}>
+      <CardBody 
+        p={0} 
+        borderTop="1px solid" 
+        borderColor={borderColor}
+        bg={headerBg}
+      >
         <VStack spacing={0}>
           <HStack p={3} spacing={2}>
             <Textarea
@@ -443,21 +549,40 @@ export default function SpeedyAIChatbot({
               resize="none"
               rows={2}
               bg={inputBg}
+              color={textColor}
               borderColor={borderColor}
-              _focus={{
-                borderColor: 'blue.500',
-                boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
+              _placeholder={{
+                color: '#6b7280',
               }}
+              _focus={{
+                borderColor: '#2563eb',
+                boxShadow: '0 0 0 1px #2563eb, 0 0 10px rgba(37, 99, 235, 0.3)',
+              }}
+              transition="all 0.2s ease"
             />
             <VStack spacing={1}>
               <IconButton
                 aria-label="Send"
                 icon={<FiSend />}
-                colorScheme="blue"
+                bg="#2563eb"
+                color="#FFFFFF"
                 size="sm"
                 onClick={handleSendMessage}
                 isLoading={isLoading}
                 isDisabled={!inputMessage.trim() || isLoading}
+                _hover={{
+                  bg: '#1d4ed8',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 0 15px rgba(37, 99, 235, 0.5)',
+                }}
+                _disabled={{
+                  bg: '#1a1a1a',
+                  color: '#6b7280',
+                  cursor: 'not-allowed',
+                  opacity: 0.5,
+                }}
+                transition="all 0.2s ease"
+                boxShadow="0 0 10px rgba(37, 99, 235, 0.3)"
               />
               {messages.length > 1 && (
                 <Button
@@ -465,6 +590,11 @@ export default function SpeedyAIChatbot({
                   variant="ghost"
                   onClick={handleClearChat}
                   fontSize="xs"
+                  color={textColor}
+                  _hover={{
+                    bg: '#1a1a1a',
+                    color: '#ef4444',
+                  }}
                 >
                   {language === 'ar' ? 'مسح' : 'Clear'}
                 </Button>
