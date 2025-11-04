@@ -145,14 +145,13 @@ export default async function RootLayout({
           rel="stylesheet"
         />
 
-        {/* Fix CSS files incorrectly loaded as scripts (runs in head before page load) */}
+        {/* Fix CSS files incorrectly loaded as scripts - CRITICAL: Must run synchronously before any other scripts */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Run immediately when head is parsed
-                if (document.readyState === 'loading') {
-                  // Fix CSS files that are incorrectly loaded as script tags
+                // Immediately fix CSS files loaded as scripts (before any other scripts execute)
+                function fixCSSAsScripts() {
                   const scripts = document.querySelectorAll('script[src*=".css"]');
                   scripts.forEach((script) => {
                     const src = script.getAttribute('src');
@@ -160,20 +159,29 @@ export default async function RootLayout({
                       // Check if link already exists to avoid duplicates
                       const existingLink = document.querySelector('link[href="' + src + '"]');
                       if (!existingLink) {
-                        // Remove the incorrect script tag
+                        // Remove the incorrect script tag immediately
                         script.remove();
                         // Create a proper link tag
                         const link = document.createElement('link');
                         link.rel = 'stylesheet';
                         link.href = src;
                         link.type = 'text/css';
-                        document.head.appendChild(link);
+                        link.crossOrigin = 'anonymous';
+                        document.head.insertBefore(link, document.head.firstChild);
                       } else {
                         // Just remove the duplicate script tag
                         script.remove();
                       }
                     }
                   });
+                }
+                
+                // Run immediately (synchronous)
+                fixCSSAsScripts();
+                
+                // Also run on DOMContentLoaded as backup
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', fixCSSAsScripts, { once: true });
                 }
               })();
             `,
@@ -183,13 +191,12 @@ export default async function RootLayout({
         {/* Preload critical resources - removed favicon preload as it's not used immediately */}
       </head>
       <body>
-        {/* Fix CSS files incorrectly loaded as scripts (backup - runs after DOM load) */}
+        {/* Fix CSS files incorrectly loaded as scripts - Watch for dynamically added scripts (Next.js hydration) */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 function fixCSSAsScripts() {
-                  // Fix CSS files that are incorrectly loaded as script tags
                   const scripts = document.querySelectorAll('script[src*=".css"]');
                   scripts.forEach((script) => {
                     const src = script.getAttribute('src');
@@ -204,6 +211,7 @@ export default async function RootLayout({
                         link.rel = 'stylesheet';
                         link.href = src;
                         link.type = 'text/css';
+                        link.crossOrigin = 'anonymous';
                         document.head.appendChild(link);
                       } else {
                         // Just remove the duplicate script tag
@@ -216,31 +224,23 @@ export default async function RootLayout({
                 // Run immediately
                 fixCSSAsScripts();
                 
-                // Run on DOM ready as backup
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', fixCSSAsScripts);
-                } else {
-                  fixCSSAsScripts();
-                }
-                
-                // Watch for dynamically added script tags (Next.js hydration)
-                if (window.MutationObserver) {
+                // Watch for dynamically added script tags (Next.js hydration/react)
+                if (typeof window !== 'undefined' && window.MutationObserver) {
                   const observer = new MutationObserver(function(mutations) {
+                    let needsFix = false;
                     mutations.forEach(function(mutation) {
                       mutation.addedNodes.forEach(function(node) {
                         if (node.nodeType === 1 && node.tagName === 'SCRIPT') {
                           const src = node.getAttribute('src');
                           if (src && src.endsWith('.css')) {
-                            node.remove();
-                            const link = document.createElement('link');
-                            link.rel = 'stylesheet';
-                            link.href = src;
-                            link.type = 'text/css';
-                            document.head.appendChild(link);
+                            needsFix = true;
                           }
                         }
                       });
                     });
+                    if (needsFix) {
+                      fixCSSAsScripts();
+                    }
                   });
                   
                   observer.observe(document.head, { childList: true, subtree: true });
