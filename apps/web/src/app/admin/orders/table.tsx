@@ -90,6 +90,29 @@ const fastPulseAnimation = keyframes`
   50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
 `;
 
+const waveAnimation = keyframes`
+  0% { 
+    transform: translateX(-100%) translateY(0) scaleY(1); 
+    opacity: 0.3;
+  }
+  25% { 
+    transform: translateX(-50%) translateY(-5px) scaleY(1.1); 
+    opacity: 0.5;
+  }
+  50% { 
+    transform: translateX(0%) translateY(-10px) scaleY(1.2); 
+    opacity: 0.7;
+  }
+  75% { 
+    transform: translateX(50%) translateY(-5px) scaleY(1.1); 
+    opacity: 0.5;
+  }
+  100% { 
+    transform: translateX(100%) translateY(0) scaleY(1); 
+    opacity: 0.3;
+  }
+`;
+
 // Priority calculation based on scheduled date
 function calculatePriority(scheduledAt: string): {
   level: 'urgent' | 'high' | 'medium' | 'low' | 'future';
@@ -852,12 +875,43 @@ export default function OrdersClient({
   };
 
   const renderOrdersTable = () => (
-    <Card>
-      <CardBody p={0}>
-        <Table variant="simple">
+    <Card bg="#000000" borderColor="#333333">
+      <CardBody p={0} bg="#000000">
+        <Table 
+          variant="simple"
+          sx={{
+            backgroundColor: '#000000',
+            color: '#FFFFFF',
+            '& thead tr': {
+              backgroundColor: '#111111 !important',
+            },
+            '& thead th': {
+              backgroundColor: '#111111 !important',
+              color: '#FFFFFF !important',
+              borderColor: '#333333 !important',
+            },
+            '& tbody tr:nth-of-type(even)': {
+              backgroundColor: '#000000 !important',
+              backgroundImage: 'none !important',
+            },
+            '& tbody tr:nth-of-type(odd)': {
+              backgroundColor: '#0a0a0a !important',
+              backgroundImage: 'none !important',
+            },
+            '& tbody tr': {
+              backgroundColor: '#000000 !important',
+              backgroundImage: 'none !important',
+              color: '#FFFFFF !important',
+            },
+            '& tbody td': {
+              color: '#FFFFFF !important',
+              borderColor: '#333333 !important',
+            },
+          }}
+        >
           <Thead>
             <Tr>
-              <Th px={4}>
+              <Th px={4} color="#FFFFFF" bg="#111111" borderColor="#333333">
                 <Checkbox
                   isChecked={
                     selectedOrders.length === filteredOrders.length &&
@@ -876,17 +930,17 @@ export default function OrdersClient({
                   }}
                 />
               </Th>
-              <Th>Code</Th>
-              <Th>Customer</Th>
-              <Th>Route</Th>
-              <Th>Time Window</Th>
-              <Th>Status</Th>
-              <Th>Driver</Th>
-              <Th>Price</Th>
-              <Th>Data Quality</Th>
-              <Th>Payment</Th>
-              <Th>SLA</Th>
-              <Th>Actions</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Code</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Customer</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Route</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Time Window</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Status</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Driver</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Price</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Data Quality</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Payment</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">SLA</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -902,9 +956,9 @@ export default function OrdersClient({
               ))
             ) : filteredOrders.length === 0 ? (
               <Tr>
-                <Td colSpan={11}>
+                <Td colSpan={11} color="#FFFFFF">
                   <Flex justify="center" py={8}>
-                    <Text color="text.tertiary">No orders found</Text>
+                    <Text color="#FFFFFF">No orders found</Text>
                   </Flex>
                 </Td>
               </Tr>
@@ -922,7 +976,7 @@ export default function OrdersClient({
                       bg: isDeclined ? 'red.900' : 
                           isInProgress ? 'blue.900' :
                           isAccepted ? 'green.900' : 
-                          'bg.surface.hover' 
+                          '#1a1a1a' 
                     }}
                     cursor="pointer"
                     onClick={() => handleViewOrder(order.reference)}
@@ -932,6 +986,7 @@ export default function OrdersClient({
                       isAccepted ? 'green.950' : 
                       'transparent'
                     }
+                    color="#FFFFFF"
                     borderLeft={
                       isDeclined || isAccepted || isInProgress ? '4px solid' : 'none'
                     }
@@ -977,7 +1032,7 @@ export default function OrdersClient({
                           isDeclined ? 'red.400' : 
                           isInProgress ? 'blue.400' :
                           isAccepted ? 'green.400' :
-                          'blue.600'
+                          '#FFFFFF'
                         }>
                           #{order.reference || 'N/A'}
                         </Text>
@@ -985,10 +1040,10 @@ export default function OrdersClient({
                     </Td>
                     <Td>
                       <VStack align="start" spacing={1}>
-                        <Text fontWeight="medium">
+                        <Text fontWeight="medium" color="#FFFFFF">
                           {order.customerName || 'Unknown Customer'}
                         </Text>
-                        <Text fontSize="sm" color="text.secondary">
+                        <Text fontSize="sm" color="#9ca3af">
                           {order.customer?.email || order.customerEmail || '-'}
                         </Text>
                       </VStack>
@@ -1001,7 +1056,7 @@ export default function OrdersClient({
                             color="green.500"
                             boxSize={3}
                           />
-                          <Text fontSize="sm" noOfLines={1} maxW="200px">
+                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
                             {order.pickupAddress?.label || '-'}
                           </Text>
                         </HStack>
@@ -1011,11 +1066,11 @@ export default function OrdersClient({
                             color="red.500"
                             boxSize={3}
                           />
-                          <Text fontSize="sm" noOfLines={1} maxW="200px">
+                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
                             {order.dropoffAddress?.label || '-'}
                           </Text>
                         </HStack>
-                        <Text fontSize="xs" color="text.tertiary">
+                        <Text fontSize="xs" color="#9ca3af">
                           {formatDistance(order.distanceMeters)} •{' '}
                           {formatDuration(order.durationSeconds)}
                         </Text>
@@ -1023,12 +1078,12 @@ export default function OrdersClient({
                     </Td>
                     <Td>
                       <VStack align="start" spacing={1}>
-                        <Text fontSize="sm">
+                        <Text fontSize="sm" color="#FFFFFF">
                           {order.scheduledAt
                             ? format(new Date(order.scheduledAt), 'MMM dd')
                             : '-'}
                         </Text>
-                        <Text fontSize="xs" color="text.tertiary">
+                        <Text fontSize="xs" color="#9ca3af">
                           {order.pickupTimeSlot || order.timeSlot || '-'}
                         </Text>
                         {order.urgency && order.urgency !== 'scheduled' && (
@@ -1089,17 +1144,17 @@ export default function OrdersClient({
                         {order.driver?.user?.name ? (
                           <>
                             <Icon as={FaTruck} color="blue.500" boxSize={3} />
-                            <Text fontSize="sm">{order.driver.user.name}</Text>
+                            <Text fontSize="sm" color="#FFFFFF">{order.driver.user.name}</Text>
                           </>
                         ) : (
-                          <Text fontSize="sm" color="text.tertiary">
+                          <Text fontSize="sm" color="#9ca3af">
                             -
                           </Text>
                         )}
                       </HStack>
                     </Td>
                     <Td>
-                      <Text fontWeight="bold">{formatCurrency(order.totalGBP || 0)}</Text>
+                      <Text fontWeight="bold" color="#FFFFFF">{formatCurrency(order.totalGBP || 0)}</Text>
                     </Td>
                     <Td>
                       <Tooltip label={`Data completeness: ${getDataQualityScore(order)}%`}>
@@ -1139,10 +1194,10 @@ export default function OrdersClient({
                             fontSize="xs"
                             color={
                               slaStatus.status === 'overdue'
-                                ? 'red.500'
+                                ? 'red.400'
                                 : slaStatus.status === 'warning'
-                                  ? 'orange.500'
-                                  : 'gray.500'
+                                  ? 'orange.400'
+                                  : '#9ca3af'
                             }
                           >
                             {slaStatus.message}
@@ -1249,15 +1304,41 @@ export default function OrdersClient({
           return (
             <Card
               key={order.id}
-              _hover={{ shadow: 'md' }}
-              transition="shadow 0.2s"
+              bg="#111111"
+              borderColor="#333333"
+              borderWidth="2px"
+              borderRadius="xl"
+              boxShadow="0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)"
               cursor="pointer"
               onClick={() => handleViewOrder(order.reference)}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              position="relative"
+              overflow="hidden"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: `linear-gradient(90deg, ${getStatusColor(order.status) === 'green' ? '#10b981' : getStatusColor(order.status) === 'red' ? '#ef4444' : getStatusColor(order.status) === 'yellow' ? '#f59e0b' : '#2563eb'} 0%, transparent 100%)`,
+              }}
+              _hover={{
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(37, 99, 235, 0.2)',
+                borderColor: '#2563eb',
+              }}
             >
-              <CardBody>
-                <VStack align="stretch" spacing={3}>
+              <CardBody bg="#111111" p={5}>
+                <VStack align="stretch" spacing={4}>
                   <HStack justify="space-between">
-                    <Text fontWeight="bold" color="blue.600" fontSize="lg">
+                    <Text 
+                      fontWeight="bold" 
+                      color="#2563eb" 
+                      fontSize="lg"
+                      letterSpacing="0.5px"
+                      textShadow="0 0 10px rgba(37, 99, 235, 0.3)"
+                    >
                       #{order.reference}
                     </Text>
                     <Checkbox
@@ -1276,40 +1357,75 @@ export default function OrdersClient({
                   </HStack>
 
                   <VStack align="start" spacing={2}>
-                    <Text fontWeight="medium">
+                    <Text 
+                      fontWeight="semibold" 
+                      color="#FFFFFF"
+                      fontSize="md"
+                      letterSpacing="0.3px"
+                    >
                       {order.customer && order.customer.name
                         ? order.customer.name
                         : order.customerName || '-'}
                     </Text>
-                    <Text fontSize="sm" color="gray.600">
+                    <Text 
+                      fontSize="sm" 
+                      color="#9ca3af"
+                      fontWeight="medium"
+                    >
                       {order.customer && order.customer.email
                         ? order.customer.email
                         : order.customerEmail || '-'}
                     </Text>
                   </VStack>
 
-                  <VStack align="start" spacing={1}>
-                    <HStack>
-                      <Icon as={FaMapMarkerAlt} color="green.500" boxSize={3} />
-                      <Text fontSize="sm" noOfLines={1}>
+                  <VStack align="start" spacing={2}>
+                    <HStack spacing={2}>
+                      <Icon as={FaMapMarkerAlt} color="#10b981" boxSize={4} />
+                      <Text 
+                        fontSize="sm" 
+                        color="#FFFFFF"
+                        fontWeight="medium"
+                        noOfLines={1}
+                      >
                         {order.pickupAddress?.label || '-'}
                       </Text>
                     </HStack>
-                    <HStack>
-                      <Icon as={FaMapMarkerAlt} color="red.500" boxSize={3} />
-                      <Text fontSize="sm" noOfLines={1}>
+                    <HStack spacing={2}>
+                      <Icon as={FaMapMarkerAlt} color="#ef4444" boxSize={4} />
+                      <Text 
+                        fontSize="sm" 
+                        color="#FFFFFF"
+                        fontWeight="medium"
+                        noOfLines={1}
+                      >
                         {order.dropoffAddress?.label || '-'}
                       </Text>
                     </HStack>
                   </VStack>
 
-                  <HStack justify="space-between">
-                    <Badge colorScheme={getStatusColor(order.status)}>
+                  <HStack justify="space-between" pt={2} borderTop="1px solid" borderColor="#333333">
+                    <Badge 
+                      colorScheme={getStatusColor(order.status)}
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontWeight="semibold"
+                      fontSize="xs"
+                      letterSpacing="0.5px"
+                      boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
+                    >
                       {order.status
                         ? String(order.status).replace('_', ' ')
                         : 'Unknown'}
                     </Badge>
-                    <Text fontWeight="bold">{formatCurrency(order.totalGBP || 0)}</Text>
+                    <Text 
+                      fontWeight="bold" 
+                      color="#10b981"
+                      fontSize="lg"
+                      letterSpacing="0.5px"
+                    >
+                      {formatCurrency(order.totalGBP || 0)}
+                    </Text>
                   </HStack>
 
                   <HStack
@@ -1367,40 +1483,95 @@ export default function OrdersClient({
             order => order.status === status
           );
           return (
-            <Card key={status}>
-              <CardHeader>
+            <Card 
+              key={status}
+              bg="#111111"
+              borderColor="#333333"
+              borderWidth="2px"
+              borderRadius="xl"
+              boxShadow="0 4px 16px rgba(0, 0, 0, 0.4)"
+              overflow="hidden"
+            >
+              <CardHeader 
+                bg="linear-gradient(135deg, #1a1a1a 0%, #111111 100%)"
+                borderBottom="2px solid"
+                borderColor="#333333"
+                pb={3}
+              >
                 <HStack justify="space-between">
-                  <Heading size="sm" textTransform="capitalize">
+                  <Heading 
+                    size="sm" 
+                    textTransform="capitalize"
+                    color="#FFFFFF"
+                    fontWeight="bold"
+                    letterSpacing="0.5px"
+                  >
                     {status ? String(status).replace('_', ' ') : 'Unknown'}
                   </Heading>
-                  <Badge colorScheme="blue" borderRadius="full">
+                  <Badge 
+                    colorScheme="blue" 
+                    borderRadius="full"
+                    px={3}
+                    py={1}
+                    fontWeight="bold"
+                    fontSize="sm"
+                    boxShadow="0 2px 8px rgba(37, 99, 235, 0.4)"
+                  >
                     {statusOrders.length}
                   </Badge>
                 </HStack>
               </CardHeader>
-              <CardBody>
-                <VStack spacing={2} align="stretch">
+              <CardBody bg="#111111" p={4}>
+                <VStack spacing={3} align="stretch">
                   {statusOrders.map(order => {
                     const slaStatus = getSLAStatus(order);
                     return (
                       <Card
                         key={order.id}
-                        size="sm"
-                        variant="outline"
+                        bg="#1a1a1a"
+                        borderColor="#333333"
+                        borderWidth="1px"
+                        borderRadius="lg"
                         cursor="pointer"
                         onClick={() => handleViewOrder(order.reference)}
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                        _hover={{
+                          transform: 'translateX(4px)',
+                          borderColor: '#2563eb',
+                          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                        }}
                       >
                         <CardBody p={3}>
                           <VStack align="start" spacing={2}>
-                            <Text fontWeight="bold" fontSize="sm">
+                            <Text 
+                              fontWeight="bold" 
+                              fontSize="sm"
+                              color="#2563eb"
+                              letterSpacing="0.3px"
+                            >
                               #{order.reference}
                             </Text>
-                            <Text fontSize="xs">{order.customerName}</Text>
-                            <Text fontSize="xs" color="gray.600" noOfLines={1}>
+                            <Text 
+                              fontSize="xs" 
+                              color="#FFFFFF"
+                              fontWeight="medium"
+                            >
+                              {order.customerName}
+                            </Text>
+                            <Text 
+                              fontSize="xs" 
+                              color="#9ca3af" 
+                              noOfLines={1}
+                              fontWeight="medium"
+                            >
                               {order.pickupAddress?.label || '-'}
                             </Text>
-                            <HStack justify="space-between" w="full">
-                              <Text fontWeight="bold" fontSize="xs">
+                            <HStack justify="space-between" w="full" pt={1} borderTop="1px solid" borderColor="#333333">
+                              <Text 
+                                fontWeight="bold" 
+                                fontSize="xs"
+                                color="#10b981"
+                              >
                                 {formatCurrency(order.totalGBP || 0)}
                               </Text>
                               <Icon
@@ -1413,12 +1584,12 @@ export default function OrdersClient({
                                 }
                                 color={
                                   slaStatus.status === 'overdue'
-                                    ? 'red.500'
+                                    ? '#ef4444'
                                     : slaStatus.status === 'warning'
-                                      ? 'orange.500'
-                                      : 'green.500'
+                                      ? '#f59e0b'
+                                      : '#10b981'
                                 }
-                                boxSize={3}
+                                boxSize={4}
                               />
                             </HStack>
                           </VStack>
@@ -1440,26 +1611,42 @@ export default function OrdersClient({
       <AdminShell
         title="Orders"
         subtitle="Manage and track all orders"
-        showCreateButton={true}
-        onCreateClick={handleCreateOrder}
+        showCreateButton={false}
         showDispatchMode={true}
         actions={
           <HStack spacing={3}>
-            {newOrdersCount > 0 && (
-              <Alert status="warning" borderRadius="md" py={2} px={3}>
-                <AlertIcon />
-                <Text fontSize="sm" fontWeight="semibold">
-                  {newOrdersCount} new order{newOrdersCount > 1 ? 's' : ''}{' '}
-                  pending assignment
-                </Text>
-              </Alert>
-            )}
             <ViewToggle view={viewMode} onViewChange={setViewMode} />
             <Button
               leftIcon={<FaDownload />}
               variant="outline"
               onClick={() => handleBulkAction('export')}
               isDisabled={selectedOrders.length === 0}
+              bg="#111111"
+              color="#FFFFFF"
+              borderColor="#333333"
+              borderWidth="2px"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              fontWeight="semibold"
+              letterSpacing="0.5px"
+              boxShadow="0 4px 12px rgba(0, 0, 0, 0.3)"
+              _hover={{
+                bg: '#1a1a1a',
+                borderColor: '#2563eb',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
+              }}
+              _active={{
+                transform: 'translateY(0)',
+              }}
+              _disabled={{
+                opacity: 0.5,
+                cursor: 'not-allowed',
+                bg: '#0a0a0a',
+                borderColor: '#1a1a1a',
+              }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               Export ({selectedOrders.length})
             </Button>
@@ -1468,6 +1655,32 @@ export default function OrdersClient({
               variant="outline"
               onClick={() => handleBulkAction('email')}
               isDisabled={selectedOrders.length === 0}
+              bg="#111111"
+              color="#FFFFFF"
+              borderColor="#333333"
+              borderWidth="2px"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              fontWeight="semibold"
+              letterSpacing="0.5px"
+              boxShadow="0 4px 12px rgba(0, 0, 0, 0.3)"
+              _hover={{
+                bg: '#1a1a1a',
+                borderColor: '#10b981',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
+              }}
+              _active={{
+                transform: 'translateY(0)',
+              }}
+              _disabled={{
+                opacity: 0.5,
+                cursor: 'not-allowed',
+                bg: '#0a0a0a',
+                borderColor: '#1a1a1a',
+              }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               Email Customers
             </Button>
@@ -1478,38 +1691,171 @@ export default function OrdersClient({
               onClick={() => handleBulkAction('send-floor-warnings')}
               isDisabled={selectedOrders.length === 0}
               title="Send floor warning emails to selected customers who didn't specify floor numbers"
+              bg="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+              color="#FFFFFF"
+              borderColor="#f59e0b"
+              borderWidth="2px"
+              borderRadius="lg"
+              px={4}
+              py={2}
+              fontWeight="bold"
+              letterSpacing="0.5px"
+              boxShadow="0 4px 16px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2)"
+              _hover={{
+                bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                borderColor: '#f59e0b',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 24px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.3)',
+              }}
+              _active={{
+                transform: 'translateY(0)',
+              }}
+              _disabled={{
+                opacity: 0.5,
+                cursor: 'not-allowed',
+                bg: '#0a0a0a',
+                borderColor: '#1a1a1a',
+              }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               Send Floor Warnings ({selectedOrders.length})
-            </Button>
-            <Button
-              leftIcon={<FaRoute />}
-              colorScheme="blue"
-              variant="solid"
-              onClick={() => handleCreateRouteFromOrders()}
-              isDisabled={selectedOrders.length < 2}
-              title="Create a multi-drop route from selected orders"
-            >
-              Create Route ({selectedOrders.length})
             </Button>
           </HStack>
         }
       >
         <Box>
+          {/* Pending Orders Banner */}
+          {newOrdersCount > 0 && (
+            <Card 
+              mb={6} 
+              bg="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+              borderColor="#f59e0b"
+              borderWidth="2px"
+              borderRadius="xl"
+              boxShadow="0 8px 32px rgba(245, 158, 11, 0.3), 0 0 20px rgba(245, 158, 11, 0.2)"
+              position="relative"
+              overflow="hidden"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%)',
+                pointerEvents: 'none',
+              }}
+              _after={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '200%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 25%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0.5) 75%, transparent 100%)',
+                animation: `${waveAnimation} 3s ease-in-out infinite`,
+                pointerEvents: 'none',
+                zIndex: 1,
+                filter: 'blur(1px)',
+              }}
+              css={{
+                '@keyframes wave': {
+                  '0%': {
+                    transform: 'translateX(-100%) translateY(0) scaleY(1)',
+                    opacity: '0.3',
+                  },
+                  '25%': {
+                    transform: 'translateX(-50%) translateY(-5px) scaleY(1.1)',
+                    opacity: '0.5',
+                  },
+                  '50%': {
+                    transform: 'translateX(0%) translateY(-10px) scaleY(1.2)',
+                    opacity: '0.7',
+                  },
+                  '75%': {
+                    transform: 'translateX(50%) translateY(-5px) scaleY(1.1)',
+                    opacity: '0.5',
+                  },
+                  '100%': {
+                    transform: 'translateX(100%) translateY(0) scaleY(1)',
+                    opacity: '0.3',
+                  },
+                },
+              }}
+            >
+              <CardBody p={4} position="relative" zIndex={2}>
+                <HStack spacing={4} align="center" position="relative" zIndex={2}>
+                  <Circle
+                    size="48px"
+                    bg="rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
+                    border="2px solid rgba(255, 255, 255, 0.3)"
+                    boxShadow="0 4px 16px rgba(0, 0, 0, 0.2)"
+                  >
+                    <Icon
+                      as={FaExclamationTriangle}
+                      color="#FFFFFF"
+                      boxSize="24px"
+                      animation={`${fastPulseAnimation} 2s infinite`}
+                    />
+                  </Circle>
+                  <VStack align="start" spacing={1} flex={1}>
+                    <Text
+                      fontSize="lg"
+                      fontWeight="bold"
+                      color="#FFFFFF"
+                      letterSpacing="0.5px"
+                      textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
+                    >
+                      {newOrdersCount} New Order{newOrdersCount > 1 ? 's' : ''} Pending Assignment
+                    </Text>
+                    <Text
+                      fontSize="sm"
+                      color="rgba(255, 255, 255, 0.9)"
+                      fontWeight="medium"
+                    >
+                      These orders need driver assignment. Click to view and assign drivers.
+                    </Text>
+                  </VStack>
+                  <Badge
+                    bg="rgba(255, 255, 255, 0.2)"
+                    color="#FFFFFF"
+                    fontSize="lg"
+                    fontWeight="bold"
+                    px={4}
+                    py={2}
+                    borderRadius="full"
+                    border="2px solid rgba(255, 255, 255, 0.3)"
+                    boxShadow="0 4px 16px rgba(0, 0, 0, 0.2)"
+                    backdropFilter="blur(10px)"
+                  >
+                    {newOrdersCount}
+                  </Badge>
+                </HStack>
+              </CardBody>
+            </Card>
+          )}
+
           {/* Filters */}
-          <Card mb={6}>
-            <CardBody>
+          <Card mb={6} bg="#000000" borderColor="#333333">
+            <CardBody bg="#000000">
               <VStack spacing={4} align="stretch">
                 {/* Search and Quick Filters */}
                 <Flex gap={4} wrap="wrap">
                   <Box flex="1" minW="300px">
                     <InputGroup>
-                      <InputLeftElement>
+                      <InputLeftElement color="#FFFFFF">
                         <FaSearch />
                       </InputLeftElement>
                       <ClientInput
                         placeholder="Search by code, address, customer..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
+                        bg="#111111"
+                        color="#FFFFFF"
+                        borderColor="#333333"
+                        _placeholder={{ color: '#9ca3af' }}
+                        _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                       />
                     </InputGroup>
                   </Box>
@@ -1518,44 +1864,64 @@ export default function OrdersClient({
                     onChange={e => setStatusFilter(e.target.value)}
                     placeholder="All Status"
                     minW="150px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _hover={{ borderColor: '#2563eb' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   >
-                    <option value="open">Open</option>
-                    <option value="assigned">Assigned</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="open" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Open</option>
+                    <option value="assigned" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Assigned</option>
+                    <option value="in_progress" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>In Progress</option>
+                    <option value="completed" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Completed</option>
+                    <option value="cancelled" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Cancelled</option>
                   </Select>
                   <Select
                     value={paymentFilter}
                     onChange={e => setPaymentFilter(e.target.value)}
                     placeholder="All Payments"
                     minW="150px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _hover={{ borderColor: '#2563eb' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   >
-                    <option value="unpaid">Unpaid</option>
-                    <option value="requires_action">Requires Action</option>
-                    <option value="paid">Paid</option>
-                    <option value="refunded">Refunded</option>
+                    <option value="unpaid" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Unpaid</option>
+                    <option value="requires_action" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Requires Action</option>
+                    <option value="paid" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Paid</option>
+                    <option value="refunded" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Refunded</option>
                   </Select>
                   <Select
                     value={orderTypeFilter}
                     onChange={e => setOrderTypeFilter(e.target.value as 'all' | 'new' | 'existing')}
                     placeholder="Order Type"
                     minW="150px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _hover={{ borderColor: '#2563eb' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   >
-                    <option value="all">All Orders</option>
-                    <option value="new">New Orders Only</option>
-                    <option value="existing">Existing Orders Only</option>
+                    <option value="all" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>All Orders</option>
+                    <option value="new" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>New Orders Only</option>
+                    <option value="existing" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Existing Orders Only</option>
                   </Select>
                   <Select
                     value={dateRange}
                     onChange={e => setDateRange(e.target.value)}
                     placeholder="Date Range"
                     minW="150px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _hover={{ borderColor: '#2563eb' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   >
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="custom">Custom Range</option>
+                    <option value="today" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Today</option>
+                    <option value="week" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>This Week</option>
+                    <option value="month" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>This Month</option>
+                    <option value="custom" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Custom Range</option>
                   </Select>
                 </Flex>
 
@@ -1566,35 +1932,58 @@ export default function OrdersClient({
                     value={driverFilter}
                     onChange={e => setDriverFilter(e.target.value)}
                     minW="200px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   />
                   <ClientInput
                     placeholder="Filter by area..."
                     value={areaFilter}
                     onChange={e => setAreaFilter(e.target.value)}
                     minW="200px"
+                    bg="#111111"
+                    color="#FFFFFF"
+                    borderColor="#333333"
+                    _placeholder={{ color: '#9ca3af' }}
+                    _focus={{ borderColor: '#2563eb', bg: '#111111' }}
                   />
                 </Flex>
 
                 {/* Bulk Actions */}
                 {selectedOrders.length > 0 && (
-                  <Alert status="info">
-                    <AlertIcon />
+                  <Alert status="info" bg="#1a1a1a" borderColor="#2563eb">
+                    <AlertIcon color="#2563eb" />
                     <HStack justify="space-between" w="full">
-                      <Text>{selectedOrders.length} orders selected</Text>
+                      <Text color="#FFFFFF">{selectedOrders.length} orders selected</Text>
                       <HStack spacing={2}>
                         <Button
                           size="sm"
                           onClick={() => handleBulkAction('assign')}
+                          bg="#2563eb"
+                          color="#FFFFFF"
+                          _hover={{ bg: '#1d4ed8' }}
                         >
                           Assign Driver
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleBulkAction('status')}
+                          bg="#2563eb"
+                          color="#FFFFFF"
+                          _hover={{ bg: '#1d4ed8' }}
                         >
                           Change Status
                         </Button>
-                        <Button size="sm" onClick={() => setSelectedOrders([])}>
+                        <Button 
+                          size="sm" 
+                          onClick={() => setSelectedOrders([])}
+                          variant="outline"
+                          borderColor="#333333"
+                          color="#FFFFFF"
+                          _hover={{ bg: '#1a1a1a' }}
+                        >
                           Clear Selection
                         </Button>
                       </HStack>
@@ -1612,7 +2001,7 @@ export default function OrdersClient({
 
           {/* Pagination and Summary */}
           <Flex justify="space-between" align="center" mt={4}>
-            <Text color="gray.600">
+            <Text color="#FFFFFF">
               Showing {filteredOrders.length} of {orders.length} orders
             </Text>
             <HStack spacing={2}>
@@ -1623,6 +2012,10 @@ export default function OrdersClient({
                 onClick={() =>
                   setPagination(prev => ({ ...prev, page: prev.page - 1 }))
                 }
+                borderColor="#333333"
+                color="#FFFFFF"
+                _hover={{ bg: '#1a1a1a' }}
+                _disabled={{ borderColor: '#333333', color: '#9ca3af', opacity: 0.5 }}
               >
                 Previous
               </Button>
@@ -1634,6 +2027,10 @@ export default function OrdersClient({
                   setPagination(prev => ({ ...prev, page: prev.page + 1 }));
                   loadOrders();
                 }}
+                borderColor="#333333"
+                color="#FFFFFF"
+                _hover={{ bg: '#1a1a1a' }}
+                _disabled={{ borderColor: '#333333', color: '#9ca3af', opacity: 0.5 }}
               >
                 Next
               </Button>

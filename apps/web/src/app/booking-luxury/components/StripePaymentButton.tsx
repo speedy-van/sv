@@ -370,51 +370,104 @@ export default function StripePaymentButton({
       <Box position="relative" w="full">
         <Button
           size="xl"
-          h={{ base: "60px", md: "70px" }}
-          fontSize={{ base: "lg", md: "xl" }}
-          fontWeight="bold"
+          h={{ base: "64px", md: "72px" }}
+          fontSize={{ base: "xl", md: "2xl" }}
+          fontWeight="700"
+          letterSpacing="0.5px"
           w="full"
-          bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          bg="linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)"
           color="white"
           onClick={handlePayment}
           isDisabled={disabled || isProcessing}
-          leftIcon={isProcessing ? <Spinner size="md" color="white" /> : <FaCreditCard size="20px" />}
+          leftIcon={
+            isProcessing ? (
+              <Spinner size="md" color="white" thickness="3px" speed="0.8s" />
+            ) : (
+              <Box
+                as={FaCreditCard}
+                fontSize="24px"
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+            )
+          }
+          borderRadius="xl"
+          border="2px solid"
+          borderColor="rgba(16, 185, 129, 0.5)"
+          boxShadow="0 8px 32px rgba(16, 185, 129, 0.4), 0 0 60px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
           _hover={{
-            transform: "translateY(-2px)",
-            shadow: "2xl",
-            bg: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+            transform: "translateY(-4px) scale(1.02)",
+            shadow: "0 12px 40px rgba(16, 185, 129, 0.5), 0 0 80px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+            bg: "linear-gradient(135deg, #059669 0%, #047857 50%, #065F46 100%)",
+            borderColor: "rgba(16, 185, 129, 0.7)",
           }}
           _active={{
-            transform: "translateY(0px)",
+            transform: "translateY(-2px) scale(0.98)",
+            shadow: "0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
           }}
           _disabled={{
             opacity: 0.6,
             cursor: "not-allowed",
             transform: "none",
+            bg: "linear-gradient(135deg, #6B7280 0%, #4B5563 100%)",
+            borderColor: "rgba(107, 114, 128, 0.5)",
+            boxShadow: "none",
           }}
-          transition="all 0.3s ease"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           position="relative"
           overflow="hidden"
           _before={{
             content: '""',
             position: "absolute",
             top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)",
+            opacity: 0.6,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+          _after={{
+            content: '""',
+            position: "absolute",
+            top: 0,
             left: "-100%",
             width: "100%",
             height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-            animation: !disabled && !isProcessing ? "waveAnimation 2s infinite" : "none",
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+            animation: !disabled && !isProcessing ? "shineAnimation 3s infinite" : "none",
+            zIndex: 1,
             pointerEvents: "none",
           }}
           sx={{
-            "@keyframes waveAnimation": {
+            "@keyframes shineAnimation": {
               "0%": { left: "-100%" },
               "50%": { left: "100%" },
               "100%": { left: "100%" },
-            }
+            },
+            "& > *": {
+              position: "relative",
+              zIndex: 2,
+            },
           }}
         >
-          {isProcessing ? 'Processing Payment...' : '🚀 Pay Securely with Stripe'}
+          {isProcessing ? (
+            <HStack spacing={2}>
+              <Text>Processing Payment...</Text>
+            </HStack>
+          ) : (
+            <HStack spacing={3} align="center">
+              <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="700" letterSpacing="0.5px">
+                Pay Now
+              </Text>
+              <Box
+                as={FaLock}
+                fontSize="16px"
+                opacity={0.9}
+                filter="drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))"
+              />
+            </HStack>
+          )}
         </Button>
       </Box>
 
@@ -430,28 +483,62 @@ export default function StripePaymentButton({
         </Alert>
       )}
 
-      <VStack spacing={3} align="center">
-        <HStack justify="center" spacing={6} fontSize="sm" color="gray.600">
-          <HStack spacing={2}>
-            <FaLock color="#48BB78" />
-            <Text fontWeight="600">Secure Payment</Text>
+      <VStack spacing={4} align="center" pt={2}>
+        <HStack justify="center" spacing={6} fontSize="sm" color="rgba(255, 255, 255, 0.7)">
+          <HStack spacing={2} align="center">
+            <Box
+              as={FaLock}
+              color="#10B981"
+              fontSize="16px"
+              filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.4))"
+            />
+            <Text fontWeight="600" letterSpacing="0.2px">Secure Payment</Text>
           </HStack>
-          <HStack spacing={2}>
-            <FaShieldAlt color="#48BB78" />
-            <Text fontWeight="600">Protected by Stripe</Text>
+          <HStack spacing={2} align="center">
+            <Box
+              as={FaShieldAlt}
+              color="#10B981"
+              fontSize="16px"
+              filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.4))"
+            />
+            <Text fontWeight="600" letterSpacing="0.2px">Protected by Stripe</Text>
           </HStack>
         </HStack>
 
-        <HStack spacing={4} align="center">
-          <Badge colorScheme="green" px={3} py={1} borderRadius="full" fontSize="xs">
+        <HStack spacing={4} align="center" flexWrap="wrap" justify="center">
+          <Badge
+            bg="linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.2) 100%)"
+            color="white"
+            px={4}
+            py={2}
+            borderRadius="full"
+            fontSize="xs"
+            fontWeight="700"
+            letterSpacing="0.3px"
+            border="2px solid"
+            borderColor="rgba(16, 185, 129, 0.4)"
+            boxShadow="0 4px 12px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+          >
             🔒 Bank-level Security
           </Badge>
-          <Badge colorScheme="blue" px={3} py={1} borderRadius="full" fontSize="xs">
+          <Badge
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%)"
+            color="white"
+            px={4}
+            py={2}
+            borderRadius="full"
+            fontSize="xs"
+            fontWeight="700"
+            letterSpacing="0.3px"
+            border="2px solid"
+            borderColor="rgba(59, 130, 246, 0.4)"
+            boxShadow="0 4px 12px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+          >
             ⚡ Instant Processing
           </Badge>
         </HStack>
 
-        <Text fontSize="xs" color="gray.500" textAlign="center" maxW="300px">
+        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" textAlign="center" maxW="400px" fontWeight="500" letterSpacing="0.2px" lineHeight="1.6">
           Your payment information is encrypted and secure. We never store your card details.
         </Text>
       </VStack>

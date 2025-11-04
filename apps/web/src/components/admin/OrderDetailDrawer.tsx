@@ -277,8 +277,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
     onClose: onRemoveModalClose 
   } = useDisclosure();
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  // Dark theme with black background and white text
+  const bgColor = '#000000'; // Pure black background
+  const borderColor = '#333333'; // Dark gray border
+  const textColor = '#FFFFFF'; // White text
+  const secondaryTextColor = '#9ca3af'; // Light gray for secondary text
+  const cardBg = '#111111'; // Dark gray for cards
 
   useEffect(() => {
     if (isOpen && orderCode) {
@@ -779,10 +783,68 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} size="lg">
-      <DrawerOverlay />
-      <DrawerContent bg={bgColor}>
-        <DrawerCloseButton />
-        <DrawerHeader borderBottom={`1px solid ${borderColor}`} pb={4}>
+      <DrawerOverlay bg="blackAlpha.800" />
+      <DrawerContent 
+        bg={bgColor} 
+        color={textColor} 
+        sx={{ 
+          bg: `${bgColor} !important`,
+          backgroundColor: `${bgColor} !important`,
+          color: `${textColor} !important`,
+          '&': {
+            backgroundColor: '#000000 !important',
+            background: '#000000 !important',
+            color: '#FFFFFF !important',
+          },
+        }}
+        __css={{
+          backgroundColor: '#000000 !important',
+          background: '#000000 !important',
+          color: '#FFFFFF !important',
+        }}
+        css={{
+          backgroundColor: '#000000 !important',
+          background: '#000000 !important',
+          color: '#FFFFFF !important',
+        }}
+        style={{
+          backgroundColor: '#000000',
+          background: '#000000',
+          color: '#FFFFFF',
+        }}
+      >
+        <DrawerCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+        <DrawerHeader 
+          borderBottom={`1px solid ${borderColor}`} 
+          pb={4} 
+          bg={cardBg} 
+          color={textColor} 
+          sx={{ 
+            bg: `${cardBg} !important`,
+            backgroundColor: `${cardBg} !important`,
+            color: `${textColor} !important`,
+            '&': {
+              backgroundColor: '#111111 !important',
+              background: '#111111 !important',
+              color: '#FFFFFF !important',
+            },
+          }}
+          __css={{
+            backgroundColor: '#111111 !important',
+            background: '#111111 !important',
+            color: '#FFFFFF !important',
+          }}
+          css={{
+            backgroundColor: '#111111 !important',
+            background: '#111111 !important',
+            color: '#FFFFFF !important',
+          }}
+          style={{
+            backgroundColor: '#111111',
+            background: '#111111',
+            color: '#FFFFFF',
+          }}
+        >
           <VStack align="stretch" spacing={3}>
             <HStack justify="space-between">
               <HStack spacing={3}>
@@ -793,12 +855,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     animation={calculatePriority(order.scheduledAt).animation}
                   />
                 )}
-                <Text fontSize="lg" fontWeight="bold">
+                <Text fontSize="lg" fontWeight="bold" color={textColor}>
                   Order Details
                 </Text>
               </HStack>
               {orderCode && (
-                <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
+                <Badge colorScheme="blue" fontSize="sm" px={3} py={1} bg="#2563eb" color="#FFFFFF">
                   #{orderCode}
                 </Badge>
               )}
@@ -822,30 +884,59 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           </VStack>
         </DrawerHeader>
 
-        <DrawerBody p={6}>
+        <DrawerBody 
+          p={6} 
+          bg={bgColor} 
+          color={textColor} 
+          sx={{ 
+            bg: `${bgColor} !important`,
+            backgroundColor: `${bgColor} !important`,
+            color: `${textColor} !important`,
+            '&': {
+              backgroundColor: '#000000 !important',
+              background: '#000000 !important',
+              color: '#FFFFFF !important',
+            },
+          }}
+          __css={{
+            backgroundColor: '#000000 !important',
+            background: '#000000 !important',
+            color: '#FFFFFF !important',
+          }}
+          css={{
+            backgroundColor: '#000000 !important',
+            background: '#000000 !important',
+            color: '#FFFFFF !important',
+          }}
+          style={{
+            backgroundColor: '#000000',
+            background: '#000000',
+            color: '#FFFFFF',
+          }}
+        >
           {loading ? (
             <Box display="flex" justifyContent="center" py={8}>
-              <Spinner size="xl" />
+              <Spinner size="xl" color="#2563eb" />
             </Box>
           ) : error ? (
-            <Alert status="error">
-              <AlertIcon />
-              <Text>{error}</Text>
+            <Alert status="error" bg="#1a1a1a" borderColor={borderColor}>
+              <AlertIcon color="#ef4444" />
+              <Text color={textColor}>{error}</Text>
             </Alert>
           ) : order ? (
             <VStack spacing={6} align="stretch">
               {/* Data Completeness Summary */}
               {completenessData && (
-                <Box p={4} borderRadius="md" bg="gray.50" borderWidth={1}>
+                <Box p={4} borderRadius="md" bg={cardBg} borderWidth={1} borderColor={borderColor}>
                   <VStack spacing={3} align="stretch">
                     <HStack justify="space-between">
-                      <Text fontWeight="bold" fontSize="md">
+                      <Text fontWeight="bold" fontSize="md" color={textColor}>
                         Data Completeness
                       </Text>
                       <HStack spacing={2}>
                         <Text fontSize="sm" fontWeight="bold" color={
-                          completenessData.completenessScore >= 80 ? 'green.600' :
-                          completenessData.completenessScore >= 60 ? 'orange.600' : 'red.600'
+                          completenessData.completenessScore >= 80 ? '#10b981' :
+                          completenessData.completenessScore >= 60 ? '#f59e0b' : '#ef4444'
                         }>
                           {completenessData.completenessScore}%
                         </Text>
@@ -865,16 +956,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       <VStack spacing={1} align="stretch">
                         {completenessData.critical.map((issue, index) => (
                           <HStack key={`critical-${index}`} spacing={2}>
-                            <FiXCircle color="red" size={14} />
-                            <Text fontSize="xs" color="red.600">
+                            <FiXCircle color="#ef4444" size={14} />
+                            <Text fontSize="xs" color="#ef4444">
                               {issue.message}
                             </Text>
                           </HStack>
                         ))}
                         {completenessData.warning.map((issue, index) => (
                           <HStack key={`warning-${index}`} spacing={2}>
-                            <FiAlertTriangle color="orange" size={14} />
-                            <Text fontSize="xs" color="orange.600">
+                            <FiAlertTriangle color="#f59e0b" size={14} />
+                            <Text fontSize="xs" color="#f59e0b">
                               {issue.message}
                             </Text>
                           </HStack>
@@ -884,8 +975,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     
                     {completenessData.critical.length === 0 && completenessData.warning.length === 0 && (
                       <HStack spacing={2}>
-                        <FiCheckCircle color="green" size={14} />
-                        <Text fontSize="xs" color="green.600">
+                        <FiCheckCircle color="#10b981" size={14} />
+                        <Text fontSize="xs" color="#10b981">
                           All critical information provided
                         </Text>
                       </HStack>
@@ -894,12 +985,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </Box>
               )}
 
-              <Divider />
+              <Divider borderColor={borderColor} />
 
               {/* Order Status */}
               <VStack align="stretch" spacing={3}>
                 <HStack justify="space-between">
-                  <Text fontWeight="bold">Status</Text>
+                  <Text fontWeight="bold" color={textColor}>Status</Text>
                   <Badge colorScheme={getStatusColor(order.status)} size="lg">
                     {order.status.replace('_', ' ')}
                   </Badge>
@@ -924,70 +1015,70 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 )}
               </VStack>
 
-              <Divider />
+              <Divider borderColor={borderColor} />
 
               {/* Customer Information */}
               <VStack align="stretch" spacing={3}>
-                <Text fontWeight="bold" fontSize="md">
+                <Text fontWeight="bold" fontSize="md" color={textColor}>
                   Customer Information
                 </Text>
                 <HStack>
-                  <FiUser />
-                  <Text>{order.customerName}</Text>
+                  <FiUser color={textColor} />
+                  <Text color={textColor}>{order.customerName}</Text>
                 </HStack>
                 <HStack>
-                  <FiMail />
-                  <Text fontSize="sm" color="gray.600">
+                  <FiMail color={secondaryTextColor} />
+                  <Text fontSize="sm" color={secondaryTextColor}>
                     {order.customerEmail}
                   </Text>
                 </HStack>
                 <HStack>
-                  <FiPhone />
+                  <FiPhone color={secondaryTextColor} />
                   {getStatusIcon(
                     !!(order.customerPhone && order.customerPhone.length >= 10), 
                     false
                   )}
                   <Text fontSize="sm" color={
                     order.customerPhone && order.customerPhone.length >= 10 
-                      ? "gray.600" 
-                      : "orange.600"
+                      ? secondaryTextColor 
+                      : "#f59e0b"
                   }>
                     {order.customerPhone || 'NOT PROVIDED'}
                   </Text>
                 </HStack>
               </VStack>
 
-              <Divider />
+              <Divider borderColor={borderColor} />
 
               {/* Addresses */}
               <VStack align="stretch" spacing={3}>
-                <Text fontWeight="bold" fontSize="md">
+                <Text fontWeight="bold" fontSize="md" color={textColor}>
                   Addresses & Property Details
                 </Text>
                 <VStack align="stretch" spacing={4}>
-                  <Box p={3} borderWidth={1} borderRadius="md" borderColor="green.200" bg="green.50">
+                  <Box p={3} borderWidth={1} borderRadius="md" borderColor="#10b981" bg={cardBg}>
                     <HStack align="start" spacing={3}>
-                      <FiMapPin color="green" />
+                      <FiMapPin color="#10b981" />
                       <VStack align="start" spacing={1} flex={1}>
-                        <Text fontSize="sm" fontWeight="bold" color="green.700">
+                        <Text fontSize="sm" fontWeight="bold" color="#10b981">
                           Pickup Location
                         </Text>
-                        <Text fontSize="sm" color="gray.700">
+                        <Text fontSize="sm" color={textColor}>
                           {order.pickupAddress?.label || 'Not specified'}
                         </Text>
                         {order.pickupAddress?.postcode && (
-                          <Text fontSize="xs" color="gray.600">
+                          <Text fontSize="xs" color={secondaryTextColor}>
                             Postcode: {order.pickupAddress.postcode}
                           </Text>
                         )}
                         {order.pickupAddress?.flatNumber && (
-                          <Text fontSize="xs" color="gray.600">
+                          <Text fontSize="xs" color={secondaryTextColor}>
                             Flat/Unit: {order.pickupAddress.flatNumber}
                           </Text>
                         )}
                         {order.pickupProperty && (
                           <VStack align="start" spacing={0} mt={2}>
-                            <Text fontSize="xs" color="gray.600">
+                            <Text fontSize="xs" color={secondaryTextColor}>
                               Property: {order.pickupProperty.propertyType}
                             </Text>
                             <HStack spacing={1}>
@@ -996,7 +1087,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 true
                               )}
                               <Text fontSize="xs" color={
-                                order.pickupProperty.floors > 0 ? "gray.600" : "red.600"
+                                order.pickupProperty.floors > 0 ? secondaryTextColor : "#ef4444"
                               }>
                                 Floor: {order.pickupProperty.floors > 0 
                                   ? order.pickupProperty.floors 
@@ -1004,7 +1095,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 }
                               </Text>
                             </HStack>
-                            <Text fontSize="xs" color="gray.600">
+                            <Text fontSize="xs" color={secondaryTextColor}>
                               Access: {order.pickupProperty.accessType.replace('_', ' ')}
                             </Text>
                             {order.pickupProperty.propertyType === 'FLAT' && (
@@ -1014,7 +1105,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                   true
                                 )}
                                 <Text fontSize="xs" color={
-                                  order.pickupAddress?.flatNumber ? "gray.600" : "red.600"
+                                  order.pickupAddress?.flatNumber ? secondaryTextColor : "#ef4444"
                                 }>
                                   Flat/Unit: {order.pickupAddress?.flatNumber || 'NOT SPECIFIED'}
                                 </Text>
@@ -1026,29 +1117,29 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     </HStack>
                   </Box>
                   
-                  <Box p={3} borderWidth={1} borderRadius="md" borderColor="red.200" bg="red.50">
+                  <Box p={3} borderWidth={1} borderRadius="md" borderColor="#ef4444" bg={cardBg}>
                     <HStack align="start" spacing={3}>
-                      <FiMapPin color="red" />
+                      <FiMapPin color="#ef4444" />
                       <VStack align="start" spacing={1} flex={1}>
-                        <Text fontSize="sm" fontWeight="bold" color="red.700">
+                        <Text fontSize="sm" fontWeight="bold" color="#ef4444">
                           Delivery Location
                         </Text>
-                        <Text fontSize="sm" color="gray.700">
+                        <Text fontSize="sm" color={textColor}>
                           {order.dropoffAddress?.label || 'Not specified'}
                         </Text>
                         {order.dropoffAddress?.postcode && (
-                          <Text fontSize="xs" color="gray.600">
+                          <Text fontSize="xs" color={secondaryTextColor}>
                             Postcode: {order.dropoffAddress.postcode}
                           </Text>
                         )}
                         {order.dropoffAddress?.flatNumber && (
-                          <Text fontSize="xs" color="gray.600">
+                          <Text fontSize="xs" color={secondaryTextColor}>
                             Flat/Unit: {order.dropoffAddress.flatNumber}
                           </Text>
                         )}
                         {order.dropoffProperty && (
                           <VStack align="start" spacing={0} mt={2}>
-                            <Text fontSize="xs" color="gray.600">
+                            <Text fontSize="xs" color={secondaryTextColor}>
                               Property: {order.dropoffProperty.propertyType}
                             </Text>
                             <HStack spacing={1}>
@@ -1057,7 +1148,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 true
                               )}
                               <Text fontSize="xs" color={
-                                order.dropoffProperty.floors > 0 ? "gray.600" : "red.600"
+                                order.dropoffProperty.floors > 0 ? secondaryTextColor : "#ef4444"
                               }>
                                 Floor: {order.dropoffProperty.floors > 0 
                                   ? order.dropoffProperty.floors 
@@ -1065,7 +1156,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 }
                               </Text>
                             </HStack>
-                            <Text fontSize="xs" color="gray.600">
+                            <Text fontSize="xs" color={secondaryTextColor}>
                               Access: {order.dropoffProperty.accessType.replace('_', ' ')}
                             </Text>
                             {order.dropoffProperty.propertyType === 'FLAT' && (
@@ -1075,7 +1166,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                   true
                                 )}
                                 <Text fontSize="xs" color={
-                                  order.dropoffAddress?.flatNumber ? "gray.600" : "red.600"
+                                  order.dropoffAddress?.flatNumber ? secondaryTextColor : "#ef4444"
                                 }>
                                   Flat/Unit: {order.dropoffAddress?.flatNumber || 'NOT SPECIFIED'}
                                 </Text>
@@ -1089,12 +1180,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </VStack>
               </VStack>
 
-              <Divider />
+              <Divider borderColor={borderColor} />
 
               {/* Driver Information */}
               <VStack align="stretch" spacing={3}>
                 <HStack justify="space-between">
-                  <Text fontWeight="bold" fontSize="md">
+                  <Text fontWeight="bold" fontSize="md" color={textColor}>
                     Driver Information
                   </Text>
                   {order.driver && (
@@ -1105,6 +1196,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         variant="outline"
                         onClick={onAssignModalOpen}
                         leftIcon={<FiTruck />}
+                        borderColor={borderColor}
+                        color={textColor}
+                        _hover={{ bg: '#1a1a1a' }}
                       >
                         Change Driver
                       </Button>
@@ -1114,6 +1208,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         variant="outline"
                         onClick={onRemoveModalOpen}
                         leftIcon={<FiX />}
+                        borderColor={borderColor}
+                        color="#ef4444"
+                        _hover={{ bg: '#1a1a1a' }}
                       >
                         Remove Driver
                       </Button>
@@ -1124,27 +1221,27 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 {order.driver?.user ? (
                   <>
                     <HStack>
-                      <FiTruck />
-                      <Text>{order.driver.user.name || 'Unknown Driver'}</Text>
+                      <FiTruck color={textColor} />
+                      <Text color={textColor}>{order.driver.user.name || 'Unknown Driver'}</Text>
                     </HStack>
                     <HStack>
-                      <FiMail />
-                      <Text fontSize="sm" color="gray.600">
+                      <FiMail color={secondaryTextColor} />
+                      <Text fontSize="sm" color={secondaryTextColor}>
                         {order.driver.user.email || 'N/A'}
                       </Text>
                     </HStack>
                     <HStack>
-                      <FiPhone />
-                      <Text fontSize="sm" color="gray.600">
+                      <FiPhone color={secondaryTextColor} />
+                      <Text fontSize="sm" color={secondaryTextColor}>
                         {order.driver.user.phone || 'N/A'}
                       </Text>
                     </HStack>
                   </>
                 ) : (
-                  <Box p={3} bg="yellow.50" borderRadius="md" borderWidth={1} borderColor="yellow.200">
+                  <Box p={3} bg={cardBg} borderRadius="md" borderWidth={1} borderColor="#f59e0b">
                     <HStack spacing={2}>
-                      <FiAlertTriangle color="orange" />
-                      <Text fontSize="sm" color="orange.700">
+                      <FiAlertTriangle color="#f59e0b" />
+                      <Text fontSize="sm" color="#f59e0b">
                         No driver assigned to this order
                       </Text>
                     </HStack>
@@ -1155,35 +1252,38 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       mt={2}
                       onClick={onAssignModalOpen}
                       leftIcon={<FiTruck />}
+                      borderColor={borderColor}
+                      color="#10b981"
+                      _hover={{ bg: '#1a1a1a' }}
                     >
                       Assign Driver
                     </Button>
                   </Box>
                 )}
               </VStack>
-              <Divider />
+              <Divider borderColor={borderColor} />
 
               {/* Items */}
               {order.items && order.items.length > 0 && (
                 <>
                   <VStack align="stretch" spacing={3}>
-                    <Text fontWeight="bold" fontSize="md">
+                    <Text fontWeight="bold" fontSize="md" color={textColor}>
                       Items ({order.items.length})
                     </Text>
                     <VStack align="stretch" spacing={2}>
                       {order.items.map((item, index) => (
-                        <Box key={item.id || index} p={3} borderWidth={1} borderRadius="md" bg="gray.50">
+                        <Box key={item.id || index} p={3} borderWidth={1} borderRadius="md" bg={cardBg} borderColor={borderColor}>
                           <HStack justify="space-between" align="start">
                             <VStack align="start" spacing={1} flex={1}>
-                              <Text fontSize="sm" fontWeight="medium">
+                              <Text fontSize="sm" fontWeight="medium" color={textColor}>
                                 {item.name}
                               </Text>
                               <HStack spacing={4}>
-                                <Text fontSize="xs" color="gray.600">
+                                <Text fontSize="xs" color={secondaryTextColor}>
                                   Qty: {item.quantity}
                                 </Text>
                                 {item.volumeM3 > 0 && (
-                                  <Text fontSize="xs" color="gray.600">
+                                  <Text fontSize="xs" color={secondaryTextColor}>
                                     Volume: {item.volumeM3.toFixed(2)}m³
                                   </Text>
                                 )}
@@ -1195,7 +1295,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 h="40px"
                                 borderRadius="md"
                                 overflow="hidden"
-                                bg="gray.200"
+                                bg={borderColor}
                               >
                                 <img
                                   src={item.image}
@@ -1209,34 +1309,34 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       ))}
                     </VStack>
                   </VStack>
-                  <Divider />
+                  <Divider borderColor={borderColor} />
                 </>
               )}
 
               {/* Order Details */}
               <VStack align="stretch" spacing={4}>
-                <Text fontWeight="bold" fontSize="md">
+                <Text fontWeight="bold" fontSize="md" color={textColor}>
                   Booking Details
                 </Text>
                 
                 {/* Price Overview Card */}
-                <Card bg="green.50" borderColor="green.200" borderWidth={1}>
+                <Card bg={cardBg} borderColor="#10b981" borderWidth={1}>
                   <CardBody>
                     <SimpleGrid columns={2} spacing={4}>
                       <Stat>
-                        <StatLabel fontSize="xs" color="gray.600">Customer Paid</StatLabel>
-                        <StatNumber fontSize="2xl" color="green.600">
+                        <StatLabel fontSize="xs" color={secondaryTextColor}>Customer Paid</StatLabel>
+                        <StatNumber fontSize="2xl" color="#10b981">
                           {formatCurrency(order.totalGBP)}
                         </StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel fontSize="xs" color="gray.600">
+                        <StatLabel fontSize="xs" color={secondaryTextColor}>
                           Est. Driver Earnings
                         </StatLabel>
-                        <StatNumber fontSize="2xl" color="blue.600">
+                        <StatNumber fontSize="2xl" color="#2563eb">
                           {calculateDriverEarnings(order).formatted}
                         </StatNumber>
-                        <StatHelpText fontSize="xs">
+                        <StatHelpText fontSize="xs" color={secondaryTextColor}>
                           Base + Mileage + Time
                         </StatHelpText>
                       </Stat>
@@ -1245,16 +1345,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </Card>
                 
                 {/* Trip Metrics Card */}
-                <Card bg="blue.50" borderColor="blue.200" borderWidth={1}>
+                <Card bg={cardBg} borderColor="#2563eb" borderWidth={1}>
                   <CardBody>
                     <SimpleGrid columns={2} spacing={4}>
                       <VStack align="start" spacing={1}>
                         <HStack spacing={1}>
                           {getStatusIcon(!!(order.baseDistanceMiles || order.distanceMeters), true)}
-                          <Text fontSize="xs" color="gray.600">Distance</Text>
+                          <Text fontSize="xs" color={secondaryTextColor}>Distance</Text>
                         </HStack>
                         <Text fontWeight="bold" fontSize="lg" color={
-                          (order.baseDistanceMiles || order.distanceMeters) ? "blue.600" : "red.600"
+                          (order.baseDistanceMiles || order.distanceMeters) ? "#2563eb" : "#ef4444"
                         }>
                           {order.baseDistanceMiles 
                             ? `${order.baseDistanceMiles.toFixed(1)} mi`
@@ -1266,10 +1366,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       </VStack>
                       <VStack align="start" spacing={1}>
                         <HStack spacing={1}>
-                          <FiClock />
-                          <Text fontSize="xs" color="gray.600">Duration</Text>
+                          <FiClock color={secondaryTextColor} />
+                          <Text fontSize="xs" color={secondaryTextColor}>Duration</Text>
                         </HStack>
-                        <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                        <Text fontWeight="bold" fontSize="lg" color="#2563eb">
                           {formatDuration(order.durationSeconds)}
                         </Text>
                       </VStack>
@@ -1279,36 +1379,36 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 
                 {/* Driver Earnings Breakdown */}
                 {(order.distanceMeters || order.baseDistanceMiles) && order.durationSeconds && (
-                  <Card bg="purple.50" borderColor="purple.200" borderWidth={1}>
+                  <Card bg={cardBg} borderColor="#a855f7" borderWidth={1}>
                     <CardBody>
                       <VStack align="stretch" spacing={2}>
                         <HStack spacing={2}>
-                          <FiTrendingUp />
-                          <Text fontSize="sm" fontWeight="bold" color="purple.700">
+                          <FiTrendingUp color="#a855f7" />
+                          <Text fontSize="sm" fontWeight="bold" color="#a855f7">
                             Driver Earnings Breakdown
                           </Text>
                         </HStack>
-                        <Divider borderColor="purple.200" />
+                        <Divider borderColor={borderColor} />
                         <HStack justify="space-between" fontSize="xs">
-                          <Text color="gray.600">Base Fare:</Text>
-                          <Text fontWeight="medium">£{calculateDriverEarnings(order).base.toFixed(2)}</Text>
+                          <Text color={secondaryTextColor}>Base Fare:</Text>
+                          <Text fontWeight="medium" color={textColor}>£{calculateDriverEarnings(order).base.toFixed(2)}</Text>
                         </HStack>
                         <HStack justify="space-between" fontSize="xs">
-                          <Text color="gray.600">Mileage Fee:</Text>
-                          <Text fontWeight="medium">£{calculateDriverEarnings(order).mileage.toFixed(2)}</Text>
+                          <Text color={secondaryTextColor}>Mileage Fee:</Text>
+                          <Text fontWeight="medium" color={textColor}>£{calculateDriverEarnings(order).mileage.toFixed(2)}</Text>
                         </HStack>
                         <HStack justify="space-between" fontSize="xs">
-                          <Text color="gray.600">Time Fee:</Text>
-                          <Text fontWeight="medium">£{calculateDriverEarnings(order).time.toFixed(2)}</Text>
+                          <Text color={secondaryTextColor}>Time Fee:</Text>
+                          <Text fontWeight="medium" color={textColor}>£{calculateDriverEarnings(order).time.toFixed(2)}</Text>
                         </HStack>
-                        <Divider borderColor="purple.200" />
+                        <Divider borderColor={borderColor} />
                         <HStack justify="space-between">
-                          <Text fontSize="sm" fontWeight="bold" color="purple.700">Total Driver Gets:</Text>
-                          <Text fontSize="md" fontWeight="bold" color="purple.700">
+                          <Text fontSize="sm" fontWeight="bold" color="#a855f7">Total Driver Gets:</Text>
+                          <Text fontSize="md" fontWeight="bold" color="#a855f7">
                             {calculateDriverEarnings(order).formatted}
                           </Text>
                         </HStack>
-                        <Text fontSize="xs" color="gray.500" fontStyle="italic">
+                        <Text fontSize="xs" color={secondaryTextColor} fontStyle="italic">
                           * Actual earnings calculated at job completion
                         </Text>
                       </VStack>
@@ -1316,8 +1416,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   </Card>
                 )}
                 <HStack justify="space-between">
-                  <Text>Scheduled Date</Text>
-                  <Text>
+                  <Text color={textColor}>Scheduled Date</Text>
+                  <Text color={textColor}>
                     {order.scheduledAt
                       ? new Date(order.scheduledAt).toLocaleDateString('en-GB', {
                           day: '2-digit',
@@ -1328,8 +1428,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   </Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text>Scheduled Time</Text>
-                  <Text>
+                  <Text color={textColor}>Scheduled Time</Text>
+                  <Text color={textColor}>
                     {order.scheduledAt
                       ? new Date(order.scheduledAt).toLocaleTimeString('en-GB', {
                           hour: '2-digit',
@@ -1341,15 +1441,15 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 <HStack justify="space-between">
                   <HStack spacing={1}>
                     {getStatusIcon(!!order.pickupTimeSlot, false)}
-                    <Text>Time Slot</Text>
+                    <Text color={textColor}>Time Slot</Text>
                   </HStack>
-                  <Text color={order.pickupTimeSlot ? "gray.700" : "orange.600"}>
+                  <Text color={order.pickupTimeSlot ? textColor : "#f59e0b"}>
                     {order.pickupTimeSlot || 'NOT SPECIFIED'}
                   </Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text>Created</Text>
-                  <Text>
+                  <Text color={textColor}>Created</Text>
+                  <Text color={textColor}>
                     {new Date(order.createdAt).toLocaleDateString('en-GB', {
                       day: '2-digit',
                       month: '2-digit',
@@ -1361,8 +1461,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </HStack>
                 {order.paidAt && (
                   <HStack justify="space-between">
-                    <Text>Paid At</Text>
-                    <Text>
+                    <Text color={textColor}>Paid At</Text>
+                    <Text color={textColor}>
                       {new Date(order.paidAt).toLocaleDateString('en-GB', {
                         day: '2-digit',
                         month: '2-digit',
@@ -1376,29 +1476,29 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               </VStack>
 
               {/* Notes */}
-              <Divider />
+              <Divider borderColor={borderColor} />
               <VStack align="stretch" spacing={2}>
                 <HStack spacing={1}>
                   {getStatusIcon(!!order.notes, false)}
-                  <Text fontWeight="bold" fontSize="md">
+                  <Text fontWeight="bold" fontSize="md" color={textColor}>
                     Customer Notes
                   </Text>
                 </HStack>
                 <Box 
                   p={3} 
                   borderRadius="md" 
-                  bg={order.notes ? "blue.50" : "gray.50"}
+                  bg={order.notes ? cardBg : cardBg}
                   borderWidth={1}
-                  borderColor={order.notes ? "blue.200" : "gray.200"}
+                  borderColor={order.notes ? "#2563eb" : borderColor}
                 >
-                  <Text fontSize="sm" color={order.notes ? "gray.700" : "gray.500"} fontStyle={!order.notes ? "italic" : "normal"}>
+                  <Text fontSize="sm" color={order.notes ? textColor : secondaryTextColor} fontStyle={!order.notes ? "italic" : "normal"}>
                     {order.notes || 'No customer notes provided'}
                   </Text>
                 </Box>
               </VStack>
 
               {/* Actions */}
-              <Divider />
+              <Divider borderColor={borderColor} />
               {isEditing ? (
                 <HStack spacing={3} pt={4}>
                   <Button
@@ -1409,6 +1509,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     onClick={handleEditSave}
                     isLoading={isSaving}
                     loadingText="Saving..."
+                    bg="#10b981"
+                    color="#FFFFFF"
+                    _hover={{ bg: '#059669' }}
                   >
                     Save Changes
                   </Button>
@@ -1419,6 +1522,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     flex={1}
                     onClick={handleEditCancel}
                     isDisabled={isSaving}
+                    borderColor={borderColor}
+                    color={textColor}
+                    _hover={{ bg: '#1a1a1a' }}
                   >
                     Cancel Edit
                   </Button>
@@ -1433,6 +1539,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       flex={1}
                       onClick={handleEditStart}
                       isDisabled={order?.status === 'CANCELLED'}
+                      bg="#2563eb"
+                      color="#FFFFFF"
+                      _hover={{ bg: '#1d4ed8' }}
+                      _disabled={{ bg: '#1a1a1a', color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Edit Order
                     </Button>
@@ -1446,6 +1556,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isLoading={isSendingEmail}
                       loadingText="Sending..."
                       isDisabled={order?.status === 'CANCELLED'}
+                      borderColor={borderColor}
+                      color="#10b981"
+                      _hover={{ bg: '#1a1a1a' }}
+                      _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Send Confirmation
                     </Button>
@@ -1459,6 +1573,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       size="sm"
                       flex={1}
                       onClick={handleSendFloorWarningEmail}
+                      borderColor={borderColor}
+                      color="#f59e0b"
+                      _hover={{ bg: '#1a1a1a' }}
                       isLoading={isSendingEmail}
                       loadingText="Sending..."
                       isDisabled={order?.status === 'CANCELLED'}
@@ -1473,6 +1590,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       flex={1}
                       onClick={onAssignModalOpen}
                       isDisabled={order?.status === 'CANCELLED'}
+                      borderColor={borderColor}
+                      color={textColor}
+                      _hover={{ bg: '#1a1a1a' }}
+                      _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       {order?.driver ? 'Change Driver' : 'Assign Driver'}
                     </Button>
@@ -1485,6 +1606,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         flex={1}
                         onClick={handleRemoveDriver}
                         isDisabled={order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
+                        borderColor={borderColor}
+                        color="#f59e0b"
+                        _hover={{ bg: '#1a1a1a' }}
+                        _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Remove Driver
                       </Button>
@@ -1497,6 +1622,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       flex={1}
                       onClick={onCancelModalOpen}
                       isDisabled={order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
+                      borderColor={borderColor}
+                      color="#ef4444"
+                      _hover={{ bg: '#1a1a1a' }}
+                      _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Cancel Order
                     </Button>
@@ -1505,7 +1634,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               )}
             </VStack>
           ) : (
-            <Text color="gray.500" textAlign="center" py={8}>
+            <Text color={textColor} textAlign="center" py={8}>
               No order selected
             </Text>
           )}
@@ -1514,51 +1643,54 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
       {/* Cancel Order Confirmation Modal */}
       <Modal isOpen={isCancelModalOpen} onClose={onCancelModalClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader color="red.600">
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent bg={bgColor} borderColor={borderColor} borderWidth={1}>
+          <ModalHeader color="#ef4444" bg={cardBg} borderBottom={`1px solid ${borderColor}`}>
             <HStack spacing={2}>
               <FiTrash2 />
-              <Text>Cancel Order</Text>
+              <Text color="#ef4444">Cancel Order</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+          <ModalCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+          <ModalBody bg={bgColor} color={textColor}>
             <VStack spacing={4} align="stretch">
-              <Alert status="warning">
-                <AlertIcon />
+              <Alert status="warning" bg="#1a1a1a" borderColor={borderColor}>
+                <AlertIcon color="#f59e0b" />
                 <VStack align="start" spacing={1}>
-                  <Text fontWeight="bold">This action cannot be undone!</Text>
-                  <Text fontSize="sm">
+                  <Text fontWeight="bold" color={textColor}>This action cannot be undone!</Text>
+                  <Text fontSize="sm" color={textColor}>
                     Cancelling this order will:
                   </Text>
                 </VStack>
               </Alert>
               
               <VStack align="start" spacing={2} pl={4}>
-                <Text fontSize="sm">• Change order status to CANCELLED</Text>
-                <Text fontSize="sm">• Send cancellation notification to customer</Text>
-                <Text fontSize="sm">• Remove from active orders list</Text>
-                <Text fontSize="sm">• Trigger refund process if payment was made</Text>
+                <Text fontSize="sm" color={textColor}>• Change order status to CANCELLED</Text>
+                <Text fontSize="sm" color={textColor}>• Send cancellation notification to customer</Text>
+                <Text fontSize="sm" color={textColor}>• Remove from active orders list</Text>
+                <Text fontSize="sm" color={textColor}>• Trigger refund process if payment was made</Text>
               </VStack>
 
               {order && (
-                <Box p={3} bg="gray.50" borderRadius="md">
-                  <Text fontWeight="bold" fontSize="sm" mb={1}>Order to Cancel:</Text>
-                  <Text fontSize="sm">Reference: {order.reference}</Text>
-                  <Text fontSize="sm">Customer: {order.customerName}</Text>
-                  <Text fontSize="sm">Amount: {formatCurrency(order.totalGBP)}</Text>
+                <Box p={3} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+                  <Text fontWeight="bold" fontSize="sm" mb={1} color={textColor}>Order to Cancel:</Text>
+                  <Text fontSize="sm" color={textColor}>Reference: {order.reference}</Text>
+                  <Text fontSize="sm" color={textColor}>Customer: {order.customerName}</Text>
+                  <Text fontSize="sm" color={textColor}>Amount: {formatCurrency(order.totalGBP)}</Text>
                 </Box>
               )}
             </VStack>
           </ModalBody>
 
-          <ModalFooter>
+          <ModalFooter bg={cardBg} borderTop={`1px solid ${borderColor}`}>
             <HStack spacing={3}>
               <Button 
                 variant="outline" 
                 onClick={onCancelModalClose}
                 isDisabled={isCancelling}
+                borderColor={borderColor}
+                color={textColor}
+                _hover={{ bg: '#1a1a1a' }}
               >
                 Keep Order
               </Button>
@@ -1567,6 +1699,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 onClick={handleCancelOrder}
                 isLoading={isCancelling}
                 loadingText="Cancelling..."
+                bg="#ef4444"
+                color="#FFFFFF"
+                _hover={{ bg: '#dc2626' }}
               >
                 Yes, Cancel Order
               </Button>
@@ -1577,20 +1712,20 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
       {/* Assign Driver Modal */}
       <Modal isOpen={isAssignModalOpen} onClose={onAssignModalClose} size="xl" scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent maxH="90vh">
-          <ModalHeader>
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent maxH="90vh" bg={bgColor} borderColor={borderColor} borderWidth={1}>
+          <ModalHeader bg={cardBg} borderBottom={`1px solid ${borderColor}`} color={textColor}>
             <HStack spacing={2}>
-              <FiTruck />
-              <Text>{order?.driver ? 'Change Driver' : 'Assign Driver'}</Text>
+              <FiTruck color={textColor} />
+              <Text color={textColor}>{order?.driver ? 'Change Driver' : 'Assign Driver'}</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody overflowY="auto" maxH="60vh">
+          <ModalCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+          <ModalBody overflowY="auto" maxH="60vh" bg={bgColor} color={textColor}>
             <VStack spacing={4} align="stretch">
-              <Alert status="info">
-                <AlertIcon />
-                <Text fontSize="sm">
+              <Alert status="info" bg="#1a1a1a" borderColor={borderColor}>
+                <AlertIcon color="#2563eb" />
+                <Text fontSize="sm" color={textColor}>
                   {order?.driver 
                     ? 'Select a new driver to replace the current one. The current driver will be notified of the change.'
                     : 'Select a driver to assign to this order. The driver will be notified immediately.'
@@ -1599,19 +1734,19 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               </Alert>
 
               <FormControl>
-                <FormLabel>Available Drivers</FormLabel>
+                <FormLabel color={textColor}>Available Drivers</FormLabel>
                 {isLoadingDrivers ? (
                   <HStack justify="center" py={4}>
-                    <Spinner size="sm" />
-                    <Text>Loading drivers...</Text>
+                    <Spinner size="sm" color="#2563eb" />
+                    <Text color={textColor}>Loading drivers...</Text>
                   </HStack>
                 ) : availableDrivers.length === 0 ? (
                   <VStack spacing={3} align="stretch">
-                    <Alert status="warning">
-                      <AlertIcon />
+                    <Alert status="warning" bg="#1a1a1a" borderColor={borderColor}>
+                      <AlertIcon color="#f59e0b" />
                       <VStack align="start" spacing={1}>
-                        <Text fontSize="sm" fontWeight="bold">No drivers found</Text>
-                        <Text fontSize="xs">
+                        <Text fontSize="sm" fontWeight="bold" color={textColor}>No drivers found</Text>
+                        <Text fontSize="xs" color={textColor}>
                           This could happen if no drivers are approved and active, or if all drivers are currently busy.
                         </Text>
                       </VStack>
@@ -1623,6 +1758,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         variant="outline"
                         onClick={loadAvailableDrivers}
                         isLoading={isLoadingDrivers}
+                        borderColor={borderColor}
+                        color="#2563eb"
+                        _hover={{ bg: '#1a1a1a' }}
                       >
                         Refresh Driver List
                       </Button>
@@ -1630,6 +1768,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         size="sm"
                         colorScheme="orange"
                         variant="outline"
+                        borderColor={borderColor}
+                        color="#f59e0b"
+                        _hover={{ bg: '#1a1a1a' }}
                         onClick={async () => {
                           try {
                             const response = await fetch('/api/admin/drivers/fix-availability', {
@@ -1673,10 +1814,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                      availableDrivers.length > 0 ? (
                       <Box 
                         h="450px" 
-                        bg="gray.50" 
+                        bg={cardBg} 
                         borderRadius="md" 
                         border="1px solid" 
-                        borderColor="gray.200"
+                        borderColor={borderColor}
                         position="relative"
                         overflow="hidden"
                       >
