@@ -1101,8 +1101,26 @@ export default function WhoAndPaymentStep({
                       email: step2.customerDetails.email || '',
                       phone: step2.customerDetails.phone || '',
                     },
-                    pickupAddress: formData.step1.pickupAddress,
-                    dropoffAddress: formData.step1.dropoffAddress,
+                    pickupAddress: {
+                      ...formData.step1.pickupAddress,
+                      // Ensure street field is populated from multiple sources
+                      street: formData.step1.pickupAddress?.street || 
+                             formData.step1.pickupAddress?.line1 || 
+                             formData.step1.pickupAddress?.address || 
+                             formData.step1.pickupAddress?.formatted_address ||
+                             formData.step1.pickupAddress?.full ||
+                             '',
+                    },
+                    dropoffAddress: {
+                      ...formData.step1.dropoffAddress,
+                      // Ensure street field is populated from multiple sources
+                      street: formData.step1.dropoffAddress?.street || 
+                             formData.step1.dropoffAddress?.line1 || 
+                             formData.step1.dropoffAddress?.address || 
+                             formData.step1.dropoffAddress?.formatted_address ||
+                             formData.step1.dropoffAddress?.full ||
+                             '',
+                    },
                     items: formData.step1.items,
                     pricing: formData.step1.pricing,
                     serviceType: formData.step1.serviceType,
