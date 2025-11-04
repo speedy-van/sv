@@ -214,10 +214,31 @@ class AIRealTimeMonitor {
     if (!this.lastLocation || this.activeJobs.length === 0) return null;
 
     const currentJob = this.activeJobs[0];
-    const distanceToPickup = this.calculateDistance(
-      this.lastLocation,
-      { lat: currentJob.pickup.lat, lng: currentJob.pickup.lng }
-    );
+    
+    // Use API endpoint for distance calculation (unified pricing system requirement)
+    let distanceToPickup = 0;
+    try {
+      const distanceResponse = await fetch(`${this.baseUrl}/api/address/distance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: { lat: this.lastLocation.lat, lng: this.lastLocation.lng },
+          to: { lat: currentJob.pickup.lat, lng: currentJob.pickup.lng }
+        })
+      });
+      
+      if (distanceResponse.ok) {
+        const distanceData = await distanceResponse.json();
+        distanceToPickup = distanceData.distance || 0; // distance in miles
+      }
+    } catch (error) {
+      console.warn('Failed to calculate distance via API, using fallback:', error);
+      // Fallback: simple approximation (not used for pricing, only for UI display)
+      distanceToPickup = this.calculateApproximateDistance(
+        this.lastLocation,
+        { lat: currentJob.pickup.lat, lng: currentJob.pickup.lng }
+      );
+    }
 
     const analysis = {
       distanceToPickup,
@@ -230,7 +251,9 @@ class AIRealTimeMonitor {
     return analysis;
   }
 
-  private calculateDistance(point1: { lat: number; lng: number }, point2: { lat: number; lng: number }): number {
+  // Fallback distance calculation - for UI display only, NOT used for pricing
+  // This is a simple approximation and should only be used when API is unavailable
+  private calculateApproximateDistance(point1: { lat: number; lng: number }, point2: { lat: number; lng: number }): number {
     const R = 3959; // Earth's radius in miles
     const dLat = this.toRadians(point2.lat - point1.lat);
     const dLon = this.toRadians(point2.lng - point1.lng);
@@ -394,7 +417,7 @@ class AIRateLimiter {
 
 class AIService {
   private rateLimiter = AIRateLimiter.getInstance();
-  private baseUrl = 'https://speedy-van.co.uk/api'; // Update this based on your environment
+  private baseUrl = 'https://speedy-van.co.uk'; // Base URL for API calls
 
   // Cache for AI responses (simple in-memory cache)
   private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
