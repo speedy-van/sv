@@ -607,7 +607,13 @@ export function useBookingForm() {
           },
           // Include full structured address data for pricing engine
           houseNumber: pickupAddress.formatted?.houseNumber || '',
-          street: pickupAddress.formatted?.street || '',
+          // Extract street from multiple sources - Google Places API may not have formatted.street
+          street: pickupAddress.formatted?.street || 
+                 pickupAddress.line1 || 
+                 pickupAddress.address || 
+                 pickupAddress.formatted_address ||
+                 pickupAddress.full ||
+                 '',
           flatNumber: pickupAddress.formatted?.flatNumber || '',
           businessName: pickupAddress.formatted?.businessName || ''
         },
@@ -624,7 +630,13 @@ export function useBookingForm() {
           },
           // Include full structured address data for pricing engine
           houseNumber: dropoffAddress.formatted?.houseNumber || '',
-          street: dropoffAddress.formatted?.street || '',
+          // Extract street from multiple sources - Google Places API may not have formatted.street
+          street: dropoffAddress.formatted?.street || 
+                 dropoffAddress.line1 || 
+                 dropoffAddress.address || 
+                 dropoffAddress.formatted_address ||
+                 dropoffAddress.full ||
+                 '',
           flatNumber: dropoffAddress.formatted?.flatNumber || '',
           businessName: dropoffAddress.formatted?.businessName || ''
         },
