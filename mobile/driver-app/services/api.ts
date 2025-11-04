@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { ApiResponse } from '../types';
@@ -57,6 +58,24 @@ class ApiService {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Add user ID headers for story-related requests
+        if (config.url && config.url.includes('/api/admin/stories')) {
+          try {
+            // Get user data from AsyncStorage (using same key as auth service)
+            const userData = await AsyncStorage.getItem('auth_user_data');
+            if (userData) {
+              const user = JSON.parse(userData);
+              if (user && user.id) {
+                config.headers['x-user-id'] = user.id;
+                config.headers['x-user-type'] = 'driver';
+              }
+            }
+          } catch (error) {
+            console.warn('Failed to get user data for story request:', error);
+          }
+        }
+
         return config;
       },
       (error) => {

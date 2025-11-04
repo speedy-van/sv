@@ -10,6 +10,7 @@ class PusherService {
   private channel: any = null;
   private broadcastChannel: any = null;
   private driverId: string | null = null;
+  private subscribedChannels: Map<string, any> = new Map();
 
   initialize(driverId: string): void {
     if (this.pusher && this.driverId === driverId) {
@@ -189,6 +190,45 @@ class PusherService {
       console.log('❌ JOB REMOVED (personal):', data);
       callback(data);
     });
+  }
+
+  // Subscribe to a specific channel
+  subscribeToChannel(channelName: string): any {
+    if (!this.pusher) {
+      console.warn('Pusher not initialized');
+      return null;
+    }
+
+    // Check if already subscribed
+    if (this.subscribedChannels.has(channelName)) {
+      return this.subscribedChannels.get(channelName);
+    }
+
+    try {
+      const channel = this.pusher.subscribe(channelName);
+      this.subscribedChannels.set(channelName, channel);
+      console.log('📡 Subscribed to channel:', channelName);
+      return channel;
+    } catch (error) {
+      console.error('Failed to subscribe to channel:', channelName, error);
+      return null;
+    }
+  }
+
+  // Unsubscribe from a specific channel
+  unsubscribeFromChannel(channelName: string): void {
+    if (!this.pusher) return;
+
+    const channel = this.subscribedChannels.get(channelName);
+    if (channel) {
+      try {
+        this.pusher.unsubscribe(channelName);
+        this.subscribedChannels.delete(channelName);
+        console.log('📡 Unsubscribed from channel:', channelName);
+      } catch (error) {
+        console.error('Failed to unsubscribe from channel:', channelName, error);
+      }
+    }
   }
 }
 

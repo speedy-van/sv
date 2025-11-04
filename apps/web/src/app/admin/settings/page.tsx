@@ -145,6 +145,14 @@ export default function AdminSettings() {
       badge: 'Messaging',
     },
     {
+      title: 'Story Management',
+      description:
+        'Create and manage daily stories for drivers. Share updates, safety notes, and motivational messages.',
+      href: '/admin/settings/stories',
+      icon: FiActivity,
+      badge: 'Daily',
+    },
+    {
       title: 'Integrations',
       description:
         'Configure Stripe, Pusher, Maps API, email providers, and webhooks.',

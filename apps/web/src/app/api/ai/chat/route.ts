@@ -4,12 +4,14 @@ import Groq from 'groq-sdk';
 import { POPULAR_ITEMS } from '../../../../lib/items/popular-items';
 import GOOGLE_BUSINESS_PROFILE from '../../../../data/google-business-profile';
 
+// Customer Chatbot API Key - Namespaced for isolation
 function getGroqClient() {
-  if (!process.env.GROQ_API_KEY) {
+  const GROQ_API_KEY_CUSTOMER = process.env.GROQ_API_KEY_CUSTOMER || process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY_CUSTOMER) {
     return null;
   }
   return new Groq({
-    apiKey: process.env.GROQ_API_KEY,
+    apiKey: GROQ_API_KEY_CUSTOMER,
   });
 }
 

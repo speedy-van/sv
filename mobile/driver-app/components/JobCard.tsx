@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Job } from '../types';
-import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
+import { colors, typography, spacing, borderRadius, shadows, glassEffect } from '../utils/theme';
 import { formatCurrency, formatDate, formatTime, getStatusColor, getStatusLabel } from '../utils/helpers';
 import { soundService } from '../services/soundService';
 
@@ -26,338 +27,400 @@ export const JobCard: React.FC<JobCardProps> = ({
   const totalStops = (job as any).totalStops;
   const completedStops = (job as any).completedStops || 0;
 
+  // Generate accessibility information
+  const accessibilityLabel = `${job.reference}: ${isRoute ? `${totalStops || 0} deliveries` : job.customer || 'Job'} from ${job.from} to ${job.to}. ${formatCurrency(job.estimatedEarnings || 0)}. Status: ${statusLabel}`;
+
+  const accessibilityHint = showActions
+    ? 'Double tap to view details. Swipe or use actions to accept or decline job'
+    : 'Double tap to view job details and manage this delivery';
+
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={styles.cardContainer}
       onPress={() => {
         soundService.playButtonClick();
         onPress();
       }}
-      activeOpacity={0.7}
+      activeOpacity={0.85}
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityRole="button"
+      accessibilityState={{ expanded: false }}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.reference}>{job.reference}</Text>
-          {isRoute && (
-            <View style={[styles.badge, { backgroundColor: colors.accent }]}>
-              <Text style={styles.badgeText}>🗺️ ROUTE</Text>
+      <BlurView intensity={30} tint="dark" style={styles.blurContainer}>
+        <View style={[styles.card, shadows.lg]}>
+          {/* Glass background with gradient accent */}
+          <View style={[styles.accentBar, { backgroundColor: statusColor }]} />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.reference}>{job.reference}</Text>
+              {isRoute && (
+                <View style={[styles.badge, styles.badgeRoute]}>
+                  <Text style={styles.badgeText}>🗺️ ROUTE</Text>
+                </View>
+              )}
+              <View style={[styles.badge, { backgroundColor: statusColor }]}>
+                <Text style={styles.badgeText}>{statusLabel}</Text>
+              </View>
+            </View>
+            <View style={styles.earningsContainer}>
+              <Text style={styles.earnings}>{formatCurrency(job.estimatedEarnings)}</Text>
+            </View>
+          </View>
+
+          {/* Route Progress */}
+          {isRoute && totalStops && (
+            <View style={styles.routeProgress}>
+              <View style={styles.progressHeader}>
+                <Text style={styles.progressLabel}>Route Progress</Text>
+                <Text style={styles.progressText}>{completedStops}/{totalStops} stops</Text>
+              </View>
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${totalStops > 0 ? (completedStops / totalStops) * 100 : 0}%` }
+                  ]}
+                />
+              </View>
             </View>
           )}
-          <View style={[styles.badge, { backgroundColor: statusColor }]}>
-            <Text style={styles.badgeText}>{statusLabel}</Text>
+
+          {/* Customer Info */}
+          <View style={styles.section}>
+            <Text style={styles.customer}>
+              {isRoute ? `${totalStops || 0} Deliveries` : job.customer}
+            </Text>
+            {!isRoute && <Text style={styles.phone}>{job.customerPhone}</Text>}
           </View>
-        </View>
-        <Text style={styles.earnings}>{formatCurrency(job.estimatedEarnings)}</Text>
-      </View>
 
-      {/* Route Progress (if route) */}
-      {isRoute && totalStops && (
-        <View style={styles.routeProgress}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Route Progress</Text>
-            <Text style={styles.progressText}>{completedStops}/{totalStops} stops</Text>
+          {/* Location Info with modern design */}
+          <View style={styles.locationSection}>
+            <View style={styles.locationRow}>
+              <View style={[styles.locationDot, styles.locationDotPickup]} />
+              <Text style={styles.locationText} numberOfLines={1}>
+                {job.from}
+              </Text>
+            </View>
+            <View style={styles.locationConnector} />
+            <View style={styles.locationRow}>
+              <View style={[styles.locationDot, styles.locationDotDestination]} />
+              <Text style={styles.locationText} numberOfLines={1}>
+                {job.to}
+              </Text>
+            </View>
           </View>
-          <View style={styles.progressBar}>
-            <View 
-              style={[
-                styles.progressFill, 
-                { width: `${totalStops > 0 ? (completedStops / totalStops) * 100 : 0}%` }
-              ]} 
-            />
+
+          {/* Details Grid */}
+          <View style={styles.detailsGrid}>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>📅 Date</Text>
+              <Text style={styles.detailValue}>{formatDate(job.date)}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>🕐 Time</Text>
+              <Text style={styles.detailValue}>{formatTime(job.time)}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>📍 Distance</Text>
+              <Text style={styles.detailValue}>{job.distance}</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailLabel}>🚐 Vehicle</Text>
+              <Text style={styles.detailValue}>{job.vehicleType}</Text>
+            </View>
           </View>
-        </View>
-      )}
 
-      {/* Customer Info */}
-      <View style={styles.section}>
-        <Text style={styles.customer}>
-          {isRoute ? `${totalStops || 0} Deliveries` : job.customer}
-        </Text>
-        {!isRoute && <Text style={styles.phone}>{job.customerPhone}</Text>}
-      </View>
-
-      {/* Location Info */}
-      <View style={styles.section}>
-        <View style={styles.locationRow}>
-          <View style={styles.locationDot} />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {job.from}
-          </Text>
-        </View>
-        <View style={styles.locationConnector} />
-        <View style={styles.locationRow}>
-          <View style={[styles.locationDot, styles.locationDotDestination]} />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {job.to}
-          </Text>
-        </View>
-      </View>
-
-      {/* Details */}
-      <View style={styles.detailsRow}>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>Date</Text>
-          <Text style={styles.detailValue}>{formatDate(job.date)}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>Time</Text>
-          <Text style={styles.detailValue}>{formatTime(job.time)}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>Distance</Text>
-          <Text style={styles.detailValue}>{job.distance}</Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailLabel}>Vehicle</Text>
-          <Text style={styles.detailValue}>{job.vehicleType}</Text>
-        </View>
-      </View>
-
-      {/* Items */}
-      {job.items && (
-        <View style={styles.itemsSection}>
-          <Text style={styles.itemsLabel}>Items:</Text>
-          <Text style={styles.itemsText} numberOfLines={2}>
-            {job.items}
-          </Text>
-        </View>
-      )}
-
-      {/* Actions */}
-      {showActions && (
-        <View style={styles.actions}>
-          {onDecline && (
-            <TouchableOpacity
-              style={[styles.button, styles.buttonSecondary]}
-              onPress={() => {
-                soundService.playError();
-                onDecline();
-              }}
-            >
-              <Text style={styles.buttonTextSecondary}>Decline</Text>
-            </TouchableOpacity>
+          {/* Items */}
+          {job.items && (
+            <View style={styles.itemsSection}>
+              <Text style={styles.itemsLabel}>📦 Items</Text>
+              <Text style={styles.itemsText} numberOfLines={2}>
+                {job.items}
+              </Text>
+            </View>
           )}
-          {onAccept && (
-            <TouchableOpacity
-              style={[styles.button, styles.buttonPrimary]}
-              onPress={() => {
-                soundService.playSuccess();
-                onAccept();
-              }}
-            >
-              <Text style={styles.buttonTextPrimary}>Accept Job</Text>
-            </TouchableOpacity>
+
+          {/* Actions */}
+          {showActions && (
+            <View style={styles.actions}>
+              {onDecline && (
+                <TouchableOpacity
+                  style={[styles.button, styles.buttonSecondary]}
+                  onPress={() => {
+                    soundService.playError();
+                    onDecline();
+                  }}
+                  activeOpacity={0.7}
+                  accessible={true}
+                  accessibilityLabel={`Decline job ${job.reference}`}
+                  accessibilityHint="Double tap to decline this job offer"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.buttonTextSecondary}>Decline</Text>
+                </TouchableOpacity>
+              )}
+              {onAccept && (
+                <TouchableOpacity
+                  style={[styles.button, styles.buttonPrimary]}
+                  onPress={() => {
+                    soundService.playSuccess();
+                    onAccept();
+                  }}
+                  activeOpacity={0.7}
+                  accessible={true}
+                  accessibilityLabel={`Accept job ${job.reference} for ${formatCurrency(job.estimatedEarnings || 0)}`}
+                  accessibilityHint="Double tap to accept this job and start delivery"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.buttonTextPrimary}>Accept Job</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           )}
+
+          {/* Shine effect */}
+          <View style={styles.shineEffect} />
         </View>
-      )}
+      </BlurView>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  cardContainer: {
+    marginBottom: spacing.lg,
+    borderRadius: borderRadius.xxl,
+    overflow: 'hidden',
+  },
+  blurContainer: {
+    borderRadius: borderRadius.xxl,
+    overflow: 'hidden',
+  },
   card: {
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
+    ...glassEffect.medium,
+    borderRadius: borderRadius.xxl,
+    padding: spacing.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border.medium,
+    position: 'relative',
+  },
+  accentBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    borderTopLeftRadius: borderRadius.xxl,
+    borderTopRightRadius: borderRadius.xxl,
+    opacity: 0.8,
+  },
+  shineEffect: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 120,
+    height: 120,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 60,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.sm,
+    flex: 1,
+    flexWrap: 'wrap',
   },
   reference: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    ...typography.headline,
+    color: colors.text.primary,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    ...shadows.sm,
+  },
+  badgeRoute: {
+    backgroundColor: colors.accent,
   },
   badgeText: {
-    fontSize: 11,
-    color: '#FFFFFF',
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    ...typography.caption2Emphasized,
+    color: colors.text.primary,
+  },
+  earningsContainer: {
+    backgroundColor: colors.glass.light,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   earnings: {
-    fontSize: 20,
+    ...typography.title3,
+    color: colors.success,
     fontWeight: '800',
-    color: '#10B981',
-    letterSpacing: -0.3,
   },
   section: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   customer: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 4,
+    ...typography.headline,
+    color: colors.text.primary,
+    marginBottom: spacing.xxs,
   },
   phone: {
-    fontSize: 13,
-    color: '#FFFFFF',
-    fontWeight: '500',
-    opacity: 0.8,
+    ...typography.subheadline,
+    color: colors.text.secondary,
+  },
+  locationSection: {
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.glass.light,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing.md,
   },
   locationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#007AFF',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    ...shadows.glow.blue,
+  },
+  locationDotPickup: {
+    backgroundColor: colors.primary,
   },
   locationDotDestination: {
-    backgroundColor: '#10B981',
+    backgroundColor: colors.success,
   },
   locationConnector: {
     width: 2,
-    height: 18,
-    backgroundColor: 'rgba(59, 130, 246, 0.3)',
-    marginLeft: 5,
-    marginVertical: 3,
+    height: 20,
+    backgroundColor: colors.border.medium,
+    marginLeft: 4,
+    marginVertical: spacing.xxs,
   },
   locationText: {
-    fontSize: 13,
-    color: '#FFFFFF',
+    ...typography.subheadline,
+    color: colors.text.primary,
     flex: 1,
-    fontWeight: '500',
   },
-  detailsRow: {
+  detailsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 14,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(59, 130, 246, 0.3)',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   detailItem: {
     flex: 1,
+    minWidth: '45%',
+    backgroundColor: colors.glass.light,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   detailLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    opacity: 0.7,
+    ...typography.caption1,
+    color: colors.text.secondary,
+    marginBottom: spacing.xxs,
   },
   detailValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    ...typography.calloutEmphasized,
+    color: colors.text.primary,
   },
   itemsSection: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(59, 130, 246, 0.3)',
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.glass.light,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   itemsLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 6,
-    opacity: 0.8,
+    ...typography.caption1Emphasized,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
   },
   itemsText: {
-    fontSize: 13,
-    color: '#FFFFFF',
-    fontWeight: '500',
+    ...typography.subheadline,
+    color: colors.text.primary,
   },
   actions: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
+    gap: spacing.md,
+    marginTop: spacing.lg,
   },
   button: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.md,
   },
   buttonPrimary: {
-    backgroundColor: '#007AFF',
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    backgroundColor: colors.primary,
+    ...shadows.glow.blue,
   },
   buttonSecondary: {
-    backgroundColor: 'rgba(30, 64, 175, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.5)',
+    backgroundColor: colors.glass.medium,
+    borderWidth: 1.5,
+    borderColor: colors.border.strong,
   },
   buttonTextPrimary: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    ...typography.headline,
+    color: colors.text.primary,
   },
   buttonTextSecondary: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    ...typography.calloutEmphasized,
+    color: colors.text.primary,
   },
   routeProgress: {
-    marginBottom: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.glass.light,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
+    borderColor: colors.border.medium,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    opacity: 0.8,
+    ...typography.caption1Emphasized,
+    color: colors.text.secondary,
   },
   progressText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#FF9500',
+    ...typography.calloutEmphasized,
+    color: colors.accent,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: colors.glass.dark,
+    borderRadius: borderRadius.xs,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#FF9500',
-    borderRadius: 4,
+    backgroundColor: colors.accent,
+    borderRadius: borderRadius.xs,
   },
 });
-

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,16 @@ import {
   RefreshControl,
   TouchableOpacity,
   Alert,
+  Animated,
+  Easing,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/api';
 import { pusherService } from '../../services/pusher';
-import { colors, typography, spacing, borderRadius } from '../../utils/theme';
+import { colors, typography, spacing, borderRadius, shadows, glassEffect } from '../../utils/theme';
 import { AnimatedScreen } from '../../components/AnimatedScreen';
 
 // Helper functions for date formatting (without external library)
@@ -100,8 +103,30 @@ export default function ScheduleScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-20)).current;
+
   useEffect(() => {
     loadSchedule();
+  }, []);
+
+  // Animation effects
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   // Listen for real-time updates
@@ -212,127 +237,259 @@ export default function ScheduleScreen() {
     return '#06B6D4'; // Cyan - Future
   };
 
+  // Group items by date
+  const groupedItems = scheduleItems.reduce((acc, item) => {
+    const dateKey = formatDate(item.scheduledAt);
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(item);
+    return acc;
+  }, {} as Record<string, ScheduleItem[]>);
+
   return (
     <AnimatedScreen>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-        <Text style={styles.title}>📅 Schedule</Text>
-        <Text style={styles.subtitle}>Your upcoming deliveries</Text>
-      </View>
+        {/* Enhanced Header */}
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <BlurView intensity={40} tint="dark" style={styles.headerBlur}>
+            <View style={styles.headerContent}>
+              <View style={styles.headerLeft}>
+                <Ionicons name="calendar" size={32} color="#8B5CF6" />
+                <View style={styles.headerTextContainer}>
+                  <Text style={styles.title}>Schedule</Text>
+                  <Text style={styles.subtitle}>Your upcoming deliveries</Text>
+                </View>
+              </View>
+              <View style={styles.headerStats}>
+                <View style={styles.statItem}>
+                  <Ionicons name="time" size={16} color="#8B5CF6" />
+                  <Text style={styles.statText}>{scheduleItems.length}</Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.headerGradient} />
+          </BlurView>
+        </Animated.View>
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#8B5CF6"
+            colors={['#8B5CF6']}
+          />
         }
       >
         {loading ? (
           <View style={styles.loadingContainer}>
+            <Animated.View
+              style={[
+                styles.loadingSpinner,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ rotate: fadeAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '360deg'],
+                  }) }],
+                },
+              ]}
+            >
+              <Ionicons name="calendar" size={32} color="#8B5CF6" />
+            </Animated.View>
             <Text style={styles.loadingText}>Loading schedule...</Text>
           </View>
         ) : scheduleItems.length > 0 ? (
-          scheduleItems.map((item, index) => {
-            const statusColor = getStatusColor(item.scheduledAt);
-            const dateLabel = getDateLabel(item.scheduledAt);
-            const timeLabel = getTimeLabel(item.scheduledAt);
-
-            return (
-              <TouchableOpacity
-                key={item.id}
+          Object.entries(groupedItems).map(([dateKey, items], groupIndex) => (
+            <View key={dateKey} style={styles.dateGroup}>
+              {/* Date Header */}
+              <Animated.View
                 style={[
-                  styles.scheduleCard,
+                  styles.dateHeader,
                   {
-                    borderColor: statusColor,
-                    shadowColor: statusColor,
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }],
                   },
                 ]}
-                onPress={() => handleItemPress(item)}
-                activeOpacity={0.7}
               >
-                {/* Date & Time Badge */}
-                <View style={[styles.dateBadge, { backgroundColor: statusColor }]}>
-                  <Text style={styles.dateLabel}>{dateLabel}</Text>
-                  <Text style={styles.timeLabel}>{timeLabel}</Text>
-                </View>
-
-                {/* Content */}
-                <View style={styles.cardContent}>
-                  {/* Header */}
-                  <View style={styles.cardHeader}>
-                    <View style={styles.typeContainer}>
-                      <Text style={styles.typeIcon}>
-                        {item.type === 'route' ? '🚛' : '📦'}
-                      </Text>
-                      <Text style={styles.reference}>{item.reference}</Text>
-                    </View>
-                    <View style={[styles.earningsBadge, { backgroundColor: statusColor }]}>
-                      <Text style={styles.earningsText}>{item.earnings}</Text>
+                <BlurView intensity={20} tint="dark" style={styles.dateHeaderBlur}>
+                  <View style={styles.dateHeaderContent}>
+                    <Ionicons name="calendar-outline" size={18} color="#8B5CF6" />
+                    <Text style={styles.dateHeaderText}>{dateKey}</Text>
+                    <View style={styles.dateHeaderBadge}>
+                      <Text style={styles.dateHeaderBadgeText}>{items.length}</Text>
                     </View>
                   </View>
+                </BlurView>
+              </Animated.View>
 
-                  {/* Route indicator */}
-                  {item.type === 'route' && item.stops > 0 && (
-                    <View style={styles.stopsIndicator}>
-                      <Ionicons name="git-network-outline" size={14} color="#8B5CF6" />
-                      <Text style={styles.stopsText}>
-                        Multi-drop: {item.stops + 1} stops
-                      </Text>
-                    </View>
-                  )}
+              {/* Schedule Items */}
+              {items.map((item, index) => {
+                const statusColor = getStatusColor(item.scheduledAt);
+                const dateLabel = getDateLabel(item.scheduledAt);
+                const timeLabel = getTimeLabel(item.scheduledAt);
 
-                  {/* Locations */}
-                  <View style={styles.locationsContainer}>
-                    <View style={styles.locationRow}>
-                      <View style={styles.locationDot} />
-                      <View style={styles.locationTextContainer}>
-                        <Text style={styles.locationLabel}>PICKUP</Text>
-                        <Text style={styles.locationText} numberOfLines={1}>
-                          {item.pickupAddress}
-                        </Text>
-                      </View>
-                    </View>
+                return (
+                  <Animated.View
+                    key={item.id}
+                    style={{
+                      opacity: fadeAnim,
+                      transform: [
+                        {
+                          translateY: slideAnim.interpolate({
+                            inputRange: [-20, 0],
+                            outputRange: [20 + (groupIndex * items.length + index) * 10, 0],
+                          }),
+                        },
+                      ],
+                    }}
+                  >
+                    <TouchableOpacity
+                      style={styles.scheduleCard}
+                      onPress={() => handleItemPress(item)}
+                      activeOpacity={0.85}
+                    >
+                      <BlurView intensity={30} tint="dark" style={styles.cardBlur}>
+                        {/* Date & Time Badge - Enhanced */}
+                        <View style={[styles.dateBadge, { backgroundColor: statusColor }]}>
+                          <View style={styles.dateBadgeContent}>
+                            <Ionicons name="time" size={16} color="#FFFFFF" />
+                            <View style={styles.dateBadgeTextContainer}>
+                              <Text style={styles.dateLabel}>{dateLabel}</Text>
+                              <Text style={styles.timeLabel}>{timeLabel}</Text>
+                            </View>
+                          </View>
+                          <View style={[styles.statusIndicator, { backgroundColor: statusColor }]} />
+                        </View>
 
-                    <View style={styles.locationConnector} />
+                        {/* Content */}
+                        <View style={styles.cardContent}>
+                          {/* Header - Enhanced */}
+                          <View style={styles.cardHeader}>
+                            <View style={styles.typeContainer}>
+                              <View style={[styles.typeIconContainer, { backgroundColor: statusColor + '20' }]}>
+                                <Ionicons
+                                  name={item.type === 'route' ? 'git-network' : 'cube'}
+                                  size={20}
+                                  color={statusColor}
+                                />
+                              </View>
+                              <View style={styles.referenceContainer}>
+                                <Text style={styles.referenceLabel}>REFERENCE</Text>
+                                <Text style={styles.reference}>{item.reference}</Text>
+                              </View>
+                            </View>
+                            <View style={[styles.earningsBadge, { backgroundColor: statusColor }]}>
+                              <Ionicons name="cash" size={14} color="#FFFFFF" />
+                              <Text style={styles.earningsText}>{item.earnings}</Text>
+                            </View>
+                          </View>
 
-                    <View style={styles.locationRow}>
-                      <View style={[styles.locationDot, styles.locationDotDestination]} />
-                      <View style={styles.locationTextContainer}>
-                        <Text style={styles.locationLabel}>DROP-OFF</Text>
-                        <Text style={styles.locationText} numberOfLines={1}>
-                          {item.dropoffAddress}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
+                          {/* Route indicator - Enhanced */}
+                          {item.type === 'route' && item.stops > 0 && (
+                            <View style={styles.stopsIndicator}>
+                              <View style={styles.stopsIconContainer}>
+                                <Ionicons name="git-network" size={16} color="#8B5CF6" />
+                              </View>
+                              <Text style={styles.stopsText}>
+                                Multi-drop route: {item.stops + 1} stops
+                              </Text>
+                            </View>
+                          )}
 
-                  {/* Customer name if available */}
-                  {item.customerName && (
-                    <View style={styles.customerContainer}>
-                      <Ionicons name="person-outline" size={14} color="#6B7280" />
-                      <Text style={styles.customerText}>{item.customerName}</Text>
-                    </View>
-                  )}
+                          {/* Locations - Enhanced */}
+                          <View style={styles.locationsContainer}>
+                            <View style={styles.locationRow}>
+                              <View style={[styles.locationDot, styles.locationDotPickup]} />
+                              <View style={styles.locationTextContainer}>
+                                <View style={styles.locationLabelContainer}>
+                                  <Ionicons name="location" size={12} color="#007AFF" />
+                                  <Text style={styles.locationLabel}>PICKUP</Text>
+                                </View>
+                                <Text style={styles.locationText} numberOfLines={2}>
+                                  {item.pickupAddress}
+                                </Text>
+                              </View>
+                            </View>
 
-                  {/* Action hint */}
-                  <View style={styles.actionHint}>
-                    <Ionicons name="arrow-forward-circle" size={16} color={statusColor} />
-                    <Text style={[styles.actionText, { color: statusColor }]}>
-                      Tap to view progress steps
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })
+                            <View style={styles.locationConnector}>
+                              <View style={styles.locationConnectorLine} />
+                            </View>
+
+                            <View style={styles.locationRow}>
+                              <View style={[styles.locationDot, styles.locationDotDestination]} />
+                              <View style={styles.locationTextContainer}>
+                                <View style={styles.locationLabelContainer}>
+                                  <Ionicons name="location" size={12} color="#10B981" />
+                                  <Text style={[styles.locationLabel, styles.locationLabelDestination]}>DROP-OFF</Text>
+                                </View>
+                                <Text style={styles.locationText} numberOfLines={2}>
+                                  {item.dropoffAddress}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+
+                          {/* Customer name - Enhanced */}
+                          {item.customerName && (
+                            <View style={styles.customerContainer}>
+                              <View style={styles.customerIconContainer}>
+                                <Ionicons name="person" size={14} color="#8B5CF6" />
+                              </View>
+                              <Text style={styles.customerLabel}>Customer:</Text>
+                              <Text style={styles.customerText}>{item.customerName}</Text>
+                            </View>
+                          )}
+
+                          {/* Action hint - Enhanced */}
+                          <View style={styles.actionHint}>
+                            <View style={styles.actionHintIconContainer}>
+                              <Ionicons name="arrow-forward-circle" size={18} color={statusColor} />
+                            </View>
+                            <Text style={[styles.actionText, { color: statusColor }]}>
+                              Tap to view details & progress
+                            </Text>
+                          </View>
+                        </View>
+                      </BlurView>
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })}
+            </View>
+          ))
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>📅</Text>
-            <Text style={styles.emptyStateTitle}>No Scheduled Jobs</Text>
-            <Text style={styles.emptyStateText}>
-              Your assigned jobs and routes will appear here
-            </Text>
+            <BlurView intensity={30} tint="dark" style={styles.emptyStateBlur}>
+              <View style={styles.emptyStateContent}>
+                <View style={styles.emptyStateIconContainer}>
+                  <Ionicons name="calendar-outline" size={64} color="#8B5CF6" />
+                </View>
+                <Text style={styles.emptyStateTitle}>No Scheduled Jobs</Text>
+                <Text style={styles.emptyStateText}>
+                  Your assigned jobs and routes will appear here when scheduled
+                </Text>
+                <TouchableOpacity
+                  style={styles.emptyStateButton}
+                  onPress={handleRefresh}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="refresh" size={18} color="#FFFFFF" />
+                  <Text style={styles.emptyStateButtonText}>Refresh</Text>
+                </TouchableOpacity>
+              </View>
+            </BlurView>
           </View>
         )}
       </ScrollView>
@@ -344,21 +501,37 @@ export default function ScheduleScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A', // Matches splash screen
+    backgroundColor: '#0F172A',
   },
   header: {
-    padding: 20,
     paddingTop: 60,
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    paddingBottom: spacing.md,
+    overflow: 'hidden',
+  },
+  headerBlur: {
+    padding: spacing.lg,
     borderBottomWidth: 2,
     borderBottomColor: '#8B5CF6',
-    // Purple neon glow - iOS
     shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
-    // Purple neon glow - Android
     elevation: 8,
+    position: 'relative',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  headerTextContainer: {
+    gap: spacing.xs / 2,
   },
   title: {
     fontSize: 28,
@@ -370,72 +543,185 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '500',
-    marginTop: 2,
+    opacity: 0.8,
+  },
+  headerStats: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: '#8B5CF6',
+  },
+  statText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  headerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    zIndex: 1,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  dateGroup: {
+    marginBottom: spacing.xl,
+  },
+  dateHeader: {
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+  },
+  dateHeaderBlur: {
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+  },
+  dateHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dateHeaderText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  dateHeaderBadge: {
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs / 2,
+    borderRadius: borderRadius.sm,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  dateHeaderBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   loadingContainer: {
-    padding: 60,
+    padding: spacing.xxl,
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  loadingSpinner: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#8B5CF6',
   },
   loadingText: {
     fontSize: 15,
     color: '#FFFFFF',
+    opacity: 0.8,
+    fontWeight: '500',
   },
   scheduleCard: {
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: 20,
-    marginBottom: 16,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    borderWidth: 2,
-    // Dynamic shadow is set inline
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 18,
-    elevation: 12,
+    ...shadows.lg,
+  },
+  cardBlur: {
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
   },
   dateBadge: {
+    padding: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  dateBadgeContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    paddingHorizontal: 16,
+    gap: spacing.sm,
+  },
+  dateBadgeTextContainer: {
+    flex: 1,
+    gap: spacing.xs / 2,
   },
   dateLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    opacity: 0.9,
   },
   timeLabel: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: -0.3,
   },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.9,
+  },
   cardContent: {
-    padding: 16,
-    gap: 12,
+    padding: spacing.lg,
+    gap: spacing.md,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: spacing.sm,
   },
   typeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
+    flex: 1,
   },
-  typeIcon: {
-    fontSize: 24,
+  typeIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  referenceContainer: {
+    flex: 1,
+    gap: spacing.xs / 2,
+  },
+  referenceLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   reference: {
     fontSize: 16,
@@ -444,9 +730,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   earningsBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -462,12 +751,22 @@ const styles = StyleSheet.create({
   stopsIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    gap: spacing.sm,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  stopsIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stopsText: {
     fontSize: 12,
@@ -475,74 +774,120 @@ const styles = StyleSheet.create({
     color: '#8B5CF6',
   },
   locationsContainer: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: spacing.md,
   },
   locationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#007AFF',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     marginTop: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  locationDotPickup: {
+    backgroundColor: '#007AFF',
+    shadowColor: '#007AFF',
   },
   locationDotDestination: {
     backgroundColor: '#10B981',
     shadowColor: '#10B981',
   },
   locationConnector: {
+    marginLeft: 6,
+    marginVertical: spacing.xs,
+    alignItems: 'center',
+  },
+  locationConnectorLine: {
     width: 2,
-    height: 16,
-    backgroundColor: '#D1D5DB',
-    marginLeft: 5,
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 1,
   },
   locationTextContainer: {
     flex: 1,
+    gap: spacing.xs / 2,
+  },
+  locationLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs / 2,
   },
   locationLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#9CA3AF',
+    color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 2,
+  },
+  locationLabelDestination: {
+    color: '#999',
   },
   locationText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#FFFFFF',
+    lineHeight: 18,
   },
   customerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F5',
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  customerIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customerLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999',
   },
   customerText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#FFFFFF',
   },
   actionHint: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingTop: 12,
+    gap: spacing.sm,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F5',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  actionHintIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionText: {
     fontSize: 13,
@@ -550,30 +895,42 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   emptyState: {
-    alignItems: 'center',
-    padding: 60,
-    gap: 16,
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: 24,
-    marginTop: 20,
-    borderWidth: 3,
+    marginTop: spacing.xl,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    ...shadows.lg,
+  },
+  emptyStateBlur: {
+    padding: spacing.xxl,
+    borderRadius: borderRadius.xl,
+    borderWidth: 2.5,
     borderColor: '#8B5CF6',
-    // Purple neon glow effect - iOS
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.7,
     shadowRadius: 20,
-    // Purple neon glow effect - Android
     elevation: 14,
   },
-  emptyStateIcon: {
-    fontSize: 72,
-    opacity: 0.5,
+  emptyStateContent: {
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  emptyStateIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#8B5CF6',
   },
   emptyStateTitle: {
     fontSize: 22,
     fontWeight: '700',
     color: '#8B5CF6',
+    textAlign: 'center',
     textShadowColor: 'rgba(139, 92, 246, 0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
@@ -583,6 +940,25 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 22,
+    opacity: 0.8,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: '#8B5CF6',
+    ...shadows.md,
+  },
+  emptyStateButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 
