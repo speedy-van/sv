@@ -222,14 +222,17 @@ class AIRealTimeMonitor {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: { lat: this.lastLocation.lat, lng: this.lastLocation.lng },
-          to: { lat: currentJob.pickup.lat, lng: currentJob.pickup.lng }
+          pickupLat: this.lastLocation.lat,
+          pickupLng: this.lastLocation.lng,
+          dropoffLat: currentJob.pickup.lat,
+          dropoffLng: currentJob.pickup.lng
         })
       });
       
       if (distanceResponse.ok) {
         const distanceData = await distanceResponse.json();
-        distanceToPickup = distanceData.distance || 0; // distance in miles
+        // API returns distance in meters, convert to miles
+        distanceToPickup = distanceData.distance ? (distanceData.distance / 1609.34) : 0; // meters to miles
       }
     } catch (error) {
       console.warn('Failed to calculate distance via API, using fallback:', error);
