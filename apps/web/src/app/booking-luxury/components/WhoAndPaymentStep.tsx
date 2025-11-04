@@ -1104,20 +1104,22 @@ export default function WhoAndPaymentStep({
                     pickupAddress: {
                       ...formData.step1.pickupAddress,
                       // Ensure street field is populated from multiple sources
-                      street: formData.step1.pickupAddress?.street || 
+                      street: (formData.step1.pickupAddress as any)?.street || 
+                             formData.step1.pickupAddress?.formatted?.street ||
                              formData.step1.pickupAddress?.line1 || 
                              formData.step1.pickupAddress?.address || 
-                             formData.step1.pickupAddress?.formatted_address ||
+                             (formData.step1.pickupAddress as any)?.formatted_address ||
                              formData.step1.pickupAddress?.full ||
                              '',
                     },
                     dropoffAddress: {
                       ...formData.step1.dropoffAddress,
                       // Ensure street field is populated from multiple sources
-                      street: formData.step1.dropoffAddress?.street || 
+                      street: (formData.step1.dropoffAddress as any)?.street || 
+                             formData.step1.dropoffAddress?.formatted?.street ||
                              formData.step1.dropoffAddress?.line1 || 
                              formData.step1.dropoffAddress?.address || 
-                             formData.step1.dropoffAddress?.formatted_address ||
+                             (formData.step1.dropoffAddress as any)?.formatted_address ||
                              formData.step1.dropoffAddress?.full ||
                              '',
                     },

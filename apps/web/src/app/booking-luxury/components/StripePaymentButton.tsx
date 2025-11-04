@@ -35,6 +35,10 @@ interface AddressData {
   flatNumber?: string;
   formatted_address?: string;
   place_name?: string;
+  street?: string;
+  full?: string;
+  line1?: string;
+  number?: string;
 }
 
 interface ItemData {
