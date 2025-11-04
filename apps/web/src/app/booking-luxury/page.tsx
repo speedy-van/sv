@@ -627,13 +627,13 @@ export default function BookingLuxuryPage() {
               },
             }}
           >
-            <CardBody p={0} px={{ base: 6, md: 8 }} py={{ base: 6, md: 8 }}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={6}>
+            <CardBody p={0} px={{ base: 3, sm: 4, md: 8 }} py={{ base: 4, md: 8 }}>
+              <Flex justify="space-between" align="center" wrap="wrap" gap={{ base: 3, md: 6 }}>
                 {/* LEFT: Brand + Step Navigation */}
-                <HStack spacing={8}>
+                <HStack spacing={{ base: 3, md: 8 }} flexWrap="wrap">
                   {currentStep === 1 && (
                     <Button
-                      size="md"
+                      size={{ base: 'sm', md: 'md' }}
                       variant="outline"
                       colorScheme="gray"
                       onClick={() => router.push('/')}
@@ -642,8 +642,9 @@ export default function BookingLuxuryPage() {
                       color="white"
                       fontWeight="semibold"
                       borderRadius="lg"
-                      px={4}
-                      py={2}
+                      px={{ base: 2, md: 4 }}
+                      py={{ base: 1, md: 2 }}
+                      fontSize={{ base: 'xs', md: 'sm' }}
                       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                       _hover={{
                         bg: "rgba(255, 255, 255, 0.1)",
@@ -658,11 +659,11 @@ export default function BookingLuxuryPage() {
                       ← Back to Home
                     </Button>
                   )}
-                  <HStack spacing={4}>
+                  <HStack spacing={{ base: 2, md: 4 }}>
                     <Box
                       position="relative"
-                      w="56px"
-                      h="56px"
+                      w={{ base: '40px', md: '56px' }}
+                      h={{ base: '40px', md: '56px' }}
                       borderRadius="xl"
                       bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)"
                       display="flex"
@@ -677,11 +678,11 @@ export default function BookingLuxuryPage() {
                         boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                       }}
                     >
-                      <Icon as={FaTruck} boxSize={7} color="blue.300" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                      <Icon as={FaTruck} boxSize={{ base: 5, md: 7 }} color="blue.300" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
                     </Box>
-                    <VStack align="start" spacing={2}>
+                    <VStack align="start" spacing={{ base: 1, md: 2 }}>
                       <Heading 
-                        size="lg" 
+                        size={{ base: 'md', md: 'lg' }} 
                         color="white"
                         fontWeight="700"
                         letterSpacing="0.5px"
@@ -695,14 +696,14 @@ export default function BookingLuxuryPage() {
                       >
                         Speedy Van
                       </Heading>
-                      <HStack spacing={3}>
+                      <HStack spacing={{ base: 1.5, md: 3 }} flexWrap="wrap">
                         <Badge 
                           bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)"
                           color="blue.200"
-                          fontSize="xs"
+                          fontSize={{ base: '2xs', sm: 'xs' }}
                           fontWeight="semibold"
-                          px={3}
-                          py={1}
+                          px={{ base: 1.5, sm: 2, md: 3 }}
+                          py={{ base: 0.5, md: 1 }}
                           borderRadius="full"
                           border="1px solid"
                           borderColor="rgba(59, 130, 246, 0.4)"
@@ -714,16 +715,17 @@ export default function BookingLuxuryPage() {
                             boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                           }}
                         >
-                          <Icon as={FaShieldAlt} mr={1.5} />
-                          Fully Insured
+                          <Icon as={FaShieldAlt} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
+                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>Fully Insured</Text>
+                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>Insured</Text>
                         </Badge>
                         <Badge 
                           bg="linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%)"
                           color="yellow.200"
-                          fontSize="xs"
+                          fontSize={{ base: '2xs', sm: 'xs' }}
                           fontWeight="semibold"
-                          px={3}
-                          py={1}
+                          px={{ base: 1.5, sm: 2, md: 3 }}
+                          py={{ base: 0.5, md: 1 }}
                           borderRadius="full"
                           border="1px solid"
                           borderColor="rgba(251, 191, 36, 0.4)"
@@ -735,8 +737,9 @@ export default function BookingLuxuryPage() {
                             boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                           }}
                         >
-                          <Icon as={FaStar} mr={1.5} />
-                          5-Star Rated
+                          <Icon as={FaStar} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
+                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>5-Star Rated</Text>
+                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>5-Star</Text>
                         </Badge>
                       </HStack>
                     </VStack>
