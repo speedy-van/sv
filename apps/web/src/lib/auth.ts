@@ -155,13 +155,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }: { token: any; user?: any }) {
       // Only log when user data is being added (not on every token refresh)
-      if (user && !token.role) {
-        console.log('🎫 Adding user data to JWT token:', {
-          role: user.role,
-          adminRole: (user as any).adminRole,
-        });
-        token.role = user.role;
-        token.adminRole = (user as any).adminRole;
+      if (user) {
+        // Set token.sub to user.id to ensure session.user.id matches database user.id
+        token.sub = user.id;
+        if (!token.role) {
+          console.log('🎫 Adding user data to JWT token:', {
+            id: user.id,
+            sub: token.sub,
+            role: user.role,
+            adminRole: (user as any).adminRole,
+          });
+          token.role = user.role;
+          token.adminRole = (user as any).adminRole;
+        }
       }
       return token;
     },

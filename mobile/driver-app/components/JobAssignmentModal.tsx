@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
 import { formatCurrency, formatDate, formatTime } from '../utils/helpers';
+import { emoteManager } from '../services/emoteService';
+import { showGlobalEmote } from './EmoteOverlay';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const TIMER_DURATION = 30 * 60; // 30 minutes in seconds
@@ -47,6 +49,30 @@ export const JobAssignmentModal: React.FC<JobAssignmentModalProps> = ({
   const [timeRemaining, setTimeRemaining] = useState(TIMER_DURATION);
   const slideAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  // Trigger emote for order acceptance
+  const handleAcceptOrder = async () => {
+    const enabled = await emoteManager.areEmotesEnabled();
+    if (enabled) {
+      const emoteData = await emoteManager.getEmoteDisplayData('orderAccepted');
+      if (emoteData) {
+        showGlobalEmote(emoteData);
+      }
+    }
+    onView(); // Call the original handler
+  };
+
+  // Trigger emote for order decline
+  const handleDeclineOrder = async () => {
+    const enabled = await emoteManager.areEmotesEnabled();
+    if (enabled) {
+      const emoteData = await emoteManager.getEmoteDisplayData('orderDeclined');
+      if (emoteData) {
+        showGlobalEmote(emoteData);
+      }
+    }
+    onDecline(); // Call the original handler
+  };
 
   useEffect(() => {
     if (visible && assignment) {
@@ -259,14 +285,14 @@ export const JobAssignmentModal: React.FC<JobAssignmentModalProps> = ({
           <View style={styles.actions}>
             <TouchableOpacity
               style={[styles.button, styles.buttonDecline]}
-              onPress={onDecline}
+              onPress={handleDeclineOrder}
               activeOpacity={0.7}
             >
               <Text style={styles.buttonTextDecline}>Decline</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.buttonView]}
-              onPress={onView}
+              onPress={handleAcceptOrder}
               activeOpacity={0.7}
             >
               <Text style={styles.buttonTextView}>View Details</Text>

@@ -192,20 +192,23 @@ export default function PermissionsDemoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
+          <Ionicons name="arrow-back" size={24} color="#000000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Permissions Demo</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {/* Critical Warning Banner */}
+        {/* Critical Warning Banner - More Visible */}
         <View style={styles.warningBanner}>
-          <Ionicons name="warning" size={24} color="#FF6B6B" />
-          <Text style={styles.warningText}>
-            ⚠️ DEMO MODE - This page is ONLY for Apple Test Account (zadfad41@gmail.com). 
-            Production driver accounts will NOT see any demo data.
-          </Text>
+          <Ionicons name="warning" size={28} color="#FF0000" />
+          <View style={styles.warningContent}>
+            <Text style={styles.warningTitle}>⚠️ DEMO MODE</Text>
+            <Text style={styles.warningText}>
+              This page is ONLY for Apple Test Account (zadfad41@gmail.com). 
+              Production driver accounts will NOT see any demo data.
+            </Text>
+          </View>
         </View>
 
         {/* Info Banner */}
@@ -216,9 +219,13 @@ export default function PermissionsDemoScreen() {
           </Text>
         </View>
 
-        {/* Test Account Info */}
+        {/* Test Account Info - More Visible */}
         <View style={styles.testAccountCard}>
-          <Text style={styles.testAccountTitle}>🧪 Apple Test Account Details</Text>
+          <View style={styles.testAccountHeader}>
+            <Ionicons name="flask" size={24} color="#FF9500" />
+            <Text style={styles.testAccountTitle}>Apple Test Account Details</Text>
+          </View>
+          <View style={styles.testAccountDivider} />
           <View style={styles.testAccountRow}>
             <Text style={styles.testAccountLabel}>Email:</Text>
             <Text style={styles.testAccountValue}>zadfad41@gmail.com</Text>
@@ -265,7 +272,7 @@ export default function PermissionsDemoScreen() {
               • (Would show popup in production)
             </Text>
             <TouchableOpacity style={styles.demoButton} onPress={handleTestJobAlert}>
-              <Ionicons name="flash" size={20} color={colors.text.inverse} />
+              <Ionicons name="flash" size={20} color="#000000" />
               <Text style={styles.demoButtonText}>Trigger Job Alert</Text>
             </TouchableOpacity>
           </View>
@@ -300,7 +307,7 @@ const FeatureItem = ({ icon, text }: { icon: string; text: string }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     flex: 1,
@@ -320,8 +327,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xxl + spacing.md,
     paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    ...shadows.sm,
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 40,
@@ -333,7 +339,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typography.h3,
-    color: colors.text.primary,
+    color: '#000000',
   },
   content: {
     flex: 1,
@@ -344,18 +350,30 @@ const styles = StyleSheet.create({
   },
   warningBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FF6B6B20',
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: '#FF000015',
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     gap: spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B6B',
+    borderWidth: 2,
+    borderColor: '#FF0000',
+    ...shadows.md,
+  },
+  warningContent: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  warningTitle: {
+    ...typography.bodyBold,
+    color: '#FF0000',
+    fontSize: 16,
+    fontWeight: '700',
   },
   warningText: {
     ...typography.caption,
-    color: colors.text.primary,
+    color: '#000000',
     flex: 1,
     fontWeight: '600',
+    lineHeight: 20,
   },
   infoBanner: {
     flexDirection: 'row',
@@ -368,47 +386,70 @@ const styles = StyleSheet.create({
   },
   infoText: {
     ...typography.caption,
-    color: colors.text.primary,
+    color: '#000000',
     flex: 1,
   },
   testAccountCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFF8E1',
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    padding: spacing.lg,
+    gap: spacing.md,
+    borderWidth: 3,
+    borderColor: '#FF9500',
+    ...shadows.lg,
+  },
+  testAccountHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
-    borderWidth: 2,
-    borderColor: colors.accent,
-    ...shadows.sm,
   },
   testAccountTitle: {
-    ...typography.bodyBold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
+    ...typography.h4,
+    color: '#FF9500',
+    fontWeight: '700',
+    fontSize: 18,
+  },
+  testAccountDivider: {
+    height: 2,
+    backgroundColor: '#FF950040',
+    borderRadius: 1,
+    marginVertical: spacing.xs,
   },
   testAccountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
   testAccountLabel: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    ...typography.body,
+    color: '#000000',
+    fontWeight: '600',
   },
   testAccountValue: {
-    ...typography.captionBold,
-    color: colors.text.primary,
+    ...typography.bodyBold,
+    color: '#000000',
     fontFamily: 'monospace',
+    fontSize: 16,
+    fontWeight: '700',
   },
   sectionTitle: {
     ...typography.h4,
-    color: colors.text.secondary,
+    color: '#000000',
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     gap: spacing.md,
-    ...shadows.sm,
+    borderWidth: 2,
+    borderColor: '#06B6D4',
+    shadowColor: '#06B6D4',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 18,
+    elevation: 12,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -429,11 +470,11 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...typography.bodyBold,
-    color: colors.text.primary,
+    color: '#000000',
   },
   cardDescription: {
     ...typography.caption,
-    color: colors.text.secondary,
+    color: '#000000',
     lineHeight: 18,
   },
   statusBadge: {
@@ -447,11 +488,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.small,
-    color: colors.text.secondary,
+    color: '#000000',
     fontWeight: '600',
   },
   statusTextActive: {
-    color: colors.success,
+    color: '#000000',
   },
   testButton: {
     flexDirection: 'row',
@@ -466,7 +507,7 @@ const styles = StyleSheet.create({
   },
   testButtonText: {
     ...typography.captionBold,
-    color: colors.primary,
+    color: '#000000',
   },
   demoSection: {
     gap: spacing.md,
@@ -483,7 +524,7 @@ const styles = StyleSheet.create({
   },
   demoButtonText: {
     ...typography.bodyBold,
-    color: colors.text.inverse,
+    color: '#000000',
   },
   featureSection: {
     gap: spacing.md,
@@ -499,7 +540,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     ...typography.caption,
-    color: colors.text.primary,
+    color: '#000000',
     flex: 1,
   },
 });

@@ -1,138 +1,107 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
-import { colors, typography, spacing, borderRadius, shadows } from '../utils/theme';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, typography, spacing, borderRadius, shadows, glassEffect } from '../utils/theme';
 
 interface OnlineIndicatorProps {
   visible: boolean;
   isSearching?: boolean;
 }
 
-export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({ 
-  visible, 
-  isSearching = true 
+export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
+  visible,
+  isSearching = true
 }) => {
-  console.log('🔍 OnlineIndicator render:', { visible, isSearching });
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(0.3)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const dotAnim1 = useRef(new Animated.Value(0)).current;
-  const dotAnim2 = useRef(new Animated.Value(0)).current;
-  const dotAnim3 = useRef(new Animated.Value(0)).current;
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (visible && isSearching) {
-      // Pulse animation for main circle
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.3,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
+    if (visible) {
+      // Fade in animation
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
 
-      // Opacity animation for pulse rings
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(opacityAnim, {
-            toValue: 0.8,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacityAnim, {
-            toValue: 0.2,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
+      if (isSearching) {
+        // Pulse animation - enhanced
+        Animated.loop(
+          Animated.sequence([
+            Animated.parallel([
+              Animated.timing(pulseAnim, {
+                toValue: 1.3,
+                duration: 1200,
+                useNativeDriver: true,
+              }),
+              Animated.timing(scaleAnim, {
+                toValue: 1.05,
+                duration: 1200,
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.parallel([
+              Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 1200,
+                useNativeDriver: true,
+              }),
+              Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 1200,
+                useNativeDriver: true,
+              }),
+            ]),
+          ])
+        ).start();
 
-      // Progress bar animation
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(progressAnim, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: false,
-          }),
-          Animated.timing(progressAnim, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: false,
-          }),
-        ])
-      ).start();
-
-      // Animated dots (loading dots)
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(dotAnim1, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(dotAnim2, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(dotAnim3, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.parallel([
-            Animated.timing(dotAnim1, {
-              toValue: 0,
-              duration: 0,
+        // Opacity animation - enhanced
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(opacityAnim, {
+              toValue: 0.9,
+              duration: 1200,
               useNativeDriver: true,
             }),
-            Animated.timing(dotAnim2, {
-              toValue: 0,
-              duration: 0,
+            Animated.timing(opacityAnim, {
+              toValue: 0.2,
+              duration: 1200,
               useNativeDriver: true,
             }),
-            Animated.timing(dotAnim3, {
-              toValue: 0,
-              duration: 0,
-              useNativeDriver: true,
-            }),
-          ]),
-        ])
-      ).start();
+          ])
+        ).start();
 
-      // White wave shimmer animation
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(shimmerAnim, {
+        // Rotate animation for search icon
+        Animated.loop(
+          Animated.timing(rotateAnim, {
             toValue: 1,
-            duration: 2000,
+            duration: 3000,
             useNativeDriver: true,
-          }),
-          Animated.timing(shimmerAnim, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    } else {
-      pulseAnim.setValue(1);
-      opacityAnim.setValue(1);
-      progressAnim.setValue(0);
-      dotAnim1.setValue(0);
-      dotAnim2.setValue(0);
-      dotAnim3.setValue(0);
-      shimmerAnim.setValue(0);
+          })
+        ).start();
+
+        // Progress bar - smoother
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(progressAnim, {
+              toValue: 1,
+              duration: 2500,
+              useNativeDriver: false,
+            }),
+            Animated.timing(progressAnim, {
+              toValue: 0,
+              duration: 0,
+              useNativeDriver: false,
+            }),
+          ])
+        ).start();
+
+      }
     }
   }, [visible, isSearching]);
 
@@ -143,226 +112,343 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
     outputRange: ['0%', '100%'],
   });
 
-  const shimmerTranslateX = shimmerAnim.interpolate({
+  const rotateValue = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-300, 300],
+    outputRange: ['0deg', '360deg'],
   });
 
   return (
-    <View style={styles.container}>
-      {/* White wave shimmer overlay for entire card */}
-      {isSearching && (
-        <Animated.View
-          style={[
-            styles.cardShimmerOverlay,
-            {
-              transform: [{ translateX: shimmerTranslateX }],
-            },
-          ]}
-        />
-      )}
-      <View style={styles.content}>
-        <View style={styles.indicatorContainer}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+      <BlurView intensity={40} tint="dark" style={styles.blurContainer}>
+        <Animated.View style={[styles.content, shadows.glow.green, { transform: [{ scale: scaleAnim }] }]}>
+          {/* Gradient Background */}
           {isSearching && (
-            <>
-              {/* Outer pulse ring with enhanced glow */}
-              <Animated.View
-                style={[
-                  styles.pulseOuter,
-                  {
-                    transform: [{ scale: pulseAnim }],
-                    opacity: opacityAnim,
-                  },
-                ]}
-              />
-              {/* Inner pulse ring with enhanced glow */}
-              <Animated.View
-                style={[
-                  styles.pulseInner,
-                  {
-                    transform: [{ scale: pulseAnim }],
-                    opacity: opacityAnim.interpolate({
-                      inputRange: [0.2, 0.8],
-                      outputRange: [0.4, 1],
-                    }),
-                  },
-                ]}
-              />
-            </>
+            <View style={styles.gradientBackground}>
+              <View style={styles.gradientTop} />
+              <View style={styles.gradientBottom} />
+            </View>
           )}
-          <View style={[
-            styles.dot, 
-            !isSearching && styles.dotStatic,
-            isSearching && styles.dotGlowing
-          ]} />
-        </View>
-        
-        <View style={styles.textContainer}>
-          <View style={styles.headerRow}>
-            <Text style={styles.statusText}>
-              {isSearching ? 'Searching for jobs' : 'Online'}
-            </Text>
-            {isSearching && (
-              <View style={styles.dotsContainer}>
-                <Animated.View style={[styles.loadingDot, { opacity: dotAnim1 }]} />
-                <Animated.View style={[styles.loadingDot, { opacity: dotAnim2 }]} />
-                <Animated.View style={[styles.loadingDot, { opacity: dotAnim3 }]} />
+
+
+          {/* Main Content */}
+          <View style={styles.mainContent}>
+            {/* Indicator Icon Container - Enhanced */}
+            <View style={styles.indicatorContainer}>
+              {isSearching && (
+                <>
+                  {/* Outer pulse rings */}
+                  <Animated.View
+                    style={[
+                      styles.pulseOuter,
+                      {
+                        transform: [{ scale: pulseAnim }],
+                        opacity: opacityAnim,
+                      },
+                    ]}
+                  />
+                  <Animated.View
+                    style={[
+                      styles.pulseInner,
+                      {
+                        transform: [{ scale: pulseAnim }],
+                        opacity: opacityAnim.interpolate({
+                          inputRange: [0.2, 0.9],
+                          outputRange: [0.5, 1],
+                        }),
+                      },
+                    ]}
+                  />
+                  {/* Search icon with rotation */}
+                  <Animated.View
+                    style={[
+                      styles.searchIconContainer,
+                      {
+                        transform: [{ rotate: rotateValue }],
+                      },
+                    ]}
+                  >
+                    <Ionicons name="search" size={24} color="#FFFFFF" />
+                  </Animated.View>
+                </>
+              )}
+              {!isSearching && (
+                <View style={styles.dotContainer}>
+                  <View style={[styles.dot, styles.dotStatic]} />
+                </View>
+              )}
+            </View>
+
+            {/* Text Content - Enhanced */}
+            <View style={styles.textContainer}>
+              <View style={styles.titleRow}>
+                <View style={styles.titleContent}>
+                  <Text style={styles.statusText} numberOfLines={1} ellipsizeMode="tail">
+                    {isSearching ? 'Searching for jobs' : '✓ Online'}
+                  </Text>
+                  {isSearching && (
+                    <View style={styles.searchBadge}>
+                      <View style={styles.searchBadgeDot} />
+                      <Text style={styles.searchBadgeText}>ACTIVE</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            )}
+              <Text style={styles.subText}>
+                {isSearching
+                  ? 'Looking for available routes nearby'
+                  : 'Ready to receive assignments'}
+              </Text>
+              {isSearching && (
+                <View style={styles.searchStats}>
+                  <View style={styles.statItem}>
+                    <Ionicons name="location" size={14} color="#FFFFFF" />
+                    <Text style={styles.statText}>Nearby</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Ionicons name="time" size={14} color="#FFFFFF" />
+                    <Text style={styles.statText}>Real-time</Text>
+                  </View>
+                </View>
+              )}
+            </View>
           </View>
-          <Text style={styles.subText}>
-            {isSearching 
-              ? 'Looking for available routes and orders nearby' 
-              : 'Ready to receive job assignments'}
-          </Text>
-        </View>
-      </View>
-      
-      {/* Animated Progress Bar */}
-      {isSearching && (
-        <View style={styles.progressBarContainer}>
-          <Animated.View
-            style={[
-              styles.progressBar,
-              {
-                width: progressWidth,
-              },
-            ]}
-          />
-        </View>
-      )}
-    </View>
+        </Animated.View>
+
+        {/* Progress bar - Enhanced */}
+        {isSearching && (
+          <View style={styles.progressBarContainer}>
+            <Animated.View
+              style={[
+                styles.progressBar,
+                {
+                  width: progressWidth,
+                },
+              ]}
+            />
+            <View style={styles.progressBarGlow} />
+          </View>
+        )}
+      </BlurView>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#10B981',
-    // Green neon glow effect - iOS
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 20,
-    // Green neon glow effect - Android
-    elevation: 14,
+    ...shadows.lg,
+  },
+  blurContainer: {
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
   },
   content: {
+    ...glassEffect.medium,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-  },
-  indicatorContainer: {
-    width: 56,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: spacing.lg,
+    padding: spacing.xl + spacing.md,
+    borderWidth: 2.5,
+    borderColor: colors.success,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
     position: 'relative',
-  },
-  pulseOuter: {
-    position: 'absolute',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.success,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  pulseInner: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.success,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.success,
-  },
-  dotGlowing: {
-    backgroundColor: colors.success,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  dotStatic: {
-    backgroundColor: colors.primary,
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: 4,
-  },
-  statusText: {
-    ...typography.bodyBold,
-    color: '#FFFFFF',
-    fontSize: 17,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    gap: 4,
-    alignItems: 'center',
-  },
-  loadingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.success,
-  },
-  subText: {
-    ...typography.caption,
-    color: '#FFFFFF',
-    opacity: 0.8,
-  },
-  progressBarContainer: {
-    height: 4,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    marginTop: spacing.md,
-    borderRadius: borderRadius.sm,
     overflow: 'hidden',
+    ...shadows.glow.green,
+    minHeight: 120,
   },
-  progressBar: {
-    height: '100%',
-    backgroundColor: colors.success,
-    borderRadius: borderRadius.sm,
-  },
-  cardShimmerOverlay: {
+  gradientBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    width: 120,
+    opacity: 0.3,
+  },
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  gradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+  },
+  mainContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+    flex: 1,
+    zIndex: 1,
+  },
+  indicatorContainer: {
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor: 'rgba(16, 185, 129, 0.25)',
+    borderRadius: 35,
+    borderWidth: 3,
+    borderColor: colors.success,
+    ...shadows.glow.green,
+  },
+  pulseOuter: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: colors.success,
+    opacity: 0.4,
+  },
+  pulseInner: {
+    position: 'absolute',
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    backgroundColor: colors.success,
+    opacity: 0.6,
+  },
+  searchIconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  dotContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  dotGlowing: {
+    backgroundColor: colors.success,
+    ...shadows.glow.green,
+  },
+  dotStatic: {
+    backgroundColor: colors.primary,
+  },
+  textContainer: {
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
+  },
+  titleRow: {
+    marginBottom: spacing.xs,
+  },
+  titleContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flexWrap: 'nowrap',
+    flexShrink: 1,
+  },
+  statusText: {
+    ...typography.headline,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+    flexShrink: 1,
+    flex: 1,
+    minWidth: 0,
+  },
+  searchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.success,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    flexShrink: 0,
+    ...shadows.md,
+  },
+  searchBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+  },
+  searchBadgeText: {
+    ...typography.small,
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 11,
+    letterSpacing: 1.5,
+  },
+  subText: {
+    ...typography.subheadline,
+    color: '#FFFFFF',
+    fontSize: 15,
+    opacity: 0.95,
+    lineHeight: 22,
+    marginBottom: spacing.sm,
+    fontWeight: '500',
+  },
+  searchStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.xs,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  statText: {
+    ...typography.caption,
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  progressBarContainer: {
+    height: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+    borderRadius: 2.5,
+    position: 'relative',
+  },
+  progressBar: {
     height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    transform: [{ skewX: '-20deg' }],
-    zIndex: 10,
+    backgroundColor: colors.success,
+    borderRadius: 2.5,
+    ...shadows.glow.green,
+  },
+  progressBarGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.success,
+    opacity: 0.3,
+    borderRadius: 2.5,
   },
 });
-

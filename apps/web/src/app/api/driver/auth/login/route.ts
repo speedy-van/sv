@@ -27,22 +27,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user with driver role (case-insensitive email search)
-    const user = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive',
-        },
-        role: 'driver',
-      },
-      include: {
-        driver: true,
-      },
+    // Find user - try multiple methods to find by email
+    const emailTrimmed = email.trim();
+    
+    // Try exact match first
+    let user = await prisma.user.findUnique({
+      where: { email: emailTrimmed },
+      include: { driver: true },
     });
-
+    
+    // Try lowercase
     if (!user) {
-      await logAudit('anonymous', 'driver_login_failed', undefined, { targetType: 'auth', before: { email }, after: null });
+      user = await prisma.user.findUnique({
+        where: { email: emailTrimmed.toLowerCase() },
+        include: { driver: true },
+      });
+    }
+    
+    // Try case-insensitive
+    if (!user) {
+      user = await prisma.user.findFirst({
+        where: { email: { equals: emailTrimmed, mode: 'insensitive' } },
+        include: { driver: true },
+      });
+    }
+    
+    // Must be a driver
+    if (!user || user.role !== 'driver') {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401, headers: corsHeaders }
@@ -52,7 +63,6 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      await logAudit(user.id, 'driver_login_failed', user.id, { targetType: 'auth', before: { email }, after: null });
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401, headers: corsHeaders }
@@ -70,8 +80,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log successful login
-    await logAudit(user.id, 'driver_login_success', user.id, { targetType: 'auth', before: null, after: { email: user.email, role: user.role, driverId: user.driver?.id } });
+    // Log successful login (non-blocking - don't wait for it)
+    logAudit(user.id, 'driver_login_success', user.id, { targetType: 'auth', before: null, after: { email: user.email, role: user.role, driverId: user.driver?.id } }).catch(() => {});
 
     // Generate a simple token (for mobile app compatibility)
     const token = Buffer.from(`${user.id}:${user.email}:${Date.now()}`).toString('base64');
@@ -98,8 +108,9 @@ export async function POST(request: NextRequest) {
     }, { headers: corsHeaders });
   } catch (error) {
     console.error('Driver login error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500, headers: corsHeaders }
     );
   }

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Image, StyleSheet, Animated, Dimensions, Text } from 'react-native';
+import { View, Image, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { BlurView } from 'expo-blur';
 import { useAuth } from '../contexts/AuthContext';
+import { colors, spacing, shadows } from '../utils/theme';
 
 const { width, height } = Dimensions.get('window');
 const LETTERS = 'Speedy Van'.split('');
@@ -13,47 +15,111 @@ export default function Index() {
 
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
-  const waterAnim1 = useRef(new Animated.Value(0)).current;
-  const waterAnim2 = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const logoRotate = useRef(new Animated.Value(0)).current;
+  const particleAnim1 = useRef(new Animated.Value(0)).current;
+  const particleAnim2 = useRef(new Animated.Value(0)).current;
+  const particleAnim3 = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(-200)).current;
   const letterAnims = useRef(LETTERS.map(() => new Animated.Value(-50))).current;
   const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
-    // Step 1: Logo elegant fade in and scale
+    // Logo entrance with spring effect
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        tension: 40,
-        friction: 10,
+        tension: 30,
+        friction: 8,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Step 2: Subtle water-like motion (two layers moving slowly)
+    // Subtle logo rotation
     Animated.loop(
-      Animated.timing(waterAnim1, {
-        toValue: 1,
-        duration: 8000,
-        useNativeDriver: true,
-      })
+      Animated.sequence([
+        Animated.timing(logoRotate, {
+          toValue: 1,
+          duration: 10000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoRotate, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Floating particles
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(particleAnim1, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(particleAnim1, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
     ).start();
 
     Animated.loop(
-      Animated.timing(waterAnim2, {
-        toValue: 1,
-        duration: 10000,
-        useNativeDriver: true,
-      })
+      Animated.sequence([
+        Animated.timing(particleAnim2, {
+          toValue: 1,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(particleAnim2, {
+          toValue: 0,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+      ])
     ).start();
 
-    // Step 3: Letter-by-letter drop animation (starts at 0.5s)
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(particleAnim3, {
+          toValue: 1,
+          duration: 5000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(particleAnim3, {
+          toValue: 0,
+          duration: 5000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Glow pulsing effect
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.5,
+          duration: 2000,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+
+    // Letter drop animation
     setTimeout(() => {
       const letterAnimations = letterAnims.map((anim, index) =>
         Animated.timing(anim, {
@@ -63,31 +129,31 @@ export default function Index() {
           useNativeDriver: true,
         })
       );
-      Animated.parallel(letterAnimations).start();
-    }, 500);
+      Animated.stagger(50, letterAnimations).start();
+    }, 600);
 
-    // Step 4: Shimmer sweep across text (starts at 1.2s)
+    // Shimmer sweep
     setTimeout(() => {
       Animated.timing(shimmerAnim, {
         toValue: 400,
         duration: 1500,
         useNativeDriver: true,
       }).start();
-    }, 1200);
+    }, 1400);
 
-    // Step 5: Subtitle fade in (starts at 1.5s)
+    // Subtitle fade in
     setTimeout(() => {
       Animated.timing(subtitleAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 800,
         useNativeDriver: true,
       }).start();
-    }, 1500);
+    }, 1800);
 
-    // Hide splash and navigate after 3 seconds
+    // Navigate after animation
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 3000);
+    }, 3200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -103,81 +169,96 @@ export default function Index() {
   }, [isAuthenticated, loading, showSplash]);
 
   if (!showSplash && !loading) {
-    return null; // Will navigate
+    return null;
   }
 
-  const water1TranslateX = waterAnim1.interpolate({
+  const particle1TranslateY = particleAnim1.interpolate({
     inputRange: [0, 1],
-    outputRange: [-100, 100],
+    outputRange: [0, -100],
   });
 
-  const water1TranslateY = waterAnim1.interpolate({
+  const particle2TranslateY = particleAnim2.interpolate({
     inputRange: [0, 1],
-    outputRange: [-30, 30],
+    outputRange: [0, 100],
   });
 
-  const water2TranslateX = waterAnim2.interpolate({
+  const particle3TranslateY = particleAnim3.interpolate({
     inputRange: [0, 1],
-    outputRange: [100, -100],
+    outputRange: [0, -80],
   });
 
-  const water2TranslateY = waterAnim2.interpolate({
+  const logoRotateValue = logoRotate.interpolate({
     inputRange: [0, 1],
-    outputRange: [30, -30],
+    outputRange: ['0deg', '360deg'],
   });
 
   return (
     <View style={styles.container}>
-      {/* Water-like Motion Effect - Layer 1 */}
+      {/* Gradient background */}
+      <View style={styles.gradientBackground} />
+
+      {/* Floating particles */}
       <Animated.View
         style={[
-          styles.waterLayer,
-          styles.waterLayer1,
+          styles.particle,
+          styles.particle1,
           {
-            transform: [
-              { translateX: water1TranslateX },
-              { translateY: water1TranslateY },
-            ],
-            opacity: 0.15,
+            transform: [{ translateY: particle1TranslateY }],
+            opacity: particleAnim1,
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.particle,
+          styles.particle2,
+          {
+            transform: [{ translateY: particle2TranslateY }],
+            opacity: particleAnim2,
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.particle,
+          styles.particle3,
+          {
+            transform: [{ translateY: particle3TranslateY }],
+            opacity: particleAnim3,
           },
         ]}
       />
 
-      {/* Water-like Motion Effect - Layer 2 */}
+      {/* Logo container with glass effect */}
       <Animated.View
         style={[
-          styles.waterLayer,
-          styles.waterLayer2,
-          {
-            transform: [
-              { translateX: water2TranslateX },
-              { translateY: water2TranslateY },
-            ],
-            opacity: 0.1,
-          },
-        ]}
-      />
-
-      {/* Central Logo Container with Elegant Fade */}
-      <Animated.View
-        style={[
-          styles.logoContainer,
+          styles.logoWrapper,
           {
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }],
           },
         ]}
       >
-        <View style={styles.logoCircle}>
-          <Image
-            source={require('../assets/splash-icon.png')}
-            style={styles.logo}
-            resizeMode="cover"
-          />
-        </View>
+        <BlurView intensity={40} tint="dark" style={styles.logoBlur}>
+          <Animated.View style={[styles.logoGlow, { opacity: glowAnim }]} />
+          <Animated.View
+            style={[
+              styles.logoCircle,
+              {
+                transform: [{ rotate: logoRotateValue }],
+              },
+            ]}
+          >
+            <Image
+              source={require('../assets/splash-icon.png')}
+              style={styles.logo}
+              resizeMode="cover"
+            />
+          </Animated.View>
+        </BlurView>
       </Animated.View>
 
-      {/* Letter-by-Letter Drop Animation for "Speedy Van" with Shimmer */}
+      {/* App name with letter animation */}
       <View style={styles.textContainer}>
         {LETTERS.map((letter, index) => (
           <Animated.Text
@@ -196,8 +277,8 @@ export default function Index() {
             {letter}
           </Animated.Text>
         ))}
-        
-        {/* Shimmer sweep effect across text */}
+
+        {/* Shimmer effect */}
         <Animated.View
           style={[
             styles.shimmer,
@@ -208,10 +289,10 @@ export default function Index() {
         />
       </View>
 
-      {/* Subtitle with Elegant Fade */}
+      {/* Subtitle */}
       <Animated.Text
         style={[
-          styles.appSubtitle,
+          styles.subtitle,
           {
             opacity: subtitleAnim,
           },
@@ -219,6 +300,9 @@ export default function Index() {
       >
         D R I V E R
       </Animated.Text>
+
+      {/* Bottom decoration */}
+      <View style={styles.bottomDecoration} />
     </View>
   );
 }
@@ -226,56 +310,76 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.background.primary,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  waterLayer: {
+  gradientBackground: {
     position: 'absolute',
-    width: width * 1.5,
-    height: width * 1.5,
-    borderRadius: width,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.background.primary,
   },
-  waterLayer1: {
-    backgroundColor: '#1E40AF',
-    top: '30%',
+  particle: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  particle1: {
+    backgroundColor: colors.primary,
+    opacity: 0.1,
+    top: '20%',
     left: '10%',
   },
-  waterLayer2: {
-    backgroundColor: '#1E3A8A',
-    top: '40%',
-    right: '10%',
+  particle2: {
+    backgroundColor: colors.success,
+    opacity: 0.1,
+    top: '60%',
+    right: '15%',
   },
-  logoContainer: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // iOS subtle blue glow
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    // Android subtle glow
-    elevation: 16,
-    borderWidth: 3,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
-    backgroundColor: 'transparent',
+  particle3: {
+    backgroundColor: colors.accent,
+    opacity: 0.1,
+    bottom: '25%',
+    left: '20%',
   },
-  logoCircle: {
+  logoWrapper: {
     width: 200,
     height: 200,
     borderRadius: 100,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+  },
+  logoBlur: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: colors.border.medium,
+  },
+  logoGlow: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: colors.primary,
+    ...shadows.glow.blue,
+  },
+  logoCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 180,
+    height: 180,
   },
   textContainer: {
     flexDirection: 'row',
@@ -285,11 +389,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   letter: {
-    fontSize: 44,
+    fontSize: 42,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: colors.text.primary,
     letterSpacing: -1,
-    textShadowColor: 'rgba(59, 130, 246, 0.5)',
+    textShadowColor: colors.shadow.colored.blue,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 12,
   },
@@ -299,16 +403,23 @@ const styles = StyleSheet.create({
     left: 0,
     width: 100,
     height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     transform: [{ skewX: '-20deg' }],
   },
-  appSubtitle: {
+  subtitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#3B82F6',
-    marginTop: 12,
+    fontWeight: '700',
+    color: colors.primary,
+    marginTop: spacing.md,
     letterSpacing: 8,
-    textTransform: 'uppercase',
+  },
+  bottomDecoration: {
+    position: 'absolute',
+    bottom: 60,
+    width: 60,
+    height: 4,
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+    opacity: 0.8,
   },
 });
-

@@ -1,0 +1,65 @@
+[
+  {
+    "id": "celebrate",
+    "name": "Celebrate",
+    "triggerEvent": "orderAccepted",
+    "animationType": "bounce",
+    "asset": "celebrate.png",
+    "duration": 2000,
+    "description": "Shows when driver accepts an order"
+  },
+  {
+    "id": "thumbs_up",
+    "name": "Thumbs Up",
+    "triggerEvent": "routeAccepted",
+    "animationType": "slide_up",
+    "asset": "thumbs_up.png",
+    "duration": 1800,
+    "description": "Shows when driver accepts a route"
+  },
+  {
+    "id": "facepalm",
+    "name": "Facepalm",
+    "triggerEvent": "orderDeclined",
+    "animationType": "fade_in",
+    "asset": "facepalm.png",
+    "duration": 1500,
+    "description": "Shows when driver declines an order"
+  },
+  {
+    "id": "confused",
+    "name": "Confused",
+    "triggerEvent": "routeDeclined",
+    "animationType": "shake",
+    "asset": "confused.png",
+    "duration": 1600,
+    "description": "Shows when driver declines a route"
+  },
+  {
+    "id": "victory",
+    "name": "Victory",
+    "triggerEvent": "jobCompleted",
+    "animationType": "bounce",
+    "asset": "victory.png",
+    "duration": 2200,
+    "description": "Shows when driver completes a job"
+  },
+  {
+    "id": "thinking",
+    "name": "Thinking",
+    "triggerEvent": "jobStarted",
+    "animationType": "fade_in",
+    "asset": "thinking.png",
+    "duration": 1200,
+    "description": "Shows when driver starts a job"
+  },
+  {
+    "id": "wave",
+    "name": "Wave Goodbye",
+    "triggerEvent": "jobCancelled",
+    "animationType": "slide_down",
+    "asset": "wave.png",
+    "duration": 1400,
+    "description": "Shows when a job is cancelled"
+  }
+]

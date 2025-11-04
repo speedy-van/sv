@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 import { ROUTES } from '@/lib/routing';
+import SpeedyAIChatbotProvider from '@/components/admin/SpeedyAIChatbotProvider';
 
 // Force dynamic rendering for admin pages (fixes DYNAMIC_SERVER_USAGE error)
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,9 @@ export default async function AdminLayout({
       <UnifiedNavigation role="admin" isAuthenticated={true}>
         <UnifiedErrorBoundary role="admin">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>
+      
+      {/* Speedy AI Chatbot */}
+      <SpeedyAIChatbotProvider />
     </>
   );
 }

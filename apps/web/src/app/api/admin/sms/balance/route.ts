@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Get SMS balance
  */

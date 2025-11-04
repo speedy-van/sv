@@ -8,7 +8,11 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
+  Modal,
+  Image,
 } from 'react-native';
+import { Video } from 'expo-av';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,9 +22,10 @@ import { pusherService } from '../../services/pusher';
 import { JobCard } from '../../components/JobCard';
 import { StatsCard } from '../../components/StatsCard';
 import { OnlineIndicator } from '../../components/OnlineIndicator';
+import { AIDashboardSection } from '../../components/AIDashboardSection';
 // JobAssignmentModal is now handled globally - no import needed
 import { DashboardData, JobAssignment, PusherEvent } from '../../types';
-import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
+import { colors, typography, spacing, borderRadius, shadows, glassEffect } from '../../utils/theme';
 import { formatCurrency } from '../../utils/helpers';
 import { notificationService } from '../../services/notification';
 import { soundService } from '../../services/soundService';
@@ -56,45 +61,508 @@ const AnimatedSectionTitle: React.FC = () => {
   );
 };
 
-// Animated Greeting Component with White Wave Effect
-const AnimatedGreeting: React.FC<{ name: string }> = ({ name }) => {
+// Enhanced Available Jobs Card Component
+interface AvailableJobsCardProps {
+  jobs: any[];
+  totalCount: number;
+  onJobPress: (jobId: string) => void;
+}
+
+const AvailableJobsCard: React.FC<AvailableJobsCardProps> = ({ jobs, totalCount, onJobPress }) => {
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
-    Animated.loop(
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
+    // Rotate animation every 5 seconds - continuous loop
+    const rotateAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 5000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    rotateAnimation.start();
+
+    // Pulse animation
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(pulseAnim, {
+            toValue: 1.15,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1.05,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+    pulseAnimation.start();
+
+    // Shimmer effect
+    const shimmerAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, {
           toValue: 1,
-          duration: 2000,
-          useNativeDriver: false,
+          duration: 3000,
+          useNativeDriver: true,
         }),
         Animated.timing(shimmerAnim, {
           toValue: 0,
           duration: 0,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    shimmerAnimation.start();
+
+    return () => {
+      rotateAnimation.stop();
+      pulseAnimation.stop();
+      shimmerAnimation.stop();
+    };
   }, []);
 
-  const translateX = shimmerAnim.interpolate({
+  const rotateValue = rotateAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-300, 300],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const shimmerTranslateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-400, 400],
   });
 
   return (
-    <View style={styles.greetingContainer}>
-      <Text style={styles.greeting}>Hello, {name}! 👋</Text>
-      {/* White wave overlay */}
-      <Animated.View
-        style={[
-          styles.shimmerOverlay,
-          {
-            transform: [{ translateX }],
+    <Animated.View style={[styles.availableJobsCard, { opacity: fadeAnim }]}>
+      <BlurView intensity={40} tint="dark" style={styles.availableJobsBlur}>
+        <Animated.View style={[
+          styles.availableJobsContent,
+          { transform: [{ scale: scaleAnim }] }
+        ]}>
+          {/* Gradient Background */}
+          <View style={styles.availableJobsGradient}>
+            <View style={styles.availableJobsGradientTop} />
+            <View style={styles.availableJobsGradientBottom} />
+          </View>
+
+          {/* Shimmer overlay */}
+          <Animated.View
+            style={[
+              styles.availableJobsShimmer,
+              {
+                transform: [{ translateX: shimmerTranslateX }],
+              },
+            ]}
+          />
+
+          {/* Header */}
+          <View style={styles.availableJobsHeader}>
+            <View style={styles.availableJobsHeaderLeft}>
+              <Animated.View
+                style={[
+                  styles.availableJobsIconContainer,
+                  {
+                    transform: [
+                      { rotate: rotateValue },
+                    ],
+                  },
+                ]}
+              >
+                <Animated.View
+                  style={[
+                    styles.availableJobsIconWrapper,
+                    {
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                >
+                  <Ionicons name="cube" size={32} color="#FFFFFF" />
+                  <View style={styles.availableJobsIconGlow} />
+                </Animated.View>
+              </Animated.View>
+              <View style={styles.availableJobsHeaderText}>
+                <View style={styles.availableJobsTitleRow}>
+                  <Text style={styles.availableJobsTitle}>Available Jobs</Text>
+                  <View style={styles.availableJobsBadge}>
+                    <Text style={styles.availableJobsBadgeText}>{totalCount}</Text>
+                  </View>
+                </View>
+                <Text style={styles.availableJobsSubtitle}>
+                  {totalCount === 1 ? '1 job waiting' : `${totalCount} jobs waiting for you`}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Gradient separator */}
+          <View style={styles.availableJobsSeparator} />
+
+          {/* Jobs List */}
+          <View style={styles.availableJobsList}>
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onPress={() => onJobPress(job.id)}
+              />
+            ))}
+          </View>
+        </Animated.View>
+      </BlurView>
+    </Animated.View>
+  );
+};
+
+// Admin Story Component
+const AdminStory: React.FC = () => {
+  const [currentStory, setCurrentStory] = useState<any>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    loadCurrentStory();
+
+    // Listen for real-time story updates
+    const storyChannel = pusherService.subscribeToChannel('admin-stories');
+
+    storyChannel.bind('story-created', (data: any) => {
+      console.log('📡 Story created:', data);
+      if (data.story.isActive) {
+        setCurrentStory(data.story);
+      }
+    });
+
+    storyChannel.bind('story-updated', (data: any) => {
+      console.log('📡 Story updated:', data);
+      if (data.story.isActive) {
+        setCurrentStory(data.story);
+      } else if (currentStory?.id === data.story.id) {
+        // If the current story was deactivated, clear it
+        setCurrentStory(null);
+      }
+    });
+
+    storyChannel.bind('story-deleted', (data: any) => {
+      console.log('📡 Story deleted:', data);
+      if (currentStory?.id === data.storyId) {
+        setCurrentStory(null);
+      }
+    });
+
+    return () => {
+      pusherService.unsubscribeFromChannel('admin-stories');
+    };
+  }, [currentStory]);
+
+  const loadCurrentStory = async () => {
+    try {
+      const response = await apiService.get('/api/admin/stories/current');
+          if (response.success && response.data?.story) {
+            console.log('🎥 STORY DATA RECEIVED:', {
+              id: response.data.story.id,
+              type: response.data.story.type,
+              mediaUrl: response.data.story.mediaUrl,
+              hasMediaUrl: !!response.data.story.mediaUrl,
+              title: response.data.story.title,
+              content: response.data.story.content?.substring(0, 100) + '...'
+            });
+            setCurrentStory(response.data.story);
+            setImageLoadError(false); // Reset error state for new story
+          }
+    } catch (error) {
+      console.warn('Failed to load admin story:', error);
+    }
+  };
+
+  const handleStoryPress = () => {
+    if (currentStory) {
+      setIsModalVisible(true);
+      // Check if user has liked this story
+      checkLikeStatus();
+    } else {
+      // Show message when no stories are available
+      Alert.alert(
+        'No Stories Available',
+        'The admin hasn\'t posted any stories yet. Check back later!',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const checkLikeStatus = async () => {
+    if (!currentStory || !user?.id) return;
+
+    try {
+      const response = await apiService.get(`/api/admin/stories/${currentStory.id}/like?userId=${user.id}&userType=driver`);
+      if (response.success) {
+        setIsLiked(response.data.isLiked);
+      }
+    } catch (error) {
+      console.warn('Failed to check like status:', error);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!currentStory || !user?.id || isLiking) return;
+
+    setIsLiking(true);
+    try {
+      const action = isLiked ? 'unlike' : 'like';
+      const response = await apiService.post(`/api/admin/stories/${currentStory.id}/like`, {
+        action,
+        userId: user.id,
+        userType: 'driver',
+      });
+
+      if (response.success) {
+        setIsLiked(!isLiked);
+        // Update local stats
+        setCurrentStory(prev => ({
+          ...prev,
+          stats: {
+            ...prev.stats,
+            likeCount: prev.stats.likeCount + (action === 'like' ? 1 : -1),
           },
-        ]}
-      />
-    </View>
+        }));
+      }
+    } catch (error) {
+      console.warn('Failed to toggle like:', error);
+      Alert.alert('Error', 'Failed to update like status');
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!currentStory || !user?.id || isSharing) return;
+
+    setIsSharing(true);
+    try {
+      const response = await apiService.post(`/api/admin/stories/${currentStory.id}/share`, {
+        userId: user.id,
+        userType: 'driver',
+        shareType: 'native',
+      });
+
+      if (response.success) {
+        // Update local stats
+        setCurrentStory(prev => ({
+          ...prev,
+          stats: {
+            ...prev.stats,
+            shareCount: prev.stats.shareCount + 1,
+          },
+        }));
+
+        Alert.alert('Success', 'Story shared successfully!');
+      }
+    } catch (error) {
+      console.warn('Failed to share story:', error);
+      Alert.alert('Error', 'Failed to share story');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  // Always show the story circle, even if no active story
+
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.storyContainer}
+        onPress={handleStoryPress}
+        activeOpacity={0.8}
+      >
+        <View style={[
+          styles.storyRing,
+          !currentStory && styles.storyRingInactive
+        ]}>
+          <View style={[
+            styles.storyAvatar,
+            !currentStory && styles.storyAvatarInactive
+          ]}>
+            <Text style={[
+              styles.storyAvatarText,
+              !currentStory && styles.storyAvatarTextInactive
+            ]}>A</Text>
+          </View>
+        </View>
+        <Text style={[
+          styles.storyLabel,
+          !currentStory && styles.storyLabelInactive
+        ]}>
+          {currentStory ? 'Admin Story' : 'No Stories'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Story Modal */}
+      <Modal
+        visible={isModalVisible && !!currentStory}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        {currentStory && (
+          <View style={styles.storyModalOverlay}>
+            <View style={styles.storyModalContent}>
+              <TouchableOpacity
+                style={styles.storyCloseButton}
+                onPress={() => setIsModalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+
+              <View style={styles.storyHeader}>
+                <View style={styles.storyHeaderAvatar}>
+                  <Text style={styles.storyHeaderAvatarText}>A</Text>
+                </View>
+                <View style={styles.storyHeaderInfo}>
+                  <Text style={styles.storyHeaderName}>Admin</Text>
+                  <Text style={styles.storyHeaderTime}>
+                    {new Date(currentStory.createdAt).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View style={styles.storyStats}>
+                  <View style={styles.statItem}>
+                    <Ionicons name="eye-outline" size={14} color="#666" />
+                    <Text style={styles.statText}>{currentStory.stats?.viewCount || 0}</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Ionicons name="heart" size={14} color="#FF6B6B" />
+                    <Text style={styles.statText}>{currentStory.stats?.likeCount || 0}</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Ionicons name="share-outline" size={14} color="#666" />
+                    <Text style={styles.statText}>{currentStory.stats?.shareCount || 0}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Interaction Buttons */}
+              <View style={styles.storyActions}>
+                <TouchableOpacity
+                  style={[styles.actionButton, isLiked && styles.actionButtonLiked]}
+                  onPress={handleLike}
+                  disabled={isLiking}
+                >
+                  <Ionicons
+                    name={isLiked ? "heart" : "heart-outline"}
+                    size={24}
+                    color={isLiked ? "#FF6B6B" : "#666"}
+                  />
+                  <Text style={[styles.actionButtonText, isLiked && styles.actionButtonTextLiked]}>
+                    {isLiked ? 'Liked' : 'Like'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleShare}
+                  disabled={isSharing}
+                >
+                  <Ionicons name="share-outline" size={24} color="#666" />
+                  <Text style={styles.actionButtonText}>Share</Text>
+                </TouchableOpacity>
+              </View>
+
+            <ScrollView style={styles.storyContent}>
+              {(() => {
+                console.log('🎬 RENDERING STORY:', {
+                  type: currentStory.type,
+                  hasMediaUrl: !!currentStory.mediaUrl,
+                  mediaUrl: currentStory.mediaUrl,
+                  contentLength: currentStory.content?.length || 0
+                });
+
+                if (currentStory.type === 'text') {
+                  console.log('📝 Rendering as TEXT');
+                  return <Text style={styles.storyText}>{currentStory.content}</Text>;
+                }
+
+                if (currentStory.type === 'image' && currentStory.mediaUrl && !imageLoadError) {
+                  console.log('🖼️ Rendering as IMAGE');
+                  return (
+                    <Image
+                      source={{ uri: currentStory.mediaUrl }}
+                      style={styles.storyImage}
+                      resizeMode="cover"
+                      onLoad={() => {
+                        console.log('✅ Image loaded successfully');
+                        setImageLoadError(false);
+                      }}
+                      onError={(error) => {
+                        console.log('❌ Image failed to load:', error);
+                        setImageLoadError(true);
+                        // Don't alert - just fall back to text content
+                      }}
+                    />
+                  );
+                }
+
+                if (currentStory.type === 'video' && currentStory.mediaUrl) {
+                  console.log('🎥 Rendering as VIDEO');
+                  return (
+                    <Video
+                      source={{ uri: currentStory.mediaUrl }}
+                      style={styles.storyVideo}
+                      resizeMode="cover"
+                      shouldPlay={true}
+                      isLooping={false}
+                      useNativeControls={true}
+                    />
+                  );
+                }
+
+                // Fallback: render as text if type is unknown, no mediaUrl, or image failed to load
+                console.log('📄 Fallback: Rendering as TEXT', {
+                  type: currentStory.type,
+                  hasMediaUrl: !!currentStory.mediaUrl,
+                  imageLoadError
+                });
+                return <Text style={styles.storyText}>{currentStory.content}</Text>;
+              })()}
+
+              {currentStory.title && (
+                <Text style={styles.storyTitle}>{currentStory.title}</Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+        )}
+      </Modal>
+    </>
   );
 };
 
@@ -268,7 +736,8 @@ export default function DashboardScreen() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    loadDashboard(true); // Force refresh to clear cache
+        loadDashboard(true); // Force refresh to clear cache
+        // AI will automatically update via AIDashboardSection when jobs change
     refreshLocation();
   };
 
@@ -346,8 +815,8 @@ export default function DashboardScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-        <View>
-          <AnimatedGreeting name={user?.name || 'Driver'} />
+        <View style={styles.headerContent}>
+          <AdminStory />
           <Text style={styles.subtitle}>Ready for your deliveries?</Text>
         </View>
       </View>
@@ -359,34 +828,69 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* Online/Offline Status Toggle with Neon Glow */}
-        <View style={[
-          styles.statusCard,
-          isOnline ? styles.statusCardOnline : styles.statusCardOffline
-        ]}>
-          <View style={styles.statusHeader}>
-            <View style={styles.statusInfo}>
-              <Text style={styles.statusTitle}>
-                {isOnline ? '🟢 Online' : '🔴 Offline'}
-              </Text>
-              <Text style={styles.statusSubtitle}>
-                {isOnline ? 'Available for new jobs' : 'Not receiving jobs'}
-              </Text>
+        {/* Online/Offline Status Toggle - Enhanced */}
+        <BlurView intensity={40} tint="dark" style={styles.statusCardBlur}>
+          <View style={[
+            styles.statusCard,
+            isOnline ? styles.statusCardOnline : styles.statusCardOffline
+          ]}>
+            {/* Gradient Background */}
+            {isOnline && (
+              <View style={styles.statusGradient}>
+                <View style={styles.statusGradientTop} />
+                <View style={styles.statusGradientBottom} />
+              </View>
+            )}
+
+            <View style={styles.statusHeader}>
+              <View style={styles.statusInfo}>
+                <View style={styles.statusTitleRow}>
+                  <View style={[styles.statusIndicator, isOnline && styles.statusIndicatorOnline]}>
+                    {isOnline ? (
+                      <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
+                    ) : (
+                      <Ionicons name="close-circle" size={24} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <View style={styles.statusTextContainer}>
+                    <Text style={styles.statusTitle}>
+                      {isOnline ? 'Online' : 'Offline'}
+                    </Text>
+                    <Text style={styles.statusSubtitle}>
+                      {isOnline ? 'Available for new jobs' : 'Not receiving jobs'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
+                onPress={() => handleToggleOnlineStatus(!isOnline)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.statusToggleKnob, isOnline && styles.statusToggleKnobActive]} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
-              onPress={() => handleToggleOnlineStatus(!isOnline)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.statusToggleKnob, isOnline && styles.statusToggleKnobActive]} />
-            </TouchableOpacity>
+            <View style={styles.statusHintContainer}>
+              <View style={styles.statusHintRow}>
+                {isOnline ? (
+                  <>
+                    <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                    <Text style={[styles.statusHint, styles.statusHintActive]}>
+                      System is searching for routes and orders for you
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="warning" size={16} color="#F59E0B" />
+                    <Text style={styles.statusHint}>
+                      Tap the toggle to go online and start receiving jobs
+                    </Text>
+                  </>
+                )}
+              </View>
+            </View>
           </View>
-          <Text style={[styles.statusHint, isOnline && styles.statusHintActive]}>
-            {isOnline 
-              ? '✓ System is searching for routes and orders for you' 
-              : '⚠ Tap the toggle to go online and start receiving jobs'}
-          </Text>
-        </View>
+        </BlurView>
 
         {/* Animated Search Indicator - Shows when online and searching */}
         {isOnline && (
@@ -432,6 +936,34 @@ export default function DashboardScreen() {
           </View>
         </View>
 
+        {/* AI Assistant Section */}
+        <AIDashboardSection
+          activeJobs={dashboardData?.jobs.assigned?.map(job => ({
+            id: job.id,
+            reference: job.reference,
+            pickup: {
+              address: (job as any).addresses?.pickup?.line1 || (job as any).from || 'Pickup location',
+              lat: (job as any).addresses?.pickup?.coordinates?.lat || 0,
+              lng: (job as any).addresses?.pickup?.coordinates?.lng || 0,
+              time: (job as any).schedule?.date || new Date().toISOString(),
+            },
+            dropoff: {
+              address: (job as any).addresses?.dropoff?.line1 || (job as any).to || 'Drop-off location',
+              lat: (job as any).addresses?.dropoff?.coordinates?.lat || 0,
+              lng: (job as any).addresses?.dropoff?.coordinates?.lng || 0,
+              time: (job as any).schedule?.date || new Date().toISOString(),
+            },
+            earnings: (job as any).pricing?.estimatedEarnings || (job as any).earnings || '£0.00',
+            priority: (job as any).priority || 'medium',
+            vehicleType: (job as any).crewRecommendation?.vehicleType || (job as any).vehicleType || 'Van',
+          })) || []}
+          onSuggestionAction={(action, suggestionId) => {
+            // Handle AI suggestion actions
+            console.log('Dashboard AI Action:', action, suggestionId);
+            // You can add specific handling here for dashboard-specific actions
+          }}
+        />
+
         {/* Assigned Jobs */}
         {dashboardData?.jobs.assigned && dashboardData.jobs.assigned.length > 0 && (
           <View style={styles.section}>
@@ -446,18 +978,13 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Available Jobs */}
+        {/* Available Jobs - Enhanced */}
         {dashboardData?.jobs.available && dashboardData.jobs.available.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Available Jobs</Text>
-            {dashboardData.jobs.available.slice(0, 3).map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                onPress={() => router.push(`/job/${job.id}`)}
-              />
-            ))}
-          </View>
+          <AvailableJobsCard
+            jobs={dashboardData.jobs.available.slice(0, 3)}
+            totalCount={dashboardData.statistics.availableJobs || 0}
+            onJobPress={(jobId) => router.push(`/job/${jobId}`)}
+          />
         )}
 
         {/* Empty State */}
@@ -509,26 +1036,184 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  greetingContainer: {
-    overflow: 'hidden',
-    position: 'relative',
+  headerContent: {
+    alignItems: 'center',
   },
-  greeting: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.5,
+  // Story styles
+  storyContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
-  shimmerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: 100,
+  storyRing: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    padding: 3,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#FF9500', // Gradient-like effect
+    shadowColor: '#FF9500',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  storyAvatar: {
+    width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    transform: [{ skewX: '-20deg' }],
+    borderRadius: 32,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storyAvatarText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  storyLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  storyModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  storyModalContent: {
+    width: '90%',
+    height: '80%',
+    backgroundColor: '#000000',
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+  },
+  storyCloseButton: {
+    position: 'absolute',
+    top: spacing.lg,
+    right: spacing.lg,
+    zIndex: 10,
+    padding: spacing.sm,
+  },
+  storyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.lg,
+    paddingTop: spacing.xxl,
+  },
+  storyHeaderAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  storyHeaderAvatarText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  storyHeaderName: {
+    ...typography.headline,
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  storyHeaderTime: {
+    ...typography.caption1,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  storyContent: {
+    flex: 1,
+    padding: spacing.lg,
+  },
+  storyTitle: {
+    ...typography.title1,
+    color: '#FFFFFF',
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  storyText: {
+    ...typography.body,
+    color: '#FFFFFF',
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  storyImage: {
+    width: '100%',
+    height: 300,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.md,
+  },
+  storyVideo: {
+    width: '100%',
+    height: 300,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.md,
+  },
+  // Story interaction styles
+  storyHeaderInfo: {
+    flex: 1,
+  },
+  storyStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statText: {
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '500',
+  },
+  storyActions: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.lg,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    gap: spacing.xs,
+  },
+  actionButtonLiked: {
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+  },
+  actionButtonText: {
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '500',
+  },
+  actionButtonTextLiked: {
+    color: '#FF6B6B',
+  },
+  // Inactive story styles
+  storyRingInactive: {
+    borderColor: '#666',
+    shadowColor: '#666',
+    shadowOpacity: 0.2,
+  },
+  storyAvatarInactive: {
+    backgroundColor: '#666',
+  },
+  storyAvatarTextInactive: {
+    color: '#999',
+  },
+  storyLabelInactive: {
+    color: '#999',
   },
   subtitle: {
     fontSize: 14,
@@ -545,52 +1230,100 @@ const styles = StyleSheet.create({
     gap: 20,
     paddingBottom: 40,
   },
+  statusCardBlur: {
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    marginBottom: spacing.lg,
+    ...shadows.lg,
+  },
   statusCard: {
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 3,
+    ...glassEffect.medium,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    borderWidth: 2.5,
+    borderColor: colors.danger,
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    position: 'relative',
+    overflow: 'hidden',
+    ...shadows.glow.red,
   },
   statusCardOnline: {
-    borderColor: '#10B981',
-    // Green neon glow effect - iOS
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 24,
-    // Green neon glow effect - Android
-    elevation: 16,
+    borderColor: colors.success,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    ...shadows.glow.green,
   },
-  statusCardOffline: {
-    borderColor: '#EF4444',
-    // Red neon glow effect - iOS
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 20,
-    // Red neon glow effect - Android
-    elevation: 14,
+  statusGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+    zIndex: 0,
+  },
+  statusGradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  statusGradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
   },
   statusHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
+    zIndex: 2,
   },
   statusInfo: {
     flex: 1,
   },
+  statusTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  statusIndicator: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+    borderWidth: 2.5,
+    borderColor: colors.danger,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.glow.red,
+  },
+  statusIndicatorOnline: {
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: colors.success,
+    ...shadows.glow.green,
+  },
+  statusTextContainer: {
+    flex: 1,
+  },
   statusTitle: {
-    fontSize: 18,
-    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    marginBottom: spacing.xs / 2,
   },
   statusSubtitle: {
-    fontSize: 13,
     color: '#FFFFFF',
+    fontSize: 15,
+    opacity: 0.9,
     fontWeight: '500',
-    opacity: 0.8,
+    lineHeight: 20,
   },
   statusToggle: {
     width: 60,
@@ -622,12 +1355,25 @@ const styles = StyleSheet.create({
   statusToggleKnobActive: {
     alignSelf: 'flex-end',
   },
+  statusHintContainer: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    zIndex: 2,
+  },
+  statusHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   statusHint: {
-    fontSize: 12,
     color: '#FFFFFF',
-    marginTop: 8,
+    fontSize: 14,
+    opacity: 0.8,
     fontWeight: '500',
-    opacity: 0.7,
+    flex: 1,
+    lineHeight: 20,
   },
   statusHintActive: {
     color: '#10B981',
@@ -698,6 +1444,154 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.8,
+  },
+  // Available Jobs Card Styles
+  availableJobsCard: {
+    marginBottom: spacing.lg,
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+    ...shadows.lg,
+  },
+  availableJobsBlur: {
+    borderRadius: borderRadius.xl,
+    overflow: 'hidden',
+  },
+  availableJobsContent: {
+    ...glassEffect.medium,
+    borderRadius: borderRadius.xl,
+    borderWidth: 2.5,
+    borderColor: colors.success,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    position: 'relative',
+    overflow: 'hidden',
+    ...shadows.glow.green,
+  },
+  availableJobsGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+    zIndex: 0,
+  },
+  availableJobsGradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  availableJobsGradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+  },
+  availableJobsShimmer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 150,
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    transform: [{ skewX: '-25deg' }],
+    zIndex: 1,
+  },
+  availableJobsHeader: {
+    padding: spacing.xl,
+    paddingBottom: spacing.md,
+    zIndex: 2,
+  },
+  availableJobsHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  availableJobsIconContainer: {
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  availableJobsIconWrapper: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 3,
+    borderColor: colors.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    ...shadows.glow.green,
+  },
+  availableJobsIconGlow: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.success,
+    opacity: 0.3,
+    ...shadows.glow.green,
+  },
+  availableJobsHeaderText: {
+    flex: 1,
+  },
+  availableJobsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  availableJobsTitle: {
+    ...typography.title2,
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    flex: 1,
+  },
+  availableJobsBadge: {
+    backgroundColor: colors.success,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    ...shadows.md,
+  },
+  availableJobsBadgeText: {
+    ...typography.subheadline,
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  availableJobsSubtitle: {
+    ...typography.caption1,
+    color: '#FFFFFF',
+    fontSize: 14,
+    opacity: 0.9,
+    fontWeight: '500',
+    lineHeight: 18,
+  },
+  availableJobsSeparator: {
+    height: 2,
+    backgroundColor: colors.success,
+    opacity: 0.6,
+    marginHorizontal: spacing.xl,
+    borderRadius: 1,
+    ...shadows.glow.green,
+  },
+  availableJobsList: {
+    padding: spacing.xl,
+    paddingTop: spacing.md,
+    gap: spacing.md,
+    zIndex: 2,
   },
 });
 

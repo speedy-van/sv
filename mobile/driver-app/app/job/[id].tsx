@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService } from '../../services/api';
 import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
 import { JobProgressTracker, JobStep } from '../../components/JobProgressTracker';
+import { emoteManager } from '../../services/emoteService';
+import { showGlobalEmote } from '../../components/EmoteOverlay';
 import { soundService } from '../../services/soundService';
 
 // Types
@@ -64,6 +66,8 @@ export default function JobDetailsScreen() {
   const [currentStep, setCurrentStep] = useState<JobStep>('navigate_to_pickup');
   const [completedSteps, setCompletedSteps] = useState<JobStep[]>([]);
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('offline');
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   // Load job details and progress on mount
   useEffect(() => {
@@ -71,23 +75,70 @@ export default function JobDetailsScreen() {
     loadProgressState();
   }, [id]);
   
-  // Setup AppState listener separately (no dependencies on progress state)
+  // Setup AppState listener for saving progress and syncing
   useEffect(() => {
-    // Listen for app state changes to save progress
-    const handleAppStateChange = (nextAppState: string) => {
+    // Listen for app state changes
+    const handleAppStateChange = async (nextAppState: string) => {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
-        saveProgressState();
+        // Save progress when app goes to background
+        await saveProgressState();
+        console.log('📱 App going to background - progress saved');
+      } else if (nextAppState === 'active') {
+        // App came back to foreground - check for updates and sync
+        console.log('📱 App became active - checking for updates');
+        await checkForUpdatesAndSync();
       }
     };
-    
+
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-    
+
     return () => {
       subscription?.remove();
       // Save progress when component unmounts
       saveProgressState();
     };
-  }, []);
+  }, [currentStep, completedSteps]); // Include progress state in dependencies
+
+  // Check for updates and sync when app becomes active
+  const checkForUpdatesAndSync = async () => {
+    try {
+      // Check if there are unsynced changes
+      const savedProgress = await AsyncStorage.getItem(`job_progress_${id}`);
+      if (savedProgress) {
+        const progressData = JSON.parse(savedProgress);
+        await syncWithServerState(progressData);
+      }
+
+      // Check server for any updates to job status
+      const response = await apiService.get(`/api/driver/jobs/${id}`);
+      if (response.success && response.data) {
+        const apiData = response.data.job || response.data;
+
+        // Check if job status changed (e.g., cancelled by admin)
+        if (apiData.status !== job?.status) {
+          console.log('⚠️ Job status changed on server:', apiData.status);
+          Alert.alert(
+            'Job Status Updated',
+            `Job status has been updated to: ${apiData.status}`,
+            [{ text: 'OK' }]
+          );
+          // Reload job details
+          setJob(prev => prev ? { ...prev, status: apiData.status } : null);
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to check for updates:', error);
+      // Continue normally - don't disrupt user experience
+    }
+  };
+
+  // Update sync status
+  const updateSyncStatus = (status: 'synced' | 'syncing' | 'offline' | 'error') => {
+    setSyncStatus(status);
+    if (status === 'synced') {
+      setLastSyncTime(new Date());
+    }
+  };
 
   // Save progress state to AsyncStorage
   const saveProgressState = async () => {
@@ -96,15 +147,16 @@ export default function JobDetailsScreen() {
         currentStep,
         completedSteps,
         timestamp: new Date().toISOString(),
+        lastSyncTime: lastSyncTime?.toISOString(),
       };
       await AsyncStorage.setItem(`job_progress_${id}`, JSON.stringify(progressData));
-      console.log('💾 Progress saved:', progressData);
+      console.log('💾 Progress saved locally:', progressData);
     } catch (error) {
-      console.error('❌ Failed to save progress:', error);
+      console.error('❌ Failed to save progress locally:', error);
     }
   };
 
-  // Load progress state from AsyncStorage
+  // Load progress state from AsyncStorage and sync with server
   const loadProgressState = async () => {
     try {
       const savedProgress = await AsyncStorage.getItem(`job_progress_${id}`);
@@ -112,10 +164,107 @@ export default function JobDetailsScreen() {
         const progressData = JSON.parse(savedProgress);
         setCurrentStep(progressData.currentStep || 'navigate_to_pickup');
         setCompletedSteps(progressData.completedSteps || []);
-        console.log('📂 Progress restored:', progressData);
+        console.log('📂 Progress restored locally:', progressData);
+
+        // Try to sync with server state in background
+        syncWithServerState(progressData);
+      } else {
+        // No local progress, check server for any existing state
+        await checkServerState();
       }
     } catch (error) {
       console.error('❌ Failed to load progress:', error);
+      // If local loading fails, try server
+      await checkServerState();
+    }
+  };
+
+  // Check server for existing job state
+  const checkServerState = async () => {
+    try {
+      console.log('🔍 Checking server for job state...');
+      const response = await apiService.get(`/api/driver/jobs/${id}`);
+
+      if (response.success && response.data) {
+        const apiData = response.data.job || response.data;
+
+        // If server has progress information, use it
+        if (apiData.progress && apiData.progress.currentStep) {
+          console.log('📡 Server state found:', apiData.progress);
+          setCurrentStep(apiData.progress.currentStep);
+          setCompletedSteps(apiData.progress.completedSteps || []);
+
+          // Save server state locally
+          await saveProgressState();
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not check server state:', error);
+      // Continue with default state - user can still work
+    }
+  };
+
+  // Sync local progress with server state
+  const syncWithServerState = async (localProgress: any) => {
+    try {
+      console.log('🔄 Syncing local progress with server...');
+      const response = await apiService.get(`/api/driver/jobs/${id}`);
+
+      if (response.success && response.data) {
+        const apiData = response.data.job || response.data;
+        const serverProgress = apiData.progress;
+
+        if (serverProgress) {
+          // Compare timestamps to resolve conflicts
+          const localTimestamp = new Date(localProgress.timestamp || 0);
+          const serverTimestamp = new Date(serverProgress.timestamp || 0);
+
+          if (serverTimestamp > localTimestamp) {
+            console.log('📡 Server state is newer, updating local state');
+            setCurrentStep(serverProgress.currentStep);
+            setCompletedSteps(serverProgress.completedSteps || []);
+            await saveProgressState();
+          } else if (localTimestamp > serverTimestamp) {
+            console.log('📱 Local state is newer, syncing to server');
+            // Try to sync local progress to server
+            await syncProgressToServer(localProgress);
+          } else {
+            console.log('✅ Local and server states are in sync');
+          }
+        } else {
+          // No server progress, sync local to server
+          console.log('📤 No server progress, syncing local progress to server');
+          await syncProgressToServer(localProgress);
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not sync with server:', error);
+      // Continue with local state - offline functionality
+    }
+  };
+
+  // Sync local progress to server
+  const syncProgressToServer = async (progressData: any) => {
+    try {
+      const response = await apiService.post(
+        `/api/driver/jobs/${id}/update-progress`,
+        {
+          step: progressData.currentStep,
+          completedSteps: progressData.completedSteps,
+          payload: {
+            timestamp: progressData.timestamp,
+            sync: true // Mark as sync operation
+          }
+        }
+      );
+
+      if (response.success) {
+        console.log('✅ Progress synced to server');
+      } else {
+        console.warn('⚠️ Failed to sync progress to server:', response.error);
+      }
+    } catch (error) {
+      console.warn('⚠️ Error syncing progress to server:', error);
     }
   };
 
@@ -196,6 +345,18 @@ export default function JobDetailsScreen() {
               );
 
               if (response.success) {
+                // Trigger emote for route acceptance
+                const triggerEmote = async () => {
+                  const enabled = await emoteManager.areEmotesEnabled();
+                  if (enabled) {
+                    const emoteData = await emoteManager.getEmoteDisplayData('routeAccepted');
+                    if (emoteData) {
+                      showGlobalEmote(emoteData);
+                    }
+                  }
+                };
+                triggerEmote();
+
                 Alert.alert('Success', 'Job accepted successfully', [
                   {
                     text: 'OK',
@@ -239,6 +400,18 @@ export default function JobDetailsScreen() {
               );
 
               if (response.success) {
+                // Trigger emote for route decline
+                const triggerEmote = async () => {
+                  const enabled = await emoteManager.areEmotesEnabled();
+                  if (enabled) {
+                    const emoteData = await emoteManager.getEmoteDisplayData('routeDeclined');
+                    if (emoteData) {
+                      showGlobalEmote(emoteData);
+                    }
+                  }
+                };
+                triggerEmote();
+
                 Alert.alert('Job Declined', 'You have declined this job', [
                   {
                     text: 'OK',
@@ -313,6 +486,18 @@ export default function JobDetailsScreen() {
               );
 
               if (response.success) {
+                // Trigger emote for job completion
+                const triggerEmote = async () => {
+                  const enabled = await emoteManager.areEmotesEnabled();
+                  if (enabled) {
+                    const emoteData = await emoteManager.getEmoteDisplayData('jobCompleted');
+                    if (emoteData) {
+                      showGlobalEmote(emoteData);
+                    }
+                  }
+                };
+                triggerEmote();
+
                 Alert.alert('Success', 'Job completed successfully', [
                   {
                     text: 'OK',
@@ -362,48 +547,66 @@ export default function JobDetailsScreen() {
   const handleStepComplete = async (step: JobStep) => {
     try {
       setIsUpdatingProgress(true);
-      
-      const response = await apiService.post(
-        `/api/driver/jobs/${id}/update-progress`,
-        { step, payload: { timestamp: new Date().toISOString() } }
-      );
 
-      if (response.success) {
-        // Update progress state
-        const newCompletedSteps = [...completedSteps, currentStep];
-        setCompletedSteps(newCompletedSteps);
-        setCurrentStep(step);
-        
-        // Save progress immediately after successful update
-        await saveProgressState();
-        
-        // Show success message
-        Alert.alert('Success', response.data?.message || 'Progress updated');
-        
-        // If job completed, navigate to earnings
-        if (step === 'job_completed') {
-          // Clear saved progress for this job
-          await AsyncStorage.removeItem(`job_progress_${id}`);
-          
-          Alert.alert(
-            'Job Completed! 🎉',
-            'Great work! Your earnings have been recorded.',
-            [
-              {
-                text: 'View Earnings',
-                onPress: () => router.replace('/tabs/earnings'),
-              },
-              {
-                text: 'Back to Dashboard',
-                onPress: () => router.replace('/tabs/dashboard'),
-              },
-            ]
-          );
+      // Immediately update local state and save to storage (regardless of server sync)
+      const newCompletedSteps = [...completedSteps, currentStep];
+      setCompletedSteps(newCompletedSteps);
+      setCurrentStep(step);
+
+      // Save progress immediately to local storage
+      await saveProgressState();
+
+      console.log('✅ Progress updated locally:', { currentStep: step, completedSteps: newCompletedSteps });
+
+      // Set sync status to syncing
+      updateSyncStatus('syncing');
+
+      // Try to sync with server in background
+      try {
+        const response = await apiService.post(
+          `/api/driver/jobs/${id}/update-progress`,
+          { step, payload: { timestamp: new Date().toISOString() } }
+        );
+
+        if (response.success) {
+          console.log('✅ Progress synced with server:', response.data?.message);
+          updateSyncStatus('synced');
+
+          // If job completed, navigate to earnings
+          if (step === 'job_completed') {
+            // Clear saved progress for this job
+            await AsyncStorage.removeItem(`job_progress_${id}`);
+
+            Alert.alert(
+              'Job Completed! 🎉',
+              'Great work! Your earnings have been recorded.',
+              [
+                {
+                  text: 'View Earnings',
+                  onPress: () => router.replace('/tabs/earnings'),
+                },
+                {
+                  text: 'Back to Dashboard',
+                  onPress: () => router.replace('/tabs/dashboard'),
+                },
+              ]
+            );
+          }
+        } else {
+          console.warn('⚠️ Server sync failed, but progress saved locally:', response.error);
+          updateSyncStatus('error');
+          // Don't show error alert - progress is saved locally
+          // User can continue working offline
         }
-      } else {
-        Alert.alert('Error', response.error || 'Failed to update progress');
+      } catch (syncError) {
+        console.warn('⚠️ Server sync error, but progress saved locally:', syncError);
+        updateSyncStatus('error');
+        // Don't show error alert - progress is saved locally
+        // User can continue working offline
       }
+
     } catch (error: any) {
+      console.error('❌ Critical error in step completion:', error);
       Alert.alert('Error', error.message || 'Failed to update progress');
     } finally {
       setIsUpdatingProgress(false);
@@ -440,7 +643,33 @@ export default function JobDetailsScreen() {
           <Text style={styles.headerTitle}>Job Details</Text>
           <Text style={styles.headerSubtitle}>{job.reference}</Text>
         </View>
-        <View style={{ width: 40 }} />
+        {/* Sync Status Indicator */}
+        <View style={styles.syncIndicator}>
+          {syncStatus === 'synced' && (
+            <View style={styles.syncStatus}>
+              <Ionicons name="cloud-done" size={16} color="#34C759" />
+              <Text style={styles.syncText}>Synced</Text>
+            </View>
+          )}
+          {syncStatus === 'syncing' && (
+            <View style={styles.syncStatus}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.syncText}>Syncing</Text>
+            </View>
+          )}
+          {syncStatus === 'offline' && (
+            <View style={styles.syncStatus}>
+              <Ionicons name="cloud-offline" size={16} color="#FF9500" />
+              <Text style={styles.syncText}>Offline</Text>
+            </View>
+          )}
+          {syncStatus === 'error' && (
+            <View style={styles.syncStatus}>
+              <Ionicons name="cloud-offline" size={16} color="#FF3B30" />
+              <Text style={styles.syncText}>Sync Error</Text>
+            </View>
+          )}
+        </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -448,7 +677,7 @@ export default function JobDetailsScreen() {
         <View style={styles.mapContainer}>
           {job.pickup?.lat && job.dropoff?.lat ? (
             <MapView
-              provider={PROVIDER_GOOGLE}
+              provider={PROVIDER_DEFAULT}
               style={styles.map}
               initialRegion={{
                 latitude: (job.pickup.lat + job.dropoff.lat) / 2,
@@ -940,6 +1169,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Sync indicator styles
+  syncIndicator: {
+    alignItems: 'flex-end',
+    minWidth: 80,
+  },
+  syncStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  syncText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666',
   },
 });
 

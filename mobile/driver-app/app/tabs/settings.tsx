@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/auth';
 import { apiService } from '../../services/api';
 import { colors, typography, spacing, borderRadius, shadows } from '../../utils/theme';
+import { emoteManager } from '../../services/emoteService';
 
 interface DriverProfile {
   firstName: string;
@@ -39,10 +40,21 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [emotesEnabled, setEmotesEnabled] = useState(true);
 
   useEffect(() => {
     loadProfile();
+    loadEmoteSettings();
   }, []);
+
+  const loadEmoteSettings = async () => {
+    try {
+      const enabled = await emoteManager.areEmotesEnabled();
+      setEmotesEnabled(enabled);
+    } catch (error) {
+      console.warn('Failed to load emote settings:', error);
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -110,6 +122,16 @@ export default function SettingsScreen() {
       // Revert on error
       setProfile({ ...profile, locationConsent: oldValue });
       Alert.alert('Error', error.message || 'Failed to update location consent');
+    }
+  };
+
+  const handleEmoteToggle = async (value: boolean) => {
+    try {
+      await emoteManager.setEmotesEnabled(value);
+      setEmotesEnabled(value);
+    } catch (error) {
+      console.warn('Failed to save emote settings:', error);
+      Alert.alert('Error', 'Failed to save emote settings');
     }
   };
 
@@ -270,6 +292,24 @@ export default function SettingsScreen() {
             <Switch
               value={profile.locationConsent}
               onValueChange={handleLocationConsentToggle}
+              trackColor={{ false: '#ccc', true: '#007AFF' }}
+              thumbColor="#fff"
+            />
+          </View>
+
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.emoteIcon}>🤖</Text>
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Show Emotes</Text>
+                <Text style={styles.settingDescription}>
+                  Display animated reactions when accepting/declining jobs
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={emotesEnabled}
+              onValueChange={handleEmoteToggle}
               trackColor={{ false: '#ccc', true: '#007AFF' }}
               thumbColor="#fff"
             />
@@ -455,6 +495,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
     fontWeight: '500',
+  },
+  emoteIcon: {
+    fontSize: 24,
+    width: 24,
+    textAlign: 'center',
   },
 });
 

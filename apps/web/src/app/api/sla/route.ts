@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { slaMonitor } from '@/lib/telemetry/sla-monitor';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const slaStatus = slaMonitor.getSLAStatus();

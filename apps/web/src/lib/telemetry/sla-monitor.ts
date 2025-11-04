@@ -253,71 +253,83 @@ export class SLAMonitor {
     const stats = performanceMonitor.getStats();
     const availability = this.calculateAvailability();
     
+    // Calculate SLA statuses directly (avoid recursion)
+    const responseTimeP99 = stats.api_response_time?.p99 || 0;
+    const responseTimeP95 = stats.api_response_time?.p95 || 0;
+    const dbQueryTimeP95 = stats.db_query_time?.p95 || 0;
+    const dbQueryTimeP50 = stats.db_query_time?.p50 || 0;
+    const memoryUsage = stats.memory_heap_used?.avg || 0;
+    const cpuUsage = stats.cpu_usage?.avg || 0;
+    
+    const sla_p99 = responseTimeP99 <= SLA_THRESHOLDS.RESPONSE_TIME_P99;
+    const sla_p95 = responseTimeP95 <= SLA_THRESHOLDS.RESPONSE_TIME_P95;
+    const db_sla_p95 = dbQueryTimeP95 <= SLA_THRESHOLDS.DB_QUERY_TIME_P95;
+    const db_sla_p50 = dbQueryTimeP50 <= SLA_THRESHOLDS.DB_QUERY_TIME_P50;
+    const memory_sla = memoryUsage <= SLA_THRESHOLDS.MEMORY_USAGE_MAX * 1024 * 1024;
+    const cpu_sla = cpuUsage <= SLA_THRESHOLDS.CPU_USAGE_MAX;
+    const availability_sla = availability >= SLA_THRESHOLDS.AVAILABILITY_TARGET;
+    
+    // Calculate overall status directly (avoid recursion)
+    let overallStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
+    
+    // Check for critical violations
+    if (!sla_p99 || !db_sla_p95 || !memory_sla || !cpu_sla || !availability_sla) {
+      overallStatus = 'critical';
+    } else if (!sla_p95 || !db_sla_p50) {
+      // Check for warning violations
+      overallStatus = 'warning';
+    }
+    
     return {
       // Response time metrics
       responseTime: {
         p50: stats.api_response_time?.p50 || 0,
-        p95: stats.api_response_time?.p95 || 0,
-        p99: stats.api_response_time?.p99 || 0,
-        sla_p99: stats.api_response_time?.p99 <= SLA_THRESHOLDS.RESPONSE_TIME_P99,
-        sla_p95: stats.api_response_time?.p95 <= SLA_THRESHOLDS.RESPONSE_TIME_P95,
+        p95: responseTimeP95,
+        p99: responseTimeP99,
+        sla_p99,
+        sla_p95,
       },
       
       // Database metrics
       database: {
-        p50: stats.db_query_time?.p50 || 0,
-        p95: stats.db_query_time?.p95 || 0,
-        sla_p95: stats.db_query_time?.p95 <= SLA_THRESHOLDS.DB_QUERY_TIME_P95,
-        sla_p50: stats.db_query_time?.p50 <= SLA_THRESHOLDS.DB_QUERY_TIME_P50,
+        p50: dbQueryTimeP50,
+        p95: dbQueryTimeP95,
+        sla_p95: db_sla_p95,
+        sla_p50: db_sla_p50,
       },
       
       // System metrics
       system: {
         memory: {
-          usage: stats.memory_heap_used?.avg || 0,
-          sla: (stats.memory_heap_used?.avg || 0) <= SLA_THRESHOLDS.MEMORY_USAGE_MAX * 1024 * 1024,
+          usage: memoryUsage,
+          sla: memory_sla,
         },
         cpu: {
-          usage: stats.cpu_usage?.avg || 0,
-          sla: (stats.cpu_usage?.avg || 0) <= SLA_THRESHOLDS.CPU_USAGE_MAX,
+          usage: cpuUsage,
+          sla: cpu_sla,
         },
       },
       
       // Availability
       availability: {
         current: availability,
-        sla: availability >= SLA_THRESHOLDS.AVAILABILITY_TARGET,
+        sla: availability_sla,
         target: SLA_THRESHOLDS.AVAILABILITY_TARGET,
       },
       
       // Overall SLA status
       overall: {
-        status: this.calculateOverallSLAStatus(),
+        status: overallStatus,
         timestamp: new Date().toISOString(),
         uptime: Date.now() - this.startTime,
       },
     };
   }
 
-  // Calculate overall SLA status
+  // Calculate overall SLA status (deprecated - logic moved to getSLAStatus to avoid recursion)
   private calculateOverallSLAStatus(): 'healthy' | 'warning' | 'critical' {
     const status = this.getSLAStatus();
-    
-    // Check for critical violations
-    if (!status.responseTime.sla_p99 || 
-        !status.database.sla_p95 || 
-        !status.system.memory.sla || 
-        !status.system.cpu.sla || 
-        !status.availability.sla) {
-      return 'critical';
-    }
-    
-    // Check for warning violations
-    if (!status.responseTime.sla_p95 || !status.database.sla_p50) {
-      return 'warning';
-    }
-    
-    return 'healthy';
+    return status.overall.status;
   }
 
   // Start SLA monitoring
