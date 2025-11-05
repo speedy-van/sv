@@ -19,7 +19,6 @@ import {
   Button,
   Input,
   InputGroup,
-  InputLeftElement,
   IconButton,
   useToast,
   Divider,
@@ -51,6 +50,8 @@ import {
   AlertTitle,
   AlertDescription,
   Image,
+  useBreakpointValue,
+  useBreakpoint,
 } from '@chakra-ui/react';
 // Images rendered with Chakra <Image>
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
@@ -270,6 +271,26 @@ export default function WhereAndWhatStep({
   const { step1 } = formData;
   const toast = useToast();
 
+  // 🎯 Responsive Design Hooks - Force responsive behavior
+  const breakpoint = useBreakpoint();
+  const isMobile = useBreakpointValue({ base: true, md: false }) ?? true;
+  const isTablet = useBreakpointValue({ base: false, md: true, lg: false }) ?? false;
+  const isDesktop = useBreakpointValue({ base: false, lg: true }) ?? false;
+
+  // 🎯 Responsive Values - Using useBreakpointValue for precise control
+  const cardPadding = useBreakpointValue({ base: 3, sm: 4, md: 6 }) ?? 4;
+  const cardSpacing = useBreakpointValue({ base: 3, sm: 4, md: 6 }) ?? 4;
+  const cardBorderRadius = useBreakpointValue({ base: 'lg', md: 'xl' }) ?? 'lg';
+  const iconSize = useBreakpointValue({ base: '44px', sm: '48px', md: '56px' }) ?? '48px';
+  const iconBoxSize = useBreakpointValue({ base: 4.5, sm: 5, md: 6 }) ?? 5;
+  const headingSize = useBreakpointValue({ base: 'sm', sm: 'md', md: 'xl' }) ?? 'md';
+  const textSize = useBreakpointValue({ base: 'xs', sm: 'sm', md: 'md' }) ?? 'sm';
+  const titleTextSize = useBreakpointValue({ base: 'sm', sm: 'md', md: 'xl' }) ?? 'md';
+  const addressGridColumns = useBreakpointValue({ base: 1, md: 2 }) ?? 1;
+  const addressGridSpacing = useBreakpointValue({ base: 3, sm: 4, md: 6 }) ?? 4;
+  const buttonMinHeight = useBreakpointValue({ base: '48px', sm: '44px' }) ?? '44px';
+  const buttonFontSize = useBreakpointValue({ base: 'sm', sm: 'md' }) ?? 'md';
+  const searchPlaceholder = "type what you looking for";
 
   const [individualItems, setIndividualItems] = useState<IndividualItem[]>([]);
   const [individualItemsLoading, setIndividualItemsLoading] = useState<boolean>(true);
@@ -503,7 +524,7 @@ export default function WhereAndWhatStep({
       <Box
         position="relative"
         w="full"
-        borderRadius="lg"
+        borderRadius="xl"
         overflow="hidden"
         sx={{
           '@keyframes neonPulse': {
@@ -526,7 +547,7 @@ export default function WhereAndWhatStep({
             inset={0}
             w="full"
             h="full"
-            objectFit="contain"
+            objectFit="cover"
             loading="lazy"
             onLoad={() => setLoaded(true)}
           />
@@ -1978,209 +1999,519 @@ export default function WhereAndWhatStep({
   // Images removed - no image helper function needed
 
   return (
-    <Box maxW="6xl" py={8}>
-      <VStack spacing={8} align="stretch">
-        
+    <VStack spacing={{ base: 6, md: 10 }} align="stretch" w="100%" px={{ base: 3, md: 6 }} py={{ base: 6, md: 10 }} overflowX="hidden">
         
         {/* Version Banner - Hidden in production, visible in dev */}
 
         
         {/* Header */}
-        <VStack spacing={4} textAlign="center">
-          <Heading size="xl" color="white">
-            What needs moving?
-          </Heading>
-          <Text color="gray.400" fontSize="lg" maxW="600px">
-            Select the items you need to move. You can choose individual items or complete house packages.
-          </Text>
-        </VStack>
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <VStack spacing={{ base: 3, sm: 4 }} textAlign="center">
+            <Heading size={{ base: "lg", sm: "xl", md: "2xl" }} color="white" fontWeight="700" letterSpacing="0.3px">
+              What needs moving?
+            </Heading>
+            <Text color="gray.400" fontSize={{ base: "sm", sm: "md", md: "lg" }} maxW="600px" lineHeight="1.6" px={{ base: 2, sm: 0 }}>
+              Select the items you need to move. You can choose individual items or complete house packages.
+            </Text>
+          </VStack>
+        </Box>
 
         {/* Address Input Section */}
-        <Card bg="gray.800" borderRadius="lg" border="1px solid" borderColor="gray.600">
-          <CardBody p={6}>
-            <VStack spacing={6}>
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
+          <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
+            <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
               
-              {/* Header */}
-              <VStack spacing={2} textAlign="center">
-                <Heading size="md" color="white">
-                  📍 Pickup & Dropoff Locations
-                </Heading>
-                <Text color="gray.400">
-                  Enter your addresses for accurate distance calculation
-                </Text>
+              {/* Enhanced Header */}
+              <VStack spacing={{ base: 1.5, sm: 2.5 }} textAlign="center" position="relative" w="full">
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  w={{ base: "100px", sm: "150px", md: "180px" }}
+                  h={{ base: "100px", sm: "150px", md: "180px" }}
+                  borderRadius="full"
+                  bg="radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)"
+                  filter="blur(30px)"
+                  zIndex={0}
+                />
+                <VStack spacing={{ base: 1, sm: 1.5 }} position="relative" zIndex={1} w="full">
+                  <Heading 
+                    size={{ base: "sm", sm: "md", md: "xl" }} 
+                    fontWeight="700"
+                    letterSpacing="0.5px"
+                    bg="linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)"
+                    bgClip="text"
+                    sx={{
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      textShadow: "0 4px 20px rgba(16, 185, 129, 0.3)",
+                    }}
+                    px={{ base: 1, sm: 0 }}
+                    lineHeight="1.2"
+                  >
+                    📍 Pickup & Dropoff Locations
+                  </Heading>
+                  <Text 
+                    color="gray.300"
+                    fontSize={{ base: "xs", sm: "sm", md: "md" }}
+                    fontWeight="500"
+                    letterSpacing="0.3px"
+                    px={{ base: 1, sm: 0 }}
+                    lineHeight="1.4"
+                  >
+                    Enter your addresses for accurate distance calculation
+                  </Text>
+                </VStack>
               </VStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} w="full">
-                {/* Pickup Address */}
-                <VStack spacing={4} align="stretch">
-                  <HStack spacing={3}>
-                    <Circle size="40px" bg="green.600">
-                      <Icon as={FaMapMarkerAlt} color="white" boxSize={5} />
-                    </Circle>
-                    <VStack align="start" spacing={0}>
-                      <Text fontSize="lg" fontWeight="bold" color="white">
-                        Pickup Address
-                      </Text>
-                      <Text fontSize="sm" color="gray.400">
-                        Where we'll collect your items
-                      </Text>
-                    </VStack>
-                  </HStack>
+              <SimpleGrid columns={addressGridColumns} spacing={addressGridSpacing} w="full">
+                {/* Enhanced Pickup Address Card */}
+                <Card
+                  bg="linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%)"
+                  border="2px solid"
+                  borderColor="rgba(16, 185, 129, 0.3)"
+                  borderRadius={cardBorderRadius}
+                  position="relative"
+                  overflow="hidden"
+                  w="full"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{
+                    borderColor: "rgba(16, 185, 129, 0.5)",
+                    boxShadow: "0 8px 32px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                    transform: isMobile ? "translateY(-1px)" : "translateY(-2px)",
+                  }}
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)',
+                      opacity: 0.6,
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    },
+                    '& > *': {
+                      position: 'relative',
+                      zIndex: 1,
+                    },
+                  }}
+                >
+                  <CardBody p={cardPadding} w="full">
+                    <VStack spacing={cardSpacing} align="stretch" w="full">
+                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexWrap="nowrap">
+                        <Box
+                          position="relative"
+                          w={iconSize}
+                          h={iconSize}
+                          minW={iconSize}
+                          minH={iconSize}
+                          flexShrink={0}
+                          borderRadius={cardBorderRadius}
+                          bg="linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%)"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          boxShadow="0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          border="2px solid"
+                          borderColor="rgba(16, 185, 129, 0.5)"
+                          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                          _hover={{
+                            transform: isMobile ? "scale(1.05)" : "scale(1.1) rotate(5deg)",
+                            boxShadow: "0 6px 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                          }}
+                        >
+                          <Icon as={FaMapMarkerAlt} color="#10B981" boxSize={iconBoxSize} filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" />
+                        </Box>
+                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW="0" textAlign="left" overflow="hidden">
+                          <Text 
+                            fontSize={titleTextSize} 
+                            fontWeight="700" 
+                            color="white"
+                            letterSpacing="0.3px"
+                            lineHeight="1.2"
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
+                          >
+                            Pickup Address
+                          </Text>
+                          <Text 
+                            fontSize={textSize} 
+                            color="white"
+                            fontWeight="500"
+                            lineHeight="1.3"
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
+                          >
+                            Where we'll collect your items
+                          </Text>
+                        </VStack>
+                      </HStack>
                   
-                  <Box
-                    sx={{
-                      '.chakra-input': {
-                        bg: 'gray.700 !important',
-                        borderColor: 'gray.600 !important',
-                        color: 'white !important',
-                        '&:focus': {
-                          borderColor: 'green.500 !important',
-                          boxShadow: '0 0 0 1px var(--chakra-colors-green-500) !important'
-                        },
-                        '&::placeholder': {
-                          color: 'gray.400 !important'
-                        }
-                      },
-                      '.chakra-button': {
-                        bg: 'green.600 !important',
-                        color: 'white !important',
-                        '&:hover': {
-                          bg: 'green.700 !important'
-                        }
-                      },
-                      '.chakra-select': {
-                        bg: 'gray.700 !important',
-                        borderColor: 'gray.600 !important',
-                        color: 'white !important'
-                      }
-                    }}
-                  >
-                    <UKAddressAutocomplete
-                      id="pickup-address"
-                      label="Pickup Address"
-                      value={step1.pickupAddress as any}
-                      onChange={(address) => {
-                        if (address) {
-                          updateFormData('step1', {
-                            pickupAddress: address as any
-                          });
-                        } else {
-                          // Never set to null; reset to an empty address shape to avoid runtime errors
-                          updateFormData('step1', {
-                            pickupAddress: {
-                              address: '',
-                              city: '',
-                              postcode: '',
-                              coordinates: { lat: 0, lng: 0 },
-                              houseNumber: '',
-                              flatNumber: '',
-                              formatted_address: '',
-                              place_name: ''
-                            } as any
-                          });
-                        }
-                        // Pricing is now automatic via Enterprise Engine
-                      }}
-                      placeholder="Start typing your pickup address..."
-                      helperText="Enter your full pickup address (street, postcode, etc.)"
-                      isRequired={true}
-                    />
-                  </Box>
-
-                </VStack>
-
-                {/* Dropoff Address */}
-                <VStack spacing={4} align="stretch">
-                  <HStack spacing={3}>
-                    <Circle size="40px" bg="blue.600">
-                      <Icon as={FaMapMarkerAlt} color="white" boxSize={5} />
-                    </Circle>
-                    <VStack align="start" spacing={0}>
-                      <Text fontSize="lg" fontWeight="bold" color="white">
-                        Dropoff Address
-                      </Text>
-                      <Text fontSize="sm" color="gray.400">
-                        Your destination
-                      </Text>
+                      <Box
+                        borderRadius={useBreakpointValue({ base: 'md', md: 'lg' }) ?? 'md'}
+                        bg="rgba(31, 41, 55, 0.5)"
+                        border="1px solid"
+                        borderColor="rgba(16, 185, 129, 0.2)"
+                        p={cardPadding}
+                        w="full"
+                        transition="all 0.3s"
+                        _hover={{
+                          borderColor: "rgba(16, 185, 129, 0.4)",
+                          bg: "rgba(31, 41, 55, 0.7)",
+                        }}
+                        sx={{
+                          '.chakra-input': {
+                            bg: 'rgba(17, 24, 39, 0.8) !important',
+                            borderColor: 'rgba(16, 185, 129, 0.3) !important',
+                            color: 'white !important',
+                            borderRadius: 'lg !important',
+                            _focus: {
+                              borderColor: '#10B981 !important',
+                              boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(16, 185, 129, 0.3) !important',
+                            },
+                            '&::placeholder': {
+                              color: 'rgba(156, 163, 175, 0.6) !important'
+                            }
+                          },
+                          '.chakra-button': {
+                            bg: 'linear-gradient(135deg, #10B981 0%, #059669 100%) !important',
+                            color: 'white !important',
+                            fontWeight: 'semibold !important',
+                            borderRadius: 'lg !important',
+                            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4) !important',
+                            transition: 'all 0.2s !important',
+                            _hover: {
+                              bg: 'linear-gradient(135deg, #059669 0%, #047857 100%) !important',
+                              transform: 'translateY(-1px) !important',
+                              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.5) !important',
+                            },
+                            _active: {
+                              transform: 'translateY(0) !important',
+                            }
+                          },
+                          '.chakra-select': {
+                            bg: 'rgba(17, 24, 39, 0.8) !important',
+                            borderColor: 'rgba(16, 185, 129, 0.3) !important',
+                            color: 'white !important',
+                            borderRadius: 'lg !important',
+                            _focus: {
+                              borderColor: '#10B981 !important',
+                              boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.2) !important',
+                            }
+                          }
+                        }}
+                      >
+                        <UKAddressAutocomplete
+                          id="pickup-address"
+                          label="Pickup Address"
+                          value={step1.pickupAddress as any}
+                          onChange={(address) => {
+                            if (address) {
+                              updateFormData('step1', {
+                                pickupAddress: address as any
+                              });
+                            } else {
+                              // Never set to null; reset to an empty address shape to avoid runtime errors
+                              updateFormData('step1', {
+                                pickupAddress: {
+                                  address: '',
+                                  city: '',
+                                  postcode: '',
+                                  coordinates: { lat: 0, lng: 0 },
+                                  houseNumber: '',
+                                  flatNumber: '',
+                                  formatted_address: '',
+                                  place_name: ''
+                                } as any
+                              });
+                            }
+                            // Pricing is now automatic via Enterprise Engine
+                          }}
+                          placeholder="Start typing your pickup address..."
+                          helperText="Enter your full pickup address (street, postcode, etc.)"
+                          isRequired={true}
+                        />
+                      </Box>
                     </VStack>
-                  </HStack>
-                  
-                  <Box
-                    sx={{
-                      '.chakra-input': {
-                        bg: 'gray.700 !important',
-                        borderColor: 'gray.600 !important',
-                        color: 'white !important',
-                        '&:focus': {
-                          borderColor: 'blue.500 !important',
-                          boxShadow: '0 0 0 1px var(--chakra-colors-blue-500) !important'
-                        },
-                        '&::placeholder': {
-                          color: 'gray.400 !important'
-                        }
-                      },
-                      '.chakra-button': {
-                        bg: 'blue.600 !important',
-                        color: 'white !important',
-                        '&:hover': {
-                          bg: 'blue.700 !important'
-                        }
-                      },
-                      '.chakra-select': {
-                        bg: 'gray.700 !important',
-                        borderColor: 'gray.600 !important',
-                        color: 'white !important'
-                      }
-                    }}
-                  >
-                    <UKAddressAutocomplete
-                      id="dropoff-address"
-                      label="Dropoff Address"
-                      value={step1.dropoffAddress as any}
-                      onChange={(address) => {
-                        if (address) {
-                          updateFormData('step1', {
-                            dropoffAddress: address as any
-                          });
-                        } else {
-                          updateFormData('step1', {
-                            dropoffAddress: {
-                              address: '',
-                              city: '',
-                              postcode: '',
-                              coordinates: { lat: 0, lng: 0 },
-                              houseNumber: '',
-                              flatNumber: '',
-                              formatted_address: '',
-                              place_name: ''
-                            } as any
-                          });
-                        }
-                        // Pricing is now automatic via Enterprise Engine
-                      }}
-                      placeholder="Start typing your dropoff address..."
-                      helperText="Enter your full dropoff address (street, postcode, etc.)"
-                      isRequired={true}
-                    />
-                  </Box>
+                  </CardBody>
+                </Card>
 
-                </VStack>
+                {/* Enhanced Dropoff Address Card */}
+                <Card
+                  bg="linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%)"
+                  border="2px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                  borderRadius={cardBorderRadius}
+                  position="relative"
+                  overflow="hidden"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{
+                    borderColor: "rgba(59, 130, 246, 0.5)",
+                    boxShadow: "0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                    transform: isMobile ? "translateY(-1px)" : "translateY(-2px)",
+                  }}
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%)',
+                      opacity: 0.6,
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    },
+                    '& > *': {
+                      position: 'relative',
+                      zIndex: 1,
+                    },
+                  }}
+                >
+                  <CardBody p={cardPadding} w="full">
+                    <VStack spacing={cardSpacing} align="stretch" w="full">
+                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexWrap="nowrap">
+                        <Box
+                          position="relative"
+                          w={iconSize}
+                          h={iconSize}
+                          minW={iconSize}
+                          minH={iconSize}
+                          flexShrink={0}
+                          borderRadius={cardBorderRadius}
+                          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          border="2px solid"
+                          borderColor="rgba(59, 130, 246, 0.5)"
+                          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                          _hover={{
+                            transform: isMobile ? "scale(1.05)" : "scale(1.1) rotate(5deg)",
+                            boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                          }}
+                        >
+                          <Icon as={FaMapMarkerAlt} color="#3B82F6" boxSize={iconBoxSize} filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                        </Box>
+                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW="0" textAlign="left" overflow="hidden">
+                          <Text 
+                            fontSize={titleTextSize} 
+                            fontWeight="700" 
+                            color="white"
+                            letterSpacing="0.3px"
+                            lineHeight="1.2"
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
+                          >
+                            Dropoff Address
+                          </Text>
+                          <Text 
+                            fontSize={textSize} 
+                            color="white"
+                            fontWeight="500"
+                            lineHeight="1.3"
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
+                          >
+                            Where we'll deliver your items
+                          </Text>
+                        </VStack>
+                      </HStack>
+                      
+                      <Box
+                        borderRadius={useBreakpointValue({ base: 'md', md: 'lg' }) ?? 'md'}
+                        bg="rgba(31, 41, 55, 0.5)"
+                        border="1px solid"
+                        borderColor="rgba(59, 130, 246, 0.2)"
+                        p={cardPadding}
+                        w="full"
+                        transition="all 0.3s"
+                        _hover={{
+                          borderColor: "rgba(59, 130, 246, 0.4)",
+                          bg: "rgba(31, 41, 55, 0.7)",
+                        }}
+                        mt={isMobile ? 2 : 3}
+                        sx={{
+                          '.chakra-input': {
+                            bg: 'rgba(17, 24, 39, 0.8) !important',
+                            borderColor: 'rgba(59, 130, 246, 0.3) !important',
+                            color: 'white !important',
+                            borderRadius: 'lg !important',
+                            _focus: {
+                              borderColor: '#3B82F6 !important',
+                              boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(59, 130, 246, 0.3) !important',
+                            },
+                            '&::placeholder': {
+                              color: 'rgba(156, 163, 175, 0.6) !important'
+                            }
+                          },
+                          '.chakra-button': {
+                            bg: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important',
+                            color: 'white !important',
+                            fontWeight: 'semibold !important',
+                            borderRadius: 'lg !important',
+                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4) !important',
+                            transition: 'all 0.2s !important',
+                            _hover: {
+                              bg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important',
+                              transform: 'translateY(-1px) !important',
+                              boxShadow: '0 6px 20px rgba(59, 130, 246, 0.5) !important',
+                            },
+                            _active: {
+                              transform: 'translateY(0) !important',
+                            }
+                          },
+                          '.chakra-select': {
+                            bg: 'rgba(17, 24, 39, 0.8) !important',
+                            borderColor: 'rgba(59, 130, 246, 0.3) !important',
+                            color: 'white !important',
+                            borderRadius: 'lg !important',
+                            _focus: {
+                              borderColor: '#3B82F6 !important',
+                              boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2) !important',
+                            }
+                          }
+                        }}
+                      >
+                        <UKAddressAutocomplete
+                          id="dropoff-address"
+                          label="Dropoff Address"
+                          value={step1.dropoffAddress as any}
+                          onChange={(address) => {
+                            if (address) {
+                              updateFormData('step1', {
+                                dropoffAddress: address as any
+                              });
+                            } else {
+                              updateFormData('step1', {
+                                dropoffAddress: {
+                                  address: '',
+                                  city: '',
+                                  postcode: '',
+                                  coordinates: { lat: 0, lng: 0 },
+                                  houseNumber: '',
+                                  flatNumber: '',
+                                  formatted_address: '',
+                                  place_name: ''
+                                } as any
+                              });
+                            }
+                            // Pricing is now automatic via Enterprise Engine
+                          }}
+                          placeholder="Start typing your dropoff address..."
+                          helperText="Enter your full dropoff address (street, postcode, etc.)"
+                          isRequired={true}
+                        />
+                      </Box>
+                    </VStack>
+                  </CardBody>
+                </Card>
               </SimpleGrid>
 
-              {/* Address Summary */}
-              <Card bg="gray.700" borderRadius="lg" border="1px solid" borderColor="gray.600">
-                <CardBody p={4}>
-                  <HStack justify="space-between" align="center">
-                    <VStack align="start" spacing={1}>
-                      <Text fontSize="sm" color="gray.400">Moving From</Text>
-                      <Text color="white" fontWeight="medium">
+              {/* Enhanced Address Summary */}
+              <Card 
+                bg="linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(26, 32, 44, 0.6) 100%)"
+                borderRadius="xl" 
+                border="2px solid"
+                borderColor="rgba(147, 51, 234, 0.3)"
+                backdropFilter="blur(10px)"
+                position="relative"
+                overflow="hidden"
+                transition="all 0.3s"
+                _hover={{
+                  borderColor: "rgba(147, 51, 234, 0.5)",
+                  boxShadow: "0 8px 32px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                }}
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.05) 0%, transparent 100%)',
+                    opacity: 0.6,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                  },
+                  '& > *': {
+                    position: 'relative',
+                    zIndex: 1,
+                  },
+                }}
+              >
+                <CardBody p={6}>
+                  <HStack justify="space-between" align="center" spacing={6}>
+                    <VStack align="start" spacing={2} flex={1}>
+                      <Text 
+                        fontSize="xs" 
+                        color="gray.400"
+                        fontWeight="600"
+                        letterSpacing="0.5px"
+                        textTransform="uppercase"
+                      >
+                        Moving From
+                      </Text>
+                      <Text 
+                        color="white" 
+                        fontWeight="600"
+                        fontSize="md"
+                        letterSpacing="0.2px"
+                        noOfLines={2}
+                      >
                         {(typeof step1.pickupAddress === 'string' ? step1.pickupAddress : (step1.pickupAddress?.full || step1.pickupAddress?.line1 || step1.pickupAddress?.formatted_address)) || 'Not selected'}
                       </Text>
                     </VStack>
-                    <Icon as={FaArrowRight} color="gray.400" />
-                    <VStack align="end" spacing={1}>
-                      <Text fontSize="sm" color="gray.400">Moving To</Text>
-                      <Text color="white" fontWeight="medium">
+                    <Box
+                      position="relative"
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      bg="linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)"
+                      border="1px solid"
+                      borderColor="rgba(147, 51, 234, 0.4)"
+                      boxShadow="0 2px 8px rgba(147, 51, 234, 0.2)"
+                    >
+                      <Icon as={FaArrowRight} color="#A78BFA" boxSize={5} filter="drop-shadow(0 2px 4px rgba(147, 51, 234, 0.4))" />
+                    </Box>
+                    <VStack align="end" spacing={2} flex={1}>
+                      <Text 
+                        fontSize="xs" 
+                        color="gray.400"
+                        fontWeight="600"
+                        letterSpacing="0.5px"
+                        textTransform="uppercase"
+                      >
+                        Moving To
+                      </Text>
+                      <Text 
+                        color="white" 
+                        fontWeight="600"
+                        fontSize="md"
+                        letterSpacing="0.2px"
+                        textAlign="right"
+                        noOfLines={2}
+                      >
                         {(typeof step1.dropoffAddress === 'string' ? step1.dropoffAddress : (step1.dropoffAddress?.full || step1.dropoffAddress?.line1 || step1.dropoffAddress?.formatted_address)) || 'Not selected'}
                       </Text>
                     </VStack>
@@ -2191,30 +2522,133 @@ export default function WhereAndWhatStep({
             </VStack>
           </CardBody>
         </Card>
+        </Box>
 
-        {/* Premium Date and Time Selection */}
-        <Card bg="gray.800" borderRadius="xl" border="1px solid" borderColor="gray.600" overflow="hidden">
+        {/* Premium Date and Time Selection - Enhanced */}
+        <Box w="100%" maxW="container.md" mx="auto">
+          <Card 
+          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+          backdropFilter="blur(20px) saturate(180%)"
+          shadow="0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.3), 0 0 100px rgba(168, 85, 247, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+          borderRadius="2xl"
+          border="2px solid"
+          borderColor="rgba(168, 85, 247, 0.5)"
+          overflow="hidden"
+          position="relative"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          _hover={{
+            shadow: "0 12px 40px rgba(168, 85, 247, 0.5), 0 0 80px rgba(168, 85, 247, 0.4), 0 0 120px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+            borderColor: "rgba(168, 85, 247, 0.7)",
+            transform: "translateY(-2px)",
+          }}
+          sx={{
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
+              opacity: 0.6,
+              zIndex: 0,
+              pointerEvents: 'none',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
+              animation: 'shine 10s infinite',
+              zIndex: 1,
+              pointerEvents: 'none',
+            },
+            '@keyframes shine': {
+              '0%': { left: '-100%' },
+              '100%': { left: '200%' },
+            },
+            '& > *': {
+              position: 'relative',
+              zIndex: 2,
+            },
+          }}
+        >
           <CardBody p={8}>
             <VStack spacing={8}>
               
-              {/* Header */}
-              <VStack spacing={3} textAlign="center">
-                <Heading size="lg" color="white" fontWeight="bold">
-                  When do you need the move?
-                </Heading>
-                <Text color="rgba(255, 255, 255, 0.7)" fontSize="lg">
-                  Choose your preferred date and time
-                </Text>
+              {/* Enhanced Header */}
+              <VStack spacing={3} textAlign="center" position="relative">
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  w="180px"
+                  h="180px"
+                  borderRadius="full"
+                  bg="radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)"
+                  filter="blur(35px)"
+                  zIndex={0}
+                />
+                <VStack spacing={2} position="relative" zIndex={1}>
+                  <Heading 
+                    size="xl" 
+                    fontWeight="700"
+                    letterSpacing="0.5px"
+                    bg="linear-gradient(135deg, #A78BFA 0%, #9333EA 50%, #7C3AED 100%)"
+                    bgClip="text"
+                    sx={{
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      textShadow: "0 4px 20px rgba(168, 85, 247, 0.3)",
+                    }}
+                  >
+                    When do you need the move?
+                  </Heading>
+                  <Text 
+                    color="rgba(255, 255, 255, 0.8)" 
+                    fontSize="lg"
+                    fontWeight="500"
+                    letterSpacing="0.3px"
+                  >
+                    Choose your preferred date and time
+                  </Text>
+                </VStack>
               </VStack>
 
               {/* Date Selection Cards */}
               <VStack align="stretch" spacing={6} w="full">
                 <VStack align="start" spacing={4}>
-                  <Text fontSize="xl" fontWeight="bold" color="white">
-                    📅 Select Date
-                  </Text>
+                  <HStack spacing={3}>
+                    <Box
+                      position="relative"
+                      w="40px"
+                      h="40px"
+                      borderRadius="lg"
+                      bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      boxShadow="0 4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.5)"
+                    >
+                      <Text fontSize="lg">📅</Text>
+                    </Box>
+                    <Text 
+                      fontSize="xl" 
+                      fontWeight="700" 
+                      color="white"
+                      letterSpacing="0.3px"
+                    >
+                      Select Date
+                    </Text>
+                  </HStack>
                   
-                  {/* 7 Date Cards - Starting Tomorrow */}
+                  {/* Enhanced 7 Date Cards - Starting Tomorrow */}
                   <SimpleGrid columns={{ base: 2, md: 4, lg: 7 }} spacing={3} w="full">
                     {(() => {
                       const dateCards = [];
@@ -2226,31 +2660,80 @@ export default function WhereAndWhatStep({
                         dateCards.push(
                           <Card
                             key={i}
-                            bg={isSelected ? "blue.600" : "rgba(255, 255, 255, 0.05)"}
+                            bg={
+                              isSelected 
+                                ? "linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)"
+                                : "linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)"
+                            }
                             border="2px solid"
-                            borderColor={isSelected ? "blue.400" : "rgba(255, 255, 255, 0.1)"}
+                            borderColor={
+                              isSelected 
+                                ? "rgba(59, 130, 246, 0.6)" 
+                                : "rgba(255, 255, 255, 0.15)"
+                            }
                             borderRadius="xl"
                             cursor="pointer"
-                            transition="all 0.3s"
+                            position="relative"
+                            overflow="hidden"
+                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                            boxShadow={
+                              isSelected
+                                ? "0 8px 32px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
+                                : "0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                            }
                             _hover={{
-                              bg: isSelected ? "blue.500" : "rgba(255, 255, 255, 0.08)",
-                              borderColor: "blue.400",
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 8px 25px rgba(0, 0, 0, 0.3)"
+                              bg: isSelected 
+                                ? "linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)"
+                                : "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
+                              borderColor: "rgba(59, 130, 246, 0.6)",
+                              transform: "translateY(-4px) scale(1.02)",
+                              boxShadow: "0 12px 40px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                             }}
                             onClick={() => updateFormData('step1', { pickupDate: dateString })}
+                            sx={{
+                              '&::before': isSelected ? {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)',
+                                opacity: 0.6,
+                                zIndex: 0,
+                                pointerEvents: 'none',
+                              } : {},
+                              '& > *': {
+                                position: 'relative',
+                                zIndex: 1,
+                              },
+                            }}
                           >
-                            <CardBody p={3} textAlign="center">
-                              <VStack spacing={2}>
-                                <Text fontSize="xl">
+                            <CardBody p={{ base: 2, sm: 3, md: 4 }} textAlign="center">
+                              <VStack spacing={{ base: 1, sm: 1.5, md: 2 }}>
+                                <Text fontSize={{ base: "xl", sm: "2xl" }} filter={isSelected ? "drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" : "none"}>
                                   {i === 1 ? '🌅' : 
                                    date.getDay() === 0 || date.getDay() === 6 ? '🎯' : '📅'}
                                 </Text>
-                                <Text fontWeight="bold" color="white" fontSize="sm">
+                                <Text 
+                                  fontWeight="700" 
+                                  color="white" 
+                                  fontSize={{ base: "xs", sm: "sm" }}
+                                  letterSpacing="0.2px"
+                                  whiteSpace="nowrap"
+                                  overflow="hidden"
+                                  textOverflow="ellipsis"
+                                  w="full"
+                                >
                                   {i === 1 ? 'Tomorrow' : 
                                    date.toLocaleDateString('en-US', { weekday: 'short' })}
                                 </Text>
-                                <Text fontSize="xs" color="rgba(255, 255, 255, 0.7)">
+                                <Text 
+                                  fontSize={{ base: "2xs", sm: "xs" }}
+                                  color={isSelected ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.6)"}
+                                  fontWeight="500"
+                                  whiteSpace="nowrap"
+                                >
                                   {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </Text>
                               </VStack>
@@ -2269,145 +2752,232 @@ export default function WhereAndWhatStep({
                     </Text>
                     
                     <Card
-                      bg="rgba(168, 85, 247, 0.1)"
+                      bg="linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)"
                       border="2px solid"
-                      borderColor="rgba(168, 85, 247, 0.3)"
+                      borderColor="rgba(168, 85, 247, 0.4)"
                       borderRadius="xl"
                       cursor="pointer"
-                      transition="all 0.3s"
+                      position="relative"
+                      overflow="hidden"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       maxW="300px"
                       mx="auto"
+                      boxShadow="0 4px 20px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                       _hover={{
-                        bg: "rgba(168, 85, 247, 0.15)",
-                        borderColor: "purple.400",
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 8px 25px rgba(168, 85, 247, 0.2)"
+                        bg: "linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.15) 100%)",
+                        borderColor: "rgba(168, 85, 247, 0.6)",
+                        transform: "translateY(-4px) scale(1.02)",
+                        boxShadow: "0 8px 32px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                       }}
                       onClick={() => {
                         const dateInput = document.getElementById('hidden-date-picker') as HTMLInputElement;
-                        if (dateInput) dateInput.showPicker();
+                        if (dateInput) {
+                          // Try showPicker() first (modern browsers)
+                          if (typeof dateInput.showPicker === 'function') {
+                            try {
+                              dateInput.showPicker();
+                            } catch (error) {
+                              // Fallback for browsers that don't support showPicker
+                              dateInput.focus();
+                              dateInput.click();
+                            }
+                          } else {
+                            // Fallback for older browsers
+                            dateInput.focus();
+                            dateInput.click();
+                          }
+                        }
+                      }}
+                      sx={{
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%)',
+                          opacity: 0.6,
+                          zIndex: 0,
+                          pointerEvents: 'none',
+                        },
+                        '& > *': {
+                          position: 'relative',
+                          zIndex: 1,
+                        },
                       }}
                     >
-                      <CardBody p={4} textAlign="center">
-                        <VStack spacing={2}>
-                          <Text fontSize="2xl">📆</Text>
-                          <Text fontWeight="bold" color="white" fontSize="md">
+                      <CardBody p={5} textAlign="center">
+                        <VStack spacing={3}>
+                          <Box
+                            w={{ base: "48px", sm: "52px", md: "56px" }}
+                            h={{ base: "48px", sm: "52px", md: "56px" }}
+                            minW={{ base: "48px", sm: "52px", md: "56px" }}
+                            minH={{ base: "48px", sm: "52px", md: "56px" }}
+                            borderRadius={{ base: "lg", md: "xl" }}
+                            bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            boxShadow="0 4px 20px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                            border="2px solid"
+                            borderColor="rgba(168, 85, 247, 0.5)"
+                            mx="auto"
+                          >
+                            <Text fontSize={{ base: "xl", sm: "xl", md: "2xl" }}>📆</Text>
+                          </Box>
+                          <Text 
+                            fontWeight="700" 
+                            color="white" 
+                            fontSize={{ base: "md", sm: "lg", md: "xl" }}
+                            letterSpacing="0.3px"
+                            lineHeight="1.3"
+                          >
                             Choose Future Date
                           </Text>
-                          <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)">
+                          <Text 
+                            fontSize={{ base: "xs", sm: "sm", md: "md" }} 
+                            color="rgba(255, 255, 255, 0.7)"
+                            fontWeight="500"
+                            lineHeight="1.4"
+                          >
                             Open calendar picker
                           </Text>
-                  </VStack>
+                        </VStack>
 
-                  {/* Hidden Date Picker */}
-                  <Input
-                    id="hidden-date-picker"
-                    type="date"
-                    position="absolute"
-                    left="-9999px"
-                    opacity={0}
-                    min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Tomorrow minimum
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        updateFormData('step1', { pickupDate: e.target.value });
-                      }
-                    }}
-                  />
-                </CardBody>
-              </Card>
-            </VStack>                  {/* Hidden Date Input for Calendar */}
-                  <Input
-                    id="hidden-date-value"
-                    type="date"
-                    position="absolute"
-                    opacity={0}
-                    pointerEvents="none"
-                    value={step1.pickupDate || ''}
-                    onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
-                    min={new Date().toISOString().split('T')[0]}
-                  />
+                        {/* Hidden Date Picker */}
+                        <Input
+                          id="hidden-date-picker"
+                          type="date"
+                          position="absolute"
+                          top="0"
+                          left="0"
+                          width="100%"
+                          height="100%"
+                          opacity={0}
+                          cursor="pointer"
+                          zIndex={10}
+                          min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} // Tomorrow minimum
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              updateFormData('step1', { pickupDate: e.target.value });
+                            }
+                          }}
+                        />
+                      </CardBody>
+                    </Card>
+                  </VStack>
                 </VStack>
 
-                {/* Time Selection Cards */}
+                {/* Enhanced Time Selection Cards */}
                 <VStack align="start" spacing={4}>
-                  <Text fontSize="xl" fontWeight="bold" color="white">
-                    ⏰ Select Time
-                  </Text>
+                  <HStack spacing={3}>
+                    <Box
+                      position="relative"
+                      w="40px"
+                      h="40px"
+                      borderRadius="lg"
+                      bg="linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%)"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      boxShadow="0 4px 16px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                      border="1px solid"
+                      borderColor="rgba(16, 185, 129, 0.5)"
+                    >
+                      <Text fontSize="lg">⏰</Text>
+                    </Box>
+                    <Text 
+                      fontSize="xl" 
+                      fontWeight="700" 
+                      color="white"
+                      letterSpacing="0.3px"
+                    >
+                      Select Time
+                    </Text>
+                  </HStack>
                   
-                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} w="full">
-                    {timeSlots.map((slot) => (
-                      <Card
-                        key={slot}
-                        bg={step1.pickupTimeSlot === slot ? "green.600" : "rgba(255, 255, 255, 0.05)"}
-                        border="2px solid"
-                        borderColor={step1.pickupTimeSlot === slot ? "green.400" : "rgba(255, 255, 255, 0.1)"}
-                        borderRadius="xl"
-                        cursor="pointer"
-                        transition="all 0.3s"
-                        _hover={{
-                          bg: step1.pickupTimeSlot === slot ? "green.500" : "rgba(255, 255, 255, 0.08)",
-                          borderColor: "green.400",
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.3)"
-                        }}
-                        onClick={() => updateFormData('step1', { pickupTimeSlot: slot })}
-                      >
-                        <CardBody p={4} textAlign="center">
-                          <VStack spacing={2}>
-                            <Text fontSize="xl">🕐</Text>
-                            <Text fontWeight="bold" color="white" fontSize="sm">
-                              {slot}
-                            </Text>
-                          </VStack>
-                        </CardBody>
-                      </Card>
-                    ))}
+                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} w="full">
+                    {timeSlots.map((slot) => {
+                      const isSelected = step1.pickupTimeSlot === slot;
+                      return (
+                        <Card
+                          key={slot}
+                          bg={
+                            isSelected
+                              ? "linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.8) 100%)"
+                              : "linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)"
+                          }
+                          border="2px solid"
+                          borderColor={
+                            isSelected
+                              ? "rgba(16, 185, 129, 0.6)"
+                              : "rgba(255, 255, 255, 0.15)"
+                          }
+                          borderRadius="xl"
+                          cursor="pointer"
+                          position="relative"
+                          overflow="hidden"
+                          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                          boxShadow={
+                            isSelected
+                              ? "0 8px 32px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
+                              : "0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                          }
+                          _hover={{
+                            bg: isSelected
+                              ? "linear-gradient(135deg, rgba(16, 185, 129, 1) 0%, rgba(5, 150, 105, 0.9) 100%)"
+                              : "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
+                            borderColor: "rgba(16, 185, 129, 0.6)",
+                            transform: "translateY(-4px) scale(1.02)",
+                            boxShadow: "0 12px 40px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          }}
+                          onClick={() => updateFormData('step1', { pickupTimeSlot: slot })}
+                          sx={{
+                            '&::before': isSelected ? {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)',
+                              opacity: 0.6,
+                              zIndex: 0,
+                              pointerEvents: 'none',
+                            } : {},
+                            '& > *': {
+                              position: 'relative',
+                              zIndex: 1,
+                            },
+                          }}
+                        >
+                          <CardBody p={{ base: 4, sm: 5, md: 6 }} textAlign="center" minH={{ base: "100px", sm: "120px", md: "140px" }}>
+                            <VStack spacing={{ base: 1.5, sm: 2, md: 3 }}>
+                              <Text 
+                                fontSize={{ base: "xl", sm: "2xl" }}
+                                filter={isSelected ? "drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" : "none"}
+                              >
+                                🕐
+                              </Text>
+                              <Text 
+                                fontWeight="700" 
+                                color="white" 
+                                fontSize={{ base: "2xs", sm: "2xs", md: "xs" }}
+                                letterSpacing="0.2px"
+                                whiteSpace="nowrap"
+                              >
+                                {slot}
+                              </Text>
+                            </VStack>
+                          </CardBody>
+                        </Card>
+                      );
+                    })}
                   </SimpleGrid>
+                </VStack>
 
                 {/* Skip Time Selection Option removed per request */}
-                </VStack>
-
-                {/* Selection Summary */}
-                {step1.pickupDate && (
-                  <Card 
-                    bg="rgba(34, 197, 94, 0.1)" 
-                    border="2px solid rgba(34, 197, 94, 0.3)"
-                    borderRadius="xl"
-                    overflow="hidden"
-                  >
-                    <CardBody p={6}>
-                      <HStack justify="center" spacing={8}>
-                        <VStack spacing={2}>
-                          <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)" fontWeight="medium">
-                            📅 Selected Date
-                          </Text>
-                          <Text color="white" fontWeight="bold" fontSize="lg">
-                            {step1.pickupDate ? 
-                              new Date(step1.pickupDate + 'T00:00:00').toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                month: 'long', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              }) : 
-                              'Not selected'
-                            }
-                          </Text>
-                        </VStack>
-                        
-                        <Box w="1px" h="60px" bg="rgba(255, 255, 255, 0.2)" />
-                        
-                        <VStack spacing={2}>
-                          <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)" fontWeight="medium">
-                            ⏰ Selected Time
-                          </Text>
-                          <Text color="white" fontWeight="bold" fontSize="lg">
-                            {step1.pickupTimeSlot || 'Flexible (Optional)'}
-                          </Text>
-                        </VStack>
-                      </HStack>
-                    </CardBody>
-                  </Card>
-                )}
 
                 {/* Validation Errors */}
                 {errors['step1.pickupDate'] && (
@@ -2426,145 +2996,534 @@ export default function WhereAndWhatStep({
             </VStack>
           </CardBody>
         </Card>
+        </Box>
 
-        {/* Item Selection */}
-        <Card bg="gray.800" borderRadius="lg" border="1px solid" borderColor="gray.600">
-          <CardBody p={6}>
-            <VStack spacing={6}>
+        {/* Item Selection - Enhanced */}
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <Card 
+          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+          backdropFilter="blur(20px) saturate(180%)"
+          shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+          borderRadius="2xl"
+          border="2px solid"
+          borderColor="rgba(59, 130, 246, 0.5)"
+          overflow="hidden"
+          position="relative"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          _hover={{
+            shadow: "0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.4), 0 0 120px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+            borderColor: "rgba(59, 130, 246, 0.7)",
+            transform: "translateY(-2px)",
+          }}
+          sx={{
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 50%, rgba(168, 85, 247, 0.05) 100%)',
+              opacity: 0.6,
+              zIndex: 0,
+              pointerEvents: 'none',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
+              animation: 'shine 10s infinite',
+              zIndex: 1,
+              pointerEvents: 'none',
+            },
+            '@keyframes shine': {
+              '0%': { left: '-100%' },
+              '100%': { left: '200%' },
+            },
+            '& > *': {
+              position: 'relative',
+              zIndex: 2,
+            },
+          }}
+        >
+          <CardBody p={8}>
+            <VStack spacing={8}>
               
-              {/* Header */}
-              <VStack spacing={2} textAlign="center">
-                <Heading size="md" color="white">
-                  Select Your Items
-                </Heading>
-                <Text color="gray.400" fontSize="md">
-                  Choose how you'd like to add items
-                </Text>
+              {/* Enhanced Header */}
+              <VStack spacing={3} textAlign="center" position="relative">
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  w="180px"
+                  h="180px"
+                  borderRadius="full"
+                  bg="radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)"
+                  filter="blur(35px)"
+                  zIndex={0}
+                />
+                <VStack spacing={2} position="relative" zIndex={1}>
+                  <Heading 
+                    size="xl" 
+                    fontWeight="700"
+                    letterSpacing="0.5px"
+                    bg="linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)"
+                    bgClip="text"
+                    sx={{
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      textShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
+                    }}
+                  >
+                    Select Your Items
+                  </Heading>
+                  <Text 
+                    color="rgba(255, 255, 255, 0.7)" 
+                    fontSize="lg"
+                    fontWeight="500"
+                    letterSpacing="0.3px"
+                  >
+                    Choose how you'd like to add items
+                  </Text>
+                </VStack>
               </VStack>
 
-              {/* Stats */}
+              {/* Enhanced Stats */}
               <HStack spacing={8} justify="center" flexWrap="wrap">
-                <VStack spacing={1}>
-                  <Text fontSize="xl" fontWeight="bold" color="blue.400">
-                    {individualItems.length}
-                  </Text>
-                  <Text fontSize="sm" color="gray.400">
-                    Available Items
-                  </Text>
-                </VStack>
+                <Card
+                  bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)"
+                  border="2px solid"
+                  borderColor="rgba(59, 130, 246, 0.4)"
+                  borderRadius="xl"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  transition="all 0.3s"
+                  _hover={{
+                    borderColor: "rgba(59, 130, 246, 0.6)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 32px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+                  }}
+                >
+                  <CardBody p={4}>
+                    <VStack spacing={2}>
+                      <Text 
+                        fontSize="2xl" 
+                        fontWeight="700" 
+                        bg="linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)"
+                        bgClip="text"
+                        sx={{
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {individualItems.length}
+                      </Text>
+                      <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)" fontWeight="500">
+                        Available Items
+                      </Text>
+                    </VStack>
+                  </CardBody>
+                </Card>
                 
-                <VStack spacing={1}>
-                  <Text fontSize="xl" fontWeight="bold" color="green.400">
-                    {groupedIndividualItems.length}
-                  </Text>
-                  <Text fontSize="sm" color="gray.400">
-                    Categories
-                  </Text>
-                </VStack>
+                <Card
+                  bg="linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)"
+                  border="2px solid"
+                  borderColor="rgba(16, 185, 129, 0.4)"
+                  borderRadius="xl"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  transition="all 0.3s"
+                  _hover={{
+                    borderColor: "rgba(16, 185, 129, 0.6)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 32px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+                  }}
+                >
+                  <CardBody p={4}>
+                    <VStack spacing={2}>
+                      <Text 
+                        fontSize="2xl" 
+                        fontWeight="700" 
+                        bg="linear-gradient(135deg, #10B981 0%, #34D399 100%)"
+                        bgClip="text"
+                        sx={{
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {groupedIndividualItems.length}
+                      </Text>
+                      <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)" fontWeight="500">
+                        Categories
+                      </Text>
+                    </VStack>
+                  </CardBody>
+                </Card>
 
-                <VStack spacing={1}>
-                  <Text fontSize="xl" fontWeight="bold" color="purple.400">
-                    {step1.items.length}
-                  </Text>
-                  <Text fontSize="sm" color="gray.400">
-                    Items Selected
-                  </Text>
-                </VStack>
+                <Card
+                  bg="linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)"
+                  border="2px solid"
+                  borderColor="rgba(168, 85, 247, 0.4)"
+                  borderRadius="xl"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 4px 20px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  transition="all 0.3s"
+                  _hover={{
+                    borderColor: "rgba(168, 85, 247, 0.6)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 32px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+                  }}
+                >
+                  <CardBody p={4}>
+                    <VStack spacing={2}>
+                      <Text 
+                        fontSize="2xl" 
+                        fontWeight="700" 
+                        bg="linear-gradient(135deg, #A78BFA 0%, #C4B5FD 100%)"
+                        bgClip="text"
+                        sx={{
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        {step1.items.length}
+                      </Text>
+                      <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)" fontWeight="500">
+                        Items Selected
+                      </Text>
+                    </VStack>
+                  </CardBody>
+                </Card>
               </HStack>
 
               {/* Available Categories card removed as requested */}
 
-              {/* Selection Modes */}
-              <HStack spacing={3} flexWrap="wrap" justify="center">
+              {/* Enhanced Selection Modes */}
+              <HStack spacing={4} flexWrap="wrap" justify="center">
                 <Button 
-                  variant={itemSelectionMode === 'bedroom' ? 'solid' : 'outline'}
-                  bg={itemSelectionMode === 'bedroom' ? 'blue.600' : 'gray.700'}
+                  bg={itemSelectionMode === 'bedroom' 
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
+                  }
+                  border="2px solid"
+                  borderColor={itemSelectionMode === 'bedroom' 
+                    ? 'rgba(59, 130, 246, 0.6)' 
+                    : 'rgba(255, 255, 255, 0.15)'
+                  }
                   color="white"
-                  borderColor="gray.600"
-                  onClick={() => setItemSelectionMode('bedroom')}
+                  borderRadius="xl"
+                  px={6}
+                  py={6}
+                  fontWeight="700"
+                  letterSpacing="0.3px"
+                  fontSize="md"
                   leftIcon={<FaHome />}
-                  _hover={{ bg: 'blue.700' }}
+                  boxShadow={itemSelectionMode === 'bedroom' 
+                    ? '0 8px 32px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  }
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{ 
+                    bg: itemSelectionMode === 'bedroom'
+                      ? 'linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    borderColor: 'rgba(59, 130, 246, 0.6)',
+                    transform: 'translateY(-2px) scale(1.02)',
+                    boxShadow: itemSelectionMode === 'bedroom'
+                      ? '0 12px 40px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                      : '0 8px 24px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  }}
+                  _active={{
+                    transform: 'translateY(0) scale(1)',
+                  }}
+                  onClick={() => setItemSelectionMode('bedroom')}
+                  position="relative"
+                  overflow="hidden"
+                  sx={{
+                    '&::before': itemSelectionMode === 'bedroom' ? {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)',
+                      opacity: 0.6,
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    } : {},
+                    '& > *': {
+                      position: 'relative',
+                      zIndex: 1,
+                    },
+                  }}
                 >
                   House Packages
                 </Button>
                 <Button 
-                  variant={itemSelectionMode === 'smart' ? 'solid' : 'outline'}
-                  bg={itemSelectionMode === 'smart' ? 'purple.600' : 'gray.700'}
+                  bg={itemSelectionMode === 'smart' 
+                    ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.9) 0%, rgba(147, 51, 234, 0.8) 100%)'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
+                  }
+                  border="2px solid"
+                  borderColor={itemSelectionMode === 'smart' 
+                    ? 'rgba(168, 85, 247, 0.6)' 
+                    : 'rgba(255, 255, 255, 0.15)'
+                  }
                   color="white"
-                  borderColor="gray.600"
-                  onClick={() => setItemSelectionMode('smart')}
+                  borderRadius="xl"
+                  px={6}
+                  py={6}
+                  fontWeight="700"
+                  letterSpacing="0.3px"
+                  fontSize="md"
                   leftIcon={<FaSearch />}
-                  _hover={{ bg: 'purple.700' }}
+                  boxShadow={itemSelectionMode === 'smart' 
+                    ? '0 8px 32px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  }
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{ 
+                    bg: itemSelectionMode === 'smart'
+                      ? 'linear-gradient(135deg, rgba(168, 85, 247, 1) 0%, rgba(147, 51, 234, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    borderColor: 'rgba(168, 85, 247, 0.6)',
+                    transform: 'translateY(-2px) scale(1.02)',
+                    boxShadow: itemSelectionMode === 'smart'
+                      ? '0 12px 40px rgba(168, 85, 247, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                      : '0 8px 24px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  }}
+                  _active={{
+                    transform: 'translateY(0) scale(1)',
+                  }}
+                  onClick={() => setItemSelectionMode('smart')}
+                  position="relative"
+                  overflow="hidden"
+                  sx={{
+                    '&::before': itemSelectionMode === 'smart' ? {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)',
+                      opacity: 0.6,
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    } : {},
+                    '& > *': {
+                      position: 'relative',
+                      zIndex: 1,
+                    },
+                  }}
                 >
                   Search Items
                 </Button>
                 <Button 
-                  variant={itemSelectionMode === 'choose' ? 'solid' : 'outline'}
-                  bg={itemSelectionMode === 'choose' ? 'green.600' : 'gray.700'}
+                  bg={itemSelectionMode === 'choose' 
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.8) 100%)'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%)'
+                  }
+                  border="2px solid"
+                  borderColor={itemSelectionMode === 'choose' 
+                    ? 'rgba(16, 185, 129, 0.6)' 
+                    : 'rgba(255, 255, 255, 0.15)'
+                  }
                   color="white"
-                  borderColor="gray.600"
-                  onClick={() => setItemSelectionMode('choose')}
+                  borderRadius="xl"
+                  px={6}
+                  py={6}
+                  fontWeight="700"
+                  letterSpacing="0.3px"
+                  fontSize="md"
                   leftIcon={<FaCouch />}
-                  _hover={{ bg: 'green.700' }}
+                  boxShadow={itemSelectionMode === 'choose' 
+                    ? '0 8px 32px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  }
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{ 
+                    bg: itemSelectionMode === 'choose'
+                      ? 'linear-gradient(135deg, rgba(16, 185, 129, 1) 0%, rgba(5, 150, 105, 0.9) 100%)'
+                      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    borderColor: 'rgba(16, 185, 129, 0.6)',
+                    transform: 'translateY(-2px) scale(1.02)',
+                    boxShadow: itemSelectionMode === 'choose'
+                      ? '0 12px 40px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                      : '0 8px 24px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  }}
+                  _active={{
+                    transform: 'translateY(0) scale(1)',
+                  }}
+                  onClick={() => setItemSelectionMode('choose')}
+                  position="relative"
+                  overflow="hidden"
+                  sx={{
+                    '&::before': itemSelectionMode === 'choose' ? {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%)',
+                      opacity: 0.6,
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    } : {},
+                    '& > *': {
+                      position: 'relative',
+                      zIndex: 1,
+                    },
+                  }}
                 >
                   Individual Items
                 </Button>
               </HStack>
 
-              <Divider borderColor="gray.600" />
+              <Divider 
+                borderColor="rgba(255, 255, 255, 0.1)" 
+                borderWidth="1px"
+                sx={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.5) 50%, transparent 100%)',
+                  height: '1px',
+                }}
+              />
 
-              {/* House Packages Mode */}
+              {/* House Packages Mode - Enhanced */}
               {itemSelectionMode === 'bedroom' && (
-                <VStack spacing={4} w="full">
-                  <Text fontSize="lg" color="white" fontWeight="semibold" textAlign="center">
-                    Complete House Moving Packages
-                  </Text>
+                <VStack spacing={{ base: 4, sm: 5, md: 6 }} w="full">
+                  <VStack spacing={{ base: 1.5, sm: 2 }} textAlign="center" w="full">
+                    <Heading 
+                      size={{ base: "md", sm: "lg", md: "xl" }} 
+                      color="white" 
+                      fontWeight="700"
+                      letterSpacing="0.3px"
+                      bg="linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)"
+                      bgClip="text"
+                      sx={{
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
+                      lineHeight="1.2"
+                      px={{ base: 2, sm: 0 }}
+                    >
+                      Complete House Moving Packages
+                    </Heading>
+                    <Text color="rgba(255, 255, 255, 0.6)" fontSize={{ base: "xs", sm: "sm", md: "md" }} lineHeight="1.4" px={{ base: 2, sm: 0 }}>
+                      Choose a complete package for your moving needs
+                    </Text>
+                  </VStack>
                   
                   {/* Mobile: Vertical layout */}
                   <VStack 
-                    spacing={3} 
+                    spacing={{ base: 3, sm: 4 }} 
                     w="full" 
                     display={{ base: "flex", md: "none" }}
                   >
                     {bedroomPackages.map((pkg) => (
                       <Card
                         key={pkg.id}
-                        bg="gray.700"
-                        borderRadius="lg"
-                        border="1px solid"
-                        borderColor="gray.600"
+                        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(26, 32, 44, 0.9) 100%)"
+                        border="2px solid"
+                        borderColor="rgba(59, 130, 246, 0.4)"
+                        borderRadius="xl"
+                        backdropFilter="blur(10px)"
+                        boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                         cursor="pointer"
+                        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                         _hover={{ 
-                          borderColor: "blue.500",
-                          shadow: "md"
+                          borderColor: "rgba(59, 130, 246, 0.6)",
+                          transform: "translateY(-4px)",
+                          boxShadow: "0 8px 32px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
                         }}
                         onClick={() => addItem(pkg)}
-                        transition="all 0.2s ease"
                         w="full"
+                        overflow="visible"
+                        position="relative"
+                        sx={{
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%)',
+                            opacity: 0.6,
+                            zIndex: 0,
+                            pointerEvents: 'none',
+                          },
+                          '& > *': {
+                            position: 'relative',
+                            zIndex: 1,
+                          },
+                        }}
                       >
-                        <CardBody p={4}>
-                          <HStack spacing={3} align="center">
-                            {/* Package Image */}
-                            <Box w="80px" h="80px">
+                        <CardBody p={5}>
+                          <VStack spacing={4} align="center" w="full">
+                            {/* Image at top */}
+                            <Box 
+                              w={{ base: "120px", sm: "140px" }}
+                              h={{ base: "120px", sm: "140px" }}
+                              borderRadius="xl"
+                              overflow="hidden"
+                              boxShadow="0 4px 16px rgba(59, 130, 246, 0.3)"
+                              border="2px solid"
+                              borderColor="rgba(59, 130, 246, 0.4)"
+                              mx="auto"
+                            >
                               <ItemImage src={pkg.image} alt={`${pkg.name} package`} ratio={1} />
                             </Box>
                             
-
-
-                            {/* Add Button */}
+                            {/* Package name below image */}
+                            <Text 
+                              color="white" 
+                              fontWeight="700" 
+                              fontSize={{ base: "md", sm: "lg" }}
+                              letterSpacing="0.2px"
+                              textAlign="center"
+                            >
+                              {pkg.name}
+                            </Text>
+                            
+                            {/* Select button below name */}
                             <Button
-                              size="sm"
-                              colorScheme="blue"
+                              size="md"
+                              bg="linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)"
+                              border="2px solid"
+                              borderColor="rgba(59, 130, 246, 0.6)"
+                              color="white"
+                              borderRadius="xl"
+                              fontWeight="700"
+                              letterSpacing="0.3px"
                               leftIcon={<FaPlus />}
+                              boxShadow="0 4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                              transition="all 0.3s"
+                              _hover={{
+                                bg: "linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)",
+                                transform: "scale(1.05)",
+                                boxShadow: "0 6px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                              }}
+                              _active={{
+                                transform: "scale(0.98)",
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 addItem(pkg);
                               }}
-                              minW="90px"
+                              w="full"
+                              maxW={{ base: "200px", sm: "240px" }}
                             >
                               Select
                             </Button>
-                          </HStack>
+                          </VStack>
                         </CardBody>
                       </Card>
                     ))}
@@ -2572,49 +3531,101 @@ export default function WhereAndWhatStep({
 
                   {/* Desktop: Grid layout */}
                   <SimpleGrid 
-                    columns={3} 
-                    spacing={4} 
+                    columns={{ base: 1, sm: 2, md: 3 }} 
+                    spacing={{ base: 4, md: 6 }} 
                     w="full"
                     display={{ base: "none", md: "grid" }}
                   >
                     {bedroomPackages.map((pkg) => (
                       <Card
                         key={pkg.id}
-                        bg="gray.700"
-                        borderRadius="lg"
-                        border="1px solid"
-                        borderColor="gray.600"
+                        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(26, 32, 44, 0.9) 100%)"
+                        border="2px solid"
+                        borderColor="rgba(59, 130, 246, 0.4)"
+                        borderRadius="xl"
+                        backdropFilter="blur(10px)"
+                        boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                         cursor="pointer"
+                        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                         _hover={{ 
-                          borderColor: "blue.500",
-                          transform: "translateY(-2px)",
-                          shadow: "lg"
+                          borderColor: "rgba(59, 130, 246, 0.6)",
+                          transform: "translateY(-4px) scale(1.02)",
+                          boxShadow: "0 8px 32px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
                         }}
                         onClick={() => addItem(pkg)}
-                        transition="all 0.2s ease"
+                        overflow="hidden"
+                        position="relative"
+                        sx={{
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%)',
+                            opacity: 0.6,
+                            zIndex: 0,
+                            pointerEvents: 'none',
+                          },
+                          '& > *': {
+                            position: 'relative',
+                            zIndex: 1,
+                          },
+                        }}
                       >
-                        <CardBody p={5} textAlign="center">
-                          <VStack spacing={4}>
-                            {/* Package Image */}
-                            <Box w="140px" h="140px">
+                        <CardBody p={6} textAlign="center">
+                          <VStack spacing={5}>
+                            <Box 
+                              w="160px" 
+                              h="160px"
+                              mx="auto"
+                              borderRadius="xl"
+                              overflow="hidden"
+                              boxShadow="0 4px 20px rgba(59, 130, 246, 0.3)"
+                              border="2px solid"
+                              borderColor="rgba(59, 130, 246, 0.4)"
+                            >
                               <ItemImage src={pkg.image} alt={`${pkg.name} package`} ratio={1} />
                             </Box>
-                            
-
-
-                            {/* Add Button */}
-                            <Button
-                              size="sm"
-                              colorScheme="blue"
-                              leftIcon={<FaPlus />}
-                              w="full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addItem(pkg);
-                              }}
-                            >
-                              Select Package
-                            </Button>
+                            <VStack spacing={3} w="full">
+                              <Text 
+                                color="white" 
+                                fontWeight="700" 
+                                fontSize="lg"
+                                letterSpacing="0.3px"
+                              >
+                                {pkg.name}
+                              </Text>
+                              <Button
+                                size="md"
+                                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)"
+                                border="2px solid"
+                                borderColor="rgba(59, 130, 246, 0.6)"
+                                color="white"
+                                borderRadius="xl"
+                                fontWeight="700"
+                                letterSpacing="0.3px"
+                                leftIcon={<FaPlus />}
+                                w="full"
+                                boxShadow="0 4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                                transition="all 0.3s"
+                                _hover={{
+                                  bg: "linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)",
+                                  transform: "scale(1.05)",
+                                  boxShadow: "0 6px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                                }}
+                                _active={{
+                                  transform: "scale(0.98)",
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addItem(pkg);
+                                }}
+                              >
+                                Select Package
+                              </Button>
+                            </VStack>
                           </VStack>
                         </CardBody>
                       </Card>
@@ -2631,12 +3642,16 @@ export default function WhereAndWhatStep({
                       bg: 'gray.700 !important',
                       borderColor: 'gray.600 !important',
                       color: 'white !important',
+                      borderRadius: 'xl !important',
                       '&:focus': {
                         borderColor: 'purple.500 !important',
                         boxShadow: '0 0 0 1px var(--chakra-colors-purple-500) !important'
                       },
                       '&::placeholder': {
-                        color: 'gray.400 !important'
+                        color: 'gray.400 !important',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                       }
                     }
                   }}>
@@ -2658,7 +3673,7 @@ export default function WhereAndWhatStep({
                         items.forEach(item => addItem(item));
                       }}
                       selectedItems={step1.items}
-                      placeholder="Search catalog (600+ items) - try 'sofa', 'kitchen', 'bedroom set'..."
+                      placeholder={searchPlaceholder}
                     />
                   </Box>
                   
@@ -2668,25 +3683,35 @@ export default function WhereAndWhatStep({
 
               {/* Individual Items Mode */}
               {itemSelectionMode === 'choose' && (
-                <VStack spacing={6} w="full" align="stretch">
+                <VStack spacing={{ base: 4, sm: 5, md: 6 }} w="full" align="stretch">
                   {/* Default: Featured Popular Items (single-click add using dataset images) */}
                   {featuredPopularItems.length > 0 && (
-                    <Card bg="gray.700" border="1px solid" borderColor="gray.600">
-                      <CardBody>
-                        <VStack align="stretch" spacing={4}>
+                    <Card bg="gray.700" border="1px solid" borderColor="gray.600" w="full" overflow="visible">
+                      <CardBody p={{ base: 3, sm: 4, md: 5 }} w="full">
+                        <VStack align="stretch" spacing={{ base: 3, sm: 4 }} w="full">
                           <HStack justify="space-between" align="center">
                             <Text fontWeight="bold" color="white" fontSize="lg">
                               Popular items
                             </Text>
                             <Badge colorScheme="pink" variant="subtle">Quick add</Badge>
                           </HStack>
-                          <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 4, md: 6 }}>
+                          <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
                             {featuredPopularItems.map((fi) => (
                               <Box key={`${fi.groupKey}-${fi.src}`} cursor="pointer" onClick={() => incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel)}>
                                 <ItemImage src={fi.src} alt={fi.label} ratio={3/4} />
                                 <VStack mt={2} spacing={1}>
                                   <Text fontSize="sm" color="white" textAlign="center">{fi.label}</Text>
-                                  <Button size="xs" colorScheme="blue" onClick={(e) => { e.stopPropagation(); incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel); }}>Add</Button>
+                                  <Button 
+                                    size={{ base: "sm", sm: "md" }}
+                                    minH={{ base: "44px", sm: "36px" }}
+                                    fontSize={{ base: "sm", sm: "xs" }}
+                                    px={{ base: 4, sm: 3 }}
+                                    py={{ base: 3, sm: 2 }}
+                                    colorScheme="blue" 
+                                    onClick={(e) => { e.stopPropagation(); incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel); }}
+                                  >
+                                    Add
+                                  </Button>
                                 </VStack>
                               </Box>
                             ))}
@@ -2718,64 +3743,59 @@ export default function WhereAndWhatStep({
                       )}
                       {/* Always show items - customers can continue booking */}
                       <Flex direction={{ base: 'column', md: 'row' }} gap={4} w="full">
-                        <FormControl w={{ base: '100%', md: '45%' }}>
-                          <FormLabel htmlFor="luxury-category-filter" color="gray.300" fontSize="sm">
-                            Filter by category
-                          </FormLabel>
-                          <Box
-                            position="relative"
-                            borderRadius="lg"
-                            p="1px"
-                            bg="linear-gradient(45deg, #10B981, #34D399, #6EE7B7, #A7F3D0, #10B981)"
-                            animation="neonGlow 2s ease-in-out infinite alternate"
+                        <VStack align="stretch" spacing={3} w="full">
+                          <FormLabel 
+                            htmlFor="luxury-category-filter" 
+                            fontSize="lg"
+                            fontWeight="700"
+                            letterSpacing="0.3px"
+                            bg="linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%)"
+                            bgClip="text"
                             sx={{
-                              '@keyframes neonGlow': {
-                                '0%': {
-                                  boxShadow: '0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.3), 0 0 15px rgba(16, 185, 129, 0.2)',
-                                },
-                                '100%': {
-                                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.8), 0 0 30px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.4)',
-                                },
-                              },
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              textShadow: "0 2px 10px rgba(16, 185, 129, 0.3)",
                             }}
                           >
+                            Filter by category
+                          </FormLabel>
+                          <FormControl>
                             <Select
                               id="luxury-category-filter"
-                              name="luxury-category-filter"
                               value={selectedCategory}
-                              onChange={(event) => setSelectedCategory(event.target.value)}
-                              bg="gray.700"
-                              borderColor="transparent"
-                              color="white"
-                              borderRadius="md"
-                              _focus={{
-                                borderColor: 'transparent',
-                                boxShadow: 'none',
-                                '& + div': {
-                                  boxShadow: '0 0 25px rgba(16, 185, 129, 1), 0 0 35px rgba(16, 185, 129, 0.8), 0 0 45px rgba(16, 185, 129, 0.6)',
-                                }
-                              }}
+                              onChange={(e) => setSelectedCategory(e.target.value)}
+                              bg="white"
+                              color="gray.700"
+                              border="2px solid"
+                              borderColor="rgba(16, 185, 129, 0.5)"
+                              borderRadius="xl"
+                              fontSize="sm"
+                              fontWeight="600"
+                              px={4}
+                              py={2}
                               _hover={{
-                                '& + div': {
-                                  animation: 'neonGlow 1s ease-in-out infinite alternate',
-                                }
+                                borderColor: 'rgba(16, 185, 129, 0.7)',
+                              }}
+                              _focus={{
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.5)',
+                              }}
+                              sx={{
+                                boxShadow: '0 0 10px rgba(16, 185, 129, 0.3)',
+                                '&:focus': {
+                                  boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.5)',
+                                },
                               }}
                             >
-                            <option style={{ color: '#1A202C', background: '#EDF2F7' }} value="All">
-                              All Categories
-                            </option>
-                            {datasetCategories.map((c) => (
-                              <option
-                                key={c.key}
-                                style={{ color: '#1A202C', background: '#EDF2F7' }}
-                                value={c.key}
-                              >
-                                {c.label}
-                              </option>
-                            ))}
-                          </Select>
-                          </Box>
-                        </FormControl>
+                              <option value="All">All Categories</option>
+                              {datasetCategories.map((c) => (
+                                <option key={c.key} value={c.key}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </VStack>
                         <VStack align="start" spacing={1} flex="1">
                           <Text color="gray.300" fontSize="sm" fontWeight="semibold">
                             Dataset coverage
@@ -2802,34 +3822,38 @@ export default function WhereAndWhatStep({
                       ) : (
                         <VStack spacing={4} align="stretch">
                           {(selectedCategory === 'All' ? datasetGroups : datasetGroups.filter(g => g.key === selectedCategory)).map((group) => (
-                            <Card key={group.key} bg="gray.700" border="1px solid" borderColor="gray.600">
-                              <CardBody>
-                                <VStack align="stretch" spacing={4}>
-                                  <HStack justify="space-between" align="center">
-                                    <HStack spacing={3}>
-                                      <Text fontWeight="bold" color="white" fontSize="lg">
+                            <Card key={group.key} bg="gray.700" border="1px solid" borderColor="gray.600" w="full" overflow="visible">
+                              <CardBody p={{ base: 3, sm: 4, md: 5 }} w="full">
+                                <VStack align="stretch" spacing={{ base: 3, sm: 4 }} w="full">
+                                  <HStack justify="space-between" align="center" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
+                                    <HStack spacing={{ base: 2, sm: 3 }} flexWrap={{ base: "wrap", sm: "nowrap" }}>
+                                      <Text fontWeight="bold" color="white" fontSize={{ base: "md", sm: "lg", md: "xl" }} lineHeight="1.2">
                                         {group.label}
                                       </Text>
-                                      <Badge colorScheme="blue" variant="subtle">
+                                      <Badge colorScheme="blue" variant="subtle" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }}>
                                         {group.images.length} images
                                       </Badge>
                                     </HStack>
-                                    <Badge colorScheme="purple" variant="outline">UK dataset imagery</Badge>
+                                    <Badge colorScheme="purple" variant="outline" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }} whiteSpace={{ base: "nowrap", sm: "normal" }}>UK dataset imagery</Badge>
                                   </HStack>
-                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={{ base: 4, md: 6 }}>
+                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
                                     {group.images.map((src, idx) => (
-                                      <Box key={`${group.key}-${idx}`}>
+                                      <Box key={`${group.key}-${idx}`} cursor="pointer" onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))} overflow="visible">
                                         <ItemImage src={src} alt={group.label} ratio={3/4} />
-                                        <Text mt={2} fontSize="sm" color="white" textAlign="center">
-                                          {titleFromSrc(src, group.label)}
-                                        </Text>
-                                        <HStack justify="center" mt={2} spacing={2}>
-                                          <Button size="sm" variant="outline" colorScheme="red" onClick={() => decrementDatasetItem(group.key, src)}>-</Button>
-                                          <Text color="white" minW="28px" textAlign="center" fontWeight="bold">
-                                            {getQuantityForDataset(group.key, src)}
-                                          </Text>
-                                          <Button size="sm" colorScheme="green" onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))}>+</Button>
-                                        </HStack>
+                                        <VStack mt={2} spacing={1}>
+                                          <Text fontSize="sm" color="white" textAlign="center">{titleFromSrc(src, group.label)}</Text>
+                                          <Button 
+                                            size={{ base: "sm", sm: "md" }}
+                                            minH={{ base: "44px", sm: "36px" }}
+                                            fontSize={{ base: "sm", sm: "xs" }}
+                                            px={{ base: 4, sm: 3 }}
+                                            py={{ base: 3, sm: 2 }}
+                                            colorScheme="blue" 
+                                            onClick={(e) => { e.stopPropagation(); incrementDatasetItem(group.key, src, titleFromSrc(src, group.label)); }}
+                                          >
+                                            Add
+                                          </Button>
+                                        </VStack>
                                       </Box>
                                     ))}
                                   </SimpleGrid>
@@ -2959,45 +3983,49 @@ export default function WhereAndWhatStep({
                             </VStack>
                           </HStack>
                           
-                          <HStack spacing={3}>
+                          <HStack spacing={{ base: 2, sm: 3 }} flexWrap={{ base: "wrap", sm: "nowrap" }}>
                             {/* Quantity Controls */}
-                            <HStack spacing={2} bg="gray.600" borderRadius="lg" p={2}>
+                            <HStack spacing={{ base: 1.5, sm: 2 }} bg="gray.600" borderRadius={{ base: "md", md: "lg" }} p={{ base: 1.5, sm: 2 }}>
                               <IconButton
-                                size="xs"
+                                size={{ base: "sm", sm: "xs" }}
                                 icon={<FaMinus />}
                                 onClick={() => updateQuantity(item.id!, (item.quantity || 0) - 1)}
                                 bg="transparent"
                                 color="white"
                                 _hover={{ bg: "gray.500" }}
                                 aria-label="Decrease quantity"
-                                minW="24px"
-                                h="24px"
+                                minW={{ base: "32px", sm: "24px" }}
+                                minH={{ base: "32px", sm: "24px" }}
+                                h={{ base: "32px", sm: "24px" }}
                               />
-                              <Text color="white" fontWeight="bold" minW="30px" textAlign="center" fontSize="sm">
+                              <Text color="white" fontWeight="bold" minW={{ base: "32px", sm: "30px" }} textAlign="center" fontSize={{ base: "sm", sm: "sm" }}>
                                 {item.quantity || 0}
                               </Text>
                               <IconButton
-                                size="xs"
+                                size={{ base: "sm", sm: "xs" }}
                                 icon={<FaPlus />}
                                 onClick={() => updateQuantity(item.id!, (item.quantity || 0) + 1)}
                                 bg="transparent"
                                 color="white"
                                 _hover={{ bg: "green.600" }}
                                 aria-label="Increase quantity"
-                                minW="24px"
-                                h="24px"
+                                minW={{ base: "32px", sm: "24px" }}
+                                minH={{ base: "32px", sm: "24px" }}
+                                h={{ base: "32px", sm: "24px" }}
                               />
                             </HStack>
                             
                             {/* Remove Button */}
                             <IconButton
-                              size="sm"
+                              size={{ base: "md", sm: "sm" }}
                               icon={<FaTrash />}
                               onClick={() => removeItem(item.id!)}
                               bg="red.600"
                               color="white"
                               _hover={{ bg: "red.500" }}
                               aria-label="Remove item"
+                              minW={{ base: "40px", sm: "32px" }}
+                              minH={{ base: "40px", sm: "32px" }}
                             />
                           </HStack>
                         </HStack>
@@ -3009,48 +4037,50 @@ export default function WhereAndWhatStep({
             </CardBody>
           </Card>
         )}
+        </Box>
 
         {/* Price Summary & Cart */}
-        <Card bg="gray.800" borderRadius="lg" border="1px solid" borderColor="gray.600">
-          <CardBody p={{ base: 4, md: 6 }}>
-            <VStack spacing={{ base: 4, md: 6 }}>
+        <Box w="100%" maxW="container.md" mx="auto">
+          <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
+          <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
+            <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
               
               {/* Header */}
-              <VStack spacing={2} textAlign="center">
-                <Heading size={{ base: "sm", md: "md" }} color="white">
+              <VStack spacing={{ base: 1.5, sm: 2 }} textAlign="center" w="full">
+                <Heading size={{ base: "sm", sm: "md", md: "lg" }} color="white" lineHeight="1.2">
                   💰 Price Summary
                 </Heading>
-                <Text color="gray.400" fontSize={{ base: "sm", md: "md" }}>
+                <Text color="gray.400" fontSize={{ base: "xs", sm: "sm", md: "md" }} lineHeight="1.4" px={{ base: 2, sm: 0 }}>
                   Your estimated total
                 </Text>
               </VStack>
 
               {/* Selected Items Cart */}
               {step1.items.length > 0 && (
-                <Card bg="gray.700" borderRadius="lg" border="1px solid" borderColor="gray.600" w="full">
-                  <CardBody p={{ base: 3, md: 4 }}>
-                    <VStack spacing={3}>
-                      <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" mb={2}>
+                <Card bg="gray.700" borderRadius={{ base: "md", md: "lg" }} border="1px solid" borderColor="gray.600" w="full">
+                  <CardBody p={{ base: 3, sm: 3.5, md: 4 }} w="full">
+                    <VStack spacing={{ base: 2.5, sm: 3 }} align="stretch" w="full">
+                      <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} fontWeight="bold" color="white" mb={{ base: 1.5, sm: 2 }} lineHeight="1.2">
                         🛒 Selected Items ({step1.items.length})
                       </Text>
                       
-                      <VStack spacing={2} w="full" maxH={{ base: "150px", md: "200px" }} overflowY="auto">
+                      <VStack spacing={{ base: 2, sm: 2.5 }} w="full" maxH={{ base: "120px", sm: "150px", md: "200px" }} overflowY="auto">
                         {step1.items.map((item) => {
                           const imageSrc = (item.image && item.image.trim().length > 0)
                             ? item.image
                             : resolveItemImage({ category: item.category, itemImage: item.image, itemId: item.id });
 
                           return (
-                            <HStack key={item.id} justify="space-between" w="full" p={2} bg="gray.600" borderRadius="lg">
-                              <HStack spacing={{ base: 2, md: 3 }}>
-                                <Box w="40px" h="40px">
+                            <HStack key={item.id} justify="space-between" w="full" p={{ base: 2, sm: 2.5 }} bg="gray.600" borderRadius={{ base: "md", md: "lg" }} spacing={{ base: 2, sm: 3 }}>
+                              <HStack spacing={{ base: 2, sm: 2.5, md: 3 }} flex={1} minW={0}>
+                                <Box w={{ base: "36px", sm: "40px" }} h={{ base: "36px", sm: "40px" }} flexShrink={0}>
                                   <ItemImage src={imageSrc} alt={item.name || 'Item'} ratio={1} />
                                 </Box>
-                                <VStack align="start" spacing={0}>
-                                  <Text color="white" fontWeight="medium" fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>
+                                <VStack align="start" spacing={0} flex={1} minW={0}>
+                                  <Text color="white" fontWeight="medium" fontSize={{ base: "xs", sm: "sm", md: "md" }} noOfLines={1} lineHeight="1.3">
                                     {item.name}
                                   </Text>
-                                  <Text color="gray.400" fontSize="xs">Qty: {item.quantity}</Text>
+                                  <Text color="gray.400" fontSize={{ base: "xs", sm: "sm" }} lineHeight="1.3">Qty: {item.quantity}</Text>
                                 </VStack>
                               </HStack>
                             </HStack>
@@ -3067,51 +4097,53 @@ export default function WhereAndWhatStep({
 
         {/* Automatic Pricing & Availability - ENTERPRISE ENGINE */}
         {(pricingTiers || isLoadingAvailability) && step1.items.length > 0 && (
-          <Card bg="gray.800" borderRadius="lg" border="1px solid" borderColor="blue.600">
-            <CardBody p={6}>
-              <VStack spacing={4} align="stretch">
-                <HStack justify="space-between">
-                  <Heading size="md" color="white">
+          <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="blue.600" w="full">
+            <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
+              <VStack spacing={{ base: 3, sm: 4 }} align="stretch" w="full">
+                <HStack justify="space-between" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
+                  <Heading size={{ base: "sm", sm: "md", md: "lg" }} color="white" lineHeight="1.2">
                     Service Options
                   </Heading>
                   {isLoadingAvailability && (
-                    <HStack spacing={2}>
-                      <Spinner size="sm" color="blue.400" />
-                      <Text fontSize="sm" color="blue.400">Checking availability...</Text>
+                    <HStack spacing={{ base: 1.5, sm: 2 }}>
+                      <Spinner size={{ base: "xs", sm: "sm" }} color="blue.400" />
+                      <Text fontSize={{ base: "xs", sm: "sm" }} color="blue.400" lineHeight="1.3">Checking availability...</Text>
                     </HStack>
                   )}
                 </HStack>
                 
-                <Text fontSize="sm" color="gray.400">
+                <Text fontSize={{ base: "xs", sm: "sm", md: "md" }} color="gray.400" lineHeight="1.4" px={{ base: 1, sm: 0 }}>
                   Prices and availability calculated automatically using full address data
                 </Text>
 
-                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, sm: 4 }} w="full">
                   {/* Economy Multi-Drop */}
                   <Card 
                     bg={pricingTiers?.economy?.available ? "green.900" : "gray.900"} 
                     borderColor={pricingTiers?.economy?.available ? "green.500" : "gray.600"}
                     border="1px solid"
+                    borderRadius={{ base: "md", md: "lg" }}
                     opacity={pricingTiers?.economy?.available ? 1 : 0.6}
+                    w="full"
                   >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Economy</Text>
-                          <Badge colorScheme={pricingTiers?.economy?.available ? "green" : "gray"}>
+                    <CardBody p={{ base: 3, sm: 4 }}>
+                      <VStack spacing={{ base: 2.5, sm: 3 }} align="stretch" w="full">
+                        <HStack justify="space-between" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
+                          <Text fontWeight="bold" color="white" fontSize={{ base: "sm", sm: "md" }} lineHeight="1.2">Economy</Text>
+                          <Badge colorScheme={pricingTiers?.economy?.available ? "green" : "gray"} fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }}>
                             Multi-Drop
                           </Badge>
                         </HStack>
                         
                         {pricingTiers?.economy?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="green.400">
+                          <Text fontSize={{ base: "xl", sm: "2xl" }} fontWeight="bold" color="green.400" lineHeight="1.2">
                             £{pricingTiers.economy.price}
                           </Text>
                         )}
                         
                         {pricingTiers?.economy?.availability ? (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
+                          <VStack spacing={{ base: 1, sm: 1.5 }} align="start" w="full">
+                            <Text fontSize={{ base: "xs", sm: "sm" }} color="white" lineHeight="1.3" noOfLines={2}>
                               {pricingTiers.economy.availability.route_type === 'economy' && 
                                pricingTiers.economy.availability.next_available_date === new Date().toISOString().split('T')[0]
                                 ? "Available tomorrow"
@@ -3119,13 +4151,13 @@ export default function WhereAndWhatStep({
                               }
                             </Text>
                             <Tooltip label={pricingTiers.economy.availability.explanation}>
-                              <Text fontSize="xs" color="green.300">
+                              <Text fontSize={{ base: "xs", sm: "sm" }} color="green.300" lineHeight="1.3" noOfLines={2}>
                                 {Math.round(pricingTiers.economy.availability.fill_rate)}% route efficiency
                               </Text>
                             </Tooltip>
                           </VStack>
                         ) : (
-                          <Text fontSize="sm" color="gray.400">
+                          <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.400" lineHeight="1.3">
                             Route optimization required
                           </Text>
                         )}
@@ -3138,26 +4170,28 @@ export default function WhereAndWhatStep({
                     bg="blue.900" 
                     borderColor="blue.500"
                     border="1px solid"
+                    borderRadius={{ base: "md", md: "lg" }}
+                    w="full"
                   >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Standard</Text>
-                          <Badge colorScheme="blue">Priority Slot</Badge>
+                    <CardBody p={{ base: 3, sm: 4 }}>
+                      <VStack spacing={{ base: 2.5, sm: 3 }} align="stretch" w="full">
+                        <HStack justify="space-between" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
+                          <Text fontWeight="bold" color="white" fontSize={{ base: "sm", sm: "md" }} lineHeight="1.2">Standard</Text>
+                          <Badge colorScheme="blue" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }}>Priority Slot</Badge>
                         </HStack>
                         
                         {pricingTiers?.standard?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="blue.400">
+                          <Text fontSize={{ base: "xl", sm: "2xl" }} fontWeight="bold" color="blue.400" lineHeight="1.2">
                             £{pricingTiers.standard.price}
                           </Text>
                         )}
                         
                         {pricingTiers?.standard?.availability && (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
+                          <VStack spacing={{ base: 1, sm: 1.5 }} align="start" w="full">
+                            <Text fontSize={{ base: "xs", sm: "sm" }} color="white" lineHeight="1.3" noOfLines={2}>
                               Available tomorrow
                             </Text>
-                            <Text fontSize="xs" color="blue.300">
+                            <Text fontSize={{ base: "xs", sm: "sm" }} color="blue.300" lineHeight="1.3" noOfLines={2}>
                               {pricingTiers.standard.availability.explanation}
                             </Text>
                           </VStack>
@@ -3171,26 +4205,28 @@ export default function WhereAndWhatStep({
                     bg="purple.900" 
                     borderColor="purple.500"
                     border="1px solid"
+                    borderRadius={{ base: "md", md: "lg" }}
+                    w="full"
                   >
-                    <CardBody p={4}>
-                      <VStack spacing={3} align="stretch">
-                        <HStack justify="space-between">
-                          <Text fontWeight="bold" color="white">Express</Text>
-                          <Badge colorScheme="purple">Dedicated Van</Badge>
+                    <CardBody p={{ base: 3, sm: 4 }}>
+                      <VStack spacing={{ base: 2.5, sm: 3 }} align="stretch" w="full">
+                        <HStack justify="space-between" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
+                          <Text fontWeight="bold" color="white" fontSize={{ base: "sm", sm: "md" }} lineHeight="1.2">Express</Text>
+                          <Badge colorScheme="purple" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }}>Dedicated Van</Badge>
                         </HStack>
                         
                         {pricingTiers?.express?.price && (
-                          <Text fontSize="2xl" fontWeight="bold" color="purple.400">
+                          <Text fontSize={{ base: "xl", sm: "2xl" }} fontWeight="bold" color="purple.400" lineHeight="1.2">
                             £{pricingTiers.express.price}
                           </Text>
                         )}
                         
                         {pricingTiers?.express?.availability && (
-                          <VStack spacing={1} align="start">
-                            <Text fontSize="sm" color="white">
+                          <VStack spacing={{ base: 1, sm: 1.5 }} align="start" w="full">
+                            <Text fontSize={{ base: "xs", sm: "sm" }} color="white" lineHeight="1.3" noOfLines={2}>
                               Available tomorrow
                             </Text>
-                            <Text fontSize="xs" color="purple.300">
+                            <Text fontSize={{ base: "xs", sm: "sm" }} color="purple.300" lineHeight="1.3" noOfLines={2}>
                               {pricingTiers.express.availability.explanation}
                             </Text>
                           </VStack>
@@ -3201,7 +4237,7 @@ export default function WhereAndWhatStep({
                 </SimpleGrid>
 
                 {availabilityData && (
-                  <Text fontSize="xs" color="gray.500" textAlign="center">
+                  <Text fontSize={{ base: "xs", sm: "sm" }} color="gray.500" textAlign="center" lineHeight="1.3" px={{ base: 2, sm: 0 }}>
                     Calculated at {new Date(availabilityData.calculatedAt).toLocaleTimeString()} • Enterprise Engine
                   </Text>
                 )}
@@ -3211,21 +4247,26 @@ export default function WhereAndWhatStep({
         )}
 
         {/* Continue Button */}
-        <Card bg="gray.800" borderRadius="lg" border="1px solid" borderColor="gray.600">
-          <CardBody p={6}>
-            <HStack justify="space-between" w="full">
-              <Badge bg="green.600" color="white" p={3} borderRadius="lg">
+        <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
+          <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
+            <HStack justify="space-between" w="full" flexDirection={{ base: "column", sm: "row" }} spacing={{ base: 3, sm: 4 }}>
+              <Badge bg="green.600" color="white" p={{ base: 2, sm: 2.5, md: 3 }} borderRadius={{ base: "md", md: "lg" }} fontSize={{ base: "sm", sm: "md" }} fontWeight="700" letterSpacing="0.3px" w={{ base: "full", sm: "auto" }} textAlign="center">
                 ✅ {step1.items.length} Items Selected
               </Badge>
 
-              <HStack>
+              <HStack spacing={{ base: 2, sm: 3 }} w={{ base: "full", sm: "auto" }} flexDirection={{ base: "column", sm: "row" }}>
                 <Button
                   as={Link}
                   href="/"
                   variant="outline"
                   colorScheme="gray"
-                  size="lg"
-                  leftIcon={<Icon as={FaArrowLeft} />}
+                  size={{ base: "md", sm: "lg" }}
+                  leftIcon={<Icon as={FaArrowLeft} fontSize={{ base: "14px", sm: "16px" }} />}
+                  minH={{ base: "48px", sm: "44px" }}
+                  w={{ base: "full", sm: "auto" }}
+                  fontSize={{ base: "sm", sm: "md" }}
+                  fontWeight="600"
+                  letterSpacing="0.3px"
                 >
                   Back to Home
                 </Button>
@@ -3233,10 +4274,15 @@ export default function WhereAndWhatStep({
                 {onNext && (
                   <Button
                     colorScheme="blue"
-                    size="lg"
+                    size={{ base: "md", sm: "lg" }}
                     isDisabled={step1.items.length === 0}
                     onClick={onNext}
-                    rightIcon={<Icon as={FaArrowRight} />}
+                    rightIcon={<Icon as={FaArrowRight} fontSize={{ base: "14px", sm: "16px" }} />}
+                    minH={{ base: "48px", sm: "44px" }}
+                    w={{ base: "full", sm: "auto" }}
+                    fontSize={{ base: "sm", sm: "md" }}
+                    fontWeight="700"
+                    letterSpacing="0.3px"
                     _disabled={{
                       opacity: 0.5,
                       cursor: "not-allowed"
@@ -3249,8 +4295,7 @@ export default function WhereAndWhatStep({
             </HStack>
           </CardBody>
         </Card>
-
-      </VStack>
-    </Box>
+        </Box>
+    </VStack>
   );
 }

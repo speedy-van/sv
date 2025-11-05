@@ -424,17 +424,30 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     inputRef.current?.focus();
   }, [onChange]);
 
-  // Click outside to close dropdown
+  // Click outside to close dropdown - use timeout to allow onClick to fire first
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current && 
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
+      // Use setTimeout to allow onClick handlers to fire first
+      setTimeout(() => {
+        // Check if click is inside dropdown or input
+        const target = event.target as Node;
+        if (
+          dropdownRef.current && 
+          dropdownRef.current.contains(target)
+        ) {
+          // Click is inside dropdown - don't close
+          return;
+        }
+        if (
+          inputRef.current &&
+          inputRef.current.contains(target)
+        ) {
+          // Click is on input - don't close
+          return;
+        }
+        // Click is outside - close dropdown
         setShowSuggestions(false);
-      }
+      }, 0);
     };
 
     if (showSuggestions) {
@@ -443,7 +456,8 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
       if (rect) {
         setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
       }
-      document.addEventListener('mousedown', handleClickOutside);
+      // Use 'click' event with normal bubbling (not capture) to allow onClick to fire first
+      document.addEventListener('click', handleClickOutside);
       const reposition = () => {
         const r = inputRef.current?.getBoundingClientRect();
         if (r) setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
@@ -454,7 +468,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
       // listeners removed by reference in caller; safe fallback
     };
   }, [showSuggestions]);
@@ -632,7 +646,15 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                     borderColor: "rgba(66, 153, 225, 0.2)"
                   }}
                   transition="all 0.2s"
-                  onClick={() => selectSuggestion(suggestion)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Close dropdown immediately to prevent click outside handler
+                    setShowSuggestions(false);
+                    setSuggestions([]);
+                    // Select suggestion
+                    selectSuggestion(suggestion);
+                  }}
                 >
                   <HStack align="start" spacing={3}>
                     <Icon 
@@ -742,7 +764,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
               
               {/* Building Type */}
               <Box>
-                <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                <FormLabel fontSize="xs" color="white" mb={1}>
                   Building Type
                 </FormLabel>
                 <Select
@@ -788,7 +810,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
               {/* Floor and Apartment Numbers */}
               <SimpleGrid columns={2} spacing={3}>
                 <Box>
-                  <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                  <FormLabel fontSize="xs" color="white" mb={1}>
                     Floor Number
                   </FormLabel>
                   <Input
@@ -831,7 +853,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                 </Box>
 
                 <Box>
-                  <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                  <FormLabel fontSize="xs" color="white" mb={1}>
                     Apartment Number
                   </FormLabel>
                   <Input

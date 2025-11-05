@@ -93,9 +93,9 @@ export default function DispatchModeToggle({
 
   if (isLoading) {
     return (
-      <HStack spacing={2}>
-        <Spinner size="sm" />
-        <Text fontSize="sm" color="gray.500">Loading...</Text>
+      <HStack spacing={2} bg="#111111" px={3} py={2} borderRadius="lg" border="1px solid" borderColor="#333333">
+        <Spinner size="sm" color="#2563eb" />
+        <Text fontSize="sm" color="#9ca3af">Loading...</Text>
       </HStack>
     );
   }
@@ -108,42 +108,73 @@ export default function DispatchModeToggle({
           : 'Manual mode: You manually assign orders to drivers'
       }
       placement="bottom"
+      hasArrow
     >
       <Flex
         align="center"
         gap={3}
-        p={2}
-        px={3}
-        borderRadius="md"
-        bg={mode === 'auto' ? 'green.50' : 'blue.50'}
-        borderWidth="1px"
-        borderColor={mode === 'auto' ? 'green.200' : 'blue.200'}
-        transition="all 0.2s"
+        px={4}
+        py={2.5}
+        borderRadius="lg"
+        bg={mode === 'auto' 
+          ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+          : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'}
+        borderWidth="2px"
+        borderColor={mode === 'auto' ? '#10b981' : '#2563eb'}
+        boxShadow={mode === 'auto'
+          ? '0 4px 16px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2)'
+          : '0 4px 16px rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.2)'}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         cursor="pointer"
+        position="relative"
+        overflow="hidden"
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: mode === 'auto'
+            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)'
+            : 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(29, 78, 216, 0.1) 100%)',
+          pointerEvents: 'none',
+        }}
         _hover={{
-          bg: mode === 'auto' ? 'green.100' : 'blue.100',
-          transform: 'translateY(-1px)',
-          shadow: 'sm'
+          transform: 'translateY(-2px)',
+          boxShadow: mode === 'auto'
+            ? '0 6px 24px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.3)'
+            : '0 6px 24px rgba(37, 99, 235, 0.6), 0 0 30px rgba(37, 99, 235, 0.3)',
+        }}
+        _active={{
+          transform: 'translateY(0)',
         }}
       >
         <Icon 
           as={mode === 'auto' ? FiZap : FiUser} 
-          color={mode === 'auto' ? 'green.600' : 'blue.600'}
-          boxSize={size === 'lg' ? 5 : size === 'sm' ? 3 : 4}
+          color="#FFFFFF"
+          boxSize={size === 'lg' ? 6 : size === 'sm' ? 4 : 5}
+          position="relative"
+          zIndex={1}
+          filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
         />
         
         {showLabel && (
-          <VStack align="start" spacing={0}>
+          <VStack align="start" spacing={0.5} position="relative" zIndex={1}>
             <Text 
               fontSize={size === 'lg' ? 'md' : 'sm'} 
               fontWeight="bold"
-              color={mode === 'auto' ? 'green.700' : 'blue.700'}
+              color="#FFFFFF"
+              letterSpacing="0.3px"
+              textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
             >
               Dispatch Mode
             </Text>
             <Text 
               fontSize={size === 'lg' ? 'sm' : 'xs'} 
-              color={mode === 'auto' ? 'green.600' : 'blue.600'}
+              color="rgba(255, 255, 255, 0.9)"
+              fontWeight="semibold"
+              letterSpacing="0.5px"
             >
               {mode === 'auto' ? 'Automatic' : 'Manual'}
             </Text>
@@ -151,33 +182,49 @@ export default function DispatchModeToggle({
         )}
 
         <Badge
-          colorScheme={mode === 'auto' ? 'green' : 'blue'}
+          bg="rgba(255, 255, 255, 0.2)"
+          color="#FFFFFF"
           fontSize={size === 'lg' ? 'sm' : 'xs'}
-          px={2}
+          px={3}
           py={1}
           borderRadius="full"
+          fontWeight="bold"
+          letterSpacing="0.5px"
+          border="1px solid rgba(255, 255, 255, 0.3)"
+          backdropFilter="blur(10px)"
+          boxShadow="0 2px 8px rgba(0, 0, 0, 0.2)"
+          position="relative"
+          zIndex={1}
         >
           {mode.toUpperCase()}
         </Badge>
 
-        <Switch
-          isChecked={mode === 'auto'}
-          onChange={handleToggle}
-          isDisabled={isSwitching}
-          colorScheme={mode === 'auto' ? 'green' : 'blue'}
-          size={size}
-        />
+        <Box position="relative" zIndex={1}>
+          <Switch
+            isChecked={mode === 'auto'}
+            onChange={handleToggle}
+            isDisabled={isSwitching}
+            colorScheme={mode === 'auto' ? 'green' : 'blue'}
+            size={size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md'}
+            sx={{
+              'span[data-checked]': {
+                bg: '#FFFFFF',
+              },
+            }}
+          />
+        </Box>
 
-        <Tooltip label="Click to learn more about dispatch modes">
-          <Box>
-            <Icon 
-              as={FiInfo} 
-              color="gray.400" 
-              boxSize={3}
-              cursor="help"
-            />
-          </Box>
-        </Tooltip>
+        {isSwitching && (
+          <Spinner 
+            size="sm" 
+            color="#FFFFFF"
+            position="absolute"
+            right={2}
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={2}
+          />
+        )}
       </Flex>
     </Tooltip>
   );

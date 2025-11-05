@@ -10,7 +10,7 @@ services:
     plan: standard # Recommended for production
     region: frankfurt # EU Central
     rootDir: apps/web
-    buildCommand: cd ../.. && npm install -g pnpm@10.17.0 && pnpm install --frozen-lockfile && pnpm --filter ./apps/web build
+    buildCommand: cd ../.. && npm install -g pnpm@10.17.0 && pnpm install --frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm --filter ./apps/web build
     startCommand: pnpm start
     healthCheckPath: /api/health
     numInstances: 2 # High availability
@@ -18,6 +18,9 @@ services:
       # Node Environment
       - key: NODE_ENV
         value: production
+      # Increase Node.js heap memory for build
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=4096
       
       # Database
       - key: DATABASE_URL

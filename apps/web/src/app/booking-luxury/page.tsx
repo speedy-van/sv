@@ -572,29 +572,50 @@ export default function BookingLuxuryPage() {
 
   return (
     <Box minH="100vh" bg={bgColor} py={{ base: 2, md: 8 }} pb={{ base: "100px", md: 8 }}>
-      <Container maxW="6xl">
+      <Container maxW="6xl" px={{ base: 4, md: 6 }}>
         <VStack spacing={{ base: 4, md: 8 }} align="stretch" py={{ base: 4, md: 8 }}>
-          {/* PREMIUM HEADER - NEON GLOW */}
+          {/* PREMIUM HEADER - ENHANCED GLASSMORPHISM */}
           <Card 
-            bg="rgba(26, 32, 44, 0.95)" 
-            backdropFilter="blur(10px)"
-            shadow="0 0 40px rgba(147, 51, 234, 0.6), 0 0 80px rgba(147, 51, 234, 0.3), 0 0 120px rgba(147, 51, 234, 0.1)" 
-            borderRadius="2xl" 
-            border="2px" 
-            borderColor="purple.400"
+            bg="linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
+            backdropFilter="blur(20px) saturate(180%)"
+            shadow="0 8px 32px rgba(147, 51, 234, 0.4), 0 0 60px rgba(147, 51, 234, 0.3), 0 0 100px rgba(147, 51, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+            borderRadius="2xl"
+            border="2px solid"
+            borderColor="rgba(147, 51, 234, 0.5)"
             position="relative"
             overflow="hidden"
+            w="full"
+            mx={0}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            _hover={{
+              shadow: "0 12px 40px rgba(147, 51, 234, 0.5), 0 0 80px rgba(147, 51, 234, 0.4), 0 0 120px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+              borderColor: "rgba(147, 51, 234, 0.7)",
+              transform: "translateY(-2px)",
+            }}
             sx={{
               '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
+                opacity: 0.6,
+                zIndex: 1,
+                pointerEvents: 'none',
+              },
+              '&::after': {
                 content: '""',
                 position: 'absolute',
                 top: 0,
                 left: '-100%',
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
-                animation: 'shine 4s infinite',
-                zIndex: 1,
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                animation: 'shine 6s infinite',
+                zIndex: 2,
+                pointerEvents: 'none',
               },
               '@keyframes shine': {
                 '0%': { left: '-100%' },
@@ -602,36 +623,123 @@ export default function BookingLuxuryPage() {
               },
               '& > *': {
                 position: 'relative',
-                zIndex: 2,
+                zIndex: 3,
               },
             }}
           >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={6}>
+            <CardBody p={0} px={{ base: 3, sm: 4, md: 8 }} py={{ base: 4, md: 8 }}>
+              <Flex justify="space-between" align="center" wrap="wrap" gap={{ base: 3, md: 6 }}>
                 {/* LEFT: Brand + Step Navigation */}
-                <HStack spacing={8}>
+                <HStack spacing={{ base: 3, md: 8 }} flexWrap="wrap">
                   {currentStep === 1 && (
                     <Button
-                      size="sm"
+                      size={{ base: 'sm', md: 'md' }}
                       variant="outline"
                       colorScheme="gray"
                       onClick={() => router.push('/')}
+                      bg="rgba(255, 255, 255, 0.05)"
+                      borderColor="rgba(255, 255, 255, 0.2)"
+                      color="white"
+                      fontWeight="semibold"
+                      borderRadius="lg"
+                      px={{ base: 2, md: 4 }}
+                      py={{ base: 1, md: 2 }}
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                      _hover={{
+                        bg: "rgba(255, 255, 255, 0.1)",
+                        borderColor: "rgba(255, 255, 255, 0.3)",
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                      }}
+                      _active={{
+                        transform: "translateY(0)",
+                      }}
                     >
                       ← Back to Home
                     </Button>
                   )}
-                  <HStack spacing={4}>
-                    <Icon as={FaTruck} boxSize={8} color="blue.600" />
-                    <VStack align="start" spacing={1}>
-                      <Heading size="lg" color="white">Speedy Van</Heading>
-                      <HStack spacing={3}>
-                        <Badge colorScheme="blue" variant="subtle" fontSize="xs">
-                          <Icon as={FaShieldAlt} mr={1} />
-                          Fully Insured
+                  <HStack spacing={{ base: 2, md: 4 }}>
+                    <Box
+                      position="relative"
+                      w={{ base: '40px', md: '56px' }}
+                      h={{ base: '40px', md: '56px' }}
+                      borderRadius="xl"
+                      bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.5)"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      _hover={{
+                        transform: "scale(1.05) rotate(5deg)",
+                        boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                      }}
+                    >
+                      <Icon as={FaTruck} boxSize={{ base: 5, md: 7 }} color="blue.300" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                    </Box>
+                    <VStack align="start" spacing={{ base: 1, md: 2 }}>
+                      <Heading 
+                        size={{ base: 'md', md: 'lg' }} 
+                        color="white"
+                        fontWeight="700"
+                        letterSpacing="0.5px"
+                        textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
+                        bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 100%)"
+                        bgClip="text"
+                        sx={{
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
+                        Speedy Van
+                      </Heading>
+                      <HStack spacing={{ base: 1.5, md: 3 }} flexWrap="wrap">
+                        <Badge 
+                          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                          color="blue.200"
+                          fontSize={{ base: '2xs', sm: 'xs' }}
+                          fontWeight="semibold"
+                          px={{ base: 1.5, sm: 2, md: 3 }}
+                          py={{ base: 0.5, md: 1 }}
+                          borderRadius="full"
+                          border="1px solid"
+                          borderColor="rgba(59, 130, 246, 0.4)"
+                          boxShadow="0 2px 8px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          backdropFilter="blur(10px)"
+                          transition="all 0.2s"
+                          _hover={{
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                          }}
+                        >
+                          <Icon as={FaShieldAlt} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
+                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>Fully Insured</Text>
+                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>Insured</Text>
                         </Badge>
-                        <Badge colorScheme="yellow" variant="subtle" fontSize="xs">
-                          <Icon as={FaStar} mr={1} />
-                          5-Star Rated
+                        <Badge 
+                          bg="linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%)"
+                          color="yellow.200"
+                          fontSize={{ base: '2xs', sm: 'xs' }}
+                          fontWeight="semibold"
+                          px={{ base: 1.5, sm: 2, md: 3 }}
+                          py={{ base: 0.5, md: 1 }}
+                          borderRadius="full"
+                          border="1px solid"
+                          borderColor="rgba(251, 191, 36, 0.4)"
+                          boxShadow="0 2px 8px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          backdropFilter="blur(10px)"
+                          transition="all 0.2s"
+                          _hover={{
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                          }}
+                        >
+                          <Icon as={FaStar} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
+                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>5-Star Rated</Text>
+                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>5-Star</Text>
                         </Badge>
                       </HStack>
                     </VStack>
@@ -649,16 +757,39 @@ export default function BookingLuxuryPage() {
                           transition="all 0.2s"
                         >
                           <Circle 
-                            size="32px" 
+                            size="40px" 
                             bg={
-                              step.id === currentStep ? 'blue.600' : 
-                              step.id < currentStep ? 'green.500' : 
-                              'gray.200'
+                              step.id === currentStep 
+                                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%)'
+                                : step.id < currentStep 
+                                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)'
+                                : 'rgba(75, 85, 99, 0.3)'
                             }
-                            color={step.id <= currentStep ? 'white' : 'gray.500'}
+                            color={step.id <= currentStep ? 'white' : 'gray.400'}
                             fontSize="sm"
                             fontWeight="bold"
-                            shadow={step.id === currentStep ? '0 0 0 3px rgba(59, 130, 246, 0.2)' : undefined}
+                            boxShadow={
+                              step.id === currentStep 
+                                ? '0 4px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.2)'
+                                : step.id < currentStep
+                                ? '0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                                : '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                            }
+                            border="2px solid"
+                            borderColor={
+                              step.id === currentStep 
+                                ? 'rgba(59, 130, 246, 0.6)'
+                                : step.id < currentStep
+                                ? 'rgba(16, 185, 129, 0.6)'
+                                : 'rgba(255, 255, 255, 0.1)'
+                            }
+                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                            _hover={step.id <= currentStep ? {
+                              transform: "scale(1.1)",
+                              boxShadow: step.id === currentStep 
+                                ? '0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.3)'
+                                : '0 6px 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                            } : {}}
                           >
                             {step.id < currentStep ? <Icon as={FaCheck} boxSize={4} /> : 
                              step.id === currentStep ? <Icon as={step.icon} boxSize={4} /> :
@@ -744,10 +875,38 @@ export default function BookingLuxuryPage() {
                         </HStack>
                         {index < STEPS.length - 1 && (
                           <Box 
-                            w="40px" 
-                            h="2px" 
-                            bg={step.id < currentStep ? 'green.400' : 'gray.200'} 
+                            w="50px" 
+                            h="3px" 
+                            bg={
+                              step.id < currentStep 
+                                ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.8) 0%, rgba(5, 150, 105, 0.8) 100%)'
+                                : 'rgba(75, 85, 99, 0.3)'
+                            }
                             borderRadius="full"
+                            boxShadow={
+                              step.id < currentStep
+                                ? '0 2px 8px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                                : '0 1px 4px rgba(0, 0, 0, 0.2)'
+                            }
+                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            overflow="hidden"
+                            _before={step.id < currentStep ? {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: '-100%',
+                              width: '100%',
+                              height: '100%',
+                              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
+                              animation: 'pulse 2s infinite',
+                            } : {}}
+                            sx={{
+                              '@keyframes pulse': {
+                                '0%, 100%': { left: '-100%' },
+                                '50%': { left: '100%' },
+                              },
+                            }}
                           />
                         )}
                       </React.Fragment>
@@ -758,737 +917,133 @@ export default function BookingLuxuryPage() {
 
               </Flex>
 
-              {/* SIMPLIFIED TITLE SECTION */}
-              <Box mt={6} textAlign="center">
-                <Heading 
-                  size="xl" 
-                  color="white"
-                  fontWeight="600"
-                  mb={2}
-                >
+              {/* ENHANCED TITLE SECTION */}
+              <Box mt={8} textAlign="center" position="relative">
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  w="200px"
+                  h="200px"
+                  borderRadius="full"
+                  bg="radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)"
+                  filter="blur(40px)"
+                  zIndex={0}
+                />
+                <VStack spacing={3} position="relative" zIndex={1}>
+                  <Heading 
+                    size="2xl" 
+                    fontWeight="700"
+                    letterSpacing="0.5px"
+                    bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 50%, #C7D2FE 100%)"
+                    bgClip="text"
+                    sx={{
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      textShadow: "0 4px 20px rgba(147, 51, 234, 0.3)",
+                    }}
+                  >
                   Your Move Plan
-                </Heading>
-                <Text 
-                  fontSize="lg" 
-                  color="gray.300"
-                  fontWeight="medium"
-                >
+                  </Heading>
+                  <Text 
+                    fontSize="lg" 
+                    color="gray.300"
+                    fontWeight="500"
+                    letterSpacing="0.3px"
+                  >
                   Step {currentStep}: {STEPS[currentStep - 1]?.title}
-                </Text>
+                  </Text>
+                </VStack>
               </Box>
             </CardBody>
           </Card>
 
 
 
-          {/* Main Content with Luxury Sidebar */}
-          <SimpleGrid columns={{ base: 1, lg: 3 }} gap={8} w="full">
-            {/* Main Content Area */}
-            <Box gridColumn={{ base: "1", lg: "1 / 3" }}>
-              <Card 
-                bg="gray.800" 
-                shadow="0 0 30px rgba(128, 90, 213, 0.4), 0 0 60px rgba(128, 90, 213, 0.2), 0 0 90px rgba(128, 90, 213, 0.1)"
-                borderRadius="2xl" 
-                overflow="hidden" 
-                border="2px solid rgba(128, 90, 213, 0.6)"
-                data-step="items"
-              >
-                <CardBody p={0}>
-                  {currentStep === 1 ? (
-                    <WhereAndWhatStep
-                      formData={formData}
-                      updateFormData={updateFormData}
-                      errors={errors}
-                      onNext={() => setCurrentStep(2)}
-                      pricingTiers={pricingTiers}
-                      availabilityData={availabilityData}
-                      isLoadingAvailability={isLoadingAvailability}
-                    />
-                  ) : currentStep === 2 ? (
-                    <WhoAndPaymentStep
-                      formData={formData}
-                      updateFormData={updateFormData}
-                      errors={errors}
-                      paymentSuccess={false}
-                      isCalculatingPricing={isCalculatingPricing}
-                      economyPrice={calculateEconomyPrice()}
-                      standardPrice={calculateStandardPrice()}
-                      priorityPrice={calculatePriorityPrice()}
-                      calculatePricing={calculatePricing}
-                      validatePromotionCode={validatePromotionCode}
-                      applyPromotionCode={applyPromotionCode}
-                      removePromotionCode={removePromotionCode}
-                    />
-                  ) : null}
-                </CardBody>
-              </Card>
-            </Box>
-
-            {/* Sidebar - Reduced Visual Weight */}
-            <VStack spacing={4} display={{ base: "none", lg: "flex" }}>
-              {/* Why Choose Speedy Van - Premium Edition */}
-              <Card 
-                bg="gray.800" 
-                shadow="0 0 40px rgba(59, 130, 246, 0.6), 0 0 80px rgba(59, 130, 246, 0.3), 0 0 120px rgba(59, 130, 246, 0.1)" 
-                borderRadius="2xl" 
-                border="2px" 
-                borderColor="blue.400"
-                overflow="hidden"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: "-2px",
-                  left: "-2px",
-                  right: "-2px",
-                  bottom: "-2px",
-                  borderRadius: "2xl",
-                  background: "linear-gradient(45deg, #3B82F6, #1D4ED8, #06B6D4, #8B5CF6)",
-                  zIndex: -1,
-                  filter: "blur(8px)",
-                  opacity: 0.6
-                }}
-              >
-                <CardHeader pb={3}>
-                  <VStack spacing={2} align="center">
-                    <Box
-                      p={3}
-                      borderRadius="full"
-                      bg="gradient(to-r, blue.500, blue.400)"
-                      shadow="0 4px 20px rgba(59, 130, 246, 0.4)"
-                    >
-                      <Text fontSize="2xl">🚚</Text>
-                    </Box>
-                    <VStack spacing={1} align="center">
-                      <Heading size="md" color="white" fontWeight="bold">
-                        Why Choose Speedy Van?
-                      </Heading>
-                      <Text fontSize="xs" color="blue.300" fontWeight="semibold">
-                        Premium Moving Excellence
-                      </Text>
-                    </VStack>
-                  </VStack>
-                </CardHeader>
-                <CardBody pt={0}>
-                  <VStack spacing={4} align="stretch">
-                    <Box 
-                      p={3} 
-                      bg="gray.900" 
-                      borderRadius="lg" 
-                      border="1px" 
-                      borderColor="gray.700"
-                    >
-                      <HStack spacing={3} align="center">
-                        <Box
-                          p={2}
-                          borderRadius="full"
-                          bg="blue.600"
-                          shadow="0 2px 8px rgba(59, 130, 246, 0.3)"
-                        >
-                          <Icon as={FaShieldAlt} color="white" boxSize={4} />
-                        </Box>
-                        <VStack align="start" spacing={0} flex={1}>
-                          <Text fontSize="sm" fontWeight="bold" color="white">Fully Insured</Text>
-                          <Text fontSize="xs" color="blue.300">£100k comprehensive coverage</Text>
-                        </VStack>
-                        <Text fontSize="xs" color="green.400" fontWeight="bold">✓ Protected</Text>
-                      </HStack>
-                    </Box>
-
-                    <Box 
-                      p={3} 
-                      bg="gray.900" 
-                      borderRadius="lg" 
-                      border="1px" 
-                      borderColor="gray.700"
-                    >
-                      <HStack spacing={3} align="center">
-                        <Box
-                          p={2}
-                          borderRadius="full"
-                          bg="yellow.500"
-                          shadow="0 2px 8px rgba(245, 158, 11, 0.3)"
-                        >
-                          <Icon as={FaStar} color="white" boxSize={4} />
-                        </Box>
-                        <VStack align="start" spacing={0} flex={1}>
-                          <Text fontSize="sm" fontWeight="bold" color="white">5-Star Excellence</Text>
-                          <Text fontSize="xs" color="yellow.300">100,000+ happy customers</Text>
-                        </VStack>
-                        <Text fontSize="xs" color="yellow.400" fontWeight="bold">⭐ 5.0</Text>
-                      </HStack>
-                    </Box>
-
-                    <Box 
-                      p={3} 
-                      bg="gray.900" 
-                      borderRadius="lg" 
-                      border="1px" 
-                      borderColor="gray.700"
-                    >
-                      <HStack spacing={3} align="center">
-                        <Box
-                          p={2}
-                          borderRadius="full"
-                          bg="green.600"
-                          shadow="0 2px 8px rgba(34, 197, 94, 0.3)"
-                        >
-                          <Icon as={FaClock} color="white" boxSize={4} />
-                        </Box>
-                        <VStack align="start" spacing={0} flex={1}>
-                          <Text fontSize="sm" fontWeight="bold" color="white">On-Time Promise</Text>
-                          <Text fontSize="xs" color="green.300">99.2% punctuality rate</Text>
-                        </VStack>
-                        <Text fontSize="xs" color="green.400" fontWeight="bold">📍 Reliable</Text>
-                      </HStack>
-                    </Box>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Premium Support Card */}
-              <Card 
-                bg="gray.800" 
-                shadow="0 0 40px rgba(34, 197, 94, 0.6), 0 0 80px rgba(34, 197, 94, 0.3), 0 0 120px rgba(34, 197, 94, 0.1)" 
-                borderRadius="2xl" 
-                border="2px" 
-                borderColor="green.400"
-                overflow="hidden"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: "-2px",
-                  left: "-2px",
-                  right: "-2px",
-                  bottom: "-2px",
-                  borderRadius: "2xl",
-                  background: "linear-gradient(45deg, #10B981, #34D399, #6EE7B7, #A7F3D0)",
-                  zIndex: -1,
-                  filter: "blur(8px)",
-                  opacity: 0.6
-                }}
-              >
-                <CardHeader pb={3}>
-                  <VStack spacing={2} align="center">
-                    <Box
-                      p={3}
-                      borderRadius="full"
-                      bg="gradient(to-r, green.500, green.400)"
-                      shadow="0 4px 20px rgba(34, 197, 94, 0.4)"
-                    >
-                      <Icon as={FaPhone} color="white" fontSize="xl" />
-                    </Box>
-                    <VStack spacing={1} align="center">
-                      <Heading size="md" color="white" fontWeight="bold">
-                        Need Help?
-                      </Heading>
-                      <Text fontSize="xs" color="green.300" fontWeight="semibold">
-                        24/7 Premium Support
-                      </Text>
-                    </VStack>
-                  </VStack>
-                </CardHeader>
-                <CardBody pt={0}>
-                  <VStack spacing={4} align="stretch">
-                    <Button 
-                      bg="linear-gradient(135deg, #10B981, #059669)"
-                      color="white"
-                      w="full" 
-                      leftIcon={<Icon as={FaPhone} />}
-                      size="lg"
-                      fontSize="md"
-                      fontWeight="bold"
-                      borderRadius="xl"
-                      py={6}
-                      _hover={{
-                        bg: "linear-gradient(135deg, #059669, #047857)",
-                        transform: "translateY(-2px)",
-                        shadow: "0 8px 30px rgba(34, 197, 94, 0.8)"
-                      }}
-                      _active={{
-                        transform: "translateY(0px)"
-                      }}
-                      transition="all 0.2s ease"
-                      as="a"
-                      href="tel:01202129764"
-                    >
-                      01202129764
-                    </Button>
-                    
-                    <VStack spacing={2}>
-                      <HStack justify="space-between" w="full">
-                        <HStack spacing={2}>
-                          <Box w="2" h="2" bg="green.400" borderRadius="full" />
-                          <Text fontSize="xs" color="gray.300">Instant Response</Text>
-                        </HStack>
-                        <Text fontSize="2xs" color="green.400" fontWeight="semibold">✓ Available</Text>
-                      </HStack>
-                      
-                      <HStack justify="space-between" w="full">
-                        <HStack spacing={2}>
-                          <Box w="2" h="2" bg="blue.400" borderRadius="full" />
-                          <Text fontSize="xs" color="gray.300">Expert Advisors</Text>
-                        </HStack>
-                        <Text fontSize="2xs" color="blue.400" fontWeight="semibold">📞 Ready</Text>
-                      </HStack>
-                    </VStack>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Premium Trending Items */}
-              <Card 
-                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.05))" 
-                shadow="0 0 40px rgba(34, 197, 94, 0.6), 0 0 80px rgba(34, 197, 94, 0.3), 0 0 120px rgba(34, 197, 94, 0.1)" 
-                borderRadius="2xl" 
-                border="2px" 
-                borderColor="green.400"
-                overflow="hidden"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: "-2px",
-                  left: "-2px",
-                  right: "-2px",
-                  bottom: "-2px",
-                  borderRadius: "2xl",
-                  background: "linear-gradient(45deg, #10B981, #3B82F6, #8B5CF6, #06B6D4, #F59E0B, #EF4444)",
-                  zIndex: -1,
-                  filter: "blur(10px)",
-                  opacity: 0.7
-                }}
-              >
-                {/* Clean Header */}
-                <Box position="relative" bg="gray.800" borderBottom="1px" borderColor="gray.700">
-                  <CardHeader py={4}>
-                    <VStack align="start" spacing={2}>
-                      <Heading size="md" color="white" fontWeight="bold">
-                        Top 3 Picks This Week
-                      </Heading>
-                      <HStack spacing={2} align="center">
-                        <Text fontSize="sm" color="blue.300">
-                          Save time with popular items
-                        </Text>
-                        <Badge 
-                          bg="blue.600" 
-                          color="white" 
-                          borderRadius="full" 
-                          fontSize="2xs"
-                          px={2}
-                        >
-                          TRENDING
-                        </Badge>
-                      </HStack>
-                    </VStack>
-                  </CardHeader>
-                </Box>
-                
-                <CardBody py={4}>
-                  <VStack spacing={4} align="stretch">
-                    {/* Item 1 - Sofa (Simplified) */}
-                    <Box 
-                      bg="gray.800" 
-                      borderRadius="lg" 
-                      p={4} 
-                      border="1px" 
-                      borderColor="gray.600"
-                      shadow="0 2px 8px rgba(0, 0, 0, 0.2)"
-                      _hover={{ 
-                        borderColor: "blue.500",
-                        shadow: "0 4px 16px rgba(59, 130, 246, 0.2)"
-                      }}
-                      transition="all 0.2s ease"
-                    >
-                      <HStack spacing={4} justify="space-between" w="full">
-                        {/* Left: Image + Info */}
-                        <HStack spacing={4} flex={1}>
-                          {/* Icon instead of Image */}
-                          <Box
-                            w="80px"
-                            h="80px"
-                            borderRadius="lg"
-                            bg="gray.700"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            border="2px"
-                            borderColor="gray.600"
-                          >
-                            <Text fontSize="3xl">🛋️</Text>
-                          </Box>
-                          
-                          <VStack align="start" spacing={3} flex={1}>
-                            <VStack align="start" spacing={1}>
-                              <Text fontSize="lg" fontWeight="bold" color="white">
-                                Sofa
-                              </Text>
-                              <Badge bg="green.600" color="white" borderRadius="full" fontSize="xs" px={3} py={1}>
-                                ✓ Chosen by 85%
-                              </Badge>
-                            </VStack>
-                          </VStack>
-                        </HStack>
-                        
-
-                      </HStack>
-                    </Box>
-
-                    {/* Item 2 - Washing Machine (Simplified) */}
-                    <Box 
-                      bg="gray.800" 
-                      borderRadius="lg" 
-                      p={4} 
-                      border="1px" 
-                      borderColor="gray.600"
-                      shadow="0 2px 8px rgba(0, 0, 0, 0.2)"
-                      _hover={{ 
-                        borderColor: "blue.500",
-                        shadow: "0 4px 16px rgba(59, 130, 246, 0.2)"
-                      }}
-                      transition="all 0.2s ease"
-                    >
-                      <HStack spacing={4} justify="space-between" w="full">
-                        {/* Left: Image + Info */}
-                        <HStack spacing={4} flex={1}>
-                          {/* Icon instead of Image */}
-                          <Box
-                            w="80px"
-                            h="80px"
-                            borderRadius="lg"
-                            bg="gray.700"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            border="2px"
-                            borderColor="gray.600"
-                          >
-                            <Text fontSize="3xl">🌀</Text>
-                          </Box>
-                          
-                          <VStack align="start" spacing={3} flex={1}>
-                            <VStack align="start" spacing={1}>
-                              <Text fontSize="lg" fontWeight="bold" color="white">
-                                Washing Machine
-                              </Text>
-                              <Badge bg="green.600" color="white" borderRadius="full" fontSize="xs" px={3} py={1}>
-                                ✓ Chosen by 78%
-                              </Badge>
-                            </VStack>
-                          </VStack>
-                        </HStack>
-                        
-
-                      </HStack>
-                    </Box>
-
-                    {/* Item 3 - Double Bed (Simplified) */}
-                    <Box 
-                      bg="gray.800" 
-                      borderRadius="lg" 
-                      p={4} 
-                      border="1px" 
-                      borderColor="gray.600"
-                      shadow="0 2px 8px rgba(0, 0, 0, 0.2)"
-                      _hover={{ 
-                        borderColor: "blue.500",
-                        shadow: "0 4px 16px rgba(59, 130, 246, 0.2)"
-                      }}
-                      transition="all 0.2s ease"
-                    >
-                      <HStack spacing={4} justify="space-between" w="full">
-                        {/* Left: Image + Info */}
-                        <HStack spacing={4} flex={1}>
-                          {/* Icon instead of Image */}
-                          <Box
-                            w="80px"
-                            h="80px"
-                            borderRadius="lg"
-                            bg="gray.700"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            border="2px"
-                            borderColor="gray.600"
-                          >
-                            <Text fontSize="3xl">🛏️</Text>
-                          </Box>
-                          
-                          <VStack align="start" spacing={3} flex={1}>
-                            <VStack align="start" spacing={1}>
-                              <Text fontSize="lg" fontWeight="bold" color="white">
-                                Double Bed
-                              </Text>
-                              <Badge bg="green.600" color="white" borderRadius="full" fontSize="xs" px={3} py={1}>
-                                ✓ Chosen by 72%
-                              </Badge>
-                            </VStack>
-                          </VStack>
-                        </HStack>
-                        
-
-                      </HStack>
-                    </Box>
-
-                    {/* Cleaner Footer Stats */}
-                    <Box mt={4} p={4} bg="gray.700" borderRadius="lg" border="1px" borderColor="gray.600">
-                      <HStack justify="space-between" spacing={4}>
-                        <VStack spacing={1} align="start">
-                          <Text fontSize="sm" color="blue.300" fontWeight="semibold">
-                            2,847 items added this week
-                          </Text>
-                          <Text fontSize="xs" color="gray.400">
-                            Save time with popular choices
-                          </Text>
-                        </VStack>
-                        <Button
-                          size="sm"
-                          bg="blue.600"
-                          color="white"
-                          _hover={{ bg: "blue.500" }}
-                          borderRadius="lg"
-                          px={4}
-                          onClick={() => {
-                            // Navigate to the items section or expand the current step
-                            setCurrentStep(1);
-                            // Scroll to the items section
-                            const itemsSection = document.querySelector('[data-step="items"]');
-                            if (itemsSection) {
-                              itemsSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                          }}
-                        >
-                          View All Items
-                        </Button>
-                      </HStack>
-                    </Box>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Premium Speedy Van Card */}
-              <Card 
-                bg="gray.800" 
-                shadow="0 0 40px rgba(147, 51, 234, 0.6), 0 0 80px rgba(147, 51, 234, 0.3), 0 0 120px rgba(147, 51, 234, 0.1)" 
-                borderRadius="2xl" 
-                border="2px" 
-                borderColor="purple.400"
-                overflow="hidden"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: "-2px",
-                  left: "-2px",
-                  right: "-2px",
-                  bottom: "-2px",
-                  borderRadius: "2xl",
-                  background: "linear-gradient(45deg, #8B5CF6, #3B82F6, #06B6D4, #10B981, #F59E0B, #EF4444)",
-                  zIndex: -1,
-                  filter: "blur(10px)",
-                  opacity: 0.7
-                }}
-              >
-                <Box position="relative">
-                  {/* Premium Badge */}
-                  <Box
-                    position="absolute"
-                    top="4"
-                    left="4"
-                    bg="gradient(to-r, blue.600, blue.500)"
-                    px={3}
-                    py={1}
-                    borderRadius="full"
-                    zIndex={2}
-                    shadow="0 4px 12px rgba(59, 130, 246, 0.4)"
-                  >
-                    <Text fontSize="xs" color="white" fontWeight="bold">
-                      PREMIUM
-                    </Text>
-                  </Box>
-
-                  {/* Service Information - Text Only */}
-                  <Box
-                    w="full"
-                    h="220px"
-                    bg="gray.900"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    borderRadius="xl"
-                    position="relative"
-                  >
-                    <VStack spacing={4} textAlign="center" px={6}>
-                      <Text fontSize="4xl">🚚</Text>
-                      <Text fontSize="lg" color="white" fontWeight="bold">
-                        Professional Moving Service
-                      </Text>
-                      <Text fontSize="sm" color="gray.300">
-                        Fully Insured & GPS Tracked
-                      </Text>
-                    </VStack>
-                  </Box>
-                </Box>
-
-                <CardBody py={6} px={6}>
-                  <VStack spacing={4} align="stretch">
-                    {/* Main Title */}
-                    <VStack spacing={2} align="center">
-                      <Heading size="lg" color="white" fontWeight="bold" textAlign="center">
-                        Professional Luton Van
-                      </Heading>
-                      <Text fontSize="sm" color="blue.300" fontWeight="medium" textAlign="center">
-                        🚚 Your Trusted Moving Partner
-                      </Text>
-                    </VStack>
-
-                    {/* Features Grid */}
-                    <VStack spacing={3} align="stretch">
-                      <HStack justify="space-between" align="center">
-                        <HStack spacing={2}>
-                          <Box w="2" h="2" bg="green.400" borderRadius="full" />
-                          <Text fontSize="sm" color="gray.300">Fully Insured</Text>
-                        </HStack>
-                        <Text fontSize="xs" color="green.400" fontWeight="semibold">✓ Covered</Text>
-                      </HStack>
-                      
-                      <HStack justify="space-between" align="center">
-                        <HStack spacing={2}>
-                          <Box w="2" h="2" bg="blue.400" borderRadius="full" />
-                          <Text fontSize="sm" color="gray.300">GPS Tracked</Text>
-                        </HStack>
-                        <Text fontSize="xs" color="blue.400" fontWeight="semibold">📍 Live</Text>
-                      </HStack>
-                      
-                      <HStack justify="space-between" align="center">
-                        <HStack spacing={2}>
-                          <Box w="2" h="2" bg="purple.400" borderRadius="full" />
-                          <Text fontSize="sm" color="gray.300">Expert Drivers</Text>
-                        </HStack>
-                        <Text fontSize="xs" color="purple.400" fontWeight="semibold">⭐ 5.0</Text>
-                      </HStack>
-                    </VStack>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Welcome to Speedy Van Image */}
-              <Card 
-                bg="gray.800" 
-                shadow="0 0 40px rgba(59, 130, 246, 0.6), 0 0 80px rgba(59, 130, 246, 0.3), 0 0 120px rgba(59, 130, 246, 0.1)" 
-                borderRadius="2xl" 
-                border="2px" 
-                borderColor="blue.400"
-                overflow="hidden"
-                position="relative"
-                _before={{
-                  content: '""',
-                  position: "absolute",
-                  top: "-2px",
-                  left: "-2px",
-                  right: "-2px",
-                  bottom: "-2px",
-                  borderRadius: "2xl",
-                  background: "linear-gradient(45deg, #3B82F6, #8B5CF6, #06B6D4, #10B981, #F59E0B, #EF4444)",
-                  zIndex: -1,
-                  filter: "blur(10px)",
-                  opacity: 0.7
-                }}
-              >
-                <CardBody p={6}>
-                  <VStack spacing={4} align="center">
-                    <Text fontSize="lg" color="white" fontWeight="bold" textAlign="center">
-                      Welcome to Our Service
-                    </Text>
-                    
-                    <Box
-                      w="full"
-                      maxW="300px"
-                      h="300px"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      bg="gray.800"
-                      borderRadius="xl"
-                    >
-                      <VStack spacing={4} textAlign="center">
-                        <Text fontSize="5xl">😊</Text>
-                        <Text fontSize="lg" color="white" fontWeight="bold">
-                          Welcome to Speedy Van
-                        </Text>
-                      </VStack>
-                    </Box>
-                    
-                    <Text fontSize="sm" color="gray.300" textAlign="center">
-                      Your trusted moving partner with a smile! 😊
-                    </Text>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Live Price Preview - Dark Theme */}
-              {formData.step1.items.length > 0 && (
-                <Card bg="gray.800" shadow="0 0 20px rgba(147, 51, 234, 0.3)" borderRadius="lg" border="1px" borderColor="purple.600">
-                  <CardBody p={4}>
-                    <VStack spacing={2} align="center">
-                      <Text fontSize="xs" color="purple.400" fontWeight="semibold">
-                        Items Selected
-                      </Text>
-                      <Text fontSize="2xl" fontWeight="bold" color="purple.300">
-                        {formData.step1.items.length}
-                      </Text>
-                      <Text fontSize="xs" color="gray.400" textAlign="center">
-                        items selected
-                      </Text>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              )}
-
-              {/* Pricing Error Display */}
-              {errors.pricing && (
-                <Card bg="red.900" shadow="0 0 20px rgba(239, 68, 68, 0.3)" borderRadius="lg" border="1px" borderColor="red.600">
-                  <CardBody p={4}>
-                    <VStack spacing={3} align="stretch">
-                      <HStack spacing={2} align="center">
-                        <Circle size="24px" bg="red.600" color="white">
-                          <Icon as={FaExclamationTriangle} boxSize={3} />
-                        </Circle>
-                        <VStack align="start" spacing={0} flex={1}>
-                          <Text fontSize="sm" fontWeight="bold" color="red.100">
-                            Pricing Error
-                          </Text>
-                          <Text fontSize="xs" color="red.200">
-                            Unable to calculate price
-                          </Text>
-                        </VStack>
-                      </HStack>
-                      <Text fontSize="sm" color="red.100" textAlign="center">
-                        {errors.pricing}
-                      </Text>
-                      <Button
-                        size="sm"
-                        bg="red.600"
-                        color="white"
-                        _hover={{ bg: "red.500" }}
-                        borderRadius="lg"
-                        onClick={() => {
-                          clearErrors();
-                          calculatePricing().catch(error => {
-                            console.error('Retry pricing failed:', error);
-                          });
-                        }}
-                        leftIcon={<Icon as={FaRedo} />}
-                      >
-                        Retry Calculation
-                      </Button>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              )}
-            </VStack>
-          </SimpleGrid>
+          {/* Main Content - Enhanced Glassmorphism */}
+          <Card 
+            bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+            backdropFilter="blur(20px) saturate(180%)"
+            shadow="0 8px 32px rgba(128, 90, 213, 0.4), 0 0 60px rgba(128, 90, 213, 0.3), 0 0 100px rgba(128, 90, 213, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+            borderRadius="2xl"
+            overflow="hidden"
+            border="2px solid"
+            borderColor="rgba(128, 90, 213, 0.5)"
+            data-step="items"
+            w="full"
+            mx={0}
+            position="relative"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            _hover={{
+              shadow: "0 12px 40px rgba(128, 90, 213, 0.5), 0 0 80px rgba(128, 90, 213, 0.4), 0 0 120px rgba(128, 90, 213, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+              borderColor: "rgba(128, 90, 213, 0.7)",
+              transform: "translateY(-2px)",
+            }}
+            sx={{
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(128, 90, 213, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
+                opacity: 0.6,
+                zIndex: 0,
+                pointerEvents: 'none',
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
+                animation: 'shine 8s infinite',
+                zIndex: 1,
+                pointerEvents: 'none',
+              },
+              '@keyframes shine': {
+                '0%': { left: '-100%' },
+                '100%': { left: '200%' },
+              },
+              '& > *': {
+                position: 'relative',
+                zIndex: 2,
+              },
+            }}
+          >
+            <CardBody p={0}>
+              {currentStep === 1 ? (
+                <WhereAndWhatStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  onNext={() => setCurrentStep(2)}
+                  pricingTiers={pricingTiers}
+                  availabilityData={availabilityData}
+                  isLoadingAvailability={isLoadingAvailability}
+                />
+              ) : currentStep === 2 ? (
+                <WhoAndPaymentStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  paymentSuccess={false}
+                  isCalculatingPricing={isCalculatingPricing}
+                  economyPrice={calculateEconomyPrice()}
+                  standardPrice={calculateStandardPrice()}
+                  priorityPrice={calculatePriorityPrice()}
+                  calculatePricing={calculatePricing}
+                  validatePromotionCode={validatePromotionCode}
+                  applyPromotionCode={applyPromotionCode}
+                  removePromotionCode={removePromotionCode}
+                />
+              ) : null}
+            </CardBody>
+          </Card>
 
 
           {/* Enhanced Error Display */}

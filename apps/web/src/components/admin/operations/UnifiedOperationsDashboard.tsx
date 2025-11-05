@@ -378,26 +378,6 @@ export default function UnifiedOperationsDashboard() {
         </VStack>
         
         <HStack spacing={3}>
-          {/* Test Toast Button (for debugging) */}
-          <Button
-            colorScheme="purple"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              toast({
-                title: '🧪 Test Notification',
-                description: 'If you see this, toast notifications are working!',
-                status: 'info',
-                duration: 5000,
-                isClosable: true,
-                position: 'top',
-              });
-              console.log('🧪 Test toast triggered');
-            }}
-          >
-            Test Toast
-          </Button>
-
           {/* Declined Notifications Badge */}
           {declinedNotifications.length > 0 && (
             <Button
@@ -482,26 +462,83 @@ export default function UnifiedOperationsDashboard() {
       <Tabs
         index={activeTab}
         onChange={setActiveTab}
-        variant="enclosed"
-        colorScheme="blue"
+        variant="unstyled"
         isLazy
       >
-        <TabList bg="gray.800" borderColor="gray.700" borderRadius="md" p={2}>
+        <TabList 
+          bg="#111111" 
+          borderColor="#333333" 
+          borderWidth="2px"
+          borderRadius="xl" 
+          p={2}
+          boxShadow="0 4px 16px rgba(0, 0, 0, 0.4)"
+          display="flex"
+          gap={2}
+        >
           <Tab
+            flex={1}
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
             _selected={{
-              bg: 'blue.600',
-              color: 'white',
-              borderColor: 'blue.600',
+              bg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#2563eb',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#10b981',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)',
+              },
             }}
-            _hover={{ bg: 'gray.700' }}
-            color="gray.300"
-            fontWeight="medium"
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
           >
-            <HStack spacing={2}>
-              <Icon as={FaClipboardList} />
-              <Text>Single Orders</Text>
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaClipboardList} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px">Single Orders</Text>
               {ordersCount > 0 && (
-                <Badge colorScheme="blue" borderRadius="full">
+                <Badge 
+                  bg="rgba(37, 99, 235, 0.2)"
+                  color="#FFFFFF"
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  fontWeight="bold"
+                  fontSize="xs"
+                  letterSpacing="0.5px"
+                  border="1px solid"
+                  borderColor="rgba(37, 99, 235, 0.3)"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 2px 8px rgba(0, 0, 0, 0.2)"
+                  animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                >
                   {ordersCount}
                 </Badge>
               )}
@@ -509,20 +546,69 @@ export default function UnifiedOperationsDashboard() {
           </Tab>
 
           <Tab
+            flex={1}
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
             _selected={{
-              bg: 'blue.600',
-              color: 'white',
-              borderColor: 'blue.600',
+              bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#10b981',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#2563eb',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(37, 99, 235, 0.6)',
+              },
             }}
-            _hover={{ bg: 'gray.700' }}
-            color="gray.300"
-            fontWeight="medium"
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
           >
-            <HStack spacing={2}>
-              <Icon as={FaRoute} />
-              <Text>Multi-Drop Routes</Text>
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaRoute} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px">Multi-Drop Routes</Text>
               {routesCount > 0 && (
-                <Badge colorScheme="green" borderRadius="full">
+                <Badge 
+                  bg="rgba(16, 185, 129, 0.2)"
+                  color="#FFFFFF"
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  fontWeight="bold"
+                  fontSize="xs"
+                  letterSpacing="0.5px"
+                  border="1px solid"
+                  borderColor="rgba(16, 185, 129, 0.3)"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 2px 8px rgba(0, 0, 0, 0.2)"
+                  animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                >
                   {routesCount}
                 </Badge>
               )}
