@@ -2003,7 +2003,7 @@ export default function WhereAndWhatStep({
       display="block" 
       w="100%" 
       maxW="100%" 
-      px={{ base: 3, md: 6 }} 
+      px={{ base: 0, md: 6 }} 
       py={{ base: 6, md: 10 }} 
       overflowX="hidden"
       sx={{
@@ -2020,7 +2020,7 @@ export default function WhereAndWhatStep({
 
         
         {/* Header */}
-        <Box w="100%" maxW="container.lg" mx="auto">
+        <Box w="100%" maxW={{ base: "100%", md: "container.lg" }} mx="auto" px={{ base: 3, md: 0 }}>
           <VStack spacing={{ base: 3, sm: 4 }} textAlign="center">
             <Heading size={{ base: "lg", sm: "xl", md: "2xl" }} color="white" fontWeight="700" letterSpacing="0.3px">
               What needs moving?
@@ -2032,7 +2032,7 @@ export default function WhereAndWhatStep({
         </Box>
 
         {/* Address Input Section */}
-        <Box w="100%" maxW="container.lg" mx="auto">
+        <Box w="100%" maxW={{ base: "100%", md: "container.lg" }} mx="auto" px={{ base: 3, md: 0 }}>
           <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
           <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
             <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
@@ -3019,7 +3019,7 @@ export default function WhereAndWhatStep({
         </Box>
 
         {/* Item Selection - Enhanced */}
-        <Box w="100%" maxW="container.lg" mx="auto">
+        <Box w="100%" maxW={{ base: "100%", md: "container.lg" }} mx="auto" px={{ base: 3, md: 0 }}>
           <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px) saturate(180%)"

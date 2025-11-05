@@ -585,7 +585,7 @@ export default function BookingLuxuryPage() {
         overscrollBehavior: 'none',
       }}
     >
-      <Container maxW="6xl" px={{ base: 4, md: 6 }}>
+      <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 2, md: 6 }}>
         <Box 
           display="block" 
           w="100%" 
@@ -1104,7 +1104,7 @@ export default function BookingLuxuryPage() {
       {/* Inline Back button (non-sticky) */}
       {currentStep === STEPS.length && (
         <Box mt={6} pb={6}>
-          <Container maxW="6xl">
+          <Container maxW={{ base: "full", md: "6xl" }}>
             <Button
               leftIcon={<FaArrowLeft />}
               onClick={handlePrevious}
