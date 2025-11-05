@@ -2102,7 +2102,7 @@ export default function WhereAndWhatStep({
                 >
                   <CardBody p={cardPadding} w="full">
                     <VStack spacing={cardSpacing} align="stretch" w="full">
-                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexDirection="row">
+                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexWrap="nowrap">
                         <Box
                           position="relative"
                           w={iconSize}
@@ -2126,14 +2126,18 @@ export default function WhereAndWhatStep({
                         >
                           <Icon as={FaMapMarkerAlt} color="#10B981" boxSize={iconBoxSize} filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" />
                         </Box>
-                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW={0} textAlign="left">
+                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW="0" textAlign="left" overflow="hidden">
                           <Text 
                             fontSize={titleTextSize} 
                             fontWeight="700" 
                             color="white"
                             letterSpacing="0.3px"
                             lineHeight="1.2"
-                            noOfLines={2}
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
                           >
                             Pickup Address
                           </Text>
@@ -2142,7 +2146,11 @@ export default function WhereAndWhatStep({
                             color="gray.300"
                             fontWeight="500"
                             lineHeight="1.3"
-                            noOfLines={2}
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
                           >
                             Where we'll collect your items
                           </Text>
@@ -2273,7 +2281,7 @@ export default function WhereAndWhatStep({
                 >
                   <CardBody p={cardPadding} w="full">
                     <VStack spacing={cardSpacing} align="stretch" w="full">
-                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexDirection="row">
+                      <HStack spacing={useBreakpointValue({ base: 2.5, sm: 3, md: 4 }) ?? 3} align="center" w="full" flexWrap="nowrap">
                         <Box
                           position="relative"
                           w={iconSize}
@@ -2297,14 +2305,18 @@ export default function WhereAndWhatStep({
                         >
                           <Icon as={FaMapMarkerAlt} color="#3B82F6" boxSize={iconBoxSize} filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
                         </Box>
-                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW={0} textAlign="left">
+                        <VStack align="start" spacing={useBreakpointValue({ base: 0.5, sm: 1 }) ?? 1} flex={1} minW="0" textAlign="left" overflow="hidden">
                           <Text 
                             fontSize={titleTextSize} 
                             fontWeight="700" 
                             color="white"
                             letterSpacing="0.3px"
                             lineHeight="1.2"
-                            noOfLines={2}
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
                           >
                             Dropoff Address
                           </Text>
@@ -2313,9 +2325,13 @@ export default function WhereAndWhatStep({
                             color="gray.300"
                             fontWeight="500"
                             lineHeight="1.3"
-                            noOfLines={2}
+                            noOfLines={1}
+                            whiteSpace="nowrap"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            w="full"
                           >
-                            Your destination
+                            Where we'll deliver your items
                           </Text>
                         </VStack>
                       </HStack>
@@ -2690,25 +2706,30 @@ export default function WhereAndWhatStep({
                               },
                             }}
                           >
-                            <CardBody p={4} textAlign="center">
-                              <VStack spacing={2}>
-                                <Text fontSize="2xl" filter={isSelected ? "drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" : "none"}>
+                            <CardBody p={{ base: 2, sm: 3, md: 4 }} textAlign="center">
+                              <VStack spacing={{ base: 1, sm: 1.5, md: 2 }}>
+                                <Text fontSize={{ base: "xl", sm: "2xl" }} filter={isSelected ? "drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" : "none"}>
                                   {i === 1 ? '🌅' : 
                                    date.getDay() === 0 || date.getDay() === 6 ? '🎯' : '📅'}
                                 </Text>
                                 <Text 
                                   fontWeight="700" 
                                   color="white" 
-                                  fontSize="sm"
+                                  fontSize={{ base: "xs", sm: "sm" }}
                                   letterSpacing="0.2px"
+                                  whiteSpace="nowrap"
+                                  overflow="hidden"
+                                  textOverflow="ellipsis"
+                                  w="full"
                                 >
                                   {i === 1 ? 'Tomorrow' : 
                                    date.toLocaleDateString('en-US', { weekday: 'short' })}
                                 </Text>
                                 <Text 
-                                  fontSize="xs" 
+                                  fontSize={{ base: "2xs", sm: "xs" }}
                                   color={isSelected ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.6)"}
                                   fontWeight="500"
+                                  whiteSpace="nowrap"
                                 >
                                   {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </Text>
@@ -2928,10 +2949,10 @@ export default function WhereAndWhatStep({
                             },
                           }}
                         >
-                          <CardBody p={5} textAlign="center">
-                            <VStack spacing={3}>
+                          <CardBody p={{ base: 2, sm: 3, md: 5 }} textAlign="center">
+                            <VStack spacing={{ base: 1.5, sm: 2, md: 3 }}>
                               <Text 
-                                fontSize="2xl" 
+                                fontSize={{ base: "xl", sm: "2xl" }}
                                 filter={isSelected ? "drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" : "none"}
                               >
                                 🕐
@@ -2939,8 +2960,9 @@ export default function WhereAndWhatStep({
                               <Text 
                                 fontWeight="700" 
                                 color="white" 
-                                fontSize="md"
+                                fontSize={{ base: "xs", sm: "sm", md: "md" }}
                                 letterSpacing="0.2px"
+                                whiteSpace="nowrap"
                               >
                                 {slot}
                               </Text>
@@ -3959,7 +3981,17 @@ export default function WhereAndWhatStep({
                                     {group.images.map((src, idx) => (
                                       <Box key={`${group.key}-${idx}`}>
                                         <ItemImage src={src} alt={group.label} ratio={3/4} />
-                                        <Text mt={{ base: 1.5, sm: 2 }} fontSize={{ base: "xs", sm: "sm" }} color="white" textAlign="center" lineHeight="1.3" noOfLines={2}>
+                                        <Text 
+                                          mt={{ base: 1.5, sm: 2 }} 
+                                          fontSize={{ base: "xs", sm: "sm" }} 
+                                          color="white" 
+                                          textAlign="center" 
+                                          lineHeight="1.3" 
+                                          noOfLines={2}
+                                          wordBreak="break-word"
+                                          overflow="hidden"
+                                          textOverflow="ellipsis"
+                                        >
                                           {titleFromSrc(src, group.label)}
                                         </Text>
                                         <HStack justify="center" mt={{ base: 1.5, sm: 2 }} spacing={{ base: 2, sm: 3 }} w="full">
