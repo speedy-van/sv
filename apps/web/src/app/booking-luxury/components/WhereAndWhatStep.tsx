@@ -1999,7 +1999,22 @@ export default function WhereAndWhatStep({
   // Images removed - no image helper function needed
 
   return (
-    <VStack spacing={{ base: 6, md: 10 }} align="stretch" w="100%" px={{ base: 3, md: 6 }} py={{ base: 6, md: 10 }} overflowX="hidden">
+    <Box 
+      display="block" 
+      w="100%" 
+      maxW="100%" 
+      px={{ base: 3, md: 6 }} 
+      py={{ base: 6, md: 10 }} 
+      overflowX="hidden"
+      sx={{
+        '& > *': {
+          marginBottom: { base: '24px', md: '40px' },
+        },
+        '& > *:last-child': {
+          marginBottom: 0,
+        },
+      }}
+    >
         
         {/* Version Banner - Hidden in production, visible in dev */}
 
@@ -2442,6 +2457,8 @@ export default function WhereAndWhatStep({
                   boxShadow: "0 8px 32px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                 }}
                 sx={{
+                  willChange: 'filter',
+                  WebkitBackdropFilter: 'blur(10px)',
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -2525,7 +2542,7 @@ export default function WhereAndWhatStep({
         </Box>
 
         {/* Premium Date and Time Selection - Enhanced */}
-        <Box w="100%" maxW="container.md" mx="auto">
+        <Box w="100%" maxW="100%" mx="auto">
           <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px) saturate(180%)"
@@ -2542,6 +2559,8 @@ export default function WhereAndWhatStep({
             transform: "translateY(-2px)",
           }}
           sx={{
+            willChange: 'filter',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -2649,7 +2668,7 @@ export default function WhereAndWhatStep({
                   </HStack>
                   
                   {/* Enhanced 7 Date Cards - Starting Tomorrow */}
-                  <SimpleGrid columns={{ base: 2, md: 4, lg: 7 }} spacing={3} w="full">
+                  <SimpleGrid columns={{ base: 1, sm: 2, md: 4, lg: 7 }} spacing={3} w="full">
                     {(() => {
                       const dateCards = [];
                       for (let i = 1; i <= 7; i++) {
@@ -2760,7 +2779,8 @@ export default function WhereAndWhatStep({
                       position="relative"
                       overflow="hidden"
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      maxW="300px"
+                      w="full"
+                      maxW="100%"
                       mx="auto"
                       boxShadow="0 4px 20px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                       _hover={{
@@ -3016,6 +3036,8 @@ export default function WhereAndWhatStep({
             transform: "translateY(-2px)",
           }}
           sx={{
+            willChange: 'filter',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -3103,6 +3125,10 @@ export default function WhereAndWhatStep({
                   backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
+                  sx={{ 
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
                   _hover={{
                     borderColor: "rgba(59, 130, 246, 0.6)",
                     transform: "translateY(-2px)",
@@ -3138,6 +3164,10 @@ export default function WhereAndWhatStep({
                   backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
+                  sx={{ 
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
                   _hover={{
                     borderColor: "rgba(16, 185, 129, 0.6)",
                     transform: "translateY(-2px)",
@@ -3173,6 +3203,10 @@ export default function WhereAndWhatStep({
                   backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
+                  sx={{ 
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
                   _hover={{
                     borderColor: "rgba(168, 85, 247, 0.6)",
                     transform: "translateY(-2px)",
@@ -3448,6 +3482,8 @@ export default function WhereAndWhatStep({
                         overflow="visible"
                         position="relative"
                         sx={{
+                          WebkitBackdropFilter: 'blur(10px)',
+                          willChange: 'filter',
                           '&::before': {
                             content: '""',
                             position: 'absolute',
@@ -3519,7 +3555,7 @@ export default function WhereAndWhatStep({
                                 addItem(pkg);
                               }}
                               w="full"
-                              maxW={{ base: "200px", sm: "240px" }}
+                              maxW="100%"
                             >
                               Select
                             </Button>
@@ -3556,6 +3592,8 @@ export default function WhereAndWhatStep({
                         overflow="hidden"
                         position="relative"
                         sx={{
+                          WebkitBackdropFilter: 'blur(10px)',
+                          willChange: 'filter',
                           '&::before': {
                             content: '""',
                             position: 'absolute',
@@ -3695,7 +3733,7 @@ export default function WhereAndWhatStep({
                             </Text>
                             <Badge colorScheme="pink" variant="subtle">Quick add</Badge>
                           </HStack>
-                          <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
+                          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
                             {featuredPopularItems.map((fi) => (
                               <Box key={`${fi.groupKey}-${fi.src}`} cursor="pointer" onClick={() => incrementDatasetItem(fi.groupKey, fi.src, fi.groupLabel)}>
                                 <ItemImage src={fi.src} alt={fi.label} ratio={3/4} />
@@ -3796,7 +3834,7 @@ export default function WhereAndWhatStep({
                             </Select>
                           </FormControl>
                         </VStack>
-                        <VStack align="start" spacing={1} flex="1">
+                        <VStack align="start" spacing={1} flex={{ base: 0, md: 1 }}>
                           <Text color="gray.300" fontSize="sm" fontWeight="semibold">
                             Dataset coverage
                           </Text>
@@ -3836,7 +3874,7 @@ export default function WhereAndWhatStep({
                                     </HStack>
                                     <Badge colorScheme="purple" variant="outline" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }} whiteSpace={{ base: "nowrap", sm: "normal" }}>UK dataset imagery</Badge>
                                   </HStack>
-                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
+                                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
                                     {group.images.map((src, idx) => (
                                       <Box key={`${group.key}-${idx}`} cursor="pointer" onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))} overflow="visible">
                                         <ItemImage src={src} alt={group.label} ratio={3/4} />
@@ -4040,7 +4078,7 @@ export default function WhereAndWhatStep({
         </Box>
 
         {/* Price Summary & Cart */}
-        <Box w="100%" maxW="container.md" mx="auto">
+        <Box w="100%" maxW="100%" mx="auto">
           <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
           <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
             <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
@@ -4296,6 +4334,6 @@ export default function WhereAndWhatStep({
           </CardBody>
         </Card>
         </Box>
-    </VStack>
+    </Box>
   );
 }

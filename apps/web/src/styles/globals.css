@@ -113,9 +113,57 @@ html, body, #__next {
 
 /* iOS Safari viewport fixes */
 html, body { 
-  overflow-x: hidden; 
+  height: 100%;
+  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+/* Prevent Safari from converting flex containers to scroll snapping containers */
+* {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Safari 17+ Flex/Grid Fix: Prevent flex items from collapsing in Grid containers */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari only - target Safari-specific bugs */
+  [data-chakra-simple-grid] > *,
+  .css-grid > *,
+  .css-simple-grid > * {
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    flex-basis: auto !important;
+  }
+  
+  /* Force block-level display on main content containers to prevent Safari scroll snapping */
+  [data-chakra-component="Box"][style*="display: block"],
+  [data-chakra-component="Box"] {
+    display: block !important;
+  }
+  
+  /* Prevent Safari from converting VStack to scroll snapping container */
+  [data-chakra-component="VStack"] {
+    display: block !important;
+    flex-direction: unset !important;
+  }
+  
+  /* Additional Safari 17+ fixes for flex containers */
+  .flex-container,
+  [style*="display: flex"],
+  [style*="display:flex"] {
+    min-height: 0;
+  }
+  
+  /* Safari 17+ viewport fix - use dvh when supported */
+  @supports (height: 100dvh) {
+    html, body {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+  }
 }
 
 /* iOS text layout safety - prevent vertical glyphs and text tearing */

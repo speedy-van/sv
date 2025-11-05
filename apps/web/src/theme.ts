@@ -161,7 +161,7 @@ const semanticTokens = {
 
 const breakpoints = {
   base: '0px',
-  sm: '480px', // Mobile landscape
+  sm: '380px', // Covers iPhone 15–17 (was 480px)
   md: '768px', // Tablet
   lg: '1024px', // Desktop
   xl: '1280px', // Large desktop
@@ -184,6 +184,11 @@ const styles = {
         'linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%)',
       backgroundAttachment: 'fixed',
       minHeight: '100vh',
+      // iPhone 15+ safe-area support (prevents Safari from clipping top/bottom elements)
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)',
     },
 
     // Focus styles with neon glow

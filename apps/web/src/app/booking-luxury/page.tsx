@@ -571,9 +571,36 @@ export default function BookingLuxuryPage() {
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
-    <Box minH="100vh" bg={bgColor} py={{ base: 2, md: 8 }} pb={{ base: "100px", md: 8 }}>
+    <Box 
+      display="block" 
+      w="100%" 
+      minH="100dvh" 
+      bg={bgColor} 
+      py={{ base: 2, md: 8 }} 
+      pb={{ base: "100px", md: 8 }}
+      overflowX="hidden"
+      overflowY="auto"
+      sx={{
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'none',
+      }}
+    >
       <Container maxW="6xl" px={{ base: 4, md: 6 }}>
-        <VStack spacing={{ base: 4, md: 8 }} align="stretch" py={{ base: 4, md: 8 }}>
+        <Box 
+          display="block" 
+          w="100%" 
+          py={{ base: 4, md: 8 }}
+          sx={{
+            '& > *': {
+              display: 'block',
+              width: '100%',
+              marginBottom: { base: '16px', md: '32px' },
+            },
+            '& > *:last-child': {
+              marginBottom: 0,
+            },
+          }}
+        >
           {/* PREMIUM HEADER - ENHANCED GLASSMORPHISM */}
           <Card 
             bg="linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
@@ -1071,7 +1098,7 @@ export default function BookingLuxuryPage() {
               </CardBody>
             </Card>
           )}
-        </VStack>
+        </Box>
       </Container>
 
       {/* Inline Back button (non-sticky) */}
