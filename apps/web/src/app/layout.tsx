@@ -20,6 +20,7 @@ import Providers from '@/components/Providers';
 import SchemaProvider from '@/components/Schema/SchemaProvider';
 import { VisitorTracker } from '@/components/VisitorTracker';
 import { StructuredData } from '@/components/StructuredData';
+import DeviceDetectionScript from '@/components/DeviceDetectionScript';
 
 export const metadata = {
   title: 'Man and Van London | From £25/hour | Book Online Now | Speedy Van',
@@ -318,6 +319,7 @@ export default async function RootLayout({
             `,
           }}
         />
+        <DeviceDetectionScript />
         <VisitorTracker />
         <StructuredData type="moving-company" />
         <SchemaProvider>

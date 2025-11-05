@@ -1416,3 +1416,101 @@ textarea:focus-visible {
     opacity: 0;
   }
 }
+
+/* ========================================
+   Safari 17+ iPhone 15-17 Layout Bug Fixes
+   ======================================== */
+
+/* Device-specific class applied via JavaScript detection */
+.safari-17-plus,
+.iphone-ios-17-plus {
+  /* Force block display on all flex containers to prevent Safari scroll snapping bug */
+  --safari-fix-display: block;
+}
+
+/* Safari 17+ on iPhone: Disable backdrop-filter to prevent GPU compositing issues */
+@supports (-webkit-touch-callout: none) {
+  /* Target iOS Safari only */
+  @media (max-width: 768px) {
+    /* Force stronger background opacity when backdrop-filter is disabled */
+    .safari-17-plus [data-backdrop-filter],
+    .iphone-ios-17-plus [data-backdrop-filter] {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: rgba(31, 41, 55, 0.98) !important;
+    }
+    
+    /* Prevent flex/grid collapse on Safari 17+ */
+    .safari-17-plus * {
+      min-width: 0 !important;
+      min-height: 0 !important;
+    }
+    
+    /* Force SimpleGrid to use block layout on affected devices */
+    .safari-17-plus [data-chakra-component="SimpleGrid"],
+    .iphone-ios-17-plus [data-chakra-component="SimpleGrid"] {
+      display: block !important;
+    }
+    
+    .safari-17-plus [data-chakra-component="SimpleGrid"] > *,
+    .iphone-ios-17-plus [data-chakra-component="SimpleGrid"] > * {
+      display: block !important;
+      width: 100% !important;
+      margin-bottom: 16px !important;
+    }
+    
+    /* Prevent VStack collapse */
+    .safari-17-plus [data-chakra-component="VStack"],
+    .iphone-ios-17-plus [data-chakra-component="VStack"] {
+      display: block !important;
+    }
+    
+    /* Disable complex transforms that trigger GPU bugs */
+    .safari-17-plus [style*="transform"],
+    .iphone-ios-17-plus [style*="transform"] {
+      transform: none !important;
+    }
+  }
+}
+
+/* Additional Safari 17+ fixes for flex/grid combinations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari 17+ specific fixes */
+  @media (max-width: 768px) {
+    /* Prevent scroll snapping container conversion */
+    * {
+      scroll-snap-type: none !important;
+      -webkit-overflow-scrolling: auto !important;
+    }
+    
+    /* Force all Cards to use solid backgrounds on Safari 17+ */
+    [data-chakra-component="Card"] {
+      background: rgba(31, 41, 55, 0.98) !important;
+    }
+    
+    /* Disable will-change on Safari 17+ to prevent GPU issues */
+    * {
+      will-change: auto !important;
+    }
+    
+    /* Force grid items to maintain width */
+    [data-chakra-component="SimpleGrid"] > * {
+      flex-shrink: 0 !important;
+      flex-grow: 0 !important;
+      flex-basis: auto !important;
+    }
+  }
+}
+
+/* Emergency fallback: Force all layouts to stack vertically on Safari 17+ if needed */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 768px) {
+    /* Only apply if JavaScript detection adds this class */
+    body.safari-17-emergency-mode * {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      flex-direction: column !important;
+    }
+  }
+}
