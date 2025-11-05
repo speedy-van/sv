@@ -89,7 +89,6 @@ import {
 import { MdElevator, MdKitchen, MdLocalLaundryService, MdTv } from 'react-icons/md';
 
 import type { FormData } from '../hooks/useBookingForm';
-import { useDeviceDetection } from '@/lib/hooks/use-device-detection';
 import { SmartSearchBox } from './SmartSearchBox';
 import { COMPREHENSIVE_CATALOG, HOUSE_PACKAGES } from '../../../lib/pricing/catalog-dataset';
 import { IndividualItem } from '@speedy-van/shared';
@@ -258,15 +257,6 @@ export default function WhereAndWhatStep({
   availabilityData,
   isLoadingAvailability,
 }: WhereAndWhatStepProps) {
-  
-  // 🚨 Safari 17+ Device Detection for Layout Bug Workaround
-  const { 
-    shouldUseSimplifiedLayout, 
-    hasBackdropFilterBug, 
-    hasFlexGridBug,
-    isSafari17Plus,
-    isAffectedIPhone 
-  } = useDeviceDetection();
   
   // State for item selection mode
   const [itemSelectionMode, setItemSelectionMode] = useState<'bedroom' | 'smart' | 'choose'>('choose');
@@ -2458,7 +2448,7 @@ export default function WhereAndWhatStep({
                 borderRadius="xl" 
                 border="2px solid"
                 borderColor="rgba(147, 51, 234, 0.3)"
-                backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                backdropFilter="blur(10px)"
                 position="relative"
                 overflow="hidden"
                 transition="all 0.3s"
@@ -2467,8 +2457,8 @@ export default function WhereAndWhatStep({
                   boxShadow: "0 8px 32px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                 }}
                 sx={{
-                  willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-                  WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
+                  willChange: 'filter',
+                  WebkitBackdropFilter: 'blur(10px)',
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -2555,7 +2545,7 @@ export default function WhereAndWhatStep({
         <Box w="100%" maxW="100%" mx="auto">
           <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-          backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(20px) saturate(180%)'}
+          backdropFilter="blur(20px) saturate(180%)"
           shadow="0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.3), 0 0 100px rgba(168, 85, 247, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
           borderRadius="2xl"
           border="2px solid"
@@ -2569,8 +2559,8 @@ export default function WhereAndWhatStep({
             transform: "translateY(-2px)",
           }}
           sx={{
-            willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-            WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(20px) saturate(180%)',
+            willChange: 'filter',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -3032,7 +3022,7 @@ export default function WhereAndWhatStep({
         <Box w="100%" maxW="container.lg" mx="auto">
           <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-          backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(20px) saturate(180%)'}
+          backdropFilter="blur(20px) saturate(180%)"
           shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
           borderRadius="2xl"
           border="2px solid"
@@ -3046,8 +3036,8 @@ export default function WhereAndWhatStep({
             transform: "translateY(-2px)",
           }}
           sx={{
-            willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-            WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(20px) saturate(180%)',
+            willChange: 'filter',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -3132,12 +3122,12 @@ export default function WhereAndWhatStep({
                   border="2px solid"
                   borderColor="rgba(59, 130, 246, 0.4)"
                   borderRadius="xl"
-                  backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                  backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
                   sx={{ 
-                    willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-                    WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
                   }}
                   _hover={{
                     borderColor: "rgba(59, 130, 246, 0.6)",
@@ -3171,12 +3161,12 @@ export default function WhereAndWhatStep({
                   border="2px solid"
                   borderColor="rgba(16, 185, 129, 0.4)"
                   borderRadius="xl"
-                  backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                  backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
                   sx={{ 
-                    willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-                    WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
                   }}
                   _hover={{
                     borderColor: "rgba(16, 185, 129, 0.6)",
@@ -3210,12 +3200,12 @@ export default function WhereAndWhatStep({
                   border="2px solid"
                   borderColor="rgba(168, 85, 247, 0.4)"
                   borderRadius="xl"
-                  backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                  backdropFilter="blur(10px)"
                   boxShadow="0 4px 20px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                   transition="all 0.3s"
                   sx={{ 
-                    willChange: hasBackdropFilterBug ? 'auto' : 'filter',
-                    WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
+                    willChange: 'filter',
+                    WebkitBackdropFilter: 'blur(10px)',
                   }}
                   _hover={{
                     borderColor: "rgba(168, 85, 247, 0.6)",
@@ -3478,7 +3468,7 @@ export default function WhereAndWhatStep({
                         border="2px solid"
                         borderColor="rgba(59, 130, 246, 0.4)"
                         borderRadius="xl"
-                        backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                        backdropFilter="blur(10px)"
                         boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                         cursor="pointer"
                         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -3492,8 +3482,8 @@ export default function WhereAndWhatStep({
                         overflow="visible"
                         position="relative"
                         sx={{
-                          WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
-                          willChange: hasBackdropFilterBug ? 'auto' : 'filter',
+                          WebkitBackdropFilter: 'blur(10px)',
+                          willChange: 'filter',
                           '&::before': {
                             content: '""',
                             position: 'absolute',
@@ -3589,7 +3579,7 @@ export default function WhereAndWhatStep({
                         border="2px solid"
                         borderColor="rgba(59, 130, 246, 0.4)"
                         borderRadius="xl"
-                        backdropFilter={hasBackdropFilterBug ? 'none' : 'blur(10px)'}
+                        backdropFilter="blur(10px)"
                         boxShadow="0 4px 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
                         cursor="pointer"
                         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -3602,8 +3592,8 @@ export default function WhereAndWhatStep({
                         overflow="hidden"
                         position="relative"
                         sx={{
-                          WebkitBackdropFilter: hasBackdropFilterBug ? 'none' : 'blur(10px)',
-                          willChange: hasBackdropFilterBug ? 'auto' : 'filter',
+                          WebkitBackdropFilter: 'blur(10px)',
+                          willChange: 'filter',
                           '&::before': {
                             content: '""',
                             position: 'absolute',
