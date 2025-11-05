@@ -1544,7 +1544,7 @@ export default function WhoAndPaymentStep({
             </Card>
           ) : (
             // Show promotion code input - Enhanced
-            <HStack spacing={4} align="stretch">
+            <VStack spacing={4} align="stretch">
               <Input
                 placeholder="Enter promotion code (e.g., SAVE20, WELCOME10)"
                 value={promotionCode}
@@ -1585,7 +1585,7 @@ export default function WhoAndPaymentStep({
                 letterSpacing="0.3px"
                 fontSize="md"
                 textTransform="uppercase"
-                flex={1}
+                w="full"
                 transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
@@ -1608,6 +1608,7 @@ export default function WhoAndPaymentStep({
                 boxShadow="0 4px 16px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
                 borderColor="rgba(251, 146, 60, 0.5)"
+                w="full"
                 _hover={{
                   bg: "linear-gradient(135deg, #EA580C 0%, #DC2626 100%)",
                   boxShadow: "0 6px 20px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
@@ -1625,7 +1626,7 @@ export default function WhoAndPaymentStep({
               >
                 Apply
               </Button>
-            </HStack>
+            </VStack>
           )}
         </VStack>
       </Card>
@@ -1752,7 +1753,7 @@ export default function WhoAndPaymentStep({
           </HStack>
           </VStack>
 
-          {/* Stripe Payment Card - Enhanced */}
+          {/* Stripe Payment Card - Enhanced - Hidden on mobile */}
           <Box 
             p={6} 
             bg="linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)"
@@ -1764,6 +1765,7 @@ export default function WhoAndPaymentStep({
             position="relative"
             overflow="hidden"
             transition="all 0.3s"
+            display={{ base: "none", md: "block" }}
             _hover={{
               borderColor: "rgba(16, 185, 129, 0.6)",
               boxShadow: "0 6px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
@@ -1951,90 +1953,105 @@ export default function WhoAndPaymentStep({
                   {(isEconomyAvailable() || getNextEconomyDate()) && (
                     <Card
                       bg={formData.step1.serviceType === 'standard' 
-                        ? "linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(29, 78, 216, 0.2) 100%)" 
+                        ? "linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(29, 78, 216, 0.3) 100%)" 
                         : "linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(26, 32, 44, 0.7) 100%)"}
                       backdropFilter="blur(10px)"
                       borderRadius="xl"
-                      border="2px solid"
-                      borderColor={formData.step1.serviceType === 'standard' ? "rgba(59, 130, 246, 0.6)" : "rgba(59, 130, 246, 0.3)"}
+                      border={formData.step1.serviceType === 'standard' ? "3px solid" : "2px solid"}
+                      borderColor={formData.step1.serviceType === 'standard' ? "rgba(59, 130, 246, 1)" : "rgba(59, 130, 246, 0.3)"}
                       p={6}
                       shadow={formData.step1.serviceType === 'standard' 
-                        ? "0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)" 
+                        ? "0 12px 48px rgba(59, 130, 246, 0.6), 0 0 80px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(59, 130, 246, 0.2)" 
                         : "0 4px 16px rgba(59, 130, 246, 0.2)"}
                       cursor={isUpdatingService ? "not-allowed" : "pointer"}
                       onClick={() => handleServiceTypeChange('standard')}
+                      transform={formData.step1.serviceType === 'standard' ? 'scale(1.02)' : 'scale(1)'}
                       _hover={isUpdatingService ? {} : { 
-                        transform: 'translateY(-4px)', 
-                        shadow: '0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-                        borderColor: 'rgba(59, 130, 246, 0.7)'
+                        transform: formData.step1.serviceType === 'standard' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
+                        shadow: formData.step1.serviceType === 'standard' 
+                          ? '0 16px 56px rgba(59, 130, 246, 0.7), 0 0 100px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(59, 130, 246, 0.3)'
+                          : '0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                        borderColor: formData.step1.serviceType === 'standard' ? 'rgba(59, 130, 246, 1)' : 'rgba(59, 130, 246, 0.7)'
                       }}
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       opacity={isUpdatingService ? 0.7 : 1}
                       position="relative"
-                      overflow="hidden"
+                      overflow="visible"
                       sx={{
                         '&::before': formData.step1.serviceType === 'standard' ? {
                           content: '""',
                           position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
-                          opacity: 0.6,
-                          zIndex: 0,
+                          top: '-4px',
+                          left: '-4px',
+                          right: '-4px',
+                          bottom: '-4px',
+                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%)',
+                          borderRadius: 'xl',
+                          opacity: 0.8,
+                          zIndex: -1,
                           pointerEvents: 'none',
+                          animation: 'pulse 2s ease-in-out infinite',
                         } : {},
+                        '@keyframes pulse': {
+                          '0%, 100%': { opacity: 0.8 },
+                          '50%': { opacity: 0.4 },
+                        },
                       }}
                     >
                     <VStack spacing={4} align="stretch" position="relative" zIndex={1}>
-                      <HStack justify="space-between" align="center">
-                        <VStack align="start" spacing={2}>
-                          <HStack spacing={2}>
-                            <Badge 
-                              bg="linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%)"
-                              color="white" 
-                              borderRadius="full" 
-                              fontSize="xs" 
-                              px={4} 
-                              py={2}
-                              fontWeight="700"
-                              letterSpacing="0.3px"
-                              boxShadow="0 4px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                              border="2px solid"
-                              borderColor="rgba(16, 185, 129, 0.5)"
-                            >
-                              ECONOMY
-                            </Badge>
-                            <Badge 
-                              bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
-                              color="white" 
-                              borderRadius="full" 
-                              fontSize="xs" 
-                              px={4} 
-                              py={2}
-                              fontWeight="700"
-                              letterSpacing="0.3px"
-                              boxShadow="0 4px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                              border="2px solid"
-                              borderColor="rgba(59, 130, 246, 0.5)"
-                            >
-                              MULTI-DROP
-                            </Badge>
-                          </HStack>
-                          <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px">
-                            Multi-Drop Route
-                          </Heading>
+                      {formData.step1.serviceType === 'standard' && (
+                        <Box position="absolute" top={-2} right={-2} zIndex={10}>
+                          <Circle size="40px" bg="green.500" color="white" boxShadow="0 4px 20px rgba(16, 185, 129, 0.6)">
+                            <Icon as={FaCheckCircle} fontSize="20px" />
+                          </Circle>
+                        </Box>
+                      )}
+                      <VStack spacing={2} align="center">
+                        <VStack spacing={2}>
+                          <Badge 
+                            bg="linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%)"
+                            color="white" 
+                            borderRadius="full" 
+                            fontSize="xs" 
+                            px={4} 
+                            py={2}
+                            fontWeight="700"
+                            letterSpacing="0.3px"
+                            boxShadow="0 4px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                            border="2px solid"
+                            borderColor="rgba(16, 185, 129, 0.5)"
+                          >
+                            ECONOMY
+                          </Badge>
+                          <Badge 
+                            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                            color="white" 
+                            borderRadius="full" 
+                            fontSize="xs" 
+                            px={4} 
+                            py={2}
+                            fontWeight="700"
+                            letterSpacing="0.3px"
+                            boxShadow="0 4px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                            border="2px solid"
+                            borderColor="rgba(59, 130, 246, 0.5)"
+                          >
+                            MULTI-DROP
+                          </Badge>
                         </VStack>
-                        <VStack align="end" spacing={1}>
-                          <Text fontSize="3xl" fontWeight="bold" color="green.400" letterSpacing="0.3px">
-                            £{calculateEconomyPrice().toFixed(2)}
-                          </Text>
-                          <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px">
-                            Cheapest option
-                          </Text>
-                        </VStack>
-                      </HStack>
+                        <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px" textAlign="center">
+                          Multi-Drop Route
+                        </Heading>
+                      </VStack>
+                      
+                      <VStack spacing={1} align="center">
+                        <Text fontSize="4xl" fontWeight="bold" color="green.400" letterSpacing="0.3px" textAlign="center">
+                          £{calculateEconomyPrice().toFixed(2)}
+                        </Text>
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px" textAlign="center">
+                          Cheapest option
+                        </Text>
+                      </VStack>
 
                       <Divider borderColor="rgba(255, 255, 255, 0.1)" />
 
@@ -2081,73 +2098,88 @@ export default function WhoAndPaymentStep({
                   {/* Standard (Direct Van) */}
                   <Card
                     bg={formData.step1.serviceType === 'premium' 
-                      ? "linear-gradient(135deg, rgba(147, 51, 234, 0.3) 0%, rgba(126, 34, 206, 0.2) 100%)" 
+                      ? "linear-gradient(135deg, rgba(147, 51, 234, 0.4) 0%, rgba(126, 34, 206, 0.3) 100%)" 
                       : "linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(26, 32, 44, 0.7) 100%)"}
                     backdropFilter="blur(10px)"
                     borderRadius="xl"
-                    border="2px solid"
-                    borderColor={formData.step1.serviceType === 'premium' ? "rgba(168, 85, 247, 0.6)" : "rgba(147, 51, 234, 0.3)"}
+                    border={formData.step1.serviceType === 'premium' ? "3px solid" : "2px solid"}
+                    borderColor={formData.step1.serviceType === 'premium' ? "rgba(168, 85, 247, 1)" : "rgba(147, 51, 234, 0.3)"}
                     p={6}
                     shadow={formData.step1.serviceType === 'premium' 
-                      ? "0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)" 
+                      ? "0 12px 48px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(168, 85, 247, 0.2)" 
                       : "0 4px 16px rgba(168, 85, 247, 0.2)"}
                     cursor={isUpdatingService ? "not-allowed" : "pointer"}
                     onClick={() => handleServiceTypeChange('premium')}
+                    transform={formData.step1.serviceType === 'premium' ? 'scale(1.02)' : 'scale(1)'}
                     _hover={isUpdatingService ? {} : { 
-                      transform: 'translateY(-4px)', 
-                      shadow: '0 12px 40px rgba(168, 85, 247, 0.5), 0 0 80px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-                      borderColor: 'rgba(168, 85, 247, 0.7)'
+                      transform: formData.step1.serviceType === 'premium' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
+                      shadow: formData.step1.serviceType === 'premium' 
+                        ? '0 16px 56px rgba(168, 85, 247, 0.7), 0 0 100px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(168, 85, 247, 0.3)'
+                        : '0 12px 40px rgba(168, 85, 247, 0.5), 0 0 80px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      borderColor: formData.step1.serviceType === 'premium' ? 'rgba(168, 85, 247, 1)' : 'rgba(168, 85, 247, 0.7)'
                     }}
                     transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                     opacity={isUpdatingService ? 0.7 : 1}
                     position="relative"
-                    overflow="hidden"
+                    overflow="visible"
                     sx={{
                       '&::before': formData.step1.serviceType === 'premium' ? {
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-                        opacity: 0.6,
-                        zIndex: 0,
+                        top: '-4px',
+                        left: '-4px',
+                        right: '-4px',
+                        bottom: '-4px',
+                        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%)',
+                        borderRadius: 'xl',
+                        opacity: 0.8,
+                        zIndex: -1,
                         pointerEvents: 'none',
+                        animation: 'pulse 2s ease-in-out infinite',
                       } : {},
+                      '@keyframes pulse': {
+                        '0%, 100%': { opacity: 0.8 },
+                        '50%': { opacity: 0.4 },
+                      },
                     }}
                   >
                     <VStack spacing={4} align="stretch" position="relative" zIndex={1}>
-                      <HStack justify="space-between" align="center">
-                        <VStack align="start" spacing={2}>
-                          <Badge 
-                            bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
-                            color="white" 
-                            borderRadius="full" 
-                            fontSize="xs" 
-                            px={4} 
-                            py={2}
-                            fontWeight="700"
-                            letterSpacing="0.3px"
-                            boxShadow="0 4px 12px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                            border="2px solid"
-                            borderColor="rgba(168, 85, 247, 0.5)"
-                          >
-                            STANDARD
-                          </Badge>
-                          <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px">
-                            Direct Van Service
-                          </Heading>
-                        </VStack>
-                        <VStack align="end" spacing={1}>
-                          <Text fontSize="3xl" fontWeight="bold" color="purple.400" letterSpacing="0.3px">
-                            £{calculateStandardPrice().toFixed(2)}
-                          </Text>
-                          <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px">
-                            Most popular
-                          </Text>
-                        </VStack>
-                      </HStack>
+                      {formData.step1.serviceType === 'premium' && (
+                        <Box position="absolute" top={-2} right={-2} zIndex={10}>
+                          <Circle size="40px" bg="green.500" color="white" boxShadow="0 4px 20px rgba(16, 185, 129, 0.6)">
+                            <Icon as={FaCheckCircle} fontSize="20px" />
+                          </Circle>
+                        </Box>
+                      )}
+                      <VStack spacing={2} align="center">
+                        <Badge 
+                          bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                          color="white" 
+                          borderRadius="full" 
+                          fontSize="xs" 
+                          px={4} 
+                          py={2}
+                          fontWeight="700"
+                          letterSpacing="0.3px"
+                          boxShadow="0 4px 12px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          border="2px solid"
+                          borderColor="rgba(168, 85, 247, 0.5)"
+                        >
+                          STANDARD
+                        </Badge>
+                        <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px" textAlign="center">
+                          Direct Van Service
+                        </Heading>
+                      </VStack>
+                      
+                      <VStack spacing={1} align="center">
+                        <Text fontSize="4xl" fontWeight="bold" color="purple.400" letterSpacing="0.3px" textAlign="center">
+                          £{calculateStandardPrice().toFixed(2)}
+                        </Text>
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px" textAlign="center">
+                          Most popular
+                        </Text>
+                      </VStack>
 
                       <Divider borderColor="rgba(255, 255, 255, 0.1)" />
 
@@ -2177,73 +2209,88 @@ export default function WhoAndPaymentStep({
                   {/* Priority/Express (Fastest) */}
                   <Card
                     bg={formData.step1.serviceType === 'white-glove' 
-                      ? "linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(234, 88, 12, 0.2) 100%)" 
+                      ? "linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)" 
                       : "linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(26, 32, 44, 0.7) 100%)"}
                     backdropFilter="blur(10px)"
                     borderRadius="xl"
-                    border="2px solid"
-                    borderColor={formData.step1.serviceType === 'white-glove' ? "rgba(251, 146, 60, 0.6)" : "rgba(251, 146, 60, 0.3)"}
+                    border={formData.step1.serviceType === 'white-glove' ? "3px solid" : "2px solid"}
+                    borderColor={formData.step1.serviceType === 'white-glove' ? "rgba(251, 146, 60, 1)" : "rgba(251, 146, 60, 0.3)"}
                     p={6}
                     shadow={formData.step1.serviceType === 'white-glove' 
-                      ? "0 8px 32px rgba(251, 146, 60, 0.4), 0 0 60px rgba(251, 146, 60, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)" 
+                      ? "0 12px 48px rgba(251, 146, 60, 0.6), 0 0 80px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(251, 146, 60, 0.2)" 
                       : "0 4px 16px rgba(251, 146, 60, 0.2)"}
                     cursor={isUpdatingService ? "not-allowed" : "pointer"}
                     onClick={() => handleServiceTypeChange('white-glove')}
+                    transform={formData.step1.serviceType === 'white-glove' ? 'scale(1.02)' : 'scale(1)'}
                     _hover={isUpdatingService ? {} : { 
-                      transform: 'translateY(-4px)', 
-                      shadow: '0 12px 40px rgba(251, 146, 60, 0.5), 0 0 80px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-                      borderColor: 'rgba(251, 146, 60, 0.7)'
+                      transform: formData.step1.serviceType === 'white-glove' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
+                      shadow: formData.step1.serviceType === 'white-glove' 
+                        ? '0 16px 56px rgba(251, 146, 60, 0.7), 0 0 100px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(251, 146, 60, 0.3)'
+                        : '0 12px 40px rgba(251, 146, 60, 0.5), 0 0 80px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      borderColor: formData.step1.serviceType === 'white-glove' ? 'rgba(251, 146, 60, 1)' : 'rgba(251, 146, 60, 0.7)'
                     }}
                     transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                     opacity={isUpdatingService ? 0.7 : 1}
                     position="relative"
-                    overflow="hidden"
+                    overflow="visible"
                     sx={{
                       '&::before': formData.step1.serviceType === 'white-glove' ? {
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(234, 88, 12, 0.05) 100%)',
-                        opacity: 0.6,
-                        zIndex: 0,
+                        top: '-4px',
+                        left: '-4px',
+                        right: '-4px',
+                        bottom: '-4px',
+                        background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(234, 88, 12, 0.2) 100%)',
+                        borderRadius: 'xl',
+                        opacity: 0.8,
+                        zIndex: -1,
                         pointerEvents: 'none',
+                        animation: 'pulse 2s ease-in-out infinite',
                       } : {},
+                      '@keyframes pulse': {
+                        '0%, 100%': { opacity: 0.8 },
+                        '50%': { opacity: 0.4 },
+                      },
                     }}
                   >
                     <VStack spacing={4} align="stretch" position="relative" zIndex={1}>
-                      <HStack justify="space-between" align="center">
-                        <VStack align="start" spacing={2}>
-                          <Badge 
-                            bg="linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)"
-                            color="white" 
-                            borderRadius="full" 
-                            fontSize="xs" 
-                            px={4} 
-                            py={2}
-                            fontWeight="700"
-                            letterSpacing="0.3px"
-                            boxShadow="0 4px 12px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                            border="2px solid"
-                            borderColor="rgba(251, 146, 60, 0.5)"
-                          >
-                            PRIORITY
-                          </Badge>
-                          <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px">
-                            White Glove Service
-                          </Heading>
-                        </VStack>
-                        <VStack align="end" spacing={1}>
-                          <Text fontSize="3xl" fontWeight="bold" color="orange.400" letterSpacing="0.3px">
-                            £{calculatePriorityPrice().toFixed(2)}
-                          </Text>
-                          <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px">
-                            Premium service
-                          </Text>
-                        </VStack>
-                      </HStack>
+                      {formData.step1.serviceType === 'white-glove' && (
+                        <Box position="absolute" top={-2} right={-2} zIndex={10}>
+                          <Circle size="40px" bg="green.500" color="white" boxShadow="0 4px 20px rgba(16, 185, 129, 0.6)">
+                            <Icon as={FaCheckCircle} fontSize="20px" />
+                          </Circle>
+                        </Box>
+                      )}
+                      <VStack spacing={2} align="center">
+                        <Badge 
+                          bg="linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)"
+                          color="white" 
+                          borderRadius="full" 
+                          fontSize="xs" 
+                          px={4} 
+                          py={2}
+                          fontWeight="700"
+                          letterSpacing="0.3px"
+                          boxShadow="0 4px 12px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          border="2px solid"
+                          borderColor="rgba(251, 146, 60, 0.5)"
+                        >
+                          PRIORITY
+                        </Badge>
+                        <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px" textAlign="center">
+                          White Glove Service
+                        </Heading>
+                      </VStack>
+                      
+                      <VStack spacing={1} align="center">
+                        <Text fontSize="4xl" fontWeight="bold" color="orange.400" letterSpacing="0.3px" textAlign="center">
+                          £{calculatePriorityPrice().toFixed(2)}
+                        </Text>
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px" textAlign="center">
+                          Premium service
+                        </Text>
+                      </VStack>
 
                       <Divider borderColor="rgba(255, 255, 255, 0.1)" />
 
@@ -2295,24 +2342,23 @@ export default function WhoAndPaymentStep({
                     }}
                   >
                     <VStack spacing={4} align="stretch" position="relative" zIndex={1}>
-                      <HStack justify="space-between" align="center">
-                        <VStack align="start" spacing={1}>
-                          <Text fontSize="sm" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.3px" textTransform="uppercase">
-                            Selected Service
-                          </Text>
-                          <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px">
-                            {getServiceLevelDisplayName()}
-                          </Heading>
-                        </VStack>
-                        <VStack align="end" spacing={1}>
-                          <Text fontSize="3xl" fontWeight="bold" color="green.400" letterSpacing="0.3px">
-                            £{getCurrentPrice().toFixed(2)}
-                          </Text>
-                          <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px">
-                            Total Price
-                          </Text>
-                        </VStack>
-                      </HStack>
+                      <VStack spacing={2} align="center">
+                        <Text fontSize="sm" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.3px" textTransform="uppercase" textAlign="center">
+                          Selected Service
+                        </Text>
+                        <Heading size="md" fontWeight="700" color="white" letterSpacing="0.3px" textAlign="center">
+                          {getServiceLevelDisplayName()}
+                        </Heading>
+                      </VStack>
+                      
+                      <VStack spacing={1} align="center">
+                        <Text fontSize="4xl" fontWeight="bold" color="green.400" letterSpacing="0.3px" textAlign="center">
+                          £{getCurrentPrice().toFixed(2)}
+                        </Text>
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="600" letterSpacing="0.2px" textAlign="center">
+                          Total Price
+                        </Text>
+                      </VStack>
 
                       <Divider borderColor="rgba(255, 255, 255, 0.1)" />
 
@@ -2612,12 +2658,13 @@ export default function WhoAndPaymentStep({
                 }}
               >
                 <VStack spacing={{ base: 4, sm: 4.5, md: 5 }} align="stretch" position="relative" zIndex={1} w="full">
-                  <HStack justify="space-between" align="center">
+                  <VStack spacing={2} align="center">
                     <Heading 
                       size="md" 
                       color="white"
                       fontWeight="700"
                       letterSpacing="0.3px"
+                      textAlign="center"
                     >
                       Booking Details
                     </Heading>
@@ -2646,10 +2693,11 @@ export default function WhoAndPaymentStep({
                           : "rgba(251, 146, 60, 0.5)"
                       }
                       textTransform="capitalize"
+                      mx="auto"
                     >
                       {formData.step1.serviceType === 'white-glove' ? 'White Glove' : formData.step1.serviceType === 'premium' ? 'Standard' : formData.step1.serviceType === 'standard' ? 'Economy' : formData.step1.serviceType} Service
                     </Badge>
-                  </HStack>
+                  </VStack>
                   
                   <Divider borderColor="rgba(255, 255, 255, 0.1)" />
                   

@@ -19,7 +19,6 @@ import {
   Button,
   Input,
   InputGroup,
-  InputLeftElement,
   IconButton,
   useToast,
   Divider,
@@ -291,6 +290,7 @@ export default function WhereAndWhatStep({
   const addressGridSpacing = useBreakpointValue({ base: 3, sm: 4, md: 6 }) ?? 4;
   const buttonMinHeight = useBreakpointValue({ base: '48px', sm: '44px' }) ?? '44px';
   const buttonFontSize = useBreakpointValue({ base: 'sm', sm: 'md' }) ?? 'md';
+  const searchPlaceholder = "type what you looking for";
 
   const [individualItems, setIndividualItems] = useState<IndividualItem[]>([]);
   const [individualItemsLoading, setIndividualItemsLoading] = useState<boolean>(true);
@@ -524,7 +524,7 @@ export default function WhereAndWhatStep({
       <Box
         position="relative"
         w="full"
-        borderRadius="lg"
+        borderRadius="xl"
         overflow="hidden"
         sx={{
           '@keyframes neonPulse': {
@@ -547,7 +547,7 @@ export default function WhereAndWhatStep({
             inset={0}
             w="full"
             h="full"
-            objectFit="contain"
+            objectFit="cover"
             loading="lazy"
             onLoad={() => setLoaded(true)}
           />
@@ -1999,25 +1999,26 @@ export default function WhereAndWhatStep({
   // Images removed - no image helper function needed
 
   return (
-    <Box maxW="6xl" py={{ base: 3, sm: 5, md: 8 }} px={{ base: 3, sm: 4, md: 6 }} w="full" overflowX="hidden">
-      <VStack spacing={{ base: 3, sm: 5, md: 8 }} align="stretch" w="full">
-        
+    <VStack spacing={{ base: 6, md: 10 }} align="stretch" w="100%" px={{ base: 3, md: 6 }} py={{ base: 6, md: 10 }} overflowX="hidden">
         
         {/* Version Banner - Hidden in production, visible in dev */}
 
         
         {/* Header */}
-        <VStack spacing={{ base: 3, sm: 4 }} textAlign="center">
-          <Heading size={{ base: "lg", sm: "xl", md: "2xl" }} color="white" fontWeight="700" letterSpacing="0.3px">
-            What needs moving?
-          </Heading>
-          <Text color="gray.400" fontSize={{ base: "sm", sm: "md", md: "lg" }} maxW="600px" lineHeight="1.6" px={{ base: 2, sm: 0 }}>
-            Select the items you need to move. You can choose individual items or complete house packages.
-          </Text>
-        </VStack>
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <VStack spacing={{ base: 3, sm: 4 }} textAlign="center">
+            <Heading size={{ base: "lg", sm: "xl", md: "2xl" }} color="white" fontWeight="700" letterSpacing="0.3px">
+              What needs moving?
+            </Heading>
+            <Text color="gray.400" fontSize={{ base: "sm", sm: "md", md: "lg" }} maxW="600px" lineHeight="1.6" px={{ base: 2, sm: 0 }}>
+              Select the items you need to move. You can choose individual items or complete house packages.
+            </Text>
+          </VStack>
+        </Box>
 
         {/* Address Input Section */}
-        <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
           <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
             <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
               
@@ -2143,7 +2144,7 @@ export default function WhereAndWhatStep({
                           </Text>
                           <Text 
                             fontSize={textSize} 
-                            color="gray.300"
+                            color="white"
                             fontWeight="500"
                             lineHeight="1.3"
                             noOfLines={1}
@@ -2322,7 +2323,7 @@ export default function WhereAndWhatStep({
                           </Text>
                           <Text 
                             fontSize={textSize} 
-                            color="gray.300"
+                            color="white"
                             fontWeight="500"
                             lineHeight="1.3"
                             noOfLines={1}
@@ -2521,9 +2522,11 @@ export default function WhereAndWhatStep({
             </VStack>
           </CardBody>
         </Card>
+        </Box>
 
         {/* Premium Date and Time Selection - Enhanced */}
-        <Card 
+        <Box w="100%" maxW="container.md" mx="auto">
+          <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px) saturate(180%)"
           shadow="0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.3), 0 0 100px rgba(168, 85, 247, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
@@ -2894,7 +2897,7 @@ export default function WhereAndWhatStep({
                     </Text>
                   </HStack>
                   
-                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} w="full">
+                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} w="full">
                     {timeSlots.map((slot) => {
                       const isSelected = step1.pickupTimeSlot === slot;
                       return (
@@ -2949,7 +2952,7 @@ export default function WhereAndWhatStep({
                             },
                           }}
                         >
-                          <CardBody p={{ base: 2, sm: 3, md: 5 }} textAlign="center">
+                          <CardBody p={{ base: 4, sm: 5, md: 6 }} textAlign="center" minH={{ base: "100px", sm: "120px", md: "140px" }}>
                             <VStack spacing={{ base: 1.5, sm: 2, md: 3 }}>
                               <Text 
                                 fontSize={{ base: "xl", sm: "2xl" }}
@@ -2960,7 +2963,7 @@ export default function WhereAndWhatStep({
                               <Text 
                                 fontWeight="700" 
                                 color="white" 
-                                fontSize={{ base: "xs", sm: "sm", md: "md" }}
+                                fontSize={{ base: "2xs", sm: "2xs", md: "xs" }}
                                 letterSpacing="0.2px"
                                 whiteSpace="nowrap"
                               >
@@ -2975,131 +2978,6 @@ export default function WhereAndWhatStep({
                 </VStack>
 
                 {/* Skip Time Selection Option removed per request */}
-
-                {/* Enhanced Selection Summary */}
-                {step1.pickupDate && (
-                  <Card 
-                    bg="linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)"
-                    border="2px solid"
-                    borderColor="rgba(16, 185, 129, 0.4)"
-                    borderRadius="xl"
-                    overflow="hidden"
-                    position="relative"
-                    backdropFilter="blur(10px)"
-                    boxShadow="0 8px 32px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-                    transition="all 0.3s"
-                    _hover={{
-                      borderColor: "rgba(16, 185, 129, 0.6)",
-                      boxShadow: "0 12px 40px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-                    }}
-                    sx={{
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%)',
-                        opacity: 0.6,
-                        zIndex: 0,
-                        pointerEvents: 'none',
-                      },
-                      '& > *': {
-                        position: 'relative',
-                        zIndex: 1,
-                      },
-                    }}
-                  >
-                    <CardBody p={6}>
-                      <HStack justify="center" spacing={8}>
-                        <VStack spacing={3} align="start">
-                          <HStack spacing={2}>
-                            <Box
-                              w="32px"
-                              h="32px"
-                              borderRadius="lg"
-                              bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
-                            >
-                              <Text fontSize="sm">📅</Text>
-                            </Box>
-                            <Text 
-                              fontSize="xs" 
-                              color="rgba(255, 255, 255, 0.7)" 
-                              fontWeight="600"
-                              letterSpacing="0.5px"
-                              textTransform="uppercase"
-                            >
-                              Selected Date
-                            </Text>
-                          </HStack>
-                          <Text 
-                            color="white" 
-                            fontWeight="700" 
-                            fontSize="lg"
-                            letterSpacing="0.2px"
-                          >
-                            {step1.pickupDate ? 
-                              new Date(step1.pickupDate + 'T00:00:00').toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                month: 'long', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              }) : 
-                              'Not selected'
-                            }
-                          </Text>
-                        </VStack>
-                        
-                        <Box 
-                          w="2px" 
-                          h="80px" 
-                          bg="linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)"
-                          borderRadius="full"
-                        />
-                        
-                        <VStack spacing={3} align="end">
-                          <HStack spacing={2}>
-                            <Box
-                              w="32px"
-                              h="32px"
-                              borderRadius="lg"
-                              bg="linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%)"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              boxShadow="0 2px 8px rgba(16, 185, 129, 0.3)"
-                            >
-                              <Text fontSize="sm">⏰</Text>
-                            </Box>
-                            <Text 
-                              fontSize="xs" 
-                              color="rgba(255, 255, 255, 0.7)" 
-                              fontWeight="600"
-                              letterSpacing="0.5px"
-                              textTransform="uppercase"
-                            >
-                              Selected Time
-                            </Text>
-                          </HStack>
-                          <Text 
-                            color="white" 
-                            fontWeight="700" 
-                            fontSize="lg"
-                            letterSpacing="0.2px"
-                            textAlign="right"
-                          >
-                            {step1.pickupTimeSlot || 'Flexible (Optional)'}
-                          </Text>
-                        </VStack>
-                      </HStack>
-                    </CardBody>
-                  </Card>
-                )}
 
                 {/* Validation Errors */}
                 {errors['step1.pickupDate'] && (
@@ -3118,9 +2996,11 @@ export default function WhereAndWhatStep({
             </VStack>
           </CardBody>
         </Card>
+        </Box>
 
         {/* Item Selection - Enhanced */}
-        <Card 
+        <Box w="100%" maxW="container.lg" mx="auto">
+          <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px) saturate(180%)"
           shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
@@ -3565,7 +3445,7 @@ export default function WhereAndWhatStep({
                         }}
                         onClick={() => addItem(pkg)}
                         w="full"
-                        overflow="hidden"
+                        overflow="visible"
                         position="relative"
                         sx={{
                           '&::before': {
@@ -3587,57 +3467,63 @@ export default function WhereAndWhatStep({
                         }}
                       >
                         <CardBody p={5}>
-                          <HStack spacing={4} align="center">
+                          <VStack spacing={4} align="center" w="full">
+                            {/* Image at top */}
                             <Box 
-                              w="100px" 
-                              h="100px"
+                              w={{ base: "120px", sm: "140px" }}
+                              h={{ base: "120px", sm: "140px" }}
                               borderRadius="xl"
                               overflow="hidden"
                               boxShadow="0 4px 16px rgba(59, 130, 246, 0.3)"
                               border="2px solid"
                               borderColor="rgba(59, 130, 246, 0.4)"
+                              mx="auto"
                             >
                               <ItemImage src={pkg.image} alt={`${pkg.name} package`} ratio={1} />
                             </Box>
-                            <VStack spacing={2} align="start" flex={1}>
-                              <Text 
-                                color="white" 
-                                fontWeight="700" 
-                                fontSize="md"
-                                letterSpacing="0.2px"
-                              >
-                                {pkg.name}
-                              </Text>
-                              <Button
-                                size="md"
-                                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)"
-                                border="2px solid"
-                                borderColor="rgba(59, 130, 246, 0.6)"
-                                color="white"
-                                borderRadius="xl"
-                                fontWeight="700"
-                                letterSpacing="0.3px"
-                                leftIcon={<FaPlus />}
-                                boxShadow="0 4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                                transition="all 0.3s"
-                                _hover={{
-                                  bg: "linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)",
-                                  transform: "scale(1.05)",
-                                  boxShadow: "0 6px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                                }}
-                                _active={{
-                                  transform: "scale(0.98)",
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  addItem(pkg);
-                                }}
-                                minW="120px"
-                              >
-                                Select
-                              </Button>
-                            </VStack>
-                          </HStack>
+                            
+                            {/* Package name below image */}
+                            <Text 
+                              color="white" 
+                              fontWeight="700" 
+                              fontSize={{ base: "md", sm: "lg" }}
+                              letterSpacing="0.2px"
+                              textAlign="center"
+                            >
+                              {pkg.name}
+                            </Text>
+                            
+                            {/* Select button below name */}
+                            <Button
+                              size="md"
+                              bg="linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.8) 100%)"
+                              border="2px solid"
+                              borderColor="rgba(59, 130, 246, 0.6)"
+                              color="white"
+                              borderRadius="xl"
+                              fontWeight="700"
+                              letterSpacing="0.3px"
+                              leftIcon={<FaPlus />}
+                              boxShadow="0 4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                              transition="all 0.3s"
+                              _hover={{
+                                bg: "linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 0.9) 100%)",
+                                transform: "scale(1.05)",
+                                boxShadow: "0 6px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                              }}
+                              _active={{
+                                transform: "scale(0.98)",
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addItem(pkg);
+                              }}
+                              w="full"
+                              maxW={{ base: "200px", sm: "240px" }}
+                            >
+                              Select
+                            </Button>
+                          </VStack>
                         </CardBody>
                       </Card>
                     ))}
@@ -3645,8 +3531,8 @@ export default function WhereAndWhatStep({
 
                   {/* Desktop: Grid layout */}
                   <SimpleGrid 
-                    columns={3} 
-                    spacing={6} 
+                    columns={{ base: 1, sm: 2, md: 3 }} 
+                    spacing={{ base: 4, md: 6 }} 
                     w="full"
                     display={{ base: "none", md: "grid" }}
                   >
@@ -3756,12 +3642,16 @@ export default function WhereAndWhatStep({
                       bg: 'gray.700 !important',
                       borderColor: 'gray.600 !important',
                       color: 'white !important',
+                      borderRadius: 'xl !important',
                       '&:focus': {
                         borderColor: 'purple.500 !important',
                         boxShadow: '0 0 0 1px var(--chakra-colors-purple-500) !important'
                       },
                       '&::placeholder': {
-                        color: 'gray.400 !important'
+                        color: 'gray.400 !important',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                       }
                     }
                   }}>
@@ -3783,7 +3673,7 @@ export default function WhereAndWhatStep({
                         items.forEach(item => addItem(item));
                       }}
                       selectedItems={step1.items}
-                      placeholder="Search catalog (600+ items) - try 'sofa', 'kitchen', 'bedroom set'..."
+                      placeholder={searchPlaceholder}
                     />
                   </Box>
                   
@@ -3796,7 +3686,7 @@ export default function WhereAndWhatStep({
                 <VStack spacing={{ base: 4, sm: 5, md: 6 }} w="full" align="stretch">
                   {/* Default: Featured Popular Items (single-click add using dataset images) */}
                   {featuredPopularItems.length > 0 && (
-                    <Card bg="gray.700" border="1px solid" borderColor="gray.600" w="full">
+                    <Card bg="gray.700" border="1px solid" borderColor="gray.600" w="full" overflow="visible">
                       <CardBody p={{ base: 3, sm: 4, md: 5 }} w="full">
                         <VStack align="stretch" spacing={{ base: 3, sm: 4 }} w="full">
                           <HStack justify="space-between" align="center">
@@ -3853,13 +3743,12 @@ export default function WhereAndWhatStep({
                       )}
                       {/* Always show items - customers can continue booking */}
                       <Flex direction={{ base: 'column', md: 'row' }} gap={4} w="full">
-                        <FormControl w={{ base: '100%', md: '45%' }}>
+                        <VStack align="stretch" spacing={3} w="full">
                           <FormLabel 
                             htmlFor="luxury-category-filter" 
                             fontSize="lg"
                             fontWeight="700"
                             letterSpacing="0.3px"
-                            mb={3}
                             bg="linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%)"
                             bgClip="text"
                             sx={{
@@ -3867,76 +3756,46 @@ export default function WhereAndWhatStep({
                               WebkitTextFillColor: "transparent",
                               textShadow: "0 2px 10px rgba(16, 185, 129, 0.3)",
                             }}
-                            position="relative"
-                            display="inline-block"
-                            _before={{
-                              content: '""',
-                              position: 'absolute',
-                              bottom: '-4px',
-                              left: 0,
-                              width: '60%',
-                              height: '2px',
-                              bg: 'linear-gradient(90deg, #10B981 0%, #34D399 100%)',
-                              borderRadius: 'full',
-                              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.5)',
-                            }}
                           >
                             Filter by category
                           </FormLabel>
-                          <Box
-                            position="relative"
-                            borderRadius="lg"
-                            p="1px"
-                            bg="linear-gradient(45deg, #10B981, #34D399, #6EE7B7, #A7F3D0, #10B981)"
-                            animation="neonGlow 2s ease-in-out infinite alternate"
-                            sx={{
-                              '@keyframes neonGlow': {
-                                '0%': {
-                                  boxShadow: '0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.3), 0 0 15px rgba(16, 185, 129, 0.2)',
-                                },
-                                '100%': {
-                                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.8), 0 0 30px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.4)',
-                                },
-                              },
-                            }}
-                          >
+                          <FormControl>
                             <Select
                               id="luxury-category-filter"
-                              name="luxury-category-filter"
                               value={selectedCategory}
-                              onChange={(event) => setSelectedCategory(event.target.value)}
-                              bg="gray.700"
-                              borderColor="transparent"
-                              color="white"
-                              borderRadius="md"
-                              _focus={{
-                                borderColor: 'transparent',
-                                boxShadow: 'none',
-                                '& + div': {
-                                  boxShadow: '0 0 25px rgba(16, 185, 129, 1), 0 0 35px rgba(16, 185, 129, 0.8), 0 0 45px rgba(16, 185, 129, 0.6)',
-                                }
-                              }}
+                              onChange={(e) => setSelectedCategory(e.target.value)}
+                              bg="white"
+                              color="gray.700"
+                              border="2px solid"
+                              borderColor="rgba(16, 185, 129, 0.5)"
+                              borderRadius="xl"
+                              fontSize="sm"
+                              fontWeight="600"
+                              px={4}
+                              py={2}
                               _hover={{
-                                '& + div': {
-                                  animation: 'neonGlow 1s ease-in-out infinite alternate',
-                                }
+                                borderColor: 'rgba(16, 185, 129, 0.7)',
+                              }}
+                              _focus={{
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.5)',
+                              }}
+                              sx={{
+                                boxShadow: '0 0 10px rgba(16, 185, 129, 0.3)',
+                                '&:focus': {
+                                  boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.5)',
+                                },
                               }}
                             >
-                            <option style={{ color: '#1A202C', background: '#EDF2F7' }} value="All">
-                              All Categories
-                            </option>
-                            {datasetCategories.map((c) => (
-                              <option
-                                key={c.key}
-                                style={{ color: '#1A202C', background: '#EDF2F7' }}
-                                value={c.key}
-                              >
-                                {c.label}
-                              </option>
-                            ))}
-                          </Select>
-                          </Box>
-                        </FormControl>
+                              <option value="All">All Categories</option>
+                              {datasetCategories.map((c) => (
+                                <option key={c.key} value={c.key}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </VStack>
                         <VStack align="start" spacing={1} flex="1">
                           <Text color="gray.300" fontSize="sm" fontWeight="semibold">
                             Dataset coverage
@@ -3963,7 +3822,7 @@ export default function WhereAndWhatStep({
                       ) : (
                         <VStack spacing={4} align="stretch">
                           {(selectedCategory === 'All' ? datasetGroups : datasetGroups.filter(g => g.key === selectedCategory)).map((group) => (
-                            <Card key={group.key} bg="gray.700" border="1px solid" borderColor="gray.600" w="full">
+                            <Card key={group.key} bg="gray.700" border="1px solid" borderColor="gray.600" w="full" overflow="visible">
                               <CardBody p={{ base: 3, sm: 4, md: 5 }} w="full">
                                 <VStack align="stretch" spacing={{ base: 3, sm: 4 }} w="full">
                                   <HStack justify="space-between" align="center" flexWrap={{ base: "wrap", sm: "nowrap" }} spacing={{ base: 2, sm: 3 }} w="full">
@@ -3977,49 +3836,24 @@ export default function WhereAndWhatStep({
                                     </HStack>
                                     <Badge colorScheme="purple" variant="outline" fontSize={{ base: "xs", sm: "sm" }} px={{ base: 2, sm: 3 }} py={{ base: 1, sm: 1 }} whiteSpace={{ base: "nowrap", sm: "normal" }}>UK dataset imagery</Badge>
                                   </HStack>
-                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
+                                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={{ base: 3, sm: 4, md: 6 }} w="full">
                                     {group.images.map((src, idx) => (
-                                      <Box key={`${group.key}-${idx}`}>
+                                      <Box key={`${group.key}-${idx}`} cursor="pointer" onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))} overflow="visible">
                                         <ItemImage src={src} alt={group.label} ratio={3/4} />
-                                        <Text 
-                                          mt={{ base: 1.5, sm: 2 }} 
-                                          fontSize={{ base: "xs", sm: "sm" }} 
-                                          color="white" 
-                                          textAlign="center" 
-                                          lineHeight="1.3" 
-                                          noOfLines={2}
-                                          wordBreak="break-word"
-                                          overflow="hidden"
-                                          textOverflow="ellipsis"
-                                        >
-                                          {titleFromSrc(src, group.label)}
-                                        </Text>
-                                        <HStack justify="center" mt={{ base: 1.5, sm: 2 }} spacing={{ base: 2, sm: 3 }} w="full">
+                                        <VStack mt={2} spacing={1}>
+                                          <Text fontSize="sm" color="white" textAlign="center">{titleFromSrc(src, group.label)}</Text>
                                           <Button 
-                                            size={{ base: "md", sm: "sm" }}
+                                            size={{ base: "sm", sm: "md" }}
                                             minH={{ base: "44px", sm: "36px" }}
-                                            minW={{ base: "44px", sm: "36px" }}
-                                            fontSize={{ base: "lg", sm: "sm" }}
-                                            variant="outline" 
-                                            colorScheme="red" 
-                                            onClick={() => decrementDatasetItem(group.key, src)}
+                                            fontSize={{ base: "sm", sm: "xs" }}
+                                            px={{ base: 4, sm: 3 }}
+                                            py={{ base: 3, sm: 2 }}
+                                            colorScheme="blue" 
+                                            onClick={(e) => { e.stopPropagation(); incrementDatasetItem(group.key, src, titleFromSrc(src, group.label)); }}
                                           >
-                                            -
+                                            Add
                                           </Button>
-                                          <Text color="white" minW={{ base: "36px", sm: "28px" }} textAlign="center" fontWeight="bold" fontSize={{ base: "md", sm: "sm" }}>
-                                            {getQuantityForDataset(group.key, src)}
-                                          </Text>
-                                          <Button 
-                                            size={{ base: "md", sm: "sm" }}
-                                            minH={{ base: "44px", sm: "36px" }}
-                                            minW={{ base: "44px", sm: "36px" }}
-                                            fontSize={{ base: "lg", sm: "sm" }}
-                                            colorScheme="green" 
-                                            onClick={() => incrementDatasetItem(group.key, src, titleFromSrc(src, group.label))}
-                                          >
-                                            +
-                                          </Button>
-                                        </HStack>
+                                        </VStack>
                                       </Box>
                                     ))}
                                   </SimpleGrid>
@@ -4203,9 +4037,11 @@ export default function WhereAndWhatStep({
             </CardBody>
           </Card>
         )}
+        </Box>
 
         {/* Price Summary & Cart */}
-        <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
+        <Box w="100%" maxW="container.md" mx="auto">
+          <Card bg="gray.800" borderRadius={{ base: "lg", md: "xl" }} border="1px solid" borderColor="gray.600" w="full">
           <CardBody p={{ base: 3, sm: 4, md: 6 }} w="full">
             <VStack spacing={{ base: 3, sm: 4, md: 6 }} align="stretch" w="full">
               
@@ -4459,8 +4295,7 @@ export default function WhereAndWhatStep({
             </HStack>
           </CardBody>
         </Card>
-
-      </VStack>
-    </Box>
+        </Box>
+    </VStack>
   );
 }

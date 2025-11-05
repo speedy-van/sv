@@ -764,7 +764,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
               
               {/* Building Type */}
               <Box>
-                <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                <FormLabel fontSize="xs" color="white" mb={1}>
                   Building Type
                 </FormLabel>
                 <Select
@@ -810,7 +810,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
               {/* Floor and Apartment Numbers */}
               <SimpleGrid columns={2} spacing={3}>
                 <Box>
-                  <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                  <FormLabel fontSize="xs" color="white" mb={1}>
                     Floor Number
                   </FormLabel>
                   <Input
@@ -853,7 +853,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                 </Box>
 
                 <Box>
-                  <FormLabel fontSize="xs" color="rgba(255, 255, 255, 0.8)" mb={1}>
+                  <FormLabel fontSize="xs" color="white" mb={1}>
                     Apartment Number
                   </FormLabel>
                   <Input

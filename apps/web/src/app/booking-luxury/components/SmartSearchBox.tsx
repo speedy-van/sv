@@ -53,7 +53,6 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<SearchSuggestion[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [inlineCompletion, setInlineCompletion] = useState('');
   const [showNLPAnalysis, setShowNLPAnalysis] = useState(true); // State to control NLP display
   const [catalogItems, setCatalogItems] = useState<any[]>([]); // Loaded catalog items
   
@@ -243,13 +242,7 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
       setAutocompleteSuggestions([]); // No autocomplete suggestions
       setSuggestions(searchSuggestions);
       
-      // Set inline completion for first exact match
-      if (searchSuggestions.length > 0 && searchSuggestions[0].text.toLowerCase().startsWith(value.toLowerCase())) {
-        const completion = searchSuggestions[0].text.substring(value.length);
-        setInlineCompletion(completion);
-      } else {
-        setInlineCompletion('');
-      }
+      // Inline completion removed
     };
 
     const debounceTimer = setTimeout(updateSuggestions, 50); // Faster response
@@ -261,7 +254,6 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     // ALWAYS fill the search field first
     onChange(suggestion.text);
-    setInlineCompletion('');
     
     // If it's an item suggestion, also add it to the cart
     if (suggestion.type === 'item' && suggestion.item) {
@@ -372,28 +364,11 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
       {/* Search Input with Inline Completion */}
       <InputGroup size="lg">
         <Box position="relative" flex="1">
-          {/* Background text for inline completion */}
-          {inlineCompletion && (
-            <Text
-              position="absolute"
-              left="16px" // No search icon, so adjust position
-              top="50%"
-              transform="translateY(-50%)"
-              fontSize="md"
-              color="gray.400"
-              pointerEvents="none"
-              zIndex={1}
-              whiteSpace="nowrap"
-            >
-              {value + inlineCompletion}
-            </Text>
-          )}
           <Input
             ref={inputRef}
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
-              setInlineCompletion('');
             }}
             onFocus={() => {
               setIsFocused(true);
@@ -414,10 +389,19 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
             fontSize="md"
             position="relative"
             zIndex={2}
+            px={4}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
             _hover={{ borderColor: "blue.200" }}
             _focus={{ 
               borderColor: "blue.400", 
               boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" 
+            }}
+            _placeholder={{
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
             }}
             inputMode="search"
             enterKeyHint="search"
@@ -436,7 +420,6 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
               icon={<FaTimes />}
               onClick={() => {
                 onChange('');
-                setInlineCompletion('');
                 inputRef.current?.focus();
               }}
               color="gray.400"
@@ -461,8 +444,6 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
             zIndex={9999}
             maxH={{ base: "300px", md: "400px" }}
             overflowY="auto"
-            w={{ base: "calc(100vw - 32px)", md: "90%" }}
-            maxW={{ base: "400px", md: "600px" }}
             onMouseEnter={handleSuggestionsMouseEnter}
             onMouseLeave={handleSuggestionsMouseLeave}
             sx={{
@@ -504,16 +485,12 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
               })() : 0,
               left: inputRef.current ? (() => {
                 const inputRect = inputRef.current.getBoundingClientRect();
-                const viewportWidth = window.innerWidth;
-                const suggestionsWidth = Math.min(343, viewportWidth - 32);
-                const leftPosition = inputRect.left + window.scrollX;
-                
-                // Center if possible, otherwise align to input
-                if (leftPosition + suggestionsWidth > viewportWidth) {
-                  return Math.max(16, viewportWidth - suggestionsWidth - 16) + window.scrollX;
-                }
-                return leftPosition;
+                return inputRect.left + window.scrollX;
               })() : 0,
+              width: inputRef.current ? (() => {
+                const inputRect = inputRef.current.getBoundingClientRect();
+                return inputRect.width;
+              })() : undefined,
             }}
           >
             {/* Individual Items Search Results */}
@@ -650,12 +627,7 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
         </Portal>
       )}
 
-      {/* Search Results Count */}
-      {value && !isNaturalLanguageQuery(value) && (suggestions.length > 0 || autocompleteSuggestions.length > 0) && (
-        <Text fontSize="xs" color="gray.600" mt={1} pl={2}>
-          {suggestions.length + autocompleteSuggestions.length} suggestions found
-        </Text>
-      )}
+      {/* Search Results Count - Removed */}
 
       {/* Natural Language Processing Results */}
       {value && isNaturalLanguageQuery(value) && showNLPAnalysis && (
