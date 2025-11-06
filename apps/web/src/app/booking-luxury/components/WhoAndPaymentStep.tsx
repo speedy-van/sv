@@ -166,7 +166,7 @@ export default function WhoAndPaymentStep({
     updateCustomerDetails('email', suggestion);
     setEmailSuggestions([]);
     setShowEmailSuggestions(false);
-    emailInputRef.current?.focus();
+    // REMOVED: emailInputRef.current?.focus() - causes unwanted scroll on mobile
   }, [updateCustomerDetails]);
 
   // Update dropdown position when email suggestions are shown

@@ -172,30 +172,6 @@ html, body {
     }
   }
   
-  /* Fallback to dvh if svh is not supported */
-  @supports (height: 100dvh) and not (height: 100svh) {
-    html, body {
-      height: 100dvh;
-      min-height: 100dvh;
-      /* Account for safe-area-insets */
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-  }
-  
-  /* Fallback to calc with safe-area-insets */
-  @supports not (height: 100svh) and not (height: 100dvh) {
-    html, body {
-      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-      min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-  }
 }
 
 /* iOS text layout safety - prevent vertical glyphs and text tearing */
@@ -1582,9 +1558,49 @@ textarea::placeholder {
 }
 
 /* Buttons keep their intended colors */
-button,
-.chakra-button,
-[type="submit"],
-[type="button"] {
-  /* Don't override button backgrounds */
+/* CRITICAL FIX: Prevent Scroll Jumps on Booking Page */
+
+/* Prevent automatic scroll to bottom on re-render */
+html {
+  scroll-behavior: auto !important;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  scroll-behavior: auto !important;
+  overscroll-behavior-y: contain;
+}
+
+/* Prevent scroll jumps on focus - especially on mobile Safari */
+input:focus,
+textarea:focus,
+select:focus {
+  scroll-margin-top: 100px;
+  scroll-margin-bottom: 100px;
+}
+
+/* Mobile Safari specific fixes */
+@media (max-width: 768px) {
+  html, body {
+    scroll-behavior: auto !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent input focus from scrolling page */
+  input:focus,
+  textarea:focus,
+  select:focus,
+  button:focus {
+    scroll-margin-top: 120px;
+    scroll-margin-bottom: 120px;
+  }
+  
+  /* Prevent Chakra UI components from causing scroll */
+  .chakra-input:focus,
+  .chakra-textarea:focus,
+  .chakra-select:focus {
+    scroll-margin-top: 120px !important;
+    scroll-margin-bottom: 120px !important;
+  }
 }

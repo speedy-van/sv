@@ -79,6 +79,9 @@ export default function BookingLuxuryPage() {
   const [checkoutWaveActive, setCheckoutWaveActive] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
+  
+  // CRITICAL FIX: Prevent unwanted scroll on re-render
+  const scrollPositionRef = React.useRef<number>(0);
 
   const {
     formData,
@@ -747,6 +750,36 @@ export default function BookingLuxuryPage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const isMobile = useBreakpointValue({ base: true, md: false });
 
+  // CRITICAL FIX: Save and restore scroll position on re-render
+  useEffect(() => {
+    // Save scroll position before re-render
+    const saveScrollPosition = () => {
+      scrollPositionRef.current = window.scrollY || window.pageYOffset || 0;
+    };
+    
+    // Save on scroll
+    window.addEventListener('scroll', saveScrollPosition, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', saveScrollPosition);
+    };
+  }, []);
+  
+  // CRITICAL FIX: Restore scroll position after re-render (prevent jump to bottom)
+  useEffect(() => {
+    // Restore scroll position if it changed unexpectedly
+    const currentScroll = window.scrollY || window.pageYOffset || 0;
+    const savedScroll = scrollPositionRef.current;
+    
+    // If scroll jumped unexpectedly (more than 100px), restore it
+    if (Math.abs(currentScroll - savedScroll) > 100 && savedScroll > 0) {
+      window.scrollTo({
+        top: savedScroll,
+        behavior: 'auto' // Instant restore, no smooth scrolling
+      });
+    }
+  });
+
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
@@ -762,6 +795,7 @@ export default function BookingLuxuryPage() {
       sx={{
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'none',
+        scrollBehavior: 'auto', // Prevent smooth scroll jumps
       }}
     >
       <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 2, md: 6 }}>
