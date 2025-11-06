@@ -731,71 +731,39 @@ export default function BookingLuxuryPage() {
             borderColor="rgba(59, 130, 246, 0.2)"
             py={3}
             mb={6}
-            sx={{
-              // CRITICAL: Force horizontal layout on all devices
-              display: 'flex !important',
-              flexDirection: 'row !important',
-              writingMode: 'horizontal-tb !important',
-              textOrientation: 'mixed !important',
-            }}
           >
-            <Flex 
-              justify="space-between" 
-              align="center" 
-              px={{ base: 4, md: 6 }}
-              w="full"
-              direction="row"
-              sx={{
-                // CRITICAL: Ensure horizontal layout
-                flexDirection: 'row !important',
-                alignItems: 'center !important',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {/* Left: Brand & Back */}
-              <HStack 
-                spacing={3}
-                sx={{
-                  flexDirection: 'row !important',
-                  alignItems: 'center !important',
-                }}
+            <VStack spacing={3} w="full">
+              {/* Top: Brand & Back Button */}
+              <Flex 
+                justify="space-between" 
+                align="center" 
+                px={{ base: 4, md: 6 }}
+                w="full"
               >
-                {currentStep === 1 && (
-                  <IconButton
-                    aria-label="Back to home"
-                    icon={<FaArrowLeft />}
-                    size="sm"
-                    variant="ghost"
-                    color="gray.400"
-                    onClick={() => router.push('/')}
-                    _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
-                  />
-                )}
-                <HStack 
-                  spacing={2}
-                  sx={{
-                    flexDirection: 'row !important',
-                    alignItems: 'center !important',
-                  }}
-                >
+                <HStack spacing={2}>
+                  {currentStep === 1 && (
+                    <IconButton
+                      aria-label="Back to home"
+                      icon={<FaArrowLeft />}
+                      size="sm"
+                      variant="ghost"
+                      color="gray.400"
+                      onClick={() => router.push('/')}
+                      _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
+                    />
+                  )}
                   <Icon as={FaTruck} boxSize={6} color="blue.400" />
-                  <Heading 
-                    size="md" 
-                    color="white"
-                    sx={{
-                      writingMode: 'horizontal-tb !important',
-                      textOrientation: 'mixed !important',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <Heading size="md" color="white">
                     Speedy Van
                   </Heading>
                 </HStack>
-              </HStack>
+              </Flex>
 
-              {/* Right: Progress Steps */}
+              {/* Bottom: Progress Steps - Under Speedy Van */}
               <HStack 
                 spacing={2}
+                justify="center"
+                w="full"
                 sx={{
                   flexDirection: 'row !important',
                   alignItems: 'center !important',
@@ -804,8 +772,8 @@ export default function BookingLuxuryPage() {
                 {STEPS.map((step, index) => (
                   <React.Fragment key={step.id}>
                     <Box
-                      w={{ base: '30px', md: '36px' }}
-                      h={{ base: '30px', md: '36px' }}
+                      w={{ base: '32px', md: '36px' }}
+                      h={{ base: '32px', md: '36px' }}
                       borderRadius="full"
                       bg={
                         step.id === currentStep 
@@ -824,30 +792,21 @@ export default function BookingLuxuryPage() {
                       onClick={() => step.id <= currentStep && handleStepClick(step.id)}
                       transition="all 0.2s"
                       _hover={step.id <= currentStep ? { transform: 'scale(1.1)' } : {}}
-                      sx={{
-                        // Force flex layout
-                        display: 'flex !important',
-                        alignItems: 'center !important',
-                        justifyContent: 'center !important',
-                      }}
                     >
                       {step.id < currentStep ? <Icon as={FaCheck} boxSize={3} /> : step.id}
                     </Box>
                     {index < STEPS.length - 1 && (
                       <Box 
-                        w={{ base: '20px', md: '30px' }} 
+                        w={{ base: '24px', md: '30px' }} 
                         h="2px" 
                         bg={step.id < currentStep ? 'green.500' : 'gray.700'}
                         transition="all 0.3s"
-                        sx={{
-                          flexShrink: 0,
-                        }}
                       />
                     )}
                   </React.Fragment>
                 ))}
               </HStack>
-            </Flex>
+            </VStack>
           </Box>
 
 
