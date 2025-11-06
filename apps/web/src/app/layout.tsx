@@ -97,7 +97,7 @@ export default async function RootLayout({
   const initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
 
   return (
-    <html lang="en" dir="ltr" data-theme="dark" className="chakra-ui-dark">
+    <html lang="en" dir="ltr">
       <head>
         {/* CRITICAL: ColorModeScript + CSS Variables MUST be first to prevent Safari CSS variable issues */}
         <script
@@ -107,11 +107,11 @@ export default async function RootLayout({
                 try {
                   var colorMode = 'dark';
                   var root = document.documentElement;
-                  root.style.setProperty('--chakra-ui-color-mode', colorMode);
-                  root.classList.add('chakra-ui-dark');
                   root.setAttribute('data-theme', 'dark');
+                  root.classList.add('chakra-ui-dark');
                   
                   // CRITICAL: Set Chakra CSS variables immediately for Safari iOS
+                  root.style.setProperty('--chakra-ui-color-mode', colorMode);
                   root.style.setProperty('--chakra-colors-neon-400', '#00C2FF');
                   root.style.setProperty('--chakra-colors-neon-500', '#00B8F0');
                   root.style.setProperty('--chakra-colors-bg-surface', 'rgba(13, 13, 13, 1)');
