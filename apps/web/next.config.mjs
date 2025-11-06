@@ -47,6 +47,17 @@ const nextConfig = {
     unoptimized: false,
   },
 
+  // Redirects for route changes
+  async redirects() {
+    return [
+      {
+        source: '/auth/register',
+        destination: '/customer/register',
+        permanent: true,
+      },
+    ];
+  },
+
   // Add custom headers for caching, performance, and security
   async headers() {
     return [

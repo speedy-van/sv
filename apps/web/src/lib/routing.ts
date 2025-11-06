@@ -17,13 +17,15 @@ export const ROUTES = {
   
   // Auth routes
   LOGIN: '/auth/login',
-  REGISTER: '/auth/register',
+  REGISTER: '/customer/register', // Customer registration page
   FORGOT_PASSWORD: '/auth/forgot',
   RESET_PASSWORD: '/auth/reset',
   VERIFY_EMAIL: '/auth/verify',
   
   // Customer routes
   CUSTOMER_DASHBOARD: '/customer',
+  CUSTOMER_LOGIN: '/customer/login',
+  CUSTOMER_REGISTER: '/customer/register',
   CUSTOMER_ORDERS: '/customer/orders',
   CUSTOMER_PROFILE: '/customer/profile',
   CUSTOMER_SETTINGS: '/customer/settings',
@@ -149,6 +151,8 @@ export function isPublicRoute(pathname: string): boolean {
     ROUTES.TERMS,
     ROUTES.LOGIN,
     ROUTES.REGISTER,
+    ROUTES.CUSTOMER_LOGIN,
+    ROUTES.CUSTOMER_REGISTER,
     ROUTES.FORGOT_PASSWORD,
     ROUTES.RESET_PASSWORD,
     ROUTES.VERIFY_EMAIL,

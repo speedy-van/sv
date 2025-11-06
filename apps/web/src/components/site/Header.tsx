@@ -310,23 +310,44 @@ const Header: React.FC = memo(() => {
                         {item.label}
                       </MenuButton>
                       <MenuList
-                        bg="white"
+                        bg="rgba(26, 26, 26, 0.98)"
                         border="1px solid"
-                        borderColor="gray.200"
+                        borderColor="rgba(59, 130, 246, 0.3)"
                         borderRadius="xl"
-                        boxShadow="0 10px 40px rgba(0,0,0,0.1)"
+                        boxShadow="0 10px 40px rgba(0,0,0,0.3)"
                         p={2}
+                        backdropFilter="blur(10px)"
+                        sx={{
+                          '& .chakra-menu__menuitem': {
+                            color: 'white !important',
+                            bg: 'transparent !important',
+                          },
+                        }}
                       >
                         {item.children?.map((child) => (
                           <MenuItem
                             key={child.label}
                             icon={<child.icon />}
+                            color="white"
+                            bg="transparent"
                             _hover={{
-                              bg: 'rgba(0,194,255,0.1)',
-                              color: 'neon.400',
+                              bg: 'rgba(59, 130, 246, 0.2) !important',
+                              color: 'neon.400 !important',
+                            }}
+                            _focus={{
+                              bg: 'rgba(59, 130, 246, 0.2) !important',
+                              color: 'neon.400 !important',
+                            }}
+                            _active={{
+                              bg: 'rgba(59, 130, 246, 0.3) !important',
+                              color: 'neon.400 !important',
                             }}
                             borderRadius="lg"
                             onClick={() => window.location.href = child.href}
+                            sx={{
+                              color: 'white !important',
+                              bg: 'transparent !important',
+                            }}
                           >
                             {child.label}
                           </MenuItem>
@@ -402,45 +423,102 @@ const Header: React.FC = memo(() => {
                 Sign In
               </MenuButton>
                 <MenuList
-                  bg="white"
+                  bg="rgba(26, 26, 26, 0.98)"
                   border="1px solid"
-                  borderColor="gray.200"
+                  borderColor="rgba(59, 130, 246, 0.3)"
                   borderRadius="xl"
-                  boxShadow="0 10px 40px rgba(0,0,0,0.1)"
+                  boxShadow="0 10px 40px rgba(0,0,0,0.3)"
                   p={2}
+                  backdropFilter="blur(10px)"
+                  sx={{
+                    '& .chakra-menu__menuitem': {
+                      color: 'white !important',
+                      bg: 'transparent !important',
+                    },
+                  }}
                 >
                   <MenuItem
                     icon={<FiUsers />}
+                    color="white"
+                    bg="transparent"
                     onClick={() => {
-                      console.log('👤 Customer Sign In clicked - redirecting to /auth/login');
-                      window.location.href = '/auth/login?role=customer';
+                      console.log('👤 Customer Sign In clicked - redirecting to /customer/login');
+                      window.location.href = '/customer/login';
                     }}
-                    _hover={{ bg: 'rgba(0,194,255,0.1)' }}
+                    _hover={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.400 !important' 
+                    }}
+                    _focus={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.400 !important' 
+                    }}
+                    _active={{ 
+                      bg: 'rgba(59, 130, 246, 0.3) !important', 
+                      color: 'neon.400 !important' 
+                    }}
                     borderRadius="lg"
+                    sx={{
+                      color: 'white !important',
+                      bg: 'transparent !important',
+                    }}
                   >
                     Customer Portal
                   </MenuItem>
                   <MenuItem
                     icon={<FiUser />}
+                    color="white"
+                    bg="transparent"
                     onClick={() => {
-                      console.log('🚚 Driver Sign In clicked - redirecting to /auth/login');
-                      window.location.href = '/auth/login?role=driver';
+                      console.log('🚚 Driver Sign In clicked - redirecting to /driver-auth');
+                      window.location.href = '/driver-auth';
                     }}
-                    _hover={{ bg: 'rgba(0,194,255,0.1)' }}
+                    _hover={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.400 !important' 
+                    }}
+                    _focus={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.400 !important' 
+                    }}
+                    _active={{ 
+                      bg: 'rgba(59, 130, 246, 0.3) !important', 
+                      color: 'neon.400 !important' 
+                    }}
                     borderRadius="lg"
+                    sx={{
+                      color: 'white !important',
+                      bg: 'transparent !important',
+                    }}
                   >
                     Driver Portal
                   </MenuItem>
-                  <MenuDivider />
+                  <MenuDivider borderColor="rgba(59, 130, 246, 0.2)" />
                   <MenuItem
                     icon={<FiUserPlus />}
+                    color="neon.400"
+                    bg="transparent"
                     onClick={() => {
                       console.log('🚚 Become Driver clicked - redirecting to /driver-application');
                       window.location.href = '/driver-application';
                     }}
-                    _hover={{ bg: 'rgba(0,194,255,0.1)' }}
+                    _hover={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.300 !important' 
+                    }}
+                    _focus={{ 
+                      bg: 'rgba(59, 130, 246, 0.2) !important', 
+                      color: 'neon.300 !important' 
+                    }}
+                    _active={{ 
+                      bg: 'rgba(59, 130, 246, 0.3) !important', 
+                      color: 'neon.300 !important' 
+                    }}
                     borderRadius="lg"
-                    color="neon.400"
+                    sx={{
+                      color: 'neon.400 !important',
+                      bg: 'transparent !important',
+                    }}
                   >
                     Become Driver
                   </MenuItem>
@@ -580,8 +658,8 @@ const Header: React.FC = memo(() => {
                   fullWidth
                   size="lg"
                   onClick={() => {
-                    console.log('👤 Customer Sign In (mobile) clicked - redirecting to /auth/login');
-                    window.location.href = '/auth/login?role=customer';
+                    console.log('👤 Customer Sign In (mobile) clicked - redirecting to /customer/login');
+                    window.location.href = '/customer/login';
                     toggleMenu();
                   }}
                   leftIcon={<FiUsers />}
@@ -595,8 +673,8 @@ const Header: React.FC = memo(() => {
                   fullWidth
                   size="lg"
                   onClick={() => {
-                    console.log('🚚 Driver Sign In (mobile) clicked - redirecting to /auth/login');
-                    window.location.href = '/auth/login?role=driver';
+                    console.log('🚚 Driver Sign In (mobile) clicked - redirecting to /driver-auth');
+                    window.location.href = '/driver-auth';
                     toggleMenu();
                   }}
                   leftIcon={<FiUser />}

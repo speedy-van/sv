@@ -11,6 +11,10 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
+  // Set pathname header for use in layouts
+  const pathname = request.nextUrl.pathname;
+  response.headers.set('x-pathname', pathname);
+
   // Force HTTPS in production
   const url = request.nextUrl.clone();
   const isProduction = process.env.NODE_ENV === 'production';

@@ -119,7 +119,7 @@ export default function MobileHeader() {
               fontSize="sm"
               boxShadow="0 4px 12px rgba(59, 130, 246, 0.4)"
               leftIcon={<FiLogIn />}
-              onClick={() => window.location.href = '/auth/login'}
+              onClick={() => window.location.href = '/customer/login'}
               borderRadius="full"
               _hover={{
                 bg: 'linear-gradient(135deg, #2563EB, #1d4ed8)',
@@ -422,7 +422,7 @@ export default function MobileHeader() {
                   e.preventDefault();
                   e.stopPropagation();
                   onClose();
-                  window.location.href = '/auth/login';
+                  window.location.href = '/customer/login';
                 }}
                 cursor="pointer"
                 textAlign="left"
@@ -446,7 +446,7 @@ export default function MobileHeader() {
                   e.preventDefault();
                   e.stopPropagation();
                   onClose();
-                  window.location.href = '/auth/register';
+                  window.location.href = '/customer/register';
                 }}
                 cursor="pointer"
                 textAlign="left"
