@@ -160,28 +160,8 @@ export default function AddressesStep({
         </Card>
       </VStack>
 
-      {/* Auto-Progress Indicator - Shows when addresses complete */}
-      {canProceed && (
-        <Box
-          mt={6}
-          p={4}
-          bg="rgba(16, 185, 129, 0.1)"
-          border="1px solid"
-          borderColor="green.400"
-          borderRadius="xl"
-          textAlign="center"
-        >
-          <HStack justify="center" spacing={3}>
-            <Spinner size="sm" color="green.400" />
-            <Text color="white" fontSize="sm" fontWeight="500">
-              Addresses confirmed! Moving to next step...
-            </Text>
-          </HStack>
-        </Box>
-      )}
-      
-      {/* Manual Next Button - Only shows if not complete */}
-      {!canProceed && onNext && (
+      {/* Continue Button - Always visible when addresses are complete */}
+      {onNext && (
         <Button
           onClick={onNext}
           isDisabled={!canProceed}
@@ -202,7 +182,7 @@ export default function AddressesStep({
             cursor: 'not-allowed',
           }}
         >
-          Continue
+          {canProceed ? 'Continue to Items & Time' : 'Enter Both Addresses'}
         </Button>
       )}
     </Box>

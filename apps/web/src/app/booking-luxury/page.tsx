@@ -499,39 +499,8 @@ export default function BookingLuxuryPage() {
     }
   };
   
-  // Smart auto-progression: When step 1 addresses are complete, auto-advance
-  useEffect(() => {
-    // CRITICAL: Simple check - if both addresses have full text and coordinates, advance
-    const isPickupComplete = formData.step1.pickupAddress?.full && 
-                            formData.step1.pickupAddress?.postcode &&
-                            formData.step1.pickupAddress?.coordinates?.lat &&
-                            formData.step1.pickupAddress?.coordinates?.lat !== 0;
-    const isDropoffComplete = formData.step1.dropoffAddress?.full && 
-                             formData.step1.dropoffAddress?.postcode &&
-                             formData.step1.dropoffAddress?.coordinates?.lat &&
-                             formData.step1.dropoffAddress?.coordinates?.lat !== 0;
-    
-    if (currentStep === 1 && 
-        isPickupComplete && 
-        isDropoffComplete &&
-        !isAutoTransitioning) {
-      // Auto-advance WITHOUT validation (validation happens on manual next click)
-      const timer = setTimeout(() => {
-        console.log('✅ Step 1 complete - Auto-advancing to Step 2');
-        console.log('📍 Pickup:', formData.step1.pickupAddress?.full);
-        console.log('📍 Dropoff:', formData.step1.dropoffAddress?.full);
-        
-        setIsAutoTransitioning(true);
-        setTimeout(() => {
-          setCurrentStep(2);
-          clearErrors();
-          setIsAutoTransitioning(false);
-        }, 300);
-      }, 800); // Give user time to see completion
-      
-      return () => clearTimeout(timer);
-    }
-  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning, clearErrors]);
+  // REMOVED: Auto-progression - Let user add building details (floor, elevator, apartment)
+  // User clicks "Continue" button when ready instead of auto-advance
 
   const handlePrevious = () => {
     if (currentStep > 1) {
