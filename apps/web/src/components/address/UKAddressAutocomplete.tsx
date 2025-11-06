@@ -131,6 +131,8 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   const abortControllerRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isSelectingRef = useRef(false); // Prevent double selection
+  const justSelectedRef = useRef(false); // Prevent search after selection
   const toast = useToast();
   const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
@@ -256,8 +258,20 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
 
   // Debounce search calls - Now triggers at 2 characters
   useEffect(() => {
+    // CRITICAL: Don't search if user just selected a suggestion
+    if (justSelectedRef.current) {
+      console.log('⏭️ Skipping search - user just selected an address');
+      return;
+    }
+    
+    // Don't search if dropdown is already closed (user selected something)
+    if (!showSuggestions && inputValue === value?.full) {
+      console.log('⏭️ Skipping search - address already selected');
+      return; // Skip search if user just selected an address
+    }
+
     const timer = setTimeout(() => {
-      if (inputValue.trim().length >= 2) {
+      if (inputValue.trim().length >= 2 && !justSelectedRef.current) {
         searchAddresses(inputValue);
       } else {
         setSuggestions([]);
@@ -266,30 +280,35 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     }, 250); // Slightly faster response
 
     return () => clearTimeout(timer);
-  }, [inputValue, searchAddresses]);
+  }, [inputValue, searchAddresses, showSuggestions, value?.full]);
 
 
   // Handle suggestion selection - IMMEDIATE single-click selection
   const selectSuggestion = useCallback(async (suggestion: AddressSuggestion) => {
+    // Prevent double selection - CRITICAL FIX
+    if (isSelectingRef.current) {
+      console.log('⚠️ Selection already in progress - ignoring duplicate call');
+      return;
+    }
+    
+    isSelectingRef.current = true; // Lock selection
+    justSelectedRef.current = true; // Mark that we just selected (prevent search)
+    
     console.log(`✅ Selected suggestion:`, {
       id: suggestion.id,
       text: suggestion.displayText,
       provider: suggestion.provider
     });
 
-    // IMMEDIATE UI updates - no delays
-    setInputValue(suggestion.displayText);
-    setShowSuggestions(false);  // Close dropdown IMMEDIATELY
+    // IMMEDIATE UI updates - CLOSE DROPDOWN FIRST to prevent any re-opening
+    setShowSuggestions(false);  // Close dropdown FIRST
+    setSuggestions([]);         // Clear suggestions IMMEDIATELY
     setSelectedIndex(-1);       // Reset selection
-    setSuggestions([]);         // Clear suggestions to prevent re-opening
+    
+    // Then update input value
+    setInputValue(suggestion.displayText);
     setIsLoading(true);
     setApiError('');
-    
-    // Force hide suggestions immediately
-    setTimeout(() => {
-      setShowSuggestions(false);
-      setSuggestions([]);
-    }, 0);
 
     try {
       let fullAddressData = suggestion;
@@ -366,14 +385,31 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
         duration: 4000,
         isClosable: true,
       });
+      
+      // Unlock after a small delay in case of error
+      setTimeout(() => {
+        isSelectingRef.current = false;
+      }, 500);
     } finally {
       setIsLoading(false);
+      // Unlock selection after completion
+      setTimeout(() => {
+        isSelectingRef.current = false;
+        // Keep justSelectedRef true for a bit longer to prevent search trigger
+        setTimeout(() => {
+          justSelectedRef.current = false;
+        }, 500); // Keep for 500ms to ensure useEffect doesn't trigger search
+      }, 100); // Small delay to prevent rapid double-clicks
     }
-  }, [onChange, sessionToken, toast]);
+  }, [onChange, sessionToken, toast, floorNumber, apartmentNumber, hasElevator, buildingType]);
 
   // Handle input changes - prevent search when address is already selected
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    
+    // If user is typing (not programmatic update), clear the justSelected flag
+    justSelectedRef.current = false;
+    
     setInputValue(newValue);
     
     // Only trigger search if this is actual user typing, not programmatic setting
@@ -424,30 +460,27 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     inputRef.current?.focus();
   }, [onChange]);
 
-  // Click outside to close dropdown - use timeout to allow onClick to fire first
+  // Click outside to close dropdown - use mousedown to avoid interfering with onClick
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Use setTimeout to allow onClick handlers to fire first
-      setTimeout(() => {
-        // Check if click is inside dropdown or input
-        const target = event.target as Node;
-        if (
-          dropdownRef.current && 
-          dropdownRef.current.contains(target)
-        ) {
-          // Click is inside dropdown - don't close
-          return;
-        }
-        if (
-          inputRef.current &&
-          inputRef.current.contains(target)
-        ) {
-          // Click is on input - don't close
-          return;
-        }
-        // Click is outside - close dropdown
-        setShowSuggestions(false);
-      }, 0);
+    const handleMouseDownOutside = (event: MouseEvent) => {
+      // Check if click is inside dropdown or input
+      const target = event.target as Node;
+      if (
+        dropdownRef.current && 
+        dropdownRef.current.contains(target)
+      ) {
+        // Click is inside dropdown - don't close
+        return;
+      }
+      if (
+        inputRef.current &&
+        inputRef.current.contains(target)
+      ) {
+        // Click is on input - don't close
+        return;
+      }
+      // Click is outside - close dropdown
+      setShowSuggestions(false);
     };
 
     if (showSuggestions) {
@@ -456,8 +489,9 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
       if (rect) {
         setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
       }
-      // Use 'click' event with normal bubbling (not capture) to allow onClick to fire first
-      document.addEventListener('click', handleClickOutside);
+      // Use 'mousedown' event instead of 'click' to avoid interfering with onClick handlers
+      // mousedown fires before click, so we can close the dropdown without blocking onClick
+      document.addEventListener('mousedown', handleMouseDownOutside);
       const reposition = () => {
         const r = inputRef.current?.getBoundingClientRect();
         if (r) setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
@@ -468,7 +502,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
     }
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('mousedown', handleMouseDownOutside);
       // listeners removed by reference in caller; safe fallback
     };
   }, [showSuggestions]);
@@ -646,14 +680,21 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                     borderColor: "rgba(66, 153, 225, 0.2)"
                   }}
                   transition="all 0.2s"
+                  onMouseDown={(e) => {
+                    // Use onMouseDown instead of onClick to capture the event before any other handler
+                    e.preventDefault(); // Prevent input from losing focus
+                    e.stopPropagation(); // Stop event from bubbling to handleMouseDownOutside
+                    
+                    console.log('🖱️ onMouseDown fired for suggestion:', suggestion.displayText);
+                    
+                    // Select suggestion immediately - ONE CLICK ONLY
+                    selectSuggestion(suggestion);
+                  }}
                   onClick={(e) => {
+                    // Prevent onClick from firing after onMouseDown
                     e.preventDefault();
                     e.stopPropagation();
-                    // Close dropdown immediately to prevent click outside handler
-                    setShowSuggestions(false);
-                    setSuggestions([]);
-                    // Select suggestion
-                    selectSuggestion(suggestion);
+                    console.log('🖱️ onClick fired (should be blocked) for suggestion:', suggestion.displayText);
                   }}
                 >
                   <HStack align="start" spacing={3}>

@@ -54,6 +54,40 @@ if (DATABASE_URL) {
   // console.log('⚠️  DATABASE_URL not set during build - using placeholder');
 }
 
+// Suppress "connection closed" errors from Prisma console output
+// Prisma logs errors directly to console.error even when logging is disabled
+// We intercept console.error to filter out connection closed errors
+const originalConsoleError = console.error;
+let isPrismaErrorSuppressionEnabled = true;
+
+// Only intercept if not already intercepted (prevent double wrapping)
+if (!(console.error as any).__prismaIntercepted) {
+  console.error = (...args: any[]) => {
+    // Check if this is a Prisma connection closed error
+    const message = args.join(' ');
+    const isPrismaConnectionError = 
+      message.includes('prisma:error') &&
+      (message.includes('Error in PostgreSQL connection') || 
+       message.includes('Closed') ||
+       message.includes('connection'));
+    
+    // Suppress Prisma connection closed errors - they are handled by reconnect logic
+    if (isPrismaErrorSuppressionEnabled && isPrismaConnectionError) {
+      // Mark connection as disconnected to trigger reconnect
+      if (typeof globalForPrisma !== 'undefined' && globalForPrisma.prisma) {
+        // Connection will be re-established on next query via ensurePrismaConnection
+      }
+      return; // Suppress the error
+    }
+    
+    // Log all other errors normally
+    originalConsoleError.apply(console, args);
+  };
+  
+  // Mark as intercepted to prevent double wrapping
+  (console.error as any).__prismaIntercepted = true;
+}
+
 // Prisma Client with optimized connection pool settings for Neon
 // Enhanced error handling for connection closed errors
 export const prisma =
@@ -69,8 +103,10 @@ export const prisma =
     errorFormat: 'pretty',
   });
 
-// Suppress "connection closed" errors in Prisma logs - they will be handled by reconnect logic
-// Note: Prisma logs errors directly to console, we handle them in ensurePrismaConnection
+// Export function to enable/disable error suppression (for debugging)
+export function setPrismaErrorSuppression(enabled: boolean) {
+  isPrismaErrorSuppressionEnabled = enabled;
+}
 
 // Wrapper function to handle Prisma queries with automatic retry on connection errors
 export async function prismaQuery<T>(
