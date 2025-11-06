@@ -11,8 +11,18 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
-  // Set pathname header for use in layouts
+  // CRITICAL: Cache busting headers for Next.js static files
+  // Prevent browsers and CDNs from serving stale chunks
   const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith('/_next/static/')) {
+    // Force revalidation for Next.js chunks
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    response.headers.set('X-Content-Hash', process.env.NEXT_BUILD_ID || Date.now().toString());
+    // Add ETag busting
+    response.headers.set('ETag', `"${Date.now()}"`);
+  }
+
+  // Set pathname header for use in layouts
   response.headers.set('x-pathname', pathname);
 
   // Force HTTPS in production

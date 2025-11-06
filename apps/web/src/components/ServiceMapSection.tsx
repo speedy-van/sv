@@ -93,16 +93,37 @@ const ServiceMapSection = () => {
   const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
-    // Check WebGL support before initializing map
+    // Enhanced WebGL support check for Safari iOS 17
     const checkWebGL = () => {
       try {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
         if (!gl) {
           console.warn('⚠️ WebGL not supported - Map will be disabled');
           setHasWebGL(false);
           return false;
         }
+
+        // Additional check for Safari iOS 17 WebGL context issues
+        // Test if getParameter works (this is where the error occurs)
+        try {
+          // Type assertion: gl is WebGLRenderingContext, not CanvasRenderingContext2D
+          const webglContext = gl as WebGLRenderingContext;
+          if (webglContext && 'getParameter' in webglContext && 'ALIASED_POINT_SIZE_RANGE' in webglContext) {
+            const testParam = webglContext.getParameter(webglContext.ALIASED_POINT_SIZE_RANGE);
+            if (!testParam || !Array.isArray(testParam) || testParam.length < 2) {
+              console.warn('⚠️ WebGL context incomplete - Map will be disabled');
+              setHasWebGL(false);
+              return false;
+            }
+          }
+        } catch (paramError) {
+          console.warn('⚠️ WebGL getParameter failed (Safari iOS 17 issue):', paramError);
+          setHasWebGL(false);
+          return false;
+        }
+
         return true;
       } catch (e) {
         console.warn('⚠️ WebGL check failed:', e);
@@ -125,7 +146,7 @@ const ServiceMapSection = () => {
     }
 
     try {
-      // Initialize map with error handling
+      // Initialize map with enhanced error handling for Safari iOS 17
       const mapboxMap = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/dark-v11',
@@ -135,6 +156,8 @@ const ServiceMapSection = () => {
         maxZoom: 12,
         attributionControl: false, // Remove attribution for cleaner look
         failIfMajorPerformanceCaveat: true, // Fail gracefully if WebGL is slow
+        preserveDrawingBuffer: false, // Reduce memory usage
+        antialias: false, // Disable antialiasing for better Safari compatibility
       });
 
       // Disable controls for cleaner look
@@ -145,9 +168,31 @@ const ServiceMapSection = () => {
       mapboxMap.doubleClickZoom.disable();
       mapboxMap.touchZoomRotate.disable();
 
-      // Handle map errors
-      mapboxMap.on('error', (e) => {
+      // Handle map errors with enhanced Safari iOS 17 support
+      mapboxMap.on('error', (e: any) => {
         console.error('❌ Mapbox error:', e);
+        
+        // Check if error is related to WebGL context
+        const errorMessage = e?.error?.message || e?.message || String(e);
+        if (errorMessage.includes('WebGL') || 
+            errorMessage.includes('getParameter') || 
+            errorMessage.includes('ALIASED_POINT_SIZE_RANGE') ||
+            errorMessage.includes('null is not an object')) {
+          console.warn('⚠️ WebGL context error detected (Safari iOS 17) - Disabling map');
+          setMapError(true);
+          setHasWebGL(false);
+          
+          // Clean up map instance
+          try {
+            if (mapboxMap) {
+              mapboxMap.remove();
+            }
+          } catch (cleanupErr) {
+            console.warn('⚠️ Error cleaning up failed map:', cleanupErr);
+          }
+          return;
+        }
+        
         setMapError(true);
         setHasWebGL(false);
       });
@@ -214,8 +259,18 @@ const ServiceMapSection = () => {
       });
     });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error initializing Mapbox:', error);
+      
+      // Check if error is related to WebGL context (Safari iOS 17)
+      const errorMessage = error?.message || String(error);
+      if (errorMessage.includes('WebGL') || 
+          errorMessage.includes('getParameter') || 
+          errorMessage.includes('ALIASED_POINT_SIZE_RANGE') ||
+          errorMessage.includes('null is not an object')) {
+        console.warn('⚠️ WebGL context initialization failed (Safari iOS 17) - Using fallback');
+      }
+      
       setMapError(true);
       setHasWebGL(false);
     }

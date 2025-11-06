@@ -96,6 +96,10 @@ self.addEventListener('fetch', (event) => {
 // Check if request is for a static file
 function isStaticFile(request) {
   const url = new URL(request.url);
+  // CRITICAL: Never cache Next.js static chunks - they have unique hashes per build
+  if (url.pathname.startsWith('/_next/static/')) {
+    return false; // Don't cache Next.js chunks - always fetch from network
+  }
   return url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/);
 }
 
@@ -116,15 +120,33 @@ async function handleStaticFile(request) {
   try {
     const url = new URL(request.url);
     
+    // CRITICAL: Never cache Next.js static chunks - always fetch from network
+    // These files have unique hashes per build and must always be fresh
+    if (url.pathname.startsWith('/_next/static/')) {
+      // Always fetch from network, never cache
+      const networkResponse = await fetch(request, {
+        cache: 'no-store', // Force fresh fetch
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        }
+      });
+      return networkResponse;
+    }
+    
     // Ensure CSS files have correct content-type header
     if (url.pathname.endsWith('.css')) {
       // Always fetch CSS from network to avoid cache issues
-      const networkResponse = await fetch(request);
+      const networkResponse = await fetch(request, {
+        cache: 'no-store', // Force fresh fetch for CSS
+      });
       
       if (networkResponse.ok) {
         // Create a new response with correct content-type
         const headers = new Headers(networkResponse.headers);
         headers.set('Content-Type', 'text/css; charset=utf-8');
+        headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.set('Pragma', 'no-cache');
         
         const cssResponse = new Response(networkResponse.body, {
           status: networkResponse.status,
@@ -132,31 +154,18 @@ async function handleStaticFile(request) {
           headers: headers
         });
         
-        // Cache with correct headers
-        const cache = await caches.open(STATIC_CACHE);
-        cache.put(request, cssResponse.clone());
-        
+        // Don't cache CSS files - always fetch fresh
         return cssResponse;
       }
       
       return networkResponse;
     }
     
-    // Try cache first for other static files
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    // Fetch from network
-    const networkResponse = await fetch(request);
+    // For other static files, try network first (no cache)
+    const networkResponse = await fetch(request, {
+      cache: 'no-store', // Force fresh fetch
+    });
     
-    // Cache successful responses
-    if (networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone());
-    }
-
     return networkResponse;
   } catch (error) {
     console.error('Error handling static file:', error);

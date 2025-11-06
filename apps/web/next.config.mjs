@@ -108,6 +108,11 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
+          // CRITICAL: Add cache busting headers to prevent stale chunks
+          {
+            key: 'X-Content-Hash',
+            value: process.env.NEXT_BUILD_ID || Date.now().toString(),
+          },
         ],
       },
       {
@@ -148,6 +153,15 @@ const nextConfig = {
   // Required for Render.com deployment where CDN cache can serve stale chunks
   // This ensures each build produces fresh chunk hashes, preventing CSS/JS mix-ups
   output: 'standalone',
+  
+  // CRITICAL: Generate unique build ID for cache busting
+  // This ensures each deployment has a unique identifier
+  generateBuildId: async () => {
+    // Use timestamp + random string for unique build ID
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    return `${timestamp}-${random}`;
+  },
   
   // Disable compiler console removal (keep for debugging cache issues)
   compiler: {

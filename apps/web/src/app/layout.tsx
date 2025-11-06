@@ -149,6 +149,42 @@ export default async function RootLayout({
           rel="stylesheet"
         />
 
+        {/* CRITICAL: Service Worker Cache Busting - Unregister old service workers */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                'use strict';
+                // Unregister all service workers to prevent stale cache
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                      registration.unregister().then(function(success) {
+                        if (success) {
+                          console.log('✅ Service Worker unregistered successfully');
+                        }
+                      });
+                    }
+                  });
+                  
+                  // Clear all caches
+                  if ('caches' in window) {
+                    caches.keys().then(function(cacheNames) {
+                      return Promise.all(
+                        cacheNames.map(function(cacheName) {
+                          return caches.delete(cacheName);
+                        })
+                      );
+                    }).then(function() {
+                      console.log('✅ All caches cleared');
+                    });
+                  }
+                }
+              })();
+            `,
+          }}
+        />
+
         {/* CRITICAL: Ensure Emotion/CSS-in-JS styles are properly injected into <head> for Safari/iOS */}
         <script
           dangerouslySetInnerHTML={{
