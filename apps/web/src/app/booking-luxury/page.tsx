@@ -81,9 +81,6 @@ export default function BookingLuxuryPage() {
   const toast = useToast();
   const searchParams = useSearchParams();
   
-  // CRITICAL FIX: Prevent unwanted scroll on re-render
-  const scrollPositionRef = React.useRef<number>(0);
-  
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
 
@@ -481,13 +478,14 @@ export default function BookingLuxuryPage() {
     if (currentStep === 1) {
       // Step 1: Just check addresses exist
       if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
+        // Scroll to top FIRST
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(2);
           clearErrors();
           setIsAutoTransitioning(false);
-          // Scroll to top smoothly
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 300);
       } else {
         toast({
@@ -499,13 +497,14 @@ export default function BookingLuxuryPage() {
     } else {
       // Other steps - just advance
       if (currentStep < STEPS.length) {
+        // CRITICAL: Scroll to top FIRST (especially for Step 3)
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(currentStep + 1);
           clearErrors();
           setIsAutoTransitioning(false);
-          // CRITICAL: Scroll to top when moving to Step 3 (Payment)
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 300);
       }
     }
@@ -637,35 +636,7 @@ export default function BookingLuxuryPage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // CRITICAL FIX: Save and restore scroll position on re-render
-  useEffect(() => {
-    // Save scroll position before re-render
-    const saveScrollPosition = () => {
-      scrollPositionRef.current = window.scrollY || window.pageYOffset || 0;
-    };
-    
-    // Save on scroll
-    window.addEventListener('scroll', saveScrollPosition, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', saveScrollPosition);
-    };
-  }, []);
-  
-  // CRITICAL FIX: Restore scroll position after re-render (prevent jump to bottom)
-  useEffect(() => {
-    // Restore scroll position if it changed unexpectedly
-    const currentScroll = window.scrollY || window.pageYOffset || 0;
-    const savedScroll = scrollPositionRef.current;
-    
-    // If scroll jumped unexpectedly (more than 100px), restore it
-    if (Math.abs(currentScroll - savedScroll) > 100 && savedScroll > 0) {
-      window.scrollTo({
-        top: savedScroll,
-        behavior: 'auto' // Instant restore, no smooth scrolling
-      });
-    }
-  });
+  // REMOVED: Scroll restoration interferes with step transitions
 
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
