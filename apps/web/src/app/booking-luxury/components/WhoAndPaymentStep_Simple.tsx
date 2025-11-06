@@ -1,0 +1,446 @@
+'use client';
+
+/**
+ * Step 3: Customer Details & Payment - Simplified Version
+ * Clean, modern design like Uber/Airbnb
+ */
+
+import { useState, useCallback } from 'react';
+import {
+  Box,
+  VStack,
+  HStack,
+  Text,
+  Button,
+  Input,
+  Textarea,
+  Checkbox,
+  Card,
+  CardBody,
+  Divider,
+  InputGroup,
+  InputLeftElement,
+  Alert,
+  AlertIcon,
+  Badge,
+  useToast,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Icon,
+  SimpleGrid,
+} from '@chakra-ui/react';
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaBuilding,
+  FaCreditCard,
+  FaCheckCircle,
+} from 'react-icons/fa';
+import { FormData, CustomerDetails } from '../hooks/useBookingForm';
+import StripePaymentButton from './StripePaymentButton';
+
+interface WhoAndPaymentStepProps {
+  formData: FormData;
+  updateFormData: (step: keyof FormData, data: Partial<FormData[keyof FormData]>) => void;
+  errors: Record<string, string>;
+  paymentSuccess?: boolean;
+  isCalculatingPricing?: boolean;
+  economyPrice?: number;
+  standardPrice?: number;
+  priorityPrice?: number;
+  calculatePricing?: () => Promise<boolean>;
+  validatePromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
+  applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
+  removePromotionCode?: () => void;
+}
+
+export default function WhoAndPaymentStepSimple({
+  formData,
+  updateFormData,
+  errors,
+  economyPrice = 0,
+  standardPrice = 0,
+  priorityPrice = 0,
+}: WhoAndPaymentStepProps) {
+  const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
+  const toast = useToast();
+
+  const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
+    updateFormData('step2', {
+      customerDetails: {
+        ...formData.step2.customerDetails,
+        [field]: value
+      }
+    });
+  }, [formData.step2.customerDetails, updateFormData]);
+
+  const services = [
+    {
+      id: 'economy' as const,
+      name: 'Economy',
+      price: economyPrice,
+      description: 'Shared route, 7 days delivery',
+      icon: '🚐',
+    },
+    {
+      id: 'standard' as const,
+      name: 'Standard',
+      price: standardPrice,
+      description: 'Direct service, flexible scheduling',
+      icon: '🚚',
+      popular: true,
+    },
+    {
+      id: 'express' as const,
+      name: 'Express',
+      price: priorityPrice,
+      description: 'Same-day or next-day delivery',
+      icon: '⚡',
+    },
+  ];
+
+  return (
+    <Box w="full">
+      <VStack spacing={6} align="stretch">
+        {/* CARD 1: Service Selection - Simplified Tabs */}
+        <Card
+          bg="rgba(26, 26, 26, 0.6)"
+          border="1px solid"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderRadius="2xl"
+          backdropFilter="blur(10px)"
+        >
+          <CardBody p={{ base: 6, md: 8 }}>
+            <VStack spacing={6} align="stretch">
+              <Text fontSize="lg" fontWeight="600" color="white">
+                Choose Your Service
+              </Text>
+
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                {services.map((service) => (
+                  <Box
+                    key={service.id}
+                    p={5}
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor={selectedService === service.id ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
+                    bg={selectedService === service.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedService(service.id);
+                      // Don't update formData serviceType - it uses different values
+                    }}
+                    transition="all 0.2s"
+                    _hover={{
+                      borderColor: 'blue.500',
+                      bg: 'rgba(59, 130, 246, 0.05)',
+                    }}
+                    position="relative"
+                  >
+                    {service.popular && (
+                      <Badge
+                        position="absolute"
+                        top={-2}
+                        right={-2}
+                        bg="blue.500"
+                        color="white"
+                        fontSize="2xs"
+                        px={2}
+                        py={1}
+                        borderRadius="full"
+                      >
+                        Popular
+                      </Badge>
+                    )}
+                    <VStack spacing={3} align="start">
+                      <Text fontSize="2xl">{service.icon}</Text>
+                      <Box>
+                        <Text fontSize="md" fontWeight="bold" color="white">
+                          {service.name}
+                        </Text>
+                        <Text fontSize="xs" color="gray.400">
+                          {service.description}
+                        </Text>
+                      </Box>
+                      <Text fontSize="2xl" fontWeight="bold" color="white">
+                        £{service.price}
+                      </Text>
+                    </VStack>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        {/* CARD 2: Customer Information - Single Clean Card */}
+        <Card
+          bg="rgba(26, 26, 26, 0.6)"
+          border="1px solid"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderRadius="2xl"
+          backdropFilter="blur(10px)"
+        >
+          <CardBody p={{ base: 6, md: 8 }}>
+            <VStack spacing={6} align="stretch">
+              <Text fontSize="lg" fontWeight="600" color="white">
+                Your Information
+              </Text>
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                <FormControl isInvalid={!!errors['step2.customerDetails.firstName']}>
+                  <FormLabel color="white" fontSize="sm">First Name</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement>
+                      <Icon as={FaUser} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      placeholder="John"
+                      value={formData.step2.customerDetails.firstName || ''}
+                      onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
+                      bg="rgba(0, 0, 0, 0.3)"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.3)"
+                      color="white"
+                      _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                    />
+                  </InputGroup>
+                  {errors['step2.customerDetails.firstName'] && (
+                    <FormErrorMessage>{errors['step2.customerDetails.firstName']}</FormErrorMessage>
+                  )}
+                </FormControl>
+
+                <FormControl isInvalid={!!errors['step2.customerDetails.lastName']}>
+                  <FormLabel color="white" fontSize="sm">Last Name</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement>
+                      <Icon as={FaUser} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      placeholder="Doe"
+                      value={formData.step2.customerDetails.lastName || ''}
+                      onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
+                      bg="rgba(0, 0, 0, 0.3)"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.3)"
+                      color="white"
+                      _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                    />
+                  </InputGroup>
+                  {errors['step2.customerDetails.lastName'] && (
+                    <FormErrorMessage>{errors['step2.customerDetails.lastName']}</FormErrorMessage>
+                  )}
+                </FormControl>
+              </SimpleGrid>
+
+              <FormControl isInvalid={!!errors['step2.customerDetails.email']}>
+                <FormLabel color="white" fontSize="sm">Email</FormLabel>
+                <InputGroup>
+                  <InputLeftElement>
+                    <Icon as={FaEnvelope} color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    type="email"
+                    placeholder="john.doe@example.com"
+                    value={formData.step2.customerDetails.email || ''}
+                    onChange={(e) => updateCustomerDetails('email', e.target.value)}
+                    bg="rgba(0, 0, 0, 0.3)"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  />
+                </InputGroup>
+                {errors['step2.customerDetails.email'] && (
+                  <FormErrorMessage>{errors['step2.customerDetails.email']}</FormErrorMessage>
+                )}
+              </FormControl>
+
+              <FormControl isInvalid={!!errors['step2.customerDetails.phone']}>
+                <FormLabel color="white" fontSize="sm">Phone Number</FormLabel>
+                <InputGroup>
+                  <InputLeftElement>
+                    <Icon as={FaPhone} color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    type="tel"
+                    placeholder="+44 1234 567890"
+                    value={formData.step2.customerDetails.phone || ''}
+                    onChange={(e) => updateCustomerDetails('phone', e.target.value)}
+                    bg="rgba(0, 0, 0, 0.3)"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  />
+                </InputGroup>
+                {errors['step2.customerDetails.phone'] && (
+                  <FormErrorMessage>{errors['step2.customerDetails.phone']}</FormErrorMessage>
+                )}
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color="white" fontSize="sm">Company Name (Optional)</FormLabel>
+                <InputGroup>
+                  <InputLeftElement>
+                    <Icon as={FaBuilding} color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Your Company Ltd"
+                    value={formData.step2.customerDetails.company || ''}
+                    onChange={(e) => updateCustomerDetails('company', e.target.value)}
+                    bg="rgba(0, 0, 0, 0.3)"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  />
+                </InputGroup>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color="white" fontSize="sm">Special Instructions (Optional)</FormLabel>
+                <Textarea
+                  placeholder="Any special instructions or requests for your move..."
+                  value={formData.step2.specialInstructions || ''}
+                  onChange={(e) => updateFormData('step2', { specialInstructions: e.target.value })}
+                  bg="rgba(0, 0, 0, 0.3)"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                  color="white"
+                  rows={3}
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                />
+              </FormControl>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        {/* CARD 3: Payment & Confirmation - Final Step */}
+        <Card
+          bg="rgba(26, 26, 26, 0.6)"
+          border="1px solid"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderRadius="2xl"
+          backdropFilter="blur(10px)"
+        >
+          <CardBody p={{ base: 6, md: 8 }}>
+            <VStack spacing={6} align="stretch">
+              <HStack justify="space-between" align="center">
+                <Text fontSize="lg" fontWeight="600" color="white">
+                  Complete Your Booking
+                </Text>
+                <Badge 
+                  bg="green.500" 
+                  color="white" 
+                  px={3} 
+                  py={1} 
+                  borderRadius="full"
+                  fontSize="md"
+                  fontWeight="bold"
+                >
+                  £{standardPrice}
+                </Badge>
+              </HStack>
+
+              <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+
+              {/* Booking Summary */}
+              <VStack spacing={3} align="stretch">
+                <HStack justify="space-between">
+                  <Text color="gray.400" fontSize="sm">Pickup</Text>
+                  <Text color="white" fontSize="sm" fontWeight="500">
+                    {formData.step1.pickupAddress?.city || 'Not set'}
+                  </Text>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text color="gray.400" fontSize="sm">Dropoff</Text>
+                  <Text color="white" fontSize="sm" fontWeight="500">
+                    {formData.step1.dropoffAddress?.city || 'Not set'}
+                  </Text>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text color="gray.400" fontSize="sm">Items</Text>
+                  <Text color="white" fontSize="sm" fontWeight="500">
+                    {formData.step1.items.length} items
+                  </Text>
+                </HStack>
+                <HStack justify="space-between">
+                  <Text color="gray.400" fontSize="sm">Service</Text>
+                  <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
+                    {selectedService}
+                  </Text>
+                </HStack>
+              </VStack>
+
+              <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+
+              {/* Terms & Conditions */}
+              <VStack spacing={3} align="start">
+                <Checkbox
+                  colorScheme="blue"
+                  color="gray.300"
+                  fontSize="sm"
+                >
+                  I accept the{' '}
+                  <Text as="span" color="blue.400" textDecoration="underline" cursor="pointer">
+                    Terms and Conditions
+                  </Text>
+                </Checkbox>
+
+                <Checkbox
+                  colorScheme="blue"
+                  color="gray.300"
+                  fontSize="sm"
+                >
+                  I have read the{' '}
+                  <Text as="span" color="blue.400" textDecoration="underline" cursor="pointer">
+                    Privacy Policy
+                  </Text>
+                </Checkbox>
+              </VStack>
+
+              {/* Stripe Payment Button */}
+              <Button
+                size="lg"
+                w="full"
+                bg="blue.500"
+                color="white"
+                py={7}
+                fontSize="md"
+                fontWeight="600"
+                borderRadius="xl"
+                leftIcon={<Icon as={FaCreditCard} />}
+                isDisabled={
+                  !formData.step2.customerDetails.firstName ||
+                  !formData.step2.customerDetails.lastName ||
+                  !formData.step2.customerDetails.email ||
+                  !formData.step2.customerDetails.phone
+                }
+                _hover={{ bg: 'blue.600' }}
+                _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
+              >
+                Pay £{standardPrice} Securely
+              </Button>
+
+              {/* Security Badge */}
+              <HStack justify="center" spacing={2} color="gray.400" fontSize="xs">
+                <Icon as={FaCreditCard} />
+                <Text>Secure payment processed by Stripe</Text>
+              </HStack>
+            </VStack>
+          </CardBody>
+        </Card>
+      </VStack>
+    </Box>
+  );
+}
+

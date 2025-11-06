@@ -19,6 +19,8 @@ import {
   CardBody,
   Icon,
   useBreakpointValue,
+  Divider,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FaArrowRight,
@@ -53,31 +55,21 @@ export default function AddressesStep({
   return (
     <Box w="full">
       <VStack spacing={6} w="full" align="stretch">
-        {/* Pickup Address Card - Luxury Design */}
+        {/* Single Clean Card - Modern Design like Uber/Airbnb */}
         <Card
-          bg="linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%)"
-          border="2px solid"
-          borderColor="rgba(16, 185, 129, 0.3)"
-          borderRadius={cardBorderRadius}
-          position="relative"
+          bg="rgba(26, 26, 26, 0.6)"
+          border="1px solid"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderRadius="2xl"
           overflow="visible"
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-          _hover={{
-            borderColor: "rgba(16, 185, 129, 0.5)",
-            boxShadow: "0 8px 32px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-            transform: isMobile ? "translateY(-1px)" : "translateY(-2px)",
-          }}
-          sx={{
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}
+          backdropFilter="blur(10px)"
         >
           <CardBody p={{ base: 6, md: 8 }}>
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={8} align="stretch">
+              {/* Pickup Address */}
               <Box
                 position="relative"
                 sx={{
-                  // Prevent clipping of autocomplete dropdown
                   overflow: 'visible !important',
                   zIndex: 2
                 }}
@@ -107,8 +99,7 @@ export default function AddressesStep({
                         });
                       }
                     }}
-                    placeholder="Start typing your pickup address..."
-                    helperText="Enter your full pickup address (street, postcode, etc.)"
+                    placeholder="Where are we picking up from?"
                     isRequired={true}
                   />
                   {errors['step1.pickupAddress'] && (
@@ -118,35 +109,13 @@ export default function AddressesStep({
                   )}
                 </FormControl>
               </Box>
-            </VStack>
-          </CardBody>
-        </Card>
 
-        {/* Dropoff Address Card - Luxury Design */}
-        <Card
-          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%)"
-          border="2px solid"
-          borderColor="rgba(59, 130, 246, 0.3)"
-          borderRadius={cardBorderRadius}
-          position="relative"
-          overflow="visible"
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-          _hover={{
-            borderColor: "rgba(59, 130, 246, 0.5)",
-            boxShadow: "0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-            transform: isMobile ? "translateY(-1px)" : "translateY(-2px)",
-          }}
-          sx={{
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}
-        >
-          <CardBody p={{ base: 6, md: 8 }}>
-            <VStack spacing={6} align="stretch">
+              <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+
+              {/* Dropoff Address */}
               <Box
                 position="relative"
                 sx={{
-                  // Prevent clipping of autocomplete dropdown
                   overflow: 'visible !important',
                   zIndex: 1
                 }}
@@ -176,8 +145,7 @@ export default function AddressesStep({
                         });
                       }
                     }}
-                    placeholder="Start typing your dropoff address..."
-                    helperText="Enter your full dropoff address (street, postcode, etc.)"
+                    placeholder="Where are we delivering to?"
                     isRequired={true}
                   />
                   {errors['step1.dropoffAddress'] && (
@@ -192,62 +160,51 @@ export default function AddressesStep({
         </Card>
       </VStack>
 
-      {/* Navigation Buttons */}
-      <HStack
-        spacing={4}
-        mt={8}
-        justify="space-between"
-        w="full"
-        flexDirection={{ base: 'column-reverse', md: 'row' }}
-      >
-        {onBack && (
-          <Button
-            leftIcon={<Icon as={FaArrowLeft} />}
-            onClick={onBack}
-            variant="outline"
-            borderColor="rgba(255, 255, 255, 0.2)"
-            color="white"
-            size="lg"
-            w={{ base: 'full', md: 'auto' }}
-            minW={{ md: '200px' }}
-            _hover={{
-              bg: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }}
-          >
-            Back
-          </Button>
-        )}
-
-        {onNext && (
-          <Button
-            rightIcon={<Icon as={FaArrowRight} />}
-            onClick={onNext}
-            isDisabled={!canProceed}
-            bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-            color="white"
-            size="lg"
-            w={{ base: 'full', md: 'auto' }}
-            minW={{ md: '200px' }}
-            _hover={{
-              bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-              transform: 'translateY(-2px)',
-              boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
-            }}
-            _disabled={{
-              opacity: 0.4,
-              cursor: 'not-allowed',
-              _hover: {
-                transform: 'none',
-                boxShadow: 'none',
-              },
-            }}
-            transition="all 0.3s"
-          >
-            Next Step
-          </Button>
-        )}
-      </HStack>
+      {/* Auto-Progress Indicator - Shows when addresses complete */}
+      {canProceed && (
+        <Box
+          mt={6}
+          p={4}
+          bg="rgba(16, 185, 129, 0.1)"
+          border="1px solid"
+          borderColor="green.400"
+          borderRadius="xl"
+          textAlign="center"
+        >
+          <HStack justify="center" spacing={3}>
+            <Spinner size="sm" color="green.400" />
+            <Text color="white" fontSize="sm" fontWeight="500">
+              Addresses confirmed! Moving to next step...
+            </Text>
+          </HStack>
+        </Box>
+      )}
+      
+      {/* Manual Next Button - Only shows if not complete */}
+      {!canProceed && onNext && (
+        <Button
+          onClick={onNext}
+          isDisabled={!canProceed}
+          bg="blue.500"
+          color="white"
+          size="lg"
+          w="full"
+          mt={6}
+          py={7}
+          fontSize="md"
+          fontWeight="600"
+          borderRadius="xl"
+          _hover={{
+            bg: 'blue.600',
+          }}
+          _disabled={{
+            opacity: 0.5,
+            cursor: 'not-allowed',
+          }}
+        >
+          Continue
+        </Button>
+      )}
     </Box>
   );
 }

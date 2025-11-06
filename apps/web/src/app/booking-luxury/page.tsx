@@ -34,9 +34,10 @@ import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMa
 import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
-import WhoAndPaymentStep from './components/WhoAndPaymentStep';
+import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
 
 // Removed ItemImage component - using icons instead
@@ -82,6 +83,9 @@ export default function BookingLuxuryPage() {
   
   // CRITICAL FIX: Prevent unwanted scroll on re-render
   const scrollPositionRef = React.useRef<number>(0);
+  
+  // Auto-progression flags
+  const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
 
   const {
     formData,
@@ -611,10 +615,14 @@ export default function BookingLuxuryPage() {
     const isValid = await validateStep(currentStep);
     if (isValid) {
       if (currentStep < STEPS.length) {
-        // Pricing is now handled automatically - no manual intervention required
+        setIsAutoTransitioning(true);
         
-        setCurrentStep(currentStep + 1);
-        clearErrors();
+        // Smooth transition delay
+        setTimeout(() => {
+          setCurrentStep(currentStep + 1);
+          clearErrors();
+          setIsAutoTransitioning(false);
+        }, 300);
       }
     } else {
       toast({
@@ -626,6 +634,22 @@ export default function BookingLuxuryPage() {
       });
     }
   };
+  
+  // Smart auto-progression: When step 1 addresses are complete, auto-advance
+  useEffect(() => {
+    if (currentStep === 1 && 
+        formData.step1.pickupAddress?.full && 
+        formData.step1.dropoffAddress?.full &&
+        !isAutoTransitioning) {
+      // Auto-advance after short delay
+      const timer = setTimeout(() => {
+        console.log('✅ Step 1 complete - Auto-advancing to Step 2');
+        handleNext();
+      }, 800); // Give user time to see completion
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning]);
 
   const handlePrevious = () => {
     if (currentStep > 1) {
@@ -814,511 +838,171 @@ export default function BookingLuxuryPage() {
             },
           }}
         >
-          {/* PREMIUM HEADER - ENHANCED GLASSMORPHISM */}
-          <Card 
-            bg="linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
-            backdropFilter="blur(20px) saturate(180%)"
-            shadow="0 8px 32px rgba(147, 51, 234, 0.4), 0 0 60px rgba(147, 51, 234, 0.3), 0 0 100px rgba(147, 51, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-            borderRadius="2xl"
-            border="2px solid"
-            borderColor="rgba(147, 51, 234, 0.5)"
-            position="relative"
-            overflow="hidden"
-            w="full"
-            mx={0}
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            _hover={{
-              shadow: "0 12px 40px rgba(147, 51, 234, 0.5), 0 0 80px rgba(147, 51, 234, 0.4), 0 0 120px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-              borderColor: "rgba(147, 51, 234, 0.7)",
-              transform: "translateY(-2px)",
-            }}
-            sx={{
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
-                opacity: 0.6,
-                zIndex: 1,
-                pointerEvents: 'none',
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                animation: 'shine 6s infinite',
-                zIndex: 2,
-                pointerEvents: 'none',
-              },
-              '@keyframes shine': {
-                '0%': { left: '-100%' },
-                '100%': { left: '200%' },
-              },
-              '& > *': {
-                position: 'relative',
-                zIndex: 3,
-              },
-            }}
+          {/* SIMPLIFIED STICKY HEADER - Modern & Clean */}
+          <Box
+            position="sticky"
+            top={0}
+            zIndex={100}
+            bg="rgba(13, 13, 13, 0.95)"
+            backdropFilter="blur(10px)"
+            borderBottom="1px solid"
+            borderColor="rgba(59, 130, 246, 0.2)"
+            py={3}
+            mb={6}
           >
-            <CardBody p={0} px={{ base: 3, sm: 4, md: 8 }} py={{ base: 4, md: 8 }}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={{ base: 3, md: 6 }}>
-                {/* LEFT: Brand + Step Navigation */}
-                <HStack spacing={{ base: 3, md: 8 }} flexWrap="wrap">
-                  {currentStep === 1 && (
-                    <Button
-                      size={{ base: 'sm', md: 'md' }}
-                      variant="outline"
-                      colorScheme="gray"
-                      onClick={() => router.push('/')}
-                      bg="rgba(255, 255, 255, 0.05)"
-                      borderColor="rgba(255, 255, 255, 0.2)"
-                      color="white"
-                      fontWeight="semibold"
-                      borderRadius="lg"
-                      px={{ base: 2, md: 4 }}
-                      py={{ base: 1, md: 2 }}
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                      _hover={{
-                        bg: "rgba(255, 255, 255, 0.1)",
-                        borderColor: "rgba(255, 255, 255, 0.3)",
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-                      }}
-                      _active={{
-                        transform: "translateY(0)",
-                      }}
-                    >
-                      ← Back to Home
-                    </Button>
-                  )}
-                  <HStack spacing={{ base: 2, md: 4 }}>
+            <Flex justify="space-between" align="center" px={{ base: 4, md: 6 }}>
+              {/* Left: Brand & Back */}
+              <HStack spacing={3}>
+                {currentStep === 1 && (
+                  <IconButton
+                    aria-label="Back to home"
+                    icon={<FaArrowLeft />}
+                    size="sm"
+                    variant="ghost"
+                    color="gray.400"
+                    onClick={() => router.push('/')}
+                    _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
+                  />
+                )}
+                <HStack spacing={2}>
+                  <Icon as={FaTruck} boxSize={6} color="blue.400" />
+                  <Heading size="md" color="white">Speedy Van</Heading>
+                </HStack>
+              </HStack>
+
+              {/* Right: Progress Steps */}
+              <HStack spacing={2}>
+                {STEPS.map((step, index) => (
+                  <React.Fragment key={step.id}>
                     <Box
-                      position="relative"
-                      w={{ base: '40px', md: '56px' }}
-                      h={{ base: '40px', md: '56px' }}
-                      borderRadius="xl"
-                      bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                      w={{ base: '30px', md: '36px' }}
+                      h={{ base: '30px', md: '36px' }}
+                      borderRadius="full"
+                      bg={
+                        step.id === currentStep 
+                          ? 'blue.500'
+                          : step.id < currentStep 
+                          ? 'green.500'
+                          : 'gray.700'
+                      }
+                      color="white"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                      border="1px solid"
-                      borderColor="rgba(59, 130, 246, 0.5)"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      _hover={{
-                        transform: "scale(1.05) rotate(5deg)",
-                        boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                      }}
+                      fontSize="sm"
+                      fontWeight="bold"
+                      cursor={step.id <= currentStep ? 'pointer' : 'default'}
+                      onClick={() => step.id <= currentStep && handleStepClick(step.id)}
+                      transition="all 0.2s"
+                      _hover={step.id <= currentStep ? { transform: 'scale(1.1)' } : {}}
                     >
-                      <Icon as={FaTruck} boxSize={{ base: 5, md: 7 }} color="blue.300" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                      {step.id < currentStep ? <Icon as={FaCheck} boxSize={3} /> : step.id}
                     </Box>
-                    <VStack align="start" spacing={{ base: 1, md: 2 }}>
-                      <Heading 
-                        size={{ base: 'md', md: 'lg' }} 
-                        color="white"
-                        fontWeight="700"
-                        letterSpacing="0.5px"
-                        textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
-                        bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 100%)"
-                        bgClip="text"
-                        sx={{
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      >
-                        Speedy Van
-                      </Heading>
-                      <HStack spacing={{ base: 1.5, md: 3 }} flexWrap="wrap">
-                        <Badge 
-                          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)"
-                          color="blue.200"
-                          fontSize={{ base: '2xs', sm: 'xs' }}
-                          fontWeight="semibold"
-                          px={{ base: 1.5, sm: 2, md: 3 }}
-                          py={{ base: 0.5, md: 1 }}
-                          borderRadius="full"
-                          border="1px solid"
-                          borderColor="rgba(59, 130, 246, 0.4)"
-                          boxShadow="0 2px 8px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                          backdropFilter="blur(10px)"
-                          transition="all 0.2s"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                          }}
-                        >
-                          <Icon as={FaShieldAlt} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
-                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>Fully Insured</Text>
-                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>Insured</Text>
-                        </Badge>
-                        <Badge 
-                          bg="linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%)"
-                          color="yellow.200"
-                          fontSize={{ base: '2xs', sm: 'xs' }}
-                          fontWeight="semibold"
-                          px={{ base: 1.5, sm: 2, md: 3 }}
-                          py={{ base: 0.5, md: 1 }}
-                          borderRadius="full"
-                          border="1px solid"
-                          borderColor="rgba(251, 191, 36, 0.4)"
-                          boxShadow="0 2px 8px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                          backdropFilter="blur(10px)"
-                          transition="all 0.2s"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                          }}
-                        >
-                          <Icon as={FaStar} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
-                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>5-Star Rated</Text>
-                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>5-Star</Text>
-                        </Badge>
-                      </HStack>
-                    </VStack>
-                  </HStack>
-                  
-                  {/* SINGLE PROGRESS INDICATOR - Step Navigation Only */}
-                  <HStack spacing={4} display={{ base: 'none', lg: 'flex' }}>
-                    {STEPS.map((step, index) => (
-                      <React.Fragment key={step.id}>
-                        <HStack 
-                          spacing={3}
-                          cursor={step.id <= currentStep ? 'pointer' : 'default'}
-                          onClick={() => step.id <= currentStep && handleStepClick(step.id)}
-                          _hover={step.id <= currentStep ? { transform: 'translateY(-1px)' } : {}}
-                          transition="all 0.2s"
-                        >
-                          <Circle 
-                            size="40px" 
-                            bg={
-                              step.id === currentStep 
-                                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%)'
-                                : step.id < currentStep 
-                                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)'
-                                : 'rgba(75, 85, 99, 0.3)'
-                            }
-                            color={step.id <= currentStep ? 'white' : 'gray.400'}
-                            fontSize="sm"
-                            fontWeight="bold"
-                            boxShadow={
-                              step.id === currentStep 
-                                ? '0 4px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.2)'
-                                : step.id < currentStep
-                                ? '0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-                                : '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                            }
-                            border="2px solid"
-                            borderColor={
-                              step.id === currentStep 
-                                ? 'rgba(59, 130, 246, 0.6)'
-                                : step.id < currentStep
-                                ? 'rgba(16, 185, 129, 0.6)'
-                                : 'rgba(255, 255, 255, 0.1)'
-                            }
-                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                            _hover={step.id <= currentStep ? {
-                              transform: "scale(1.1)",
-                              boxShadow: step.id === currentStep 
-                                ? '0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.3)'
-                                : '0 6px 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                            } : {}}
-                          >
-                            {step.id < currentStep ? <Icon as={FaCheck} boxSize={4} /> : 
-                             step.id === currentStep ? <Icon as={step.icon} boxSize={4} /> :
-                             step.id}
-                          </Circle>
-                          <VStack align="start" spacing={0}>
-                            <Text 
-                              fontSize="md" 
-                              fontWeight={step.id === currentStep ? 'bold' : 'medium'}
-                              color={
-                                step.id === currentStep ? 'blue.400' : 
-                                step.id < currentStep ? 'green.400' : 
-                                'gray.400'
-                              }
-                              position="relative"
-                              _before={(step.id === 1 && itemsDetailsWaveActive) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-5px',
-                                width: 'calc(100% + 10px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(34, 197, 94, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'itemsDetailsWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '4px'
-                              } : (step.id === 2 && checkoutWaveActive) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-5px',
-                                width: 'calc(100% + 10px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(34, 197, 94, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'checkoutWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '4px'
-                              } : {}}
-                              sx={{
-                                '@keyframes itemsDetailsWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                },
-                                '@keyframes checkoutWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                }
-                              }}
-                            >
-                              {step.shortTitle}
-                            </Text>
-                            <Text 
-                              fontSize="xs" 
-                              color="gray.400"
-                              position="relative"
-                              _before={(step.id === 2 && currentStep === 1) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-3px',
-                                width: 'calc(100% + 6px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(239, 68, 68, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'pendingWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '3px'
-                              } : {}}
-                              sx={{
-                                '@keyframes pendingWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                }
-                              }}
-                            >
-                              {step.id < currentStep ? 'Complete' : 
-                               step.id === currentStep ? 'Active' : 
-                               'Pending'}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                        {index < STEPS.length - 1 && (
-                          <Box 
-                            w="50px" 
-                            h="3px" 
-                            bg={
-                              step.id < currentStep 
-                                ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.8) 0%, rgba(5, 150, 105, 0.8) 100%)'
-                                : 'rgba(75, 85, 99, 0.3)'
-                            }
-                            borderRadius="full"
-                            boxShadow={
-                              step.id < currentStep
-                                ? '0 2px 8px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                                : '0 1px 4px rgba(0, 0, 0, 0.2)'
-                            }
-                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                            position="relative"
-                            overflow="hidden"
-                            _before={step.id < currentStep ? {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: '-100%',
-                              width: '100%',
-                              height: '100%',
-                              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-                              animation: 'pulse 2s infinite',
-                            } : {}}
-                            sx={{
-                              '@keyframes pulse': {
-                                '0%, 100%': { left: '-100%' },
-                                '50%': { left: '100%' },
-                              },
-                            }}
-                          />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </HStack>
-                </HStack>
+                    {index < STEPS.length - 1 && (
+                      <Box 
+                        w={{ base: '20px', md: '30px' }} 
+                        h="2px" 
+                        bg={step.id < currentStep ? 'green.500' : 'gray.700'}
+                        transition="all 0.3s"
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
+              </HStack>
+            </Flex>
+          </Box>
 
 
-              </Flex>
 
-              {/* ENHANCED TITLE SECTION */}
-              <Box mt={8} textAlign="center" position="relative">
-                <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
-                  transform="translate(-50%, -50%)"
-                  w="200px"
-                  h="200px"
-                  borderRadius="full"
-                  bg="radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)"
-                  filter="blur(40px)"
-                  zIndex={0}
-                />
-                <VStack spacing={3} position="relative" zIndex={1}>
-                  <Heading 
-                    size="2xl" 
-                    fontWeight="700"
-                    letterSpacing="0.5px"
-                    bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 50%, #C7D2FE 100%)"
-                    bgClip="text"
-                    sx={{
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      textShadow: "0 4px 20px rgba(147, 51, 234, 0.3)",
-                    }}
-                  >
-                  Your Move Plan
-                  </Heading>
-                  <Text 
-                    fontSize="lg" 
-                    color="gray.300"
-                    fontWeight="500"
-                    letterSpacing="0.3px"
-                  >
-                  Step {currentStep}: {STEPS[currentStep - 1]?.title}
-                  </Text>
-                </VStack>
+          {/* Step Title */}
+          <Box mb={6} textAlign="center">
+            <Heading 
+              size="xl" 
+              color="white"
+              fontWeight="600"
+              mb={2}
+            >
+              {STEPS[currentStep - 1]?.title}
+            </Heading>
+            <Text fontSize="md" color="gray.400">
+              {STEPS[currentStep - 1]?.description}
+            </Text>
+          </Box>
+
+          {/* Main Content with Smooth Transitions - Framer Motion */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1] // Smooth easing like Uber
+              }}
+              style={{ width: '100%' }}
+            >
+              <Box w="full">
+                {currentStep === 1 ? (
+                  <AddressesStep
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    onNext={handleNext}
+                  />
+                ) : currentStep === 2 ? (
+                  <WhereAndWhatStep
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    onNext={handleNext}
+                    onBack={() => setCurrentStep(1)}
+                    calculatePricing={calculateComprehensivePricing}
+                    pricingTiers={pricingTiers}
+                    availabilityData={availabilityData}
+                    isLoadingAvailability={isLoadingAvailability}
+                  />
+                ) : currentStep === 3 ? (
+                  <WhoAndPaymentStepSimple
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    paymentSuccess={false}
+                    isCalculatingPricing={isCalculatingPricing}
+                    economyPrice={calculateEconomyPrice()}
+                    standardPrice={calculateStandardPrice()}
+                    priorityPrice={calculatePriorityPrice()}
+                    calculatePricing={calculatePricing}
+                    validatePromotionCode={validatePromotionCode}
+                    applyPromotionCode={applyPromotionCode}
+                    removePromotionCode={removePromotionCode}
+                  />
+                ) : null}
               </Box>
-            </CardBody>
-          </Card>
+            </motion.div>
+          </AnimatePresence>
 
 
-
-          {/* Main Content - Enhanced Glassmorphism */}
-          <Card 
-            bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-            backdropFilter="blur(20px) saturate(180%)"
-            shadow="0 8px 32px rgba(128, 90, 213, 0.4), 0 0 60px rgba(128, 90, 213, 0.3), 0 0 100px rgba(128, 90, 213, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-            borderRadius="2xl"
-            overflow="hidden"
-            border="2px solid"
-            borderColor="rgba(128, 90, 213, 0.5)"
-            data-step="items"
-            w="full"
-            mx={0}
-            position="relative"
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            _hover={{
-              shadow: "0 12px 40px rgba(128, 90, 213, 0.5), 0 0 80px rgba(128, 90, 213, 0.4), 0 0 120px rgba(128, 90, 213, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-              borderColor: "rgba(128, 90, 213, 0.7)",
-              transform: "translateY(-2px)",
-            }}
-            sx={{
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(135deg, rgba(128, 90, 213, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
-                opacity: 0.6,
-                zIndex: 0,
-                pointerEvents: 'none',
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
-                animation: 'shine 8s infinite',
-                zIndex: 1,
-                pointerEvents: 'none',
-              },
-              '@keyframes shine': {
-                '0%': { left: '-100%' },
-                '100%': { left: '200%' },
-              },
-              '& > *': {
-                position: 'relative',
-                zIndex: 2,
-              },
-            }}
-          >
-            <CardBody p={0}>
-              {currentStep === 1 ? (
-                <AddressesStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  onNext={() => setCurrentStep(2)}
-                />
-              ) : currentStep === 2 ? (
-                <WhereAndWhatStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  onNext={() => setCurrentStep(3)}
-                  onBack={() => setCurrentStep(1)}
-                  calculatePricing={calculateComprehensivePricing}
-                  pricingTiers={pricingTiers}
-                  availabilityData={availabilityData}
-                  isLoadingAvailability={isLoadingAvailability}
-                />
-              ) : currentStep === 3 ? (
-                <WhoAndPaymentStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  paymentSuccess={false}
-                  isCalculatingPricing={isCalculatingPricing}
-                  economyPrice={calculateEconomyPrice()}
-                  standardPrice={calculateStandardPrice()}
-                  priorityPrice={calculatePriorityPrice()}
-                  calculatePricing={calculatePricing}
-                  validatePromotionCode={validatePromotionCode}
-                  applyPromotionCode={applyPromotionCode}
-                  removePromotionCode={removePromotionCode}
-                />
-              ) : null}
-            </CardBody>
-          </Card>
-
-
-          {/* Enhanced Error Display */}
+          {/* Simplified Error Display */}
           {Object.keys(errors).length > 0 && (
-            <Card bg="red.50" borderColor="red.200" borderWidth="2px" borderRadius="2xl">
-              <CardBody p={{ base: 4, md: 6 }}>
-                <Alert status="error" borderRadius="xl" bg="transparent" border="none">
-                  <AlertIcon boxSize={{ base: 4, md: 6 }} />
-                  <Box>
-                    <AlertTitle fontSize={{ base: "md", md: "lg" }} mb={2}>Please fix the following errors:</AlertTitle>
-                    <AlertDescription>
-                      <VStack align="start" spacing={2}>
-                        {Object.entries(errors).map(([field, error]) => (
-                          <HStack key={field} spacing={2} align="start">
-                            <Text color="red.500" fontSize={{ base: "xs", md: "sm" }}>•</Text>
-                            <Text fontSize={{ base: "xs", md: "sm" }} color="red.700">
-                              {error}
-                            </Text>
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              </CardBody>
-            </Card>
+            <Alert 
+              status="error" 
+              borderRadius="xl"
+              bg="rgba(220, 38, 38, 0.1)"
+              border="1px solid"
+              borderColor="rgba(220, 38, 38, 0.3)"
+              mt={4}
+            >
+              <AlertIcon color="red.400" />
+              <Box>
+                <AlertTitle fontSize="sm" color="white" mb={1}>Please fix errors</AlertTitle>
+                <AlertDescription>
+                  <Text fontSize="xs" color="gray.300">
+                    {Object.values(errors)[0]}
+                  </Text>
+                </AlertDescription>
+              </Box>
+            </Alert>
           )}
         </Box>
       </Container>
