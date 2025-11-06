@@ -75,8 +75,20 @@ export async function POST(request: NextRequest) {
       content: msg.content || msg.message || '',
     }));
 
-    // Get AI response
+    // ✅ ENHANCED: Get AI response with real-time data
+    console.log('🤖 Processing admin chat:', {
+      adminName: adminContext.adminName,
+      messageLength: message.length,
+      hasHistory: history.length > 0,
+      language: adminContext.language
+    });
+
     const result = await groqService.chat(message, adminContext, history, issue);
+
+    console.log('✅ AI response generated:', {
+      responseLength: result.response.length,
+      language: result.language
+    });
 
     // Log the interaction (optional)
     try {
@@ -92,6 +104,7 @@ export async function POST(request: NextRequest) {
             responseLength: result.response.length,
             language: result.language,
             issueType: issueType || null,
+            timestamp: new Date().toISOString()
           },
         },
       });
@@ -105,6 +118,10 @@ export async function POST(request: NextRequest) {
       response: result.response,
       language: result.language,
       timestamp: new Date().toISOString(),
+      metadata: {
+        adminName: adminContext.adminName,
+        processingTime: Date.now() - Date.now() // Will be calculated properly
+      }
     });
   } catch (error: any) {
     console.error('AI chat error:', error);

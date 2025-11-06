@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Container,
@@ -37,6 +37,15 @@ import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import HomeFooter from '@/components/site/HomeFooter';
 import SpeedyAIBotWrapper from '@/components/site/SpeedyAIBotWrapper';
+import dynamic from 'next/dynamic';
+
+const TrustpilotWidget = dynamic(
+  () => import('@/components/site/TrustpilotWidget'),
+  { 
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // Import ServiceMapSection directly
 import ServiceMapSection from '../../components/ServiceMapSection';
@@ -1118,43 +1127,7 @@ const MobileCTA: React.FC = () => {
 
 // Main Mobile Home Page Component
 export default function MobileHomePageContent() {
-  const isMobile = useBreakpointValue({ base: true, lg: false });
 
-  // Load Trustpilot script
-  useEffect(() => {
-    const businessUnitId = ''; // Set your Trustpilot Business Unit ID here if needed
-
-    // Only load if Business Unit ID is configured
-    if (!businessUnitId) {
-      // Trustpilot integration handled server-side or not configured
-      return;
-    }
-
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="trustpilot.com/bootstrap"]')) {
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
-    script.async = true;
-    script.onload = () => {
-      console.log('✅ Trustpilot widget script loaded successfully');
-    };
-    script.onerror = () => {
-      console.warn('⚠️ Failed to load Trustpilot widget script');
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup - remove script on unmount
-      const existingScript = document.querySelector('script[src*="trustpilot.com/bootstrap"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
-      }
-    };
-  }, []);
 
   return (
     <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100vw" overflowX="hidden">
@@ -1186,84 +1159,8 @@ export default function MobileHomePageContent() {
       <HomeFooter />
 
       {/* Trustpilot Widget Section */}
-      {false && (
-        <Box
-          py={{ base: 8, md: 12 }}
-          bg="bg.surface"
-          borderTopWidth="1px"
-          borderTopColor="border.primary"
-        >
-          <Container maxW="container.xl">
-            <VStack spacing={6}>
-              {/* Trustpilot Widget */}
-              <Box
-                textAlign="center"
-                w="full"
-                maxW="300px"
-                mx="auto"
-              >
-                <Text
-                  fontSize="sm"
-                  color="text.secondary"
-                  mb={4}
-                  fontWeight="medium"
-                >
-                  Trusted by customers worldwide
-                </Text>
+      <TrustpilotWidget />
 
-                {/* Trustpilot Micro Review Count Widget */}
-                <Box
-                  className="trustpilot-widget"
-                  data-locale="en-GB"
-                  data-template-id="56278e9abfbbba0bdcd568bc"
-                  data-businessunit-id="68b0fc8a6ad677c356e83f14"
-                  data-style-height="52px"
-                  data-style-width="100%"
-                  data-theme="light"
-                  textAlign="center"
-                  sx={{
-                    '& a': {
-                      textDecoration: 'none',
-                      color: 'inherit',
-                    },
-                    '& .trustpilot-widget': {
-                      display: 'inline-block',
-                    }
-                  }}
-                >
-                  <a
-                    href="https://uk.trustpilot.com/review/speedy-van.co.uk"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Trustpilot
-                  </a>
-                </Box>
-              </Box>
-
-              {/* Footer Links */}
-              <HStack spacing={6} wrap="wrap" justify="center">
-                <Link href="/privacy" style={{ textDecoration: 'none' }}>
-                  <Text fontSize="sm" color="text.secondary" _hover={{ color: 'neon.400' }}>
-                    Privacy Policy
-                  </Text>
-                </Link>
-                <Link href="/terms" style={{ textDecoration: 'none' }}>
-                  <Text fontSize="sm" color="text.secondary" _hover={{ color: 'neon.400' }}>
-                    Terms of Service
-                  </Text>
-                </Link>
-                <Link href="/contact" style={{ textDecoration: 'none' }}>
-                  <Text fontSize="sm" color="text.secondary" _hover={{ color: 'neon.400' }}>
-                    Contact Us
-                  </Text>
-                </Link>
-              </HStack>
-            </VStack>
-          </Container>
-        </Box>
-      )}
-      
       {/* Speedy AI Bot */}
       <SpeedyAIBotWrapper />
     </Box>

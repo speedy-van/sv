@@ -124,6 +124,10 @@ export default async function RootLayout({
         {/* Theme Colors */}
         <meta name="theme-color" content="#2563EB" />
 
+        {/* CRITICAL: Ensure Safari/iOS treats CSS-in-JS styles correctly */}
+        <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+
         {/* Mobile and PWA Meta */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -143,6 +147,71 @@ export default async function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
+        />
+
+        {/* CRITICAL: Ensure Emotion/CSS-in-JS styles are properly injected into <head> for Safari/iOS */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                'use strict';
+                // Ensure Emotion styles are properly injected into <head> before hydration
+                // This prevents CSS-in-JS from displaying as text on Safari/iOS
+                function ensureEmotionStyles() {
+                  try {
+                    // Find all <style data-emotion> tags and ensure they're in <head>
+                    const emotionStyles = document.querySelectorAll('style[data-emotion]');
+                    const head = document.head || document.getElementsByTagName('head')[0];
+                    
+                    emotionStyles.forEach((style) => {
+                      // If style is not in head, move it there
+                      if (style.parentNode !== head) {
+                        head.appendChild(style);
+                      }
+                      // Ensure style has correct type attribute
+                      if (!style.getAttribute('type')) {
+                        style.setAttribute('type', 'text/css');
+                      }
+                    });
+                    
+                    // Watch for dynamically added Emotion styles (during hydration)
+                    if (typeof window !== 'undefined' && window.MutationObserver) {
+                      const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                          mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.tagName === 'STYLE') {
+                              const styleEl = node;
+                              if (styleEl.getAttribute('data-emotion')) {
+                                // Ensure Emotion style is in <head> with correct type
+                                if (styleEl.parentNode !== head) {
+                                  head.appendChild(styleEl);
+                                }
+                                if (!styleEl.getAttribute('type')) {
+                                  styleEl.setAttribute('type', 'text/css');
+                                }
+                              }
+                            }
+                          });
+                        });
+                      });
+                      
+                      observer.observe(document.head, { childList: true, subtree: true });
+                      observer.observe(document.body, { childList: true, subtree: true });
+                    }
+                  } catch (e) {
+                    console.warn('Error ensuring Emotion styles:', e);
+                  }
+                }
+                
+                // Run immediately (synchronous)
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', ensureEmotionStyles, { once: true });
+                } else {
+                  ensureEmotionStyles();
+                }
+              })();
+            `,
+          }}
         />
 
         {/* Fix CSS files incorrectly loaded as scripts - CRITICAL: Must run synchronously before any other scripts */}

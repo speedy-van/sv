@@ -89,30 +89,70 @@ const ServiceMapSection = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [hasWebGL, setHasWebGL] = useState(true);
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
+    // Check WebGL support before initializing map
+    const checkWebGL = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) {
+          console.warn('⚠️ WebGL not supported - Map will be disabled');
+          setHasWebGL(false);
+          return false;
+        }
+        return true;
+      } catch (e) {
+        console.warn('⚠️ WebGL check failed:', e);
+        setHasWebGL(false);
+        return false;
+      }
+    };
+
     if (!mapContainer.current || map.current) return;
+    
+    // Don't initialize map if WebGL is not supported
+    if (!checkWebGL()) {
+      setMapError(true);
+      return;
+    }
 
-    // Initialize map
-    const mapboxMap = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-3.5, 55.5], // Center on UK
-      zoom: 5.5,
-      minZoom: 4,
-      maxZoom: 12,
-      attributionControl: false, // Remove attribution for cleaner look
-    });
+    // CRITICAL: Ensure map container is completely empty before initializing
+    if (mapContainer.current) {
+      mapContainer.current.innerHTML = '';
+    }
 
-    // Disable controls for cleaner look
-    mapboxMap.scrollZoom.disable();
-    mapboxMap.boxZoom.disable();
-    mapboxMap.dragRotate.disable();
-    mapboxMap.keyboard.disable();
-    mapboxMap.doubleClickZoom.disable();
-    mapboxMap.touchZoomRotate.disable();
+    try {
+      // Initialize map with error handling
+      const mapboxMap = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [-3.5, 55.5], // Center on UK
+        zoom: 5.5,
+        minZoom: 4,
+        maxZoom: 12,
+        attributionControl: false, // Remove attribution for cleaner look
+        failIfMajorPerformanceCaveat: true, // Fail gracefully if WebGL is slow
+      });
 
-    mapboxMap.on('load', () => {
+      // Disable controls for cleaner look
+      mapboxMap.scrollZoom.disable();
+      mapboxMap.boxZoom.disable();
+      mapboxMap.dragRotate.disable();
+      mapboxMap.keyboard.disable();
+      mapboxMap.doubleClickZoom.disable();
+      mapboxMap.touchZoomRotate.disable();
+
+      // Handle map errors
+      mapboxMap.on('error', (e) => {
+        console.error('❌ Mapbox error:', e);
+        setMapError(true);
+        setHasWebGL(false);
+      });
+
+      mapboxMap.on('load', () => {
       setIsMapLoaded(true);
       map.current = mapboxMap;
 
@@ -174,11 +214,21 @@ const ServiceMapSection = () => {
       });
     });
 
+    } catch (error) {
+      console.error('❌ Error initializing Mapbox:', error);
+      setMapError(true);
+      setHasWebGL(false);
+    }
+
     return () => {
-      if (mapboxMap) {
-        mapboxMap.remove();
-        map.current = null;
-        setIsMapLoaded(false);
+      try {
+        if (map.current) {
+          map.current.remove();
+          map.current = null;
+          setIsMapLoaded(false);
+        }
+      } catch (cleanupError) {
+        console.warn('⚠️ Error cleaning up map:', cleanupError);
       }
     };
   }, []);
@@ -265,18 +315,19 @@ const ServiceMapSection = () => {
               animation: 'neon-pulse 2s ease-in-out infinite alternate'
             }}
           >
+            {/* Map container - must be empty for Mapbox */}
             <div
               ref={mapContainer}
               style={{
                 width: '100%',
                 height: '100%',
-                opacity: isMapLoaded ? 1 : 0.7,
-                transition: 'opacity 0.3s ease',
-                background: 'rgba(0, 0, 0, 0.8)'
+                position: 'relative',
+                zIndex: 1
               }}
             />
 
-            {!isMapLoaded && (
+            {/* Loading or Error State - positioned absolutely outside map container */}
+            {!isMapLoaded && !mapError && (
               <Box
                 position="absolute"
                 top="0"
@@ -287,9 +338,58 @@ const ServiceMapSection = () => {
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
+                zIndex={2}
+                pointerEvents="none"
               >
                 <Text color="gray.300" fontSize="lg">
                   Loading interactive map...
+                </Text>
+              </Box>
+            )}
+
+            {/* WebGL Not Supported - Show Fallback */}
+            {mapError && !hasWebGL && (
+              <Box
+                position="absolute"
+                top="0"
+                left="0"
+                right="0"
+                bottom="0"
+                bg="rgba(0, 0, 0, 0.95)"
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                p={6}
+                textAlign="center"
+                zIndex={2}
+                pointerEvents="auto"
+              >
+                <Text color="neon.400" fontSize="2xl" fontWeight="bold" mb={3}>
+                  🗺️ UK Coverage Map
+                </Text>
+                <Text color="gray.300" fontSize="md" mb={6} maxW="400px">
+                  We serve {UK_CITIES.length}+ major cities across the UK
+                </Text>
+                <SimpleGrid columns={2} spacing={2} w="full" maxW="400px">
+                  {UK_CITIES.slice(0, 8).map((city) => (
+                    <Badge
+                      key={city.name}
+                      colorScheme="blue"
+                      fontSize="sm"
+                      p={2}
+                      borderRadius="md"
+                      bg="rgba(0, 194, 255, 0.2)"
+                      color="neon.300"
+                      border="1px solid"
+                      borderColor="rgba(0, 194, 255, 0.4)"
+                    >
+                      📍 {city.name}
+                    </Badge>
+                  ))}
+                </SimpleGrid>
+                <Text color="gray.500" fontSize="xs" mt={4}>
+                  Interactive map requires WebGL support
                 </Text>
               </Box>
             )}

@@ -294,15 +294,38 @@ export function useBookingForm() {
 
   const updateFormData = useCallback((step: keyof FormData, data: Partial<FormData[keyof FormData]>) => {
     setFormData(prev => {
-      // Check if the data has actually changed to prevent unnecessary updates
-      const currentStepData = prev[step];
-      const hasChanged = Object.keys(data).some(key => {
+      // Always update - don't skip updates for items array or other critical fields
+      // The comparison logic was too aggressive and causing missed updates
+      const shouldUpdate = Object.keys(data).some(key => {
         const newValue = (data as any)[key];
-        const currentValue = (currentStepData as any)[key];
+        const currentValue = (prev[step] as any)[key];
+        
+        // Special handling for arrays (like items) - always update if array is provided
+        if (Array.isArray(newValue)) {
+          // If items array is being updated, always allow it
+          if (key === 'items') {
+            return true; // Always update items array
+          }
+          // For other arrays, check length and content
+          if (!Array.isArray(currentValue) || newValue.length !== currentValue.length) {
+            return true;
+          }
+          // Deep compare array items
+          return newValue.some((item, index) => {
+            const currentItem = currentValue[index];
+            return JSON.stringify(item) !== JSON.stringify(currentItem);
+          });
+        }
+        
+        // For non-array values, use deep comparison
+        if (newValue === null || newValue === undefined) {
+          return currentValue !== newValue;
+        }
+        
         return JSON.stringify(newValue) !== JSON.stringify(currentValue);
       });
       
-      if (!hasChanged) {
+      if (!shouldUpdate) {
         console.log(`No change detected for ${step}, skipping update`);
         return prev; // Return the same object to prevent re-render
       }

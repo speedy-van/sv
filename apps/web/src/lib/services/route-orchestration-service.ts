@@ -253,13 +253,14 @@ export class RouteOrchestrationService {
       }
 
       // Enrich with OFFICIAL data - NO DEFAULTS ALLOWED
+      const volumeValue = typeof datasetItem.volume === 'string' ? parseFloat(datasetItem.volume) : datasetItem.volume;
       enrichedItems.push({
         ...item,
         id: datasetItem.id,
         name: datasetItem.name,
         weight: datasetItem.weight, // REAL weight from official dataset
-        volume: datasetItem.volume || item.volume || (datasetItem.weight * 0.01), // Prefer official volume
-        volumeM3: datasetItem.volume || item.volumeM3 || item.volume || (datasetItem.weight * 0.01),
+        volume: volumeValue || item.volume || (datasetItem.weight * 0.01), // Prefer official volume
+        volumeM3: volumeValue || item.volumeM3 || item.volume || (datasetItem.weight * 0.01),
         category: datasetItem.category || item.category,
         fragility_level: datasetItem.fragility_level,
         workers_required: datasetItem.workers_required || 1,

@@ -2981,9 +2981,8 @@ export default function WhoAndPaymentStep({
         </VStack>
       </Card>
 
-      {/* Action Buttons Row - Moved to bottom of page */}
-      <HStack spacing={{ base: 3, sm: 4 }} w="full" justify="space-between" mt={{ base: 6, sm: 8 }} mb={{ base: 3, sm: 4 }} flexDirection={{ base: "column", sm: "row" }}>
-        {/* Back to Step 1 Button */}
+      {/* Back to Step 1 Button - Separate row */}
+      <Box w="full" mt={{ base: 6, sm: 8 }} mb={3}>
         <Button
           size={{ base: "md", sm: "lg" }}
           minH={{ base: "48px", sm: "44px" }}
@@ -3003,10 +3002,14 @@ export default function WhoAndPaymentStep({
             : 'Back to Step 1'
           }
         </Button>
+      </Box>
 
+      {/* Payment Button - Centered */}
+      <Flex w="full" justify="center" mt={{ base: 4, sm: 6 }} mb={{ base: 3, sm: 4 }}>
         {/* Stripe Payment Button */}
         {!paymentSuccess ? (
-          <StripePaymentButton
+          <Box maxW={{ base: "full", md: "500px" }} w="full">
+            <StripePaymentButton
             amount={step2.promotionDetails?.finalAmount || formData.step1.pricing.total}
             bookingData={{
               customer: {
@@ -3075,8 +3078,9 @@ export default function WhoAndPaymentStep({
               formData.step1.pricing.total <= 0
             }
           />
+          </Box>
         ) : (
-          <Alert status="success" borderRadius="xl" p={4} flex={1}>
+          <Alert status="success" borderRadius="xl" p={4} maxW={{ base: "full", md: "500px" }} w="full">
             <AlertIcon />
             <Box>
               <AlertTitle fontSize="lg">🎉 Payment Successful!</AlertTitle>
@@ -3086,7 +3090,7 @@ export default function WhoAndPaymentStep({
             </Box>
           </Alert>
         )}
-      </HStack>
+      </Flex>
 
     </VStack>
   );

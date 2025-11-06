@@ -178,6 +178,65 @@ export const validateApiResponse = <T extends z.ZodTypeAny>(
   return validateApiRequest(schema, data);
 };
 
+// Pagination and query schemas
+export const paginationQuery = z.object({
+  page: z.union([z.string(), z.number(), z.undefined()]).transform((val) => {
+    if (val === undefined || val === null || val === '') return 1;
+    const num = typeof val === 'string' ? parseInt(val, 10) : val;
+    return isNaN(num) ? 1 : Math.max(1, num);
+  }).pipe(z.number().int().min(1)).default(1),
+  limit: z.union([z.string(), z.number(), z.undefined()]).transform((val) => {
+    if (val === undefined || val === null || val === '') return 20;
+    const num = typeof val === 'string' ? parseInt(val, 10) : val;
+    return isNaN(num) ? 20 : Math.min(100, Math.max(1, num));
+  }).pipe(z.number().int().min(1).max(100)).default(20),
+});
+
+export const searchQuery = z.object({
+  search: z.string().optional(),
+  role: z.enum(['customer', 'driver', 'admin']).optional(),
+  status: z.string().optional(),
+});
+
+// ID parameter schema
+export const idParam = z.object({
+  id: z.string().min(1, 'ID is required'),
+});
+
+// Customer schemas
+export const customerCreate = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Valid email is required').optional(),
+  phone: z.string().min(1, 'Phone is required').optional(),
+});
+
+// Admin user schemas
+export const adminUserCreate = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Valid email is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  adminRole: z.enum(['super_admin', 'admin', 'moderator']).default('admin'),
+  isActive: z.boolean().default(true),
+});
+
+export const adminUserUpdate = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  adminRole: z.enum(['super_admin', 'admin', 'moderator']).optional(),
+  isActive: z.boolean().optional(),
+});
+
+// Driver application schemas
+export const driverApplicationCreate = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Valid email is required'),
+  phone: z.string().min(1, 'Phone is required'),
+  licenseNumber: z.string().min(1, 'License number is required'),
+  vehicleType: z.enum(['van', 'truck', 'car']).optional(),
+  experience: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
 // Type exports
 export type Address = z.infer<typeof AddressSchema>;
 export type ContactInfo = z.infer<typeof ContactInfoSchema>;
@@ -191,78 +250,10 @@ export type DriverProfile = z.infer<typeof DriverProfileSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type PricingRequest = z.infer<typeof PricingRequestSchema>;
 export type PricingResponse = z.infer<typeof PricingResponseSchema>;
-
-// Pagination and search schemas
-export const paginationQuery = z.object({
-  page: z.coerce.number().int().min(1).default(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
-  sortBy: z.string().optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('desc').optional(),
-});
-
-export const searchQuery = z.object({
-  search: z.string().optional(),
-  role: z.enum(['customer', 'driver', 'admin']).optional(),
-  status: z.string().optional(),
-});
-
-// ID parameter schema
-export const idParam = z.object({
-  id: z.string().uuid('Invalid UUID format'),
-});
-
-// Customer create schema
-export const customerCreate = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Valid email address is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
-});
-
-// Admin user create schema
-export const adminUserCreate = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Valid email address is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['admin', 'driver', 'customer']).default('customer'),
-  adminRole: z.enum(['admin', 'superadmin']).optional(),
-  isActive: z.boolean().default(true).optional(),
-  permissions: z.array(z.string()).optional(),
-});
-
-// Admin user update schema
-export const adminUserUpdate = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
-  email: z.string().email('Valid email address is required').optional(),
-  phone: z.string().min(10, 'Valid phone number is required').optional(),
-  role: z.enum(['admin', 'driver', 'customer']).optional(),
-  adminRole: z.enum(['admin', 'superadmin']).optional(),
-  isActive: z.boolean().optional(),
-  permissions: z.array(z.string()).optional(),
-});
-
-// Driver application create schema
-export const driverApplicationCreate = z.object({
-  personalInfo: z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Valid email address is required'),
-    phone: z.string().min(10, 'Valid phone number is required'),
-  }),
-  licenseInfo: z.object({
-    licenseNumber: z.string().min(5, 'License number is required'),
-    licenseExpiry: z.string().datetime('Valid expiry date is required'),
-    licenseClass: z.string().min(1, 'License class is required'),
-  }),
-  vehicleInfo: z.object({
-    make: z.string().min(1),
-    model: z.string().min(1),
-    year: z.number().int(),
-    registration: z.string().min(3),
-    type: z.enum(['van', 'truck', 'car']),
-  }),
-  insuranceInfo: z.object({
-    provider: z.string().min(1),
-    policyNumber: z.string().min(1),
-    expiryDate: z.string().datetime(),
-  }),
-});
+export type PaginationQuery = z.infer<typeof paginationQuery>;
+export type SearchQuery = z.infer<typeof searchQuery>;
+export type IdParam = z.infer<typeof idParam>;
+export type CustomerCreate = z.infer<typeof customerCreate>;
+export type AdminUserCreate = z.infer<typeof adminUserCreate>;
+export type AdminUserUpdate = z.infer<typeof adminUserUpdate>;
+export type DriverApplicationCreate = z.infer<typeof driverApplicationCreate>;

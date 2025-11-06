@@ -528,7 +528,9 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   if (!queryParams.ok) return queryParams.error;
 
   const { page, limit, status } = queryParams.data;
-  const skip = ((page || 1) - 1) * (limit || 10);
+  const pageNum = typeof page === 'number' ? page : (page ? parseInt(String(page), 10) : 1);
+  const limitNum = typeof limit === 'number' ? limit : (limit ? parseInt(String(limit), 10) : 20);
+  const skip = (pageNum - 1) * limitNum;
 
   const where = status ? { status: status as any } : {};
 
@@ -536,7 +538,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
     prisma.driverApplication.findMany({
       where,
       skip,
-      take: limit,
+      take: limitNum,
       orderBy: { applicationDate: 'desc' },
       include: {
         User: {
@@ -558,7 +560,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       page,
       limit,
       total,
-      pages: Math.ceil(total / (limit || 10)),
+      pages: Math.ceil(total / limitNum),
     },
   });
 });

@@ -377,8 +377,9 @@ export default function SpeedyAIBot() {
         {!isOpen && (
           <MotionBox
             position="fixed"
-            bottom={{ base: 4, md: 8 }}
-            right={{ base: 4, md: 8 }}
+            bottom={{ base: 2, md: 4 }}
+            right={{ base: 2, md: 4 }}
+            left="auto"
             zIndex={9999}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -500,8 +501,8 @@ export default function SpeedyAIBot() {
         {isOpen && (
           <MotionFlex
             position="fixed"
-            bottom={{ base: 0, md: 8 }}
-            right={{ base: 0, md: 8 }}
+            bottom={{ base: 0, md: 4 }}
+            right={{ base: 0, md: 4 }}
             left={{ base: 0, md: 'auto' }}
             w={{ base: '100%', md: '400px' }}
             h={{ base: '100%', md: '600px' }}

@@ -20,7 +20,9 @@ export const GET = withApiHandler(async (request: NextRequest) => {
   if (!queryParams.ok) return queryParams.error;
 
   const { page, limit, search, role } = queryParams.data;
-  const skip = ((page || 1) - 1) * (limit || 10);
+  const pageNum = typeof page === 'number' ? page : (page ? parseInt(String(page), 10) : 1);
+  const limitNum = typeof limit === 'number' ? limit : (limit ? parseInt(String(limit), 10) : 20);
+  const skip = (pageNum - 1) * limitNum;
 
   // Build where clause
   const where: any = {};
@@ -48,7 +50,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       },
       orderBy: { createdAt: 'desc' },
       skip,
-      take: limit,
+      take: limitNum,
     }),
     prisma.user.count({ where }),
   ]);
@@ -82,7 +84,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
       page,
       limit,
       total,
-      pages: Math.ceil(total / (limit || 10)),
+      pages: Math.ceil(total / limitNum),
     },
   });
 });

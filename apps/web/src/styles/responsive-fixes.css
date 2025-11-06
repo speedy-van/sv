@@ -61,21 +61,27 @@
   }
 }
 
-/* Small screens - 2 columns */
+/* Small screens - 2 columns (iPhone 15/16/17 and similar) */
+/* iPhone 15 Pro Max: 430px, iPhone 15 Pro: 393px, iPhone 15: 393px */
 @media (min-width: 480px) and (max-width: 767px) {
   .footer-main-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     display: grid !important;
   }
   
+  /* Allow horizontal layout on wider small screens (iPhone 15 Pro Max) */
   .home-footer-grid {
-    flex-direction: column !important;
+    flex-direction: row !important;
     display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
   }
   
   .home-footer-bottom {
-    flex-direction: column !important;
+    flex-direction: row !important;
     display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
   }
   
   .footer-trust-grid {
@@ -84,8 +90,28 @@
   }
 }
 
-/* Mobile - single column */
-@media (max-width: 479px) {
+/* iPhone 15/16/17 specific: Wider small screens (430px+) */
+@media (min-width: 430px) and (max-width: 479px) {
+  .footer-main-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    display: grid !important;
+  }
+  
+  .home-footer-grid {
+    flex-direction: row !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .footer-trust-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    display: grid !important;
+  }
+}
+
+/* Mobile - single column (only for very small screens, not iPhone 15/16/17) */
+/* iPhone 15/16/17 have width >= 393px, so they won't hit this breakpoint */
+@media (max-width: 429px) {
   .footer-main-grid,
   .footer-trust-grid {
     grid-template-columns: 1fr !important;

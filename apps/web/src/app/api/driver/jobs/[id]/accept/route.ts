@@ -144,6 +144,37 @@ export async function POST(
       select: { name: true, email: true }
     });
 
+    // ✅ CHECK: Does driver have any active jobs for today?
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const activeJobs = await prisma.assignment.findMany({
+      where: {
+        driverId: driver.id,
+        status: 'accepted',
+        Booking: {
+          scheduledAt: {
+            gte: new Date() // Future or current jobs
+          },
+          status: { in: ['CONFIRMED'] }
+        }
+      },
+      include: {
+        Booking: {
+          select: { scheduledAt: true, status: true }
+        }
+      },
+      orderBy: {
+        Booking: {
+          scheduledAt: 'asc' // Sort by scheduled time
+        }
+      }
+    });
+
+    console.log(`📊 Driver has ${activeJobs.length} active/scheduled job(s)`);
+
     // Create or update assignment and update booking
     await prisma.$transaction(async (tx) => {
       if (invitation) {
@@ -284,9 +315,24 @@ export async function POST(
       // Don't fail the request if Pusher fails
     }
 
+    // ✅ Prepare response message based on job queue
+    const isFirstJob = activeJobs.length === 0;
+    const queuePosition = activeJobs.length + 1;
+    const responseMessage = isFirstJob
+      ? `Job accepted! You can start this job now.`
+      : `Job accepted and added to your schedule (Position ${queuePosition}). Complete your current job(s) first.`;
+
     return NextResponse.json({
       success: true,
-      message: 'Job accepted successfully'
+      message: responseMessage,
+      bookingId,
+      driverId: driver.id,
+      queueInfo: {
+        position: queuePosition,
+        isQueued: !isFirstJob,
+        activeJobs: activeJobs.length,
+        canStartNow: isFirstJob
+      }
     });
 
   } catch (error) {

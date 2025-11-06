@@ -23,61 +23,43 @@ import { FiMenu, FiX, FiUser, FiLogIn, FiUserPlus, FiMapPin, FiFileText, FiShiel
 import { FaPhone, FaTruck, FaStar, FaQuestionCircle } from 'react-icons/fa';
 
 export default function MobileHeader() {
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const scrollDifference = Math.abs(currentScrollY - lastScrollY);
-      
-      // Only update if scroll difference is significant (prevents flickering)
-      if (scrollDifference < 5) return;
-      
-      // Show header when scrolling up, hide when scrolling down
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        setIsHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsHeaderVisible(false);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    // Throttle scroll events for better performance
-    let ticking = false;
-    const throttledHandleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
-    };
-  }, [lastScrollY]);
-
-  if (!isMobile) return null;
+  // CRITICAL: Always render, always visible - no scroll hiding on mobile
+  // CSS handles responsive display (mobile vs desktop)
 
   return (
     <>
       <Box
-        className={`mobile-header ${isHeaderVisible ? 'visible' : 'hidden'}`}
-        bg="rgba(15, 17, 20, 0.95)"
+        className="mobile-header mobile-header-visible"
+        position="fixed"
+        top="0"
+        left="0"
+        right="0"
+        w="100%"
+        bg="rgba(15, 17, 20, 0.98)"
         backdropFilter="blur(10px)"
-        borderBottom="1px solid rgba(45, 55, 72, 0.3)"
-        px={4}
-        py={3}
+        borderBottom="1px solid rgba(59, 130, 246, 0.3)"
+        px={3}
+        py={2}
+        zIndex={1000}
+        boxShadow="0 2px 8px rgba(0,0,0,0.3)"
+        suppressHydrationWarning
+        display={{ base: 'block', md: 'none' }}
+        visibility="visible"
+        opacity={1}
+        sx={{
+          '@media (max-width: 767px)': {
+            display: 'block !important',
+            visibility: 'visible !important',
+            opacity: '1 !important',
+          },
+          '@media (min-width: 768px)': {
+            display: 'none !important',
+          }
+        }}
       >
-        <Flex justify="space-between" align="center">
+        <Flex justify="space-between" align="center" h="56px">
           {/* Logo */}
           <Link href="/" _hover={{ textDecoration: 'none' }}>
             <HStack spacing={2}>
@@ -92,73 +74,78 @@ export default function MobileHeader() {
                 color="white"
                 fontWeight="bold"
                 fontSize="sm"
+                boxShadow="0 0 15px rgba(0, 194, 255, 0.4)"
               >
                 SV
               </Box>
-              <Text
-                fontSize="lg"
-                fontWeight="bold"
-                color="white"
-                display={{ base: 'none', sm: 'block' }}
-              >
-                Speedy Van
-              </Text>
             </HStack>
           </Link>
 
-          {/* Right side buttons */}
+          {/* Right side - Clean buttons only */}
           <HStack spacing={2}>
             {/* Call Now Button */}
             <Button
               size="sm"
-              bg="linear-gradient(135deg, #00D18F, #00C2FF)"
+              h="40px"
+              px={4}
+              bg="linear-gradient(135deg, #10B981, #059669)"
               color="white"
               fontWeight="bold"
-              boxShadow="0 4px 15px rgba(0,209,143,0.3)"
+              fontSize="sm"
+              boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
               leftIcon={<FaPhone />}
-              onClick={() => window.open('tel:+441202129746')}
-              position="relative"
-              overflow="hidden"
-              transition="all 0.3s ease"
+              onClick={() => window.open('tel:01202129764')}
+              borderRadius="full"
               _hover={{
-                bg: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+                bg: 'linear-gradient(135deg, #059669, #047857)',
                 transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(0,209,143,0.4)',
+                boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
               }}
-              _before={{
-                content: '""',
-                position: 'absolute',
-                top: '0',
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                animation: 'waveMove 2s infinite linear',
-                pointerEvents: 'none',
-              }}
-              css={{
-                '@keyframes waveMove': {
-                  '0%': {
-                    left: '-100%',
-                  },
-                  '100%': {
-                    left: '100%',
-                  },
-                },
+              _active={{
+                transform: 'scale(0.95)',
               }}
             >
-              Call Now
+              Call
             </Button>
 
-            {/* Menu Button */}
+            {/* Sign In Button */}
+            <Button
+              size="sm"
+              h="40px"
+              px={4}
+              bg="linear-gradient(135deg, #3B82F6, #2563EB)"
+              color="white"
+              fontWeight="bold"
+              fontSize="sm"
+              boxShadow="0 4px 12px rgba(59, 130, 246, 0.4)"
+              leftIcon={<FiLogIn />}
+              onClick={() => window.location.href = '/auth/login'}
+              borderRadius="full"
+              _hover={{
+                bg: 'linear-gradient(135deg, #2563EB, #1d4ed8)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+              }}
+              _active={{
+                transform: 'scale(0.95)',
+              }}
+            >
+              Sign In
+            </Button>
+
+            {/* Menu Icon Button */}
             <IconButton
               aria-label="Open menu"
-              icon={isOpen ? <FiX /> : <FiMenu />}
+              icon={<FiMenu />}
               variant="ghost"
               color="white"
-              _hover={{ bg: 'rgba(255, 255, 255, 0.1)' }}
-              onClick={isOpen ? onClose : onOpen}
               size="sm"
+              w="40px"
+              h="40px"
+              minW="40px"
+              _hover={{ bg: 'rgba(59, 130, 246, 0.2)' }}
+              _active={{ bg: 'rgba(59, 130, 246, 0.3)' }}
+              onClick={onOpen}
             />
           </HStack>
         </Flex>
@@ -191,177 +178,287 @@ export default function MobileHeader() {
 
           <DrawerBody p={0} bg="rgba(15, 17, 20, 0.95)">
             <VStack spacing={0} align="stretch">
-              <Link
-                href="/"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiUser color="#3B82F6" />
                   <Text color="white">Home</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/services"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/services';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FaTruck color="#3B82F6" />
                   <Text color="white">Services</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/pricing"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/pricing';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FaStar color="#3B82F6" />
                   <Text color="white">Pricing</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/track"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/track';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiMapPin color="#3B82F6" />
                   <Text color="white">Track Move</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/about"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/about';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiFileText color="#3B82F6" />
                   <Text color="white">About Us</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/contact"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/contact';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FaQuestionCircle color="#3B82F6" />
                   <Text color="white">Contact</Text>
                 </HStack>
-              </Link>
+              </Box>
 
               <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
-                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold">
                   DRIVER
                 </Text>
               </Box>
               
-              <Link
-                href="/driver-application"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/driver-application';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiUserPlus color="#06B6D4" />
                   <Text color="white">Apply to Drive</Text>
                 </HStack>
-              </Link>
+              </Box>
 
               <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
-                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold">
                   LEGAL
                 </Text>
               </Box>
               
-              <Link
-                href="/privacy"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/privacy';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiShield color="#3B82F6" />
                   <Text color="white">Privacy Policy</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/terms"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/terms';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiFileText color="#3B82F6" />
                   <Text color="white">Terms of Service</Text>
                 </HStack>
-              </Link>
+              </Box>
 
               <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
-                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold" mb={2}>
+                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold">
                   ACCOUNT
                 </Text>
               </Box>
               
-              <Link
-                href="/auth/login"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/auth/login';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiLogIn color="#3B82F6" />
                   <Text color="white">Sign In</Text>
                 </HStack>
-              </Link>
+              </Box>
               
-              <Link
-                href="/auth/register"
+              <Box
+                as="button"
                 p={4}
                 borderBottom="1px solid"
                 borderColor="rgba(59, 130, 246, 0.2)"
                 _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
-                onClick={onClose}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                  window.location.href = '/auth/register';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
               >
                 <HStack spacing={3}>
                   <FiUserPlus color="#3B82F6" />
                   <Text color="white">Sign Up</Text>
                 </HStack>
-              </Link>
+              </Box>
 
               <Box p={4} bg="rgba(30, 64, 175, 0.1)" borderTop="1px solid" borderColor="rgba(59, 130, 246, 0.3)">
                 <VStack spacing={3}>
@@ -371,38 +468,27 @@ export default function MobileHeader() {
                     color="white"
                     fontWeight="bold"
                     w="full"
+                    h="56px"
                     boxShadow="0 4px 15px rgba(59,130,246,0.4)"
                     _hover={{
                       bg: 'linear-gradient(135deg, #06B6D4, #3B82F6)',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 8px 25px rgba(59, 130, 246, 0.5)',
                     }}
-                    onClick={() => {
-                      window.location.href = '/booking-luxury';
+                    _active={{
+                      transform: 'scale(0.98)',
+                    }}
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onClose();
+                      setTimeout(() => {
+                        window.location.href = '/booking-luxury';
+                      }, 100);
                     }}
                     position="relative"
                     overflow="hidden"
-                    _before={{
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: '-100%',
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                      animation: 'wave 2s infinite',
-                    }}
-                    sx={{
-                      '@keyframes wave': {
-                        '0%': {
-                          left: '-100%',
-                        },
-                        '100%': {
-                          left: '100%',
-                        },
-                      },
-                    }}
+                    borderRadius="xl"
                   >
                     Book Your Move
                   </Button>
@@ -411,18 +497,26 @@ export default function MobileHeader() {
                     size="md"
                     variant="outline"
                     color="white"
-                    borderColor="rgba(59, 130, 246, 0.5)"
+                    borderColor="rgba(16, 185, 129, 0.5)"
+                    borderWidth="2px"
                     w="full"
+                    h="48px"
                     _hover={{
-                      bg: 'rgba(59, 130, 246, 0.2)',
+                      bg: 'rgba(16, 185, 129, 0.2)',
                       transform: 'translateY(-1px)',
-                      borderColor: '#3B82F6',
+                      borderColor: '#10B981',
                     }}
-                    onClick={() => {
-                      window.open('tel:+441202129746');
+                    _active={{
+                      transform: 'scale(0.98)',
+                    }}
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open('tel:01202129764');
                       onClose();
                     }}
                     leftIcon={<FaPhone />}
+                    borderRadius="xl"
                   >
                     Call Now
                   </Button>
