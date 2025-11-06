@@ -637,19 +637,37 @@ export default function BookingLuxuryPage() {
   
   // Smart auto-progression: When step 1 addresses are complete, auto-advance
   useEffect(() => {
+    // CRITICAL: Validate addresses are truly complete before auto-advance
+    const isPickupComplete = formData.step1.pickupAddress?.full && 
+                            formData.step1.pickupAddress?.postcode &&
+                            formData.step1.pickupAddress?.coordinates?.lat !== 0;
+    const isDropoffComplete = formData.step1.dropoffAddress?.full && 
+                             formData.step1.dropoffAddress?.postcode &&
+                             formData.step1.dropoffAddress?.coordinates?.lat !== 0;
+    
     if (currentStep === 1 && 
-        formData.step1.pickupAddress?.full && 
-        formData.step1.dropoffAddress?.full &&
+        isPickupComplete && 
+        isDropoffComplete &&
         !isAutoTransitioning) {
-      // Auto-advance after short delay
-      const timer = setTimeout(() => {
-        console.log('✅ Step 1 complete - Auto-advancing to Step 2');
-        handleNext();
+      // Validate step before auto-advance
+      const timer = setTimeout(async () => {
+        const isValid = await validateStep(1);
+        if (isValid) {
+          console.log('✅ Step 1 validated - Auto-advancing to Step 2');
+          setIsAutoTransitioning(true);
+          setTimeout(() => {
+            setCurrentStep(2);
+            clearErrors();
+            setIsAutoTransitioning(false);
+          }, 300);
+        } else {
+          console.log('⚠️ Step 1 validation failed - not auto-advancing');
+        }
       }, 800); // Give user time to see completion
       
       return () => clearTimeout(timer);
     }
-  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning]);
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning, validateStep, clearErrors]);
 
   const handlePrevious = () => {
     if (currentStep > 1) {
@@ -838,7 +856,7 @@ export default function BookingLuxuryPage() {
             },
           }}
         >
-          {/* SIMPLIFIED STICKY HEADER - Modern & Clean */}
+          {/* SIMPLIFIED STICKY HEADER - Modern & Clean - MOBILE SAFARI FIX */}
           <Box
             position="sticky"
             top={0}
@@ -849,10 +867,35 @@ export default function BookingLuxuryPage() {
             borderColor="rgba(59, 130, 246, 0.2)"
             py={3}
             mb={6}
+            sx={{
+              // CRITICAL: Force horizontal layout on all devices
+              display: 'flex !important',
+              flexDirection: 'row !important',
+              writingMode: 'horizontal-tb !important',
+              textOrientation: 'mixed !important',
+            }}
           >
-            <Flex justify="space-between" align="center" px={{ base: 4, md: 6 }}>
+            <Flex 
+              justify="space-between" 
+              align="center" 
+              px={{ base: 4, md: 6 }}
+              w="full"
+              direction="row"
+              sx={{
+                // CRITICAL: Ensure horizontal layout
+                flexDirection: 'row !important',
+                alignItems: 'center !important',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {/* Left: Brand & Back */}
-              <HStack spacing={3}>
+              <HStack 
+                spacing={3}
+                sx={{
+                  flexDirection: 'row !important',
+                  alignItems: 'center !important',
+                }}
+              >
                 {currentStep === 1 && (
                   <IconButton
                     aria-label="Back to home"
@@ -864,14 +907,36 @@ export default function BookingLuxuryPage() {
                     _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
                   />
                 )}
-                <HStack spacing={2}>
+                <HStack 
+                  spacing={2}
+                  sx={{
+                    flexDirection: 'row !important',
+                    alignItems: 'center !important',
+                  }}
+                >
                   <Icon as={FaTruck} boxSize={6} color="blue.400" />
-                  <Heading size="md" color="white">Speedy Van</Heading>
+                  <Heading 
+                    size="md" 
+                    color="white"
+                    sx={{
+                      writingMode: 'horizontal-tb !important',
+                      textOrientation: 'mixed !important',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Speedy Van
+                  </Heading>
                 </HStack>
               </HStack>
 
               {/* Right: Progress Steps */}
-              <HStack spacing={2}>
+              <HStack 
+                spacing={2}
+                sx={{
+                  flexDirection: 'row !important',
+                  alignItems: 'center !important',
+                }}
+              >
                 {STEPS.map((step, index) => (
                   <React.Fragment key={step.id}>
                     <Box
@@ -895,6 +960,12 @@ export default function BookingLuxuryPage() {
                       onClick={() => step.id <= currentStep && handleStepClick(step.id)}
                       transition="all 0.2s"
                       _hover={step.id <= currentStep ? { transform: 'scale(1.1)' } : {}}
+                      sx={{
+                        // Force flex layout
+                        display: 'flex !important',
+                        alignItems: 'center !important',
+                        justifyContent: 'center !important',
+                      }}
                     >
                       {step.id < currentStep ? <Icon as={FaCheck} boxSize={3} /> : step.id}
                     </Box>
@@ -904,6 +975,9 @@ export default function BookingLuxuryPage() {
                         h="2px" 
                         bg={step.id < currentStep ? 'green.500' : 'gray.700'}
                         transition="all 0.3s"
+                        sx={{
+                          flexShrink: 0,
+                        }}
                       />
                     )}
                   </React.Fragment>
