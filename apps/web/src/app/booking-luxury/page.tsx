@@ -732,7 +732,7 @@ export default function BookingLuxuryPage() {
             py={3}
             mb={6}
           >
-            <VStack spacing={3} w="full">
+            <VStack spacing={3} w="full" data-booking-header>
               {/* Top: Brand & Back Button */}
               <Flex 
                 justify="space-between" 
@@ -760,20 +760,21 @@ export default function BookingLuxuryPage() {
                     />
                   )}
                   <Icon as={FaTruck} boxSize={6} color="blue.400" />
-                  <Heading 
-                    size="md" 
+                  <Text 
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    fontWeight="bold"
                     color="white"
-                    sx={{
-                      writingMode: 'horizontal-tb !important',
-                      textOrientation: 'mixed !important',
-                      direction: 'ltr !important',
-                      whiteSpace: 'nowrap !important',
-                      display: 'inline-block !important',
-                      transform: 'none !important',
+                    style={{
+                      writingMode: 'horizontal-tb',
+                      textOrientation: 'mixed',
+                      direction: 'ltr',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      transform: 'none',
                     }}
                   >
                     Speedy Van
-                  </Heading>
+                  </Text>
                 </HStack>
               </Flex>
 

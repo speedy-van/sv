@@ -1579,12 +1579,30 @@ body {
   direction: ltr !important;
 }
 
-/* Force all headings to be horizontal */
-h1, h2, h3, h4, h5, h6, .chakra-heading {
+/* Force all headings and text to be horizontal - CRITICAL FOR MOBILE SAFARI */
+* {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
+h1, h2, h3, h4, h5, h6, .chakra-heading, .chakra-text, p, span, div {
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
   direction: ltr !important;
-  white-space: normal !important;
+}
+
+/* Specific fix for booking-luxury header */
+[data-booking-header] *,
+[data-booking-header] h1,
+[data-booking-header] h2,
+[data-booking-header] h3,
+[data-booking-header] .chakra-heading,
+[data-booking-header] .chakra-text {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  direction: ltr !important;
+  transform: none !important;
+  white-space: nowrap !important;
 }
 
 /* Prevent scroll jumps on focus - especially on mobile Safari */
