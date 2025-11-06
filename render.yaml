@@ -14,6 +14,12 @@ services:
     startCommand: node .next/standalone/server.js
     healthCheckPath: /api/health
     numInstances: 2 # High availability
+    buildFilter:
+      paths:
+        - apps/web/**
+        - packages/**
+    # Enable build cache for faster deployments
+    autoDeploy: true
     envVars:
       # Node Environment
       - key: NODE_ENV
