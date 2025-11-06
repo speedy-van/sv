@@ -476,26 +476,33 @@ export default function BookingLuxuryPage() {
   // Success page is now handled by dedicated /booking/success route
 
   const handleNext = async () => {
-    const isValid = await validateStep(currentStep);
-    if (isValid) {
+    // Simple check - no complex validation
+    if (currentStep === 1) {
+      // Step 1: Just check addresses exist
+      if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
+        setIsAutoTransitioning(true);
+        setTimeout(() => {
+          setCurrentStep(2);
+          clearErrors();
+          setIsAutoTransitioning(false);
+        }, 300);
+      } else {
+        toast({
+          title: 'Please enter both addresses',
+          status: 'error',
+          duration: 3000,
+        });
+      }
+    } else {
+      // Other steps - just advance
       if (currentStep < STEPS.length) {
         setIsAutoTransitioning(true);
-        
-        // Smooth transition delay
         setTimeout(() => {
           setCurrentStep(currentStep + 1);
           clearErrors();
           setIsAutoTransitioning(false);
         }, 300);
       }
-    } else {
-      toast({
-        title: 'Please complete all required fields',
-        description: 'Please fill in all required information before proceeding.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
     }
   };
   
@@ -868,27 +875,7 @@ export default function BookingLuxuryPage() {
           </AnimatePresence>
 
 
-          {/* Simplified Error Display */}
-          {Object.keys(errors).length > 0 && (
-            <Alert 
-              status="error" 
-              borderRadius="xl"
-              bg="rgba(220, 38, 38, 0.1)"
-              border="1px solid"
-              borderColor="rgba(220, 38, 38, 0.3)"
-              mt={4}
-            >
-              <AlertIcon color="red.400" />
-              <Box>
-                <AlertTitle fontSize="sm" color="white" mb={1}>Please fix errors</AlertTitle>
-                <AlertDescription>
-                  <Text fontSize="xs" color="gray.300">
-                    {Object.values(errors)[0]}
-                  </Text>
-                </AlertDescription>
-              </Box>
-            </Alert>
-          )}
+          {/* Error Display - Removed, errors handled by toast */}
         </Box>
       </Container>
 
