@@ -55,13 +55,15 @@ if (DATABASE_URL) {
 }
 
 // Suppress "connection closed" errors from Prisma console output
-// Prisma logs errors directly to console.error even when logging is disabled
-// We intercept console.error to filter out connection closed errors
+// Prisma logs errors directly to stderr even when logging is disabled
+// We intercept both console.error and process.stderr.write
 const originalConsoleError = console.error;
+const originalStderrWrite = process.stderr.write;
 let isPrismaErrorSuppressionEnabled = true;
 
 // Only intercept if not already intercepted (prevent double wrapping)
 if (!(console.error as any).__prismaIntercepted) {
+  // Intercept console.error
   console.error = (...args: any[]) => {
     // Check if this is a Prisma connection closed error
     const message = args.join(' ');
@@ -73,15 +75,29 @@ if (!(console.error as any).__prismaIntercepted) {
     
     // Suppress Prisma connection closed errors - they are handled by reconnect logic
     if (isPrismaErrorSuppressionEnabled && isPrismaConnectionError) {
-      // Mark connection as disconnected to trigger reconnect
-      if (typeof globalForPrisma !== 'undefined' && globalForPrisma.prisma) {
-        // Connection will be re-established on next query via ensurePrismaConnection
-      }
       return; // Suppress the error
     }
     
     // Log all other errors normally
     originalConsoleError.apply(console, args);
+  };
+  
+  // Intercept process.stderr.write (Prisma uses this directly)
+  process.stderr.write = function(chunk: any, encoding?: any, callback?: any): boolean {
+    const message = String(chunk);
+    const isPrismaConnectionError = 
+      message.includes('prisma:error') &&
+      (message.includes('Error in PostgreSQL connection') || 
+       message.includes('Closed') ||
+       message.includes('connection'));
+    
+    // Suppress Prisma connection closed errors
+    if (isPrismaErrorSuppressionEnabled && isPrismaConnectionError) {
+      return true; // Suppress the error
+    }
+    
+    // Write all other errors normally
+    return originalStderrWrite.call(process.stderr, chunk, encoding, callback);
   };
   
   // Mark as intercepted to prevent double wrapping

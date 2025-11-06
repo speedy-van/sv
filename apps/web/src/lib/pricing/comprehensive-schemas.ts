@@ -221,7 +221,8 @@ export const ComprehensivePricingInputSchema = z.object({
   dropoffs: z.array(StructuredAddressSchema).max(5, "Maximum 5 dropoffs allowed"),
 
   // Items with full dataset compliance
-  items: z.array(PricingItemSchema).min(1, "At least one item required"),
+  // Allow empty array - will use default item if needed
+  items: z.array(PricingItemSchema).default([]),
 
   // Service configuration
   serviceLevel: z.enum(["economy", "standard", "premium"]).default("standard"),
