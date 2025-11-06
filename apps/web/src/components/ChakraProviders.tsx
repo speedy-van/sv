@@ -5,10 +5,10 @@
  * FIXED: Emotion cache configuration for SSR to prevent CSS-in-JS from displaying as text on Safari/iOS
  */
 
+import React, { ReactNode, useMemo, useEffect } from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
-import { ReactNode, useMemo } from 'react';
 import mobileTheme from '@/theme/mobile-theme';
 
 interface ChakraProvidersProps {
@@ -39,6 +39,23 @@ export default function ChakraProviders({ children }: ChakraProvidersProps) {
       clientEmotionCache = createEmotionCache();
     }
     return clientEmotionCache;
+  }, []);
+
+  // Set CSS variables on client-side only (after hydration)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', 'dark');
+      root.classList.add('chakra-ui-dark');
+      root.style.setProperty('--chakra-ui-color-mode', 'dark');
+      root.style.setProperty('--chakra-colors-neon-400', '#00C2FF');
+      root.style.setProperty('--chakra-colors-neon-500', '#00B8F0');
+      root.style.setProperty('--chakra-colors-bg-surface', 'rgba(13, 13, 13, 1)');
+      root.style.setProperty('--chakra-colors-bg-card', 'rgba(26, 26, 26, 0.95)');
+      root.style.setProperty('--chakra-colors-text-primary', 'rgba(255, 255, 255, 0.92)');
+      root.style.setProperty('--chakra-colors-text-secondary', 'rgba(255, 255, 255, 0.64)');
+      root.style.setProperty('--chakra-colors-border-primary', 'rgba(59, 130, 246, 0.3)');
+    }
   }, []);
 
   return (

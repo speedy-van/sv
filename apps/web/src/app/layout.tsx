@@ -334,29 +334,6 @@ export default async function RootLayout({
         {/* Preload critical resources - removed favicon preload as it's not used immediately */}
              </head>
       <body suppressHydrationWarning>
-        {/* CRITICAL: Set CSS variables immediately for Safari iOS - runs on client only */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var root = document.documentElement;
-                  root.setAttribute('data-theme', 'dark');
-                  root.classList.add('chakra-ui-dark');
-                  root.style.setProperty('--chakra-ui-color-mode', 'dark');
-                  root.style.setProperty('--chakra-colors-neon-400', '#00C2FF');
-                  root.style.setProperty('--chakra-colors-neon-500', '#00B8F0');
-                  root.style.setProperty('--chakra-colors-bg-surface', 'rgba(13, 13, 13, 1)');
-                  root.style.setProperty('--chakra-colors-bg-card', 'rgba(26, 26, 26, 0.95)');
-                  root.style.setProperty('--chakra-colors-text-primary', 'rgba(255, 255, 255, 0.92)');
-                  root.style.setProperty('--chakra-colors-text-secondary', 'rgba(255, 255, 255, 0.64)');
-                  root.style.setProperty('--chakra-colors-border-primary', 'rgba(59, 130, 246, 0.3)');
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-        
         {/* Fix CSS files incorrectly loaded as scripts - Watch for dynamically added scripts (Next.js hydration) */}
         <script
           dangerouslySetInnerHTML={{
