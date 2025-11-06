@@ -740,7 +740,14 @@ export default function BookingLuxuryPage() {
                 px={{ base: 4, md: 6 }}
                 w="full"
               >
-                <HStack spacing={2}>
+                <HStack 
+                  spacing={2}
+                  sx={{
+                    flexDirection: 'row !important',
+                    alignItems: 'center !important',
+                    writingMode: 'horizontal-tb !important',
+                  }}
+                >
                   {currentStep === 1 && (
                     <IconButton
                       aria-label="Back to home"
@@ -753,7 +760,18 @@ export default function BookingLuxuryPage() {
                     />
                   )}
                   <Icon as={FaTruck} boxSize={6} color="blue.400" />
-                  <Heading size="md" color="white">
+                  <Heading 
+                    size="md" 
+                    color="white"
+                    sx={{
+                      writingMode: 'horizontal-tb !important',
+                      textOrientation: 'mixed !important',
+                      direction: 'ltr !important',
+                      whiteSpace: 'nowrap !important',
+                      display: 'inline-block !important',
+                      transform: 'none !important',
+                    }}
+                  >
                     Speedy Van
                   </Heading>
                 </HStack>

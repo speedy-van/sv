@@ -1564,11 +1564,27 @@ textarea::placeholder {
 html {
   scroll-behavior: auto !important;
   overscroll-behavior-y: contain;
+  /* CRITICAL: Prevent vertical text on mobile Safari */
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  direction: ltr !important;
 }
 
 body {
   scroll-behavior: auto !important;
   overscroll-behavior-y: contain;
+  /* CRITICAL: Prevent vertical text on mobile Safari */
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  direction: ltr !important;
+}
+
+/* Force all headings to be horizontal */
+h1, h2, h3, h4, h5, h6, .chakra-heading {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  direction: ltr !important;
+  white-space: normal !important;
 }
 
 /* Prevent scroll jumps on focus - especially on mobile Safari */
