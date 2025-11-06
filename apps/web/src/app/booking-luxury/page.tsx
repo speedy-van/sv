@@ -101,10 +101,6 @@ export default function BookingLuxuryPage() {
     removePromotionCode,
   } = useBookingForm();
 
-  // Auto-save functionality
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [draftRestored, setDraftRestored] = useState(false);
 
   // Enterprise Engine: Automatic availability & pricing with full addresses
   const [availabilityData, setAvailabilityData] = useState<any>(null);
@@ -115,22 +111,6 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
-  // Helper function to clear corrupted draft data
-  const clearDraftData = useCallback(() => {
-    try {
-      localStorage.removeItem('speedy_van_booking_draft');
-      console.log('✅ Cleared draft data from localStorage');
-      toast({
-        title: 'Draft cleared',
-        description: 'All saved draft data has been removed. You can start fresh.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (e) {
-      console.error('Failed to clear draft:', e);
-    }
-  }, [toast]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
@@ -442,99 +422,7 @@ export default function BookingLuxuryPage() {
     }
   }, [isClient, formData.step1.items, formData.step1.pickupAddress, formData.step1.dropoffAddress, calculatePricing]);
 
-  // Auto-save form data to localStorage
-  useEffect(() => {
-    if (!isClient) return;
-    
-    const saveFormData = async () => {
-      if (!formData) return;
-      
-      setIsSaving(true);
-      try {
-        localStorage.setItem('speedy_van_booking_draft', JSON.stringify({
-          ...formData,
-          currentStep,
-          savedAt: new Date().toISOString(),
-        }));
-        setLastSaved(new Date());
-        
-        // Show subtle save confirmation (only on mobile)
-        if (window.innerWidth < 768) {
-          toast({
-            title: 'Draft saved',
-            status: 'success',
-            duration: 1000,
-            isClosable: false,
-            position: 'top',
-            size: 'sm',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to save draft:', error);
-      } finally {
-        setIsSaving(false);
-      }
-    };
 
-    // Debounce auto-save
-    const timeoutId = setTimeout(saveFormData, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [formData, currentStep, toast, isClient]);
-
-  // Load saved draft on component mount - SILENTLY (no notification)
-  useEffect(() => {
-    if (draftRestored) return; // Prevent duplicate loading
-
-    try {
-      const savedDraft = localStorage.getItem('speedy_van_booking_draft');
-      if (savedDraft) {
-        const draftData = JSON.parse(savedDraft);
-        const savedDate = new Date(draftData.savedAt);
-        
-        // Only restore if saved within last 24 hours
-        const hoursSinceLastSave = (new Date().getTime() - savedDate.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursSinceLastSave < 24 && draftData.currentStep) {
-          // SILENTLY restore - no toast notification
-          console.log('📝 Draft restored silently from', savedDate.toLocaleString());
-          
-          setCurrentStep(draftData.currentStep);
-          setLastSaved(savedDate);
-          
-          // Restore form data
-          if (draftData.step1) {
-            try {
-              const restoredItems = Array.isArray(draftData.step1.items)
-                ? draftData.step1.items
-                    .filter((it: any) => it?.id && it?.name)
-                    .map((it: any) => ({
-                      ...it,
-                      image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
-                    }))
-                : [];
-              
-              updateFormData('step1', {
-                ...draftData.step1,
-                items: restoredItems,
-              });
-            } catch (e) {
-              console.warn('Failed to restore step1 from draft:', e);
-            }
-          }
-          if (draftData.step2) {
-            try {
-              updateFormData('step2', { ...draftData.step2 });
-            } catch (e) {
-              console.warn('Failed to restore step2 from draft:', e);
-            }
-          }
-          setDraftRestored(true);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load draft:', error);
-    }
-  }, [isClient, draftRestored, updateFormData]);
 
   // Handle URL parameters on page load
   useEffect(() => {
