@@ -1613,12 +1613,21 @@ select:focus {
   scroll-margin-bottom: 100px;
 }
 
-/* Mobile Safari specific fixes */
+/* Mobile Safari specific fixes - iPhone 14/15/16/17 */
 @media (max-width: 768px) {
   html, body {
     scroll-behavior: auto !important;
     overscroll-behavior-y: contain !important;
     -webkit-overflow-scrolling: touch;
+    /* Ensure full viewport height */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix for iPhone safe area */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
   
   /* Prevent input focus from scrolling page */
@@ -1626,15 +1635,15 @@ select:focus {
   textarea:focus,
   select:focus,
   button:focus {
-    scroll-margin-top: 120px;
-    scroll-margin-bottom: 120px;
+    scroll-margin-top: 80px;
+    scroll-margin-bottom: 80px;
   }
   
   /* Prevent Chakra UI components from causing scroll */
   .chakra-input:focus,
   .chakra-textarea:focus,
   .chakra-select:focus {
-    scroll-margin-top: 120px !important;
-    scroll-margin-bottom: 120px !important;
+    scroll-margin-top: 80px !important;
+    scroll-margin-bottom: 80px !important;
   }
 }
