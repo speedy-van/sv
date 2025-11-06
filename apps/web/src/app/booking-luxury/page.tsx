@@ -501,37 +501,37 @@ export default function BookingLuxuryPage() {
   
   // Smart auto-progression: When step 1 addresses are complete, auto-advance
   useEffect(() => {
-    // CRITICAL: Validate addresses are truly complete before auto-advance
+    // CRITICAL: Simple check - if both addresses have full text and coordinates, advance
     const isPickupComplete = formData.step1.pickupAddress?.full && 
                             formData.step1.pickupAddress?.postcode &&
+                            formData.step1.pickupAddress?.coordinates?.lat &&
                             formData.step1.pickupAddress?.coordinates?.lat !== 0;
     const isDropoffComplete = formData.step1.dropoffAddress?.full && 
                              formData.step1.dropoffAddress?.postcode &&
+                             formData.step1.dropoffAddress?.coordinates?.lat &&
                              formData.step1.dropoffAddress?.coordinates?.lat !== 0;
     
     if (currentStep === 1 && 
         isPickupComplete && 
         isDropoffComplete &&
         !isAutoTransitioning) {
-      // Validate step before auto-advance
-      const timer = setTimeout(async () => {
-        const isValid = await validateStep(1);
-        if (isValid) {
-          console.log('✅ Step 1 validated - Auto-advancing to Step 2');
-          setIsAutoTransitioning(true);
-          setTimeout(() => {
-            setCurrentStep(2);
-            clearErrors();
-            setIsAutoTransitioning(false);
-          }, 300);
-        } else {
-          console.log('⚠️ Step 1 validation failed - not auto-advancing');
-        }
+      // Auto-advance WITHOUT validation (validation happens on manual next click)
+      const timer = setTimeout(() => {
+        console.log('✅ Step 1 complete - Auto-advancing to Step 2');
+        console.log('📍 Pickup:', formData.step1.pickupAddress?.full);
+        console.log('📍 Dropoff:', formData.step1.dropoffAddress?.full);
+        
+        setIsAutoTransitioning(true);
+        setTimeout(() => {
+          setCurrentStep(2);
+          clearErrors();
+          setIsAutoTransitioning(false);
+        }, 300);
       }, 800); // Give user time to see completion
       
       return () => clearTimeout(timer);
     }
-  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning, validateStep, clearErrors]);
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, currentStep, isAutoTransitioning, clearErrors]);
 
   const handlePrevious = () => {
     if (currentStep > 1) {
