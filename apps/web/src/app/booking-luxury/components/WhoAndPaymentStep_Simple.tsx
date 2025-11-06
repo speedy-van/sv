@@ -18,10 +18,6 @@ import {
   Card,
   CardBody,
   Divider,
-  InputGroup,
-  InputLeftElement,
-  Alert,
-  AlertIcon,
   Badge,
   useToast,
   FormControl,
@@ -272,22 +268,18 @@ export default function WhoAndPaymentStepSimple({
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                 <FormControl isInvalid={!!errors['step2.customerDetails.firstName']}>
                   <FormLabel color="white" fontSize="sm">First Name</FormLabel>
-                  <InputGroup>
-                    <InputLeftElement>
-                      <Icon as={FaUser} color="gray.400" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="John"
-                      value={formData.step2.customerDetails.firstName || ''}
-                      onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
-                      bg="rgba(0, 0, 0, 0.3)"
-                      border="1px solid"
-                      borderColor="rgba(59, 130, 246, 0.3)"
-                      color="white"
-                      _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
-                    />
-                  </InputGroup>
+                  <Input
+                    placeholder="John"
+                    value={formData.step2.customerDetails.firstName || ''}
+                    onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
+                    bg="rgba(0, 0, 0, 0.3)"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
+                    size="lg"
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  />
                   {errors['step2.customerDetails.firstName'] && (
                     <FormErrorMessage>{errors['step2.customerDetails.firstName']}</FormErrorMessage>
                   )}
@@ -295,22 +287,18 @@ export default function WhoAndPaymentStepSimple({
 
                 <FormControl isInvalid={!!errors['step2.customerDetails.lastName']}>
                   <FormLabel color="white" fontSize="sm">Last Name</FormLabel>
-                  <InputGroup>
-                    <InputLeftElement>
-                      <Icon as={FaUser} color="gray.400" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Doe"
-                      value={formData.step2.customerDetails.lastName || ''}
-                      onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
-                      bg="rgba(0, 0, 0, 0.3)"
-                      border="1px solid"
-                      borderColor="rgba(59, 130, 246, 0.3)"
-                      color="white"
-                      _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                      _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
-                    />
-                  </InputGroup>
+                  <Input
+                    placeholder="Doe"
+                    value={formData.step2.customerDetails.lastName || ''}
+                    onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
+                    bg="rgba(0, 0, 0, 0.3)"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
+                    size="lg"
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  />
                   {errors['step2.customerDetails.lastName'] && (
                     <FormErrorMessage>{errors['step2.customerDetails.lastName']}</FormErrorMessage>
                   )}
@@ -318,24 +306,20 @@ export default function WhoAndPaymentStepSimple({
               </SimpleGrid>
 
               <FormControl isInvalid={!!errors['step2.customerDetails.email']}>
-                <FormLabel color="white" fontSize="sm">Email</FormLabel>
-                <InputGroup>
-                  <InputLeftElement>
-                    <Icon as={FaEnvelope} color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    type="email"
-                    placeholder="john.doe@example.com"
-                    value={formData.step2.customerDetails.email || ''}
-                    onChange={(e) => updateCustomerDetails('email', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    border="1px solid"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
-                  />
-                </InputGroup>
+                <FormLabel color="white" fontSize="sm">Email Address</FormLabel>
+                <Input
+                  type="email"
+                  placeholder="john.doe@example.com"
+                  value={formData.step2.customerDetails.email || ''}
+                  onChange={(e) => updateCustomerDetails('email', e.target.value)}
+                  bg="rgba(0, 0, 0, 0.3)"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                  color="white"
+                  size="lg"
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                />
                 {errors['step2.customerDetails.email'] && (
                   <FormErrorMessage>{errors['step2.customerDetails.email']}</FormErrorMessage>
                 )}
@@ -343,23 +327,19 @@ export default function WhoAndPaymentStepSimple({
 
               <FormControl isInvalid={!!errors['step2.customerDetails.phone']}>
                 <FormLabel color="white" fontSize="sm">Phone Number</FormLabel>
-                <InputGroup>
-                  <InputLeftElement>
-                    <Icon as={FaPhone} color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    type="tel"
-                    placeholder="+44 1234 567890"
-                    value={formData.step2.customerDetails.phone || ''}
-                    onChange={(e) => updateCustomerDetails('phone', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    border="1px solid"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
-                  />
-                </InputGroup>
+                <Input
+                  type="tel"
+                  placeholder="+44 1234 567890"
+                  value={formData.step2.customerDetails.phone || ''}
+                  onChange={(e) => updateCustomerDetails('phone', e.target.value)}
+                  bg="rgba(0, 0, 0, 0.3)"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                  color="white"
+                  size="lg"
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                />
                 {errors['step2.customerDetails.phone'] && (
                   <FormErrorMessage>{errors['step2.customerDetails.phone']}</FormErrorMessage>
                 )}
@@ -367,22 +347,18 @@ export default function WhoAndPaymentStepSimple({
 
               <FormControl>
                 <FormLabel color="white" fontSize="sm">Company Name (Optional)</FormLabel>
-                <InputGroup>
-                  <InputLeftElement>
-                    <Icon as={FaBuilding} color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    placeholder="Your Company Ltd"
-                    value={formData.step2.customerDetails.company || ''}
-                    onChange={(e) => updateCustomerDetails('company', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    border="1px solid"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
-                  />
-                </InputGroup>
+                <Input
+                  placeholder="Your Company Ltd"
+                  value={formData.step2.customerDetails.company || ''}
+                  onChange={(e) => updateCustomerDetails('company', e.target.value)}
+                  bg="rgba(0, 0, 0, 0.3)"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                  color="white"
+                  size="lg"
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                />
               </FormControl>
 
               <FormControl>
