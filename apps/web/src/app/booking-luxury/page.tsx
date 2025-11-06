@@ -114,12 +114,13 @@ export default function BookingLuxuryPage() {
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
-    // Only calculate if we have all required data with full addresses
-    if (
-      !formData.step1.pickupAddress?.coordinates ||
-      formData.step1.items.length === 0 ||
-      formData.step1.items.length === 0
-    ) {
+    // Only calculate if we have addresses (items can be empty - will use default)
+    if (!formData.step1.pickupAddress?.coordinates) {
+      return;
+    }
+    
+    // Skip if no items yet (will calculate when items are added)
+    if (formData.step1.items.length === 0) {
       return;
     }
 
@@ -670,50 +671,46 @@ export default function BookingLuxuryPage() {
       w="100%" 
       minH="100dvh" 
       bg={bgColor} 
-      py={{ base: 2, md: 8 }} 
-      pb={{ base: "100px", md: 8 }}
+      py={{ base: 0, md: 8 }} 
+      pb={{ base: "80px", md: 8 }}
       overflowX="hidden"
       overflowY="auto"
       sx={{
         WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'none',
-        scrollBehavior: 'auto', // Prevent smooth scroll jumps
+        overscrollBehavior: 'auto',
+        scrollBehavior: 'auto',
       }}
     >
-      <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 2, md: 6 }}>
+      <Container 
+        maxW={{ base: "full", md: "6xl" }} 
+        px={{ base: 2, md: 6 }}
+        pt={{ base: 2, md: 0 }}
+      >
         <Box 
           display="block" 
           w="100%" 
-          py={{ base: 4, md: 8 }}
-          sx={{
-            '& > *': {
-              display: 'block',
-              width: '100%',
-              marginBottom: { base: '16px', md: '32px' },
-            },
-            '& > *:last-child': {
-              marginBottom: 0,
-            },
-          }}
+          py={{ base: 2, md: 8 }}
         >
           {/* SIMPLIFIED STICKY HEADER - Modern & Clean - MOBILE SAFARI FIX */}
           <Box
             position="sticky"
             top={0}
             zIndex={100}
-            bg="rgba(13, 13, 13, 0.95)"
+            bg="rgba(13, 13, 13, 0.98)"
             backdropFilter="blur(10px)"
             borderBottom="1px solid"
             borderColor="rgba(59, 130, 246, 0.2)"
-            py={3}
-            mb={6}
+            py={{ base: 2, md: 3 }}
+            mb={{ base: 3, md: 6 }}
+            mx={{ base: -2, md: 0 }}
+            px={{ base: 2, md: 0 }}
           >
-            <VStack spacing={3} w="full" data-booking-header>
+            <VStack spacing={2} w="full" data-booking-header>
               {/* Top: Brand & Back Button */}
               <Flex 
                 justify="space-between" 
                 align="center" 
-                px={{ base: 4, md: 6 }}
+                px={{ base: 2, md: 6 }}
                 w="full"
               >
                 <HStack 
@@ -806,17 +803,17 @@ export default function BookingLuxuryPage() {
 
 
 
-          {/* Step Title */}
-          <Box mb={6} textAlign="center">
+          {/* Step Title - Compact on Mobile */}
+          <Box mb={{ base: 3, md: 6 }} textAlign="center" px={{ base: 2, md: 0 }}>
             <Heading 
-              size="xl" 
+              size={{ base: "lg", md: "xl" }}
               color="white"
               fontWeight="600"
-              mb={2}
+              mb={1}
             >
               {STEPS[currentStep - 1]?.title}
             </Heading>
-            <Text fontSize="md" color="gray.400">
+            <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
               {STEPS[currentStep - 1]?.description}
             </Text>
           </Box>
