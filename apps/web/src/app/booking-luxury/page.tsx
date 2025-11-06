@@ -481,9 +481,9 @@ export default function BookingLuxuryPage() {
     return () => clearTimeout(timeoutId);
   }, [formData, currentStep, toast, isClient]);
 
-  // Load saved draft on component mount
+  // Load saved draft on component mount - SILENTLY (no notification)
   useEffect(() => {
-    if (draftRestored) return; // Prevent duplicate notifications
+    if (draftRestored) return; // Prevent duplicate loading
 
     try {
       const savedDraft = localStorage.getItem('speedy_van_booking_draft');
@@ -495,52 +495,28 @@ export default function BookingLuxuryPage() {
         const hoursSinceLastSave = (new Date().getTime() - savedDate.getTime()) / (1000 * 60 * 60);
         
         if (hoursSinceLastSave < 24 && draftData.currentStep) {
-          toast({
-            title: 'Draft restored',
-            description: `Your booking draft from ${savedDate.toLocaleString()} has been restored.`,
-            status: 'info',
-            duration: 5000,
-            isClosable: true,
-          });
+          // SILENTLY restore - no toast notification
+          console.log('📝 Draft restored silently from', savedDate.toLocaleString());
+          
           setCurrentStep(draftData.currentStep);
           setLastSaved(savedDate);
-          // Restore form data (including images for items)
+          
+          // Restore form data
           if (draftData.step1) {
             try {
-              // Clean and validate items before restoring
               const restoredItems = Array.isArray(draftData.step1.items)
                 ? draftData.step1.items
-                    .filter((it: any) => {
-                      // Filter out items with invalid/old IDs that might cause API errors
-                      if (!it?.id || !it?.name) {
-                        console.warn('⚠️ Skipping invalid item from draft:', it);
-                        return false;
-                      }
-                      return true;
-                    })
+                    .filter((it: any) => it?.id && it?.name)
                     .map((it: any) => ({
                       ...it,
-                      // Ensure image is preserved if present in draft; do not inject a fallback here
                       image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
                     }))
                 : [];
               
-              // Only restore if we have valid items
               updateFormData('step1', {
                 ...draftData.step1,
                 items: restoredItems,
               });
-              
-              // Show warning if items were filtered out
-              if (Array.isArray(draftData.step1.items) && restoredItems.length < draftData.step1.items.length) {
-                toast({
-                  title: 'Some items were removed',
-                  description: 'Invalid items from your draft have been removed. Please re-add them if needed.',
-                  status: 'warning',
-                  duration: 5000,
-                  isClosable: true,
-                });
-              }
             } catch (e) {
               console.warn('Failed to restore step1 from draft:', e);
             }
@@ -552,13 +528,13 @@ export default function BookingLuxuryPage() {
               console.warn('Failed to restore step2 from draft:', e);
             }
           }
-          setDraftRestored(true); // Mark as restored to prevent duplicates
+          setDraftRestored(true);
         }
       }
     } catch (error) {
       console.error('Failed to load draft:', error);
     }
-  }, [toast, isClient, draftRestored]);
+  }, [isClient, draftRestored, updateFormData]);
 
   // Handle URL parameters on page load
   useEffect(() => {
