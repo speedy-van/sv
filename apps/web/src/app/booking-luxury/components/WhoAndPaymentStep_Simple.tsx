@@ -66,6 +66,17 @@ export default function WhoAndPaymentStepSimple({
 }: WhoAndPaymentStepProps) {
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const toast = useToast();
+  
+  // Get actual price from formData.step1.pricing or fallback to props
+  const actualPrice = formData.step1.pricing?.total || standardPrice || economyPrice || priorityPrice || 0;
+  
+  console.log('💰 WhoAndPaymentStep Price:', {
+    formDataPricing: formData.step1.pricing?.total,
+    standardPrice,
+    economyPrice,
+    priorityPrice,
+    actualPrice
+  });
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
     updateFormData('step2', {
@@ -341,13 +352,13 @@ export default function WhoAndPaymentStepSimple({
                 <Badge 
                   bg="green.500" 
                   color="white" 
-                  px={3} 
-                  py={1} 
+                  px={4} 
+                  py={2} 
                   borderRadius="full"
-                  fontSize="md"
+                  fontSize="xl"
                   fontWeight="bold"
                 >
-                  £{standardPrice}
+                  £{actualPrice.toFixed(2)}
                 </Badge>
               </HStack>
 
@@ -428,7 +439,7 @@ export default function WhoAndPaymentStepSimple({
                 _hover={{ bg: 'blue.600' }}
                 _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
               >
-                Pay £{standardPrice} Securely
+                Pay £{actualPrice.toFixed(2)} Securely
               </Button>
 
               {/* Security Badge */}
