@@ -5,7 +5,7 @@
  * Clean, modern design like Uber/Airbnb
  */
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -67,14 +67,27 @@ export default function WhoAndPaymentStepSimple({
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const toast = useToast();
   
-  // Get actual price from formData.step1.pricing or fallback to props
-  const actualPrice = formData.step1.pricing?.total || standardPrice || economyPrice || priorityPrice || 0;
+  // CRITICAL: Get base price from formData.step1.pricing.total (actual calculated price)
+  const basePrice = formData.step1.pricing?.total || standardPrice || 0;
   
-  console.log('💰 WhoAndPaymentStep Price:', {
-    formDataPricing: formData.step1.pricing?.total,
-    standardPrice,
-    economyPrice,
-    priorityPrice,
+  // Calculate service-specific prices dynamically based on base price
+  const calculatedEconomyPrice = basePrice > 0 ? Math.round(basePrice * 0.85 * 100) / 100 : (economyPrice || 0);
+  const calculatedStandardPrice = basePrice > 0 ? basePrice : (standardPrice || 0);
+  const calculatedExpressPrice = basePrice > 0 ? Math.round(basePrice * 1.5 * 100) / 100 : (priorityPrice || 0);
+  
+  // Get current price based on selected service
+  const actualPrice = selectedService === 'economy' 
+    ? calculatedEconomyPrice 
+    : selectedService === 'express' 
+    ? calculatedExpressPrice 
+    : calculatedStandardPrice;
+  
+  console.log('💰 WhoAndPaymentStep Pricing:', {
+    basePrice,
+    economy: calculatedEconomyPrice,
+    standard: calculatedStandardPrice,
+    express: calculatedExpressPrice,
+    selectedService,
     actualPrice
   });
 
@@ -86,19 +99,44 @@ export default function WhoAndPaymentStepSimple({
       }
     });
   }, [formData.step2.customerDetails, updateFormData]);
+  
+  // Update pricing when service selection changes
+  React.useEffect(() => {
+    if (basePrice > 0) {
+      // Recalculate pricing based on selected service
+      const newTotal = selectedService === 'economy' 
+        ? calculatedEconomyPrice 
+        : selectedService === 'express' 
+        ? calculatedExpressPrice 
+        : calculatedStandardPrice;
+      
+      // Update formData with new total
+      if (formData.step1.pricing && newTotal !== formData.step1.pricing.total) {
+        console.log(`🔄 Service changed to ${selectedService} - updating price to £${newTotal.toFixed(2)}`);
+        updateFormData('step1', {
+          pricing: {
+            ...formData.step1.pricing,
+            total: newTotal
+          }
+        });
+      }
+    }
+  }, [selectedService, basePrice, calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice]);
 
+  // CRITICAL: Use calculated prices (not static props)
   const services = [
     {
       id: 'economy' as const,
       name: 'Economy',
-      price: economyPrice,
+      price: calculatedEconomyPrice,
       description: 'Shared route, 7 days delivery',
       icon: '🚐',
+      discount: '15% off',
     },
     {
       id: 'standard' as const,
       name: 'Standard',
-      price: standardPrice,
+      price: calculatedStandardPrice,
       description: 'Direct service, flexible scheduling',
       icon: '🚚',
       popular: true,
@@ -106,9 +144,10 @@ export default function WhoAndPaymentStepSimple({
     {
       id: 'express' as const,
       name: 'Express',
-      price: priorityPrice,
+      price: calculatedExpressPrice,
       description: 'Same-day or next-day delivery',
       icon: '⚡',
+      premium: '50% premium',
     },
   ];
 
@@ -165,6 +204,36 @@ export default function WhoAndPaymentStepSimple({
                         Popular
                       </Badge>
                     )}
+                    {service.discount && (
+                      <Badge
+                        position="absolute"
+                        top={-2}
+                        left={-2}
+                        bg="green.500"
+                        color="white"
+                        fontSize="2xs"
+                        px={2}
+                        py={1}
+                        borderRadius="full"
+                      >
+                        {service.discount}
+                      </Badge>
+                    )}
+                    {service.premium && (
+                      <Badge
+                        position="absolute"
+                        top={-2}
+                        left={-2}
+                        bg="orange.500"
+                        color="white"
+                        fontSize="2xs"
+                        px={2}
+                        py={1}
+                        borderRadius="full"
+                      >
+                        {service.premium}
+                      </Badge>
+                    )}
                     <VStack spacing={3} align="start">
                       <Text fontSize="2xl">{service.icon}</Text>
                       <Box>
@@ -176,7 +245,7 @@ export default function WhoAndPaymentStepSimple({
                         </Text>
                       </Box>
                       <Text fontSize="2xl" fontWeight="bold" color="white">
-                        £{service.price}
+                        £{service.price.toFixed(2)}
                       </Text>
                     </VStack>
                   </Box>
