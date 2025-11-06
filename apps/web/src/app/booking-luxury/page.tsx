@@ -486,6 +486,8 @@ export default function BookingLuxuryPage() {
           setCurrentStep(2);
           clearErrors();
           setIsAutoTransitioning(false);
+          // Scroll to top smoothly
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 300);
       } else {
         toast({
@@ -502,6 +504,8 @@ export default function BookingLuxuryPage() {
           setCurrentStep(currentStep + 1);
           clearErrors();
           setIsAutoTransitioning(false);
+          // CRITICAL: Scroll to top when moving to Step 3 (Payment)
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 300);
       }
     }
