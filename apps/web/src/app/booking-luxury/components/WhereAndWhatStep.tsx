@@ -242,28 +242,28 @@ export default function WhereAndWhatStep({
                   <Select
                     value={step1.pickupDate || ''}
                     onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
-                    bg="white"
-                    borderColor="gray.300"
-                    color="gray.900"
+                    bg="rgba(26, 26, 26, 0.8)"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
                     size="lg"
-                    borderRadius="lg"
-                    borderWidth="2px"
-                    fontWeight="medium"
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    fontWeight="500"
                     cursor="pointer"
                     placeholder="Choose a date"
                     _hover={{
-                      borderColor: "gray.400",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      borderColor: "rgba(59, 130, 246, 0.5)",
+                      bg: "rgba(26, 26, 26, 0.9)",
                     }}
                     _focus={{
-                      borderColor: "#3b82f6",
-                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
-                      outline: "none",
+                      borderColor: "blue.500",
+                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
+                      bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
                       '& option': {
-                        backgroundColor: 'white',
-                        color: 'black',
+                        backgroundColor: '#1a1a1a',
+                        color: 'white',
                         padding: '12px',
                         fontSize: '14px',
                         fontWeight: '500',
@@ -298,46 +298,38 @@ export default function WhereAndWhatStep({
                   <Select
                     value={step1.pickupTimeSlot || ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
-                    bg="white"
-                    borderColor="gray.300"
-                    color="gray.900"
+                    bg="rgba(26, 26, 26, 0.8)"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
                     size="lg"
-                    borderRadius="lg"
-                    borderWidth="2px"
-                    fontWeight="medium"
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    fontWeight="500"
                     cursor="pointer"
                     placeholder="Choose a time"
                     _hover={{
-                      borderColor: "gray.400",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      borderColor: "rgba(59, 130, 246, 0.5)",
+                      bg: "rgba(26, 26, 26, 0.9)",
                     }}
                     _focus={{
-                      borderColor: "#3b82f6",
-                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
-                      outline: "none",
+                      borderColor: "blue.500",
+                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
+                      bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
                       '& option': {
-                        backgroundColor: 'white',
-                        color: 'black',
+                        backgroundColor: '#1a1a1a',
+                        color: 'white',
                         padding: '12px',
                         fontSize: '14px',
                         fontWeight: '500',
                       },
                     }}
                   >
-                    {Array.from({ length: 24 }, (_, i) => {
-                      const hour = i;
-                      const hour12 = hour % 12 || 12;
-                      const ampm = hour < 12 ? 'AM' : 'PM';
-                      const timeValue = `${hour.toString().padStart(2, '0')}:00`;
-                      const timeLabel = `${hour12}:00 ${ampm}`;
-                      return (
-                        <option key={timeValue} value={timeValue} style={{ backgroundColor: 'white', color: '#111827' }}>
-                          {timeLabel}
-                        </option>
-                      );
-                    })}
+                    <option value="08:00-12:00">8 AM - 12 PM 🌅</option>
+                    <option value="12:00-16:00">12 PM - 4 PM ☀️</option>
+                    <option value="16:00-18:00">4 PM - 6 PM 🌆</option>
+                    <option value="flexible">Flexible ⏰</option>
                   </Select>
                   {errors['step1.pickupTime'] && (
                     <FormErrorMessage>{errors['step1.pickupTime']}</FormErrorMessage>
