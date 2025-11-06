@@ -1,64 +1,114 @@
 /* Mobile Viewport Fixes for Speedy Van */
 
 /* ===== Mobile Viewport Height Fixes ===== */
-/* Use dynamic viewport height for mobile browsers */
+/* Use Small Viewport Height (svh) for better iPhone 15/16/17 support */
+/* Fallback to calc with safe-area-insets for Dynamic Island and notches */
 .mobile-hero {
-  min-height: 100dvh !important;
-  height: 100dvh !important;
+  /* Primary: Use svh for small viewport (excludes UI chrome) */
+  min-height: 100svh !important;
+  height: 100svh !important;
+  
+  /* Fallback: Use calc with safe-area-insets for Dynamic Island support */
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  
+  /* Add safe-area padding for iPhone 15/16/17 */
+  padding-top: env(safe-area-inset-top) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  padding-left: env(safe-area-inset-left) !important;
+  padding-right: env(safe-area-inset-right) !important;
 }
 
-/* ===== Mobile Header Scroll Behavior ===== */
-/* Ensure smooth header transitions */
+/* ===== Mobile Header - ALWAYS VISIBLE ===== */
+/* CRITICAL FIX for iPhone 15/16/17: No hiding, always show */
 .mobile-header {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   z-index: 1000 !important;
-  transition: transform 0.3s ease-in-out !important;
-  will-change: transform !important;
-  /* Ensure header stays above video and other content */
-  background: rgba(15, 17, 20, 0.95) !important;
+  background: rgba(15, 17, 20, 0.98) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
+  /* iPhone 15/16/17 fix - force GPU acceleration */
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, 0, 0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  /* CRITICAL: Always visible, never hidden */
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
 }
 
-.mobile-header.hidden {
-  transform: translateY(-100%) !important;
-}
-
-.mobile-header.visible {
+.mobile-header-visible {
   transform: translateY(0) !important;
+  -webkit-transform: translateY(0) !important;
 }
 
-/* Ensure content doesn't get hidden behind header */
-@media (max-width: 768px) {
+/* CRITICAL: Hide desktop header on mobile to prevent duplication */
+/* Use CSS only to avoid hydration flash */
+@media (max-width: 767px) {
+  /* IMMEDIATELY hide desktop header - before JS loads */
+  header[role="banner"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* IMMEDIATELY show mobile header */
+  .mobile-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
   .mobile-hero {
-    padding-top: 0 !important; /* No padding needed since header is fixed */
+    padding-top: 0 !important;
   }
   
-  /* Add some top margin to first content section if needed */
   .mobile-stats {
     margin-top: 0 !important;
   }
 }
 
+/* Desktop: Show desktop header, hide mobile header */
+@media (min-width: 768px) {
+  header[role="banner"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .mobile-header {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
 /* ===== Mobile Sidebar/Drawer Improvements ===== */
-/* Enhanced mobile drawer styling */
+/* Enhanced mobile drawer styling - Dark theme */
 .chakra-drawer__content {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 17, 20, 0.98) 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-left: 1px solid rgba(59, 130, 246, 0.3) !important;
 }
 
 /* Section headers in sidebar */
 .mobile-sidebar-section {
-  background: rgba(0, 194, 255, 0.05) !important;
-  border-bottom: 1px solid rgba(0, 194, 255, 0.1) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2) !important;
   padding: 0.75rem 1rem !important;
   margin: 0 !important;
+  color: white !important;
 }
 
 .mobile-sidebar-section .chakra-text {
-  color: #4a5568 !important;
+  color: #ffffff !important;
   font-weight: 600 !important;
   font-size: 0.875rem !important;
   text-transform: uppercase !important;
@@ -134,29 +184,38 @@
   }
 }
 
-/* Fallback for browsers that don't support dvh */
-@supports not (height: 100dvh) {
+/* Fallback for browsers that don't support svh or dvh */
+@supports not (height: 100svh) and not (height: 100dvh) {
   .mobile-hero {
-    min-height: 100vh !important;
-    height: 100vh !important;
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Support for dvh on browsers that support it but not svh */
+@supports (height: 100dvh) and not (height: 100svh) {
+  .mobile-hero {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
   }
 }
 
 /* ===== Prevent Horizontal Overflow ===== */
+/* CRITICAL FIX: Remove 100vw from html/body - causes layout issues on iOS 17 */
 html, body {
-  overflow-x: hidden !important;
-  width: 100% !important;
-  max-width: 100vw !important;
+  overflow-x: clip; /* Better than hidden !important for iOS 17 */
+  width: 100%;
+  max-width: 100%; /* Not 100vw - prevents scrollbar issues on iOS */
 }
 
 /* ===== Mobile Container Fixes ===== */
 .mobile-container {
-  width: 100% !important;
-  max-width: 100vw !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  margin: 0 auto !important;
-  overflow-x: hidden !important;
+  width: 100%;
+  max-width: 100%; /* Not 100vw - prevents iOS 17 layout issues */
+  padding-left: 16px;
+  padding-right: 16px;
+  margin: 0 auto;
+  overflow-x: clip; /* Better than hidden for iOS 17 */
 }
 
 /* ===== Mobile Content Spacing ===== */
@@ -164,8 +223,8 @@ html, body {
   .mobile-hero .chakra-container {
     padding-left: 16px !important;
     padding-right: 16px !important;
-    width: 100% !important;
-    max-width: 100vw !important;
+    width: 100%;
+    max-width: 100%; /* Not 100vw - prevents iOS 17 layout collapse */
   }
   
   .mobile-hero .chakra-vstack {
@@ -204,9 +263,19 @@ html, body {
 /* ===== Very Small Screens ===== */
 @media (max-width: 480px) {
   .mobile-hero {
-    min-height: 100dvh !important;
-    height: 100dvh !important;
-    padding: 0 !important;
+    /* Use svh for better iPhone support */
+    min-height: 100svh !important;
+    height: 100svh !important;
+    
+    /* Fallback with safe-area-insets */
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    
+    /* Keep safe-area padding but reset other padding */
+    padding-left: env(safe-area-inset-left) !important;
+    padding-right: env(safe-area-inset-right) !important;
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
   }
   
   .mobile-container {
@@ -230,18 +299,37 @@ html, body {
   }
 }
 
-/* ===== iOS Safari Specific Fixes ===== */
+/* ===== iOS Safari Specific Fixes (iPhone 15/16/17) ===== */
 @supports (-webkit-touch-callout: none) {
   .mobile-hero {
+    /* Use svh for modern iOS (iOS 16.4+) */
+    min-height: 100svh !important;
+    height: 100svh !important;
+    
+    /* Fallback with safe-area-insets for Dynamic Island */
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    
+    /* Legacy iOS fallback */
     min-height: -webkit-fill-available !important;
     height: -webkit-fill-available !important;
+  }
+  
+  /* iPhone 15/16/17 specific: Ensure proper safe area handling */
+  @supports (padding: env(safe-area-inset-top)) {
+    .mobile-hero {
+      padding-top: max(env(safe-area-inset-top), 0px) !important;
+      padding-bottom: max(env(safe-area-inset-bottom), 0px) !important;
+      padding-left: max(env(safe-area-inset-left), 0px) !important;
+      padding-right: max(env(safe-area-inset-right), 0px) !important;
+    }
   }
   
   /* Fallback for older iOS versions */
   @media screen and (max-width: 768px) {
     .mobile-hero {
-      min-height: 100vh !important;
-      height: 100vh !important;
+      min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
     }
   }
 }
@@ -539,11 +627,11 @@ html, body {
   .mobile-services .chakra-container,
   .mobile-testimonials .chakra-container,
   .mobile-cta .chakra-container {
-    width: 100% !important;
-    max-width: 100vw !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    margin: 0 auto !important;
+    width: 100%;
+    max-width: 100%; /* Not 100vw - prevents iOS 17 layout collapse */
+    padding-left: 16px;
+    padding-right: 16px;
+    margin: 0 auto;
   }
   
   /* Ensure all sections have proper spacing */
@@ -552,9 +640,9 @@ html, body {
   .mobile-services,
   .mobile-testimonials,
   .mobile-cta {
-    width: 100% !important;
-    max-width: 100vw !important;
-    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100%; /* Not 100vw - prevents iOS 17 layout collapse */
+    overflow-x: clip; /* Better than hidden for iOS 17 */
   }
   
   /* Fix for SimpleGrid responsiveness */

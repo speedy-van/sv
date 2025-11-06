@@ -113,9 +113,89 @@ html, body, #__next {
 
 /* iOS Safari viewport fixes */
 html, body { 
-  overflow-x: hidden; 
+  height: 100%;
+  overflow-x: clip; /* Better than hidden for iOS 17 - prevents layout collapse */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+/* Prevent Safari from converting flex containers to scroll snapping containers */
+* {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Safari 17+ Flex/Grid Fix: Prevent flex items from collapsing in Grid containers */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari only - target Safari-specific bugs */
+  [data-chakra-simple-grid] > *,
+  .css-grid > *,
+  .css-simple-grid > * {
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    flex-basis: auto !important;
+  }
+  
+  /* Force block-level display on main content containers to prevent Safari scroll snapping */
+  [data-chakra-component="Box"][style*="display: block"],
+  [data-chakra-component="Box"] {
+    display: block !important;
+  }
+  
+  /* Prevent Safari from converting VStack to scroll snapping container */
+  /* Exception: Selected Items Cart must remain flex for proper text layout */
+  [data-chakra-component="VStack"]:not(.selected-items-cart):not(.selected-item-text):not(.selected-item-content) {
+    display: block !important;
+    flex-direction: unset !important;
+  }
+  
+  /* Additional Safari 17+ fixes for flex containers */
+  .flex-container,
+  [style*="display: flex"],
+  [style*="display:flex"] {
+    min-height: 0;
+  }
+  
+  /* Safari 17+ viewport fix - use dvh when supported */
+  /* Use svh (Small Viewport Height) for better iPhone 15/16/17 support */
+  @supports (height: 100svh) {
+    html, body {
+      height: 100svh;
+      min-height: 100svh;
+      /* Account for safe-area-insets on iPhone 15/16/17 */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+  
+  /* Fallback to dvh if svh is not supported */
+  @supports (height: 100dvh) and not (height: 100svh) {
+    html, body {
+      height: 100dvh;
+      min-height: 100dvh;
+      /* Account for safe-area-insets */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+  
+  /* Fallback to calc with safe-area-insets */
+  @supports not (height: 100svh) and not (height: 100dvh) {
+    html, body {
+      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
 }
 
 /* iOS text layout safety - prevent vertical glyphs and text tearing */
@@ -244,12 +324,19 @@ main#main {
   scroll-padding-top: calc(64px + env(safe-area-inset-top));
 }
 
-/* Final viewport fixes */
+/* Final viewport fixes - iPhone 15/16/17 compatible */
+/* CRITICAL: No 100vw on html/body - causes layout collapse on iOS 17 */
 html, body {
   height: 100%;
-  overflow-x: hidden;
+  overflow-x: clip; /* Better than hidden for iOS 17 */
   position: relative;
-  width: 100%;
+  width: 100%; /* Not 100vw - prevents scrollbar issues on iOS */
+  max-width: 100%; /* Not 100vw - prevents layout collapse */
+  /* Add safe-area-insets padding for iPhone 15/16/17 Dynamic Island support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 #__next {
@@ -1367,4 +1454,137 @@ textarea:focus-visible {
     left: 100%;
     opacity: 0;
   }
+}
+
+/* ===== SPEEDY AI MOBILE BUTTON - FORCE POSITIONING ===== */
+.speedy-ai-mobile-button,
+button.speedy-ai-mobile-button {
+  position: fixed !important;
+  bottom: 8px !important;
+  right: 8px !important;
+  left: unset !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 50% !important;
+  z-index: 9998 !important;
+}
+
+/* Remove black background from video */
+.speedy-ai-mobile-button video,
+.speedy-ai-mobile-button > div,
+.speedy-ai-mobile-button > * {
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ===== HEADER DUPLICATION FIX - CRITICAL FOR iPHONE 15/16/17 ===== */
+/* Hide desktop header immediately on mobile BEFORE hydration */
+@media (max-width: 767px) {
+  .desktop-header,
+  header[role="banner"]:not(.mobile-header) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Hide mobile header on desktop */
+@media (min-width: 768px) {
+  .mobile-header {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* ===== FORCE DARK BACKGROUNDS ON ALL PAGES - ALL BROWSERS ===== */
+/* CRITICAL: Remove ALL white backgrounds */
+body,
+main,
+#__next,
+html {
+  background: #0D0D0D !important;
+  background-color: #0D0D0D !important;
+  color: #FFFFFF !important;
+}
+
+/* Override Chakra Containers and Boxes */
+[data-chakra-component="Box"],
+.chakra-container,
+.chakra-stack,
+.css-0 {
+  background-color: transparent !important;
+}
+
+/* Override ANY white backgrounds from Chakra */
+.chakra-card,
+.chakra-box[bg="white"],
+[bg="white"],
+[background="white"],
+[style*="background: white"],
+[style*="background: rgb(255, 255, 255)"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: rgb(255, 255, 255)"],
+[style*="background-color: #fff"],
+[style*="background-color: #ffffff"],
+[style*="background:white"],
+[style*="background:#fff"],
+[style*="background-color:white"],
+[style*="background-color:#fff"] {
+  background: rgba(26, 26, 26, 0.95) !important;
+  background-color: rgba(26, 26, 26, 0.95) !important;
+}
+
+/* Override gray.50, gray.100 (light grays) */
+[bg*="gray.50"],
+[bg*="gray.100"],
+[style*="gray.50"],
+[style*="background: rgb(249"],
+[style*="background: rgb(243"] {
+  background: rgba(59, 130, 246, 0.1) !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Override Card components */
+.chakra-card__body,
+.chakra-card__header,
+.chakra-card__footer {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Forms and inputs - dark but usable */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+textarea,
+select {
+  background: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Buttons keep their intended colors */
+button,
+.chakra-button,
+[type="submit"],
+[type="button"] {
+  /* Don't override button backgrounds */
 }

@@ -8,6 +8,13 @@
  */
 
 export async function register() {
+  // Fix MaxListenersExceededWarning by increasing the limit
+  // Multiple modules (Prisma, Redis, Queue, etc.) add SIGINT/SIGTERM listeners
+  // Default limit is 10, we need more for graceful shutdown handlers
+  if (typeof process !== 'undefined' && process.setMaxListeners) {
+    process.setMaxListeners(20);
+  }
+
   // Only run on server-side in production
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('🚀 Server runtime detected - initializing cron jobs...');

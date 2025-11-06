@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get available jobs that are not assigned and not cancelled
+    // CRITICAL: Only show jobs with NO assignments at all (not assigned to ANY driver)
     const availableJobs = await prisma.booking.findMany({
       where: {
         OR: [
@@ -59,6 +60,10 @@ export async function GET(request: NextRequest) {
         ],
         NOT: {
           status: 'CANCELLED'
+        },
+        // EXTRA SECURITY: Ensure no assignments exist for this booking
+        Assignment: {
+          none: {} // No assignments at all
         }
       },
       select: {

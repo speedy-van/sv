@@ -17,11 +17,14 @@ export default function SpeedyAIIcon({ size = 60 }: SpeedyAIIconProps) {
         aspectRatio: '1',
         position: 'relative',
         overflow: 'hidden',
-        borderRadius: '20%',
+        borderRadius: '50%',
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        background: 'transparent',
+        padding: 0,
+        margin: 0,
       }}
     >
       <video
@@ -40,6 +43,7 @@ export default function SpeedyAIIcon({ size = 60 }: SpeedyAIIconProps) {
           display: 'block',
           margin: 0,
           padding: 0,
+          background: 'transparent',
         }}
       >
         <source src="/logo/AB7D9FB6-5E70-43CC-A81F-A47E875EC79F-video.mp4" type="video/mp4" />

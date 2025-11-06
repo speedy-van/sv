@@ -113,6 +113,35 @@ export async function POST(
 
     console.log('✅ Driver Route Accept API - Assigning route to driver');
 
+    // ✅ CHECK: Does driver have any active jobs/routes for today?
+    const activeJobs = await prisma.assignment.findMany({
+      where: {
+        driverId: driver.id,
+        status: 'accepted',
+        Booking: {
+          scheduledAt: {
+            gte: new Date() // Future or current jobs
+          },
+          status: { in: ['CONFIRMED'] }
+        }
+      },
+      include: {
+        Booking: {
+          select: { scheduledAt: true, status: true }
+        }
+      }
+    });
+
+    const activeRoutes = await prisma.route.findMany({
+      where: {
+        driverId: userId,
+        status: { in: ['assigned', 'in_progress'] }
+      }
+    });
+
+    const totalActiveWork = activeJobs.length + activeRoutes.length;
+    console.log(`📊 Driver has ${totalActiveWork} active work item(s) (${activeJobs.length} jobs + ${activeRoutes.length} routes)`);
+
     // Accept the route and update all related records
     const result = await prisma.$transaction(async (tx) => {
       // Update route status to assigned
@@ -267,14 +296,27 @@ export async function POST(
       dropCount: route.drops.length
     });
 
+    // ✅ Prepare response message based on job queue
+    const isFirstWork = totalActiveWork === 0;
+    const queuePosition = totalActiveWork + 1;
+    const responseMessage = isFirstWork
+      ? `Route accepted! You can start this route now.`
+      : `Route accepted and added to your schedule (Position ${queuePosition}). Complete your current work first.`;
+
     return NextResponse.json({
       success: true,
-      message: 'Route accepted successfully',
+      message: responseMessage,
       data: {
         routeId: result.id,
         status: result.status,
         dropCount: route.drops.length,
-        estimatedEarnings: Number(result.driverPayout || 0) / 100
+        estimatedEarnings: Number(result.driverPayout || 0) / 100,
+        queueInfo: {
+          position: queuePosition,
+          isQueued: !isFirstWork,
+          activeWork: totalActiveWork,
+          canStartNow: isFirstWork
+        }
       }
     });
 

@@ -40,6 +40,15 @@ import Hero from '../../components/Hero';
 import HeroMessage from '../../components/HeroMessage';
 import ServiceMapSection from '../../components/ServiceMapSection';
 import HomeFooter from '@/components/site/HomeFooter';
+import dynamic from 'next/dynamic';
+
+const TrustpilotWidget = dynamic(
+  () => import('@/components/site/TrustpilotWidget'),
+  { 
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // Create motion components using chakra integration
 const MotionBox = chakra(motion.div, {
@@ -992,6 +1001,9 @@ export default function HomePageContent() {
 
       {/* Home Footer */}
       <HomeFooter />
+
+      {/* Trustpilot Widget Section */}
+      <TrustpilotWidget />
     </Box>
   );
 }

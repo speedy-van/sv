@@ -243,8 +243,8 @@ const testimonials = [
 ];
 
 export default function PricingPage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
     <Box bg={bgColor} minH="100vh" pt={20}>
@@ -262,9 +262,11 @@ viewport={{ once: true }}
             <HStack justify="center" mb={6}>
               <Box
                 p={4}
-                bg="neon.100"
-                color="neon.600"
+                bg="rgba(59, 130, 246, 0.2)"
+                color="neon.400"
                 borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(59, 130, 246, 0.3)"
               >
                 <Icon as={FiDollarSign} boxSize={12} />
               </Box>
@@ -284,16 +286,50 @@ viewport={{ once: true }}
           </MotionBox>
 
           {/* Pricing Alert */}
-          <Alert status="info" borderRadius="xl" maxW="3xl">
-            <AlertIcon />
+          <Alert 
+            status="info" 
+            borderRadius="xl" 
+            maxW="3xl"
+            bg="rgba(59, 130, 246, 0.1)"
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.3)"
+          >
+            <AlertIcon color="neon.400" />
             <Box>
-              <Text fontWeight="bold">💡 Get Your Free Quote</Text>
-              <Text fontSize="sm">Use our online calculator for an instant, accurate quote based on your specific requirements.</Text>
+              <Text fontWeight="bold" color="white">💡 Get Your Free Quote</Text>
+              <Text fontSize="sm" color="gray.300">Use our online calculator for an instant, accurate quote based on your specific requirements.</Text>
             </Box>
           </Alert>
 
           {/* Pricing Tabs */}
-          <Tabs variant="enclosed" colorScheme="blue" w="full" maxW="6xl">
+          <Tabs 
+            variant="enclosed" 
+            colorScheme="blue" 
+            w="full" 
+            maxW="6xl"
+            sx={{
+              '& .chakra-tabs__tablist': {
+                bg: 'rgba(26, 26, 26, 0.95)',
+                borderColor: 'rgba(59, 130, 246, 0.3)',
+              },
+              '& .chakra-tabs__tab': {
+                color: 'gray.300',
+                borderColor: 'rgba(59, 130, 246, 0.3)',
+                _selected: {
+                  color: 'white',
+                  bg: 'rgba(59, 130, 246, 0.2)',
+                  borderColor: 'rgba(59, 130, 246, 0.5)',
+                },
+                _hover: {
+                  color: 'white',
+                  bg: 'rgba(59, 130, 246, 0.1)',
+                }
+              },
+              '& .chakra-tabs__tab-panels': {
+                bg: 'transparent',
+              }
+            }}
+          >
             <TabList>
               <Tab>By Service Type</Tab>
               <Tab>By Home Size</Tab>
@@ -317,14 +353,16 @@ viewport={{ once: true }}
                       border="2px solid"
                       borderColor={`${service.color}.200`}
                     >
-                      <Card>
-                        <CardBody p={6} textAlign="center">
+                      <Card bg="transparent" border="none" boxShadow="none">
+                        <CardBody p={6} textAlign="center" bg="transparent">
                         <VStack spacing={4}>
                           <Box
                             p={3}
-                            bg={`${service.color}.100`}
-                            color={`${service.color}.600`}
+                            bg={`rgba(59, 130, 246, 0.2)`}
+                            color={`${service.color}.400`}
                             borderRadius="lg"
+                            border="1px solid"
+                            borderColor={`rgba(59, 130, 246, 0.3)`}
                           >
                             <Icon as={service.icon} boxSize={6} />
                           </Box>
@@ -389,8 +427,8 @@ viewport={{ once: true }}
                           Most Popular
                         </Badge>
                       )}
-                      <Card>
-                        <CardBody p={8} textAlign="center">
+                      <Card bg="transparent" border="none" boxShadow="none">
+                        <CardBody p={8} textAlign="center" bg="transparent">
                         <VStack spacing={6}>
                           <VStack spacing={2}>
                             <Heading size="lg" color="text.primary">
@@ -465,14 +503,16 @@ viewport={{ once: true }}
                         boxShadow: 'xl',
                       }}
                     >
-                      <Card>
-                        <CardBody p={6} textAlign="center">
+                      <Card bg="transparent" border="none" boxShadow="none">
+                        <CardBody p={6} textAlign="center" bg="transparent">
                         <VStack spacing={4}>
                           <Box
                             p={3}
-                            bg="gray.100"
-                            color="gray.600"
+                            bg="rgba(59, 130, 246, 0.2)"
+                            color="neon.400"
                             borderRadius="lg"
+                            border="1px solid"
+                            borderColor="rgba(59, 130, 246, 0.3)"
                           >
                             <Icon as={addon.icon} boxSize={6} />
                           </Box>
@@ -530,9 +570,11 @@ viewport={{ once: true }}
                     <VStack spacing={4}>
                       <Box
                         p={3}
-                        bg="orange.100"
-                        color="orange.600"
+                        bg="rgba(251, 191, 36, 0.2)"
+                        color="orange.400"
                         borderRadius="lg"
+                        border="1px solid"
+                        borderColor="rgba(251, 191, 36, 0.3)"
                       >
                         <Icon as={factor.icon} boxSize={6} />
                       </Box>
@@ -580,8 +622,8 @@ viewport={{ once: true }}
                   borderRadius="xl"
                   boxShadow="lg"
                 >
-                  <Card>
-                    <CardBody p={8}>
+                  <Card bg="transparent" border="none" boxShadow="none">
+                    <CardBody p={8} bg="transparent">
                     <VStack spacing={4} align="start">
                       <HStack>
                         {[...Array(testimonial.rating)].map((_, i) => (

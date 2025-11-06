@@ -13,13 +13,10 @@ import { z } from 'zod';
 export const PhysicalSpecsSchema = z.object({
   dimensions: z.string().regex(/^\d+x\d+x\d+$/, "Must be format: LxWxH in cm"),
   weight: z.number().positive("Weight must be positive").max(200, "Max 200kg per item"),
-  volume: z.string().transform((val) => {
+  volume: z.string().refine((val) => {
     const parsed = parseFloat(val);
-    if (isNaN(parsed) || parsed <= 0) {
-      throw new Error("Volume must be positive number");
-    }
-    return parsed;
-  })
+    return !isNaN(parsed) && parsed > 0;
+  }, { message: "Volume must be a positive number string" })
 });
 
 // Operational Requirements
@@ -55,11 +52,11 @@ export const AccessLogisticsSchema = z.object({
 
 // Business Specifications
 export const BusinessSpecsSchema = z.object({
-  insurance_category: z.enum(["Standard", "High-Value"]),
-  business_filename: z.string().endsWith('.jpg')
+  insurance_category: z.enum(["Standard", "High-Value"])
+  // Note: business_filename is not in the dataset, only filename exists
 });
 
-// COMPLETE UK DATASET ITEM SCHEMA (22 fields)
+// COMPLETE UK DATASET ITEM SCHEMA (21 fields - business_filename removed as it doesn't exist in dataset)
 export const UKDatasetItemSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),

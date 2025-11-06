@@ -52,22 +52,22 @@ export default function CookiePreferencesModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Cookie Preferences</ModalHeader>
-        <ModalCloseButton />
+      <ModalOverlay bg="rgba(0, 0, 0, 0.7)" backdropFilter="blur(10px)" />
+      <ModalContent bg="rgba(15, 17, 20, 0.98)" border="1px solid" borderColor="rgba(59, 130, 246, 0.3)">
+        <ModalHeader color="white">Cookie Preferences</ModalHeader>
+        <ModalCloseButton color="white" _hover={{ bg: 'rgba(59, 130, 246, 0.2)' }} />
         
         <ModalBody>
           <VStack spacing={6} align="stretch">
-            <Text fontSize="sm" color="gray.600">
+            <Text fontSize="sm" color="gray.300">
               Choose which cookies you want to accept. You can change these settings at any time.
             </Text>
 
             <FormControl>
               <HStack justify="space-between">
                 <Box>
-                  <FormLabel mb={0}>Necessary Cookies</FormLabel>
-                  <FormHelperText fontSize="xs">
+                  <FormLabel mb={0} color="white">Necessary Cookies</FormLabel>
+                  <FormHelperText fontSize="xs" color="gray.400">
                     Required for the website to function properly
                   </FormHelperText>
                 </Box>
@@ -82,8 +82,8 @@ export default function CookiePreferencesModal({
             <FormControl>
               <HStack justify="space-between">
                 <Box>
-                  <FormLabel mb={0}>Analytics Cookies</FormLabel>
-                  <FormHelperText fontSize="xs">
+                  <FormLabel mb={0} color="white">Analytics Cookies</FormLabel>
+                  <FormHelperText fontSize="xs" color="gray.400">
                     Help us understand how visitors interact with our website
                   </FormHelperText>
                 </Box>
@@ -98,8 +98,8 @@ export default function CookiePreferencesModal({
             <FormControl>
               <HStack justify="space-between">
                 <Box>
-                  <FormLabel mb={0}>Marketing Cookies</FormLabel>
-                  <FormHelperText fontSize="xs">
+                  <FormLabel mb={0} color="white">Marketing Cookies</FormLabel>
+                  <FormHelperText fontSize="xs" color="gray.400">
                     Used to track visitors across websites for advertising
                   </FormHelperText>
                 </Box>
@@ -114,8 +114,8 @@ export default function CookiePreferencesModal({
             <FormControl>
               <HStack justify="space-between">
                 <Box>
-                  <FormLabel mb={0}>Preference Cookies</FormLabel>
-                  <FormHelperText fontSize="xs">
+                  <FormLabel mb={0} color="white">Preference Cookies</FormLabel>
+                  <FormHelperText fontSize="xs" color="gray.400">
                     Remember your settings and preferences
                   </FormHelperText>
                 </Box>

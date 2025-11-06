@@ -34,6 +34,7 @@ import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMa
 import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
+import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhoAndPaymentStep from './components/WhoAndPaymentStep';
 import { useBookingForm } from './hooks/useBookingForm';
@@ -43,16 +44,24 @@ import { useBookingForm } from './hooks/useBookingForm';
 const STEPS = [
   { 
     id: 1, 
-    title: 'What, Where & When', 
-    description: 'Select items, addresses, date and time',
-    icon: FaTruck,
-    shortTitle: 'Items & Details',
+    title: 'Addresses', 
+    description: 'Pickup and drop-off locations',
+    icon: FaMapMarkerAlt,
+    shortTitle: 'Addresses',
     color: 'blue'
   },
   { 
     id: 2, 
-    title: 'Customer & Payment', 
-    description: 'Enter details and payment',
+    title: 'Items & Time', 
+    description: 'Select items and schedule',
+    icon: FaClock,
+    shortTitle: 'Items & Time',
+    color: 'purple'
+  },
+  { 
+    id: 3, 
+    title: 'Payment', 
+    description: 'Customer details and payment',
     icon: FaCheck,
     shortTitle: 'Checkout',
     color: 'green'
@@ -65,6 +74,7 @@ export default function BookingLuxuryPage() {
   const router = useRouter();
   
   // Wave effects for step headers
+  const [addressWaveActive, setAddressWaveActive] = useState(false);
   const [itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
   const [checkoutWaveActive, setCheckoutWaveActive] = useState(false);
   const toast = useToast();
@@ -98,6 +108,23 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
+  // Helper function to clear corrupted draft data
+  const clearDraftData = useCallback(() => {
+    try {
+      localStorage.removeItem('speedy_van_booking_draft');
+      console.log('✅ Cleared draft data from localStorage');
+      toast({
+        title: 'Draft cleared',
+        description: 'All saved draft data has been removed. You can start fresh.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (e) {
+      console.error('Failed to clear draft:', e);
+    }
+  }, [toast]);
+
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
     // Only calculate if we have all required data with full addresses
@@ -115,7 +142,12 @@ export default function BookingLuxuryPage() {
 
     // Validate addresses have required components (street and coordinates are required, number is optional)
     if (!pickupNorm?.street || !pickupNorm?.coordinates) {
-      console.warn('Incomplete pickup address - Enterprise Engine requires street and coordinates');
+      console.warn('Incomplete pickup address - Enterprise Engine requires street and coordinates', {
+        address: formData.step1.pickupAddress,
+        normalized: pickupNorm,
+        hasStreet: !!pickupNorm?.street,
+        hasCoordinates: !!pickupNorm?.coordinates
+      });
       return;
     }
 
@@ -140,8 +172,42 @@ export default function BookingLuxuryPage() {
             weight_override: item.weight,
             volume_override: item.volume
           })),
-          pickup: { ...pickupNorm, propertyType: 'house' },
-          dropoffs: [{ ...dropNorm, propertyType: 'house' }],
+          pickup: { 
+            ...pickupNorm, 
+            propertyType: 'house',
+            // Ensure required fields are present (API requires min 1 char)
+            street: pickupNorm.street && pickupNorm.street.length > 0 
+              ? pickupNorm.street 
+              : (pickupNorm.line1 && pickupNorm.line1.length > 0 
+                ? pickupNorm.line1.replace(/^\d+[a-zA-Z]?\s+/, '').trim() || pickupNorm.line1 
+                : 'Unknown Street'),
+            number: pickupNorm.number && pickupNorm.number.length > 0 
+              ? pickupNorm.number 
+              : (pickupNorm.line1 
+                ? (pickupNorm.line1.match(/^(\d+[a-zA-Z]?)/)?.[1] || '1') 
+                : '1'),
+            coordinates: pickupNorm.coordinates && pickupNorm.coordinates.lat && pickupNorm.coordinates.lng
+              ? pickupNorm.coordinates
+              : { lat: 0, lng: 0 }
+          },
+          dropoffs: dropNorm ? [{ 
+            ...dropNorm, 
+            propertyType: 'house',
+            // Ensure required fields are present (API requires min 1 char)
+            street: dropNorm.street && dropNorm.street.length > 0 
+              ? dropNorm.street 
+              : (dropNorm.line1 && dropNorm.line1.length > 0 
+                ? dropNorm.line1.replace(/^\d+[a-zA-Z]?\s+/, '').trim() || dropNorm.line1 
+                : 'Unknown Street'),
+            number: dropNorm.number && dropNorm.number.length > 0 
+              ? dropNorm.number 
+              : (dropNorm.line1 
+                ? (dropNorm.line1.match(/^(\d+[a-zA-Z]?)/)?.[1] || '1') 
+                : '1'),
+            coordinates: dropNorm.coordinates && dropNorm.coordinates.lat && dropNorm.coordinates.lng
+              ? dropNorm.coordinates
+              : { lat: 0, lng: 0 }
+          }] : [],
           scheduledDate: (formData.step1.pickupDate
             ? new Date(`${formData.step1.pickupDate}T09:00:00.000Z`).toISOString()
             : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
@@ -328,9 +394,15 @@ export default function BookingLuxuryPage() {
   // Control wave effects based on current step
   useEffect(() => {
     if (currentStep === 1) {
-      setItemsDetailsWaveActive(true);
+      setAddressWaveActive(true);
+      setItemsDetailsWaveActive(false);
       setCheckoutWaveActive(false);
     } else if (currentStep === 2) {
+      setAddressWaveActive(false);
+      setItemsDetailsWaveActive(true);
+      setCheckoutWaveActive(false);
+    } else if (currentStep === 3) {
+      setAddressWaveActive(false);
       setItemsDetailsWaveActive(false);
       setCheckoutWaveActive(true);
     }
@@ -428,17 +500,40 @@ export default function BookingLuxuryPage() {
           // Restore form data (including images for items)
           if (draftData.step1) {
             try {
+              // Clean and validate items before restoring
               const restoredItems = Array.isArray(draftData.step1.items)
-                ? draftData.step1.items.map((it: any) => ({
-                    ...it,
-                    // Ensure image is preserved if present in draft; do not inject a fallback here
-                    image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
-                  }))
+                ? draftData.step1.items
+                    .filter((it: any) => {
+                      // Filter out items with invalid/old IDs that might cause API errors
+                      if (!it?.id || !it?.name) {
+                        console.warn('⚠️ Skipping invalid item from draft:', it);
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map((it: any) => ({
+                      ...it,
+                      // Ensure image is preserved if present in draft; do not inject a fallback here
+                      image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
+                    }))
                 : [];
+              
+              // Only restore if we have valid items
               updateFormData('step1', {
                 ...draftData.step1,
                 items: restoredItems,
               });
+              
+              // Show warning if items were filtered out
+              if (Array.isArray(draftData.step1.items) && restoredItems.length < draftData.step1.items.length) {
+                toast({
+                  title: 'Some items were removed',
+                  description: 'Invalid items from your draft have been removed. Please re-add them if needed.',
+                  status: 'warning',
+                  duration: 5000,
+                  isClosable: true,
+                });
+              }
             } catch (e) {
               console.warn('Failed to restore step1 from draft:', e);
             }
@@ -540,13 +635,97 @@ export default function BookingLuxuryPage() {
   const normalizeAddressForPricing = useCallback((addr: any) => {
     if (!addr) return null;
     const components = addr.components || {};
-    const street = addr.street || addr.address || components.street || components.route || components.road || '';
-    const number = addr.houseNumber || addr.number || components.house_number || components.street_number || '';
-    const city = addr.city || components.city || components.locality || components.post_town || '';
-    const postcode = addr.postcode || components.postcode || components.postal_code || '';
-    const full = addr.formatted_address || addr.fullAddress || addr.place_name || addr.displayText || addr.address || '';
-    const line1 = addr.line1 || street || addr.address || '';
-    const coordinates = addr.coordinates || addr.location || null;
+    const formatted = addr.formatted || {};
+    
+    // Extract full address from multiple possible locations (FIRST - needed by other extractions)
+    const full = 
+      addr.formatted_address || 
+      addr.fullAddress || 
+      addr.full ||
+      addr.place_name || 
+      addr.displayText || 
+      addr.address || 
+      '';
+    
+    // Extract street from multiple possible locations
+    // Try to extract from line1 if street is not directly available
+    let street = 
+      addr.street || 
+      addr.address || 
+      formatted.street || 
+      components.street || 
+      components.route || 
+      components.road ||
+      '';
+    
+    // If street is still empty, try to extract from line1 (remove house number)
+    if (!street && addr.line1) {
+      // Remove house number from line1 (e.g., "3 Savile Row" -> "Savile Row")
+      const line1WithoutNumber = addr.line1.replace(/^\d+[a-zA-Z]?\s+/, '').trim();
+      if (line1WithoutNumber) {
+        street = line1WithoutNumber.split(',')[0].trim();
+      }
+    }
+    
+    // If still empty, use line1 as fallback
+    if (!street && addr.line1) {
+      street = addr.line1.split(',')[0].trim();
+    }
+    
+    // Extract house number from multiple possible locations
+    // If not found directly, try to extract from line1
+    let number = 
+      addr.houseNumber || 
+      addr.number || 
+      formatted.houseNumber ||
+      components.house_number || 
+      components.street_number || 
+      '';
+    
+    // If number is still empty, try to extract from line1 (e.g., "3 Savile Row" -> "3")
+    if (!number && addr.line1) {
+      const line1Match = addr.line1.match(/^(\d+[a-zA-Z]?)\s/);
+      if (line1Match) {
+        number = line1Match[1];
+      }
+    }
+    
+    // If still empty, try to extract from full address
+    if (!number && full) {
+      const fullMatch = full.match(/^(\d+[a-zA-Z]?)\s/);
+      if (fullMatch) {
+        number = fullMatch[1];
+      }
+    }
+    
+    // Extract city from multiple possible locations
+    const city = 
+      addr.city || 
+      components.city || 
+      components.locality || 
+      components.post_town || 
+      '';
+    
+    // Extract postcode from multiple possible locations
+    const postcode = 
+      addr.postcode || 
+      components.postcode || 
+      components.postal_code || 
+      '';
+    
+    // Extract line1 from multiple possible locations
+    const line1 = 
+      addr.line1 || 
+      street || 
+      addr.address || 
+      '';
+    
+    // Extract coordinates from multiple possible locations
+    const coordinates = 
+      addr.coordinates || 
+      addr.location || 
+      null;
+    
     return { full, line1, city, postcode, street, number, coordinates };
   }, []);
 
@@ -571,9 +750,36 @@ export default function BookingLuxuryPage() {
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
-    <Box minH="100vh" bg={bgColor} py={{ base: 2, md: 8 }} pb={{ base: "100px", md: 8 }}>
-      <Container maxW="6xl" px={{ base: 4, md: 6 }}>
-        <VStack spacing={{ base: 4, md: 8 }} align="stretch" py={{ base: 4, md: 8 }}>
+    <Box 
+      display="block" 
+      w="100%" 
+      minH="100dvh" 
+      bg={bgColor} 
+      py={{ base: 2, md: 8 }} 
+      pb={{ base: "100px", md: 8 }}
+      overflowX="hidden"
+      overflowY="auto"
+      sx={{
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'none',
+      }}
+    >
+      <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 2, md: 6 }}>
+        <Box 
+          display="block" 
+          w="100%" 
+          py={{ base: 4, md: 8 }}
+          sx={{
+            '& > *': {
+              display: 'block',
+              width: '100%',
+              marginBottom: { base: '16px', md: '32px' },
+            },
+            '& > *:last-child': {
+              marginBottom: 0,
+            },
+          }}
+        >
           {/* PREMIUM HEADER - ENHANCED GLASSMORPHISM */}
           <Card 
             bg="linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
@@ -1017,16 +1223,25 @@ export default function BookingLuxuryPage() {
           >
             <CardBody p={0}>
               {currentStep === 1 ? (
-                <WhereAndWhatStep
+                <AddressesStep
                   formData={formData}
                   updateFormData={updateFormData}
                   errors={errors}
                   onNext={() => setCurrentStep(2)}
+                />
+              ) : currentStep === 2 ? (
+                <WhereAndWhatStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  onNext={() => setCurrentStep(3)}
+                  onBack={() => setCurrentStep(1)}
+                  calculatePricing={calculateComprehensivePricing}
                   pricingTiers={pricingTiers}
                   availabilityData={availabilityData}
                   isLoadingAvailability={isLoadingAvailability}
                 />
-              ) : currentStep === 2 ? (
+              ) : currentStep === 3 ? (
                 <WhoAndPaymentStep
                   formData={formData}
                   updateFormData={updateFormData}
@@ -1071,13 +1286,13 @@ export default function BookingLuxuryPage() {
               </CardBody>
             </Card>
           )}
-        </VStack>
+        </Box>
       </Container>
 
       {/* Inline Back button (non-sticky) */}
       {currentStep === STEPS.length && (
         <Box mt={6} pb={6}>
-          <Container maxW="6xl">
+          <Container maxW={{ base: "full", md: "6xl" }}>
             <Button
               leftIcon={<FaArrowLeft />}
               onClick={handlePrevious}
@@ -1087,7 +1302,7 @@ export default function BookingLuxuryPage() {
               w="full"
               minH="44px"
             >
-              Back to Step 1
+              Back to Previous Step
             </Button>
           </Container>
         </Box>

@@ -329,6 +329,17 @@ export default function SpeedyAIBotMobile() {
           from { opacity: 0; }
           to { opacity: 1; }
         }
+
+        /* FORCE Speedy AI button to bottom-right */
+        .speedy-ai-mobile-button {
+          position: fixed !important;
+          bottom: 8px !important;
+          right: 8px !important;
+          left: unset !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
+        }
       `}</style>
 
       {/* Floating Button - Mobile Only */}
@@ -343,20 +354,22 @@ export default function SpeedyAIBotMobile() {
             e.stopPropagation();
             setIsOpen(true);
           }}
+          className="speedy-ai-mobile-button"
           style={{
             position: 'fixed',
-            bottom: '20px',
-            left: '20px',
-            right: 'auto',
+            bottom: '8px',
+            right: '8px',
+            left: 'unset',
             width: '70px',
             height: '70px',
             borderRadius: '50%',
             border: 'none',
             padding: '0',
+            margin: '0',
             overflow: 'hidden',
             cursor: 'pointer',
             zIndex: 9998,
-            boxShadow: 'none',
+            boxShadow: '0 4px 12px rgba(0, 194, 255, 0.4)',
             transition: 'transform 0.2s ease',
             WebkitTapHighlightColor: 'transparent',
             touchAction: 'manipulation',
@@ -369,31 +382,25 @@ export default function SpeedyAIBotMobile() {
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <div
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            webkit-playsinline="true"
             style={{
-              width: '18%',
+              width: '100%',
               height: '100%',
-              display: 'right',
-              alignItems: 'right',
-              justifyContent: 'right',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+              margin: 0,
+              padding: 0,
+              background: 'transparent',
             }}
           >
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{
-                width: '140%',
-                height: '136%',
-                objectFit: 'cover',
-                objectPosition: 'right',
-                display: 'block',
-              }}
-            >
-              <source src="/logo/AB7D9FB6-5E70-43CC-A81F-A47E875EC79F-video.mp4" type="video/mp4" />
-            </video>
-          </div>
+            <source src="/logo/AB7D9FB6-5E70-43CC-A81F-A47E875EC79F-video.mp4" type="video/mp4" />
+          </video>
         </button>
       )}
 
@@ -770,77 +777,165 @@ export default function SpeedyAIBotMobile() {
             </div>
           )}
 
-          {/* Input */}
+          {/* Input Area - Enhanced */}
           <div
             style={{
-              padding: '16px',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+              padding: '12px',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
               backgroundColor: '#ffffff',
-              borderTop: '1px solid #e5e7eb',
+              borderTop: '2px solid #e5e7eb',
               display: 'flex',
-              gap: '12px',
+              gap: '8px',
               alignItems: 'center',
+              boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
             }}
           >
-            {!!pendingFiles.length && (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {pendingFiles.slice(0,3).map((f, idx) => (
-                  <div key={idx} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '4px' }}>
-                    {f.url ? (
-                      <img src={f.url} alt={f.name} style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} />
-                    ) : (
-                      <span style={{ fontSize: '12px', maxWidth: '80px', display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder="Type message..."
               disabled={isLoading}
               style={{
                 flex: 1,
-                height: '22px',
-                padding: '0 20px',
-                borderRadius: '28px',
-                border: '1px solid rgb(229, 229, 235)',
-                fontSize: '17px',
+                height: '48px',
+                padding: '0 16px',
+                borderRadius: '24px',
+                border: '2px solid #e5e7eb',
+                fontSize: '15px',
                 outline: 'none',
                 backgroundColor: '#f9fafb',
-                transition: 'border 0.2s ease-in-out',
+                transition: 'all 0.2s ease',
+                fontWeight: 500,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#3B82F6';
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             />
+
+            {/* Send Button - NEW! */}
             <button
-              onClick={onUploadClick}
+              onClick={() => handleSendMessage()}
+              disabled={!inputValue.trim() || isLoading}
               style={{
-                width: '44px', height: '44px', borderRadius: '50%', border: '1px solid #d1d5db', backgroundColor: '#ffffff', fontSize: '18px'
-              }}
-              title="Upload files"
-            >
-              📎
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display:'none' }} />
-            {/* Mic button */}
-            <button
-              onClick={toggleListening}
-              style={{
-                width: '44px',
-                height: '44px',
+                width: '48px',
+                height: '48px',
+                minWidth: '48px',
                 borderRadius: '50%',
-                border: isListening ? '2px solid #ef4444' : '1px solid #d1d5db',
-                backgroundColor: isListening ? '#fee2e2' : '#ffffff',
-                color: isListening ? '#b91c1c' : '#374151',
+                border: 'none',
+                background: inputValue.trim() && !isLoading
+                  ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                  : '#d1d5db',
+                color: '#ffffff',
                 fontSize: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                cursor: inputValue.trim() && !isLoading ? 'pointer' : 'not-allowed',
+                transition: 'all 0.2s ease',
+                boxShadow: inputValue.trim() && !isLoading
+                  ? '0 4px 12px rgba(16, 185, 129, 0.4)'
+                  : 'none',
+                opacity: inputValue.trim() && !isLoading ? 1 : 0.5,
+                padding: 0,
+                margin: 0,
               }}
-              title={supportsSpeech ? (isListening ? 'Stop voice input' : 'Start voice input') : 'Voice input not supported'}
+              onTouchStart={(e) => {
+                if (inputValue.trim() && !isLoading) {
+                  e.currentTarget.style.transform = 'scale(0.9)';
+                }
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {isLoading ? '⏳' : '📤'}
+            </button>
+
+            {/* Upload Button */}
+            <button
+              onClick={onUploadClick}
+              style={{
+                width: '48px',
+                height: '48px',
+                minWidth: '48px',
+                borderRadius: '50%',
+                border: 'none',
+                background: '#3B82F6',
+                color: '#ffffff',
+                fontSize: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                padding: 0,
+                margin: 0,
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.9)';
+                e.currentTarget.style.background = '#2563EB';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.background = '#3B82F6';
+              }}
+            >
+              📎
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display:'none' }} />
+            
+            {/* Mic Button */}
+            <button
+              onClick={toggleListening}
+              disabled={!supportsSpeech}
+              style={{
+                width: '48px',
+                height: '48px',
+                minWidth: '48px',
+                borderRadius: '50%',
+                border: 'none',
+                background: isListening 
+                  ? 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
+                  : supportsSpeech
+                  ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                  : '#d1d5db',
+                color: '#ffffff',
+                fontSize: '22px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: supportsSpeech ? 'pointer' : 'not-allowed',
+                transition: 'all 0.2s ease',
+                boxShadow: isListening 
+                  ? '0 0 20px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(239, 68, 68, 0.4)' 
+                  : supportsSpeech
+                  ? '0 4px 12px rgba(16, 185, 129, 0.3)'
+                  : 'none',
+                opacity: supportsSpeech ? 1 : 0.5,
+                padding: 0,
+                margin: 0,
+              }}
+              onTouchStart={(e) => {
+                if (supportsSpeech) {
+                  e.currentTarget.style.transform = 'scale(0.9)';
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (supportsSpeech) {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }
+              }}
             >
               🎤
             </button>

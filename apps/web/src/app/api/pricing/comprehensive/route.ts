@@ -12,6 +12,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import Stripe from 'stripe';
+import { randomUUID } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { comprehensivePricingEngine } from '@/lib/pricing/comprehensive-engine';
 import {
   EnhancedPricingInputSchema,
@@ -104,8 +107,143 @@ const EnhancedPricingRequestSchema = z.object({
   }).optional()
 });
 
+/**
+ * Transform request items to pricing input format
+ * This enriches items with dataset information before schema validation
+ */
+async function transformRequestToPricingInput(
+  validatedRequest: z.infer<typeof EnhancedPricingRequestSchema>,
+  requestId: string,
+  correlationId: string
+): Promise<z.infer<typeof EnhancedPricingInputSchema>> {
+  // Ensure dataset is loaded
+  await comprehensivePricingEngine.loadDataset();
+
+  // Load dataset directly to enrich items
+  let dataset: any[] = [];
+  
+  try {
+    const datasetPath = join(process.cwd(), 'public', 'UK_Removal_Dataset', 'items_dataset.json');
+    const datasetContent = readFileSync(datasetPath, 'utf-8');
+    const datasetData = JSON.parse(datasetContent);
+    dataset = datasetData.items || [];
+  } catch (error) {
+    console.warn(`⚠️ Could not load dataset, using fallback:`, error);
+  }
+
+  // Transform items: enrich with dataset information
+  const transformedItems = await Promise.all(
+    validatedRequest.items.map(async (item) => {
+      // Find dataset item by ID or name
+      const datasetItem = dataset.find((ds: any) =>
+        ds.id === item.id || ds.name?.toLowerCase() === item.name?.toLowerCase()
+      );
+
+      if (!datasetItem) {
+        // Create fallback dataset item if not found
+        console.warn(`⚠️ Item not found in dataset: ${item.name} (${item.id}), using fallback`);
+        const fallbackDatasetItem = {
+          id: item.id,
+          name: item.name,
+          category: 'furniture',
+          filename: 'default.jpg',
+          keywords: [],
+          dimensions: '100x100x100',
+          weight: item.weight_override || 10,
+          volume: String(item.volume_override || 0.1),
+          workers_required: 2 as const,
+          dismantling_required: 'No' as const,
+          dismantling_time_minutes: 0,
+          reassembly_time_minutes: 0,
+          luton_van_fit: true,
+          van_capacity_estimate: 0.1,
+          load_priority: 'Mid-load' as const,
+          fragility_level: 'Low' as const,
+          stackability: 'Yes' as const,
+          packaging_requirement: 'None' as const,
+          special_handling_notes: '',
+          unload_difficulty: 'Easy' as const,
+          door_width_clearance_cm: 80,
+          staircase_compatibility: 'Yes' as const,
+          elevator_requirement: 'Not needed' as const,
+          insurance_category: 'Standard' as const
+        };
+
+        // Calculate basic costs
+        const laborCost = (fallbackDatasetItem.workers_required * 18 * 0.5) * item.quantity; // £18/hour, 0.5 hours
+        const itemBaseCost = ((fallbackDatasetItem.weight * 0.08) + (parseFloat(fallbackDatasetItem.volume) * 4.50)) * item.quantity;
+
+        return {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          weight_override: item.weight_override,
+          volume_override: item.volume_override,
+          datasetItem: fallbackDatasetItem,
+          labor_cost: laborCost,
+          item_base_cost: itemBaseCost
+        };
+      }
+
+      // Validate dataset item
+      const { UKDatasetItemSchema } = await import('@/lib/pricing/comprehensive-schemas');
+      const validatedDataset = UKDatasetItemSchema.parse(datasetItem);
+
+      // Calculate basic costs (simplified version)
+      const laborCost = (validatedDataset.workers_required * 18 * 0.5) * item.quantity; // £18/hour, 0.5 hours
+      const itemBaseCost = ((validatedDataset.weight * 0.08) + (parseFloat(validatedDataset.volume) * 4.50)) * item.quantity;
+
+      return {
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        weight_override: item.weight_override,
+        volume_override: item.volume_override,
+        datasetItem: validatedDataset,
+        labor_cost: laborCost,
+        item_base_cost: itemBaseCost
+      };
+    })
+  );
+
+  // Calculate time factors
+  const scheduledDate = new Date(validatedRequest.scheduledDate);
+  const timeFactors = validatedRequest.timeFactors || {
+    isRushHour: isRushHour(scheduledDate),
+    isPeakSeason: isPeakSeason(scheduledDate),
+    isStudentSeason: isStudentSeason(scheduledDate),
+    isWeekend: isWeekend(scheduledDate),
+    currentHour: scheduledDate.getHours(),
+    currentMonth: scheduledDate.getMonth() + 1
+  };
+
+  return {
+    requestId, // UUID format required by schema
+    correlationId,
+    operationalConfig: validatedRequest.operationalConfig,
+    items: transformedItems,
+    pickup: validatedRequest.pickup,
+    dropoffs: validatedRequest.dropoffs,
+    serviceLevel: validatedRequest.serviceLevel as 'economy' | 'standard' | 'premium',
+    scheduledDate: validatedRequest.scheduledDate,
+    customerSegment: validatedRequest.customerSegment as 'bronze' | 'silver' | 'gold' | 'platinum',
+    timeFactors: {
+      isRushHour: timeFactors.isRushHour ?? false,
+      isPeakSeason: timeFactors.isPeakSeason ?? false,
+      isStudentSeason: timeFactors.isStudentSeason ?? false,
+      isWeekend: timeFactors.isWeekend ?? false,
+      currentHour: timeFactors.currentHour ?? scheduledDate.getHours(),
+      currentMonth: timeFactors.currentMonth ?? scheduledDate.getMonth() + 1,
+      isSchoolHoliday: timeFactors.isSchoolHoliday ?? false,
+      isBankHoliday: timeFactors.isBankHoliday ?? false,
+      trafficConditions: timeFactors.trafficConditions ?? 'moderate'
+    },
+    serviceOptions: validatedRequest.serviceOptions
+  };
+}
+
 export async function POST(request: NextRequest) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const requestId = randomUUID(); // Use UUID format as required by schema
   const startTime = Date.now();
 
   try {
@@ -116,43 +254,31 @@ export async function POST(request: NextRequest) {
     const validatedRequest = EnhancedPricingRequestSchema.parse(body);
 
     // Generate correlation ID if not provided
-    const correlationId = validatedRequest.correlationId || `corr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const correlationId = validatedRequest.correlationId || randomUUID();
 
     // Set operational config if provided
     if (validatedRequest.operationalConfig) {
       comprehensivePricingEngine.setOperationalConfig(validatedRequest.operationalConfig);
     }
 
-    // Build enhanced pricing input with 100% operational compliance
-    const pricingInput = EnhancedPricingInputSchema.parse({
+    // Transform request to pricing input format (enriches items with dataset)
+    const pricingInput = await transformRequestToPricingInput(
+      validatedRequest,
       requestId,
-      correlationId,
-      operationalConfig: validatedRequest.operationalConfig,
-      items: validatedRequest.items,
-      pickup: validatedRequest.pickup,
-      dropoffs: validatedRequest.dropoffs,
-      serviceLevel: validatedRequest.serviceLevel,
-      scheduledDate: validatedRequest.scheduledDate,
-      customerSegment: validatedRequest.customerSegment,
-      timeFactors: validatedRequest.timeFactors || {
-        isRushHour: isRushHour(new Date(validatedRequest.scheduledDate)),
-        isPeakSeason: isPeakSeason(new Date(validatedRequest.scheduledDate)),
-        isStudentSeason: isStudentSeason(new Date(validatedRequest.scheduledDate)),
-        isWeekend: isWeekend(new Date(validatedRequest.scheduledDate)),
-        currentHour: new Date(validatedRequest.scheduledDate).getHours(),
-        currentMonth: new Date(validatedRequest.scheduledDate).getMonth() + 1
-      },
-      serviceOptions: validatedRequest.serviceOptions
-    });
+      correlationId
+    );
 
-    console.log(`📊 [${requestId}] Input validated: ${pricingInput.items.length} items, ${pricingInput.dropoffs.length} dropoffs`);
+    // Validate with enhanced schema (after transformation)
+    const validatedInput = EnhancedPricingInputSchema.parse(pricingInput);
 
-    // Calculate comprehensive pricing
-    const pricingResult = await comprehensivePricingEngine.calculatePrice(pricingInput);
+    console.log(`📊 [${requestId}] Input validated: ${validatedInput.items.length} items, ${validatedInput.dropoffs.length} dropoffs`);
+
+    // Calculate comprehensive pricing (engine will enrich items internally)
+    const pricingResult = await comprehensivePricingEngine.calculatePrice(validatedInput);
 
     // ENTERPRISE REQUIREMENT: Calculate availability for all tiers using full addresses
     const availability = await calculateAvailabilityForAllTiers(
-      pricingInput,
+      validatedInput,
       requestId
     );
 

@@ -22,6 +22,10 @@ const nextConfig = {
     swcMinify: true,
     // Enable instrumentation for server initialization
     instrumentationHook: true,
+    // CRITICAL: Disable optimistic client cache to fix Safari 17+ cache issues
+    // This prevents stale WhereAndWhatStep.tsx from being served from cache
+    // Also prevents CSS chunks from being loaded as JavaScript chunks (fixes "Unexpected token 'if'" error)
+    optimisticClientCache: false, // Force fresh components on every request
   },
 
   // Enable compression
@@ -41,6 +45,17 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     minimumCacheTTL: 31536000,
     unoptimized: false,
+  },
+
+  // Redirects for route changes
+  async redirects() {
+    return [
+      {
+        source: '/auth/register',
+        destination: '/customer/register',
+        permanent: true,
+      },
+    ];
   },
 
   // Add custom headers for caching, performance, and security
@@ -93,6 +108,11 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
+          // CRITICAL: Add cache busting headers to prevent stale chunks
+          {
+            key: 'X-Content-Hash',
+            value: process.env.NEXT_BUILD_ID || Date.now().toString(),
+          },
         ],
       },
       {
@@ -107,8 +127,9 @@ const nextConfig = {
     ];
   },
 
-  // Minimal changes to fix ActionQueueContext issue
-  reactStrictMode: false,
+  // CRITICAL: Enable React Strict Mode to catch component issues early
+  // This helps identify re-rendering issues that cause infinite loops
+  reactStrictMode: true,
 
   eslint: {
     ignoreDuringBuilds: true,
@@ -117,11 +138,34 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // Suppress specific build warnings while maintaining safety
+  // CRITICAL: Disable aggressive caching to fix Safari 17+ cache issues (iPhone 15-17)
+  // Temporary fix for WhereAndWhatStep.tsx being served from cache instead of new build
+  generateEtags: false, // Disable ETags to prevent stale cache
+  
+  // Disable on-demand entry caching
   onDemandEntries: {
-    // Suppress non-critical warnings
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
+    maxInactiveAge: 0, // Disable cache immediately
+    pagesBufferLength: 0, // Don't buffer pages in memory
+  },
+  
+  // CRITICAL: Use standalone output to ensure each deployment generates completely new chunks
+  // This prevents hash collisions where CSS chunks get loaded as JavaScript chunks
+  // Required for Render.com deployment where CDN cache can serve stale chunks
+  // This ensures each build produces fresh chunk hashes, preventing CSS/JS mix-ups
+  output: 'standalone',
+  
+  // CRITICAL: Generate unique build ID for cache busting
+  // This ensures each deployment has a unique identifier
+  generateBuildId: async () => {
+    // Use timestamp + random string for unique build ID
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    return `${timestamp}-${random}`;
+  },
+  
+  // Disable compiler console removal (keep for debugging cache issues)
+  compiler: {
+    removeConsole: false, // Keep console logs to debug cache issues
   },
   
   transpilePackages: ['@speedy-van/shared', '@speedy-van/utils', '@speedy-van/pricing'],

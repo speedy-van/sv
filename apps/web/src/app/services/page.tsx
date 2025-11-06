@@ -134,8 +134,8 @@ const trustFeatures = [
 ];
 
 export default function ServicesPage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
     <Box bg={bgColor} minH="100vh" pt={20}>
@@ -223,17 +223,19 @@ viewport={{ once: true }}
                 cursor="pointer"
                 onClick={() => window.location.href = service.href}
               >
-                <Card>
-                  <CardBody p={8}>
+                <Card bg="transparent" border="none" boxShadow="none">
+                  <CardBody p={8} bg="transparent">
                   <VStack align="start" spacing={6}>
                     {/* Service Header */}
                     <HStack justify="space-between" w="full">
                       <HStack spacing={4}>
                         <Box
                           p={3}
-                          bg={`${service.color}.100`}
-                          color={`${service.color}.600`}
+                          bg={`rgba(59, 130, 246, 0.2)`}
+                          color={`${service.color}.400`}
                           borderRadius="xl"
+                          border="1px solid"
+                          borderColor={`rgba(59, 130, 246, 0.3)`}
                         >
                           <Icon as={service.icon} boxSize={8} />
                         </Box>

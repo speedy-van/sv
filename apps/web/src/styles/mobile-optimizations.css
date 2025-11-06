@@ -16,6 +16,15 @@
     padding: 12px 16px !important;
   }
   
+  /* Exception: Booking Luxury selection buttons - override global styles */
+  .chakra-button.booking-luxury-selection-button {
+    font-size: 4px !important;
+    padding: 8px 8px !important;
+    min-height: auto !important;
+    min-width: auto !important;
+    height: auto !important;
+  }
+  
   .chakra-input {
     min-height: 44px !important;
     font-size: 16px !important; /* Prevents zoom on iOS */
@@ -80,6 +89,113 @@
   .booking-step-container {
     padding: 12px !important;
     margin: 8px !important;
+  }
+  
+  /* Booking Luxury - Selection Buttons Override */
+  /* Override global button styles for booking-luxury selection buttons on mobile */
+  .booking-luxury-selection-button {
+    font-size: 4px !important;
+    padding: 8px 8px !important;
+    min-height: auto !important;
+    min-width: auto !important;
+    height: auto !important;
+  }
+  
+  /* iPhone 15/16/17 Plus specific (430px - 480px) */
+  @media screen and (min-width: 430px) and (max-width: 480px) {
+    .booking-luxury-selection-button {
+      font-size: 4px !important;
+      padding: 8px 8px !important;
+    }
+  }
+  
+  /* Booking Luxury - Navigation Buttons Layout Fix */
+  /* Force Next Step button to the right side */
+  .chakra-card .chakra-card__body .chakra-stack[class*="HStack"] {
+    justify-content: flex-start !important;
+  }
+  
+  .chakra-card .chakra-card__body .chakra-stack[class*="HStack"] > button:last-child {
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+  }
+  
+  /* Booking Luxury - Selected Items Cart Text Fix */
+  /* Prevent text from displaying vertically (one letter per line) */
+  .selected-items-cart .selected-item-card .selected-item-text .selected-item-name,
+  .selected-items-cart .selected-item-card .selected-item-text .chakra-text,
+  .selected-items-cart .selected-item-card .chakra-stack .chakra-text,
+  .chakra-card .selected-items-cart .chakra-text,
+  .chakra-card .selected-items-cart .chakra-stack .chakra-text {
+    white-space: normal !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    display: block !important;
+    line-height: 1.4 !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    direction: ltr !important;
+    unicode-bidi: normal !important;
+  }
+  
+  /* Force horizontal text layout for selected items */
+  .selected-items-cart .selected-item-card {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  .selected-items-cart .selected-item-content {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  .selected-items-cart .selected-item-text {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  /* CRITICAL: Force horizontal text rendering for selected item names */
+  .selected-items-cart .selected-item-name,
+  .selected-items-cart .selected-item-name *,
+  .selected-item-name,
+  .selected-item-name * {
+    white-space: normal !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    display: block !important;
+    line-height: 1.4 !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    direction: ltr !important;
+    unicode-bidi: normal !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-writing-mode: horizontal-tb !important;
+    -webkit-text-orientation: mixed !important;
+    -moz-writing-mode: horizontal-tb !important;
+    -ms-writing-mode: horizontal-tb !important;
+  }
+  
+  /* Override any Safari-specific rules that might cause vertical text */
+  @supports (-webkit-touch-callout: none) {
+    .selected-items-cart .selected-item-name {
+      white-space: normal !important;
+      word-break: break-word !important;
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      display: block !important;
+      line-height: 1.4 !important;
+      writing-mode: horizontal-tb !important;
+      text-orientation: mixed !important;
+      direction: ltr !important;
+      unicode-bidi: normal !important;
+      -webkit-writing-mode: horizontal-tb !important;
+      -webkit-text-orientation: mixed !important;
+    }
   }
   
   /* Address autocomplete */

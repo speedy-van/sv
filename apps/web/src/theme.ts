@@ -108,42 +108,42 @@ const colors = {
 
 const semanticTokens = {
   colors: {
-    // Background Tokens
-    'bg.canvas': { _dark: '#0D0D0D' },
-    'bg.surface': { _dark: '#1A1A1A' },
-    'bg.surface.elevated': { _dark: '#262626' },
-    'bg.surface.hover': { _dark: '#333333' },
-    'bg.header': { _dark: '#0D0D0D' },
-    'bg.footer': { _dark: '#0D0D0D' },
-    'bg.modal': { _dark: '#1A1A1A' },
-    'bg.card': { _dark: '#1A1A1A' },
-    'bg.input': { _dark: '#262626' },
+    // Background Tokens - FORCE DARK ON ALL MODES
+    'bg.canvas': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
+    'bg.surface': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
+    'bg.surface.elevated': { default: '#262626', _light: '#262626', _dark: '#262626' },
+    'bg.surface.hover': { default: '#333333', _light: '#333333', _dark: '#333333' },
+    'bg.header': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
+    'bg.footer': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
+    'bg.modal': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
+    'bg.card': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
+    'bg.input': { default: '#262626', _light: '#262626', _dark: '#262626' },
 
-    // Text Tokens
-    'text.primary': { _dark: '#FFFFFF' },
-    'text.secondary': { _dark: '#E5E5E5' },
-    'text.tertiary': { _dark: '#A3A3A3' },
-    'text.disabled': { _dark: '#737373' },
-    'text.inverse': { _dark: '#0D0D0D' },
+    // Text Tokens - FORCE WHITE ON ALL MODES
+    'text.primary': { default: '#FFFFFF', _light: '#FFFFFF', _dark: '#FFFFFF' },
+    'text.secondary': { default: '#E5E5E5', _light: '#E5E5E5', _dark: '#E5E5E5' },
+    'text.tertiary': { default: '#A3A3A3', _light: '#A3A3A3', _dark: '#A3A3A3' },
+    'text.disabled': { default: '#737373', _light: '#737373', _dark: '#737373' },
+    'text.inverse': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
 
     // Border Tokens
-    'border.primary': { _dark: '#404040' },
-    'border.secondary': { _dark: '#262626' },
-    'border.neon': { _dark: '#00C2FF' },
-    'border.brand': { _dark: '#00D18F' },
+    'border.primary': { default: '#404040', _light: '#404040', _dark: '#404040' },
+    'border.secondary': { default: '#262626', _light: '#262626', _dark: '#262626' },
+    'border.neon': { default: '#00C2FF', _light: '#00C2FF', _dark: '#00C2FF' },
+    'border.brand': { default: '#00D18F', _light: '#00D18F', _dark: '#00D18F' },
 
     // Interactive Tokens
-    'interactive.primary': { _dark: '#00C2FF' },
-    'interactive.secondary': { _dark: '#00D18F' },
-    'interactive.hover': { _dark: '#1AB0FF' },
-    'interactive.active': { _dark: '#0099CC' },
-    'interactive.disabled': { _dark: '#404040' },
+    'interactive.primary': { default: '#00C2FF', _light: '#00C2FF', _dark: '#00C2FF' },
+    'interactive.secondary': { default: '#00D18F', _light: '#00D18F', _dark: '#00D18F' },
+    'interactive.hover': { default: '#1AB0FF', _light: '#1AB0FF', _dark: '#1AB0FF' },
+    'interactive.active': { default: '#0099CC', _light: '#0099CC', _dark: '#0099CC' },
+    'interactive.disabled': { default: '#404040', _light: '#404040', _dark: '#404040' },
 
     // Status Tokens
-    'status.success': { _dark: '#22C55E' },
-    'status.warning': { _dark: '#F59E0B' },
-    'status.error': { _dark: '#EF4444' },
-    'status.info': { _dark: '#3B82F6' },
+    'status.success': { default: '#22C55E', _light: '#22C55E', _dark: '#22C55E' },
+    'status.warning': { default: '#F59E0B', _light: '#F59E0B', _dark: '#F59E0B' },
+    'status.error': { default: '#EF4444', _light: '#EF4444', _dark: '#EF4444' },
+    'status.info': { default: '#3B82F6', _light: '#3B82F6', _dark: '#3B82F6' },
   },
 
   shadows: {
@@ -161,7 +161,7 @@ const semanticTokens = {
 
 const breakpoints = {
   base: '0px',
-  sm: '480px', // Mobile landscape
+  sm: '380px', // Covers iPhone 15–17 (was 480px)
   md: '768px', // Tablet
   lg: '1024px', // Desktop
   xl: '1280px', // Large desktop
@@ -184,6 +184,11 @@ const styles = {
         'linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%)',
       backgroundAttachment: 'fixed',
       minHeight: '100vh',
+      // iPhone 15+ safe-area support (prevents Safari from clipping top/bottom elements)
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)',
     },
 
     // Focus styles with neon glow

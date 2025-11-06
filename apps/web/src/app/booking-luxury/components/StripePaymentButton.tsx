@@ -509,12 +509,12 @@ export default function StripePaymentButton({
           <Badge
             bg="linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.2) 100%)"
             color="white"
-            px={4}
-            py={2}
+            px={5}
+            py={2.5}
             borderRadius="full"
-            fontSize="xs"
-            fontWeight="700"
-            letterSpacing="0.3px"
+            fontSize="2xs"
+            fontWeight="600"
+            letterSpacing="0.2px"
             border="2px solid"
             borderColor="rgba(16, 185, 129, 0.4)"
             boxShadow="0 4px 12px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
@@ -524,12 +524,12 @@ export default function StripePaymentButton({
           <Badge
             bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.2) 100%)"
             color="white"
-            px={4}
-            py={2}
+            px={5}
+            py={2.5}
             borderRadius="full"
-            fontSize="xs"
-            fontWeight="700"
-            letterSpacing="0.3px"
+            fontSize="2xs"
+            fontWeight="600"
+            letterSpacing="0.2px"
             border="2px solid"
             borderColor="rgba(59, 130, 246, 0.4)"
             boxShadow="0 4px 12px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"

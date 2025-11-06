@@ -1,0 +1,27 @@
+/* Speedy AI Mobile Button Override */
+/* Force button to bottom-right on mobile */
+
+.speedy-ai-mobile-button,
+button.speedy-ai-mobile-button {
+  position: fixed !important;
+  bottom: 8px !important;
+  right: 8px !important;
+  left: unset !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  width: 70px !important;
+  height: 70px !important;
+  border-radius: 50% !important;
+  z-index: 9998 !important;
+}
+
+/* Remove any black background */
+.speedy-ai-mobile-button video,
+.speedy-ai-mobile-button > div,
+.speedy-ai-mobile-button * {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+

@@ -13,6 +13,8 @@
 
 import { z } from 'zod';
 import crypto from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import {
   EnhancedPricingInputSchema,
   EnhancedPricingResultSchema,
@@ -231,25 +233,46 @@ export class ComprehensivePricingEngine {
    * Load UK Removal Dataset - 100% compliance with README
    */
   async loadDataset(): Promise<void> {
+    // Skip if already loaded
+    if (this.dataset.length > 0) {
+      console.log(`✅ Dataset already loaded: ${this.dataset.length} items`);
+      return;
+    }
+
     try {
-      // Load from public directory as specified in README
-      const response = await fetch('/UK_Removal_Dataset/items_dataset.json');
-      if (!response.ok) {
-        throw new Error(`Failed to load dataset: ${response.status}`);
+      // Load from public directory using fs (works in server-side)
+      const datasetPath = join(process.cwd(), 'public', 'UK_Removal_Dataset', 'items_dataset.json');
+      console.log(`📁 Attempting to load dataset from: ${datasetPath}`);
+      
+      const datasetContent = readFileSync(datasetPath, 'utf-8');
+      const data = JSON.parse(datasetContent);
+
+      if (!data || !data.items || !Array.isArray(data.items)) {
+        throw new Error('Invalid dataset structure: missing items array');
       }
 
-      const data = await response.json();
+      console.log(`📦 Dataset file loaded, found ${data.items.length} items`);
 
       // Validate all 22 fields per item as per README
-      this.dataset = data.items.map((item: any) => {
-        const validated = UKDatasetItemSchema.parse(item);
-        return validated;
+      this.dataset = data.items.map((item: any, index: number) => {
+        try {
+          const validated = UKDatasetItemSchema.parse(item);
+          return validated;
+        } catch (validationError) {
+          console.error(`❌ Validation failed for item ${index} (${item.name || 'unknown'}):`, validationError);
+          throw validationError;
+        }
       });
 
       console.log(`✅ Loaded ${this.dataset.length} items with 22 fields each (100% README compliance)`);
     } catch (error) {
       console.error('❌ Failed to load UK dataset:', error);
-      throw new Error('Dataset loading failed - cannot proceed with pricing');
+      console.error('Error details:', {
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack?.split('\n').slice(0, 5) : undefined
+      });
+      throw new Error(`Dataset loading failed - cannot proceed with pricing: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -430,7 +453,44 @@ export class ComprehensivePricingEngine {
       );
 
       if (!datasetItem) {
-        throw new Error(`Item not found in dataset: ${item.name} (${item.id})`);
+        // Try fuzzy matching by searching for similar names
+        const fuzzyMatch = this.dataset.find(ds =>
+          ds.name.toLowerCase().includes(item.name.toLowerCase().split(' ').slice(0, 3).join(' '))
+        );
+
+        if (!fuzzyMatch) {
+          console.warn(`⚠️ Item not found in dataset: ${item.name} (${item.id}), using fallback`);
+          // If item already has datasetItem (from API route fallback), use it
+          if (item.datasetItem) {
+            const validatedDataset = UKDatasetItemSchema.parse(item.datasetItem);
+            const laborCost = this.calculateEnhancedLaborCost(validatedDataset, item.quantity, config);
+            const itemBaseCost = this.calculateEnhancedItemBaseCost(validatedDataset, item.quantity, config);
+            const operationalNotes = this.generateOperationalNotes(validatedDataset, config);
+            return {
+              ...item,
+              datasetItem: validatedDataset,
+              labor_cost: laborCost,
+              item_base_cost: itemBaseCost,
+              operationalNotes
+            };
+          }
+          throw new Error(`Item not found in dataset: ${item.name} (${item.id})`);
+        }
+
+        console.log(`🔍 Using fuzzy match for "${item.name}" -> "${fuzzyMatch.name}"`);
+        const validatedDataset = UKDatasetItemSchema.parse(fuzzyMatch);
+        const laborCost = this.calculateEnhancedLaborCost(validatedDataset, item.quantity, config);
+        const itemBaseCost = this.calculateEnhancedItemBaseCost(validatedDataset, item.quantity, config);
+        const operationalNotes = this.generateOperationalNotes(validatedDataset, config);
+        return {
+          ...item,
+          id: fuzzyMatch.id, // Update to correct ID
+          name: fuzzyMatch.name, // Update to correct name
+          datasetItem: validatedDataset,
+          labor_cost: laborCost,
+          item_base_cost: itemBaseCost,
+          operationalNotes
+        };
       }
 
       // Validate all 22 fields are present (README compliance)

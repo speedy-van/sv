@@ -10,6 +10,8 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   Button,
   Alert,
   AlertIcon,
@@ -23,6 +25,8 @@ import {
   Divider,
   useColorModeValue,
   useToast,
+  FormErrorMessage,
+  Spinner,
 } from '@chakra-ui/react';
 import { signIn, getCsrfToken, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -41,6 +45,9 @@ import {
   FaHome,
   FaShoppingCart,
   FaHistory,
+  FaEye,
+  FaEyeSlash,
+  FaEnvelope,
 } from 'react-icons/fa';
 
 export default function CustomerLogin() {
@@ -49,12 +56,15 @@ export default function CustomerLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const router = useRouter();
   const { data: session, status } = useSession();
   const toast = useToast();
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const cardBg = useColorModeValue('white', 'gray.700');
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   // Get CSRF token on component mount
   useEffect(() => {
@@ -78,10 +88,48 @@ export default function CustomerLogin() {
     }
   }, [status, session, router]);
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      setPasswordError('Password is required');
+      return false;
+    }
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+    setEmailError('');
+    setPasswordError('');
+
+    // Validate inputs
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+
+    if (!isEmailValid || !isPasswordValid) {
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       console.log('👤 Customer login attempt for:', email);
@@ -162,6 +210,7 @@ export default function CustomerLogin() {
       py={{ base: 8, md: 12 }}
       position="relative"
       overflow="hidden"
+      pt={{ base: 20, md: 24 }}
     >
       {/* Background Pattern */}
       <Box
@@ -272,65 +321,131 @@ export default function CustomerLogin() {
             bg={cardBg}
             borderRadius="2xl"
             borderWidth="2px"
-            borderColor="border.primary"
+            borderColor="rgba(59, 130, 246, 0.3)"
             boxShadow="xl"
+            backdropFilter="blur(10px)"
+            _hover={{
+              borderColor: 'rgba(59, 130, 246, 0.5)',
+              boxShadow: '0 20px 40px rgba(0, 194, 255, 0.2)',
+            }}
+            transition="all 0.3s ease"
           >
             <CardBody p={{ base: 6, md: 8 }}>
               <form onSubmit={handleSubmit}>
                 <VStack spacing={6}>
                   <VStack spacing={2} w="full">
-                    <Heading size="lg" color="text.primary" textAlign="center">
+                    <Heading size="lg" color="white" textAlign="center">
                       Sign In
                     </Heading>
-                    <Text color="text.secondary" textAlign="center" fontSize="sm">
+                    <Text color="gray.300" textAlign="center" fontSize="sm">
                       Access your customer account
                     </Text>
                   </VStack>
 
                   {error && (
-                    <Alert status="error" borderRadius="lg">
-                      <AlertIcon />
-                      {error}
+                    <Alert 
+                      status="error" 
+                      borderRadius="lg"
+                      bg="rgba(220, 38, 38, 0.1)"
+                      border="1px solid"
+                      borderColor="rgba(220, 38, 38, 0.3)"
+                    >
+                      <AlertIcon color="red.400" />
+                      <Text color="white">{error}</Text>
                     </Alert>
                   )}
 
                   <VStack spacing={4} w="full">
-                    <FormControl isRequired>
-                      <FormLabel color="text.primary">Email Address</FormLabel>
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your.email@example.com"
-                        size="lg"
-                        borderRadius="lg"
-                        bg="bg.surface"
-                        borderColor="border.primary"
-                        _hover={{ borderColor: 'neon.400' }}
-                        _focus={{
-                          borderColor: 'neon.400',
-                          boxShadow: '0 0 0 1px rgba(0,194,255,0.3)',
-                        }}
-                      />
+                    <FormControl isRequired isInvalid={!!emailError}>
+                      <FormLabel color="white" fontSize="sm" fontWeight="semibold">
+                        Email Address
+                      </FormLabel>
+                      <InputGroup size="lg">
+                        <Input
+                          type="email"
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (emailError) validateEmail(e.target.value);
+                          }}
+                          onBlur={() => validateEmail(email)}
+                          placeholder="your.email@example.com"
+                          borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor={emailError ? 'red.400' : 'rgba(59, 130, 246, 0.3)'}
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _hover={{ 
+                            borderColor: emailError ? 'red.400' : 'rgba(59, 130, 246, 0.5)',
+                            bg: 'rgba(26, 26, 26, 0.9)',
+                          }}
+                          _focus={{
+                            borderColor: emailError ? 'red.400' : 'blue.400',
+                            boxShadow: emailError 
+                              ? '0 0 0 1px rgba(220, 38, 38, 0.3)' 
+                              : '0 0 0 1px rgba(59, 130, 246, 0.3)',
+                            bg: 'rgba(26, 26, 26, 0.95)',
+                          }}
+                        />
+                        <InputRightElement>
+                          <Icon as={FaEnvelope} color="gray.400" />
+                        </InputRightElement>
+                      </InputGroup>
+                      {emailError && (
+                        <FormErrorMessage color="red.400" fontSize="xs">
+                          {emailError}
+                        </FormErrorMessage>
+                      )}
                     </FormControl>
 
-                    <FormControl isRequired>
-                      <FormLabel color="text.primary">Password</FormLabel>
-                      <Input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        size="lg"
-                        borderRadius="lg"
-                        bg="bg.surface"
-                        borderColor="border.primary"
-                        _hover={{ borderColor: 'neon.400' }}
-                        _focus={{
-                          borderColor: 'neon.400',
-                          boxShadow: '0 0 0 1px rgba(0,194,255,0.3)',
-                        }}
-                      />
+                    <FormControl isRequired isInvalid={!!passwordError}>
+                      <FormLabel color="white" fontSize="sm" fontWeight="semibold">
+                        Password
+                      </FormLabel>
+                      <InputGroup size="lg">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (passwordError) validatePassword(e.target.value);
+                          }}
+                          onBlur={() => validatePassword(password)}
+                          placeholder="Enter your password"
+                          borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor={passwordError ? 'red.400' : 'rgba(59, 130, 246, 0.3)'}
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _hover={{ 
+                            borderColor: passwordError ? 'red.400' : 'rgba(59, 130, 246, 0.5)',
+                            bg: 'rgba(26, 26, 26, 0.9)',
+                          }}
+                          _focus={{
+                            borderColor: passwordError ? 'red.400' : 'blue.400',
+                            boxShadow: passwordError 
+                              ? '0 0 0 1px rgba(220, 38, 38, 0.3)' 
+                              : '0 0 0 1px rgba(59, 130, 246, 0.3)',
+                            bg: 'rgba(26, 26, 26, 0.95)',
+                          }}
+                        />
+                        <InputRightElement>
+                          <IconButton
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            icon={showPassword ? <FaEyeSlash /> : <FaEye />}
+                            variant="ghost"
+                            size="sm"
+                            color="gray.400"
+                            _hover={{ color: 'neon.400', bg: 'rgba(59, 130, 246, 0.1)' }}
+                            onClick={() => setShowPassword(!showPassword)}
+                          />
+                        </InputRightElement>
+                      </InputGroup>
+                      {passwordError && (
+                        <FormErrorMessage color="red.400" fontSize="xs">
+                          {passwordError}
+                        </FormErrorMessage>
+                      )}
                     </FormControl>
                   </VStack>
 
@@ -344,7 +459,7 @@ export default function CustomerLogin() {
                     borderRadius="xl"
                     isLoading={isLoading}
                     loadingText="Signing In..."
-                    rightIcon={<FaSignInAlt />}
+                    rightIcon={isLoading ? <Spinner size="sm" /> : <FaSignInAlt />}
                     _hover={{
                       bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
                       transform: 'translateY(-2px)',
@@ -353,9 +468,14 @@ export default function CustomerLogin() {
                     _active={{
                       transform: 'translateY(0)',
                     }}
+                    _disabled={{
+                      opacity: 0.6,
+                      cursor: 'not-allowed',
+                    }}
                     transition="all 0.2s ease"
+                    disabled={isLoading || !!emailError || !!passwordError}
                   >
-                    Sign In to Portal
+                    {isLoading ? 'Signing In...' : 'Sign In to Portal'}
                   </Button>
 
                   <Divider />
@@ -363,7 +483,7 @@ export default function CustomerLogin() {
                   {/* Additional Options */}
                   <VStack spacing={3} w="full">
                     <HStack spacing={2} justify="center">
-                      <Text color="text.secondary" fontSize="sm">
+                      <Text color="gray.300" fontSize="sm">
                         Don't have an account?
                       </Text>
                       <ChakraLink
@@ -371,7 +491,8 @@ export default function CustomerLogin() {
                         href="/customer/register"
                         color="neon.400"
                         fontWeight="semibold"
-                        _hover={{ color: 'neon.300' }}
+                        _hover={{ color: 'neon.300', textDecoration: 'underline' }}
+                        transition="all 0.2s"
                       >
                         Create Account
                       </ChakraLink>
@@ -380,16 +501,17 @@ export default function CustomerLogin() {
                     <ChakraLink
                       as={NextLink}
                       href="/customer/forgot"
-                      color="text.secondary"
+                      color="gray.300"
                       fontSize="sm"
-                      _hover={{ color: 'neon.400' }}
+                      _hover={{ color: 'neon.400', textDecoration: 'underline' }}
+                      transition="all 0.2s"
                     >
                       Forgot your password?
                     </ChakraLink>
 
                     <Divider />
 
-                    <Text color="text.secondary" fontSize="xs" textAlign="center">
+                    <Text color="gray.400" fontSize="xs" textAlign="center">
                       Or continue as guest when booking
                     </Text>
 
@@ -397,15 +519,17 @@ export default function CustomerLogin() {
                       variant="outline"
                       size="md"
                       w="full"
-                      borderColor="border.primary"
-                      color="text.primary"
+                      borderColor="rgba(59, 130, 246, 0.3)"
+                      color="white"
                       leftIcon={<FaArrowRight />}
                       onClick={() => router.push('/booking-luxury')}
                       _hover={{
                         borderColor: 'neon.400',
                         color: 'neon.400',
-                        bg: 'rgba(0,194,255,0.05)',
+                        bg: 'rgba(59, 130, 246, 0.1)',
+                        transform: 'translateX(4px)',
                       }}
+                      transition="all 0.2s"
                     >
                       Continue as Guest
                     </Button>
@@ -418,7 +542,7 @@ export default function CustomerLogin() {
           {/* Features Preview */}
           <Box w="full" maxW="4xl" mx="auto">
             <VStack spacing={6}>
-              <Heading size="md" color="text.primary" textAlign="center">
+              <Heading size="md" color="white" textAlign="center">
                 Customer Portal Features
               </Heading>
               
@@ -427,16 +551,23 @@ export default function CustomerLogin() {
                   <Box
                     p={3}
                     borderRadius="xl"
-                    bg="neon.500"
-                    color="white"
-                    boxShadow="0 4px 15px rgba(0,194,255,0.3)"
+                    bg="rgba(59, 130, 246, 0.2)"
+                    color="neon.400"
+                    border="1px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 4px 15px rgba(0,194,255,0.2)"
+                    _hover={{
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 25px rgba(0,194,255,0.4)',
+                    }}
+                    transition="all 0.3s"
                   >
                     <Icon as={FaShoppingCart} boxSize={6} />
                   </Box>
-                  <Text fontSize="sm" color="text.primary" fontWeight="semibold">
+                  <Text fontSize="sm" color="white" fontWeight="semibold">
                     Track Orders
                   </Text>
-                  <Text fontSize="xs" color="text.secondary" textAlign="center">
+                  <Text fontSize="xs" color="gray.300" textAlign="center">
                     Real-time tracking
                   </Text>
                 </VStack>
@@ -445,16 +576,23 @@ export default function CustomerLogin() {
                   <Box
                     p={3}
                     borderRadius="xl"
-                    bg="green.500"
-                    color="white"
-                    boxShadow="0 4px 15px rgba(0,209,143,0.3)"
+                    bg="rgba(0, 209, 143, 0.2)"
+                    color="green.400"
+                    border="1px solid"
+                    borderColor="rgba(0, 209, 143, 0.3)"
+                    boxShadow="0 4px 15px rgba(0,209,143,0.2)"
+                    _hover={{
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 25px rgba(0,209,143,0.4)',
+                    }}
+                    transition="all 0.3s"
                   >
                     <Icon as={FaHistory} boxSize={6} />
                   </Box>
-                  <Text fontSize="sm" color="text.primary" fontWeight="semibold">
+                  <Text fontSize="sm" color="white" fontWeight="semibold">
                     Order History
                   </Text>
-                  <Text fontSize="xs" color="text.secondary" textAlign="center">
+                  <Text fontSize="xs" color="gray.300" textAlign="center">
                     View past orders
                   </Text>
                 </VStack>
@@ -463,16 +601,23 @@ export default function CustomerLogin() {
                   <Box
                     p={3}
                     borderRadius="xl"
-                    bg="purple.500"
-                    color="white"
-                    boxShadow="0 4px 15px rgba(128,90,213,0.3)"
+                    bg="rgba(128, 90, 213, 0.2)"
+                    color="purple.400"
+                    border="1px solid"
+                    borderColor="rgba(128, 90, 213, 0.3)"
+                    boxShadow="0 4px 15px rgba(128,90,213,0.2)"
+                    _hover={{
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 25px rgba(128,90,213,0.4)',
+                    }}
+                    transition="all 0.3s"
                   >
                     <Icon as={FaUser} boxSize={6} />
                   </Box>
-                  <Text fontSize="sm" color="text.primary" fontWeight="semibold">
+                  <Text fontSize="sm" color="white" fontWeight="semibold">
                     Manage Profile
                   </Text>
-                  <Text fontSize="xs" color="text.secondary" textAlign="center">
+                  <Text fontSize="xs" color="gray.300" textAlign="center">
                     Update details
                   </Text>
                 </VStack>

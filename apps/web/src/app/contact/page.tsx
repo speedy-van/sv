@@ -130,8 +130,8 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
   const toast = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -194,9 +194,11 @@ export default function ContactPage() {
             <HStack justify="center" mb={6}>
               <Box
                 p={4}
-                bg="blue.100"
-                color="blue.600"
+                bg="rgba(59, 130, 246, 0.2)"
+                color="blue.400"
                 borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(59, 130, 246, 0.3)"
               >
                 <Icon as={FiMessageCircle} boxSize={12} />
               </Box>
@@ -239,9 +241,11 @@ export default function ContactPage() {
                   <VStack spacing={4}>
                     <Box
                       p={3}
-                      bg={`${method.color}.100`}
-                      color={`${method.color}.600`}
+                      bg={`rgba(59, 130, 246, 0.2)`}
+                      color={`${method.color}.400`}
                       borderRadius="lg"
+                      border="1px solid"
+                      borderColor={`rgba(59, 130, 246, 0.3)`}
                     >
                       <Icon as={method.icon} boxSize={6} />
                     </Box>
@@ -292,18 +296,23 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit}>
                     <VStack spacing={4}>
                       <FormControl isRequired>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel color="white">Full Name</FormLabel>
                         <Input
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder="Enter your full name"
                           borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor="rgba(59, 130, 246, 0.3)"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         />
                       </FormControl>
 
                       <FormControl isRequired>
-                        <FormLabel>Email Address</FormLabel>
+                        <FormLabel color="white">Email Address</FormLabel>
                         <Input
                           name="email"
                           type="email"
@@ -311,31 +320,45 @@ export default function ContactPage() {
                           onChange={handleInputChange}
                           placeholder="Enter your email"
                           borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor="rgba(59, 130, 246, 0.3)"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         />
                       </FormControl>
 
                       <FormControl>
-                        <FormLabel>Phone Number</FormLabel>
+                        <FormLabel color="white">Phone Number</FormLabel>
                         <Input
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="Enter your phone number"
                           borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor="rgba(59, 130, 246, 0.3)"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         />
                       </FormControl>
 
                       <FormControl>
-                        <FormLabel>Service Interested In</FormLabel>
+                        <FormLabel color="white">Service Interested In</FormLabel>
                         <Select
                           name="service"
                           value={formData.service}
                           onChange={handleInputChange}
                           placeholder="Select a service"
                           borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor="rgba(59, 130, 246, 0.3)"
+                          color="white"
+                          _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         >
                           {services.map((service) => (
-                            <option key={service.name} value={service.name}>
+                            <option key={service.name} value={service.name} style={{ backgroundColor: '#1a1a1a', color: 'white' }}>
                               {service.name}
                             </option>
                           ))}
@@ -343,7 +366,7 @@ export default function ContactPage() {
                       </FormControl>
 
                       <FormControl isRequired>
-                        <FormLabel>Message</FormLabel>
+                        <FormLabel color="white">Message</FormLabel>
                         <Textarea
                           name="message"
                           value={formData.message}
@@ -351,6 +374,11 @@ export default function ContactPage() {
                           placeholder="Tell us about your moving needs..."
                           rows={4}
                           borderRadius="lg"
+                          bg="rgba(26, 26, 26, 0.8)"
+                          borderColor="rgba(59, 130, 246, 0.3)"
+                          color="white"
+                          _placeholder={{ color: 'gray.400' }}
+                          _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         />
                       </FormControl>
 
@@ -398,7 +426,7 @@ export default function ContactPage() {
 
                     <VStack spacing={3} align="stretch" w="full">
                       {officeHours.map((schedule, index) => (
-                        <HStack key={index} justify="space-between" p={3} bg="gray.50" borderRadius="lg">
+                        <HStack key={index} justify="space-between" p={3} bg="rgba(59, 130, 246, 0.1)" borderRadius="lg" border="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
                           <Text fontWeight="medium" color="text.primary">
                             {schedule.day}
                           </Text>
@@ -475,9 +503,11 @@ export default function ContactPage() {
                     <HStack spacing={4}>
                       <Box
                         p={3}
-                        bg="orange.100"
-                        color="orange.600"
+                        bg="rgba(251, 191, 36, 0.2)"
+                        color="orange.400"
                         borderRadius="lg"
+                        border="1px solid"
+                        borderColor="rgba(251, 191, 36, 0.3)"
                       >
                         <Icon as={FiMapPin} boxSize={6} />
                       </Box>
@@ -491,10 +521,16 @@ export default function ContactPage() {
                       </VStack>
                     </HStack>
 
-                    <Alert status="info" borderRadius="lg">
-                      <AlertIcon />
+                    <Alert 
+                      status="info" 
+                      borderRadius="lg"
+                      bg="rgba(59, 130, 246, 0.1)"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.3)"
+                    >
+                      <AlertIcon color="blue.400" />
                       <Box>
-                        <Text fontSize="sm">
+                        <Text fontSize="sm" color="gray.300">
                           We serve customers across the UK. Our Hamilton office is our main hub, 
                           and we have local teams in major cities.
                         </Text>
