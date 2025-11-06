@@ -239,9 +239,11 @@ export default function WhereAndWhatStep({
                 {/* Date */}
                 <FormControl isInvalid={!!errors['step1.pickupDate']}>
                   <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>📅 Select Date</FormLabel>
-                  <Select
+                  <Input
+                    type="date"
                     value={step1.pickupDate || ''}
                     onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
                     bg="rgba(26, 26, 26, 0.8)"
                     borderColor="rgba(59, 130, 246, 0.3)"
                     color="white"
@@ -249,8 +251,6 @@ export default function WhereAndWhatStep({
                     borderRadius="xl"
                     borderWidth="1px"
                     fontWeight="500"
-                    cursor="pointer"
-                    placeholder="Choose a date"
                     _hover={{
                       borderColor: "rgba(59, 130, 246, 0.5)",
                       bg: "rgba(26, 26, 26, 0.9)",
@@ -261,32 +261,31 @@ export default function WhereAndWhatStep({
                       bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
-                      '& option': {
-                        backgroundColor: '#1a1a1a',
+                      colorScheme: 'dark',
+                      '&::-webkit-calendar-picker-indicator': {
+                        filter: 'invert(1)',
+                        cursor: 'pointer',
+                      },
+                      '&::-webkit-datetime-edit': {
                         color: 'white',
-                        padding: '12px',
-                        fontSize: '14px',
-                        fontWeight: '500',
+                      },
+                      '&::-webkit-datetime-edit-fields-wrapper': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-text': {
+                        color: 'gray.400',
+                      },
+                      '&::-webkit-datetime-edit-month-field': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-day-field': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-year-field': {
+                        color: 'white',
                       },
                     }}
-                  >
-                    {Array.from({ length: 30 }, (_, i) => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + i);
-                      const dateStr = date.toISOString().split('T')[0];
-                      const dateLabel = date.toLocaleDateString('en-US', { 
-                        weekday: 'short', 
-                        month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                      });
-                      return (
-                        <option key={dateStr} value={dateStr} style={{ backgroundColor: 'white', color: '#111827' }}>
-                          {dateLabel}
-                        </option>
-                      );
-                    })}
-                  </Select>
+                  />
                   {errors['step1.pickupDate'] && (
                     <FormErrorMessage>{errors['step1.pickupDate']}</FormErrorMessage>
                   )}
