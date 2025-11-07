@@ -152,12 +152,17 @@ export async function GET(
       baseDistanceMiles: order.baseDistanceMiles,
       notes: null, // Add when customer notes field is available
       pickupTimeSlot: order.pickupTimeSlot,
+      items: order.BookingItem?.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        volumeM3: item.volumeM3,
+      })) || [],
       BookingItem: order.BookingItem?.map(item => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,
         volumeM3: item.volumeM3,
-        // Add image when available
       })) || [],
     };
 
@@ -165,6 +170,7 @@ export async function GET(
       reference: order.reference,
       status: order.status,
       itemsCount: order.BookingItem?.length || 0,
+      hasItems: (order.BookingItem?.length || 0) > 0,
     });
 
     return NextResponse.json(transformedOrder);

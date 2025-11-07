@@ -510,6 +510,35 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       const pickupParsed = parseAddress(pickupLabel);
       const dropoffParsed = parseAddress(dropoffLabel);
 
+      // Get items from order or use default
+      // Note: API returns BookingItem, not items
+      const orderItems = order.items || (order as any).BookingItem || [];
+      let itemsForPricing = [];
+      
+      if (orderItems && Array.isArray(orderItems) && orderItems.length > 0) {
+        itemsForPricing = orderItems.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity || 1,
+        }));
+        console.log('📦 Using order items for pricing:', itemsForPricing);
+      } else {
+        // Default items for orders without items (use dataset items)
+        itemsForPricing = [
+          {
+            id: 'medium-box',
+            name: 'Medium Box',
+            quantity: 5,
+          },
+          {
+            id: 'sofa-2-seater',
+            name: 'Sofa (2-seater)',
+            quantity: 1,
+          }
+        ];
+        console.log('⚠️ No items in order, using default items:', itemsForPricing);
+      }
+
       // Prepare pricing data in correct format for comprehensive API
       const pricingData = {
         pickup: {
@@ -517,7 +546,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           line1: pickupLabel,
           city: pickupParsed.city || 'London',
           postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
-          street: pickupParsed.street,
+          street: pickupParsed.street || 'Street',
           number: pickupParsed.number || '1',
           coordinates: {
             lat: order.pickupAddress?.lat || 51.5074,
@@ -530,7 +559,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           line1: dropoffLabel,
           city: dropoffParsed.city || 'London',
           postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
-          street: dropoffParsed.street,
+          street: dropoffParsed.street || 'Street',
           number: dropoffParsed.number || '1',
           coordinates: {
             lat: order.dropoffAddress?.lat || 51.5074,
@@ -538,20 +567,22 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           },
           propertyType: 'house' as const,
         }],
-        items: (order.items && order.items.length > 0) ? order.items.map(item => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity || 1,
-        })) : [{
-          id: 'default-item',
-          name: 'Standard Item',
-          quantity: 1,
-        }],
+        items: itemsForPricing,
         scheduledDate: new Date(editedOrder.scheduledAt || order.scheduledAt).toISOString(),
         serviceLevel: (order.serviceType || 'standard') as 'economy' | 'standard' | 'premium',
       };
 
-      console.log('🔄 Recalculating price with data:', pricingData);
+      // Validate items array before sending
+      if (!pricingData.items || pricingData.items.length === 0) {
+        console.error('❌ Items array is empty, cannot calculate price');
+        throw new Error('Items array is required for pricing calculation');
+      }
+
+      console.log('🔄 Recalculating price with data:', {
+        ...pricingData,
+        itemsCount: pricingData.items.length,
+        firstItem: pricingData.items[0],
+      });
 
       const response = await fetch('/api/pricing/comprehensive', {
         method: 'POST',
@@ -564,6 +595,17 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Pricing API error:', errorText);
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.details && Array.isArray(errorJson.details)) {
+            const errorMessages = errorJson.details.map((d: any) => `${d.path?.join('.')}: ${d.message}`).join(', ');
+            throw new Error(`Validation failed: ${errorMessages}`);
+          }
+        } catch (parseError) {
+          // If JSON parsing fails, use the original error
+        }
+        
         throw new Error(`Pricing API returned ${response.status}`);
       }
 
