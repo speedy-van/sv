@@ -11,18 +11,9 @@ services:
     region: frankfurt # EU Central
     rootDir: apps/web
     buildCommand: |
-      cd ../.. && 
-      npm install -g pnpm@10.17.0 && 
-      pnpm install --frozen-lockfile && 
-      NODE_OPTIONS=--max-old-space-size=4096 pnpm --filter ./apps/web build &&
-      echo "📦 Copying static files for standalone mode..." &&
-      mkdir -p apps/web/.next/standalone/apps/web/.next &&
-      cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static &&
-      mkdir -p apps/web/.next/standalone/apps/web &&
-      cp -r apps/web/public apps/web/.next/standalone/apps/web/public &&
-      echo "✅ Static files copied successfully!" &&
-      ls -la apps/web/.next/standalone/apps/web/
-    startCommand: cd .next/standalone/apps/web && node server.js
+      cd ..
+      bash render-build.sh
+    startCommand: cd apps/web && node .next/standalone/server.js
     healthCheckPath: /api/health
     numInstances: 2 # High availability
     buildFilter:
@@ -101,7 +92,7 @@ services:
       - key: NEXT_PUBLIC_COMPANY_NAME
         value: Speedy Van
       - key: NEXT_PUBLIC_COMPANY_PHONE
-        value: +44 1202129746
+        value: 01202129764
       - key: NEXT_PUBLIC_COMPANY_EMAIL
         value: support@speedy-van.co.uk
       
