@@ -202,34 +202,60 @@ export default function BookingLuxuryPage() {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Extract availability and pricing
+
+        if (!data || data.success !== true || !data.data) {
+          console.error('Pricing API returned an unexpected payload', { data });
+          return;
+        }
+
         setAvailabilityData(data.data.availability);
-        
-        // Calculate three-tier pricing
-        const basePrice = data.data.amountGbpMinor / 100; // Convert from pence
-        
+
+        const amountMinorRaw = data.data.amountGbpMinor;
+        let amountMinor: number;
+
+        if (typeof amountMinorRaw === 'string') {
+          amountMinor = parseFloat(amountMinorRaw);
+        } else {
+          amountMinor = amountMinorRaw;
+        }
+
+        if (typeof amountMinor !== 'number' || Number.isNaN(amountMinor) || amountMinor <= 0) {
+          console.error('Pricing API returned an invalid amount', { amountMinorRaw });
+          return;
+        }
+
+        const normalizePrice = (value: number) => {
+          const fixed = value.toFixed(2);
+          return parseFloat(fixed);
+        };
+
+        const rawBasePrice = amountMinor / 100;
+        const basePrice = normalizePrice(rawBasePrice);
+        const economyPriceValue = normalizePrice(rawBasePrice * 0.85);
+        const expressPriceValue = normalizePrice(rawBasePrice * 1.5);
+
         const calculatedTiers = {
           economy: {
-            price: Math.round(basePrice * 0.85 * 100) / 100, // 15% discount, keep decimals
+            price: economyPriceValue,
             available: data.data.availability?.economy?.next_available_date,
             availability: data.data.availability?.economy
           },
           standard: {
-            price: Math.round(basePrice * 100) / 100, // Keep decimals
+            price: basePrice,
             available: data.data.availability?.standard?.next_available_date,
             availability: data.data.availability?.standard
           },
           express: {
-            price: Math.round(basePrice * 1.5 * 100) / 100, // 50% premium, keep decimals
+            price: expressPriceValue,
             available: data.data.availability?.express?.next_available_date,
             availability: data.data.availability?.express
           }
         };
-        
+
         setPricingTiers(calculatedTiers);
 
         console.log('✅ Enterprise Engine Pricing Tiers (STEP 2):', {
+          rawBasePrice,
           basePrice,
           economy: calculatedTiers.economy.price,
           standard: calculatedTiers.standard.price,

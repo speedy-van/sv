@@ -63,26 +63,63 @@ export default function WhoAndPaymentStepSimple({
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const toast = useToast();
   
-  // CRITICAL FIX: Use EXACT prices from props (calculated in Step 2, not recalculated here)
-  // These come from pricingTiers which are calculated by Enterprise Engine
-  const calculatedEconomyPrice = economyPrice || 0;
-  const calculatedStandardPrice = standardPrice || 0;
-  const calculatedExpressPrice = priorityPrice || 0;
-  
-  // Get current price based on selected service
-  const actualPrice = selectedService === 'economy' 
-    ? calculatedEconomyPrice 
-    : selectedService === 'express' 
-    ? calculatedExpressPrice 
-    : calculatedStandardPrice;
-  
-  console.log('💰 Step 3 Pricing (FROM STEP 2 - NO RECALCULATION):', {
-    economy: calculatedEconomyPrice,
-    standard: calculatedStandardPrice,
-    express: calculatedExpressPrice,
+  const sanitizePrice = (value: number | undefined | null) => {
+    if (typeof value === 'number') {
+      if (!Number.isNaN(value)) {
+        if (value > 0) {
+          const fixed = value.toFixed(2);
+          return parseFloat(fixed);
+        }
+      }
+    }
+    return undefined;
+  };
+
+  let safeStandardPrice = sanitizePrice(standardPrice);
+  if (safeStandardPrice === undefined) {
+    const fallbackStandard = sanitizePrice(formData.step1.pricing?.total);
+    if (fallbackStandard !== undefined) {
+      safeStandardPrice = fallbackStandard;
+    } else {
+      safeStandardPrice = 0;
+    }
+  }
+
+  let safeEconomyPrice = sanitizePrice(economyPrice);
+  if (safeEconomyPrice === undefined) {
+    if (safeStandardPrice > 0) {
+      const computedEconomy = (safeStandardPrice * 0.85).toFixed(2);
+      safeEconomyPrice = parseFloat(computedEconomy);
+    } else {
+      safeEconomyPrice = 0;
+    }
+  }
+
+  let safeExpressPrice = sanitizePrice(priorityPrice);
+  if (safeExpressPrice === undefined) {
+    if (safeStandardPrice > 0) {
+      const computedExpress = (safeStandardPrice * 1.5).toFixed(2);
+      safeExpressPrice = parseFloat(computedExpress);
+    } else {
+      safeExpressPrice = 0;
+    }
+  }
+
+  const actualPrice = selectedService === 'economy'
+    ? safeEconomyPrice
+    : selectedService === 'express'
+    ? safeExpressPrice
+    : safeStandardPrice;
+
+  console.log('💰 Step 3 Pricing Sanity Check:', {
+    economyFromProps: economyPrice,
+    standardFromProps: standardPrice,
+    expressFromProps: priorityPrice,
+    safeEconomyPrice,
+    safeStandardPrice,
+    safeExpressPrice,
     selectedService,
-    actualPrice,
-    source: 'Using exact prices from Step 2 pricingTiers'
+    actualPrice
   });
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
@@ -99,21 +136,21 @@ export default function WhoAndPaymentStepSimple({
     setSelectedService(serviceId);
     
     // Get price for selected service (from Step 2 calculation)
-    const newTotal = serviceId === 'economy' 
-      ? calculatedEconomyPrice 
-      : serviceId === 'express' 
-      ? calculatedExpressPrice 
-      : calculatedStandardPrice;
+    const newTotal = serviceId === 'economy'
+      ? safeEconomyPrice
+      : serviceId === 'express'
+      ? safeExpressPrice
+      : safeStandardPrice;
     
     console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
-  }, [calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice]);
+  }, [safeEconomyPrice, safeStandardPrice, safeExpressPrice]);
 
   // CRITICAL: Use calculated prices (not static props)
   const services = [
     {
       id: 'economy' as const,
       name: 'Economy',
-      price: calculatedEconomyPrice,
+      price: safeEconomyPrice,
       description: 'Shared route, 7 days delivery',
       icon: '🚐',
       discount: '15% off',
@@ -121,7 +158,7 @@ export default function WhoAndPaymentStepSimple({
     {
       id: 'standard' as const,
       name: 'Standard',
-      price: calculatedStandardPrice,
+      price: safeStandardPrice,
       description: 'Direct service, flexible scheduling',
       icon: '🚚',
       popular: true,
@@ -129,7 +166,7 @@ export default function WhoAndPaymentStepSimple({
     {
       id: 'express' as const,
       name: 'Express',
-      price: calculatedExpressPrice,
+      price: safeExpressPrice,
       description: 'Same-day or next-day delivery',
       icon: '⚡',
       premium: '50% premium',
