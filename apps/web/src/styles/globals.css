@@ -1647,3 +1647,15 @@ select:focus {
     scroll-margin-bottom: 80px !important;
   }
 }
+
+/* Hide scrollbars but keep scroll functionality */
+.chakra-drawer__body,
+.chakra-modal__body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.chakra-drawer__body::-webkit-scrollbar,
+.chakra-modal__body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

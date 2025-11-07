@@ -806,43 +806,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       onClose={onClose} 
       size={isEmbedded ? 'full' : 'lg'}
       placement="right"
-      blockScrollOnMount
-      trapFocus
+      blockScrollOnMount={true}
+      trapFocus={false}
+      closeOnOverlayClick={true}
     >
       <DrawerOverlay bg="blackAlpha.800" />
       <DrawerContent 
-        bg={bgColor} 
-        color={textColor} 
+        bg="#000000" 
+        color="#FFFFFF"
         maxW={isEmbedded ? { base: '100%', lg: '520px' } : undefined}
         ml={isEmbedded ? 'auto' : undefined}
-        display="flex"
-        flexDirection="column"
-        height="100vh"
-        sx={{ 
-          bg: `${bgColor} !important`,
-          backgroundColor: `${bgColor} !important`,
-          color: `${textColor} !important`,
-          '&': {
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
-            color: '#FFFFFF !important',
-          },
-        }}
-        __css={{
-          backgroundColor: '#000000 !important',
-          background: '#000000 !important',
-          color: '#FFFFFF !important',
-        }}
-        css={{
-          backgroundColor: '#000000 !important',
-          background: '#000000 !important',
-          color: '#FFFFFF !important',
-        }}
-        style={{
-          backgroundColor: '#000000',
-          background: '#000000',
-          color: '#FFFFFF',
-        }}
       >
         <DrawerCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
         <DrawerHeader 
@@ -906,29 +879,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
             bg: `${bgColor} !important`,
             backgroundColor: `${bgColor} !important`,
             color: `${textColor} !important`,
-            '&': {
-              backgroundColor: '#000000 !important',
-              background: '#000000 !important',
-              color: '#FFFFFF !important',
+            '&::-webkit-scrollbar': {
+              display: 'none',
             },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }}
-          __css={{
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
-            color: '#FFFFFF !important',
-          }}
-          css={{
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
-            color: '#FFFFFF !important',
-          }}
-          style={{
-            backgroundColor: '#000000',
-            background: '#000000',
-            color: '#FFFFFF',
-          }}
-          flex="1"
-          overflowY="auto"
         >
           {loading ? (
             <Box display="flex" justifyContent="center" py={8}>
