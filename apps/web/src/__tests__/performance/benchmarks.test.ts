@@ -99,7 +99,7 @@ describe('Performance Benchmarks', () => {
 
   beforeEach(async () => {
     // Mock file system
-    mockedFs.readFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+    mockedFs.readFileSync.mockImplementation(((filePath: PathOrFileDescriptor) => {
       const path = String(filePath);
       if (path.includes('catalog.json')) {
         return JSON.stringify(mockItemCatalog);
@@ -108,15 +108,15 @@ describe('Performance Benchmarks', () => {
         return JSON.stringify(mockPricingConfig);
       }
       throw new Error(`File not found: ${path}`);
-    });
+    }) as typeof fs.readFileSync);
 
-    mockedFs.existsSync.mockImplementation((filePath: PathLike) => {
+    mockedFs.existsSync.mockImplementation(((filePath: PathLike) => {
       const path = String(filePath);
       if (path.includes('package.json')) {
         return true;
       }
       return true; // Mock all file existence checks as true
-    });
+    }) as typeof fs.existsSync);
 
     mockedPath.join.mockImplementation((...paths) => paths.join('/'));
 
