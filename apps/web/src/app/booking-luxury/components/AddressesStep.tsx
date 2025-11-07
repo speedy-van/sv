@@ -5,7 +5,7 @@
  * Luxury Booking Design
  */
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   VStack,
@@ -52,6 +52,56 @@ export default function AddressesStep({
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
 
+  const currentPickupProperty = useMemo(() => formData.step1.pickupProperty ?? {}, [formData.step1.pickupProperty]);
+  const currentDropoffProperty = useMemo(() => formData.step1.dropoffProperty ?? {}, [formData.step1.dropoffProperty]);
+
+  const parseFloorNumber = (value?: string | number | null): number => {
+    if (value === null || value === undefined) {
+      return 0;
+    }
+
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
+    }
+
+    const trimmed = value.trim().toLowerCase();
+
+    if (!trimmed) {
+      return 0;
+    }
+
+    if (trimmed === 'ground' || trimmed === 'g' || trimmed === 'gf' || trimmed === 'ground floor') {
+      return 0;
+    }
+
+    const match = trimmed.match(/(-?\d+)/);
+    if (!match) {
+      return 0;
+    }
+
+    const parsed = parseInt(match[1], 10);
+    if (Number.isNaN(parsed)) {
+      return 0;
+    }
+
+    return Math.max(0, parsed);
+  };
+
+  const buildPropertyUpdate = (address: any, existing: any) => {
+    const floorFromBuildingDetails = address?.buildingDetails?.floorNumber;
+    const floorFromFormatted = address?.formatted?.floor;
+    const combinedFloor = floorFromBuildingDetails ?? floorFromFormatted;
+
+    return {
+      ...existing,
+      floors: parseFloorNumber(combinedFloor),
+      hasLift: typeof address?.buildingDetails?.hasElevator === 'boolean'
+        ? address.buildingDetails.hasElevator
+        : existing?.hasLift ?? false,
+      type: address?.buildingDetails?.type || existing?.type || 'house',
+    };
+  };
+
   return (
     <Box w="full">
       <VStack spacing={6} w="full" align="stretch">
@@ -82,7 +132,8 @@ export default function AddressesStep({
                     onChange={(address) => {
                       if (address) {
                         updateFormData('step1', {
-                          pickupAddress: address as any
+                          pickupAddress: address as any,
+                          pickupProperty: buildPropertyUpdate(address, currentPickupProperty) as any,
                         });
                       } else {
                         updateFormData('step1', {
@@ -95,7 +146,13 @@ export default function AddressesStep({
                             flatNumber: '',
                             formatted_address: '',
                             place_name: ''
-                          } as any
+                          } as any,
+                          pickupProperty: {
+                            ...currentPickupProperty,
+                            floors: 0,
+                            hasLift: false,
+                            type: currentPickupProperty?.type || 'house',
+                          } as any,
                         });
                       }
                     }}
@@ -128,7 +185,8 @@ export default function AddressesStep({
                     onChange={(address) => {
                       if (address) {
                         updateFormData('step1', {
-                          dropoffAddress: address as any
+                          dropoffAddress: address as any,
+                          dropoffProperty: buildPropertyUpdate(address, currentDropoffProperty) as any,
                         });
                       } else {
                         updateFormData('step1', {
@@ -141,7 +199,13 @@ export default function AddressesStep({
                             flatNumber: '',
                             formatted_address: '',
                             place_name: ''
-                          } as any
+                          } as any,
+                          dropoffProperty: {
+                            ...currentDropoffProperty,
+                            floors: 0,
+                            hasLift: false,
+                            type: currentDropoffProperty?.type || 'house',
+                          } as any,
                         });
                       }
                     }}
