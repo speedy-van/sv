@@ -330,7 +330,7 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
           </div>
           ` : ''}
 
-          <p>If you have any questions about your order, please contact our support team at support@speedy-van.co.uk or call 07901 846297.</p>
+          <p>If you have any questions about your order, please contact our support team at support@speedy-van.co.uk or call 01202129746.</p>
 
           <p>Best regards,<br>The Speedy Van Team</p>
         </div>
@@ -889,7 +889,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1034,7 +1034,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1155,7 +1155,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
