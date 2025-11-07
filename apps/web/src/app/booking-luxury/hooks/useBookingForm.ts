@@ -603,7 +603,7 @@ export function useBookingForm() {
       // Generate correlation ID for tracking
       const correlationId = `pricing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Prepare data for API call with proper validation
+      // 🔧 FIX: Prepare data for API call matching the expected PricingInputSchema format
       const pricingData = {
         items: items.map(item => ({
           id: item.id || `item-${Date.now()}-${Math.random()}`,
@@ -617,96 +617,76 @@ export function useBookingForm() {
           disassemblyRequired: item.dismantling_required === 'Yes',
           specialHandling: item.special_handling_notes ? [item.special_handling_notes] : []
         })),
-        pickupAddress: {
-          // CRITICAL FIX: Handle CompleteAddress format from UKAddressAutocomplete
+        
+        // 🔧 FIX: Use 'pickup' (not 'pickupAddress') to match API schema
+        pickup: {
           address: pickupAddress.full || pickupAddress.line1 || pickupAddress.address || pickupAddress.formatted_address || '',
-          line1: pickupAddress.line1 || '',
-          line2: pickupAddress.line2 || '',
-          city: pickupAddress.city || '',
           postcode: pickupAddress.postcode || '',
           coordinates: {
-            lat: pickupAddress.coordinates?.lat || 51.5074, // Default to London if no coordinates
+            lat: pickupAddress.coordinates?.lat || 51.5074,
             lng: pickupAddress.coordinates?.lng || -0.1278
           },
-          // Include full structured address data for pricing engine
-          houseNumber: pickupAddress.formatted?.houseNumber || '',
-          // Extract street from multiple sources - Google Places API may not have formatted.street
-          street: pickupAddress.formatted?.street || 
-                 pickupAddress.line1 || 
-                 pickupAddress.address || 
-                 pickupAddress.formatted_address ||
-                 pickupAddress.full ||
-                 '',
-          flatNumber: pickupAddress.formatted?.flatNumber || '',
-          businessName: pickupAddress.formatted?.businessName || ''
+          propertyDetails: {
+            type: formData.step1.pickupProperty?.type || 'house',
+            floors: formData.step1.pickupProperty?.floors || 0,
+            hasLift: Boolean(formData.step1.pickupProperty?.hasLift),
+            hasParking: formData.step1.pickupProperty?.hasParking !== false,
+            accessNotes: formData.step1.pickupProperty?.accessNotes,
+            requiresPermit: Boolean(formData.step1.pickupProperty?.requiresPermit)
+          }
         },
-        dropoffAddress: {
-          // CRITICAL FIX: Handle CompleteAddress format from UKAddressAutocomplete
+        
+        // 🔧 FIX: Use 'dropoffs' (array, not 'dropoffAddress') to match API schema
+        dropoffs: [{
           address: dropoffAddress.full || dropoffAddress.line1 || dropoffAddress.address || dropoffAddress.formatted_address || '',
-          line1: dropoffAddress.line1 || '',
-          line2: dropoffAddress.line2 || '',
-          city: dropoffAddress.city || '',
           postcode: dropoffAddress.postcode || '',
           coordinates: {
-            lat: dropoffAddress.coordinates?.lat || 51.5074, // Default to London if no coordinates  
+            lat: dropoffAddress.coordinates?.lat || 51.5074,
             lng: dropoffAddress.coordinates?.lng || -0.1278
           },
-          // Include full structured address data for pricing engine
-          houseNumber: dropoffAddress.formatted?.houseNumber || '',
-          // Extract street from multiple sources - Google Places API may not have formatted.street
-          street: dropoffAddress.formatted?.street || 
-                 dropoffAddress.line1 || 
-                 dropoffAddress.address || 
-                 dropoffAddress.formatted_address ||
-                 dropoffAddress.full ||
-                 '',
-          flatNumber: dropoffAddress.formatted?.flatNumber || '',
-          businessName: dropoffAddress.formatted?.businessName || ''
-        },
-        pickupProperty: {
-          type: formData.step1.pickupProperty?.type || 'house',
-          floors: formData.step1.pickupProperty?.floors || 0,
-          hasLift: Boolean(formData.step1.pickupProperty?.hasLift),
-          hasParking: formData.step1.pickupProperty?.hasParking !== false, // Default true
-          accessNotes: formData.step1.pickupProperty?.accessNotes || undefined,
-          requiresPermit: Boolean(formData.step1.pickupProperty?.requiresPermit)
-        },
-        dropoffProperty: {
-          type: formData.step1.dropoffProperty?.type || 'house',
-          floors: formData.step1.dropoffProperty?.floors || 0,
-          hasLift: Boolean(formData.step1.dropoffProperty?.hasLift),
-          hasParking: formData.step1.dropoffProperty?.hasParking !== false, // Default true
-          accessNotes: formData.step1.dropoffProperty?.accessNotes || undefined,
-          requiresPermit: Boolean(formData.step1.dropoffProperty?.requiresPermit)
-        },
-        serviceType: formData.step1.serviceType || 'signature',
+          propertyDetails: {
+            type: formData.step1.dropoffProperty?.type || 'house',
+            floors: formData.step1.dropoffProperty?.floors || 0,
+            hasLift: Boolean(formData.step1.dropoffProperty?.hasLift),
+            hasParking: formData.step1.dropoffProperty?.hasParking !== false,
+            accessNotes: formData.step1.dropoffProperty?.accessNotes,
+            requiresPermit: Boolean(formData.step1.dropoffProperty?.requiresPermit)
+          },
+          itemIds: items.map(item => item.id)
+        }],
+        
+        // 🔧 FIX: Use 'serviceLevel' (not 'serviceType') to match API schema
+        serviceLevel: formData.step1.serviceType || 'signature',
         scheduledDate: formData.step1.pickupDate ?
-          new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() : // Convert to ISO datetime
-          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Default to tomorrow
-        timeSlot: mapTimeSlotToAPI(formData.step1.pickupTimeSlot),
-        urgency: formData.step1.urgency || 'scheduled',
+          new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() :
+          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        timeSlot: mapTimeSlotToAPI(formData.step1.pickupTimeSlot) || 'flexible',
+        
         addOns: {
-          packing: false,
-          packingVolume: undefined,
-          disassembly: [],
-          reassembly: [],
-          insurance: undefined
+          packingService: false,
+          insuranceCoverage: false,
+          storageRequired: false,
+          dismantlingRequired: items.some(item => item.dismantling_required === 'Yes')
         },
-        promoCode: undefined,
-        userContext: {
-          isAuthenticated: false,
-          isReturningCustomer: false,
-          customerTier: 'standard',
-          locale: 'en-GB'
+        
+        preferences: {
+          vehicleType: 'van',
+          urgency: formData.step1.urgency || 'standard',
+          environmentalPreference: 'standard'
+        },
+        
+        metadata: {
+          source: 'booking-luxury',
+          version: '1.0.0'
         }
       };
 
       console.log('🔍 Sending pricing request:', { 
         correlationId, 
         itemsCount: pricingData.items.length,
-        pickup: pricingData.pickupAddress?.postcode,
-        dropoff: pricingData.dropoffAddress?.postcode,
-        service: pricingData.serviceType
+        pickup: pricingData.pickup?.postcode,
+        dropoff: pricingData.dropoffs?.[0]?.postcode,
+        service: pricingData.serviceLevel
       });
 
       // Call the unified pricing API
