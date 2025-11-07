@@ -26,7 +26,9 @@
     "prisma:migrate": "turbo run prisma:migrate",
     "env:verify": "tsx scripts/verify-environment.ts",
     "env:check": "bash scripts/check-db-environment.sh",
-    "db:setup": "cd packages/shared && npx prisma generate && npx prisma db push"
+    "db:setup": "cd packages/shared && npx prisma generate && npx prisma db push",
+    "db:setup-local": "tsx scripts/setup-local-database.ts",
+    "db:verify-isolation": "tsx scripts/verify-database-isolation.ts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

@@ -6,6 +6,34 @@ import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
+const normalizePostcode = (postcode: string) => postcode.trim().toUpperCase();
+
+function buildBookingAddressUpdate(addressData: any) {
+  if (!addressData || typeof addressData !== 'object') {
+    return null;
+  }
+
+  const update: Record<string, unknown> = {};
+
+  if (typeof addressData.label === 'string' && addressData.label.trim().length > 0) {
+    update.label = addressData.label.trim();
+  }
+
+  if (typeof addressData.postcode === 'string' && addressData.postcode.trim().length > 0) {
+    update.postcode = normalizePostcode(addressData.postcode);
+  }
+
+  if (typeof addressData.lat === 'number') {
+    update.lat = addressData.lat;
+  }
+
+  if (typeof addressData.lng === 'number') {
+    update.lng = addressData.lng;
+  }
+
+  return Object.keys(update).length > 0 ? update : null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
@@ -172,6 +200,14 @@ export async function GET(
         quantity: item.quantity,
         volumeM3: item.volumeM3,
       })) || [],
+      amountPaidGBP: order.amountPaidGBP,
+      additionalPaymentStatus: order.additionalPaymentStatus,
+      additionalPaymentAmountGBP: order.additionalPaymentAmountGBP,
+      additionalPaymentRequestedAt: order.additionalPaymentRequestedAt?.toISOString(),
+      additionalPaymentPaidAt: order.additionalPaymentPaidAt?.toISOString(),
+      additionalPaymentStripeIntent: order.additionalPaymentStripeIntent,
+      lastPaymentDate: order.lastPaymentDate?.toISOString(),
+      lastRefundDate: order.lastRefundDate?.toISOString(),
     };
 
     console.log('✅ Order details fetched:', {
@@ -212,6 +248,70 @@ export async function PUT(
     const { code } = await params;
     const updateData = await request.json();
 
+    // Get existing order for comparison and audit
+    const existingOrder = await prisma.booking.findUnique({
+      where: { reference: code },
+      select: {
+        id: true,
+        totalGBP: true,
+        stripePaymentIntentId: true,
+        status: true,
+        paidAt: true,
+        pickupAddress: {
+          select: {
+            id: true,
+            label: true,
+            postcode: true,
+            lat: true,
+            lng: true,
+          },
+        },
+        dropoffAddress: {
+          select: {
+            id: true,
+            label: true,
+            postcode: true,
+            lat: true,
+            lng: true,
+          },
+        },
+        amountPaidGBP: true,
+        additionalPaymentStatus: true,
+        additionalPaymentAmountGBP: true,
+        additionalPaymentStripeIntent: true,
+      },
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    const nextTotalGBP = typeof updateData.totalGBP === 'number' ? Math.round(updateData.totalGBP) : undefined;
+    const priceChanged = typeof nextTotalGBP === 'number' && nextTotalGBP !== existingOrder.totalGBP;
+    const priceChangeData = priceChanged
+      ? {
+          oldPrice: existingOrder.totalGBP,
+          newPrice: nextTotalGBP,
+          difference: nextTotalGBP - existingOrder.totalGBP,
+        }
+      : null;
+
+    if (priceChanged && (existingOrder.paidAt || existingOrder.amountPaidGBP > 0)) {
+      return NextResponse.json(
+        {
+          error: 'Paid orders cannot be repriced via direct update. Use the payment adjustment actions for additional charges or refunds.',
+          code: 'PAID_ORDER_PRICE_CHANGE_BLOCKED',
+        },
+        { status: 400 }
+      );
+    }
+
+    const pickupAddressUpdate = buildBookingAddressUpdate(updateData.pickupAddress);
+    const dropoffAddressUpdate = buildBookingAddressUpdate(updateData.dropoffAddress);
+
     // Update the booking
     const updatedOrder = await prisma.booking.update({
       where: { reference: code },
@@ -221,25 +321,47 @@ export async function PUT(
         ...(updateData.customerPhone && { customerPhone: updateData.customerPhone }),
         ...(updateData.scheduledAt && { scheduledAt: new Date(updateData.scheduledAt) }),
         ...(updateData.pickupTimeSlot && { pickupTimeSlot: updateData.pickupTimeSlot }),
-        ...(updateData.notes !== undefined && { 
+        ...(typeof nextTotalGBP === 'number' ? { totalGBP: nextTotalGBP } : {}),
+        ...(updateData.notes !== undefined && {
           // Handle notes update when available in schema
         }),
-        // Update property details if provided
+        ...(pickupAddressUpdate
+          ? {
+              pickupAddress: {
+                update: pickupAddressUpdate,
+              },
+            }
+          : {}),
+        ...(dropoffAddressUpdate
+          ? {
+              dropoffAddress: {
+                update: dropoffAddressUpdate,
+              },
+            }
+          : {}),
         ...(updateData.pickupProperty && {
           pickupProperty: {
             update: {
-              floors: updateData.pickupProperty.floors,
-              accessType: updateData.pickupProperty.accessType,
-            }
-          }
+              ...(typeof updateData.pickupProperty.floors === 'number'
+                ? { floors: updateData.pickupProperty.floors }
+                : {}),
+              ...(updateData.pickupProperty.accessType
+                ? { accessType: updateData.pickupProperty.accessType }
+                : {}),
+            },
+          },
         }),
         ...(updateData.dropoffProperty && {
           dropoffProperty: {
             update: {
-              floors: updateData.dropoffProperty.floors,
-              accessType: updateData.dropoffProperty.accessType,
-            }
-          }
+              ...(typeof updateData.dropoffProperty.floors === 'number'
+                ? { floors: updateData.dropoffProperty.floors }
+                : {}),
+              ...(updateData.dropoffProperty.accessType
+                ? { accessType: updateData.dropoffProperty.accessType }
+                : {}),
+            },
+          },
         }),
       },
       include: {
@@ -276,13 +398,88 @@ export async function PUT(
       },
     });
 
-    // Log audit trail
-    await logAudit((session.user as any).id, 'update_order', updatedOrder.id, { targetType: 'booking', before: null, after: updateData });
+    // CRITICAL: Synchronize with Stripe if price changed
+    if (priceChanged && existingOrder.stripePaymentIntentId) {
+      try {
+        const stripe = await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: '2024-04-10',
+        }));
 
-    console.log('✅ Order updated:', {
-      reference: updatedOrder.reference,
-      updatedFields: Object.keys(updateData),
-    });
+        // Check if payment intent is still modifiable
+        const paymentIntent = await stripe.paymentIntents.retrieve(existingOrder.stripePaymentIntentId);
+        
+        if (paymentIntent.status === 'requires_payment_method' || paymentIntent.status === 'requires_confirmation') {
+          // Update the payment intent amount
+          await stripe.paymentIntents.update(existingOrder.stripePaymentIntentId, {
+            amount: nextTotalGBP!, // totalGBP is in pence
+            metadata: {
+              ...paymentIntent.metadata,
+              priceUpdatedBy: 'admin',
+              priceUpdatedAt: new Date().toISOString(),
+              oldAmount: existingOrder.totalGBP.toString(),
+              newAmount: nextTotalGBP!.toString(),
+            },
+          });
+
+          // Log successful Stripe sync
+          await logAudit(
+            (session.user as any).id,
+            'stripe_payment_updated',
+            updatedOrder.id,
+            {
+              targetType: 'booking',
+              before: { totalGBP: existingOrder.totalGBP },
+              after: { totalGBP: nextTotalGBP, stripePaymentIntentId: existingOrder.stripePaymentIntentId },
+            }
+          );
+        } else {
+          // Payment intent cannot be modified (already paid or processing)
+          // Log a warning for manual review
+          await logAudit(
+            (session.user as any).id, 
+            'price_change_after_payment', 
+            updatedOrder.id, 
+            { 
+              targetType: 'booking', 
+              before: { totalGBP: existingOrder.totalGBP }, 
+              after: { totalGBP: nextTotalGBP },
+              warning: `Payment intent ${paymentIntent.status} - requires manual Stripe adjustment (refund/credit)`,
+              paymentIntentStatus: paymentIntent.status,
+            }
+          );
+        }
+      } catch (stripeError) {
+        // Log Stripe sync failure
+        await logAudit(
+          (session.user as any).id, 
+          'stripe_sync_failed', 
+          updatedOrder.id, 
+          { 
+            targetType: 'booking', 
+            error: stripeError instanceof Error ? stripeError.message : 'Unknown error',
+            priceChange: priceChangeData,
+          }
+        );
+      }
+    }
+
+    const auditAfterData = {
+      ...updateData,
+      ...(typeof nextTotalGBP === 'number' ? { totalGBP: nextTotalGBP } : {}),
+    };
+
+    // Log audit trail for order update
+    await logAudit(
+      (session.user as any).id, 
+      'update_order', 
+      updatedOrder.id, 
+      { 
+        targetType: 'booking', 
+        before: existingOrder, 
+        after: auditAfterData,
+        priceChanged: priceChanged ? priceChangeData : null,
+      }
+    );
 
     // Transform response similar to GET
     const transformedOrder = {
@@ -328,9 +525,32 @@ export async function PUT(
         quantity: item.quantity,
         volumeM3: item.volumeM3,
       })) || [],
+      amountPaidGBP: updatedOrder.amountPaidGBP,
+      additionalPaymentStatus: updatedOrder.additionalPaymentStatus,
+      additionalPaymentAmountGBP: updatedOrder.additionalPaymentAmountGBP,
+      additionalPaymentRequestedAt: updatedOrder.additionalPaymentRequestedAt?.toISOString(),
+      additionalPaymentPaidAt: updatedOrder.additionalPaymentPaidAt?.toISOString(),
+      additionalPaymentStripeIntent: updatedOrder.additionalPaymentStripeIntent,
+      lastPaymentDate: updatedOrder.lastPaymentDate?.toISOString(),
+      lastRefundDate: updatedOrder.lastRefundDate?.toISOString(),
     };
 
-    return NextResponse.json(transformedOrder);
+    // Add warnings for price changes requiring manual action
+    const response: any = { ...transformedOrder };
+    if (priceChanged && existingOrder.paidAt) {
+      response.warning = {
+        type: 'PRICE_CHANGE_AFTER_PAYMENT',
+        message: 'Price changed after payment. Manual Stripe adjustment (refund/credit) may be required.',
+        oldPrice: existingOrder.totalGBP,
+        newPrice: nextTotalGBP ?? existingOrder.totalGBP,
+        difference: priceChangeData?.difference,
+      };
+    }
+    if (priceChangeData) {
+      response.priceChange = priceChangeData;
+    }
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('❌ Error updating order:', error);

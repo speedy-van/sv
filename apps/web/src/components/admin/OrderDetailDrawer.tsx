@@ -66,6 +66,9 @@ import {
   FiTrash2,
   FiNavigation,
   FiTrendingUp,
+  FiTrendingDown,
+  FiArrowUpRight,
+  FiArrowDownRight,
   FiCopy,
 } from 'react-icons/fi';
 import PaymentConfirmationButton from './PaymentConfirmationButton';
@@ -174,6 +177,14 @@ interface OrderDetail {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  amountPaidGBP?: number;
+  additionalPaymentStatus?: 'NONE' | 'PENDING' | 'PAID' | 'REFUNDED' | 'FAILED';
+  additionalPaymentAmountGBP?: number;
+  additionalPaymentRequestedAt?: string | null;
+  additionalPaymentPaidAt?: string | null;
+  additionalPaymentStripeIntent?: string | null;
+  lastPaymentDate?: string | null;
+  lastRefundDate?: string | null;
   pickupAddress?: {
     label: string;
     postcode: string;
@@ -252,16 +263,22 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedOrder, setEditedOrder] = useState<Partial<OrderDetail>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const [isAssigningDriver, setIsAssigningDriver] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState('');
+  const [assignmentReason, setAssignmentReason] = useState('');
   const [availableDrivers, setAvailableDrivers] = useState<any[]>([]);
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
-  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
-  const [assignmentReason, setAssignmentReason] = useState<string>('');
-  const [isAssigningDriver, setIsAssigningDriver] = useState(false);
-  const [isRemovingDriver, setIsRemovingDriver] = useState(false);
-  const [isRecalculatingPrice, setIsRecalculatingPrice] = useState(false);
   const [newCalculatedPrice, setNewCalculatedPrice] = useState<number | null>(null);
+  const [adjustedTotalGBP, setAdjustedTotalGBP] = useState<number>(0);
+  const [adjustmentReason, setAdjustmentReason] = useState('');
+  const [isRequestingAdditionalPayment, setIsRequestingAdditionalPayment] = useState(false);
+  const [isIssuingRefund, setIsIssuingRefund] = useState(false);
+  const [isRecalculatingPrice, setIsRecalculatingPrice] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isRemovingDriver, setIsRemovingDriver] = useState(false);
   const isEmbedded = variant === 'embedded';
   
   const toast = useToast();
@@ -369,6 +386,18 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (order) {
+      setAdjustedTotalGBP(order.totalGBP);
+    }
+  }, [order?.id, order?.totalGBP]);
+
+  useEffect(() => {
+    if (order && (order.amountPaidGBP ?? 0) > 0 && newCalculatedPrice) {
+      setAdjustedTotalGBP(newCalculatedPrice);
+    }
+  }, [order, newCalculatedPrice]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -388,6 +417,21 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
   const formatCurrency = (amount: number) => {
     return `£${(amount / 100).toFixed(2)}`;
+  };
+
+  const formatDateTime = (value?: string | null) => {
+    if (!value) return 'N/A';
+    try {
+      return new Date(value).toLocaleString('en-GB', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return value;
+    }
   };
 
   const formatDuration = (seconds?: number) => {
@@ -556,21 +600,24 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           quantity: 1,
         }
       ];
-      
-      console.log('📦 Using dataset items for pricing (comprehensive API requirement):', itemsForPricing);
 
-      // Validate and clean postcodes
-      const cleanPostcode = (postcode: string | undefined) => {
-        if (!postcode) return 'SW1A 1AA'; // Default fallback
+      // Validate and clean postcodes with proper error handling
+      const cleanPostcode = (postcode: string | undefined, addressType: string): string => {
+        if (!postcode) {
+          throw new Error(`${addressType} postcode is required for price calculation`);
+        }
         // Remove extra spaces and ensure proper format
         const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, ' ');
         // Check if it matches UK postcode pattern
         const ukPostcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
-        return ukPostcodeRegex.test(cleaned) ? cleaned : 'SW1A 1AA';
+        if (!ukPostcodeRegex.test(cleaned)) {
+          throw new Error(`Invalid ${addressType} postcode format: ${postcode}`);
+        }
+        return cleaned;
       };
 
-      const pickupPostcode = cleanPostcode(editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode);
-      const dropoffPostcode = cleanPostcode(editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode);
+      const pickupPostcode = cleanPostcode(editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode, 'Pickup');
+      const dropoffPostcode = cleanPostcode(editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode, 'Dropoff');
 
       // Prepare pricing data in correct format for comprehensive API
       const pricingData = {
@@ -607,15 +654,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
       // Validate items array before sending
       if (!pricingData.items || pricingData.items.length === 0) {
-        console.error('❌ Items array is empty, cannot calculate price');
         throw new Error('Items array is required for pricing calculation');
       }
-
-      console.log('🔄 Recalculating price with data:', {
-        ...pricingData,
-        itemsCount: pricingData.items.length,
-        firstItem: pricingData.items[0],
-      });
 
       const response = await fetch('/api/pricing/comprehensive', {
         method: 'POST',
@@ -627,7 +667,6 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Pricing API error:', errorText);
         
         try {
           const errorJson = JSON.parse(errorText);
@@ -635,39 +674,39 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
             const errorMessages = errorJson.details.map((d: any) => `${d.path?.join('.')}: ${d.message}`).join(', ');
             throw new Error(`Validation failed: ${errorMessages}`);
           }
+          throw new Error(errorJson.error || `Pricing API error: ${response.status}`);
         } catch (parseError) {
-          // If JSON parsing fails, use the original error
+          throw new Error(`Pricing API returned ${response.status}: ${errorText}`);
         }
-        
-        throw new Error(`Pricing API returned ${response.status}`);
       }
 
       const data = await response.json();
       
       if (data.success && data.data?.amountGbpMinor) {
-        const newPriceGBP = Math.round(data.data.amountGbpMinor / 100);
-        setNewCalculatedPrice(newPriceGBP);
-        console.log('✅ New price calculated:', newPriceGBP);
+        // CRITICAL FIX: amountGbpMinor is in pence, totalGBP schema field stores pence (Int)
+        // Do NOT divide by 100 - store the raw pence value
+        const newPricePence = Math.round(data.data.amountGbpMinor);
+        setNewCalculatedPrice(newPricePence);
         
         toast({
           title: '💰 Price Recalculated',
-          description: `Old: £${(order.totalGBP / 100).toFixed(2)} → New: £${(newPriceGBP / 100).toFixed(2)}`,
+          description: `Old: £${(order.totalGBP / 100).toFixed(2)} → New: £${(newPricePence / 100).toFixed(2)}`,
           status: 'success',
           duration: 5000,
           isClosable: true,
         });
         
-        return newPriceGBP;
+        return newPricePence;
       }
       
-      throw new Error('Invalid pricing response');
+      throw new Error('Invalid pricing response - missing amountGbpMinor');
     } catch (error) {
-      console.error('❌ Price recalculation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Could not recalculate price';
       toast({
         title: 'Price Calculation Failed',
-        description: error instanceof Error ? error.message : 'Could not recalculate price. Order will be updated without price change.',
+        description: errorMessage,
         status: 'error',
-        duration: 5000,
+        duration: 7000,
         isClosable: true,
       });
       return null;
@@ -681,8 +720,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
     setIsSaving(true);
     try {
-      // Step 1: Recalculate price if property details or addresses changed
-      let updatedPrice = order.totalGBP;
+      // Step 1: Detect property/address changes that affect pricing
       const hasPropertyChanges = 
         editedOrder.pickupProperty?.floors !== order.pickupProperty?.floors ||
         editedOrder.dropoffProperty?.floors !== order.dropoffProperty?.floors ||
@@ -693,18 +731,44 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         editedOrder.dropoffAddress?.label !== order.dropoffAddress?.label ||
         editedOrder.dropoffAddress?.postcode !== order.dropoffAddress?.postcode;
 
-      if (hasPropertyChanges && !newCalculatedPrice) {
-        // Auto-calculate if not already calculated
-        const newPrice = await recalculatePrice();
-        if (newPrice !== null) {
-          updatedPrice = newPrice;
+      // Step 2: Validate price recalculation if property changes detected
+      let updatedPrice = order.totalGBP;
+      
+      if (hasPropertyChanges) {
+        if (newCalculatedPrice) {
+          // Use the already calculated price
+          updatedPrice = newCalculatedPrice;
+        } else {
+          // CRITICAL: Block save if property changed but no valid price calculated
+          toast({
+            title: '⚠️ Price Recalculation Required',
+            description: 'Property details or addresses have changed. Please click "Recalculate Price" before saving.',
+            status: 'warning',
+            duration: 8000,
+            isClosable: true,
+          });
+          setIsSaving(false);
+          return;
         }
-      } else if (newCalculatedPrice) {
-        // Use the already calculated price
-        updatedPrice = newCalculatedPrice;
       }
 
-      // Step 2: Update order with new data and price
+      const priceChanged = updatedPrice !== order.totalGBP;
+      const isPaidOrder = (order.amountPaidGBP ?? 0) > 0 || !!order.paidAt;
+
+      if (priceChanged && isPaidOrder) {
+        setAdjustedTotalGBP(updatedPrice);
+        toast({
+          title: 'Payment Adjustment Required',
+          description: 'This booking already has a payment on record. Use the payment adjustment actions to request additional payment or issue a refund.',
+          status: 'warning',
+          duration: 9000,
+          isClosable: true,
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Step 3: Update order with new data and validated price
       const response = await fetch(`/api/admin/orders/${order.reference}`, {
         method: 'PUT',
         headers: {
@@ -712,7 +776,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         },
         body: JSON.stringify({
           ...editedOrder,
-          totalGBP: updatedPrice,
+          ...(priceChanged && !isPaidOrder ? { totalGBP: updatedPrice } : {}),
         }),
       });
 
@@ -720,14 +784,24 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         throw new Error('Failed to update order');
       }
 
-      const updatedOrder = await response.json();
-      setOrder(updatedOrder);
+      const result = await response.json();
+      
+      // Check for warnings (e.g., price change after payment)
+      if (result.warning) {
+        toast({
+          title: '⚠️ Warning: Manual Action Required',
+          description: result.warning.message || 'Price changed after payment - manual Stripe adjustment may be needed.',
+          status: 'warning',
+          duration: 10000,
+          isClosable: true,
+        });
+      }
+      
+      setOrder(result);
       setIsEditing(false);
       setEditedOrder({});
       
       // Show price change notification if price was updated
-      const priceChanged = updatedPrice !== order.totalGBP;
-      
       toast({
         title: priceChanged ? '✅ Order & Price Updated' : '✅ Order Updated',
         description: priceChanged 
@@ -1054,6 +1128,157 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       setIsRemovingDriver(false);
     }
   };
+
+  const handleRequestAdditionalPayment = async () => {
+    if (!order) return;
+
+    const amountPaid = order.amountPaidGBP ?? 0;
+    const difference = adjustedTotalGBP - amountPaid;
+
+    if (difference <= 0) {
+      toast({
+        title: 'No Additional Payment Needed',
+        description: 'The adjusted total is not greater than the amount already paid.',
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsRequestingAdditionalPayment(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${order.reference}/create-additional-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetTotalGBP: adjustedTotalGBP,
+          reason: adjustmentReason ? adjustmentReason.trim() : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create additional payment request');
+      }
+
+      const data = await response.json();
+      const checkoutUrl = data?.data?.checkoutUrl as string | undefined;
+
+      toast({
+        title: 'Additional Payment Requested',
+        description: checkoutUrl
+          ? `Customer notified. Payment link: ${checkoutUrl}`
+          : 'Customer notified of the additional payment.',
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+      });
+
+      if (checkoutUrl) {
+        try {
+          window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+        } catch (openError) {
+          console.warn('Unable to open checkout link automatically:', openError);
+        }
+      }
+
+      setAdjustmentReason('');
+      setNewCalculatedPrice(null);
+      fetchOrderDetails();
+    } catch (error) {
+      toast({
+        title: 'Additional Payment Failed',
+        description: error instanceof Error ? error.message : 'Could not create additional payment request',
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRequestingAdditionalPayment(false);
+    }
+  };
+
+  const handleIssueRefund = async () => {
+    if (!order) return;
+
+    const amountPaid = order.amountPaidGBP ?? 0;
+    const refundAmount = amountPaid - adjustedTotalGBP;
+
+    if (refundAmount <= 0) {
+      toast({
+        title: 'No Refund Needed',
+        description: 'The adjusted total is not less than the amount already paid.',
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsIssuingRefund(true);
+    try {
+      const response = await fetch(`/api/admin/orders/${order.reference}/refund`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetTotalGBP: adjustedTotalGBP,
+          reason: adjustmentReason ? adjustmentReason.trim() : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to issue refund');
+      }
+
+      toast({
+        title: 'Refund Initiated',
+        description: `Refund of £${(refundAmount / 100).toFixed(2)} has been requested through Stripe.`,
+        status: 'success',
+        duration: 9000,
+        isClosable: true,
+      });
+
+      setAdjustmentReason('');
+      setNewCalculatedPrice(null);
+      fetchOrderDetails();
+    } catch (error) {
+      toast({
+        title: 'Refund Failed',
+        description: error instanceof Error ? error.message : 'Could not issue refund',
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      });
+    } finally {
+      setIsIssuingRefund(false);
+    }
+  };
+
+  const additionalPaymentStatusMeta = useMemo(() => {
+    const status = order?.additionalPaymentStatus || 'NONE';
+    switch (status) {
+      case 'PENDING':
+        return { label: 'Pending Additional Payment', color: 'orange', description: 'Awaiting customer payment for the outstanding balance.' };
+      case 'PAID':
+        return { label: 'Additional Payment Received', color: 'green', description: 'The requested additional payment was collected successfully.' };
+      case 'REFUNDED':
+        return { label: 'Adjustment Refunded', color: 'purple', description: 'A refund was issued after the customer had paid in full.' };
+      case 'FAILED':
+        return { label: 'Payment Failed', color: 'red', description: 'The additional payment attempt failed. Review Stripe logs.' };
+      default:
+        return { label: 'No Additional Payments', color: 'gray', description: 'No outstanding post-payment adjustments.' };
+    }
+  }, [order?.additionalPaymentStatus]);
+
+  const amountPaid = order?.amountPaidGBP ?? 0;
+  const outstandingAmount = order ? Math.max(order.totalGBP - amountPaid, 0) : 0;
+  const adjustedDifference = adjustedTotalGBP - amountPaid;
 
   return (
     <Drawer 
@@ -1884,47 +2109,181 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                           )}
                         </Stat>
                         <Stat>
-                          <StatLabel fontSize="xs" color={secondaryTextColor}>
-                            Est. Driver Earnings
-                          </StatLabel>
-                          <StatNumber fontSize="2xl" color="#2563eb">
-                            {calculateDriverEarnings(order).formatted}
+                          <StatLabel fontSize="xs" color={secondaryTextColor}>Scheduled Date</StatLabel>
+                          <StatNumber fontSize="lg" color={textColor}>
+                            {new Date(order.scheduledAt).toLocaleString('en-GB', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </StatNumber>
                           <StatHelpText fontSize="xs" color={secondaryTextColor}>
-                            Base + Mileage + Time
+                            Reference: {order.reference}
                           </StatHelpText>
                         </Stat>
                       </SimpleGrid>
-                      {isEditing && (
-                        <VStack spacing={2} align="stretch">
-                          {isRecalculatingPrice && (
-                            <Progress 
-                              size="xs" 
-                              isIndeterminate 
-                              colorScheme="orange"
-                              borderRadius="full"
-                            />
-                          )}
-                          <Button
-                            leftIcon={<FiDollarSign />}
-                            size="sm"
-                            colorScheme="orange"
-                            variant="outline"
-                            onClick={recalculatePrice}
-                            isLoading={isRecalculatingPrice}
-                            loadingText="Calculating with Enterprise Engine..."
-                            borderColor="#f59e0b"
-                            color="#f59e0b"
-                            _hover={{ bg: 'rgba(245, 158, 11, 0.1)' }}
-                          >
-                            {newCalculatedPrice ? '🔄 Recalculate Again' : '💰 Calculate New Price'}
-                          </Button>
-                        </VStack>
-                      )}
                     </VStack>
                   </CardBody>
                 </Card>
-                
+
+                {(amountPaid > 0 || order.paidAt) && (
+                  <Card bg={cardBg} borderColor="#2563eb" borderWidth={1}>
+                    <CardBody>
+                      <VStack align="stretch" spacing={4}>
+                        <HStack justify="space-between" align="center">
+                          <VStack align="start" spacing={1}>
+                            <Text fontWeight="bold" fontSize="md" color={textColor}>
+                              Post-Payment Adjustments
+                            </Text>
+                            <Text fontSize="xs" color={secondaryTextColor}>
+                              Manage additional charges or refunds after the customer has paid.
+                            </Text>
+                          </VStack>
+                          <Badge colorScheme={additionalPaymentStatusMeta.color} fontSize="0.7rem" px={3} py={1} borderRadius="full">
+                            {additionalPaymentStatusMeta.label}
+                          </Badge>
+                        </HStack>
+
+                        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                          <Card bg="#0f172a" borderColor="#1f2937" borderWidth={1}>
+                            <CardBody>
+                              <HStack align="center" spacing={3}>
+                                <Circle size="38px" bg="rgba(16, 185, 129, 0.15)">
+                                  <FiTrendingUp color="#10b981" />
+                                </Circle>
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="xs" color={secondaryTextColor}>Total Collected</Text>
+                                  <Text fontWeight="bold" color="#10b981">{formatCurrency(amountPaid)}</Text>
+                                </VStack>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                          <Card bg="#0f172a" borderColor="#1f2937" borderWidth={1}>
+                            <CardBody>
+                              <HStack align="center" spacing={3}>
+                                <Circle size="38px" bg="rgba(37, 99, 235, 0.15)">
+                                  <FiDollarSign color="#2563eb" />
+                                </Circle>
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="xs" color={secondaryTextColor}>Current Total</Text>
+                                  <Text fontWeight="bold" color={textColor}>{formatCurrency(order.totalGBP)}</Text>
+                                </VStack>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                          <Card bg="#0f172a" borderColor="#1f2937" borderWidth={1}>
+                            <CardBody>
+                              <HStack align="center" spacing={3}>
+                                <Circle size="38px" bg={adjustedDifference > 0 ? 'rgba(249, 115, 22, 0.15)' : 'rgba(14, 165, 233, 0.15)'}>
+                                  {adjustedDifference > 0 ? <FiArrowUpRight color="#f97316" /> : adjustedDifference < 0 ? <FiArrowDownRight color="#0ea5e9" /> : <FiCheckCircle color="#10b981" />}
+                                </Circle>
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="xs" color={secondaryTextColor}>Adjustment vs Paid</Text>
+                                  <Text fontWeight="bold" color={adjustedDifference > 0 ? '#f97316' : adjustedDifference < 0 ? '#0ea5e9' : '#10b981'}>
+                                    {adjustedDifference === 0 ? 'No Adjustment' : formatCurrency(Math.abs(adjustedDifference))}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                        </SimpleGrid>
+
+                        <VStack align="stretch" spacing={3}>
+                          <FormControl>
+                            <FormLabel fontSize="xs" color={secondaryTextColor}>Adjusted Order Total (£)</FormLabel>
+                            <NumberInput
+                              value={(adjustedTotalGBP / 100).toFixed(2)}
+                              onChange={(valueString) => {
+                                const numericValue = Number.parseFloat(valueString);
+                                if (Number.isNaN(numericValue)) {
+                                  setAdjustedTotalGBP(0);
+                                  return;
+                                }
+                                setAdjustedTotalGBP(Math.round(numericValue * 100));
+                              }}
+                              min={0}
+                              step={1}
+                              precision={2}
+                            >
+                              <NumberInputField
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              />
+                            </NumberInput>
+                          </FormControl>
+
+                          <FormControl>
+                            <FormLabel fontSize="xs" color={secondaryTextColor}>Reason (shown to customer)</FormLabel>
+                            <Textarea
+                              value={adjustmentReason}
+                              onChange={(event) => setAdjustmentReason(event.target.value)}
+                              placeholder="Explain why the adjustment is needed..."
+                              bg={cardBg}
+                              color={textColor}
+                              borderColor={borderColor}
+                              _hover={{ borderColor: '#2563eb' }}
+                              _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              rows={3}
+                            />
+                          </FormControl>
+
+                          <HStack spacing={3} flexWrap="wrap">
+                            <Button
+                              colorScheme="blue"
+                              leftIcon={<FiArrowUpRight />}
+                              onClick={handleRequestAdditionalPayment}
+                              isLoading={isRequestingAdditionalPayment}
+                              isDisabled={adjustedDifference <= 0}
+                            >
+                              Request Additional Payment
+                            </Button>
+                            <Button
+                              colorScheme="cyan"
+                              variant="outline"
+                              leftIcon={<FiArrowDownRight />}
+                              onClick={handleIssueRefund}
+                              isLoading={isIssuingRefund}
+                              isDisabled={adjustedDifference >= 0}
+                            >
+                              Issue Refund
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              color={secondaryTextColor}
+                              onClick={() => {
+                                setAdjustedTotalGBP(order.totalGBP);
+                                setAdjustmentReason('');
+                              }}
+                            >
+                              Reset
+                            </Button>
+                          </HStack>
+                        </VStack>
+
+                        <VStack align="stretch" spacing={1} fontSize="xs" color={secondaryTextColor}>
+                          <Text>{additionalPaymentStatusMeta.description}</Text>
+                          <Text>Outstanding Balance: {formatCurrency(outstandingAmount)}</Text>
+                          <Text>Last Payment: {formatDateTime(order.lastPaymentDate || order.paidAt || null)}</Text>
+                          <Text>Last Refund: {formatDateTime(order.lastRefundDate)}</Text>
+                          {order.additionalPaymentRequestedAt && (
+                            <Text>Additional Payment Requested: {formatDateTime(order.additionalPaymentRequestedAt)}</Text>
+                          )}
+                          {order.additionalPaymentPaidAt && (
+                            <Text>Additional Payment Received: {formatDateTime(order.additionalPaymentPaidAt)}</Text>
+                          )}
+                        </VStack>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                )}
+
                 {/* Trip Metrics Card */}
                 <Card bg={cardBg} borderColor="#2563eb" borderWidth={1}>
                   <CardBody>

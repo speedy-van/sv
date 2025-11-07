@@ -20,6 +20,7 @@ import { createRequestId } from '@/lib/pricing/schemas';
 import { prisma } from '@/lib/prisma';
 import { pricingSnapshotService } from '@/lib/services/pricing-snapshot-service';
 import { RouteOrchestrationService } from '@/lib/services/route-orchestration-service';
+import { logAudit } from '@/lib/audit';
 
 // Supported webhook events
 const SUPPORTED_EVENTS = [
@@ -199,6 +200,12 @@ async function handlePaymentIntentSucceeded(
     metadata: paymentIntent.metadata
   });
 
+  const paymentPurpose = paymentIntent.metadata?.paymentPurpose;
+  if (paymentPurpose === 'additional_charge') {
+    await handleAdditionalPaymentSucceeded(paymentIntent, correlationId);
+    return;
+  }
+
   const bookingId = paymentIntent.metadata.bookingId;
   if (bookingId) {
     try {
@@ -210,7 +217,14 @@ async function handlePaymentIntentSucceeded(
         data: {
           status: 'CONFIRMED',
           paidAt: new Date(),
-          stripePaymentIntentId: paymentIntent.id
+          stripePaymentIntentId: paymentIntent.id,
+          amountPaidGBP: paymentIntent.amount,
+          lastPaymentDate: new Date(),
+          additionalPaymentStatus: 'NONE',
+          additionalPaymentAmountGBP: 0,
+          additionalPaymentStripeIntent: null,
+          additionalPaymentRequestedAt: null,
+          additionalPaymentPaidAt: null,
         },
         include: {
           customer: true,
@@ -416,6 +430,61 @@ async function handlePaymentIntentRequiresAction(
     console.log(`[STRIPE WEBHOOK] ${correlationId} - Updating booking ${bookingId} to payment_pending status`);
     // Implement booking status update logic here
   }
+}
+
+/**
+ * Handle successful payment
+ */
+async function handleAdditionalPaymentSucceeded(
+  paymentIntent: Stripe.PaymentIntent,
+  correlationId: string
+): Promise<void> {
+  const bookingId = paymentIntent.metadata.bookingId;
+  if (!bookingId) {
+    console.warn(`[STRIPE WEBHOOK] ${correlationId} - Additional payment succeeded without bookingId metadata`, {
+      paymentIntentId: paymentIntent.id,
+    });
+    return;
+  }
+
+  const additionalAmount = Number.parseInt(paymentIntent.metadata.additionalAmount || `${paymentIntent.amount}`, 10);
+  const targetTotal = Number.parseInt(paymentIntent.metadata.targetTotalGBP || '0', 10);
+  const now = new Date();
+
+  const updateData: any = {
+    amountPaidGBP: {
+      increment: paymentIntent.amount,
+    },
+    additionalPaymentStatus: 'PAID',
+    additionalPaymentAmountGBP: additionalAmount > 0 ? additionalAmount : paymentIntent.amount,
+    additionalPaymentPaidAt: now,
+    additionalPaymentStripeIntent: paymentIntent.id,
+    lastPaymentDate: now,
+  };
+
+  if (targetTotal > 0) {
+    updateData.totalGBP = targetTotal;
+  }
+
+  const booking = await prisma.booking.update({
+    where: { id: bookingId },
+    data: updateData,
+  });
+
+  await logAudit('system', 'additional_payment_succeeded', booking.id, {
+    paymentIntentId: paymentIntent.id,
+    amount: paymentIntent.amount,
+    targetTotal,
+    correlationId,
+  });
+
+  console.log(`[STRIPE WEBHOOK] ${correlationId} - Additional payment applied`, {
+    bookingId,
+    paymentIntentId: paymentIntent.id,
+    amount: paymentIntent.amount,
+    totalGBP: booking.totalGBP,
+    amountPaidGBP: booking.amountPaidGBP,
+  });
 }
 
 /**

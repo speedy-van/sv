@@ -213,6 +213,14 @@ model Booking {
   customerPreferences           Json                  @default("{}")
   orderType                     String?               @default("single")
   eligibleForMultiDrop          Boolean               @default(false)
+  amountPaidGBP                 Int                   @default(0)
+  additionalPaymentStatus       AdditionalPaymentStatus @default(NONE)
+  additionalPaymentAmountGBP    Int                   @default(0)
+  additionalPaymentRequestedAt  DateTime?
+  additionalPaymentPaidAt       DateTime?
+  additionalPaymentStripeIntent String?
+  lastPaymentDate               DateTime?
+  lastRefundDate                DateTime?
   multiDropEligibilityReason    String?
   estimatedLoadPercentage       Float?
   routePreference               String?               @default("balanced")
@@ -250,6 +258,13 @@ model Booking {
   @@index([status, createdAt], map: "idx_booking_status_created")
 }
 
+enum AdditionalPaymentStatus {
+  NONE
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
 model BookingAddress {
   id                                               String    @id @default(cuid())
   label                                            String

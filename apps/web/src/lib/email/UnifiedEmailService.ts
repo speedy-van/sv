@@ -80,6 +80,26 @@ export interface TrustpilotFeedbackData {
   trustpilotUrl: string;
 }
 
+export interface AdditionalPaymentRequestData {
+  customerEmail: string;
+  customerName: string;
+  orderNumber: string;
+  amountDue: number;
+  currency: string;
+  paymentLink: string;
+  reason: string;
+}
+
+export interface RefundNotificationData {
+  customerEmail: string;
+  customerName: string;
+  orderNumber: string;
+  refundAmount: number;
+  newTotal: number;
+  currency: string;
+  reason: string;
+}
+
 interface EmailResult {
   success: boolean;
   error: string | null;
@@ -1174,6 +1194,100 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
   `;
 }
 
+function generateAdditionalPaymentRequestHTML(data: AdditionalPaymentRequestData): string {
+  const amountFormatted = `${data.currency}${data.amountDue.toFixed(2)}`;
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Additional Payment Request - ${data.orderNumber}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="color: #007bff; margin: 0;">Speedy Van</h1>
+          <h2 style="margin: 10px 0;">Additional Payment Required</h2>
+        </div>
+
+        <div style="background: white; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;">
+          <p>Dear ${data.customerName},</p>
+
+          <p>We hope you're excited for your upcoming move with Speedy Van. Our operations team has reviewed your booking <strong>${data.orderNumber}</strong> and identified some adjustments that require an additional payment.</p>
+
+          <div style="background: #fff3cd; border: 1px solid #ffe08a; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <strong>Summary:</strong><br>
+            <strong>Amount Due:</strong> ${amountFormatted}<br>
+            <strong>Reason:</strong> ${data.reason}
+          </div>
+
+          <p>Please complete the payment using the secure link below:</p>
+
+          <p style="text-align: center; margin: 25px 0;">
+            <a href="${data.paymentLink}" style="background: #28a745; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold;">Pay ${amountFormatted} Now</a>
+          </p>
+
+          <p>If you have any questions or believe this request is incorrect, please reach out to us and we'll be happy to help.</p>
+
+          <p>Best regards,<br>The Speedy Van Team</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
+          <p>Speedy Van - Professional Moving Services<br>
+          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateRefundNotificationHTML(data: RefundNotificationData): string {
+  const refundFormatted = `${data.currency}${data.refundAmount.toFixed(2)}`;
+  const newTotalFormatted = `${data.currency}${data.newTotal.toFixed(2)}`;
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Refund Issued - ${data.orderNumber}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="color: #007bff; margin: 0;">Speedy Van</h1>
+          <h2 style="margin: 10px 0;">Refund Confirmation</h2>
+        </div>
+
+        <div style="background: white; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;">
+          <p>Dear ${data.customerName},</p>
+
+          <p>We have processed a refund for your booking <strong>${data.orderNumber}</strong>. The details are provided below for your records:</p>
+
+          <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <strong>Refund Details:</strong><br>
+            <strong>Refund Amount:</strong> ${refundFormatted}<br>
+            <strong>New Order Total:</strong> ${newTotalFormatted}<br>
+            <strong>Reason:</strong> ${data.reason}
+          </div>
+
+          <p>The refund has been issued back to your original payment method. Depending on your bank, it may take 3-5 business days to appear on your statement.</p>
+
+          <p>If you have any questions or need further assistance, please contact our support team.</p>
+
+          <p>Best regards,<br>The Speedy Van Team</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
+          <p>Speedy Van - Professional Moving Services<br>
+          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 export const unifiedEmailService = {
   async sendOrderConfirmation(data: OrderConfirmationData) {
     try {
@@ -1199,6 +1313,38 @@ export const unifiedEmailService = {
       return await sendEmail(data.customerEmail, subject, html);
     } catch (error) {
       console.error('Payment confirmation email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
+  async sendAdditionalPaymentRequest(data: AdditionalPaymentRequestData) {
+    try {
+      const subject = `Additional Payment Required - ${data.orderNumber}`;
+      const html = generateAdditionalPaymentRequestHTML(data);
+      return await sendEmail(data.customerEmail, subject, html);
+    } catch (error) {
+      console.error('Additional payment request email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
+  async sendRefundNotification(data: RefundNotificationData) {
+    try {
+      const subject = `Refund Confirmation - ${data.orderNumber}`;
+      const html = generateRefundNotificationHTML(data);
+      return await sendEmail(data.customerEmail, subject, html);
+    } catch (error) {
+      console.error('Refund notification email failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

@@ -463,24 +463,24 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   // Click outside to close dropdown - use mousedown to avoid interfering with onClick
   useEffect(() => {
     const handleMouseDownOutside = (event: MouseEvent) => {
-      // Check if click is inside dropdown or input
-      const target = event.target as Node;
-      if (
-        dropdownRef.current && 
-        dropdownRef.current.contains(target)
-      ) {
-        // Click is inside dropdown - don't close
-        return;
-      }
-      if (
-        inputRef.current &&
-        inputRef.current.contains(target)
-      ) {
-        // Click is on input - don't close
-        return;
-      }
-      // Click is outside - close dropdown
-      setShowSuggestions(false);
+        // Check if click is inside dropdown or input
+        const target = event.target as Node;
+        if (
+          dropdownRef.current && 
+          dropdownRef.current.contains(target)
+        ) {
+          // Click is inside dropdown - don't close
+          return;
+        }
+        if (
+          inputRef.current &&
+          inputRef.current.contains(target)
+        ) {
+          // Click is on input - don't close
+          return;
+        }
+        // Click is outside - close dropdown
+        setShowSuggestions(false);
     };
 
     if (showSuggestions) {

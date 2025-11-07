@@ -104,7 +104,7 @@ export async function GET(req: Request) {
       ...statusFilter,
       ...(driver
         ? {
-            Driver: {
+            driver: {
               User: {
                 name: { contains: driver, mode: 'insensitive' },
               },
