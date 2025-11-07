@@ -13,7 +13,7 @@ services:
     buildCommand: |
       cd ..
       bash render-build.sh
-    startCommand: cd apps/web && node .next/standalone/apps/web/server.js
+    startCommand: node apps/web/.next/standalone/apps/web/server.js
     healthCheckPath: /api/health
     numInstances: 2 # High availability
     buildFilter:
