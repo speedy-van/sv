@@ -462,28 +462,46 @@ export default function WhoAndPaymentStepSimple({
                 </Checkbox>
               </VStack>
 
-              {/* Stripe Payment Button */}
-              <Button
-                size="lg"
-                w="full"
-                bg="blue.500"
-                color="white"
-                py={7}
-                fontSize="md"
-                fontWeight="600"
-                borderRadius="xl"
-                leftIcon={<Icon as={FaCreditCard} />}
-                isDisabled={
+              {/* Stripe Payment Button - Use actual component */}
+              <StripePaymentButton
+                bookingData={{
+                  customer: {
+                    name: `${formData.step2.customerDetails.firstName} ${formData.step2.customerDetails.lastName}`,
+                    email: formData.step2.customerDetails.email,
+                    phone: formData.step2.customerDetails.phone,
+                  },
+                  pickupAddress: formData.step1.pickupAddress as any,
+                  dropoffAddress: formData.step1.dropoffAddress as any,
+                  items: formData.step1.items,
+                  pricing: formData.step1.pricing as any,
+                  serviceType: selectedService,
+                  scheduledDate: formData.step1.pickupDate || new Date().toISOString().split('T')[0],
+                  scheduledTime: formData.step1.pickupTimeSlot,
+                  pickupDetails: formData.step1.pickupProperty as any,
+                  dropoffDetails: formData.step1.dropoffProperty as any,
+                  notes: formData.step2.specialInstructions,
+                }}
+                amount={actualPrice}
+                disabled={
                   !formData.step2.customerDetails.firstName ||
                   !formData.step2.customerDetails.lastName ||
                   !formData.step2.customerDetails.email ||
                   !formData.step2.customerDetails.phone
                 }
-                _hover={{ bg: 'blue.600' }}
-                _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
-              >
-                Pay £{actualPrice.toFixed(2)} Securely
-              </Button>
+                onSuccess={(sessionId) => {
+                  console.log('✅ Payment successful:', sessionId);
+                  window.location.href = `/booking-luxury/success?session_id=${sessionId}`;
+                }}
+                onError={(error) => {
+                  console.error('❌ Payment error:', error);
+                  toast({
+                    title: 'Payment Failed',
+                    description: error,
+                    status: 'error',
+                    duration: 5000,
+                  });
+                }}
+              />
 
               {/* Security Badge */}
               <HStack justify="center" spacing={2} color="gray.400" fontSize="xs">
