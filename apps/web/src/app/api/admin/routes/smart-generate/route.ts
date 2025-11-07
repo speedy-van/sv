@@ -70,8 +70,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`🎯 Smart AI Route Generation: Processing ${bookings.length} live bookings with flexible clustering`);
 
-    // Use DeepSeek API to generate optimal route
-    const apiKey = 'sk-dbc85858f63d44aebc7e9ef9ae2a48da';
+    // 🔒 SECURITY FIX: Use environment variable for API key instead of hardcoding
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: 'AI service not configured' },
+        { status: 500 }
+      );
+    }
     
     const prompt = `You are an expert logistics optimizer. Given the following delivery bookings, generate an optimal multi-drop route.
 

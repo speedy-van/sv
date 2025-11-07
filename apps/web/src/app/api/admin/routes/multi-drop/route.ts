@@ -23,8 +23,39 @@ import { logger } from '@/lib/logger';
 import { logAudit } from '@/lib/audit';
 import { driverEarningsService } from '@/lib/services/driver-earnings-service';
 import { createUniqueReference } from '@/lib/ref';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Helper function to serialize Decimal types to numbers for JSON responses
+ * Prevents "Decimal is not JSON serializable" errors
+ */
+function serializeDecimalFields(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (obj instanceof Decimal) {
+    return Number(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(serializeDecimalFields);
+  }
+
+  if (typeof obj === 'object') {
+    const serialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeDecimalFields(obj[key]);
+      }
+    }
+    return serialized;
+  }
+
+  return obj;
+}
 
 /**
  * GET /api/admin/routes/multi-drop
@@ -200,15 +231,19 @@ export async function GET(request: NextRequest) {
       pagination: { page, limit },
     });
 
+    // 🔧 FIX: Serialize Decimal fields before sending to frontend
+    const serializedRoutes = serializeDecimalFields(routes);
+    const serializedAnalytics = serializeDecimalFields(analytics);
+
     return NextResponse.json({
       success: true,
-      data: routes,
+      data: serializedRoutes,
       count: routes.length,
       totalCount,
       page,
       limit,
       totalPages: Math.ceil(totalCount / limit),
-      analytics,
+      analytics: serializedAnalytics,
     });
 
   } catch (error) {
@@ -325,75 +360,101 @@ export async function POST(request: NextRequest) {
     // Generate unified SV reference number
     const routeReference = await createUniqueReference('route');
     
-    // Create route with enhanced fields
-    const route = await prisma.route.create({
-      data: {
-        reference: routeReference,
-        driverId: driver?.id,
-        vehicleId,
-        startTime: new Date(startTime),
-        optimizedDistanceKm: totalDistance,
-        estimatedDuration,
-        totalDrops: optimizedDrops.length,
-        status: driverId ? 'planned' : 'pending_assignment',
-        serviceTier,
-        routeNotes: notes,
-        isModifiedByAdmin: true,
-        adminNotes: `Created by admin ${session.user.name || session.user.email} at ${new Date().toISOString()}`,
-        optimizedSequence: optimizedDrops.map((d: any, idx: number) => ({
-          sequence: idx + 1,
-          bookingId: d.bookingId,
-          address: d.deliveryAddress,
-          estimatedArrival: new Date(new Date(startTime).getTime() + idx * 30 * 60 * 1000),
-        })),
-        totalOutcome: totalValue,
-        optimizationScore: autoOptimize ? calculateOptimizationScore(optimizedDrops) : null,
-        routeOptimizationVersion: '2.0',
-      },
-      include: {
-        driver: { select: { id: true, name: true, email: true, phone: true } },
-      },
-    });
+    // 🔒 CRITICAL FIX: Wrap route + drops creation in transaction for data integrity
+    const route = await prisma.$transaction(async (tx) => {
+      // Create route with enhanced fields
+      const newRoute = await tx.route.create({
+        data: {
+          reference: routeReference,
+          driverId: driver?.id,
+          vehicleId,
+          startTime: new Date(startTime),
+          optimizedDistanceKm: totalDistance,
+          estimatedDuration,
+          totalDrops: optimizedDrops.length,
+          status: driverId ? 'planned' : 'pending_assignment',
+          serviceTier,
+          routeNotes: notes,
+          isModifiedByAdmin: true,
+          adminNotes: `Created by admin ${session.user.name || session.user.email} at ${new Date().toISOString()}`,
+          optimizedSequence: optimizedDrops.map((d: any, idx: number) => ({
+            sequence: idx + 1,
+            bookingId: d.bookingId,
+            address: d.deliveryAddress,
+            estimatedArrival: new Date(new Date(startTime).getTime() + idx * 30 * 60 * 1000),
+          })),
+          totalOutcome: totalValue,
+          optimizationScore: autoOptimize ? calculateOptimizationScore(optimizedDrops) : null,
+          routeOptimizationVersion: '2.0',
+        },
+        include: {
+          driver: { select: { id: true, name: true, email: true, phone: true } },
+        },
+      });
 
-    // Create drops with enhanced tracking
-    for (let i = 0; i < optimizedDrops.length; i++) {
-      const drop = optimizedDrops[i];
+      // Create drops with enhanced tracking and error handling
+      const failedDrops: Array<{ index: number; error: string }> = [];
       
-      // Fetch booking data if bookingId provided
-      let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
-      if (drop.bookingId) {
+      for (let i = 0; i < optimizedDrops.length; i++) {
+        const drop = optimizedDrops[i];
+        
         try {
-          const b = await prisma.booking.findUnique({
-            where: { id: String(drop.bookingId) },
-            select: { customerId: true, totalGBP: true },
+          // Fetch booking data if bookingId provided
+          let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
+          if (drop.bookingId) {
+            const b = await tx.booking.findUnique({
+              where: { id: String(drop.bookingId) },
+              select: { customerId: true, totalGBP: true },
+            });
+            if (b) bookingForDrop = b as any;
+          }
+
+          // Validate required fields
+          const finalCustomerId = bookingForDrop?.customerId || drop.customerId;
+          if (!finalCustomerId) {
+            throw new Error(`Missing customerId for drop ${i + 1}`);
+          }
+
+          if (!drop.pickupAddress || !drop.deliveryAddress) {
+            throw new Error(`Missing addresses for drop ${i + 1}`);
+          }
+
+          await tx.drop.create({
+            data: {
+              Route: { connect: { id: newRoute.id } },
+              ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
+              quotedPrice: bookingForDrop?.totalGBP || drop.quotedPrice || 0,
+              User: { connect: { id: finalCustomerId } },
+              pickupAddress: drop.pickupAddress,
+              deliveryAddress: drop.deliveryAddress,
+              pickupLat: drop.pickupLat,
+              pickupLng: drop.pickupLng,
+              timeWindowStart: new Date(new Date(startTime).getTime() + i * 30 * 60 * 1000),
+              timeWindowEnd: new Date(new Date(startTime).getTime() + (i + 1) * 30 * 60 * 1000),
+              status: 'pending',
+              weight: typeof drop.weight === 'number' ? drop.weight : undefined,
+              volume: typeof drop.volume === 'number' ? drop.volume : undefined,
+              specialInstructions: drop.specialInstructions,
+              serviceTier: serviceTier as any,
+              estimatedDuration: drop.estimatedMinutes || 30,
+            },
           });
-          if (b) bookingForDrop = b as any;
-        } catch (err) {
-          logger.warn('Failed to fetch booking for drop', { bookingId: drop.bookingId, error: err });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          failedDrops.push({ index: i, error: errorMessage });
+          logger.error(`Failed to create drop ${i + 1} in transaction`, { error: errorMessage, drop });
         }
       }
 
-      await prisma.drop.create({
-        data: {
-          Route: { connect: { id: route.id } },
-          ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
-          quotedPrice: bookingForDrop?.totalGBP || drop.quotedPrice || 0,
-          User: { connect: { id: bookingForDrop?.customerId || drop.customerId } },
-          pickupAddress: drop.pickupAddress,
-          deliveryAddress: drop.deliveryAddress,
-          pickupLat: drop.pickupLat,
-          pickupLng: drop.pickupLng,
-          timeWindowStart: new Date(new Date(startTime).getTime() + i * 30 * 60 * 1000),
-          timeWindowEnd: new Date(new Date(startTime).getTime() + (i + 1) * 30 * 60 * 1000),
-          status: 'pending',
-          weight: typeof drop.weight === 'number' ? drop.weight : undefined,
-          volume: typeof drop.volume === 'number' ? drop.volume : undefined,
-          specialInstructions: drop.specialInstructions,
-          serviceTier: serviceTier as any,
-          estimatedDuration: drop.estimatedMinutes || 30,
-        },
-      });
-    }
+      // If any drops failed, rollback entire transaction
+      if (failedDrops.length > 0) {
+        throw new Error(
+          `Failed to create ${failedDrops.length} out of ${optimizedDrops.length} drops: ${failedDrops.map(f => `Drop ${f.index + 1}: ${f.error}`).join('; ')}`
+        );
+      }
+
+      return newRoute;
+    });
 
     // Log comprehensive audit
     await logAudit(adminId, 'create_multi_drop_route', route.id, {
@@ -418,9 +479,12 @@ export async function POST(request: NextRequest) {
       estimatedDuration,
     });
 
+    // 🔧 FIX: Serialize Decimal fields before sending
+    const serializedRoute = serializeDecimalFields(route);
+
     return NextResponse.json({
       success: true,
-      data: route,
+      data: serializedRoute,
       message: 'Multi-drop route created successfully',
       optimized: autoOptimize,
       validationWarnings: validationErrors.length > 0 && forceCreate ? validationErrors : [],
@@ -534,88 +598,103 @@ export async function PUT(request: NextRequest) {
       updateData.adminNotes += ` | Pricing adjusted`;
     }
 
-    // Update drops if provided
-    if (drops && Array.isArray(drops)) {
-      // Delete existing drops
-      await prisma.drop.deleteMany({
-        where: { routeId },
-      });
-
-      // Create new drops
-      for (let i = 0; i < drops.length; i++) {
-        const drop = drops[i];
-        let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
-        if (drop.bookingId) {
-          try {
-            const b = await prisma.booking.findUnique({
-              where: { id: String(drop.bookingId) },
-              select: { customerId: true, totalGBP: true },
-            });
-            if (b) bookingForDrop = b as any;
-          } catch {}
-        }
-        await prisma.drop.create({
-          data: {
-            Route: { connect: { id: routeId } },
-            ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
-            quotedPrice: bookingForDrop?.totalGBP || drop.quotedPrice || 0,
-            User: { connect: { id: bookingForDrop?.customerId || drop.customerId } },
-            pickupAddress: drop.pickupAddress,
-            deliveryAddress: drop.deliveryAddress,
-            pickupLat: drop.pickupLat,
-            pickupLng: drop.pickupLng,
-            timeWindowStart: new Date(
-              new Date(startTime || existingRoute.startTime).getTime() + i * 30 * 60 * 1000
-            ),
-            timeWindowEnd: new Date(
-              new Date(startTime || existingRoute.startTime).getTime() + (i + 1) * 30 * 60 * 1000
-            ),
-            status: drop.status || 'pending',
-            weight: drop.weight,
-            volume: drop.volume,
-            specialInstructions: drop.specialInstructions,
-            serviceTier: drop.serviceTier || existingRoute.serviceTier as any,
-            estimatedDuration: drop.estimatedMinutes || 30,
-          },
+    // 🔒 CRITICAL FIX: Update drops and route within transaction
+    const updatedRoute = await prisma.$transaction(async (tx) => {
+      // Update drops if provided
+      if (drops && Array.isArray(drops)) {
+        // Delete existing drops within transaction
+        await tx.drop.deleteMany({
+          where: { routeId },
         });
+
+        // Create new drops with validation
+        for (let i = 0; i < drops.length; i++) {
+          const drop = drops[i];
+          let bookingForDrop: { customerId: string; totalGBP: number } | null = null;
+          
+          if (drop.bookingId) {
+            try {
+              const b = await tx.booking.findUnique({
+                where: { id: String(drop.bookingId) },
+                select: { customerId: true, totalGBP: true },
+              });
+              if (b) bookingForDrop = b as any;
+            } catch (error) {
+              logger.error(`Failed to fetch booking ${drop.bookingId} during route update`, error as Error);
+            }
+          }
+
+          // Validate required fields
+          const finalCustomerId = bookingForDrop?.customerId || drop.customerId;
+          if (!finalCustomerId) {
+            throw new Error(`Missing customerId for drop ${i + 1} in route update`);
+          }
+
+          await tx.drop.create({
+            data: {
+              Route: { connect: { id: routeId } },
+              ...(drop.bookingId ? { Booking: { connect: { id: String(drop.bookingId) } } } : {}),
+              quotedPrice: bookingForDrop?.totalGBP || drop.quotedPrice || 0,
+              User: { connect: { id: finalCustomerId } },
+              pickupAddress: drop.pickupAddress,
+              deliveryAddress: drop.deliveryAddress,
+              pickupLat: drop.pickupLat,
+              pickupLng: drop.pickupLng,
+              timeWindowStart: new Date(
+                new Date(startTime || existingRoute.startTime).getTime() + i * 30 * 60 * 1000
+              ),
+              timeWindowEnd: new Date(
+                new Date(startTime || existingRoute.startTime).getTime() + (i + 1) * 30 * 60 * 1000
+              ),
+              status: drop.status || 'pending',
+              weight: drop.weight,
+              volume: drop.volume,
+              specialInstructions: drop.specialInstructions,
+              serviceTier: drop.serviceTier || existingRoute.serviceTier as any,
+              estimatedDuration: drop.estimatedMinutes || 30,
+            },
+          });
+        }
+
+        updateData.totalDrops = drops.length;
+        updateData.optimizedSequence = drops.map((d: any, idx: number) => ({
+          sequence: idx + 1,
+          bookingId: d.bookingId,
+          address: d.deliveryAddress,
+        }));
       }
 
-      updateData.totalDrops = drops.length;
-      updateData.optimizedSequence = drops.map((d: any, idx: number) => ({
-        sequence: idx + 1,
-        bookingId: d.bookingId,
-        address: d.deliveryAddress,
-      }));
-    }
-
-    // Update route
-    const updatedRoute = await prisma.route.update({
-      where: { id: routeId },
-      data: updateData,
-      include: {
-        driver: { select: { id: true, name: true, email: true, phone: true } },
-        drops: {
-          include: {
-            Booking: {
-              select: {
-                id: true,
-                reference: true,
-                customerName: true,
-                customerPhone: true,
-                totalGBP: true,
+      // Update route within transaction
+      const updated = await tx.route.update({
+        where: { id: routeId },
+        data: updateData,
+        include: {
+          driver: { select: { id: true, name: true, email: true, phone: true } },
+          drops: {
+            include: {
+              Booking: {
+                select: {
+                  id: true,
+                  reference: true,
+                  customerName: true,
+                  customerPhone: true,
+                  totalGBP: true,
+                },
+              },
+              User: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
-            User: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
+            orderBy: { timeWindowStart: 'asc' },
           },
-          orderBy: { timeWindowStart: 'asc' },
         },
-      },
+      });
+
+      return updated;
     });
 
     // Log comprehensive audit
@@ -643,9 +722,12 @@ export async function PUT(request: NextRequest) {
       forceUpdate,
     });
 
+    // 🔧 FIX: Serialize Decimal fields before sending
+    const serializedRoute = serializeDecimalFields(updatedRoute);
+
     return NextResponse.json({
       success: true,
-      data: updatedRoute,
+      data: serializedRoute,
       message: 'Multi-drop route updated successfully',
       changesApplied: Object.keys(updateData),
     });
