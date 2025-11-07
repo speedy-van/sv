@@ -528,13 +528,26 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       
       console.log('📦 Using dataset items for pricing (comprehensive API requirement):', itemsForPricing);
 
+      // Validate and clean postcodes
+      const cleanPostcode = (postcode: string | undefined) => {
+        if (!postcode) return 'SW1A 1AA'; // Default fallback
+        // Remove extra spaces and ensure proper format
+        const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, ' ');
+        // Check if it matches UK postcode pattern
+        const ukPostcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+        return ukPostcodeRegex.test(cleaned) ? cleaned : 'SW1A 1AA';
+      };
+
+      const pickupPostcode = cleanPostcode(editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode);
+      const dropoffPostcode = cleanPostcode(editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode);
+
       // Prepare pricing data in correct format for comprehensive API
       const pricingData = {
         pickup: {
           full: pickupLabel,
           line1: pickupLabel,
           city: pickupParsed.city || 'London',
-          postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
+          postcode: pickupPostcode,
           street: pickupParsed.street || 'Street',
           number: pickupParsed.number || '1',
           coordinates: {
@@ -547,7 +560,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           full: dropoffLabel,
           line1: dropoffLabel,
           city: dropoffParsed.city || 'London',
-          postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
+          postcode: dropoffPostcode,
           street: dropoffParsed.street || 'Street',
           number: dropoffParsed.number || '1',
           coordinates: {
