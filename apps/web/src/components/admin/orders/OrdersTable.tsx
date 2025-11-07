@@ -277,7 +277,7 @@ export function OrdersTable({
   const [driverFilter, setDriverFilter] = useState('');
   const [areaFilter, setAreaFilter] = useState('');
   const [orderTypeFilter, setOrderTypeFilter] = useState<'all' | 'new' | 'existing'>('all');
-  const [viewMode, setViewMode] = useState<ViewType>('table');
+  const [viewMode, setViewMode] = useState<ViewType>('card');
   const [selectedOrderCode, setSelectedOrderCode] = useState<
     string | undefined
   >();
