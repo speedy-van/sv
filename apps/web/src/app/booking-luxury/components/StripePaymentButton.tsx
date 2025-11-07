@@ -324,7 +324,7 @@ export default function StripePaymentButton({
           bookingId: bookingId, // Use the booking ID
         },
         successUrl: `${window.location.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${window.location.origin}/booking-luxury?step=2&payment=cancelled`,
+        cancelUrl: `${window.location.origin}/booking-luxury?step=1&payment=cancelled`,
       };
       
       // Create Stripe checkout session

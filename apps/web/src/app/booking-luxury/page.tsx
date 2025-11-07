@@ -478,14 +478,27 @@ export default function BookingLuxuryPage() {
     }
 
     if (paymentStatus === 'cancelled') {
-      setCurrentStep(2); // Go back to payment step
+      // Reset to Step 1 when payment is cancelled
+      setCurrentStep(1);
       
+      // Clear URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      url.searchParams.delete('step');
+      window.history.replaceState({}, '', url.toString());
+      
+      // Show compact, responsive toast notification
       toast({
         title: 'Payment Cancelled',
-        description: 'Your payment was cancelled. You can try again when ready.',
+        description: 'Please review your booking details and try again.',
         status: 'warning',
-        duration: 5000,
+        duration: 6000,
         isClosable: true,
+        position: 'top',
+        containerStyle: {
+          maxWidth: { base: '90%', md: '500px' },
+          marginTop: { base: '60px', md: '80px' },
+        },
       });
       
       return;
