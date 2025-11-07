@@ -337,7 +337,7 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -382,7 +382,7 @@ function generatePaymentConfirmationHTML(data: PaymentConfirmationData): string 
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -433,7 +433,7 @@ function generatePasswordResetHTML(data: { email: string; resetUrl: string; driv
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -900,7 +900,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -962,7 +962,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -1045,7 +1045,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -1166,7 +1166,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
