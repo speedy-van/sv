@@ -7,9 +7,9 @@ pnpm install --frozen-lockfile
 pnpm --filter ./apps/web build
 
 # Ensure standalone bundle contains static assets and public files
-mkdir -p apps/web/.next/standalone/.next/static
-cp -R apps/web/.next/static/. apps/web/.next/standalone/.next/static/
+mkdir -p apps/web/.next/standalone/apps/web/.next/static
+cp -R apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static/
 
-mkdir -p apps/web/.next/standalone/public
-cp -R apps/web/public/. apps/web/.next/standalone/public/
+mkdir -p apps/web/.next/standalone/apps/web/public
+cp -R apps/web/public/. apps/web/.next/standalone/apps/web/public/
 

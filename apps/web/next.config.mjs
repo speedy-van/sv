@@ -166,10 +166,7 @@ const nextConfig = {
     pagesBufferLength: 0, // Don't buffer pages in memory
   },
   
-  // CRITICAL: Use standalone output to ensure each deployment generates completely new chunks
-  // This prevents hash collisions where CSS chunks get loaded as JavaScript chunks
-  // Required for Render.com deployment where CDN cache can serve stale chunks
-  // This ensures each build produces fresh chunk hashes, preventing CSS/JS mix-ups
+  // CRITICAL: Enable standalone output for Render deployment
   output: 'standalone',
   
   // CRITICAL: Generate unique build ID for cache busting
