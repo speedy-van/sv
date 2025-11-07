@@ -224,12 +224,16 @@ interface OrderDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   orderCode?: string;
+  variant?: 'standalone' | 'embedded';
+  showSummaryCards?: boolean;
 }
 
 const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   isOpen,
   onClose,
   orderCode,
+  variant = 'standalone',
+  showSummaryCards = true,
 }) => {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -245,6 +249,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const [assignmentReason, setAssignmentReason] = useState<string>('');
   const [isAssigningDriver, setIsAssigningDriver] = useState(false);
   const [isRemovingDriver, setIsRemovingDriver] = useState(false);
+  const isEmbedded = variant === 'embedded';
   
   const toast = useToast();
   const { 
@@ -796,11 +801,23 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} size="lg">
+    <Drawer 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size={isEmbedded ? 'full' : 'lg'}
+      placement="right"
+      blockScrollOnMount
+      trapFocus
+    >
       <DrawerOverlay bg="blackAlpha.800" />
       <DrawerContent 
         bg={bgColor} 
         color={textColor} 
+        maxW={isEmbedded ? { base: '100%', lg: '520px' } : undefined}
+        ml={isEmbedded ? 'auto' : undefined}
+        display="flex"
+        flexDirection="column"
+        height="100vh"
         sx={{ 
           bg: `${bgColor} !important`,
           backgroundColor: `${bgColor} !important`,
@@ -830,9 +847,13 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         <DrawerCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
         <DrawerHeader 
           borderBottom={`1px solid ${borderColor}`} 
-          pb={4} 
+          pb={3}
+          pt={3}
           bg={cardBg} 
           color={textColor} 
+          position="sticky"
+          top={0}
+          zIndex={10}
           sx={{ 
             bg: `${cardBg} !important`,
             backgroundColor: `${cardBg} !important`,
@@ -843,59 +864,38 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               color: '#FFFFFF !important',
             },
           }}
-          __css={{
-            backgroundColor: '#111111 !important',
-            background: '#111111 !important',
-            color: '#FFFFFF !important',
-          }}
-          css={{
-            backgroundColor: '#111111 !important',
-            background: '#111111 !important',
-            color: '#FFFFFF !important',
-          }}
-          style={{
-            backgroundColor: '#111111',
-            background: '#111111',
-            color: '#FFFFFF',
-          }}
         >
-          <VStack align="stretch" spacing={3}>
-            <HStack justify="space-between">
-              <HStack spacing={3}>
-                {order && (
-                  <Circle
-                    size="16px"
-                    bg={calculatePriority(order.scheduledAt).color}
-                    animation={calculatePriority(order.scheduledAt).animation}
-                  />
-                )}
-                <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                  Order Details
-                </Text>
-              </HStack>
+          <HStack justify="space-between" align="center">
+            <HStack spacing={2}>
+              {order && (
+                <Circle
+                  size="12px"
+                  bg={calculatePriority(order.scheduledAt).color}
+                  animation={calculatePriority(order.scheduledAt).animation}
+                />
+              )}
               {orderCode && (
-                <Badge colorScheme="blue" fontSize="sm" px={3} py={1} bg="#2563eb" color="#FFFFFF">
+                <Badge colorScheme="blue" fontSize="md" px={3} py={1} bg="#2563eb" color="#FFFFFF">
                   #{orderCode}
                 </Badge>
               )}
+              {order && (
+                <Badge 
+                  colorScheme={
+                    calculatePriority(order.scheduledAt).level === 'urgent' ? 'red' :
+                    calculatePriority(order.scheduledAt).level === 'high' ? 'orange' :
+                    calculatePriority(order.scheduledAt).level === 'medium' ? 'yellow' :
+                    'green'
+                  }
+                  fontSize="xs"
+                  px={2}
+                  py={1}
+                >
+                  {calculatePriority(order.scheduledAt).label}
+                </Badge>
+              )}
             </HStack>
-            {order && (
-              <Badge 
-                colorScheme={
-                  calculatePriority(order.scheduledAt).level === 'urgent' ? 'red' :
-                  calculatePriority(order.scheduledAt).level === 'high' ? 'orange' :
-                  calculatePriority(order.scheduledAt).level === 'medium' ? 'yellow' :
-                  'green'
-                }
-                fontSize="xs"
-                px={2}
-                py={1}
-                w="fit-content"
-              >
-                {calculatePriority(order.scheduledAt).label}
-              </Badge>
-            )}
-          </VStack>
+          </HStack>
         </DrawerHeader>
 
         <DrawerBody 
@@ -927,6 +927,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
             background: '#000000',
             color: '#FFFFFF',
           }}
+          flex="1"
+          overflowY="auto"
         >
           {loading ? (
             <Box display="flex" justifyContent="center" py={8}>
@@ -940,7 +942,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           ) : order ? (
             <VStack spacing={6} align="stretch">
               {/* Data Completeness Summary */}
-              {completenessData && (
+              {showSummaryCards && completenessData && (
                 <Box p={4} borderRadius="md" bg={cardBg} borderWidth={1} borderColor={borderColor}>
                   <VStack spacing={3} align="stretch">
                     <HStack justify="space-between">
