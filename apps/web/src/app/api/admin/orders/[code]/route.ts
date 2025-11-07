@@ -48,6 +48,14 @@ export async function GET(
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
+        route: {
+          select: {
+            id: true,
+            reference: true,
+            status: true,
+            totalDrops: true,
+          },
+        },
         BookingItem: {
           select: {
             id: true,
