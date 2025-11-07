@@ -209,28 +209,32 @@ export default function BookingLuxuryPage() {
         // Calculate three-tier pricing
         const basePrice = data.data.amountGbpMinor / 100; // Convert from pence
         
-        setPricingTiers({
+        const calculatedTiers = {
           economy: {
-            price: Math.round(basePrice * 0.85), // 15% discount for multi-drop
+            price: Math.round(basePrice * 0.85 * 100) / 100, // 15% discount, keep decimals
             available: data.data.availability?.economy?.next_available_date,
             availability: data.data.availability?.economy
           },
           standard: {
-            price: Math.round(basePrice),
+            price: Math.round(basePrice * 100) / 100, // Keep decimals
             available: data.data.availability?.standard?.next_available_date,
             availability: data.data.availability?.standard
           },
           express: {
-            price: Math.round(basePrice * 1.5), // 50% premium for express
+            price: Math.round(basePrice * 1.5 * 100) / 100, // 50% premium, keep decimals
             available: data.data.availability?.express?.next_available_date,
             availability: data.data.availability?.express
           }
-        });
+        };
+        
+        setPricingTiers(calculatedTiers);
 
-        console.log('✅ Enterprise Engine: Full-address availability calculated', {
-          availability: data.data.availability,
-          pickup: { city: formData.step1.pickupAddress.city },
-          dropCount: 1 // Single dropoff for now
+        console.log('✅ Enterprise Engine Pricing Tiers (STEP 2):', {
+          basePrice,
+          economy: calculatedTiers.economy.price,
+          standard: calculatedTiers.standard.price,
+          express: calculatedTiers.express.price,
+          note: 'These exact values will be used in Step 3'
         });
 
       } else {

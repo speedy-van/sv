@@ -63,13 +63,11 @@ export default function WhoAndPaymentStepSimple({
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const toast = useToast();
   
-  // CRITICAL: Get base price from formData.step1.pricing.total (actual calculated price)
-  const basePrice = formData.step1.pricing?.total || standardPrice || 0;
-  
-  // Calculate service-specific prices dynamically based on base price
-  const calculatedEconomyPrice = basePrice > 0 ? Math.round(basePrice * 0.85 * 100) / 100 : (economyPrice || 0);
-  const calculatedStandardPrice = basePrice > 0 ? basePrice : (standardPrice || 0);
-  const calculatedExpressPrice = basePrice > 0 ? Math.round(basePrice * 1.5 * 100) / 100 : (priorityPrice || 0);
+  // CRITICAL FIX: Use EXACT prices from props (calculated in Step 2, not recalculated here)
+  // These come from pricingTiers which are calculated by Enterprise Engine
+  const calculatedEconomyPrice = economyPrice || 0;
+  const calculatedStandardPrice = standardPrice || 0;
+  const calculatedExpressPrice = priorityPrice || 0;
   
   // Get current price based on selected service
   const actualPrice = selectedService === 'economy' 
@@ -78,13 +76,13 @@ export default function WhoAndPaymentStepSimple({
     ? calculatedExpressPrice 
     : calculatedStandardPrice;
   
-  console.log('💰 WhoAndPaymentStep Pricing:', {
-    basePrice,
+  console.log('💰 Step 3 Pricing (FROM STEP 2 - NO RECALCULATION):', {
     economy: calculatedEconomyPrice,
     standard: calculatedStandardPrice,
     express: calculatedExpressPrice,
     selectedService,
-    actualPrice
+    actualPrice,
+    source: 'Using exact prices from Step 2 pricingTiers'
   });
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
@@ -96,29 +94,19 @@ export default function WhoAndPaymentStepSimple({
     });
   }, [formData.step2.customerDetails, updateFormData]);
   
-  // Handle service selection change - update pricing immediately
+  // Handle service selection change - just update selected service (no price recalculation)
   const handleServiceChange = useCallback((serviceId: 'economy' | 'standard' | 'express') => {
     setSelectedService(serviceId);
     
-    // Calculate new price based on selected service
+    // Get price for selected service (from Step 2 calculation)
     const newTotal = serviceId === 'economy' 
       ? calculatedEconomyPrice 
       : serviceId === 'express' 
       ? calculatedExpressPrice 
       : calculatedStandardPrice;
     
-    console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)}`);
-    
-    // Update pricing only if it changed (prevent infinite loop)
-    if (formData.step1.pricing && Math.abs(newTotal - formData.step1.pricing.total) > 0.01) {
-      updateFormData('step1', {
-        pricing: {
-          ...formData.step1.pricing,
-          total: newTotal
-        }
-      });
-    }
-  }, [calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice, formData.step1.pricing, updateFormData]);
+    console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
+  }, [calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice]);
 
   // CRITICAL: Use calculated prices (not static props)
   const services = [
