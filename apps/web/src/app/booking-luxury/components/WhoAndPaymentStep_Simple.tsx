@@ -96,28 +96,29 @@ export default function WhoAndPaymentStepSimple({
     });
   }, [formData.step2.customerDetails, updateFormData]);
   
-  // Update pricing when service selection changes
-  React.useEffect(() => {
-    if (basePrice > 0) {
-      // Recalculate pricing based on selected service
-      const newTotal = selectedService === 'economy' 
-        ? calculatedEconomyPrice 
-        : selectedService === 'express' 
-        ? calculatedExpressPrice 
-        : calculatedStandardPrice;
-      
-      // Update formData with new total
-      if (formData.step1.pricing && newTotal !== formData.step1.pricing.total) {
-        console.log(`🔄 Service changed to ${selectedService} - updating price to £${newTotal.toFixed(2)}`);
-        updateFormData('step1', {
-          pricing: {
-            ...formData.step1.pricing,
-            total: newTotal
-          }
-        });
-      }
+  // Handle service selection change - update pricing immediately
+  const handleServiceChange = useCallback((serviceId: 'economy' | 'standard' | 'express') => {
+    setSelectedService(serviceId);
+    
+    // Calculate new price based on selected service
+    const newTotal = serviceId === 'economy' 
+      ? calculatedEconomyPrice 
+      : serviceId === 'express' 
+      ? calculatedExpressPrice 
+      : calculatedStandardPrice;
+    
+    console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)}`);
+    
+    // Update pricing only if it changed (prevent infinite loop)
+    if (formData.step1.pricing && Math.abs(newTotal - formData.step1.pricing.total) > 0.01) {
+      updateFormData('step1', {
+        pricing: {
+          ...formData.step1.pricing,
+          total: newTotal
+        }
+      });
     }
-  }, [selectedService, basePrice, calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice]);
+  }, [calculatedEconomyPrice, calculatedStandardPrice, calculatedExpressPrice, formData.step1.pricing, updateFormData]);
 
   // CRITICAL: Use calculated prices (not static props)
   const services = [
@@ -174,10 +175,7 @@ export default function WhoAndPaymentStepSimple({
                     borderColor={selectedService === service.id ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
                     bg={selectedService === service.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
                     cursor="pointer"
-                    onClick={() => {
-                      setSelectedService(service.id);
-                      // Don't update formData serviceType - it uses different values
-                    }}
+                    onClick={() => handleServiceChange(service.id)}
                     transition="all 0.2s"
                     _hover={{
                       borderColor: 'blue.500',
