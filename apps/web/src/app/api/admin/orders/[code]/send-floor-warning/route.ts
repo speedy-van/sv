@@ -39,8 +39,12 @@ export async function POST(
     }
 
     // Check if order needs floor warning
-    const hasPickupFloorIssue = !booking.pickupProperty?.floors || booking.pickupProperty.floors === 0;
-    const hasDropoffFloorIssue = !booking.dropoffProperty?.floors || booking.dropoffProperty.floors === 0;
+    // Only warn if floors is explicitly 0, null, or undefined
+    // If floors > 0, customer provided floor number, so no warning needed
+    const pickupFloors = booking.pickupProperty?.floors;
+    const dropoffFloors = booking.dropoffProperty?.floors;
+    const hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
+    const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
     if (!hasPickupFloorIssue && !hasDropoffFloorIssue) {
       return NextResponse.json({

@@ -48,6 +48,14 @@ export async function GET(
         dropoffAddress: true,
         pickupProperty: true,
         dropoffProperty: true,
+        route: {
+          select: {
+            id: true,
+            reference: true,
+            status: true,
+            totalDrops: true,
+          },
+        },
         BookingItem: {
           select: {
             id: true,
@@ -120,12 +128,24 @@ export async function GET(
         lng: order.dropoffAddress.lng,
       } : null,
       pickupProperty: order.pickupProperty ? {
+        propertyType: order.pickupProperty.propertyType,
         floors: order.pickupProperty.floors,
         accessType: order.pickupProperty.accessType,
       } : null,
       dropoffProperty: order.dropoffProperty ? {
+        propertyType: order.dropoffProperty.propertyType,
         floors: order.dropoffProperty.floors,
         accessType: order.dropoffProperty.accessType,
+      } : null,
+      serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
+      orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
+      isMultiDrop: order.isMultiDrop || false,
+      routeId: order.routeId,
+      route: order.route ? {
+        id: order.route.id,
+        reference: order.route.reference,
+        status: order.route.status,
+        totalDrops: order.route.totalDrops,
       } : null,
       driver: order.driver ? {
         User: {
@@ -140,12 +160,17 @@ export async function GET(
       baseDistanceMiles: order.baseDistanceMiles,
       notes: null, // Add when customer notes field is available
       pickupTimeSlot: order.pickupTimeSlot,
+      items: order.BookingItem?.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        volumeM3: item.volumeM3,
+      })) || [],
       BookingItem: order.BookingItem?.map(item => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,
         volumeM3: item.volumeM3,
-        // Add image when available
       })) || [],
     };
 
@@ -153,6 +178,7 @@ export async function GET(
       reference: order.reference,
       status: order.status,
       itemsCount: order.BookingItem?.length || 0,
+      hasItems: (order.BookingItem?.length || 0) > 0,
     });
 
     return NextResponse.json(transformedOrder);

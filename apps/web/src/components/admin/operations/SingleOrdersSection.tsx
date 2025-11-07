@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Box } from '@chakra-ui/react';
-import OrdersClient from '@/app/admin/orders/table';
+import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 
 interface SingleOrdersSectionProps {
   onCountChange?: (count: number) => void;
@@ -28,12 +28,13 @@ export default function SingleOrdersSection({
   acceptedNotifications,
   inProgressNotifications 
 }: SingleOrdersSectionProps) {
-  // Note: The count will be managed by the OrdersClient component internally
+  // Note: The count will be managed internally by the OrdersTable component
   // We can enhance this later to expose the count via props or context
 
   return (
     <Box>
-      <OrdersClient 
+      <OrdersTable 
+        embedded
         declinedNotifications={declinedNotifications}
         acceptedNotifications={acceptedNotifications}
         inProgressNotifications={inProgressNotifications}

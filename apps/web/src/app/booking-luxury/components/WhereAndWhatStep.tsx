@@ -239,54 +239,53 @@ export default function WhereAndWhatStep({
                 {/* Date */}
                 <FormControl isInvalid={!!errors['step1.pickupDate']}>
                   <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>📅 Select Date</FormLabel>
-                  <Select
+                  <Input
+                    type="date"
                     value={step1.pickupDate || ''}
                     onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
-                    bg="white"
-                    borderColor="gray.300"
-                    color="gray.900"
+                    min={new Date().toISOString().split('T')[0]}
+                    bg="rgba(26, 26, 26, 0.8)"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
                     size="lg"
-                    borderRadius="lg"
-                    borderWidth="2px"
-                    fontWeight="medium"
-                    cursor="pointer"
-                    placeholder="Choose a date"
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    fontWeight="500"
                     _hover={{
-                      borderColor: "gray.400",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      borderColor: "rgba(59, 130, 246, 0.5)",
+                      bg: "rgba(26, 26, 26, 0.9)",
                     }}
                     _focus={{
-                      borderColor: "#3b82f6",
-                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
-                      outline: "none",
+                      borderColor: "blue.500",
+                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
+                      bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
-                      '& option': {
-                        backgroundColor: 'white',
-                        color: 'black',
-                        padding: '12px',
-                        fontSize: '14px',
-                        fontWeight: '500',
+                      colorScheme: 'dark',
+                      '&::-webkit-calendar-picker-indicator': {
+                        filter: 'invert(1)',
+                        cursor: 'pointer',
+                      },
+                      '&::-webkit-datetime-edit': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-fields-wrapper': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-text': {
+                        color: 'gray.400',
+                      },
+                      '&::-webkit-datetime-edit-month-field': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-day-field': {
+                        color: 'white',
+                      },
+                      '&::-webkit-datetime-edit-year-field': {
+                        color: 'white',
                       },
                     }}
-                  >
-                    {Array.from({ length: 30 }, (_, i) => {
-                      const date = new Date();
-                      date.setDate(date.getDate() + i);
-                      const dateStr = date.toISOString().split('T')[0];
-                      const dateLabel = date.toLocaleDateString('en-US', { 
-                        weekday: 'short', 
-                        month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                      });
-                      return (
-                        <option key={dateStr} value={dateStr} style={{ backgroundColor: 'white', color: '#111827' }}>
-                          {dateLabel}
-                        </option>
-                      );
-                    })}
-                  </Select>
+                  />
                   {errors['step1.pickupDate'] && (
                     <FormErrorMessage>{errors['step1.pickupDate']}</FormErrorMessage>
                   )}
@@ -298,46 +297,38 @@ export default function WhereAndWhatStep({
                   <Select
                     value={step1.pickupTimeSlot || ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
-                    bg="white"
-                    borderColor="gray.300"
-                    color="gray.900"
+                    bg="rgba(26, 26, 26, 0.8)"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    color="white"
                     size="lg"
-                    borderRadius="lg"
-                    borderWidth="2px"
-                    fontWeight="medium"
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    fontWeight="500"
                     cursor="pointer"
                     placeholder="Choose a time"
                     _hover={{
-                      borderColor: "gray.400",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      borderColor: "rgba(59, 130, 246, 0.5)",
+                      bg: "rgba(26, 26, 26, 0.9)",
                     }}
                     _focus={{
-                      borderColor: "#3b82f6",
-                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
-                      outline: "none",
+                      borderColor: "blue.500",
+                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
+                      bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
                       '& option': {
-                        backgroundColor: 'white',
-                        color: 'black',
+                        backgroundColor: '#1a1a1a',
+                        color: 'white',
                         padding: '12px',
                         fontSize: '14px',
                         fontWeight: '500',
                       },
                     }}
                   >
-                    {Array.from({ length: 24 }, (_, i) => {
-                      const hour = i;
-                      const hour12 = hour % 12 || 12;
-                      const ampm = hour < 12 ? 'AM' : 'PM';
-                      const timeValue = `${hour.toString().padStart(2, '0')}:00`;
-                      const timeLabel = `${hour12}:00 ${ampm}`;
-                      return (
-                        <option key={timeValue} value={timeValue} style={{ backgroundColor: 'white', color: '#111827' }}>
-                          {timeLabel}
-                        </option>
-                      );
-                    })}
+                    <option value="08:00-12:00">8 AM - 12 PM 🌅</option>
+                    <option value="12:00-16:00">12 PM - 4 PM ☀️</option>
+                    <option value="16:00-18:00">4 PM - 6 PM 🌆</option>
+                    <option value="flexible">Flexible ⏰</option>
                   </Select>
                   {errors['step1.pickupTime'] && (
                     <FormErrorMessage>{errors['step1.pickupTime']}</FormErrorMessage>

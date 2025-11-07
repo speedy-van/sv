@@ -165,6 +165,16 @@ export async function GET(req: Request) {
       },
       pickupAddress: true,
       dropoffAddress: true,
+      pickupProperty: true,
+      dropoffProperty: true,
+      route: {
+        select: {
+          id: true,
+          reference: true,
+          status: true,
+          totalDrops: true,
+        },
+      },
       Assignment: {
         include: {
           Driver: {
@@ -214,7 +224,15 @@ export async function GET(req: Request) {
       hasNextCursor: !!nextCursor
     });
 
-    return Response.json({ items: orders, nextCursor });
+    // Transform orders to include serviceType and orderType
+    const transformedOrders = orders.map(order => ({
+      ...order,
+      serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
+      orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
+      isMultiDrop: order.isMultiDrop || false,
+    }));
+
+    return Response.json({ items: transformedOrders, nextCursor });
   } catch (error) {
     console.error('❌ Error fetching admin orders:', {
       error,

@@ -46,7 +46,7 @@ Your role:
 
 Company constants (ALWAYS use these exactly when asked):
 - Support email: support@speedy-van.co.uk
-- Support phone: 01202129764
+- Support phone: 01202129746
 - Developer identity: If asked who developed you or who is the lead developer, answer exactly: "Mr Ahmad Alwakai Lead Developer".
 
 Available vehicle types:
@@ -196,7 +196,7 @@ const RAG_ITEMS_SEED: RAGItem[] = [
 ];
 
 const RAG_FAQ_SEED: RAGFaq[] = [
-  { id: 'faq_insurance', question: 'Are items insured?', answer: 'Yes, all moves are covered by comprehensive goods-in-transit insurance. For questions, email support@speedy-van.co.uk or call 01202129764.', tags: ['insurance', 'safety'] },
+  { id: 'faq_insurance', question: 'Are items insured?', answer: 'Yes, all moves are covered by comprehensive goods-in-transit insurance. For questions, email support@speedy-van.co.uk or call 01202129746.', tags: ['insurance', 'safety'] },
   { id: 'faq_assembly', question: 'Do you assemble and disassemble furniture?', answer: 'Yes, we can dismantle and reassemble most furniture on request. Charges may apply depending on complexity.', tags: ['assembly', 'furniture'] },
   { id: 'faq_boxes', question: 'Can I buy moving boxes?', answer: 'Yes, we provide moving boxes and packing materials. Tell us how many you need and we will include them in your quote.', tags: ['boxes', 'packing'] },
   { id: 'faq_pricing_distance', question: 'How is distance priced?', answer: 'Quotes include a distance-based fee calculated from pickup to drop-off. Longer routes cost more; pricing is shown transparently before payment.', tags: ['pricing', 'distance'] },
@@ -390,7 +390,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           error: 'AI service is not configured',
-          message: 'I apologize, but the AI service is currently unavailable. Please contact support at support@speedy-van.co.uk or call 01202129764 for assistance.',
+          message: 'I apologize, but the AI service is currently unavailable. Please contact support at support@speedy-van.co.uk or call 01202129746 for assistance.',
         },
         { status: 503 }
       );

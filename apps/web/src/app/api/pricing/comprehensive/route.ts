@@ -41,7 +41,7 @@ const EnhancedPricingRequestSchema = z.object({
     quantity: z.number().min(1).default(1),
     weight_override: z.number().positive().optional(),
     volume_override: z.number().positive().optional()
-  })).min(1),
+  })).default([]).optional(),
   pickup: z.object({
     full: z.string().min(1),
     line1: z.string().min(1),
@@ -132,8 +132,21 @@ async function transformRequestToPricingInput(
   }
 
   // Transform items: enrich with dataset information
+  // Handle empty items array (return empty transformed array with default item)
+  const itemsToTransform = validatedRequest.items && validatedRequest.items.length > 0 
+    ? validatedRequest.items 
+    : [{
+        id: 'default-item',
+        name: 'Standard Item',
+        quantity: 1
+      }];
+  
+  if (!validatedRequest.items || validatedRequest.items.length === 0) {
+    console.warn('⚠️ No items provided in request - using default item for pricing calculation');
+  }
+  
   const transformedItems = await Promise.all(
-    validatedRequest.items.map(async (item) => {
+    itemsToTransform.map(async (item) => {
       // Find dataset item by ID or name
       const datasetItem = dataset.find((ds: any) =>
         ds.id === item.id || ds.name?.toLowerCase() === item.name?.toLowerCase()

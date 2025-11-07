@@ -11,14 +11,17 @@ export function middleware(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
-  // CRITICAL: Cache busting headers for Next.js static files
-  // Prevent browsers and CDNs from serving stale chunks
+  // CRITICAL: Proper MIME types for CSS files (Safari iOS fix)
   const pathname = request.nextUrl.pathname;
-  if (pathname.startsWith('/_next/static/')) {
-    // Force revalidation for Next.js chunks
+  if (pathname.startsWith('/_next/static/') && pathname.endsWith('.css')) {
+    // Force correct MIME type for CSS files
+    response.headers.set('Content-Type', 'text/css; charset=utf-8');
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+  } else if (pathname.startsWith('/_next/static/')) {
+    // Cache busting for other static files
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     response.headers.set('X-Content-Hash', process.env.NEXT_BUILD_ID || Date.now().toString());
-    // Add ETag busting
     response.headers.set('ETag', `"${Date.now()}"`);
   }
 
@@ -38,15 +41,13 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Apply middleware to all routes except static files
+// CRITICAL: Apply middleware to ALL routes INCLUDING _next/static for CSS MIME type fix
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Match ALL request paths to ensure CSS files get correct MIME type
+     * This is CRITICAL for Safari iOS rendering
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/(.*)',
   ],
 };

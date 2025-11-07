@@ -11,9 +11,15 @@ services:
     region: frankfurt # EU Central
     rootDir: apps/web
     buildCommand: cd ../.. && npm install -g pnpm@10.17.0 && pnpm install --frozen-lockfile && NODE_OPTIONS=--max-old-space-size=4096 pnpm --filter ./apps/web build
-    startCommand: pnpm start
+    startCommand: node .next/standalone/server.js
     healthCheckPath: /api/health
     numInstances: 2 # High availability
+    buildFilter:
+      paths:
+        - apps/web/**
+        - packages/**
+    # Enable build cache for faster deployments
+    autoDeploy: true
     envVars:
       # Node Environment
       - key: NODE_ENV

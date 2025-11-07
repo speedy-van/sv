@@ -34,9 +34,10 @@ import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMa
 import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
-import WhoAndPaymentStep from './components/WhoAndPaymentStep';
+import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
 
 // Removed ItemImage component - using icons instead
@@ -79,6 +80,9 @@ export default function BookingLuxuryPage() {
   const [checkoutWaveActive, setCheckoutWaveActive] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
+  
+  // Auto-progression flags
+  const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
 
   const {
     formData,
@@ -94,10 +98,6 @@ export default function BookingLuxuryPage() {
     removePromotionCode,
   } = useBookingForm();
 
-  // Auto-save functionality
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [draftRestored, setDraftRestored] = useState(false);
 
   // Enterprise Engine: Automatic availability & pricing with full addresses
   const [availabilityData, setAvailabilityData] = useState<any>(null);
@@ -108,31 +108,16 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
-  // Helper function to clear corrupted draft data
-  const clearDraftData = useCallback(() => {
-    try {
-      localStorage.removeItem('speedy_van_booking_draft');
-      console.log('✅ Cleared draft data from localStorage');
-      toast({
-        title: 'Draft cleared',
-        description: 'All saved draft data has been removed. You can start fresh.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (e) {
-      console.error('Failed to clear draft:', e);
-    }
-  }, [toast]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
-    // Only calculate if we have all required data with full addresses
-    if (
-      !formData.step1.pickupAddress?.coordinates ||
-      formData.step1.items.length === 0 ||
-      formData.step1.items.length === 0
-    ) {
+    // Only calculate if we have addresses (items can be empty - will use default)
+    if (!formData.step1.pickupAddress?.coordinates) {
+      return;
+    }
+    
+    // Skip if no items yet (will calculate when items are added)
+    if (formData.step1.items.length === 0) {
       return;
     }
 
@@ -217,35 +202,65 @@ export default function BookingLuxuryPage() {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Extract availability and pricing
+
+        if (!data || data.success !== true || !data.data) {
+          console.error('Pricing API returned an unexpected payload', { data });
+          return;
+        }
+
         setAvailabilityData(data.data.availability);
-        
-        // Calculate three-tier pricing
-        const basePrice = data.data.amountGbpMinor / 100; // Convert from pence
-        
-        setPricingTiers({
+
+        const amountMinorRaw = data.data.amountGbpMinor;
+        let amountMinor: number;
+
+        if (typeof amountMinorRaw === 'string') {
+          amountMinor = parseFloat(amountMinorRaw);
+        } else {
+          amountMinor = amountMinorRaw;
+        }
+
+        if (typeof amountMinor !== 'number' || Number.isNaN(amountMinor) || amountMinor <= 0) {
+          console.error('Pricing API returned an invalid amount', { amountMinorRaw });
+          return;
+        }
+
+        const normalizePrice = (value: number) => {
+          const fixed = value.toFixed(2);
+          return parseFloat(fixed);
+        };
+
+        const rawBasePrice = amountMinor / 100;
+        const basePrice = normalizePrice(rawBasePrice);
+        const economyPriceValue = normalizePrice(rawBasePrice * 0.85);
+        const expressPriceValue = normalizePrice(rawBasePrice * 1.5);
+
+        const calculatedTiers = {
           economy: {
-            price: Math.round(basePrice * 0.85), // 15% discount for multi-drop
+            price: economyPriceValue,
             available: data.data.availability?.economy?.next_available_date,
             availability: data.data.availability?.economy
           },
           standard: {
-            price: Math.round(basePrice),
+            price: basePrice,
             available: data.data.availability?.standard?.next_available_date,
             availability: data.data.availability?.standard
           },
           express: {
-            price: Math.round(basePrice * 1.5), // 50% premium for express
+            price: expressPriceValue,
             available: data.data.availability?.express?.next_available_date,
             availability: data.data.availability?.express
           }
-        });
+        };
 
-        console.log('✅ Enterprise Engine: Full-address availability calculated', {
-          availability: data.data.availability,
-          pickup: { city: formData.step1.pickupAddress.city },
-          dropCount: 1 // Single dropoff for now
+        setPricingTiers(calculatedTiers);
+
+        console.log('✅ Enterprise Engine Pricing Tiers (STEP 2):', {
+          rawBasePrice,
+          basePrice,
+          economy: calculatedTiers.economy.price,
+          standard: calculatedTiers.standard.price,
+          express: calculatedTiers.express.price,
+          note: 'These exact values will be used in Step 3'
         });
 
       } else {
@@ -435,123 +450,7 @@ export default function BookingLuxuryPage() {
     }
   }, [isClient, formData.step1.items, formData.step1.pickupAddress, formData.step1.dropoffAddress, calculatePricing]);
 
-  // Auto-save form data to localStorage
-  useEffect(() => {
-    if (!isClient) return;
-    
-    const saveFormData = async () => {
-      if (!formData) return;
-      
-      setIsSaving(true);
-      try {
-        localStorage.setItem('speedy_van_booking_draft', JSON.stringify({
-          ...formData,
-          currentStep,
-          savedAt: new Date().toISOString(),
-        }));
-        setLastSaved(new Date());
-        
-        // Show subtle save confirmation (only on mobile)
-        if (window.innerWidth < 768) {
-          toast({
-            title: 'Draft saved',
-            status: 'success',
-            duration: 1000,
-            isClosable: false,
-            position: 'top',
-            size: 'sm',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to save draft:', error);
-      } finally {
-        setIsSaving(false);
-      }
-    };
 
-    // Debounce auto-save
-    const timeoutId = setTimeout(saveFormData, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [formData, currentStep, toast, isClient]);
-
-  // Load saved draft on component mount
-  useEffect(() => {
-    if (draftRestored) return; // Prevent duplicate notifications
-
-    try {
-      const savedDraft = localStorage.getItem('speedy_van_booking_draft');
-      if (savedDraft) {
-        const draftData = JSON.parse(savedDraft);
-        const savedDate = new Date(draftData.savedAt);
-        
-        // Only restore if saved within last 24 hours
-        const hoursSinceLastSave = (new Date().getTime() - savedDate.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursSinceLastSave < 24 && draftData.currentStep) {
-          toast({
-            title: 'Draft restored',
-            description: `Your booking draft from ${savedDate.toLocaleString()} has been restored.`,
-            status: 'info',
-            duration: 5000,
-            isClosable: true,
-          });
-          setCurrentStep(draftData.currentStep);
-          setLastSaved(savedDate);
-          // Restore form data (including images for items)
-          if (draftData.step1) {
-            try {
-              // Clean and validate items before restoring
-              const restoredItems = Array.isArray(draftData.step1.items)
-                ? draftData.step1.items
-                    .filter((it: any) => {
-                      // Filter out items with invalid/old IDs that might cause API errors
-                      if (!it?.id || !it?.name) {
-                        console.warn('⚠️ Skipping invalid item from draft:', it);
-                        return false;
-                      }
-                      return true;
-                    })
-                    .map((it: any) => ({
-                      ...it,
-                      // Ensure image is preserved if present in draft; do not inject a fallback here
-                      image: typeof it?.image === 'string' ? it.image : (typeof it?.itemImage === 'string' ? it.itemImage : ''),
-                    }))
-                : [];
-              
-              // Only restore if we have valid items
-              updateFormData('step1', {
-                ...draftData.step1,
-                items: restoredItems,
-              });
-              
-              // Show warning if items were filtered out
-              if (Array.isArray(draftData.step1.items) && restoredItems.length < draftData.step1.items.length) {
-                toast({
-                  title: 'Some items were removed',
-                  description: 'Invalid items from your draft have been removed. Please re-add them if needed.',
-                  status: 'warning',
-                  duration: 5000,
-                  isClosable: true,
-                });
-              }
-            } catch (e) {
-              console.warn('Failed to restore step1 from draft:', e);
-            }
-          }
-          if (draftData.step2) {
-            try {
-              updateFormData('step2', { ...draftData.step2 });
-            } catch (e) {
-              console.warn('Failed to restore step2 from draft:', e);
-            }
-          }
-          setDraftRestored(true); // Mark as restored to prevent duplicates
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load draft:', error);
-    }
-  }, [toast, isClient, draftRestored]);
 
   // Handle URL parameters on page load
   useEffect(() => {
@@ -605,24 +504,44 @@ export default function BookingLuxuryPage() {
   // Success page is now handled by dedicated /booking/success route
 
   const handleNext = async () => {
-    const isValid = await validateStep(currentStep);
-    if (isValid) {
-      if (currentStep < STEPS.length) {
-        // Pricing is now handled automatically - no manual intervention required
+    // Simple check - no complex validation
+    if (currentStep === 1) {
+      // Step 1: Just check addresses exist
+      if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
+        // Scroll to top FIRST
+        window.scrollTo({ top: 0, behavior: 'auto' });
         
-        setCurrentStep(currentStep + 1);
-        clearErrors();
+        setIsAutoTransitioning(true);
+        setTimeout(() => {
+          setCurrentStep(2);
+          clearErrors();
+          setIsAutoTransitioning(false);
+        }, 300);
+      } else {
+        toast({
+          title: 'Please enter both addresses',
+          status: 'error',
+          duration: 3000,
+        });
       }
     } else {
-      toast({
-        title: 'Please complete all required fields',
-        description: 'Please fill in all required information before proceeding.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      // Other steps - just advance
+      if (currentStep < STEPS.length) {
+        // CRITICAL: Scroll to top FIRST (especially for Step 3)
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        
+        setIsAutoTransitioning(true);
+        setTimeout(() => {
+          setCurrentStep(currentStep + 1);
+          clearErrors();
+          setIsAutoTransitioning(false);
+        }, 300);
+      }
     }
   };
+  
+  // REMOVED: Auto-progression - Let user add building details (floor, elevator, apartment)
+  // User clicks "Continue" button when ready instead of auto-advance
 
   const handlePrevious = () => {
     if (currentStep > 1) {
@@ -747,6 +666,8 @@ export default function BookingLuxuryPage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const isMobile = useBreakpointValue({ base: true, md: false });
 
+  // REMOVED: Scroll restoration interferes with step transitions
+
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
@@ -755,537 +676,208 @@ export default function BookingLuxuryPage() {
       w="100%" 
       minH="100dvh" 
       bg={bgColor} 
-      py={{ base: 2, md: 8 }} 
-      pb={{ base: "100px", md: 8 }}
+      py={{ base: 0, md: 8 }} 
+      pb={{ base: "80px", md: 8 }}
       overflowX="hidden"
       overflowY="auto"
       sx={{
         WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'none',
+        overscrollBehavior: 'auto',
+        scrollBehavior: 'auto',
       }}
     >
-      <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 2, md: 6 }}>
+      <Container 
+        maxW={{ base: "full", md: "6xl" }} 
+        px={{ base: 2, md: 6 }}
+        pt={{ base: 2, md: 0 }}
+      >
         <Box 
           display="block" 
           w="100%" 
-          py={{ base: 4, md: 8 }}
-          sx={{
-            '& > *': {
-              display: 'block',
-              width: '100%',
-              marginBottom: { base: '16px', md: '32px' },
-            },
-            '& > *:last-child': {
-              marginBottom: 0,
-            },
-          }}
+          py={{ base: 2, md: 8 }}
         >
-          {/* PREMIUM HEADER - ENHANCED GLASSMORPHISM */}
-          <Card 
-            bg="linear-gradient(135deg, rgba(26, 32, 44, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
-            backdropFilter="blur(20px) saturate(180%)"
-            shadow="0 8px 32px rgba(147, 51, 234, 0.4), 0 0 60px rgba(147, 51, 234, 0.3), 0 0 100px rgba(147, 51, 234, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-            borderRadius="2xl"
-            border="2px solid"
-            borderColor="rgba(147, 51, 234, 0.5)"
-            position="relative"
-            overflow="hidden"
-            w="full"
-            mx={0}
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            _hover={{
-              shadow: "0 12px 40px rgba(147, 51, 234, 0.5), 0 0 80px rgba(147, 51, 234, 0.4), 0 0 120px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-              borderColor: "rgba(147, 51, 234, 0.7)",
-              transform: "translateY(-2px)",
-            }}
-            sx={{
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
-                opacity: 0.6,
-                zIndex: 1,
-                pointerEvents: 'none',
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                animation: 'shine 6s infinite',
-                zIndex: 2,
-                pointerEvents: 'none',
-              },
-              '@keyframes shine': {
-                '0%': { left: '-100%' },
-                '100%': { left: '200%' },
-              },
-              '& > *': {
-                position: 'relative',
-                zIndex: 3,
-              },
-            }}
+          {/* SIMPLIFIED STICKY HEADER - Modern & Clean - MOBILE SAFARI FIX */}
+          <Box
+            position="sticky"
+            top={0}
+            zIndex={100}
+            bg="rgba(13, 13, 13, 0.98)"
+            backdropFilter="blur(10px)"
+            borderBottom="1px solid"
+            borderColor="rgba(59, 130, 246, 0.2)"
+            py={{ base: 2, md: 3 }}
+            mb={{ base: 3, md: 6 }}
+            mx={{ base: -2, md: 0 }}
+            px={{ base: 2, md: 0 }}
           >
-            <CardBody p={0} px={{ base: 3, sm: 4, md: 8 }} py={{ base: 4, md: 8 }}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={{ base: 3, md: 6 }}>
-                {/* LEFT: Brand + Step Navigation */}
-                <HStack spacing={{ base: 3, md: 8 }} flexWrap="wrap">
+            <VStack spacing={2} w="full" data-booking-header>
+              {/* Top: Brand & Back Button */}
+              <Flex 
+                justify="space-between" 
+                align="center" 
+                px={{ base: 2, md: 6 }}
+                w="full"
+              >
+                <HStack 
+                  spacing={2}
+                  sx={{
+                    flexDirection: 'row !important',
+                    alignItems: 'center !important',
+                    writingMode: 'horizontal-tb !important',
+                  }}
+                >
                   {currentStep === 1 && (
-                    <Button
-                      size={{ base: 'sm', md: 'md' }}
-                      variant="outline"
-                      colorScheme="gray"
+                    <IconButton
+                      aria-label="Back to home"
+                      icon={<FaArrowLeft />}
+                      size="sm"
+                      variant="ghost"
+                      color="gray.400"
                       onClick={() => router.push('/')}
-                      bg="rgba(255, 255, 255, 0.05)"
-                      borderColor="rgba(255, 255, 255, 0.2)"
-                      color="white"
-                      fontWeight="semibold"
-                      borderRadius="lg"
-                      px={{ base: 2, md: 4 }}
-                      py={{ base: 1, md: 2 }}
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                      _hover={{
-                        bg: "rgba(255, 255, 255, 0.1)",
-                        borderColor: "rgba(255, 255, 255, 0.3)",
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-                      }}
-                      _active={{
-                        transform: "translateY(0)",
-                      }}
-                    >
-                      ← Back to Home
-                    </Button>
+                      _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
+                    />
                   )}
-                  <HStack spacing={{ base: 2, md: 4 }}>
+                  <Icon as={FaTruck} boxSize={6} color="blue.400" />
+                  <Text 
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    fontWeight="bold"
+                    color="white"
+                    style={{
+                      writingMode: 'horizontal-tb',
+                      textOrientation: 'mixed',
+                      direction: 'ltr',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-block',
+                      transform: 'none',
+                    }}
+                  >
+                    Speedy Van
+                  </Text>
+                </HStack>
+              </Flex>
+
+              {/* Bottom: Progress Steps - Under Speedy Van */}
+              <HStack 
+                spacing={2}
+                justify="center"
+                w="full"
+                sx={{
+                  flexDirection: 'row !important',
+                  alignItems: 'center !important',
+                }}
+              >
+                {STEPS.map((step, index) => (
+                  <React.Fragment key={step.id}>
                     <Box
-                      position="relative"
-                      w={{ base: '40px', md: '56px' }}
-                      h={{ base: '40px', md: '56px' }}
-                      borderRadius="xl"
-                      bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                      w={{ base: '32px', md: '36px' }}
+                      h={{ base: '32px', md: '36px' }}
+                      borderRadius="full"
+                      bg={
+                        step.id === currentStep 
+                          ? 'blue.500'
+                          : step.id < currentStep 
+                          ? 'green.500'
+                          : 'gray.700'
+                      }
+                      color="white"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                      border="1px solid"
-                      borderColor="rgba(59, 130, 246, 0.5)"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      _hover={{
-                        transform: "scale(1.05) rotate(5deg)",
-                        boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                      }}
+                      fontSize="sm"
+                      fontWeight="bold"
+                      cursor={step.id <= currentStep ? 'pointer' : 'default'}
+                      onClick={() => step.id <= currentStep && handleStepClick(step.id)}
+                      transition="all 0.2s"
+                      _hover={step.id <= currentStep ? { transform: 'scale(1.1)' } : {}}
                     >
-                      <Icon as={FaTruck} boxSize={{ base: 5, md: 7 }} color="blue.300" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                      {step.id < currentStep ? <Icon as={FaCheck} boxSize={3} /> : step.id}
                     </Box>
-                    <VStack align="start" spacing={{ base: 1, md: 2 }}>
-                      <Heading 
-                        size={{ base: 'md', md: 'lg' }} 
-                        color="white"
-                        fontWeight="700"
-                        letterSpacing="0.5px"
-                        textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
-                        bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 100%)"
-                        bgClip="text"
-                        sx={{
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      >
-                        Speedy Van
-                      </Heading>
-                      <HStack spacing={{ base: 1.5, md: 3 }} flexWrap="wrap">
-                        <Badge 
-                          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%)"
-                          color="blue.200"
-                          fontSize={{ base: '2xs', sm: 'xs' }}
-                          fontWeight="semibold"
-                          px={{ base: 1.5, sm: 2, md: 3 }}
-                          py={{ base: 0.5, md: 1 }}
-                          borderRadius="full"
-                          border="1px solid"
-                          borderColor="rgba(59, 130, 246, 0.4)"
-                          boxShadow="0 2px 8px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                          backdropFilter="blur(10px)"
-                          transition="all 0.2s"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                          }}
-                        >
-                          <Icon as={FaShieldAlt} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
-                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>Fully Insured</Text>
-                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>Insured</Text>
-                        </Badge>
-                        <Badge 
-                          bg="linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%)"
-                          color="yellow.200"
-                          fontSize={{ base: '2xs', sm: 'xs' }}
-                          fontWeight="semibold"
-                          px={{ base: 1.5, sm: 2, md: 3 }}
-                          py={{ base: 0.5, md: 1 }}
-                          borderRadius="full"
-                          border="1px solid"
-                          borderColor="rgba(251, 191, 36, 0.4)"
-                          boxShadow="0 2px 8px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                          backdropFilter="blur(10px)"
-                          transition="all 0.2s"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                          }}
-                        >
-                          <Icon as={FaStar} mr={{ base: 0.5, md: 1.5 }} boxSize={{ base: 2.5, md: 3 }} />
-                          <Text as="span" display={{ base: 'none', sm: 'inline' }}>5-Star Rated</Text>
-                          <Text as="span" display={{ base: 'inline', sm: 'none' }}>5-Star</Text>
-                        </Badge>
-                      </HStack>
-                    </VStack>
-                  </HStack>
-                  
-                  {/* SINGLE PROGRESS INDICATOR - Step Navigation Only */}
-                  <HStack spacing={4} display={{ base: 'none', lg: 'flex' }}>
-                    {STEPS.map((step, index) => (
-                      <React.Fragment key={step.id}>
-                        <HStack 
-                          spacing={3}
-                          cursor={step.id <= currentStep ? 'pointer' : 'default'}
-                          onClick={() => step.id <= currentStep && handleStepClick(step.id)}
-                          _hover={step.id <= currentStep ? { transform: 'translateY(-1px)' } : {}}
-                          transition="all 0.2s"
-                        >
-                          <Circle 
-                            size="40px" 
-                            bg={
-                              step.id === currentStep 
-                                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%)'
-                                : step.id < currentStep 
-                                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)'
-                                : 'rgba(75, 85, 99, 0.3)'
-                            }
-                            color={step.id <= currentStep ? 'white' : 'gray.400'}
-                            fontSize="sm"
-                            fontWeight="bold"
-                            boxShadow={
-                              step.id === currentStep 
-                                ? '0 4px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.2)'
-                                : step.id < currentStep
-                                ? '0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-                                : '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                            }
-                            border="2px solid"
-                            borderColor={
-                              step.id === currentStep 
-                                ? 'rgba(59, 130, 246, 0.6)'
-                                : step.id < currentStep
-                                ? 'rgba(16, 185, 129, 0.6)'
-                                : 'rgba(255, 255, 255, 0.1)'
-                            }
-                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                            _hover={step.id <= currentStep ? {
-                              transform: "scale(1.1)",
-                              boxShadow: step.id === currentStep 
-                                ? '0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.3)'
-                                : '0 6px 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                            } : {}}
-                          >
-                            {step.id < currentStep ? <Icon as={FaCheck} boxSize={4} /> : 
-                             step.id === currentStep ? <Icon as={step.icon} boxSize={4} /> :
-                             step.id}
-                          </Circle>
-                          <VStack align="start" spacing={0}>
-                            <Text 
-                              fontSize="md" 
-                              fontWeight={step.id === currentStep ? 'bold' : 'medium'}
-                              color={
-                                step.id === currentStep ? 'blue.400' : 
-                                step.id < currentStep ? 'green.400' : 
-                                'gray.400'
-                              }
-                              position="relative"
-                              _before={(step.id === 1 && itemsDetailsWaveActive) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-5px',
-                                width: 'calc(100% + 10px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(34, 197, 94, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'itemsDetailsWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '4px'
-                              } : (step.id === 2 && checkoutWaveActive) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-5px',
-                                width: 'calc(100% + 10px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(34, 197, 94, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'checkoutWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '4px'
-                              } : {}}
-                              sx={{
-                                '@keyframes itemsDetailsWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                },
-                                '@keyframes checkoutWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                }
-                              }}
-                            >
-                              {step.shortTitle}
-                            </Text>
-                            <Text 
-                              fontSize="xs" 
-                              color="gray.400"
-                              position="relative"
-                              _before={(step.id === 2 && currentStep === 1) ? {
-                                content: '""',
-                                position: 'absolute',
-                                top: '0',
-                                left: '-3px',
-                                width: 'calc(100% + 6px)',
-                                height: '100%',
-                                background: 'linear-gradient(270deg, transparent, rgba(239, 68, 68, 0.5), transparent)',
-                                backgroundSize: '200% 100%',
-                                animation: 'pendingWaveMove 3s linear infinite',
-                                zIndex: 1,
-                                borderRadius: '3px'
-                              } : {}}
-                              sx={{
-                                '@keyframes pendingWaveMove': {
-                                  '0%': { backgroundPosition: '200% 0' },
-                                  '100%': { backgroundPosition: '-200% 0' }
-                                }
-                              }}
-                            >
-                              {step.id < currentStep ? 'Complete' : 
-                               step.id === currentStep ? 'Active' : 
-                               'Pending'}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                        {index < STEPS.length - 1 && (
-                          <Box 
-                            w="50px" 
-                            h="3px" 
-                            bg={
-                              step.id < currentStep 
-                                ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.8) 0%, rgba(5, 150, 105, 0.8) 100%)'
-                                : 'rgba(75, 85, 99, 0.3)'
-                            }
-                            borderRadius="full"
-                            boxShadow={
-                              step.id < currentStep
-                                ? '0 2px 8px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                                : '0 1px 4px rgba(0, 0, 0, 0.2)'
-                            }
-                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                            position="relative"
-                            overflow="hidden"
-                            _before={step.id < currentStep ? {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: '-100%',
-                              width: '100%',
-                              height: '100%',
-                              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-                              animation: 'pulse 2s infinite',
-                            } : {}}
-                            sx={{
-                              '@keyframes pulse': {
-                                '0%, 100%': { left: '-100%' },
-                                '50%': { left: '100%' },
-                              },
-                            }}
-                          />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </HStack>
-                </HStack>
+                    {index < STEPS.length - 1 && (
+                      <Box 
+                        w={{ base: '24px', md: '30px' }} 
+                        h="2px" 
+                        bg={step.id < currentStep ? 'green.500' : 'gray.700'}
+                        transition="all 0.3s"
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
+              </HStack>
+            </VStack>
+          </Box>
 
 
-              </Flex>
 
-              {/* ENHANCED TITLE SECTION */}
-              <Box mt={8} textAlign="center" position="relative">
-                <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
-                  transform="translate(-50%, -50%)"
-                  w="200px"
-                  h="200px"
-                  borderRadius="full"
-                  bg="radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%)"
-                  filter="blur(40px)"
-                  zIndex={0}
-                />
-                <VStack spacing={3} position="relative" zIndex={1}>
-                  <Heading 
-                    size="2xl" 
-                    fontWeight="700"
-                    letterSpacing="0.5px"
-                    bg="linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 50%, #C7D2FE 100%)"
-                    bgClip="text"
-                    sx={{
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      textShadow: "0 4px 20px rgba(147, 51, 234, 0.3)",
-                    }}
-                  >
-                  Your Move Plan
-                  </Heading>
-                  <Text 
-                    fontSize="lg" 
-                    color="gray.300"
-                    fontWeight="500"
-                    letterSpacing="0.3px"
-                  >
-                  Step {currentStep}: {STEPS[currentStep - 1]?.title}
-                  </Text>
-                </VStack>
+          {/* Step Title - Compact on Mobile */}
+          <Box mb={{ base: 3, md: 6 }} textAlign="center" px={{ base: 2, md: 0 }}>
+            <Heading 
+              size={{ base: "lg", md: "xl" }}
+              color="white"
+              fontWeight="600"
+              mb={1}
+            >
+              {STEPS[currentStep - 1]?.title}
+            </Heading>
+            <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+              {STEPS[currentStep - 1]?.description}
+            </Text>
+          </Box>
+
+          {/* Main Content with Smooth Transitions - Framer Motion */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1] // Smooth easing like Uber
+              }}
+              style={{ width: '100%' }}
+            >
+              <Box w="full">
+                {currentStep === 1 ? (
+                  <AddressesStep
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    onNext={handleNext}
+                  />
+                ) : currentStep === 2 ? (
+                  <WhereAndWhatStep
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    onNext={handleNext}
+                    onBack={() => setCurrentStep(1)}
+                    calculatePricing={calculateComprehensivePricing}
+                    pricingTiers={pricingTiers}
+                    availabilityData={availabilityData}
+                    isLoadingAvailability={isLoadingAvailability}
+                  />
+                ) : currentStep === 3 ? (
+                  <WhoAndPaymentStepSimple
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    paymentSuccess={false}
+                    isCalculatingPricing={isCalculatingPricing}
+                    economyPrice={calculateEconomyPrice()}
+                    standardPrice={calculateStandardPrice()}
+                    priorityPrice={calculatePriorityPrice()}
+                    calculatePricing={calculatePricing}
+                    validatePromotionCode={validatePromotionCode}
+                    applyPromotionCode={applyPromotionCode}
+                    removePromotionCode={removePromotionCode}
+                  />
+                ) : null}
               </Box>
-            </CardBody>
-          </Card>
+            </motion.div>
+          </AnimatePresence>
 
 
-
-          {/* Main Content - Enhanced Glassmorphism */}
-          <Card 
-            bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-            backdropFilter="blur(20px) saturate(180%)"
-            shadow="0 8px 32px rgba(128, 90, 213, 0.4), 0 0 60px rgba(128, 90, 213, 0.3), 0 0 100px rgba(128, 90, 213, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-            borderRadius="2xl"
-            overflow="hidden"
-            border="2px solid"
-            borderColor="rgba(128, 90, 213, 0.5)"
-            data-step="items"
-            w="full"
-            mx={0}
-            position="relative"
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            _hover={{
-              shadow: "0 12px 40px rgba(128, 90, 213, 0.5), 0 0 80px rgba(128, 90, 213, 0.4), 0 0 120px rgba(128, 90, 213, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
-              borderColor: "rgba(128, 90, 213, 0.7)",
-              transform: "translateY(-2px)",
-            }}
-            sx={{
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'linear-gradient(135deg, rgba(128, 90, 213, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
-                opacity: 0.6,
-                zIndex: 0,
-                pointerEvents: 'none',
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
-                animation: 'shine 8s infinite',
-                zIndex: 1,
-                pointerEvents: 'none',
-              },
-              '@keyframes shine': {
-                '0%': { left: '-100%' },
-                '100%': { left: '200%' },
-              },
-              '& > *': {
-                position: 'relative',
-                zIndex: 2,
-              },
-            }}
-          >
-            <CardBody p={0}>
-              {currentStep === 1 ? (
-                <AddressesStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  onNext={() => setCurrentStep(2)}
-                />
-              ) : currentStep === 2 ? (
-                <WhereAndWhatStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  onNext={() => setCurrentStep(3)}
-                  onBack={() => setCurrentStep(1)}
-                  calculatePricing={calculateComprehensivePricing}
-                  pricingTiers={pricingTiers}
-                  availabilityData={availabilityData}
-                  isLoadingAvailability={isLoadingAvailability}
-                />
-              ) : currentStep === 3 ? (
-                <WhoAndPaymentStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  paymentSuccess={false}
-                  isCalculatingPricing={isCalculatingPricing}
-                  economyPrice={calculateEconomyPrice()}
-                  standardPrice={calculateStandardPrice()}
-                  priorityPrice={calculatePriorityPrice()}
-                  calculatePricing={calculatePricing}
-                  validatePromotionCode={validatePromotionCode}
-                  applyPromotionCode={applyPromotionCode}
-                  removePromotionCode={removePromotionCode}
-                />
-              ) : null}
-            </CardBody>
-          </Card>
-
-
-          {/* Enhanced Error Display */}
-          {Object.keys(errors).length > 0 && (
-            <Card bg="red.50" borderColor="red.200" borderWidth="2px" borderRadius="2xl">
-              <CardBody p={{ base: 4, md: 6 }}>
-                <Alert status="error" borderRadius="xl" bg="transparent" border="none">
-                  <AlertIcon boxSize={{ base: 4, md: 6 }} />
-                  <Box>
-                    <AlertTitle fontSize={{ base: "md", md: "lg" }} mb={2}>Please fix the following errors:</AlertTitle>
-                    <AlertDescription>
-                      <VStack align="start" spacing={2}>
-                        {Object.entries(errors).map(([field, error]) => (
-                          <HStack key={field} spacing={2} align="start">
-                            <Text color="red.500" fontSize={{ base: "xs", md: "sm" }}>•</Text>
-                            <Text fontSize={{ base: "xs", md: "sm" }} color="red.700">
-                              {error}
-                            </Text>
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              </CardBody>
-            </Card>
-          )}
+          {/* Error Display - Removed, errors handled by toast */}
         </Box>
       </Container>
 

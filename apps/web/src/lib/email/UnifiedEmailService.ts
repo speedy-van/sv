@@ -330,14 +330,14 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
           </div>
           ` : ''}
 
-          <p>If you have any questions about your order, please contact our support team at support@speedy-van.co.uk or call 07901 846297.</p>
+          <p>If you have any questions about your order, please contact our support team at support@speedy-van.co.uk or call 01202129746.</p>
 
           <p>Best regards,<br>The Speedy Van Team</p>
         </div>
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -382,7 +382,7 @@ function generatePaymentConfirmationHTML(data: PaymentConfirmationData): string 
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -433,7 +433,7 @@ function generatePasswordResetHTML(data: { email: string; resetUrl: string; driv
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -889,7 +889,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -900,7 +900,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -948,7 +948,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
           <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p><strong>If you need to update your floor number, please contact support immediately:</strong></p>
             <div style="text-align: center; margin: 15px 0;">
-              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 07901 846297</p>
+              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 01202129746</p>
               <p style="margin: 5px 0;"><strong>📧 Email:</strong> support@speedy-van.co.uk</p>
             </div>
           </div>
@@ -962,7 +962,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -1034,7 +1034,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1045,7 +1045,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -1155,7 +1155,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 07901 846297</p>
+            <p>📞 Phone: 01202129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1166,7 +1166,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 07901 846297</p>
+          Email: support@speedy-van.co.uk | Phone: 01202129746</p>
         </div>
       </div>
     </body>
@@ -1346,8 +1346,12 @@ export const unifiedEmailService = {
     dropoffProperty?: { floors?: number; accessType?: string };
   }) {
     try {
-      const hasPickupFloorIssue = !orderData.pickupProperty?.floors || orderData.pickupProperty.floors === 0;
-      const hasDropoffFloorIssue = !orderData.dropoffProperty?.floors || orderData.dropoffProperty.floors === 0;
+      // Only warn if floors is explicitly 0, null, or undefined
+      // If floors > 0, customer provided floor number, so no warning needed
+      const pickupFloors = orderData.pickupProperty?.floors;
+      const dropoffFloors = orderData.dropoffProperty?.floors;
+      const hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
+      const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
       if (!hasPickupFloorIssue && !hasDropoffFloorIssue) {
         return {

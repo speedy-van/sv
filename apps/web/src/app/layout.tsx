@@ -97,7 +97,7 @@ export default async function RootLayout({
   const initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
 
   return (
-    <html lang="en" dir="ltr">
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         {/* Favicon and App Icons */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -332,8 +332,8 @@ export default async function RootLayout({
         />
 
         {/* Preload critical resources - removed favicon preload as it's not used immediately */}
-      </head>
-      <body>
+             </head>
+      <body suppressHydrationWarning>
         {/* Fix CSS files incorrectly loaded as scripts - Watch for dynamically added scripts (Next.js hydration) */}
         <script
           dangerouslySetInnerHTML={{
