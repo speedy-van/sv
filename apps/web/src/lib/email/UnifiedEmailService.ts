@@ -948,7 +948,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
           <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p><strong>If you need to update your floor number, please contact support immediately:</strong></p>
             <div style="text-align: center; margin: 15px 0;">
-              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 07901 846297</p>
+              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 01202129746</p>
               <p style="margin: 5px 0;"><strong>📧 Email:</strong> support@speedy-van.co.uk</p>
             </div>
           </div>
