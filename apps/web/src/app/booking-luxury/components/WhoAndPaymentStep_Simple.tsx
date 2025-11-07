@@ -25,6 +25,8 @@ import {
   FormErrorMessage,
   Icon,
   SimpleGrid,
+  IconButton,
+  Image,
 } from '@chakra-ui/react';
 import {
   FaUser,
@@ -33,6 +35,9 @@ import {
   FaBuilding,
   FaCreditCard,
   FaCheckCircle,
+  FaPlus,
+  FaMinus,
+  FaTrash,
 } from 'react-icons/fa';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
@@ -122,6 +127,69 @@ export default function WhoAndPaymentStepSimple({
     actualPrice
   });
 
+  const selectedItems = formData.step1.items || [];
+
+  const applyItemUpdates = useCallback(
+    (items: typeof selectedItems) => {
+      const sanitizedItems = (items || [])
+        .map((item) => ({
+          ...item,
+          quantity: Math.max(0, item.quantity ?? 0),
+        }))
+        .filter((item) => item.quantity > 0);
+
+      updateFormData('step1', {
+        items: sanitizedItems.map((item) => ({ ...item })),
+      });
+    },
+    [updateFormData]
+  );
+
+  const incrementItem = useCallback(
+    (itemId: string) => {
+      const currentItems = formData.step1.items || [];
+      const nextItems = currentItems.map((item) =>
+        item.id === itemId
+          ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
+          : item
+      );
+      applyItemUpdates(nextItems);
+    },
+    [formData.step1.items, applyItemUpdates]
+  );
+
+  const decrementItem = useCallback(
+    (itemId: string) => {
+      const currentItems = formData.step1.items || [];
+      const target = currentItems.find((item) => item.id === itemId);
+      if (!target) {
+        return;
+      }
+
+      if ((target.quantity || 0) <= 1) {
+        const nextItems = currentItems.filter((item) => item.id !== itemId);
+        applyItemUpdates(nextItems);
+      } else {
+        const nextItems = currentItems.map((item) =>
+          item.id === itemId
+            ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
+            : item
+        );
+        applyItemUpdates(nextItems);
+      }
+    },
+    [formData.step1.items, applyItemUpdates]
+  );
+
+  const removeItem = useCallback(
+    (itemId: string) => {
+      const currentItems = formData.step1.items || [];
+      const nextItems = currentItems.filter((item) => item.id !== itemId);
+      applyItemUpdates(nextItems);
+    },
+    [formData.step1.items, applyItemUpdates]
+  );
+
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
     updateFormData('step2', {
       customerDetails: {
@@ -176,6 +244,120 @@ export default function WhoAndPaymentStepSimple({
   return (
     <Box w="full">
       <VStack spacing={6} align="stretch">
+        {selectedItems.length > 0 && (
+          <Card
+            bg="rgba(26, 26, 26, 0.6)"
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.2)"
+            borderRadius="2xl"
+            backdropFilter="blur(10px)"
+          >
+            <CardBody p={{ base: 6, md: 8 }}>
+              <VStack spacing={4} align="stretch">
+                <HStack justify="space-between" align="center" flexWrap="wrap" gap={2}>
+                  <Text fontSize="lg" fontWeight="600" color="white">
+                    Your Selected Items
+                  </Text>
+                  <Text fontSize="sm" color="gray.400">
+                    Adjust quantities instantly – pricing updates automatically.
+                  </Text>
+                </HStack>
+
+                <VStack spacing={3} align="stretch">
+                  {selectedItems.map((item) => (
+                    <HStack
+                      key={item.id}
+                      spacing={4}
+                      align="center"
+                      bg="rgba(15, 23, 42, 0.65)"
+                      borderRadius="xl"
+                      border="1px solid"
+                      borderColor="rgba(59, 130, 246, 0.2)"
+                      px={{ base: 3, md: 4 }}
+                      py={{ base: 3, md: 4 }}
+                      flexWrap="wrap"
+                    >
+                      <HStack spacing={3} align="center" flex={1} minW="0">
+                        {item.image && (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            boxSize={{ base: '44px', md: '56px' }}
+                            borderRadius="md"
+                            objectFit="cover"
+                            bg="rgba(15, 23, 42, 0.8)"
+                            flexShrink={0}
+                          />
+                        )}
+                        <Box minW="0">
+                          <Text
+                            fontSize={{ base: 'sm', md: 'md' }}
+                            fontWeight="600"
+                            color="white"
+                            noOfLines={2}
+                          >
+                            {item.name}
+                          </Text>
+                          {item.description && (
+                            <Text fontSize="xs" color="gray.400" noOfLines={2}>
+                              {item.description}
+                            </Text>
+                          )}
+                        </Box>
+                      </HStack>
+
+                      <HStack spacing={2} align="center">
+                        <IconButton
+                          aria-label={`Decrease ${item.name}`}
+                          icon={<FaMinus />}
+                          size="sm"
+                          variant="ghost"
+                          color="gray.300"
+                          onClick={() => decrementItem(item.id)}
+                          isDisabled={item.quantity <= 1}
+                          _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)' }}
+                        />
+                        <Text
+                          fontSize="md"
+                          fontWeight="bold"
+                          color="white"
+                          minW="32px"
+                          textAlign="center"
+                        >
+                          {item.quantity || 1}
+                        </Text>
+                        <IconButton
+                          aria-label={`Increase ${item.name}`}
+                          icon={<FaPlus />}
+                          size="sm"
+                          variant="ghost"
+                          color="gray.300"
+                          onClick={() => incrementItem(item.id)}
+                          _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)' }}
+                        />
+                      </HStack>
+
+                      <IconButton
+                        aria-label={`Remove ${item.name}`}
+                        icon={<FaTrash />}
+                        size="sm"
+                        variant="ghost"
+                        color="red.300"
+                        onClick={() => removeItem(item.id)}
+                        _hover={{ color: 'red.100', bg: 'rgba(248, 113, 113, 0.15)' }}
+                      />
+                    </HStack>
+                  ))}
+                </VStack>
+
+                <Text fontSize="xs" color="gray.500">
+                  Need to add new items? Tap the step indicator above to revisit “Items & Time”.
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
+        )}
+
         {/* CARD 1: Service Selection - Simplified Tabs */}
         <Card
           bg="rgba(26, 26, 26, 0.6)"
