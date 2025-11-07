@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Drawer,
   DrawerBody,
@@ -45,6 +45,7 @@ import {
   Card,
   CardBody,
   SimpleGrid,
+  IconButton,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { differenceInHours, differenceInDays } from 'date-fns';
@@ -65,6 +66,7 @@ import {
   FiTrash2,
   FiNavigation,
   FiTrendingUp,
+  FiCopy,
 } from 'react-icons/fi';
 import PaymentConfirmationButton from './PaymentConfirmationButton';
 
@@ -252,6 +254,29 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const isEmbedded = variant === 'embedded';
   
   const toast = useToast();
+
+  // Handle copy order code
+  const handleCopyOrderCode = useCallback(() => {
+    if (!orderCode) return;
+    
+    navigator.clipboard.writeText(orderCode).then(() => {
+      toast({
+        title: 'Copied!',
+        description: `Order code ${orderCode} copied to clipboard`,
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    }).catch(() => {
+      toast({
+        title: 'Copy failed',
+        description: 'Could not copy to clipboard',
+        status: 'error',
+        duration: 2000,
+        isClosable: true,
+      });
+    });
+  }, [orderCode, toast]);
   const { 
     isOpen: isCancelModalOpen, 
     onOpen: onCancelModalOpen, 
@@ -838,8 +863,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
             },
           }}
         >
-          <HStack justify="space-between" align="center">
-            <HStack spacing={2}>
+          <HStack justify="space-between" align="center" w="full">
+            <HStack spacing={2} flex={1}>
               {order && (
                 <Circle
                   size="12px"
@@ -848,9 +873,25 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 />
               )}
               {orderCode && (
-                <Badge colorScheme="blue" fontSize="md" px={3} py={1} bg="#2563eb" color="#FFFFFF">
-                  #{orderCode}
-                </Badge>
+                <>
+                  <Badge colorScheme="blue" fontSize="md" px={3} py={1} bg="#2563eb" color="#FFFFFF">
+                    #{orderCode}
+                  </Badge>
+                  <Tooltip label="Copy order code" placement="top">
+                    <IconButton
+                      aria-label="Copy order code"
+                      icon={<FiCopy />}
+                      size="sm"
+                      variant="ghost"
+                      color="#FFFFFF"
+                      _hover={{ bg: '#1a1a1a', color: '#10b981' }}
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleCopyOrderCode();
+                      }}
+                    />
+                  </Tooltip>
+                </>
               )}
               {order && (
                 <Badge 
