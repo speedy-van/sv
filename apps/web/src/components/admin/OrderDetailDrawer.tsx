@@ -69,6 +69,7 @@ import {
   FiCopy,
 } from 'react-icons/fi';
 import PaymentConfirmationButton from './PaymentConfirmationButton';
+import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 
 // Flashing animations
 const pulseAnimation = keyframes`
@@ -492,34 +493,62 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
     
     setIsRecalculatingPrice(true);
     try {
-      // Prepare pricing data
+      // Extract address components for API
+      const pickupLabel = editedOrder.pickupAddress?.label || order.pickupAddress?.label || '';
+      const dropoffLabel = editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '';
+      
+      // Parse address to extract street and city
+      const parseAddress = (fullAddress: string) => {
+        const parts = fullAddress.split(',').map(p => p.trim());
+        return {
+          street: parts[0] || '',
+          city: parts.length > 1 ? parts[parts.length - 2] : '',
+          number: '', // Will be extracted if available
+        };
+      };
+      
+      const pickupParsed = parseAddress(pickupLabel);
+      const dropoffParsed = parseAddress(dropoffLabel);
+
+      // Prepare pricing data in correct format for comprehensive API
       const pricingData = {
-        pickupAddress: {
-          postcode: order.pickupAddress?.postcode || '',
-          city: '',
-          street: order.pickupAddress?.label || '',
-          number: '',
+        pickup: {
+          full: pickupLabel,
+          line1: pickupLabel,
+          city: pickupParsed.city || 'London',
+          postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
+          street: pickupParsed.street,
+          number: pickupParsed.number || '1',
+          coordinates: {
+            lat: order.pickupAddress?.lat || 51.5074,
+            lng: order.pickupAddress?.lng || -0.1278,
+          },
+          propertyType: 'house' as const,
         },
-        dropoffAddress: {
-          postcode: order.dropoffAddress?.postcode || '',
-          city: '',
-          street: order.dropoffAddress?.label || '',
-          number: '',
-        },
-        pickupProperty: {
-          floors: editedOrder.pickupProperty?.floors ?? order.pickupProperty?.floors ?? 0,
-          type: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
-          hasLift: (editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType) === 'WITH_LIFT',
-        },
-        dropoffProperty: {
-          floors: editedOrder.dropoffProperty?.floors ?? order.dropoffProperty?.floors ?? 0,
-          type: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
-          hasLift: (editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType) === 'WITH_LIFT',
-        },
-        items: order.items || [],
-        scheduledDate: editedOrder.scheduledAt || order.scheduledAt,
-        timeSlot: editedOrder.pickupTimeSlot || order.pickupTimeSlot || 'flexible',
-        serviceLevel: order.serviceType || 'standard',
+        dropoffs: [{
+          full: dropoffLabel,
+          line1: dropoffLabel,
+          city: dropoffParsed.city || 'London',
+          postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
+          street: dropoffParsed.street,
+          number: dropoffParsed.number || '1',
+          coordinates: {
+            lat: order.dropoffAddress?.lat || 51.5074,
+            lng: order.dropoffAddress?.lng || -0.1278,
+          },
+          propertyType: 'house' as const,
+        }],
+        items: (order.items && order.items.length > 0) ? order.items.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity || 1,
+        })) : [{
+          id: 'default-item',
+          name: 'Standard Item',
+          quantity: 1,
+        }],
+        scheduledDate: new Date(editedOrder.scheduledAt || order.scheduledAt).toISOString(),
+        serviceLevel: (order.serviceType || 'standard') as 'economy' | 'standard' | 'premium',
       };
 
       console.log('🔄 Recalculating price with data:', pricingData);
@@ -533,7 +562,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to recalculate price');
+        const errorText = await response.text();
+        console.error('❌ Pricing API error:', errorText);
+        throw new Error(`Pricing API returned ${response.status}`);
       }
 
       const data = await response.json();
@@ -542,17 +573,26 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         const newPriceGBP = Math.round(data.data.amountGbpMinor / 100);
         setNewCalculatedPrice(newPriceGBP);
         console.log('✅ New price calculated:', newPriceGBP);
+        
+        toast({
+          title: '💰 Price Recalculated',
+          description: `Old: £${(order.totalGBP / 100).toFixed(2)} → New: £${(newPriceGBP / 100).toFixed(2)}`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        
         return newPriceGBP;
       }
       
-      return null;
+      throw new Error('Invalid pricing response');
     } catch (error) {
       console.error('❌ Price recalculation failed:', error);
       toast({
         title: 'Price Calculation Failed',
-        description: 'Could not recalculate price. Order will be updated without price change.',
-        status: 'warning',
-        duration: 4000,
+        description: error instanceof Error ? error.message : 'Could not recalculate price. Order will be updated without price change.',
+        status: 'error',
+        duration: 5000,
         isClosable: true,
       });
       return null;
@@ -566,26 +606,27 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
     setIsSaving(true);
     try {
-      // Step 1: Recalculate price if property details changed
+      // Step 1: Recalculate price if property details or addresses changed
       let updatedPrice = order.totalGBP;
       const hasPropertyChanges = 
         editedOrder.pickupProperty?.floors !== order.pickupProperty?.floors ||
         editedOrder.dropoffProperty?.floors !== order.dropoffProperty?.floors ||
         editedOrder.pickupProperty?.accessType !== order.pickupProperty?.accessType ||
-        editedOrder.dropoffProperty?.accessType !== order.dropoffProperty?.accessType;
+        editedOrder.dropoffProperty?.accessType !== order.dropoffProperty?.accessType ||
+        editedOrder.pickupAddress?.label !== order.pickupAddress?.label ||
+        editedOrder.pickupAddress?.postcode !== order.pickupAddress?.postcode ||
+        editedOrder.dropoffAddress?.label !== order.dropoffAddress?.label ||
+        editedOrder.dropoffAddress?.postcode !== order.dropoffAddress?.postcode;
 
-      if (hasPropertyChanges) {
+      if (hasPropertyChanges && !newCalculatedPrice) {
+        // Auto-calculate if not already calculated
         const newPrice = await recalculatePrice();
         if (newPrice !== null) {
           updatedPrice = newPrice;
-          toast({
-            title: '💰 Price Recalculated',
-            description: `New price: £${(updatedPrice / 100).toFixed(2)} (was £${(order.totalGBP / 100).toFixed(2)})`,
-            status: 'info',
-            duration: 5000,
-            isClosable: true,
-          });
         }
+      } else if (newCalculatedPrice) {
+        // Use the already calculated price
+        updatedPrice = newCalculatedPrice;
       }
 
       // Step 2: Update order with new data and price
@@ -608,15 +649,21 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       setOrder(updatedOrder);
       setIsEditing(false);
       setEditedOrder({});
-      setNewCalculatedPrice(null);
-
+      
+      // Show price change notification if price was updated
+      const priceChanged = updatedPrice !== order.totalGBP;
+      
       toast({
-        title: 'Order Updated',
-        description: 'Order details have been successfully updated.',
+        title: priceChanged ? '✅ Order & Price Updated' : '✅ Order Updated',
+        description: priceChanged 
+          ? `Order updated successfully. Price changed from £${(order.totalGBP / 100).toFixed(2)} to £${(updatedPrice / 100).toFixed(2)}`
+          : 'Order details have been successfully updated.',
         status: 'success',
-        duration: 3000,
+        duration: priceChanged ? 8000 : 4000,
         isClosable: true,
       });
+      
+      setNewCalculatedPrice(null);
 
       // Refresh the order details
       fetchOrderDetails();
@@ -1268,46 +1315,39 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                               </Text>
                             </Alert>
                             <FormControl>
-                              <FormLabel color={textColor} fontSize="xs">Address</FormLabel>
-                              <Textarea
-                                value={editedOrder.pickupAddress?.label || order.pickupAddress?.label || ''}
-                                onChange={(e) => setEditedOrder({
-                                  ...editedOrder,
-                                  pickupAddress: {
-                                    label: e.target.value,
-                                    postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
-                                    flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber,
-                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat,
-                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng,
+                              <FormLabel color={textColor} fontSize="xs">Pickup Address</FormLabel>
+                              <UKAddressAutocomplete
+                                id="edit-pickup-address"
+                                label=""
+                                value={{
+                                  address: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
+                                  postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
+                                  coordinates: {
+                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat || 0,
+                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng || 0,
+                                  },
+                                  houseNumber: '',
+                                  flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber || '',
+                                  city: '',
+                                  formatted_address: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
+                                  place_name: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
+                                } as any}
+                                onChange={(address: any) => {
+                                  if (address) {
+                                    setEditedOrder({
+                                      ...editedOrder,
+                                      pickupAddress: {
+                                        label: address.formatted_address || address.address || address.place_name || '',
+                                        postcode: address.postcode || '',
+                                        flatNumber: address.flatNumber,
+                                        lat: address.coordinates?.lat || null,
+                                        lng: address.coordinates?.lng || null,
+                                      }
+                                    });
                                   }
-                                })}
-                                rows={2}
-                                bg={cardBg}
-                                color={textColor}
-                                borderColor={borderColor}
-                                _hover={{ borderColor: '#2563eb' }}
-                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
-                              />
-                            </FormControl>
-                            <FormControl>
-                              <FormLabel color={textColor} fontSize="xs">Postcode</FormLabel>
-                              <Input
-                                value={editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || ''}
-                                onChange={(e) => setEditedOrder({
-                                  ...editedOrder,
-                                  pickupAddress: {
-                                    label: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
-                                    postcode: e.target.value,
-                                    flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber,
-                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat,
-                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng,
-                                  }
-                                })}
-                                bg={cardBg}
-                                color={textColor}
-                                borderColor={borderColor}
-                                _hover={{ borderColor: '#2563eb' }}
-                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                                }}
+                                placeholder="Enter pickup address..."
+                                isRequired={false}
                               />
                             </FormControl>
                             <FormControl>
@@ -1436,46 +1476,39 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                               </Text>
                             </Alert>
                             <FormControl>
-                              <FormLabel color={textColor} fontSize="xs">Address</FormLabel>
-                              <Textarea
-                                value={editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || ''}
-                                onChange={(e) => setEditedOrder({
-                                  ...editedOrder,
-                                  dropoffAddress: {
-                                    label: e.target.value,
-                                    postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
-                                    flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber,
-                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat,
-                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng,
+                              <FormLabel color={textColor} fontSize="xs">Delivery Address</FormLabel>
+                              <UKAddressAutocomplete
+                                id="edit-dropoff-address"
+                                label=""
+                                value={{
+                                  address: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
+                                  postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
+                                  coordinates: {
+                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat || 0,
+                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng || 0,
+                                  },
+                                  houseNumber: '',
+                                  flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber || '',
+                                  city: '',
+                                  formatted_address: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
+                                  place_name: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
+                                } as any}
+                                onChange={(address: any) => {
+                                  if (address) {
+                                    setEditedOrder({
+                                      ...editedOrder,
+                                      dropoffAddress: {
+                                        label: address.formatted_address || address.address || address.place_name || '',
+                                        postcode: address.postcode || '',
+                                        flatNumber: address.flatNumber,
+                                        lat: address.coordinates?.lat || null,
+                                        lng: address.coordinates?.lng || null,
+                                      }
+                                    });
                                   }
-                                })}
-                                rows={2}
-                                bg={cardBg}
-                                color={textColor}
-                                borderColor={borderColor}
-                                _hover={{ borderColor: '#2563eb' }}
-                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
-                              />
-                            </FormControl>
-                            <FormControl>
-                              <FormLabel color={textColor} fontSize="xs">Postcode</FormLabel>
-                              <Input
-                                value={editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || ''}
-                                onChange={(e) => setEditedOrder({
-                                  ...editedOrder,
-                                  dropoffAddress: {
-                                    label: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
-                                    postcode: e.target.value,
-                                    flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber,
-                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat,
-                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng,
-                                  }
-                                })}
-                                bg={cardBg}
-                                color={textColor}
-                                borderColor={borderColor}
-                                _hover={{ borderColor: '#2563eb' }}
-                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                                }}
+                                placeholder="Enter delivery address..."
+                                isRequired={false}
                               />
                             </FormControl>
                             <FormControl>
@@ -1734,17 +1767,29 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   <CardBody>
                     <VStack spacing={4} align="stretch">
                       {newCalculatedPrice && isEditing && (
-                        <Alert status="warning" bg="rgba(245, 158, 11, 0.1)" borderRadius="md">
-                          <AlertIcon color="#f59e0b" />
+                        <Alert status="warning" bg="rgba(245, 158, 11, 0.15)" borderRadius="md" borderWidth={2} borderColor="#f59e0b">
+                          <AlertIcon color="#f59e0b" boxSize={5} />
                           <VStack align="start" spacing={1} flex={1}>
-                            <Text fontSize="sm" fontWeight="bold" color="#f59e0b">
-                              New Price Calculated
+                            <Text fontSize="md" fontWeight="bold" color="#f59e0b">
+                              💰 New Price Calculated by Enterprise Engine
                             </Text>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Current: £{(order.totalGBP / 100).toFixed(2)} → New: £{(newCalculatedPrice / 100).toFixed(2)}
-                            </Text>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Price will be updated when you save changes
+                            <HStack spacing={3} w="full">
+                              <Box flex={1}>
+                                <Text fontSize="xs" color={secondaryTextColor}>Old Price:</Text>
+                                <Text fontSize="lg" fontWeight="bold" color="#ef4444" textDecoration="line-through">
+                                  £{(order.totalGBP / 100).toFixed(2)}
+                                </Text>
+                              </Box>
+                              <Text fontSize="2xl" color="#f59e0b">→</Text>
+                              <Box flex={1}>
+                                <Text fontSize="xs" color={secondaryTextColor}>New Price:</Text>
+                                <Text fontSize="lg" fontWeight="bold" color="#10b981">
+                                  £{(newCalculatedPrice / 100).toFixed(2)}
+                                </Text>
+                              </Box>
+                            </HStack>
+                            <Text fontSize="xs" color={secondaryTextColor} fontStyle="italic">
+                              ⚠️ Price will be updated when you click "Save & Update Price"
                             </Text>
                           </VStack>
                         </Alert>
@@ -1776,20 +1821,30 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         </Stat>
                       </SimpleGrid>
                       {isEditing && (
-                        <Button
-                          leftIcon={<FiDollarSign />}
-                          size="sm"
-                          colorScheme="orange"
-                          variant="outline"
-                          onClick={recalculatePrice}
-                          isLoading={isRecalculatingPrice}
-                          loadingText="Calculating..."
-                          borderColor="#f59e0b"
-                          color="#f59e0b"
-                          _hover={{ bg: 'rgba(245, 158, 11, 0.1)' }}
-                        >
-                          Recalculate Price
-                        </Button>
+                        <VStack spacing={2} align="stretch">
+                          {isRecalculatingPrice && (
+                            <Progress 
+                              size="xs" 
+                              isIndeterminate 
+                              colorScheme="orange"
+                              borderRadius="full"
+                            />
+                          )}
+                          <Button
+                            leftIcon={<FiDollarSign />}
+                            size="sm"
+                            colorScheme="orange"
+                            variant="outline"
+                            onClick={recalculatePrice}
+                            isLoading={isRecalculatingPrice}
+                            loadingText="Calculating with Enterprise Engine..."
+                            borderColor="#f59e0b"
+                            color="#f59e0b"
+                            _hover={{ bg: 'rgba(245, 158, 11, 0.1)' }}
+                          >
+                            {newCalculatedPrice ? '🔄 Recalculate Again' : '💰 Calculate New Price'}
+                          </Button>
+                        </VStack>
                       )}
                     </VStack>
                   </CardBody>
