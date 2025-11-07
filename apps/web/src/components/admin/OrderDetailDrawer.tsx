@@ -139,9 +139,17 @@ function calculateDriverEarnings(order: any) {
   const distanceMiles = order.distanceMeters 
     ? order.distanceMeters / 1609.34 
     : order.baseDistanceMiles || 0;
-  const durationMinutes = order.durationSeconds 
-    ? order.durationSeconds / 60 
-    : order.estimatedDurationMinutes || 0;
+  
+  // Calculate realistic duration if not available
+  let durationMinutes = 0;
+  if (order.durationSeconds && order.durationSeconds > 3600) {
+    durationMinutes = order.durationSeconds / 60;
+  } else if (distanceMiles > 0) {
+    // Estimate based on distance: 30mph average + 30min loading
+    durationMinutes = (distanceMiles / 30) * 60 + 30;
+  } else {
+    durationMinutes = order.estimatedDurationMinutes || 0;
+  }
   
   const baseFare = 25.00;
   const mileageFee = distanceMiles * 0.55;
@@ -383,10 +391,33 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   };
 
   const formatDuration = (seconds?: number) => {
-    if (!seconds) return '-';
+    if (!seconds || seconds === 0) return 'Not calculated';
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours === 0 && minutes === 0) return 'Not calculated';
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
     return `${hours}h ${minutes}m`;
+  };
+
+  const calculateEstimatedDuration = (order: OrderDetail) => {
+    // If we have actual duration, use it
+    if (order.durationSeconds && order.durationSeconds > 3600) {
+      return order.durationSeconds;
+    }
+    
+    // Calculate based on distance (if available)
+    const distanceMiles = order.baseDistanceMiles || (order.distanceMeters ? order.distanceMeters / 1609.34 : 0);
+    
+    if (distanceMiles > 0) {
+      // Estimate: 30mph average speed in city + 30min loading/unloading
+      const drivingMinutes = (distanceMiles / 30) * 60;
+      const loadingMinutes = 30;
+      const totalMinutes = drivingMinutes + loadingMinutes;
+      return Math.round(totalMinutes * 60); // Convert to seconds
+    }
+    
+    return 0; // Return 0 if no data available
   };
 
   const formatDistance = (meters?: number) => {
@@ -1920,7 +1951,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                           <Text fontSize="xs" color={secondaryTextColor}>Duration</Text>
                         </HStack>
                         <Text fontWeight="bold" fontSize="lg" color="#2563eb">
-                          {formatDuration(order.durationSeconds)}
+                          {formatDuration(calculateEstimatedDuration(order))}
                         </Text>
                       </VStack>
                     </SimpleGrid>
