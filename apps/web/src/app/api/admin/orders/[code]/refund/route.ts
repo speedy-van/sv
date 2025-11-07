@@ -76,9 +76,12 @@ export async function POST(
 
     for (const paymentIntentId of paymentIntents) {
       if (remaining <= 0) break;
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ['charges']
+      }) as any;
       const amountReceived = paymentIntent.amount_received ?? 0;
-      const amountRefunded = paymentIntent.amount_refunded ?? 0;
+      // Get amount_refunded from charges (Stripe API supports this with expand)
+      const amountRefunded = paymentIntent.charges?.data?.[0]?.amount_refunded ?? 0;
       const refundable = amountReceived - amountRefunded;
       if (refundable <= 0) continue;
       const amountToRefund = Math.min(refundable, remaining);
