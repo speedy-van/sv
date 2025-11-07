@@ -251,6 +251,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const [assignmentReason, setAssignmentReason] = useState<string>('');
   const [isAssigningDriver, setIsAssigningDriver] = useState(false);
   const [isRemovingDriver, setIsRemovingDriver] = useState(false);
+  const [isRecalculatingPrice, setIsRecalculatingPrice] = useState(false);
+  const [newCalculatedPrice, setNewCalculatedPrice] = useState<number | null>(null);
   const isEmbedded = variant === 'embedded';
   
   const toast = useToast();
@@ -463,6 +465,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   // Handle edit mode
   const handleEditStart = () => {
     setIsEditing(true);
+    setNewCalculatedPrice(null); // Reset calculated price
     setEditedOrder({
       customerName: order?.customerName,
       customerEmail: order?.customerEmail,
@@ -472,25 +475,129 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       notes: order?.notes,
       pickupProperty: order?.pickupProperty,
       dropoffProperty: order?.dropoffProperty,
+      pickupAddress: order?.pickupAddress,
+      dropoffAddress: order?.dropoffAddress,
     });
   };
 
   const handleEditCancel = () => {
     setIsEditing(false);
     setEditedOrder({});
+    setNewCalculatedPrice(null); // Reset calculated price
   };
+
+  // Recalculate price when property details or addresses change
+  const recalculatePrice = useCallback(async () => {
+    if (!order) return null;
+    
+    setIsRecalculatingPrice(true);
+    try {
+      // Prepare pricing data
+      const pricingData = {
+        pickupAddress: {
+          postcode: order.pickupAddress?.postcode || '',
+          city: '',
+          street: order.pickupAddress?.label || '',
+          number: '',
+        },
+        dropoffAddress: {
+          postcode: order.dropoffAddress?.postcode || '',
+          city: '',
+          street: order.dropoffAddress?.label || '',
+          number: '',
+        },
+        pickupProperty: {
+          floors: editedOrder.pickupProperty?.floors ?? order.pickupProperty?.floors ?? 0,
+          type: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
+          hasLift: (editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType) === 'WITH_LIFT',
+        },
+        dropoffProperty: {
+          floors: editedOrder.dropoffProperty?.floors ?? order.dropoffProperty?.floors ?? 0,
+          type: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
+          hasLift: (editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType) === 'WITH_LIFT',
+        },
+        items: order.items || [],
+        scheduledDate: editedOrder.scheduledAt || order.scheduledAt,
+        timeSlot: editedOrder.pickupTimeSlot || order.pickupTimeSlot || 'flexible',
+        serviceLevel: order.serviceType || 'standard',
+      };
+
+      console.log('🔄 Recalculating price with data:', pricingData);
+
+      const response = await fetch('/api/pricing/comprehensive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pricingData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to recalculate price');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data?.amountGbpMinor) {
+        const newPriceGBP = Math.round(data.data.amountGbpMinor / 100);
+        setNewCalculatedPrice(newPriceGBP);
+        console.log('✅ New price calculated:', newPriceGBP);
+        return newPriceGBP;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Price recalculation failed:', error);
+      toast({
+        title: 'Price Calculation Failed',
+        description: 'Could not recalculate price. Order will be updated without price change.',
+        status: 'warning',
+        duration: 4000,
+        isClosable: true,
+      });
+      return null;
+    } finally {
+      setIsRecalculatingPrice(false);
+    }
+  }, [order, editedOrder, toast]);
 
   const handleEditSave = async () => {
     if (!order) return;
 
     setIsSaving(true);
     try {
+      // Step 1: Recalculate price if property details changed
+      let updatedPrice = order.totalGBP;
+      const hasPropertyChanges = 
+        editedOrder.pickupProperty?.floors !== order.pickupProperty?.floors ||
+        editedOrder.dropoffProperty?.floors !== order.dropoffProperty?.floors ||
+        editedOrder.pickupProperty?.accessType !== order.pickupProperty?.accessType ||
+        editedOrder.dropoffProperty?.accessType !== order.dropoffProperty?.accessType;
+
+      if (hasPropertyChanges) {
+        const newPrice = await recalculatePrice();
+        if (newPrice !== null) {
+          updatedPrice = newPrice;
+          toast({
+            title: '💰 Price Recalculated',
+            description: `New price: £${(updatedPrice / 100).toFixed(2)} (was £${(order.totalGBP / 100).toFixed(2)})`,
+            status: 'info',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      }
+
+      // Step 2: Update order with new data and price
       const response = await fetch(`/api/admin/orders/${order.reference}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editedOrder),
+        body: JSON.stringify({
+          ...editedOrder,
+          totalGBP: updatedPrice,
+        }),
       });
 
       if (!response.ok) {
@@ -501,6 +608,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       setOrder(updatedOrder);
       setIsEditing(false);
       setEditedOrder({});
+      setNewCalculatedPrice(null);
 
       toast({
         title: 'Order Updated',
@@ -1156,9 +1264,52 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                             <Alert status="info" variant="subtle" bg="rgba(16, 185, 129, 0.1)" borderRadius="md" p={2}>
                               <AlertIcon color="#10b981" boxSize={3} />
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Pickup address details
+                                Editing pickup - price will recalculate on save
                               </Text>
                             </Alert>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Address</FormLabel>
+                              <Textarea
+                                value={editedOrder.pickupAddress?.label || order.pickupAddress?.label || ''}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  pickupAddress: {
+                                    label: e.target.value,
+                                    postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
+                                    flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber,
+                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat,
+                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng,
+                                  }
+                                })}
+                                rows={2}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Postcode</FormLabel>
+                              <Input
+                                value={editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || ''}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  pickupAddress: {
+                                    label: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
+                                    postcode: e.target.value,
+                                    flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber,
+                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat,
+                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng,
+                                  }
+                                })}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              />
+                            </FormControl>
                             <FormControl>
                               <FormLabel color={textColor} fontSize="xs">Floor Number</FormLabel>
                               <NumberInput
@@ -1278,12 +1429,55 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         </Text>
                         {isEditing ? (
                           <VStack align="stretch" spacing={2} w="full">
-                            <Alert status="info" variant="subtle" bg="rgba(37, 99, 235, 0.1)" borderRadius="md" p={2}>
-                              <AlertIcon color="#2563eb" boxSize={3} />
+                            <Alert status="info" variant="subtle" bg="rgba(239, 68, 68, 0.1)" borderRadius="md" p={2}>
+                              <AlertIcon color="#ef4444" boxSize={3} />
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Delivery address details
+                                Editing delivery - price will recalculate on save
                               </Text>
                             </Alert>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Address</FormLabel>
+                              <Textarea
+                                value={editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || ''}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  dropoffAddress: {
+                                    label: e.target.value,
+                                    postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
+                                    flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber,
+                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat,
+                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng,
+                                  }
+                                })}
+                                rows={2}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Postcode</FormLabel>
+                              <Input
+                                value={editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || ''}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  dropoffAddress: {
+                                    label: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
+                                    postcode: e.target.value,
+                                    flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber,
+                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat,
+                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng,
+                                  }
+                                })}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              />
+                            </FormControl>
                             <FormControl>
                               <FormLabel color={textColor} fontSize="xs">Floor Number</FormLabel>
                               <NumberInput
@@ -1536,27 +1730,68 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </Text>
                 
                 {/* Price Overview Card */}
-                <Card bg={cardBg} borderColor="#10b981" borderWidth={1}>
+                <Card bg={cardBg} borderColor={newCalculatedPrice ? "#f59e0b" : "#10b981"} borderWidth={newCalculatedPrice ? 2 : 1}>
                   <CardBody>
-                    <SimpleGrid columns={2} spacing={4}>
-                      <Stat>
-                        <StatLabel fontSize="xs" color={secondaryTextColor}>Customer Paid</StatLabel>
-                        <StatNumber fontSize="2xl" color="#10b981">
-                          {formatCurrency(order.totalGBP)}
-                        </StatNumber>
-                      </Stat>
-                      <Stat>
-                        <StatLabel fontSize="xs" color={secondaryTextColor}>
-                          Est. Driver Earnings
-                        </StatLabel>
-                        <StatNumber fontSize="2xl" color="#2563eb">
-                          {calculateDriverEarnings(order).formatted}
-                        </StatNumber>
-                        <StatHelpText fontSize="xs" color={secondaryTextColor}>
-                          Base + Mileage + Time
-                        </StatHelpText>
-                      </Stat>
-                    </SimpleGrid>
+                    <VStack spacing={4} align="stretch">
+                      {newCalculatedPrice && isEditing && (
+                        <Alert status="warning" bg="rgba(245, 158, 11, 0.1)" borderRadius="md">
+                          <AlertIcon color="#f59e0b" />
+                          <VStack align="start" spacing={1} flex={1}>
+                            <Text fontSize="sm" fontWeight="bold" color="#f59e0b">
+                              New Price Calculated
+                            </Text>
+                            <Text fontSize="xs" color={secondaryTextColor}>
+                              Current: £{(order.totalGBP / 100).toFixed(2)} → New: £{(newCalculatedPrice / 100).toFixed(2)}
+                            </Text>
+                            <Text fontSize="xs" color={secondaryTextColor}>
+                              Price will be updated when you save changes
+                            </Text>
+                          </VStack>
+                        </Alert>
+                      )}
+                      <SimpleGrid columns={2} spacing={4}>
+                        <Stat>
+                          <StatLabel fontSize="xs" color={secondaryTextColor}>
+                            {newCalculatedPrice && isEditing ? 'Current Price' : 'Customer Paid'}
+                          </StatLabel>
+                          <StatNumber fontSize="2xl" color={newCalculatedPrice && isEditing ? secondaryTextColor : "#10b981"}>
+                            {formatCurrency(order.totalGBP)}
+                          </StatNumber>
+                          {newCalculatedPrice && isEditing && (
+                            <StatHelpText fontSize="sm" color="#f59e0b" fontWeight="bold">
+                              New: {formatCurrency(newCalculatedPrice)}
+                            </StatHelpText>
+                          )}
+                        </Stat>
+                        <Stat>
+                          <StatLabel fontSize="xs" color={secondaryTextColor}>
+                            Est. Driver Earnings
+                          </StatLabel>
+                          <StatNumber fontSize="2xl" color="#2563eb">
+                            {calculateDriverEarnings(order).formatted}
+                          </StatNumber>
+                          <StatHelpText fontSize="xs" color={secondaryTextColor}>
+                            Base + Mileage + Time
+                          </StatHelpText>
+                        </Stat>
+                      </SimpleGrid>
+                      {isEditing && (
+                        <Button
+                          leftIcon={<FiDollarSign />}
+                          size="sm"
+                          colorScheme="orange"
+                          variant="outline"
+                          onClick={recalculatePrice}
+                          isLoading={isRecalculatingPrice}
+                          loadingText="Calculating..."
+                          borderColor="#f59e0b"
+                          color="#f59e0b"
+                          _hover={{ bg: 'rgba(245, 158, 11, 0.1)' }}
+                        >
+                          Recalculate Price
+                        </Button>
+                      )}
+                    </VStack>
                   </CardBody>
                 </Card>
                 
@@ -1775,35 +2010,50 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               {/* Actions */}
               <Divider borderColor={borderColor} />
               {isEditing ? (
-                <HStack spacing={3} pt={4}>
-                  <Button
-                    leftIcon={<FiSave />}
-                    colorScheme="green"
-                    size="sm"
-                    flex={1}
-                    onClick={handleEditSave}
-                    isLoading={isSaving}
-                    loadingText="Saving..."
-                    bg="#10b981"
-                    color="#FFFFFF"
-                    _hover={{ bg: '#059669' }}
-                  >
-                    Save Changes
-                  </Button>
-                  <Button
-                    leftIcon={<FiX />}
-                    variant="outline"
-                    size="sm"
-                    flex={1}
-                    onClick={handleEditCancel}
-                    isDisabled={isSaving}
-                    borderColor={borderColor}
-                    color={textColor}
-                    _hover={{ bg: '#1a1a1a' }}
-                  >
-                    Cancel Edit
-                  </Button>
-                </HStack>
+                <VStack spacing={3} pt={4} align="stretch">
+                  {newCalculatedPrice && (
+                    <Alert status="warning" bg="rgba(245, 158, 11, 0.15)" borderRadius="md" borderWidth={1} borderColor="#f59e0b">
+                      <AlertIcon color="#f59e0b" />
+                      <VStack align="start" spacing={0} flex={1}>
+                        <Text fontSize="sm" fontWeight="bold" color="#f59e0b">
+                          ⚠️ Price Will Be Updated
+                        </Text>
+                        <Text fontSize="xs" color={secondaryTextColor}>
+                          New price £{(newCalculatedPrice / 100).toFixed(2)} will replace current £{(order.totalGBP / 100).toFixed(2)}
+                        </Text>
+                      </VStack>
+                    </Alert>
+                  )}
+                  <HStack spacing={3}>
+                    <Button
+                      leftIcon={<FiSave />}
+                      colorScheme="green"
+                      size="sm"
+                      flex={1}
+                      onClick={handleEditSave}
+                      isLoading={isSaving}
+                      loadingText="Saving..."
+                      bg="#10b981"
+                      color="#FFFFFF"
+                      _hover={{ bg: '#059669' }}
+                    >
+                      {newCalculatedPrice ? 'Save & Update Price' : 'Save Changes'}
+                    </Button>
+                    <Button
+                      leftIcon={<FiX />}
+                      variant="outline"
+                      size="sm"
+                      flex={1}
+                      onClick={handleEditCancel}
+                      isDisabled={isSaving}
+                      borderColor={borderColor}
+                      color={textColor}
+                      _hover={{ bg: '#1a1a1a' }}
+                    >
+                      Cancel Edit
+                    </Button>
+                  </HStack>
+                </VStack>
               ) : (
                 <VStack spacing={3} pt={4}>
                   <HStack spacing={3} w="full">
