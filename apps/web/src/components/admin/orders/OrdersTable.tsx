@@ -922,15 +922,12 @@ export function OrdersTable({
             },
             '& tbody tr:nth-of-type(even)': {
               backgroundColor: '#000000 !important',
-              backgroundImage: 'none !important',
             },
             '& tbody tr:nth-of-type(odd)': {
               backgroundColor: '#0a0a0a !important',
-              backgroundImage: 'none !important',
             },
             '& tbody tr': {
               backgroundColor: '#000000 !important',
-              backgroundImage: 'none !important',
               color: '#FFFFFF !important',
             },
             '& tbody td': {
