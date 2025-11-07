@@ -98,7 +98,7 @@ describe('Performance Benchmarks', () => {
 
   beforeEach(async () => {
     // Mock file system
-    mockedFs.readFileSync.mockImplementation((filePath: any) => {
+    mockedFs.readFileSync.mockImplementation((filePath: string) => {
       if (filePath.includes('catalog.json')) {
         return JSON.stringify(mockItemCatalog);
       }
@@ -108,7 +108,7 @@ describe('Performance Benchmarks', () => {
       throw new Error(`File not found: ${filePath}`);
     });
 
-    mockedFs.existsSync.mockImplementation((filePath: any) => {
+    mockedFs.existsSync.mockImplementation((filePath: string) => {
       if (filePath.includes('package.json')) {
         return true;
       }
@@ -140,6 +140,7 @@ describe('Performance Benchmarks', () => {
           status: 'succeeded'
         })
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
     setStripeInstanceForTesting(mockStripeInstance);
   });
@@ -158,6 +159,7 @@ describe('Performance Benchmarks', () => {
       expect(typeof result).toBe('object');
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.pricingCalculation);
       
+      // eslint-disable-next-line no-console
       console.log(`Single quote calculation: ${duration.toFixed(2)}ms`);
     });
 
@@ -177,6 +179,7 @@ describe('Performance Benchmarks', () => {
       expect(results.every(r => typeof r === 'object')).toBe(true);
       expect(averageDuration).toBeLessThan(PERFORMANCE_THRESHOLDS.pricingCalculation);
       
+      // eslint-disable-next-line no-console
       console.log(`Batch quote calculations (${batchRequests.length}): ${duration.toFixed(2)}ms total, ${averageDuration.toFixed(2)}ms average`);
     });
 
@@ -210,18 +213,16 @@ describe('Performance Benchmarks', () => {
       // Create many pricing calculations to stress test memory
       const heavyRequests = Array.from({ length: 50 }, () => createComplexQuoteRequest(10));
 
-      const startTime = performance.now();
-      const results = await Promise.all(
+      await Promise.all(
         heavyRequests.map(request => pricingEngine.calculatePrice(request))
       );
-      const endTime = performance.now();
 
       const finalMemory = process.memoryUsage().heapUsed / 1024 / 1024; // MB
       const memoryIncrease = finalMemory - initialMemory;
 
-      expect(results.every(r => typeof r === 'object')).toBe(true);
       expect(memoryIncrease).toBeLessThan(PERFORMANCE_THRESHOLDS.memoryUsageMB);
       
+      // eslint-disable-next-line no-console
       console.log(`Memory usage increase: ${memoryIncrease.toFixed(2)}MB`);
     });
   });

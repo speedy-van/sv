@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma';
 import { routeManager } from '@/lib/orchestration/RouteManager';
 
 // Test data generators
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateTestBooking = (overrides: any = {}) => ({
   id: `test_booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   reference: `TEST-${Math.floor(Math.random() * 100000)}`,
@@ -36,6 +37,7 @@ const generateTestBooking = (overrides: any = {}) => ({
   ...overrides,
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateTestAddress = (overrides: any = {}) => ({
   id: `test_addr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   label: 'Test Address',
@@ -47,6 +49,7 @@ const generateTestAddress = (overrides: any = {}) => ({
   ...overrides,
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateTestProperty = (overrides: any = {}) => ({
   id: `test_prop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   propertyType: 'HOUSE' as const,
@@ -56,9 +59,9 @@ const generateTestProperty = (overrides: any = {}) => ({
 });
 
 describe('Dual Routing System - Integration Tests', () => {
-  let testBookingIds: string[] = [];
-  let testAddressIds: string[] = [];
-  let testPropertyIds: string[] = [];
+  const testBookingIds: string[] = [];
+  const testAddressIds: string[] = [];
+  const testPropertyIds: string[] = [];
   let adminUserId: string;
 
   beforeAll(async () => {

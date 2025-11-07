@@ -3,7 +3,7 @@
  * Tests the complete flow from UI through APIs to availability engine
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
 // Test configuration
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
@@ -242,6 +242,7 @@ describe('Pricing & Availability Integration', () => {
         expect(availability.economy.fill_rate).toBeGreaterThanOrEqual(50);
       }
 
+      // eslint-disable-next-line no-console
       console.log('✅ E2E Test Results:', {
         basePrice: pricingResult.data.amountGbpMinor / 100,
         availability: {
@@ -307,6 +308,7 @@ describe('Pricing & Availability Integration', () => {
         expect(availability.economy.fill_rate).toBeGreaterThan(0);
       }
       
+      // eslint-disable-next-line no-console
       console.log('✅ Multi-drop Test Results:', {
         totalCapacity: multiDropRequest.items.reduce((sum, item) => 
           sum + (item.weight_override || 0) * item.quantity, 0),
