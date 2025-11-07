@@ -248,6 +248,8 @@ export async function POST(req: Request) {
             const booking = await prisma.booking.findUnique({
               where: { id: orderId },
               include: {
+                pickupProperty: true,
+                dropoffProperty: true,
               },
             });
 
@@ -261,8 +263,14 @@ export async function POST(req: Request) {
               reference: booking.reference,
               customerEmail: booking.customerEmail,
               customerName: booking.customerName,
-              pickupProperty: undefined,
-              dropoffProperty: undefined,
+              pickupProperty: booking.pickupProperty ? {
+                floors: booking.pickupProperty.floors,
+                accessType: booking.pickupProperty.accessType,
+              } : undefined,
+              dropoffProperty: booking.dropoffProperty ? {
+                floors: booking.dropoffProperty.floors,
+                accessType: booking.dropoffProperty.accessType,
+              } : undefined,
             });
 
             floorWarningResults.push({

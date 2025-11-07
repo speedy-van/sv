@@ -120,12 +120,24 @@ export async function GET(
         lng: order.dropoffAddress.lng,
       } : null,
       pickupProperty: order.pickupProperty ? {
+        propertyType: order.pickupProperty.propertyType,
         floors: order.pickupProperty.floors,
         accessType: order.pickupProperty.accessType,
       } : null,
       dropoffProperty: order.dropoffProperty ? {
+        propertyType: order.dropoffProperty.propertyType,
         floors: order.dropoffProperty.floors,
         accessType: order.dropoffProperty.accessType,
+      } : null,
+      serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
+      orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
+      isMultiDrop: order.isMultiDrop || false,
+      routeId: order.routeId,
+      route: order.route ? {
+        id: order.route.id,
+        reference: order.route.reference,
+        status: order.route.status,
+        totalDrops: order.route.totalDrops,
       } : null,
       driver: order.driver ? {
         User: {

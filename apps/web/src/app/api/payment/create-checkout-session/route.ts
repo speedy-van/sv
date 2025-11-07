@@ -334,6 +334,14 @@ export async function POST(request: NextRequest) {
             dropoffAddressId: dropoffAddress.id,
             pickupPropertyId: pickupProperty.id,
             dropoffPropertyId: dropoffProperty.id,
+            // Store serviceType in customerPreferences JSON
+            customerPreferences: {
+              serviceType: (bookingData as any)?.serviceType || 'standard',
+              serviceLevel: (bookingData as any)?.serviceType || 'standard',
+            },
+            // Set orderType based on routeId or isMultiDrop
+            orderType: (bookingData as any)?.routeId ? 'multi-drop' : 'single',
+            isMultiDrop: !!(bookingData as any)?.routeId,
           },
         });
 

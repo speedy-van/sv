@@ -203,6 +203,16 @@ interface Order {
     label: string;
     postcode: string;
   };
+  pickupProperty?: {
+    propertyType: string;
+    floors: number;
+    accessType: string;
+  };
+  dropoffProperty?: {
+    propertyType: string;
+    floors: number;
+    accessType: string;
+  };
   customer?: {
     name: string;
     email: string;
@@ -212,6 +222,17 @@ interface Order {
       name: string;
     };
   };
+  route?: {
+    id: string;
+    reference: string;
+    status: string;
+    totalDrops: number;
+  } | null;
+  customerPreferences?: any;
+  serviceType?: string;
+  orderType?: string;
+  isMultiDrop?: boolean;
+  routeId?: string | null;
   createdAt: string;
   paidAt?: string;
   durationSeconds?: number;
@@ -932,6 +953,8 @@ export default function OrdersClient({
               </Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Code</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Customer</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Service</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Type</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Route</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Time Window</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Status</Th>
@@ -947,7 +970,7 @@ export default function OrdersClient({
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <Tr key={`loading-${i}`}>
-                  <Td colSpan={11}>
+                  <Td colSpan={13}>
                     <Flex justify="center" py={8}>
                       <Spinner />
                     </Flex>
@@ -956,7 +979,7 @@ export default function OrdersClient({
               ))
             ) : filteredOrders.length === 0 ? (
               <Tr>
-                <Td colSpan={11} color="#FFFFFF">
+                <Td colSpan={13} color="#FFFFFF">
                   <Flex justify="center" py={8}>
                     <Text color="#FFFFFF">No orders found</Text>
                   </Flex>
@@ -1049,6 +1072,28 @@ export default function OrdersClient({
                       </VStack>
                     </Td>
                     <Td>
+                      <Badge 
+                        colorScheme={
+                          order.serviceType === 'economy' ? 'blue' :
+                          order.serviceType === 'express' ? 'red' :
+                          'green'
+                        }
+                        size="sm"
+                      >
+                        {order.serviceType === 'economy' ? 'Economy' :
+                         order.serviceType === 'express' ? 'Express' :
+                         'Standard'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <Badge 
+                        colorScheme={order.isMultiDrop || order.orderType === 'multi-drop' ? 'purple' : 'gray'}
+                        size="sm"
+                      >
+                        {order.isMultiDrop || order.orderType === 'multi-drop' ? 'Multi-Drop' : 'Single'}
+                      </Badge>
+                    </Td>
+                    <Td>
                       <VStack align="start" spacing={1}>
                         <HStack>
                           <Icon
@@ -1070,6 +1115,11 @@ export default function OrdersClient({
                             {order.dropoffAddress?.label || '-'}
                           </Text>
                         </HStack>
+                        {order.route && (
+                          <Text fontSize="xs" color="purple.400">
+                            Route: {order.route.reference} ({order.route.totalDrops} drops)
+                          </Text>
+                        )}
                         <Text fontSize="xs" color="#9ca3af">
                           {formatDistance(order.distanceMeters)} •{' '}
                           {formatDuration(order.durationSeconds)}

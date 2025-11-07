@@ -201,6 +201,16 @@ interface OrderDetail {
   baseDistanceMiles?: number;
   notes?: string;
   pickupTimeSlot?: string;
+  serviceType?: string;
+  orderType?: string;
+  isMultiDrop?: boolean;
+  routeId?: string | null;
+  route?: {
+    id: string;
+    reference: string;
+    status: string;
+    totalDrops: number;
+  } | null;
   items?: Array<{
     id: string;
     name: string;
@@ -355,12 +365,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const getDataCompletenessStatus = (order: OrderDetail) => {
     const issues: Array<{ type: 'critical' | 'warning' | 'info'; message: string }> = [];
     
-    // Critical missing data
-    if (!order.pickupProperty?.floors || order.pickupProperty.floors === 0) {
-      issues.push({ type: 'critical', message: 'Pickup floor number missing' });
+    // Critical missing data - Only warn if floors is explicitly 0 or null/undefined
+    // If floors > 0, it means customer provided floor number, so no warning needed
+    const pickupFloors = order.pickupProperty?.floors;
+    const dropoffFloors = order.dropoffProperty?.floors;
+    
+    if (pickupFloors === null || pickupFloors === undefined || pickupFloors === 0) {
+      issues.push({ type: 'warning', message: 'Pickup floor number not specified' });
     }
-    if (!order.dropoffProperty?.floors || order.dropoffProperty.floors === 0) {
-      issues.push({ type: 'critical', message: 'Dropoff floor number missing' });
+    if (dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0) {
+      issues.push({ type: 'warning', message: 'Dropoff floor number not specified' });
     }
     if (!order.pickupAddress?.flatNumber && order.pickupProperty?.propertyType === 'FLAT') {
       issues.push({ type: 'critical', message: 'Pickup flat/unit number missing' });
@@ -991,9 +1005,39 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <VStack align="stretch" spacing={3}>
                 <HStack justify="space-between">
                   <Text fontWeight="bold" color={textColor}>Status</Text>
-                  <Badge colorScheme={getStatusColor(order.status)} size="lg">
-                    {order.status.replace('_', ' ')}
-                  </Badge>
+                  <HStack spacing={2}>
+                    <Badge colorScheme={getStatusColor(order.status)} size="lg">
+                      {order.status.replace('_', ' ')}
+                    </Badge>
+                    {order.serviceType && (
+                      <Badge 
+                        colorScheme={
+                          order.serviceType === 'economy' ? 'blue' :
+                          order.serviceType === 'express' ? 'red' :
+                          'green'
+                        }
+                        size="md"
+                      >
+                        {order.serviceType === 'economy' ? 'Economy' :
+                         order.serviceType === 'express' ? 'Express' :
+                         'Standard'}
+                      </Badge>
+                    )}
+                    {order.isMultiDrop || order.orderType === 'multi-drop' ? (
+                      <Badge colorScheme="purple" size="md">
+                        Multi-Drop Route
+                      </Badge>
+                    ) : (
+                      <Badge colorScheme="gray" size="md">
+                        Single Order
+                      </Badge>
+                    )}
+                    {order.route && (
+                      <Badge colorScheme="purple" variant="outline" size="md">
+                        Route: {order.route.reference} ({order.route.totalDrops} drops)
+                      </Badge>
+                    )}
+                  </HStack>
                 </HStack>
 
                 {/* Payment Confirmation Button - Show if payment is pending */}

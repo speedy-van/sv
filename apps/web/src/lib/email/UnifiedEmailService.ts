@@ -1346,8 +1346,12 @@ export const unifiedEmailService = {
     dropoffProperty?: { floors?: number; accessType?: string };
   }) {
     try {
-      const hasPickupFloorIssue = !orderData.pickupProperty?.floors || orderData.pickupProperty.floors === 0;
-      const hasDropoffFloorIssue = !orderData.dropoffProperty?.floors || orderData.dropoffProperty.floors === 0;
+      // Only warn if floors is explicitly 0, null, or undefined
+      // If floors > 0, customer provided floor number, so no warning needed
+      const pickupFloors = orderData.pickupProperty?.floors;
+      const dropoffFloors = orderData.dropoffProperty?.floors;
+      const hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
+      const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
       if (!hasPickupFloorIssue && !hasDropoffFloorIssue) {
         return {
