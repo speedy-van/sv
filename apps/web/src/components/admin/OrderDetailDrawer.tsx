@@ -1065,30 +1065,75 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 <Text fontWeight="bold" fontSize="md" color={textColor}>
                   Customer Information
                 </Text>
-                <HStack>
-                  <FiUser color={textColor} />
-                  <Text color={textColor}>{order.customerName}</Text>
-                </HStack>
-                <HStack>
-                  <FiMail color={secondaryTextColor} />
-                  <Text fontSize="sm" color={secondaryTextColor}>
-                    {order.customerEmail}
-                  </Text>
-                </HStack>
-                <HStack>
-                  <FiPhone color={secondaryTextColor} />
-                  {getStatusIcon(
-                    !!(order.customerPhone && order.customerPhone.length >= 10), 
-                    false
-                  )}
-                  <Text fontSize="sm" color={
-                    order.customerPhone && order.customerPhone.length >= 10 
-                      ? secondaryTextColor 
-                      : "#f59e0b"
-                  }>
-                    {order.customerPhone || 'NOT PROVIDED'}
-                  </Text>
-                </HStack>
+                {isEditing ? (
+                  <>
+                    <FormControl>
+                      <FormLabel color={textColor} fontSize="sm">Customer Name</FormLabel>
+                      <Input
+                        value={editedOrder.customerName || ''}
+                        onChange={(e) => setEditedOrder({ ...editedOrder, customerName: e.target.value })}
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={borderColor}
+                        _hover={{ borderColor: '#2563eb' }}
+                        _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color={textColor} fontSize="sm">Email</FormLabel>
+                      <Input
+                        type="email"
+                        value={editedOrder.customerEmail || ''}
+                        onChange={(e) => setEditedOrder({ ...editedOrder, customerEmail: e.target.value })}
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={borderColor}
+                        _hover={{ borderColor: '#2563eb' }}
+                        _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color={textColor} fontSize="sm">Phone</FormLabel>
+                      <Input
+                        type="tel"
+                        value={editedOrder.customerPhone || ''}
+                        onChange={(e) => setEditedOrder({ ...editedOrder, customerPhone: e.target.value })}
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={borderColor}
+                        _hover={{ borderColor: '#2563eb' }}
+                        _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                      />
+                    </FormControl>
+                  </>
+                ) : (
+                  <>
+                    <HStack>
+                      <FiUser color={textColor} />
+                      <Text color={textColor}>{order.customerName}</Text>
+                    </HStack>
+                    <HStack>
+                      <FiMail color={secondaryTextColor} />
+                      <Text fontSize="sm" color={secondaryTextColor}>
+                        {order.customerEmail}
+                      </Text>
+                    </HStack>
+                    <HStack>
+                      <FiPhone color={secondaryTextColor} />
+                      {getStatusIcon(
+                        !!(order.customerPhone && order.customerPhone.length >= 10), 
+                        false
+                      )}
+                      <Text fontSize="sm" color={
+                        order.customerPhone && order.customerPhone.length >= 10 
+                          ? secondaryTextColor 
+                          : "#f59e0b"
+                      }>
+                        {order.customerPhone || 'NOT PROVIDED'}
+                      </Text>
+                    </HStack>
+                  </>
+                )}
               </VStack>
 
               <Divider borderColor={borderColor} />
@@ -1106,55 +1151,119 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         <Text fontSize="sm" fontWeight="bold" color="#10b981">
                           Pickup Location
                         </Text>
-                        <Text fontSize="sm" color={textColor}>
-                          {order.pickupAddress?.label || 'Not specified'}
-                        </Text>
-                        {order.pickupAddress?.postcode && (
-                          <Text fontSize="xs" color={secondaryTextColor}>
-                            Postcode: {order.pickupAddress.postcode}
-                          </Text>
-                        )}
-                        {order.pickupAddress?.flatNumber && (
-                          <Text fontSize="xs" color={secondaryTextColor}>
-                            Flat/Unit: {order.pickupAddress.flatNumber}
-                          </Text>
-                        )}
-                        {order.pickupProperty && (
-                          <VStack align="start" spacing={0} mt={2}>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Property: {order.pickupProperty.propertyType}
-                            </Text>
-                            <HStack spacing={1}>
-                              {getStatusIcon(
-                                order.pickupProperty.floors > 0, 
-                                true
-                              )}
-                              <Text fontSize="xs" color={
-                                order.pickupProperty.floors > 0 ? secondaryTextColor : "#ef4444"
-                              }>
-                                Floor: {order.pickupProperty.floors > 0 
-                                  ? order.pickupProperty.floors 
-                                  : 'NOT SPECIFIED'
-                                }
+                        {isEditing ? (
+                          <VStack align="stretch" spacing={2} w="full">
+                            <Alert status="info" variant="subtle" bg="rgba(16, 185, 129, 0.1)" borderRadius="md" p={2}>
+                              <AlertIcon color="#10b981" boxSize={3} />
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Pickup address details
                               </Text>
-                            </HStack>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Access: {order.pickupProperty.accessType.replace('_', ' ')}
-                            </Text>
-                            {order.pickupProperty.propertyType === 'FLAT' && (
-                              <HStack spacing={1}>
-                                {getStatusIcon(
-                                  !!order.pickupAddress?.flatNumber, 
-                                  true
-                                )}
-                                <Text fontSize="xs" color={
-                                  order.pickupAddress?.flatNumber ? secondaryTextColor : "#ef4444"
-                                }>
-                                  Flat/Unit: {order.pickupAddress?.flatNumber || 'NOT SPECIFIED'}
-                                </Text>
-                              </HStack>
-                            )}
+                            </Alert>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Floor Number</FormLabel>
+                              <NumberInput
+                                value={editedOrder.pickupProperty?.floors || 0}
+                                onChange={(valueString) => {
+                                  const value = parseInt(valueString) || 0;
+                                  setEditedOrder({
+                                    ...editedOrder,
+                                    pickupProperty: {
+                                      ...editedOrder.pickupProperty,
+                                      floors: value,
+                                      propertyType: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
+                                      accessType: editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType || 'WITHOUT_LIFT',
+                                    }
+                                  });
+                                }}
+                                min={0}
+                                max={50}
+                              >
+                                <NumberInputField
+                                  bg={cardBg}
+                                  color={textColor}
+                                  borderColor={borderColor}
+                                  _hover={{ borderColor: '#2563eb' }}
+                                  _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                                />
+                              </NumberInput>
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Access Type</FormLabel>
+                              <Select
+                                value={editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType || 'WITHOUT_LIFT'}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  pickupProperty: {
+                                    ...editedOrder.pickupProperty,
+                                    accessType: e.target.value,
+                                    propertyType: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
+                                    floors: editedOrder.pickupProperty?.floors || order.pickupProperty?.floors || 0,
+                                  }
+                                })}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              >
+                                <option value="WITH_LIFT">With Lift</option>
+                                <option value="WITHOUT_LIFT">Without Lift (Stairs)</option>
+                              </Select>
+                            </FormControl>
                           </VStack>
+                        ) : (
+                          <>
+                            <Text fontSize="sm" color={textColor}>
+                              {order.pickupAddress?.label || 'Not specified'}
+                            </Text>
+                            {order.pickupAddress?.postcode && (
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Postcode: {order.pickupAddress.postcode}
+                              </Text>
+                            )}
+                            {order.pickupAddress?.flatNumber && (
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Flat/Unit: {order.pickupAddress.flatNumber}
+                              </Text>
+                            )}
+                            {order.pickupProperty && (
+                              <VStack align="start" spacing={0} mt={2}>
+                                <Text fontSize="xs" color={secondaryTextColor}>
+                                  Property: {order.pickupProperty.propertyType}
+                                </Text>
+                                <HStack spacing={1}>
+                                  {getStatusIcon(
+                                    order.pickupProperty.floors > 0, 
+                                    true
+                                  )}
+                                  <Text fontSize="xs" color={
+                                    order.pickupProperty.floors > 0 ? secondaryTextColor : "#ef4444"
+                                  }>
+                                    Floor: {order.pickupProperty.floors > 0 
+                                      ? order.pickupProperty.floors 
+                                      : 'NOT SPECIFIED'
+                                    }
+                                  </Text>
+                                </HStack>
+                                <Text fontSize="xs" color={secondaryTextColor}>
+                                  Access: {order.pickupProperty.accessType.replace('_', ' ')}
+                                </Text>
+                                {order.pickupProperty.propertyType === 'FLAT' && (
+                                  <HStack spacing={1}>
+                                    {getStatusIcon(
+                                      !!order.pickupAddress?.flatNumber, 
+                                      true
+                                    )}
+                                    <Text fontSize="xs" color={
+                                      order.pickupAddress?.flatNumber ? secondaryTextColor : "#ef4444"
+                                    }>
+                                      Flat/Unit: {order.pickupAddress?.flatNumber || 'NOT SPECIFIED'}
+                                    </Text>
+                                  </HStack>
+                                )}
+                              </VStack>
+                            )}
+                          </>
                         )}
                       </VStack>
                     </HStack>
@@ -1167,55 +1276,119 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         <Text fontSize="sm" fontWeight="bold" color="#ef4444">
                           Delivery Location
                         </Text>
-                        <Text fontSize="sm" color={textColor}>
-                          {order.dropoffAddress?.label || 'Not specified'}
-                        </Text>
-                        {order.dropoffAddress?.postcode && (
-                          <Text fontSize="xs" color={secondaryTextColor}>
-                            Postcode: {order.dropoffAddress.postcode}
-                          </Text>
-                        )}
-                        {order.dropoffAddress?.flatNumber && (
-                          <Text fontSize="xs" color={secondaryTextColor}>
-                            Flat/Unit: {order.dropoffAddress.flatNumber}
-                          </Text>
-                        )}
-                        {order.dropoffProperty && (
-                          <VStack align="start" spacing={0} mt={2}>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Property: {order.dropoffProperty.propertyType}
-                            </Text>
-                            <HStack spacing={1}>
-                              {getStatusIcon(
-                                order.dropoffProperty.floors > 0, 
-                                true
-                              )}
-                              <Text fontSize="xs" color={
-                                order.dropoffProperty.floors > 0 ? secondaryTextColor : "#ef4444"
-                              }>
-                                Floor: {order.dropoffProperty.floors > 0 
-                                  ? order.dropoffProperty.floors 
-                                  : 'NOT SPECIFIED'
-                                }
+                        {isEditing ? (
+                          <VStack align="stretch" spacing={2} w="full">
+                            <Alert status="info" variant="subtle" bg="rgba(37, 99, 235, 0.1)" borderRadius="md" p={2}>
+                              <AlertIcon color="#2563eb" boxSize={3} />
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Delivery address details
                               </Text>
-                            </HStack>
-                            <Text fontSize="xs" color={secondaryTextColor}>
-                              Access: {order.dropoffProperty.accessType.replace('_', ' ')}
-                            </Text>
-                            {order.dropoffProperty.propertyType === 'FLAT' && (
-                              <HStack spacing={1}>
-                                {getStatusIcon(
-                                  !!order.dropoffAddress?.flatNumber, 
-                                  true
-                                )}
-                                <Text fontSize="xs" color={
-                                  order.dropoffAddress?.flatNumber ? secondaryTextColor : "#ef4444"
-                                }>
-                                  Flat/Unit: {order.dropoffAddress?.flatNumber || 'NOT SPECIFIED'}
-                                </Text>
-                              </HStack>
-                            )}
+                            </Alert>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Floor Number</FormLabel>
+                              <NumberInput
+                                value={editedOrder.dropoffProperty?.floors || 0}
+                                onChange={(valueString) => {
+                                  const value = parseInt(valueString) || 0;
+                                  setEditedOrder({
+                                    ...editedOrder,
+                                    dropoffProperty: {
+                                      ...editedOrder.dropoffProperty,
+                                      floors: value,
+                                      propertyType: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
+                                      accessType: editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType || 'WITHOUT_LIFT',
+                                    }
+                                  });
+                                }}
+                                min={0}
+                                max={50}
+                              >
+                                <NumberInputField
+                                  bg={cardBg}
+                                  color={textColor}
+                                  borderColor={borderColor}
+                                  _hover={{ borderColor: '#2563eb' }}
+                                  _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                                />
+                              </NumberInput>
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel color={textColor} fontSize="xs">Access Type</FormLabel>
+                              <Select
+                                value={editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType || 'WITHOUT_LIFT'}
+                                onChange={(e) => setEditedOrder({
+                                  ...editedOrder,
+                                  dropoffProperty: {
+                                    ...editedOrder.dropoffProperty,
+                                    accessType: e.target.value,
+                                    propertyType: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
+                                    floors: editedOrder.dropoffProperty?.floors || order.dropoffProperty?.floors || 0,
+                                  }
+                                })}
+                                bg={cardBg}
+                                color={textColor}
+                                borderColor={borderColor}
+                                _hover={{ borderColor: '#2563eb' }}
+                                _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                              >
+                                <option value="WITH_LIFT">With Lift</option>
+                                <option value="WITHOUT_LIFT">Without Lift (Stairs)</option>
+                              </Select>
+                            </FormControl>
                           </VStack>
+                        ) : (
+                          <>
+                            <Text fontSize="sm" color={textColor}>
+                              {order.dropoffAddress?.label || 'Not specified'}
+                            </Text>
+                            {order.dropoffAddress?.postcode && (
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Postcode: {order.dropoffAddress.postcode}
+                              </Text>
+                            )}
+                            {order.dropoffAddress?.flatNumber && (
+                              <Text fontSize="xs" color={secondaryTextColor}>
+                                Flat/Unit: {order.dropoffAddress.flatNumber}
+                              </Text>
+                            )}
+                            {order.dropoffProperty && (
+                              <VStack align="start" spacing={0} mt={2}>
+                                <Text fontSize="xs" color={secondaryTextColor}>
+                                  Property: {order.dropoffProperty.propertyType}
+                                </Text>
+                                <HStack spacing={1}>
+                                  {getStatusIcon(
+                                    order.dropoffProperty.floors > 0, 
+                                    true
+                                  )}
+                                  <Text fontSize="xs" color={
+                                    order.dropoffProperty.floors > 0 ? secondaryTextColor : "#ef4444"
+                                  }>
+                                    Floor: {order.dropoffProperty.floors > 0 
+                                      ? order.dropoffProperty.floors 
+                                      : 'NOT SPECIFIED'
+                                    }
+                                  </Text>
+                                </HStack>
+                                <Text fontSize="xs" color={secondaryTextColor}>
+                                  Access: {order.dropoffProperty.accessType.replace('_', ' ')}
+                                </Text>
+                                {order.dropoffProperty.propertyType === 'FLAT' && (
+                                  <HStack spacing={1}>
+                                    {getStatusIcon(
+                                      !!order.dropoffAddress?.flatNumber, 
+                                      true
+                                    )}
+                                    <Text fontSize="xs" color={
+                                      order.dropoffAddress?.flatNumber ? secondaryTextColor : "#ef4444"
+                                    }>
+                                      Flat/Unit: {order.dropoffAddress?.flatNumber || 'NOT SPECIFIED'}
+                                    </Text>
+                                  </HStack>
+                                )}
+                              </VStack>
+                            )}
+                          </>
                         )}
                       </VStack>
                     </HStack>
@@ -1458,38 +1631,78 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     </CardBody>
                   </Card>
                 )}
-                <HStack justify="space-between">
-                  <Text color={textColor}>Scheduled Date</Text>
-                  <Text color={textColor}>
-                    {order.scheduledAt
-                      ? new Date(order.scheduledAt).toLocaleDateString('en-GB', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })
-                      : 'Not scheduled'}
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color={textColor}>Scheduled Time</Text>
-                  <Text color={textColor}>
-                    {order.scheduledAt
-                      ? new Date(order.scheduledAt).toLocaleTimeString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
-                      : 'Not scheduled'}
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <HStack spacing={1}>
-                    {getStatusIcon(!!order.pickupTimeSlot, false)}
-                    <Text color={textColor}>Time Slot</Text>
-                  </HStack>
-                  <Text color={order.pickupTimeSlot ? textColor : "#f59e0b"}>
-                    {order.pickupTimeSlot || 'NOT SPECIFIED'}
-                  </Text>
-                </HStack>
+                {isEditing ? (
+                  <>
+                    <FormControl>
+                      <FormLabel color={textColor} fontSize="sm">Scheduled Date & Time</FormLabel>
+                      <Input
+                        type="datetime-local"
+                        value={editedOrder.scheduledAt ? new Date(editedOrder.scheduledAt).toISOString().slice(0, 16) : ''}
+                        onChange={(e) => setEditedOrder({
+                          ...editedOrder,
+                          scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : order?.scheduledAt
+                        })}
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={borderColor}
+                        _hover={{ borderColor: '#2563eb' }}
+                        _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color={textColor} fontSize="sm">Time Slot</FormLabel>
+                      <Input
+                        type="text"
+                        value={editedOrder.pickupTimeSlot || ''}
+                        onChange={(e) => setEditedOrder({
+                          ...editedOrder,
+                          pickupTimeSlot: e.target.value
+                        })}
+                        placeholder="e.g., 8 AM - 12 PM"
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={borderColor}
+                        _hover={{ borderColor: '#2563eb' }}
+                        _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                      />
+                    </FormControl>
+                  </>
+                ) : (
+                  <>
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Scheduled Date</Text>
+                      <Text color={textColor}>
+                        {order.scheduledAt
+                          ? new Date(order.scheduledAt).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })
+                          : 'Not scheduled'}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color={textColor}>Scheduled Time</Text>
+                      <Text color={textColor}>
+                        {order.scheduledAt
+                          ? new Date(order.scheduledAt).toLocaleTimeString('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : 'Not scheduled'}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <HStack spacing={1}>
+                        {getStatusIcon(!!order.pickupTimeSlot, false)}
+                        <Text color={textColor}>Time Slot</Text>
+                      </HStack>
+                      <Text color={order.pickupTimeSlot ? textColor : "#f59e0b"}>
+                        {order.pickupTimeSlot || 'NOT SPECIFIED'}
+                      </Text>
+                    </HStack>
+                  </>
+                )}
                 <HStack justify="space-between">
                   <Text color={textColor}>Created</Text>
                   <Text color={textColor}>
@@ -1527,17 +1740,36 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     Customer Notes
                   </Text>
                 </HStack>
-                <Box 
-                  p={3} 
-                  borderRadius="md" 
-                  bg={order.notes ? cardBg : cardBg}
-                  borderWidth={1}
-                  borderColor={order.notes ? "#2563eb" : borderColor}
-                >
-                  <Text fontSize="sm" color={order.notes ? textColor : secondaryTextColor} fontStyle={!order.notes ? "italic" : "normal"}>
-                    {order.notes || 'No customer notes provided'}
-                  </Text>
-                </Box>
+                {isEditing ? (
+                  <FormControl>
+                    <Textarea
+                      value={editedOrder.notes || ''}
+                      onChange={(e) => setEditedOrder({
+                        ...editedOrder,
+                        notes: e.target.value
+                      })}
+                      placeholder="Enter customer notes or special instructions..."
+                      rows={4}
+                      bg={cardBg}
+                      color={textColor}
+                      borderColor={borderColor}
+                      _hover={{ borderColor: '#2563eb' }}
+                      _focus={{ borderColor: '#2563eb', bg: cardBg }}
+                    />
+                  </FormControl>
+                ) : (
+                  <Box 
+                    p={3} 
+                    borderRadius="md" 
+                    bg={order.notes ? cardBg : cardBg}
+                    borderWidth={1}
+                    borderColor={order.notes ? "#2563eb" : borderColor}
+                  >
+                    <Text fontSize="sm" color={order.notes ? textColor : secondaryTextColor} fontStyle={!order.notes ? "italic" : "normal"}>
+                      {order.notes || 'No customer notes provided'}
+                    </Text>
+                  </Box>
+                )}
               </VStack>
 
               {/* Actions */}
