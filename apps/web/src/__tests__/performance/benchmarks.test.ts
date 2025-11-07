@@ -15,6 +15,7 @@ import { createPaymentIntent, setStripeInstanceForTesting } from '@/lib/stripe/c
 import * as fs from 'fs';
 import * as path from 'path';
 import type { PricingInput } from '@/lib/pricing/schemas';
+import type { PathOrFileDescriptor, PathLike } from 'fs';
 
 // Mock fs for UnifiedPricingEngine
 jest.mock('fs');
@@ -98,18 +99,20 @@ describe('Performance Benchmarks', () => {
 
   beforeEach(async () => {
     // Mock file system
-    mockedFs.readFileSync.mockImplementation((filePath: string) => {
-      if (filePath.includes('catalog.json')) {
+    mockedFs.readFileSync.mockImplementation((filePath: PathOrFileDescriptor) => {
+      const path = String(filePath);
+      if (path.includes('catalog.json')) {
         return JSON.stringify(mockItemCatalog);
       }
-      if (filePath.includes('pricing.json')) {
+      if (path.includes('pricing.json')) {
         return JSON.stringify(mockPricingConfig);
       }
-      throw new Error(`File not found: ${filePath}`);
+      throw new Error(`File not found: ${path}`);
     });
 
-    mockedFs.existsSync.mockImplementation((filePath: string) => {
-      if (filePath.includes('package.json')) {
+    mockedFs.existsSync.mockImplementation((filePath: PathLike) => {
+      const path = String(filePath);
+      if (path.includes('package.json')) {
         return true;
       }
       return true; // Mock all file existence checks as true
