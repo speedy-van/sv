@@ -4,6 +4,13 @@ set -euo pipefail
 
 npm install -g pnpm@10.17.0 --force
 pnpm install --frozen-lockfile
+
+# Apply Prisma migrations to production database
+echo "🔄 Applying Prisma migrations..."
+pnpm prisma migrate deploy --schema=./packages/shared/prisma/schema.prisma
+echo "✅ Migrations applied"
+
+# Build the application
 pnpm --filter ./apps/web build
 
 # Ensure standalone bundle contains static assets and public files
