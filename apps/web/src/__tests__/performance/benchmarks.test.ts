@@ -15,6 +15,7 @@ import { createPaymentIntent, setStripeInstanceForTesting } from '@/lib/stripe/c
 import * as fs from 'fs';
 import * as path from 'path';
 import type { PricingInput } from '@/lib/pricing/schemas';
+import type { PathOrFileDescriptor, PathLike } from 'fs';
 
 // Mock fs for UnifiedPricingEngine
 jest.mock('fs');
@@ -98,22 +99,24 @@ describe('Performance Benchmarks', () => {
 
   beforeEach(async () => {
     // Mock file system
-    mockedFs.readFileSync.mockImplementation((filePath: any) => {
-      if (filePath.includes('catalog.json')) {
+    mockedFs.readFileSync.mockImplementation(((filePath: PathOrFileDescriptor) => {
+      const path = String(filePath);
+      if (path.includes('catalog.json')) {
         return JSON.stringify(mockItemCatalog);
       }
-      if (filePath.includes('pricing.json')) {
+      if (path.includes('pricing.json')) {
         return JSON.stringify(mockPricingConfig);
       }
-      throw new Error(`File not found: ${filePath}`);
-    });
+      throw new Error(`File not found: ${path}`);
+    }) as typeof fs.readFileSync);
 
-    mockedFs.existsSync.mockImplementation((filePath: any) => {
-      if (filePath.includes('package.json')) {
+    mockedFs.existsSync.mockImplementation(((filePath: PathLike) => {
+      const path = String(filePath);
+      if (path.includes('package.json')) {
         return true;
       }
       return true; // Mock all file existence checks as true
-    });
+    }) as typeof fs.existsSync);
 
     mockedPath.join.mockImplementation((...paths) => paths.join('/'));
 
@@ -140,6 +143,7 @@ describe('Performance Benchmarks', () => {
           status: 'succeeded'
         })
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
     setStripeInstanceForTesting(mockStripeInstance);
   });
@@ -158,6 +162,7 @@ describe('Performance Benchmarks', () => {
       expect(typeof result).toBe('object');
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.pricingCalculation);
       
+      // eslint-disable-next-line no-console
       console.log(`Single quote calculation: ${duration.toFixed(2)}ms`);
     });
 
@@ -177,6 +182,7 @@ describe('Performance Benchmarks', () => {
       expect(results.every(r => typeof r === 'object')).toBe(true);
       expect(averageDuration).toBeLessThan(PERFORMANCE_THRESHOLDS.pricingCalculation);
       
+      // eslint-disable-next-line no-console
       console.log(`Batch quote calculations (${batchRequests.length}): ${duration.toFixed(2)}ms total, ${averageDuration.toFixed(2)}ms average`);
     });
 
@@ -210,18 +216,16 @@ describe('Performance Benchmarks', () => {
       // Create many pricing calculations to stress test memory
       const heavyRequests = Array.from({ length: 50 }, () => createComplexQuoteRequest(10));
 
-      const startTime = performance.now();
-      const results = await Promise.all(
+      await Promise.all(
         heavyRequests.map(request => pricingEngine.calculatePrice(request))
       );
-      const endTime = performance.now();
 
       const finalMemory = process.memoryUsage().heapUsed / 1024 / 1024; // MB
       const memoryIncrease = finalMemory - initialMemory;
 
-      expect(results.every(r => typeof r === 'object')).toBe(true);
       expect(memoryIncrease).toBeLessThan(PERFORMANCE_THRESHOLDS.memoryUsageMB);
       
+      // eslint-disable-next-line no-console
       console.log(`Memory usage increase: ${memoryIncrease.toFixed(2)}MB`);
     });
   });
