@@ -167,7 +167,7 @@ const nextConfig = {
   },
   
   // CRITICAL: Enable standalone output for Render deployment
-  output: 'standalone',
+  // output: 'standalone', // DISABLED FOR TESTING CSS ISSUE
   
   // CRITICAL: Generate unique build ID for cache busting
   // This ensures each deployment has a unique identifier
