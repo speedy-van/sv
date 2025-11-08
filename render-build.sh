@@ -14,9 +14,11 @@ rm -rf .next
 echo "✅ All caches cleared"
 
 # Apply Prisma migrations to production database
-echo "🔄 Applying Prisma migrations..."
-pnpm prisma migrate deploy --schema=./packages/shared/prisma/schema.prisma
-echo "✅ Migrations applied"
+# Commented out to avoid timeout issues - migrations already applied
+# echo "🔄 Applying Prisma migrations..."
+# pnpm prisma migrate deploy --schema=./packages/shared/prisma/schema.prisma
+# echo "✅ Migrations applied"
+echo "⏭️  Skipping Prisma migrations (already applied)"
 
 # Build the application
 echo "🔨 Building Next.js application..."
