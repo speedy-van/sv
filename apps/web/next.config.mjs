@@ -22,10 +22,7 @@ const nextConfig = {
     swcMinify: true,
     // Enable instrumentation for server initialization
     instrumentationHook: true,
-    // CRITICAL: Disable optimistic client cache to fix Safari 17+ cache issues
-    // This prevents stale WhereAndWhatStep.tsx from being served from cache
-    // Also prevents CSS chunks from being loaded as JavaScript chunks (fixes "Unexpected token 'if'" error)
-    optimisticClientCache: false, // Force fresh components on every request
+    // optimisticClientCache defaults to true for proper CSS loading
   },
 
   // Enable compression
