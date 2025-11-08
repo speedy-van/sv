@@ -188,46 +188,10 @@ const nextConfig = {
   
   // Optimize webpack for large bundles (666+ items dataset)
   webpack: (config, { dev, isServer, webpack }) => {
-    // Performance optimizations for large dataset
-    if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        // Split chunks for better caching with large dataset
-        splitChunks: {
-          chunks: 'all',
-          // Exclude CSS files from being treated as JS chunks
-          // This prevents CSS from being loaded as <script> tags
-          defaultSizeTypes: ['javascript', 'unknown'],
-          cacheGroups: {
-            framework: {
-              chunks: 'all',
-              name: 'framework',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-            lib: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'lib',
-              priority: 30,
-              chunks: 'all',
-            },
-            commons: {
-              name: 'commons',
-              minChunks: 2,
-              priority: 20,
-            },
-            // Separate chunk for booking-luxury items data
-            'booking-items': {
-              test: /booking-luxury.*WhereAndWhatStep/,
-              name: 'booking-items-data',
-              priority: 25,
-              chunks: 'all',
-            },
-          },
-        },
-      };
-    }
+    // Removed custom splitChunks configuration to fix CSS loading issue
+    // Custom splitChunks was overriding Next.js default CssChunkingPlugin behavior
+    // which caused CSS files to be bundled as JavaScript chunks and loaded as <script> tags
+    // Next.js default configuration properly separates CSS into .css files with <link> tags
 
     if (dev && !isServer) {
       // Only disable devtools to prevent ActionQueueContext issue
