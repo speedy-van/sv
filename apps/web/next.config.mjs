@@ -195,6 +195,9 @@ const nextConfig = {
         // Split chunks for better caching with large dataset
         splitChunks: {
           chunks: 'all',
+          // Exclude CSS files from being treated as JS chunks
+          // This prevents CSS from being loaded as <script> tags
+          defaultSizeTypes: ['javascript', 'unknown'],
           cacheGroups: {
             framework: {
               chunks: 'all',
