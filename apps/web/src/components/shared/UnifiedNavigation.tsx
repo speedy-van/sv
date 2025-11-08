@@ -35,7 +35,7 @@ export function UnifiedNavigation({
   const borderColor = useColorModeValue('gray.700', 'gray.700');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef<HTMLButtonElement>(null);
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false }) ?? false;
 
   const getNavigationItems = (): NavigationItem[] => {
     if (!isAuthenticated) {
