@@ -1,9 +1,11 @@
 #!/bin/bash
+set -e
 
-set -euo pipefail
+echo "🚀 Starting Render build process..."
 
-npm install -g pnpm@10.17.0 --force
-pnpm install --frozen-lockfile
+# Install dependencies at root
+echo "📦 Installing dependencies..."
+pnpm install
 
 # Clear ALL caches to prevent corruption
 echo "🧹 Clearing all caches..."
