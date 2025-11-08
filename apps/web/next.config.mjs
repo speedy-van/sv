@@ -16,8 +16,8 @@ const nextConfig = {
     //     },
     //   },
     // },
-    // CSS optimizer disabled - causes CSS to load as script tags
-    // optimizeCss: true,
+    // Re-enable CSS optimizer for production (was causing issues on Render)
+    optimizeCss: true,
     // Enable faster refresh for large files
     swcMinify: true,
     // Enable instrumentation for server initialization
@@ -163,8 +163,8 @@ const nextConfig = {
     pagesBufferLength: 0, // Don't buffer pages in memory
   },
   
-  // CRITICAL: Enable standalone output for Render deployment
-  // output: 'standalone', // DISABLED FOR TESTING CSS ISSUE
+  // Disable standalone output - causes CSS loading issues on Render
+  // output: 'standalone',
   
   // CRITICAL: Generate unique build ID for cache busting
   // This ensures each deployment has a unique identifier
