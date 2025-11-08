@@ -16,8 +16,8 @@ const nextConfig = {
     //     },
     //   },
     // },
-    // Enable CSS optimizer for proper CSS handling in production
-    optimizeCss: true,
+    // CSS optimizer disabled - causes CSS to load as script tags
+    // optimizeCss: true,
     // Enable faster refresh for large files
     swcMinify: true,
     // Enable instrumentation for server initialization
