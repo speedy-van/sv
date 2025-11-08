@@ -163,8 +163,8 @@ const nextConfig = {
     pagesBufferLength: 0, // Don't buffer pages in memory
   },
   
-  // Disable standalone output - causes CSS loading issues on Render
-  // output: 'standalone',
+  // CRITICAL: Enable standalone output for Render deployment
+  output: 'standalone',
   
   // CRITICAL: Generate unique build ID for cache busting
   // This ensures each deployment has a unique identifier
