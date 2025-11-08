@@ -5,9 +5,10 @@ import { redirect } from 'next/navigation';
 import { ROUTES } from '@/lib/routing';
 import CustomerLayoutWrapper from './CustomerLayoutWrapper';
 
-// Force dynamic rendering for customer pages (fixes DYNAMIC_SERVER_USAGE error)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Dynamic rendering handled automatically by Next.js when using getServerSession()
+// Removed force-dynamic to fix CSS loading as script tags issue
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
 // Public routes that don't require authentication
 const PUBLIC_CUSTOMER_ROUTES = [

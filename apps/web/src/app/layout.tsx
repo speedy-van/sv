@@ -82,10 +82,10 @@ export const viewport = {
   colorScheme: 'light dark',
 };
 
-// Force dynamic rendering for root layout (fixes DYNAMIC_SERVER_USAGE error)
-// Required because we use cookies() for consent tracking
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Dynamic rendering handled automatically by Next.js when using cookies()
+// Removed force-dynamic to fix CSS loading as script tags issue
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
 export default async function RootLayout({
   children,
