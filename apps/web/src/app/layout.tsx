@@ -1,7 +1,12 @@
 import React from 'react';
 import ChakraProviders from '@/components/ChakraProviders';
-// Combined CSS import to fix production build issue where CSS loads as script tags
-import '@/styles/app.css';
+import '@/styles/globals.css';
+import '@/styles/mobile-enhancements.css';
+import '@/styles/mobile-fixes.css';
+import '@/styles/video-background.css';
+import '@/styles/charts.css';
+import '@/styles/responsive-fixes.css';
+import '@/styles/mobile-viewport-fixes.css';
 import "mapbox-gl/dist/mapbox-gl.css";
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
