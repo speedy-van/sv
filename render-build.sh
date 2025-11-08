@@ -5,10 +5,13 @@ set -euo pipefail
 npm install -g pnpm@10.17.0 --force
 pnpm install --frozen-lockfile
 
-# Clear Next.js cache to prevent corruption
-echo "🧹 Clearing Next.js cache..."
+# Clear ALL caches to prevent corruption
+echo "🧹 Clearing all caches..."
 rm -rf apps/web/.next
-echo "✅ Cache cleared"
+rm -rf apps/web/node_modules/.cache
+rm -rf node_modules/.cache
+rm -rf .next
+echo "✅ All caches cleared"
 
 # Apply Prisma migrations to production database
 echo "🔄 Applying Prisma migrations..."
