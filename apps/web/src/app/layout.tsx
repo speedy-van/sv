@@ -1,13 +1,7 @@
 import React from 'react';
 import ChakraProviders from '@/components/ChakraProviders';
-import '@/styles/globals.css';
-import '@/styles/mobile-enhancements.css';
-import '@/styles/mobile-fixes.css';
-// import '@/styles/booking-fixes.css'; // File doesn't exist, removed
-import '@/styles/video-background.css';
-import '@/styles/charts.css';
-import '@/styles/responsive-fixes.css';
-import '@/styles/mobile-viewport-fixes.css';
+// Combined CSS import to fix production build issue where CSS loads as script tags
+import '@/styles/app.css';
 import "mapbox-gl/dist/mapbox-gl.css";
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';

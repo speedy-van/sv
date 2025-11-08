@@ -1,0 +1,10 @@
+/* Combined CSS imports for production build */
+/* This fixes the issue where CSS files are loaded as script tags in Next.js standalone mode */
+
+@import './globals.css';
+@import './mobile-enhancements.css';
+@import './mobile-fixes.css';
+@import './video-background.css';
+@import './charts.css';
+@import './responsive-fixes.css';
+@import './mobile-viewport-fixes.css';
