@@ -62,6 +62,17 @@ export interface DynamicPricingResponse {
   isMultiDrop?: boolean;
   multiDropSavings?: number; // Amount saved by sharing the route
   routeType?: 'single' | 'multi-drop';
+  
+  // Capacity check for multi-vehicle detection
+  capacityCheck?: {
+    isValid: boolean;
+    weightUtilization: number;
+    volumeUtilization: number;
+    itemUtilization: number;
+    warnings: string[];
+    recommendations: string[];
+    vansRequired?: number;
+  };
 }
 
 export class DynamicPricingEngine {
@@ -97,6 +108,9 @@ export class DynamicPricingEngine {
       // Step 7: Calculate confidence score
       const confidence = this.calculateConfidenceScore(marketConditions, multipliers);
 
+      // Step 8: Calculate capacity check
+      const capacityCheck = this.calculateCapacityCheck(request);
+
       return {
         basePrice,
         dynamicMultipliers: multipliers,
@@ -105,6 +119,7 @@ export class DynamicPricingEngine {
         confidence,
         validUntil: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
         recommendations: this.generateRecommendations(request, multipliers),
+        capacityCheck,
       };
     } catch (error) {
       console.error('Dynamic pricing calculation failed:', error);
@@ -735,6 +750,70 @@ export class DynamicPricingEngine {
     else if (customerBookings > 10) volumeDiscount = 0.05;
     
     return { volumeDiscount };
+  }
+
+  private calculateCapacityCheck(request: DynamicPricingRequest): {
+    isValid: boolean;
+    weightUtilization: number;
+    volumeUtilization: number;
+    itemUtilization: number;
+    warnings: string[];
+    recommendations: string[];
+    vansRequired?: number;
+  } {
+    // Calculate total weight, volume, and item count
+    let totalWeight = 0;
+    let totalVolume = 0;
+    let totalItems = 0;
+
+    request.items.forEach(item => {
+      const quantity = item.quantity || 1;
+      const weight = item.weight || 15; // Default 15kg if not specified
+      const volume = item.volume || 0.1; // Default 0.1m³ if not specified
+
+      totalWeight += weight * quantity;
+      totalVolume += volume * quantity;
+      totalItems += quantity;
+    });
+
+    // Luton van capacity specs
+    const maxWeight = 1400; // kg (safe payload)
+    const maxVolume = 14.5; // m³
+    const maxItems = 150;
+
+    // Calculate utilization percentages
+    const weightUtilization = (totalWeight / maxWeight) * 100;
+    const volumeUtilization = (totalVolume / maxVolume) * 100;
+    const itemUtilization = (totalItems / maxItems) * 100;
+
+    // Calculate required number of vans
+    const vansNeededByWeight = Math.ceil(weightUtilization / 100);
+    const vansNeededByVolume = Math.ceil(volumeUtilization / 100);
+    const vansNeededByItems = Math.ceil(itemUtilization / 100);
+    const vansRequired = Math.max(vansNeededByWeight, vansNeededByVolume, vansNeededByItems);
+
+    // Generate warnings and recommendations
+    const warnings: string[] = [];
+    const recommendations: string[] = [];
+
+    if (vansRequired > 1) {
+      warnings.push(`⚠️ REQUIRES ${vansRequired} VANS - Order exceeds single vehicle capacity`);
+      recommendations.push(`Split this order across ${vansRequired} vehicles for safe transport`);
+      recommendations.push(`Weight: ${vansNeededByWeight} van(s) | Volume: ${vansNeededByVolume} van(s) | Items: ${vansNeededByItems} van(s)`);
+    } else if (weightUtilization > 90 || volumeUtilization > 90) {
+      warnings.push('Very high capacity utilization - may exceed safe loading limits');
+      recommendations.push('Consider additional vehicle or job splitting');
+    }
+
+    return {
+      isValid: warnings.length === 0,
+      weightUtilization: Math.round(weightUtilization * 100) / 100,
+      volumeUtilization: Math.round(volumeUtilization * 100) / 100,
+      itemUtilization: Math.round(itemUtilization * 100) / 100,
+      warnings,
+      recommendations,
+      vansRequired: vansRequired > 1 ? vansRequired : undefined,
+    };
   }
 
   // Simple calculatePrice method for backward compatibility
