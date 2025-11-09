@@ -318,7 +318,8 @@ export const CapacityCheckSchema = z.object({
   itemUtilization: z.number().min(0).max(300), // Allow up to 300% for multiple vehicles
   warnings: z.array(z.string()),
   recommendations: z.array(z.string()),
-  overCapacityItems: z.array(z.string()).optional()
+  overCapacityItems: z.array(z.string()).optional(),
+  vansRequired: z.number().min(1).optional() // Number of vans required for this job
 });
 
 // ============================================================================

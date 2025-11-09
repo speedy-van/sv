@@ -240,6 +240,15 @@ interface OrderDetail {
     volumeM3: number;
     image?: string;
   }>;
+  capacityCheck?: {
+    isValid: boolean;
+    weightUtilization: number;
+    volumeUtilization: number;
+    itemUtilization: number;
+    warnings: string[];
+    recommendations: string[];
+    vansRequired?: number;
+  };
 }
 
 interface OrderDetailDrawerProps {
@@ -2128,6 +2137,66 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     </VStack>
                   </CardBody>
                 </Card>
+
+                {/* Capacity Check & Vehicles Required */}
+                {order.capacityCheck && (order.capacityCheck.warnings.length > 0 || order.capacityCheck.vansRequired) && (
+                  <Alert 
+                    status={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "error" : "warning"} 
+                    bg={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)"} 
+                    borderRadius="md" 
+                    borderWidth={2} 
+                    borderColor={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "#ef4444" : "#f59e0b"}
+                  >
+                    <AlertIcon color={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "#ef4444" : "#f59e0b"} boxSize={6} />
+                    <VStack align="start" spacing={2} flex={1}>
+                      {order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 && (
+                        <Text fontSize="lg" fontWeight="bold" color="#ef4444">
+                          🚛 REQUIRES {order.capacityCheck.vansRequired} VANS
+                        </Text>
+                      )}
+                      <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                        Capacity Warnings:
+                      </Text>
+                      <VStack align="start" spacing={1} w="full">
+                        {order.capacityCheck.warnings.map((warning, idx) => (
+                          <Text key={idx} fontSize="sm" color={textColor}>• {warning}</Text>
+                        ))}
+                      </VStack>
+                      {order.capacityCheck.recommendations.length > 0 && (
+                        <>
+                          <Text fontSize="sm" fontWeight="semibold" color={textColor} mt={2}>
+                            Recommendations:
+                          </Text>
+                          <VStack align="start" spacing={1} w="full">
+                            {order.capacityCheck.recommendations.map((rec, idx) => (
+                              <Text key={idx} fontSize="sm" color="#10b981">✓ {rec}</Text>
+                            ))}
+                          </VStack>
+                        </>
+                      )}
+                      <SimpleGrid columns={3} spacing={3} w="full" mt={2}>
+                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                          <Text fontSize="xs" color={secondaryTextColor}>Weight</Text>
+                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.weightUtilization > 100 ? "#ef4444" : "#10b981"}>
+                            {order.capacityCheck.weightUtilization.toFixed(0)}%
+                          </Text>
+                        </Box>
+                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                          <Text fontSize="xs" color={secondaryTextColor}>Volume</Text>
+                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.volumeUtilization > 100 ? "#ef4444" : "#10b981"}>
+                            {order.capacityCheck.volumeUtilization.toFixed(0)}%
+                          </Text>
+                        </Box>
+                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                          <Text fontSize="xs" color={secondaryTextColor}>Items</Text>
+                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.itemUtilization > 100 ? "#ef4444" : "#10b981"}>
+                            {order.capacityCheck.itemUtilization.toFixed(0)}%
+                          </Text>
+                        </Box>
+                      </SimpleGrid>
+                    </VStack>
+                  </Alert>
+                )}
 
                 {(amountPaid > 0 || order.paidAt) && (
                   <Card bg={cardBg} borderColor="#2563eb" borderWidth={1}>

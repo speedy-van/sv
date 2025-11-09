@@ -852,22 +852,33 @@ export class ComprehensivePricingEngine {
     const volumeUtilization = (totalVolume / config.vanSpecs.maxVolumeM3) * 100;
     const itemUtilization = (totalItems / config.vanSpecs.maxItems) * 100;
 
-    if (weightUtilization > 90 || volumeUtilization > 90) {
+    // Calculate required number of vans based on utilization
+    const vansNeededByWeight = Math.ceil(weightUtilization / 100);
+    const vansNeededByVolume = Math.ceil(volumeUtilization / 100);
+    const vansNeededByItems = Math.ceil(itemUtilization / 100);
+    const vansRequired = Math.max(vansNeededByWeight, vansNeededByVolume, vansNeededByItems);
+
+    if (vansRequired > 1) {
+      warnings.push(`⚠️ REQUIRES ${vansRequired} VANS - Order exceeds single vehicle capacity`);
+      recommendations.push(`Split this order across ${vansRequired} vehicles for safe transport`);
+      recommendations.push(`Weight: ${vansNeededByWeight} van(s) | Volume: ${vansNeededByVolume} van(s) | Items: ${vansNeededByItems} van(s)`);
+    } else if (weightUtilization > 90 || volumeUtilization > 90) {
       warnings.push('Very high capacity utilization - may exceed safe loading limits');
       recommendations.push('Consider additional vehicle or job splitting');
     }
 
     const isValid = warnings.length === 0;
 
-    return CapacityCheckSchema.parse({
+    return {
       isValid,
       weightUtilization: Math.round(weightUtilization * 100) / 100,
       volumeUtilization: Math.round(volumeUtilization * 100) / 100,
       itemUtilization: Math.round(itemUtilization * 100) / 100,
       warnings,
       recommendations,
-      overCapacityItems: overCapacityItems.length > 0 ? overCapacityItems : undefined
-    });
+      overCapacityItems: overCapacityItems.length > 0 ? overCapacityItems : undefined,
+      vansRequired
+    } as any;
   }
 
   // ============================================================================

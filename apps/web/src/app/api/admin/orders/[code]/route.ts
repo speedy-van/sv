@@ -169,6 +169,7 @@ export async function GET(
       orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
       isMultiDrop: order.isMultiDrop || false,
       routeId: order.routeId,
+      capacityCheck: (order.customerPreferences as any)?.capacityCheck || null, // Extract capacity check
       route: order.route ? {
         id: order.route.id,
         reference: order.route.reference,

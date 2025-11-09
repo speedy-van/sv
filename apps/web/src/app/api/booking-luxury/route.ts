@@ -467,6 +467,7 @@ export async function POST(request: NextRequest) {
       optimizationTips: [],
       validUntil: dynamicPricingResult.validUntil,
       confidence: dynamicPricingResult.confidence,
+      capacityCheck: dynamicPricingResult.capacityCheck, // Include capacity check
     };
     
     // Validate pricing
@@ -649,6 +650,7 @@ export async function POST(request: NextRequest) {
             floorNumber: resolveFloorNumber(bookingData.dropoffAddress),
             hasLift: bookingData.dropoffDetails?.hasLift ?? (bookingData.dropoffAddress as any)?.buildingDetails?.hasElevator ?? false,
           },
+          capacityCheck: pricingResult.capacityCheck, // Store capacity check for admin
         },
 
       },
