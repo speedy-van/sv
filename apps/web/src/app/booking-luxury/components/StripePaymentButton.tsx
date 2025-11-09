@@ -33,12 +33,20 @@ interface AddressData {
   };
   houseNumber?: string;
   flatNumber?: string;
+  floorNumber?: string;
   formatted_address?: string;
   place_name?: string;
   street?: string;
   full?: string;
   line1?: string;
   number?: string;
+  buildingDetails?: {
+    flatNumber?: string;
+    apartmentNumber?: string;
+    floorNumber?: string;
+    hasElevator?: boolean;
+    type?: string;
+  };
 }
 
 interface ItemData {
@@ -62,6 +70,7 @@ interface PropertyDetails {
   hasParking?: boolean;
   accessNotes?: string;
   requiresPermit?: boolean;
+  flatNumber?: string;
 }
 
 interface PricingData {
@@ -106,6 +115,54 @@ interface BookingData {
     finalAmount?: number;
   };
 }
+
+const normaliseFlatNumber = (address?: AddressData): string | undefined => {
+  if (!address) return undefined;
+
+  const candidates = [
+    address.flatNumber,
+    address.buildingDetails?.flatNumber,
+    address.buildingDetails?.apartmentNumber,
+    address.line1?.startsWith('Flat ') ? address.line1 : undefined,
+    address.line1?.startsWith('Apartment ') ? address.line1 : undefined,
+    address.full?.startsWith('Flat ') ? address.full : undefined,
+    address.full?.startsWith('Apartment ') ? address.full : undefined,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const trimmed = value.trim();
+      if (/^flat\s+/i.test(trimmed)) {
+        const withoutPrefix = trimmed.replace(/^flat\s+/i, '').trim();
+        return withoutPrefix.length > 0 ? withoutPrefix : trimmed;
+      }
+      if (/^apartment\s+/i.test(trimmed)) {
+        const withoutApartment = trimmed.replace(/^apartment\s+/i, '').trim();
+        return withoutApartment.length > 0 ? withoutApartment : trimmed;
+      }
+      return trimmed;
+    }
+  }
+
+  return undefined;
+};
+
+const normaliseFloorNumber = (address?: AddressData): string | undefined => {
+  if (!address) return undefined;
+
+  const candidates = [
+    address.floorNumber,
+    address.buildingDetails?.floorNumber,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+};
 
 // Helper functions for three-tier pricing
 const getCorrectTotal = (bookingData: BookingData): number => {
@@ -192,6 +249,11 @@ export default function StripePaymentButton({
       // Create booking if it doesn't exist yet
       if (!bookingId) {
         // Transform the data to match the API schema
+        const pickupFlatNumber = normaliseFlatNumber(bookingData.pickupAddress);
+        const dropoffFlatNumber = normaliseFlatNumber(bookingData.dropoffAddress);
+        const pickupFloorNumber = normaliseFloorNumber(bookingData.pickupAddress);
+        const dropoffFloorNumber = normaliseFloorNumber(bookingData.dropoffAddress);
+
         const bookingRequest = {
           customer: {
             name: bookingData.customer.name || '',
@@ -209,6 +271,14 @@ export default function StripePaymentButton({
             city: bookingData.pickupAddress.city || 'Unknown City',
             postcode: bookingData.pickupAddress.postcode || '',
             country: 'UK',
+            flatNumber: pickupFlatNumber,
+            floorNumber: pickupFloorNumber,
+            buildingDetails: {
+              flatNumber: pickupFlatNumber,
+              floorNumber: pickupFloorNumber,
+              hasElevator: bookingData.pickupAddress.buildingDetails?.hasElevator,
+              type: bookingData.pickupAddress.buildingDetails?.type,
+            },
           },
           dropoffAddress: {
             // Extract street from multiple possible sources
@@ -221,22 +291,36 @@ export default function StripePaymentButton({
             city: bookingData.dropoffAddress.city || 'Unknown City',
             postcode: bookingData.dropoffAddress.postcode || '',
             country: 'UK',
+            flatNumber: dropoffFlatNumber,
+            floorNumber: dropoffFloorNumber,
+            buildingDetails: {
+              flatNumber: dropoffFlatNumber,
+              floorNumber: dropoffFloorNumber,
+              hasElevator: bookingData.dropoffAddress.buildingDetails?.hasElevator,
+              type: bookingData.dropoffAddress.buildingDetails?.type,
+            },
           },
           pickupDetails: {
             type: bookingData.pickupDetails?.type || 'house',
             floors: bookingData.pickupDetails?.floors || 0,
-            hasLift: bookingData.pickupDetails?.hasLift || false,
+            hasLift: bookingData.pickupDetails?.hasLift
+              ?? bookingData.pickupAddress.buildingDetails?.hasElevator
+              ?? false,
             hasParking: bookingData.pickupDetails?.hasParking !== false, // Default true
             accessNotes: bookingData.pickupDetails?.accessNotes || '',
             requiresPermit: bookingData.pickupDetails?.requiresPermit || false,
+            flatNumber: bookingData.pickupDetails?.flatNumber || pickupFlatNumber,
           },
           dropoffDetails: {
             type: bookingData.dropoffDetails?.type || 'house',
             floors: bookingData.dropoffDetails?.floors || 0,
-            hasLift: bookingData.dropoffDetails?.hasLift || false,
+            hasLift: bookingData.dropoffDetails?.hasLift
+              ?? bookingData.dropoffAddress.buildingDetails?.hasElevator
+              ?? false,
             hasParking: bookingData.dropoffDetails?.hasParking !== false, // Default true
             accessNotes: bookingData.dropoffDetails?.accessNotes || '',
             requiresPermit: bookingData.dropoffDetails?.requiresPermit || false,
+            flatNumber: bookingData.dropoffDetails?.flatNumber || dropoffFlatNumber,
           },
           items: bookingData.items.map(item => ({
             id: item.id || `item-${Date.now()}-${Math.random()}`,

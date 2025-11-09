@@ -122,7 +122,7 @@ export const REVIEW_RESPONSE_TEMPLATES = {
   
   negative: [
     {
-      template: `We sincerely apologize for your experience with our {service_type} service. This doesn't meet our standards. Please contact us directly at support@speedy-van.co.uk or call +44 7901 846297 so we can make this right.`,
+      template: `We sincerely apologize for your experience with our {service_type} service. This doesn't meet our standards. Please contact us directly at support@speedy-van.co.uk or call 01202129764 so we can make this right.`,
       keywords: ['disappointed', 'unhappy', 'poor', 'terrible', 'awful', 'worst'],
     },
     {
@@ -130,7 +130,7 @@ export const REVIEW_RESPONSE_TEMPLATES = {
       keywords: ['issue', 'problem', 'concern', 'complaint', 'not happy'],
     },
     {
-      template: `We're very sorry to hear about your experience in {location}. This is not the level of service we strive for. Please contact our customer service team at support@speedy-van.co.uk or +44 7901 846297 so we can address your concerns immediately.`,
+      template: `We're very sorry to hear about your experience in {location}. This is not the level of service we strive for. Please contact our customer service team at support@speedy-van.co.uk or 01202129764 so we can address your concerns immediately.`,
       keywords: ['late', 'damaged', 'rude', 'unprofessional', 'careless'],
     },
     {

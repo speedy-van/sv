@@ -513,7 +513,7 @@ export const LuxuryPostcodeAddressAutocomplete: React.FC<LuxuryPostcodeAddressAu
                       </HStack>
                       <HStack spacing={1}>
                         <Text>🏢</Text>
-                        <Text>Flat/Apartment</Text>
+                        <Text>Flat</Text>
                       </HStack>
                       <HStack spacing={1}>
                         <Text>📍</Text>

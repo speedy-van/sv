@@ -259,18 +259,24 @@ export async function POST(req: Request) {
               continue;
             }
 
+            const preferences = (booking.customerPreferences as any) || {};
+            const pickupMeta = preferences?.pickupAddressMeta || {};
+            const dropoffMeta = preferences?.dropoffAddressMeta || {};
+
             const result = await unifiedEmailService.sendFloorWarningIfNeeded({
               reference: booking.reference,
               customerEmail: booking.customerEmail,
               customerName: booking.customerName,
-              pickupProperty: booking.pickupProperty ? {
-                floors: booking.pickupProperty.floors,
-                accessType: booking.pickupProperty.accessType,
+              pickupProperty: (booking as any).pickupProperty ? {
+                floors: (booking as any).pickupProperty.floors,
+                accessType: (booking as any).pickupProperty.accessType,
               } : undefined,
-              dropoffProperty: booking.dropoffProperty ? {
-                floors: booking.dropoffProperty.floors,
-                accessType: booking.dropoffProperty.accessType,
+              dropoffProperty: (booking as any).dropoffProperty ? {
+                floors: (booking as any).dropoffProperty.floors,
+                accessType: (booking as any).dropoffProperty.accessType,
               } : undefined,
+              pickupAddressMeta: pickupMeta,
+              dropoffAddressMeta: dropoffMeta,
             });
 
             floorWarningResults.push({

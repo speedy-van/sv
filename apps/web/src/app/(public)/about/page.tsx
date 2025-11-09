@@ -26,6 +26,7 @@ import AnalyticsClient from './AnalyticsClient';
 import { parseConsentCookie } from '@/lib/consent';
 import { cookies } from 'next/headers';
 import HeaderButton from '@/components/common/HeaderButton';
+import { ROUTES } from '@/lib/routing';
 
 export const metadata: Metadata = buildMetadata({
   title: 'About Speedy Van | Trusted UK Moves & Deliveries',
@@ -69,7 +70,7 @@ export default async function AboutPage() {
         <HStack>
           <Button
             as={Link}
-            href="/book"
+            href={ROUTES.SHARED.BOOKING_LUXURY}
             colorScheme="blue"
             data-analytics="about_cta_quote_click"
             data-analytics-props='{"placement":"hero"}'
@@ -337,7 +338,7 @@ export default async function AboutPage() {
         <HStack mt={3}>
           <Button
             as={Link}
-            href="/customer-portal/login"
+            href={ROUTES.CUSTOMER_LOGIN}
             variant="outline"
             data-analytics="about_cta_quote_click"
             data-analytics-props='{"placement":"work_with_us","cta":"customer_portal"}'
@@ -405,7 +406,7 @@ export default async function AboutPage() {
         <HStack mt={3}>
           <Button
             as={Link}
-            href="/book"
+            href={ROUTES.SHARED.BOOKING_LUXURY}
             bg="linear-gradient(135deg, #00C2FF, #00D18F)"
             color="white"
             _hover={{
@@ -455,7 +456,7 @@ export default async function AboutPage() {
             },
             {
               q: 'How do I get a price?',
-              a: 'Use the Book flow for an instant quote.',
+              a: 'Use the booking flow at speedy-van.co.uk/booking-luxury for an instant quote.',
             },
             {
               q: 'Do you handle heavy items?',

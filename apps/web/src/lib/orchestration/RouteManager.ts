@@ -921,7 +921,7 @@ export class RouteManager {
               </div>
               <p>Please open your Speedy Van Driver app to view full route details and start navigation.</p>
               <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
-                This is an automated notification from Speedy Van. For support, call 01202129746 or email support@speedy-van.co.uk
+                This is an automated notification from Speedy Van. For support, call 01202129764 or email support@speedy-van.co.uk
               </p>
             </div>
           `;

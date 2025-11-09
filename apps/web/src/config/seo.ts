@@ -22,7 +22,7 @@ export const BUSINESS_INFO = {
   
   // Contact Information
   contact: {
-    phone: '+44 1698 123456', // Update with real phone
+    phone: '+44 1202 129746', // Updated company phone
     email: 'hello@speedyvan.co.uk',
     supportEmail: 'support@speedyvan.co.uk',
   },

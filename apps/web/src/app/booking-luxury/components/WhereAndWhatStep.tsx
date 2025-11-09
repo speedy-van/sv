@@ -73,7 +73,17 @@ import {
 import { MdElevator, MdKitchen, MdLocalLaundryService, MdTv } from 'react-icons/md';
 
 import type { FormData } from '../hooks/useBookingForm';
-import { ALL_REMOVAL_ITEMS, getAllCategories, filterItemsByCategory, searchItems } from '@/lib/uk-removal-items-data';
+import { 
+  ALL_REMOVAL_ITEMS, 
+  getAllCategories, 
+  filterItemsByCategory, 
+  searchItems,
+  getSubcategories,
+  filterItemsByWeight,
+  sortItems,
+  getPopularItems,
+  getItemPackages
+} from '@/lib/uk-removal-items-data';
 
 interface WhereAndWhatStepProps {
   formData: FormData;
@@ -100,32 +110,72 @@ export default function WhereAndWhatStep({
 }: WhereAndWhatStepProps) {
   
   // State for item selection mode
-  const [itemSelectionMode, setItemSelectionMode] = useState<'bedroom' | 'smart' | 'choose'>('choose');
+  const [itemSelectionMode, setItemSelectionMode] = useState<'smart' | 'choose' | 'packages'>('choose');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Bedroom');
+  
+  // ✅ NEW: Advanced filtering and sorting
+  const [selectedSubcategory, setSelectedSubcategory] = useState('All');
+  const [sortBy, setSortBy] = useState<'popular' | 'weight-asc' | 'weight-desc' | 'name-asc' | 'name-desc'>('popular');
+  const [minWeight, setMinWeight] = useState<number | undefined>(undefined);
+  const [maxWeight, setMaxWeight] = useState<number | undefined>(undefined);
+  const [showPopularFirst, setShowPopularFirst] = useState(true);
   
   const { step1 } = formData;
   const toast = useToast();
 
-  // Get all categories
+  // Get all categories and subcategories
   const categories = getAllCategories();
+  const subcategories = useMemo(() => 
+    getSubcategories(selectedCategory),
+    [selectedCategory]
+  );
+  
+  // ✅ Get predefined packages
+  const packages = useMemo(() => getItemPackages(), []);
 
-  // Filtered items based on mode
+  // ✅ ENHANCED: Filtered items with advanced sorting and filtering
   const displayedItems = useMemo(() => {
+    let items: any[] = [];
+    
+    // Step 1: Get base items based on mode
     if (itemSelectionMode === 'smart' && searchQuery) {
-      return searchItems(searchQuery);
+      items = searchItems(searchQuery);
     } else if (itemSelectionMode === 'choose' && selectedCategory) {
-      return filterItemsByCategory(selectedCategory);
+      items = filterItemsByCategory(selectedCategory);
+      
+      // Apply subcategory filter if selected
+      if (selectedSubcategory && selectedSubcategory !== 'All') {
+        const subcategoryLower = selectedSubcategory.toLowerCase();
+        items = items.filter(item => 
+          item.name.toLowerCase().includes(subcategoryLower) ||
+          item.name.toLowerCase().includes(subcategoryLower.slice(0, -1)) // Remove 's' for singular
+        );
+      }
+    } else if (itemSelectionMode === 'packages') {
+      // Show popular items for package mode
+      items = getPopularItems(50);
+    } else {
+      items = ALL_REMOVAL_ITEMS;
     }
-    return ALL_REMOVAL_ITEMS;
-  }, [itemSelectionMode, searchQuery, selectedCategory]);
+    
+    // Step 2: Apply weight filter if set
+    if (minWeight !== undefined || maxWeight !== undefined) {
+      items = filterItemsByWeight(items, minWeight, maxWeight);
+    }
+    
+    // Step 3: Apply sorting
+    items = sortItems(items, sortBy);
+    
+    return items;
+  }, [itemSelectionMode, searchQuery, selectedCategory, selectedSubcategory, sortBy, minWeight, maxWeight]);
 
   const bedroomPackages = [
-    { id: 'package_1bed', name: '1 Bedroom', items: '~15 items', image: '/items/one%20bedroom.png' },
-    { id: 'package_2bed', name: '2 Bedroom', items: '~25 items', image: '/items/2%20bedroom.png' },
-    { id: 'package_3bed', name: '3 Bedroom', items: '~35 items', image: '/items/3%20bed%20rooms.png' },
-    { id: 'package_4bed', name: '4 Bedroom', items: '~50 items', image: '/items/one%20bedroom.png' },
-    { id: 'package_5bed', name: '5 Bedroom', items: '~70 items', image: '/items/one%20bedroom.png' },
+    { id: '1bedroom', name: '1 Bedroom', packageKey: '1bedroom', image: '/items/one%20bedroom.png' },
+    { id: '2bedroom', name: '2 Bedrooms', packageKey: '2bedroom', image: '/items/2%20bedroom.png' },
+    { id: '3bedroom', name: '3 Bedrooms', packageKey: '3bedroom', image: '/items/3%20bed%20rooms.png' },
+    { id: '4bedroom', name: '4 Bedrooms', packageKey: '4bedroom', image: '/items/one%20bedroom.png' },
+    { id: '5bedroom', name: '5 Bedrooms', packageKey: '5bedroom', image: '/items/one%20bedroom.png' },
   ];
 
   // Handlers
@@ -243,7 +293,11 @@ export default function WhereAndWhatStep({
                     type="date"
                     value={step1.pickupDate || ''}
                     onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={(() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      return tomorrow.toISOString().split('T')[0];
+                    })()}
                     bg="rgba(26, 26, 26, 0.8)"
                     borderColor="rgba(59, 130, 246, 0.3)"
                     color="white"
@@ -295,33 +349,48 @@ export default function WhereAndWhatStep({
                 <FormControl isInvalid={!!errors['step1.pickupTime']}>
                   <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>⏰ Select Time</FormLabel>
                   <Select
+                    mb={4}
                     value={step1.pickupTimeSlot || ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
-                    bg="rgba(26, 26, 26, 0.8)"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
+                    bg="white"
+                    borderColor="rgba(59, 130, 246, 0.4)"
+                    color="gray.900"
                     size="lg"
                     borderRadius="xl"
-                    borderWidth="1px"
-                    fontWeight="500"
+                    borderWidth="2px"
+                    fontWeight="600"
                     cursor="pointer"
                     placeholder="Choose a time"
+                    _placeholder={{
+                      color: 'gray.500',
+                      fontWeight: '500',
+                    }}
                     _hover={{
-                      borderColor: "rgba(59, 130, 246, 0.5)",
-                      bg: "rgba(26, 26, 26, 0.9)",
+                      borderColor: "rgba(59, 130, 246, 0.7)",
+                      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.15)"
                     }}
                     _focus={{
                       borderColor: "blue.500",
-                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
-                      bg: "rgba(26, 26, 26, 0.95)",
+                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.25)",
+                      outline: "none",
                     }}
+                    transition="all 0.2s ease"
+                    iconColor="gray.700"
                     sx={{
                       '& option': {
-                        backgroundColor: '#1a1a1a',
+                        backgroundColor: 'white',
+                        color: '#111827',
+                        padding: '14px',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        lineHeight: '1.5',
+                      },
+                      '& option:hover': {
+                        backgroundColor: '#f3f4f6',
+                      },
+                      '& option:checked': {
+                        backgroundColor: '#3b82f6',
                         color: 'white',
-                        padding: '12px',
-                        fontSize: '14px',
-                        fontWeight: '500',
                       },
                     }}
                   >
@@ -397,37 +466,7 @@ export default function WhereAndWhatStep({
               </SimpleGrid>
 
               {/* Selection Modes - Vertical on Mobile, Horizontal on Desktop */}
-              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 2, md: 3 }} w="full">
-                <Button 
-                  className="booking-luxury-selection-button"
-                  size={{ base: "xs", md: "lg" }}
-                  fontSize={{ base: "3px", sm: "2xs", md: "sm" }}
-                  px={{ base: 2, md: 4 }}
-                  py={{ base: 2, md: 2 }}
-                  bg={itemSelectionMode === 'bedroom' 
-                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
-                    : 'rgba(31, 41, 55, 0.6)'}
-                  color="white"
-                  border="2px solid"
-                  borderColor={itemSelectionMode === 'bedroom' ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
-                  onClick={() => setItemSelectionMode('bedroom')}
-                  _hover={{ 
-                    bg: itemSelectionMode === 'bedroom' 
-                      ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
-                      : 'rgba(59, 130, 246, 0.2)',
-                    transform: 'translateY(-2px)'
-                  }}
-                  transition="all 0.3s"
-                  flexDirection="column"
-                  alignItems="center"
-                  justifyContent="flex-start"
-                  pt={{ base: 0, md: 1 }}
-                >
-                  <VStack spacing={0} lineHeight="1" mt={-3}>
-                    <Text fontSize={{ base: "3px", sm: "2xs", md: "sm" }}>House</Text>
-                    <Text fontSize={{ base: "3px", sm: "2xs", md: "sm" }}>Package</Text>
-                  </VStack>
-                </Button>
+              <SimpleGrid columns={{ base: 2, md: 3 }} spacing={{ base: 2, md: 3 }} w="full">
                 <Button 
                   className="booking-luxury-selection-button"
                   size={{ base: "xs", md: "lg" }}
@@ -441,11 +480,10 @@ export default function WhereAndWhatStep({
                   border="2px solid"
                   borderColor={itemSelectionMode === 'smart' ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
                   onClick={() => setItemSelectionMode('smart')}
-                  _hover={{ 
-                    bg: itemSelectionMode === 'smart' 
+                  _hover={{
+                    bg: itemSelectionMode === 'smart'
                       ? 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)'
-                      : 'rgba(168, 85, 247, 0.2)',
-                    transform: 'translateY(-2px)'
+                      : 'rgba(168, 85, 247, 0.2)'
                   }}
                   transition="all 0.3s"
                   flexDirection="column"
@@ -458,6 +496,38 @@ export default function WhereAndWhatStep({
                     <Text fontSize={{ base: "3px", sm: "2xs", md: "sm" }}>Item</Text>
                   </VStack>
                 </Button>
+                
+                {/* ✅ Packages Button */}
+                <Button 
+                  className="booking-luxury-selection-button"
+                  size={{ base: "xs", md: "lg" }}
+                  fontSize={{ base: "3px", sm: "2xs", md: "sm" }}
+                  px={{ base: 2, md: 4 }}
+                  py={{ base: 2, md: 2 }}
+                  bg={itemSelectionMode === 'packages' 
+                    ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
+                    : 'rgba(31, 41, 55, 0.6)'}
+                  color="white"
+                  border="2px solid"
+                  borderColor={itemSelectionMode === 'packages' ? 'rgba(245, 158, 11, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
+                  onClick={() => setItemSelectionMode('packages')}
+                  _hover={{
+                    bg: itemSelectionMode === 'packages'
+                      ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                      : 'rgba(245, 158, 11, 0.2)'
+                  }}
+                  transition="all 0.3s"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="flex-start"
+                  pt={{ base: 0, md: 1 }}
+                >
+                  <VStack spacing={0} lineHeight="1" mt={-3}>
+                    <Text fontSize={{ base: "3px", sm: "2xs", md: "sm" }}>Curated</Text>
+                    <Text fontSize={{ base: "3px", sm: "2xs", md: "sm" }}>Packages</Text>
+                  </VStack>
+                </Button>
+                
                 <Button 
                   className="booking-luxury-selection-button"
                   size={{ base: "xs", md: "lg" }}
@@ -471,11 +541,10 @@ export default function WhereAndWhatStep({
                   border="2px solid"
                   borderColor={itemSelectionMode === 'choose' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
                   onClick={() => setItemSelectionMode('choose')}
-                  _hover={{ 
-                    bg: itemSelectionMode === 'choose' 
+                  _hover={{
+                    bg: itemSelectionMode === 'choose'
                       ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                      : 'rgba(16, 185, 129, 0.2)',
-                    transform: 'translateY(-2px)'
+                      : 'rgba(16, 185, 129, 0.2)'
                   }}
                   transition="all 0.3s"
                   flexDirection="column"
@@ -490,145 +559,143 @@ export default function WhereAndWhatStep({
                 </Button>
               </SimpleGrid>
 
-              {/* House Packages Mode - 2 Columns on Mobile */}
-              {itemSelectionMode === 'bedroom' && (
-                <SimpleGrid columns={[2, 2, 2, 4, 5]} spacing={{ base: 2, md: 3 }} w="full">
-                  {bedroomPackages.map((pkg) => {
-                    const quantity = getItemQuantity(pkg.id);
-                    return (
-                      <VStack key={pkg.id} spacing={2} align="center" w="full">
-                        <Box 
-                          w="100%" 
-                          h={{ base: "120px", sm: "140px", md: "160px" }} 
-                          borderRadius="lg" 
-                          overflow="hidden" 
-                          bg="rgba(17, 24, 39, 0.6)"
-                          display="flex" 
-                          alignItems="center" 
-                          justifyContent="center"
-                        >
-                          <Image 
-                            src={pkg.image} 
-                            alt={pkg.name} 
-                            w="100%" 
-                            h="100%" 
-                            objectFit="cover"
-                            fallbackSrc="/placeholder-house.png"
-                          />
-                        </Box>
-                        <Text fontSize={{ base: "xs", sm: "sm", md: "md" }} color="white" fontWeight="bold" lineHeight="1.2" noOfLines={2} textAlign="center">
-                          {pkg.name}
-                        </Text>
-                        <Text fontSize={{ base: "2xs", sm: "xs", md: "sm" }} color="gray.400" noOfLines={1} textAlign="center">
-                          {pkg.items}
-                        </Text>
-                        {/* Plus/Minus Icons - Horizontal on All Screens */}
-                        <Box
-                          display="flex"
-                          flexDirection="row"
-                          justifyContent="center"
-                          alignItems="center"
-                          width="100%"
-                          gap={{ base: "4px", sm: "8px" }}
-                          sx={{
-                            flexDirection: 'row',
-                            gap: '8px',
-                          }}
-                        >
-                          <Box
-                            as="button"
-                            cursor={quantity > 0 ? "pointer" : "not-allowed"}
-                            opacity={quantity > 0 ? 1 : 0.3}
-                            onClick={(e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              if (quantity > 0) {
-                                updateQuantity(pkg.id, quantity - 1);
-                              }
-                            }}
-                            sx={{
-                              cursor: quantity > 0 ? "pointer" : "not-allowed",
-                              opacity: quantity > 0 ? 1 : 0.3,
-                              background: "transparent",
-                              border: "none",
-                              padding: "0",
-                              margin: "0",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "transform 0.2s",
-                              '&:hover': quantity > 0 ? {
-                                transform: "scale(1.2)",
-                              } : {},
-                            }}
-                          >
-                            <Icon as={FaMinus} fontSize={{ base: "lg", sm: "lg", md: "lg" }} color="white" />
-                          </Box>
-                          <Text 
-                            fontSize={{ base: "xs", sm: "sm" }} 
-                            color="white" 
-                            fontWeight="bold"
-                            textAlign="center"
-                            sx={{
-                              minWidth: '24px',
-                              padding: '0 4px',
-                            }}
-                          >
-                            {quantity}
-                          </Text>
-                          <Box
-                            as="button"
-                            cursor="pointer"
-                            onClick={(e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              updateQuantity(pkg.id, quantity + 1, pkg);
-                            }}
-                            sx={{
-                              cursor: "pointer",
-                              background: "transparent",
-                              border: "none",
-                              padding: "0",
-                              margin: "0",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "transform 0.2s",
-                              '&:hover': {
-                                transform: "scale(1.2)",
-                              },
-                            }}
-                          >
-                            <Icon as={FaPlus} fontSize={{ base: "lg", sm: "lg", md: "lg" }} color="white" />
-                          </Box>
-                        </Box>
-                      </VStack>
-                    );
-                  })}
-                </SimpleGrid>
+              {/* ✅ Packages Mode */}
+              {itemSelectionMode === 'packages' && (
+                <VStack spacing={6} w="full">
+                  <VStack spacing={2} textAlign="center">
+                    <Heading size={{ base: "md", md: "lg" }} color="white">
+                      📦 Curated Packages
+                    </Heading>
+                    <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
+                      Choose a complete room bundle or one of our featured collections to add multiple items in one tap.
+                    </Text>
+                  </VStack>
+
+                  <VStack spacing={4} w="full" align="stretch" sx={{ overflow: 'visible' }}>
+                    <VStack align="start" spacing={2}>
+                      <Text fontSize={{ base: "md", md: "lg" }} color="white" fontWeight="semibold">
+                        🏠 Home Size Bundles
+                      </Text>
+                      <Text fontSize="sm" color="gray.400">
+                        Click + to add all items from a package - customize them below
+                      </Text>
+                    </VStack>
+                    <SimpleGrid columns={[2, 2, 2, 3, 5]} spacing={{ base: 2, md: 3 }} w="full" sx={{ overflow: 'visible' }}>
+                      {bedroomPackages.map((pkg) => {
+                        const packageData = packages[pkg.packageKey as keyof typeof packages];
+                        
+                        return (
+                          <VStack key={pkg.id} spacing={2} align="stretch" w="full">
+                            {/* Package Card */}
+                            <Box
+                              borderRadius="xl"
+                              overflow="hidden"
+                              border="2px solid"
+                              borderColor="rgba(245, 158, 11, 0.3)"
+                              bg="rgba(31, 41, 55, 0.6)"
+                              transition="all 0.3s"
+                              _hover={{
+                                borderColor: "orange.400",
+                                boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)"
+                              }}
+                            >
+                              <VStack spacing={2} align="center" p={3}>
+                                <Box 
+                                  w="100%" 
+                                  h={{ base: "80px", sm: "100px", md: "120px" }} 
+                                  borderRadius="lg" 
+                                  overflow="hidden" 
+                                  bg="rgba(17, 24, 39, 0.6)"
+                                  display="flex" 
+                                  alignItems="center" 
+                                  justifyContent="center"
+                                >
+                                  <Image 
+                                    src={pkg.image} 
+                                    alt={pkg.name} 
+                                    w="100%" 
+                                    h="100%" 
+                                    objectFit="cover"
+                                    fallbackSrc="/placeholder-house.png"
+                                  />
+                                </Box>
+                                <Text fontSize={{ base: "xs", sm: "sm", md: "md" }} color="white" fontWeight="bold" textAlign="center">
+                                  {pkg.name}
+                                </Text>
+                                <Badge colorScheme="orange" fontSize="xs">
+                                  {packageData?.items.length || 0} items
+                                </Badge>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (packageData) {
+                                      const currentItems = step1.items || [];
+                                      const newItems = packageData.items.map((item: any) => {
+                                        const existingItem = currentItems.find((i: any) => i.id === item.id);
+                                        if (existingItem) {
+                                          return { ...existingItem, quantity: existingItem.quantity + 1 };
+                                        } else {
+                                          return { ...item, quantity: 1 };
+                                        }
+                                      });
+                                      const existingItemIds = new Set(packageData.items.map((i: any) => i.id));
+                                      const remainingItems = currentItems.filter((i: any) => !existingItemIds.has(i.id));
+                                      updateFormData('step1', {
+                                        items: [...remainingItems, ...newItems]
+                                      });
+                                      toast({
+                                        title: `${pkg.name} Added!`,
+                                        description: `${packageData.items.length} items added`,
+                                        status: 'success',
+                                        duration: 2000,
+                                      });
+                                    }
+                                  }}
+                                  style={{
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    margin: 0,
+                                    background: 'transparent',
+                                    border: 'none',
+                                    width: '100%',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 5V19M5 12H19" stroke="#fb923c" strokeWidth="3" strokeLinecap="round"/>
+                                  </svg>
+                                </button>
+                              </VStack>
+                            </Box>
+                          </VStack>
+                        );
+                      })}
+                    </SimpleGrid>
+                  </VStack>
+
+                </VStack>
               )}
 
               {/* Search Mode */}
               {itemSelectionMode === 'smart' && (
                 <VStack spacing={4} w="full">
-                  <InputGroup size="lg">
-                    <InputLeftElement>
-                      <Icon as={FaSearch} color="rgba(168, 85, 247, 0.6)" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Search from 666 items (e.g., 'sofa', 'bed', 'kitchen')"
-                      bg="rgba(17, 24, 39, 0.8)"
-                      border="2px solid"
-                      borderColor="rgba(168, 85, 247, 0.3)"
-                      color="white"
-                      _placeholder={{ color: "gray.400" }}
-                      _hover={{ borderColor: 'rgba(168, 85, 247, 0.5)' }}
-                      _focus={{ 
-                        borderColor: 'rgba(168, 85, 247, 0.6)',
-                        boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)"
-                      }}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </InputGroup>
+                  <Input
+                    size="lg"
+                    placeholder="Search from 666 items (e.g., 'sofa', 'bed', 'kitchen')"
+                    bg="rgba(17, 24, 39, 0.8)"
+                    border="2px solid"
+                    borderColor="rgba(168, 85, 247, 0.3)"
+                    color="white"
+                    _placeholder={{ color: "gray.400" }}
+                    _hover={{ borderColor: 'rgba(168, 85, 247, 0.5)' }}
+                    _focus={{ 
+                      borderColor: 'rgba(168, 85, 247, 0.6)',
+                      boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)"
+                    }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                   
                   <Text fontSize="sm" color="gray.400">
                     Found {displayedItems.length} items
@@ -772,49 +839,232 @@ export default function WhereAndWhatStep({
                       Browse by Category
                     </Text>
                     <Select
+                      mb={4}
                       value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedCategory(e.target.value);
+                        setSelectedSubcategory('All'); // Reset subcategory when category changes
+                      }}
                       bg="white"
-                      borderColor="gray.300"
+                      borderColor="rgba(59, 130, 246, 0.4)"
                       color="gray.900"
-                      w={{ base: "full", md: "280px" }}
-                      size="md"
-                      borderRadius="lg"
+                      w={{ base: "full", md: "300px" }}
+                      size="lg"
+                      borderRadius="xl"
                       borderWidth="2px"
-                      fontWeight="medium"
+                      fontWeight="600"
                       cursor="pointer"
                       _hover={{ 
-                        borderColor: 'gray.400',
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
+                        borderColor: 'rgba(59, 130, 246, 0.7)',
+                        boxShadow: "0 4px 14px rgba(59, 130, 246, 0.2)"
                       }}
                       _focus={{ 
                         borderColor: '#3b82f6',
-                        boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
+                        boxShadow: "0 0 0 4px rgba(59, 130, 246, 0.25)",
                         outline: "none"
                       }}
                       _active={{
-                        borderColor: '#3b82f6',
+                        borderColor: '#2563eb',
                       }}
+                      transition="all 0.2s ease"
+                      iconColor="gray.700"
                       sx={{
                         '& option': {
                           backgroundColor: 'white',
-                          color: 'black',
-                          padding: '12px',
-                          fontSize: '14px',
-                          fontWeight: '500',
+                          color: '#111827',
+                          padding: '14px',
+                          fontSize: '15px',
+                          fontWeight: '600',
+                          lineHeight: '1.5',
                         },
-                        '&:hover option': {
+                        '& option:hover': {
                           backgroundColor: '#f3f4f6',
+                        },
+                        '& option:checked': {
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          fontWeight: '700',
                         }
                       }}
                     >
                       {categories.map((cat) => (
-                        <option key={cat} value={cat} style={{ backgroundColor: 'white', color: '#111827' }}>
+                        <option key={cat} value={cat}>
                           {cat} {cat === 'All' ? `(${ALL_REMOVAL_ITEMS.length})` : `(${filterItemsByCategory(cat).length})`}
                         </option>
                       ))}
                     </Select>
                   </HStack>
+                  
+                  {/* ✅ NEW: Advanced Filters Panel */}
+                  <Card bg="rgba(31, 41, 55, 0.5)" borderColor="rgba(59, 130, 246, 0.3)" borderWidth="1px" borderRadius="lg">
+                    <CardBody p={4}>
+                      <VStack spacing={4} align="stretch">
+                        
+                        {/* Subcategory + Sort Row */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
+                          {/* Subcategory Filter */}
+                          <FormControl>
+                            <FormLabel color="white" fontSize="sm" mb={2} fontWeight="600">🔍 Subcategory</FormLabel>
+                            <Select
+                              mb={3}
+                              value={selectedSubcategory}
+                              onChange={(e) => setSelectedSubcategory(e.target.value)}
+                              bg="white"
+                              borderColor="rgba(168, 85, 247, 0.4)"
+                              color="gray.900"
+                              size="md"
+                              borderRadius="lg"
+                              borderWidth="2px"
+                              fontWeight="600"
+                              cursor="pointer"
+                              _hover={{
+                                borderColor: "rgba(168, 85, 247, 0.7)",
+                                boxShadow: "0 3px 10px rgba(168, 85, 247, 0.15)"
+                              }}
+                              _focus={{
+                                borderColor: "#a855f7",
+                                boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)",
+                                outline: "none",
+                              }}
+                              transition="all 0.2s ease"
+                              iconColor="gray.700"
+                              sx={{
+                                '& option': {
+                                  backgroundColor: 'white',
+                                  color: '#111827',
+                                  padding: '12px',
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  lineHeight: '1.5',
+                                },
+                                '& option:hover': {
+                                  backgroundColor: '#f3f4f6',
+                                },
+                                '& option:checked': {
+                                  backgroundColor: '#a855f7',
+                                  color: 'white',
+                                  fontWeight: '700',
+                                }
+                              }}
+                            >
+                              {subcategories.map((subcat) => (
+                                <option key={subcat} value={subcat}>
+                                  {subcat}
+                                </option>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          
+                          {/* Sort By */}
+                          <FormControl>
+                            <FormLabel color="white" fontSize="sm" mb={2} fontWeight="600">📊 Sort By</FormLabel>
+                            <Select
+                              mb={3}
+                              value={sortBy}
+                              onChange={(e) => setSortBy(e.target.value as any)}
+                              bg="white"
+                              borderColor="rgba(16, 185, 129, 0.4)"
+                              color="gray.900"
+                              size="md"
+                              borderRadius="lg"
+                              borderWidth="2px"
+                              fontWeight="600"
+                              cursor="pointer"
+                              _hover={{
+                                borderColor: "rgba(16, 185, 129, 0.7)",
+                                boxShadow: "0 3px 10px rgba(16, 185, 129, 0.15)"
+                              }}
+                              _focus={{
+                                borderColor: "#10b981",
+                                boxShadow: "0 0 0 3px rgba(16, 185, 129, 0.2)",
+                                outline: "none",
+                              }}
+                              transition="all 0.2s ease"
+                              iconColor="gray.700"
+                              sx={{
+                                '& option': {
+                                  backgroundColor: 'white',
+                                  color: '#111827',
+                                  padding: '12px',
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  lineHeight: '1.5',
+                                },
+                                '& option:hover': {
+                                  backgroundColor: '#f3f4f6',
+                                },
+                                '& option:checked': {
+                                  backgroundColor: '#10b981',
+                                  color: 'white',
+                                  fontWeight: '700',
+                                }
+                              }}
+                            >
+                              <option value="popular">⭐ Popular First</option>
+                              <option value="weight-asc">⚖️ Lightest First</option>
+                              <option value="weight-desc">💪 Heaviest First</option>
+                              <option value="name-asc">🔤 A→Z</option>
+                              <option value="name-desc">🔤 Z→A</option>
+                            </Select>
+                          </FormControl>
+                        </SimpleGrid>
+                        
+                        {/* Weight Range Filter */}
+                        <FormControl>
+                          <FormLabel color="white" fontSize="sm" mb={2}>⚖️ Weight Range (kg)</FormLabel>
+                          <HStack spacing={3}>
+                            <NumberInput
+                              value={minWeight || ''}
+                              onChange={(_, val) => setMinWeight(isNaN(val) ? undefined : val)}
+                              min={0}
+                              max={maxWeight || 500}
+                              size="sm"
+                            >
+                              <NumberInputField
+                                placeholder="Min"
+                                bg="rgba(17, 24, 39, 0.8)"
+                                borderColor="rgba(59, 130, 246, 0.3)"
+                                color="white"
+                              />
+                            </NumberInput>
+                            <Text color="gray.400">to</Text>
+                            <NumberInput
+                              value={maxWeight || ''}
+                              onChange={(_, val) => setMaxWeight(isNaN(val) ? undefined : val)}
+                              min={minWeight || 0}
+                              max={500}
+                              size="sm"
+                            >
+                              <NumberInputField
+                                placeholder="Max"
+                                bg="rgba(17, 24, 39, 0.8)"
+                                borderColor="rgba(59, 130, 246, 0.3)"
+                                color="white"
+                              />
+                            </NumberInput>
+                          </HStack>
+                        </FormControl>
+                        
+                        {/* Reset Filters */}
+                        {(minWeight || maxWeight || selectedSubcategory !== 'All' || sortBy !== 'popular') && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            color="gray.400"
+                            onClick={() => {
+                              setSelectedSubcategory('All');
+                              setSortBy('popular');
+                              setMinWeight(undefined);
+                              setMaxWeight(undefined);
+                            }}
+                            _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.1)' }}
+                          >
+                            🔄 Reset Filters
+                          </Button>
+                        )}
+                      </VStack>
+                    </CardBody>
+                  </Card>
 
                   <Text fontSize="sm" color="gray.400">
                     Showing {displayedItems.length} items
@@ -1203,7 +1453,6 @@ export default function WhereAndWhatStep({
                   w="full"
                   _hover={{
                     bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                    transform: 'translateY(-2px)',
                     boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
                   }}
                   _disabled={{

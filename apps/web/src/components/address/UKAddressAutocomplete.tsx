@@ -4,7 +4,7 @@
  * Professional design with enhanced UX for luxury booking platform
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Box,
   Input,
@@ -100,7 +100,6 @@ interface AddressDetails {
   floorNumber?: string;
   apartmentNumber?: string;
   hasElevator?: boolean;
-  buildingType?: string;
 }
 
 export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
@@ -124,10 +123,53 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   
   // Additional address details state
   const [floorNumber, setFloorNumber] = useState(value?.buildingDetails?.floorNumber || value?.formatted?.floor || '');
-  const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.apartmentNumber || value?.formatted?.flatNumber || '');
+const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.apartmentNumber || value?.formatted?.flatNumber || '');
   const [hasElevator, setHasElevator] = useState(value?.buildingDetails?.hasElevator || false);
-  const [buildingType, setBuildingType] = useState(value?.buildingDetails?.type || '');
   
+  const floorOptions = useMemo(() => {
+    const options: Array<{ value: string; label: string }> = [
+      { value: '', label: 'Select floor' },
+      { value: '-1', label: 'Basement (-1)' },
+      { value: '0', label: 'Ground (0)' },
+    ];
+
+    const getOrdinal = (n: number) => {
+      if (n === 1) return '1st';
+      if (n === 2) return '2nd';
+      if (n === 3) return '3rd';
+      return `${n}th`;
+    };
+
+    for (let i = 1; i <= 30; i += 1) {
+      options.push({ value: i.toString(), label: `${getOrdinal(i)} Floor` });
+    }
+
+    options.push({ value: '40+', label: '41st Floor or higher' });
+    return options;
+  }, []);
+
+  const flatOptions = useMemo(() => {
+    const options: Array<{ value: string; label: string }> = [
+      { value: '', label: 'Select flat' },
+    ];
+
+    for (let i = 1; i <= 60; i += 1) {
+      options.push({ value: i.toString(), label: `Flat ${i}` });
+    }
+
+    const suffixes = ['A', 'B', 'C', 'D'];
+    for (let i = 1; i <= 20; i += 1) {
+      suffixes.forEach((suffix) => {
+        options.push({ value: `${i}${suffix}`, label: `Flat ${i}${suffix}` });
+      });
+    }
+
+    options.push({ value: 'PH', label: 'Penthouse' });
+    options.push({ value: 'GF', label: 'Garden Flat' });
+
+    return options;
+  }, []);
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -136,20 +178,6 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   const toast = useToast();
   const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
-  // Building type options
-  const buildingTypes = [
-    { value: '', label: 'Select building type' },
-    { value: 'house', label: 'House' },
-    { value: 'apartment', label: 'Apartment' },
-    { value: 'villa', label: 'Villa' },
-    { value: 'office', label: 'Office' },
-    { value: 'company', label: 'Company' },
-    { value: 'field', label: 'Field' },
-    { value: 'farm', label: 'Farm' },
-    { value: 'warehouse', label: 'Warehouse' },
-    { value: 'shop', label: 'Shop' },
-    { value: 'other', label: 'Other' },
-  ];
 
   // Generate session token on mount
   useEffect(() => {
@@ -344,7 +372,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
           fullAddressData.components?.houseNumber,
           fullAddressData.components?.street
         ].filter(Boolean).join(' ') || '',
-        line2: apartmentNumber ? `Apartment ${apartmentNumber}` : (fullAddressData.components?.flatNumber ? `Flat ${fullAddressData.components.flatNumber}` : ''),
+        line2: apartmentNumber ? `Flat ${apartmentNumber}` : (fullAddressData.components?.flatNumber ? `Flat ${fullAddressData.components.flatNumber}` : ''),
         city: fullAddressData.components?.city || '',
         postcode: fullAddressData.components?.postcode || '',
         country: 'United Kingdom',
@@ -357,13 +385,12 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
           houseNumber: fullAddressData.components?.houseNumber || '',
           flatNumber: apartmentNumber || fullAddressData.components?.flatNumber || '',
           floor: floorNumber,
-          businessName: buildingType === 'company' || buildingType === 'office' ? 'Business' : ''
+          businessName: ''
         },
         isPostcodeValidated: !!fullAddressData.components?.postcode,
         stepCompletedAt: new Date().toISOString(),
         // Add new fields to the address object
         buildingDetails: {
-          type: buildingType,
           hasElevator: hasElevator,
           floorNumber: floorNumber,
           apartmentNumber: apartmentNumber
@@ -401,7 +428,7 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
         }, 500); // Keep for 500ms to ensure useEffect doesn't trigger search
       }, 100); // Small delay to prevent rapid double-clicks
     }
-  }, [onChange, sessionToken, toast, floorNumber, apartmentNumber, hasElevator, buildingType]);
+  }, [onChange, sessionToken, toast, floorNumber, apartmentNumber, hasElevator]);
 
   // Handle input changes - prevent search when address is already selected
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -803,52 +830,8 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                 Additional Details (Optional)
               </Text>
               
-              {/* Building Type */}
-              <Box>
-                <FormLabel fontSize="xs" color="white" mb={1}>
-                  Building Type
-                </FormLabel>
-                <Select
-                  value={buildingType}
-                  onChange={(e) => {
-                    setBuildingType(e.target.value);
-                    // Update address immediately
-                    if (value) {
-                      const updatedAddress = {
-                        ...value,
-                        buildingDetails: {
-                          ...value.buildingDetails,
-                          type: e.target.value
-                        }
-                      };
-                      onChange(updatedAddress);
-                    }
-                  }}
-                  placeholder="Select building type"
-                  size="sm"
-                  bg="rgba(255, 255, 255, 0.05)"
-                  border="1px solid rgba(255, 255, 255, 0.1)"
-                  borderRadius="lg"
-                  color="white"
-                  _hover={{
-                    borderColor: "rgba(255, 255, 255, 0.2)",
-                    bg: "rgba(255, 255, 255, 0.08)"
-                  }}
-                  _focus={{
-                    borderColor: "blue.400",
-                    bg: "rgba(255, 255, 255, 0.1)",
-                    boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)"
-                  }}
-                >
-                  {buildingTypes.map((type) => (
-                    <option key={type.value} value={type.value} style={{ backgroundColor: '#2D3748', color: 'white' }}>
-                      {type.label}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
 
-              {/* Floor and Apartment Numbers */}
+      {/* Floor and Flat Numbers */}
               <SimpleGrid columns={2} spacing={3}>
                 <Box>
                   <FormLabel fontSize="xs" color="white" mb={1}>
@@ -857,95 +840,94 @@ export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
                   <Input
                     value={floorNumber}
                     onChange={(e) => {
-                      setFloorNumber(e.target.value);
-                      // Update address immediately
+                      const inputValue = e.target.value;
+                      setFloorNumber(inputValue);
                       if (value) {
                         const updatedAddress = {
                           ...value,
                           formatted: {
                             ...value.formatted,
-                            floor: e.target.value
+                            floor: inputValue
                           },
                           buildingDetails: {
                             ...value.buildingDetails,
-                            floorNumber: e.target.value
+                            floorNumber: inputValue
                           }
                         };
                         onChange(updatedAddress);
                       }
                     }}
-                    placeholder="e.g., 2nd, Ground"
+                    placeholder="e.g., Ground, 1, 2..."
                     size="sm"
-                    bg="rgba(255, 255, 255, 0.05)"
-                    border="1px solid rgba(255, 255, 255, 0.1)"
+                    bg="white"
                     borderRadius="lg"
-                    color="white"
-                    _placeholder={{ color: "rgba(255, 255, 255, 0.6)" }}
+                    color="black"
+                    fontWeight="600"
+                    border="1px solid rgba(203, 213, 225, 0.8)"
                     _hover={{
-                      borderColor: "rgba(255, 255, 255, 0.2)",
-                      bg: "rgba(255, 255, 255, 0.08)"
+                      borderColor: "rgba(59, 130, 246, 0.6)",
                     }}
                     _focus={{
-                      borderColor: "blue.400",
-                      bg: "rgba(255, 255, 255, 0.1)",
-                      boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)"
+                      borderColor: "rgba(59, 130, 246, 0.9)",
+                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
+                      outline: "none",
                     }}
                   />
                 </Box>
 
                 <Box>
                   <FormLabel fontSize="xs" color="white" mb={1}>
-                    Apartment Number
+                    Flat Number
                   </FormLabel>
                   <Input
                     value={apartmentNumber}
                     onChange={(e) => {
-                      setApartmentNumber(e.target.value);
-                      // Update address immediately
+                      const inputValue = e.target.value;
+                      setApartmentNumber(inputValue);
                       if (value) {
+                        const line2Value = inputValue ? `Flat ${inputValue}` : '';
                         const updatedAddress = {
                           ...value,
-                          line2: e.target.value ? `Apartment ${e.target.value}` : '',
+                          line2: line2Value,
                           formatted: {
                             ...value.formatted,
-                            flatNumber: e.target.value
+                            flatNumber: inputValue
                           },
                           buildingDetails: {
                             ...value.buildingDetails,
-                            apartmentNumber: e.target.value
+                            apartmentNumber: inputValue
                           }
                         };
                         onChange(updatedAddress);
                       }
                     }}
-                    placeholder="e.g., 12A, 304"
+                    placeholder="e.g., 1A, 2B, 10..."
                     size="sm"
-                    bg="rgba(255, 255, 255, 0.05)"
-                    border="1px solid rgba(255, 255, 255, 0.1)"
+                    bg="white"
                     borderRadius="lg"
-                    color="white"
-                    _placeholder={{ color: "rgba(255, 255, 255, 0.6)" }}
+                    color="black"
+                    fontWeight="600"
+                    border="1px solid rgba(203, 213, 225, 0.8)"
                     _hover={{
-                      borderColor: "rgba(255, 255, 255, 0.2)",
-                      bg: "rgba(255, 255, 255, 0.08)"
+                      borderColor: "rgba(59, 130, 246, 0.6)",
                     }}
                     _focus={{
-                      borderColor: "blue.400",
-                      bg: "rgba(255, 255, 255, 0.1)",
-                      boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)"
+                      borderColor: "rgba(59, 130, 246, 0.9)",
+                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
+                      outline: "none",
                     }}
                   />
                 </Box>
               </SimpleGrid>
 
-              {/* Elevator Toggle */}
+              {/* Lift Toggle */}
               <HStack justify="space-between" align="center">
                 <Box>
                   <Text fontSize="sm" color="white" fontWeight="medium">
-                    Elevator Available
+                    Lift Available
                   </Text>
                   <Text fontSize="xs" color="rgba(255, 255, 255, 0.7)">
-                    Is there an elevator in the building?
+                    Is there a lift in the building?
                   </Text>
                 </Box>
                 <Switch

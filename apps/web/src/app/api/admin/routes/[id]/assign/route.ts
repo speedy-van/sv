@@ -213,7 +213,7 @@ export async function POST(
                 </div>
                 <div class="footer">
                   <p>Speedy Van Driver App</p>
-                  <p>If you need help, contact us at support@speedy-van.co.uk or call 01202129746</p>
+                  <p>If you need help, contact us at support@speedy-van.co.uk or call 01202129764</p>
                 </div>
               </div>
             </body>
@@ -631,7 +631,7 @@ export async function POST(
               </div>
               <div class="footer">
                 <p>Speedy Van Driver App</p>
-                <p>If you need help, contact us at support@speedy-van.co.uk or call 01202129746</p>
+                <p>If you need help, contact us at support@speedy-van.co.uk or call 01202129764</p>
               </div>
             </div>
           </body>

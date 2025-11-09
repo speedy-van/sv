@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { ALL_SERVICE_AREAS, getServiceAreasByRegion, UK_REGIONS } from '@/data/uk-service-areas';
+import { ROUTES } from '@/lib/routing';
 
 export default function AreasPage() {
   const englandAreas = getServiceAreasByRegion('England');
@@ -244,7 +245,7 @@ export default function AreasPage() {
           </Text>
           <Button
             as={Link}
-            href="/booking"
+            href={ROUTES.SHARED.BOOKING_LUXURY}
             colorScheme="white"
             variant="solid"
             size="lg"

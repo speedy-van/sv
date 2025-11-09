@@ -134,6 +134,47 @@ const mapPropertyTypeToPrisma = (frontendType: any): PropertyType => {
   return 'DETACHED';
 };
 
+const resolveFlatNumber = (address: any): string | undefined => {
+  const candidates = [
+    address?.flatNumber,
+    address?.formatted?.flatNumber,
+    address?.buildingDetails?.flatNumber,
+    address?.buildingDetails?.apartmentNumber,
+    address?.line2,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      if (/^flat\s+/i.test(value)) {
+        const trimmed = value.trim().replace(/^flat\s+/i, '').trim();
+        return trimmed.length > 0 ? trimmed : value.trim();
+      }
+      return value.trim();
+    }
+  }
+
+  return undefined;
+};
+
+const resolveFloorNumber = (address: any): string | undefined => {
+  const candidates = [
+    address?.buildingDetails?.floorNumber,
+    address?.formatted?.floor,
+    address?.floorNumber,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+    if (typeof value === 'number' && !Number.isNaN(value) && value > 0) {
+      return String(value);
+    }
+  }
+
+  return undefined;
+};
+
 export async function POST(request: NextRequest) {
   try {
     console.log('🔄 Creating Stripe checkout session...');
@@ -338,6 +379,16 @@ export async function POST(request: NextRequest) {
             customerPreferences: {
               serviceType: (bookingData as any)?.serviceType || 'standard',
               serviceLevel: (bookingData as any)?.serviceType || 'standard',
+              pickupAddressMeta: {
+                flatNumber: resolveFlatNumber(bookingData.pickupAddress),
+                floorNumber: resolveFloorNumber(bookingData.pickupAddress),
+                hasLift: bookingData.pickupDetails?.hasLift ?? (bookingData.pickupAddress as any)?.buildingDetails?.hasElevator ?? false,
+              },
+              dropoffAddressMeta: {
+                flatNumber: resolveFlatNumber(bookingData.dropoffAddress),
+                floorNumber: resolveFloorNumber(bookingData.dropoffAddress),
+                hasLift: bookingData.dropoffDetails?.hasLift ?? (bookingData.dropoffAddress as any)?.buildingDetails?.hasElevator ?? false,
+              },
             },
             // Set orderType based on routeId or isMultiDrop
             orderType: (bookingData as any)?.routeId ? 'multi-drop' : 'single',

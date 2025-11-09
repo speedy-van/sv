@@ -45,7 +45,7 @@ import {
   FiArrowLeft,
 } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
-import AdminShell from '@/components/admin/AdminShell';
+import { AdminShell } from '@/components/admin';
 
 interface Booking {
   id: string;
@@ -107,15 +107,28 @@ export default function CreateRoutePage() {
         fetch('/api/admin/drivers/available'),
       ]);
 
+      if (!bookingsRes.ok) {
+        throw new Error(`Bookings API failed: ${bookingsRes.status} ${bookingsRes.statusText}`);
+      }
+      if (!driversRes.ok) {
+        throw new Error(`Drivers API failed: ${driversRes.status} ${driversRes.statusText}`);
+      }
+
       const bookingsData = await bookingsRes.json();
       const driversData = await driversRes.json();
 
-      if (bookingsData.success) {
+      if (bookingsData && bookingsData.success) {
         setBookings(bookingsData.drops || []);
+      } else {
+        console.error('❌ Bookings API failed:', bookingsData);
+        setBookings([]);
       }
 
-      if (driversData.success) {
-        setDrivers(driversData.drivers || []);
+      if (driversData && driversData.success && driversData.data) {
+        setDrivers(driversData.data.drivers || []);
+      } else {
+        console.error('❌ Drivers API failed:', driversData);
+        setDrivers([]);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -139,10 +152,10 @@ export default function CreateRoutePage() {
   };
 
   const handleSelectAll = () => {
-    if (selectedBookings.length === bookings.length) {
+    if (selectedBookings.length === (bookings?.length || 0)) {
       setSelectedBookings([]);
     } else {
-      setSelectedBookings(bookings.map(b => b.id));
+      setSelectedBookings(bookings?.map(b => b.id) || []);
     }
   };
 
@@ -161,7 +174,7 @@ export default function CreateRoutePage() {
     setIsSuggestingRoute(true);
 
     try {
-      const selectedBookingsData = bookings.filter(b => selectedBookings.includes(b.id));
+      const selectedBookingsData = bookings?.filter(b => selectedBookings.includes(b.id)) || [];
       
       // Check if all bookings have coordinates
       const hasCoordinates = selectedBookingsData.every(b => 
@@ -318,7 +331,7 @@ export default function CreateRoutePage() {
     }
   };
 
-  const totalValue = bookings
+  const totalValue = (bookings || [])
     .filter(b => selectedBookings.includes(b.id))
     .reduce((sum, b) => {
       const value = Number(b.totalGBP || 0);
@@ -395,7 +408,7 @@ export default function CreateRoutePage() {
                   <Box>
                     <Text color="gray.400" fontSize="sm">Available Bookings</Text>
                     <Text color="white" fontSize="2xl" fontWeight="bold">
-                      {bookings.length}
+                      {bookings?.length || 0}
                     </Text>
                   </Box>
                 </HStack>
@@ -414,7 +427,7 @@ export default function CreateRoutePage() {
                     </Text>
                     {selectedBookings.length > 1 && (() => {
                       const selectedBookingsData = selectedBookings
-                        .map(id => bookings.find(b => b.id === id))
+                        .map(id => bookings?.find(b => b.id === id))
                         .filter(b => b && b.pickupLat && b.pickupLng && b.dropoffLat && b.dropoffLng);
                       
                       if (selectedBookingsData.length > 1) {
@@ -450,9 +463,9 @@ export default function CreateRoutePage() {
                 </HStack>
                 <VStack spacing={2} align="stretch">
                   {selectedBookings.map((bookingId, index) => {
-                    const booking = bookings.find(b => b.id === bookingId);
+                    const booking = bookings?.find(b => b.id === bookingId);
                     const nextBookingId = selectedBookings[index + 1];
-                    const nextBooking = nextBookingId ? bookings.find(b => b.id === nextBookingId) : null;
+                    const nextBooking = nextBookingId ? bookings?.find(b => b.id === nextBookingId) : null;
                     
                     let distanceToNext = 0;
                     if (booking && nextBooking && 
@@ -565,13 +578,13 @@ export default function CreateRoutePage() {
                       _hover={{ borderColor: 'gray.500' }}
                       size="lg"
                     >
-                      {drivers.filter(d => d.status === 'online').map(driver => (
+                      {drivers?.filter(d => d.status === 'online').map(driver => (
                         <option key={driver.id} value={driver.id}>
                           {driver.name} - {driver.status}
                         </option>
                       ))}
                     </Select>
-                    {drivers.filter(d => d.status === 'online').length === 0 && (
+                    {drivers?.filter(d => d.status === 'online').length === 0 && (
                       <Text color="orange.300" fontSize="xs" mt={1}>
                         ⚠️ No drivers currently online. Route will be created unassigned.
                       </Text>
@@ -607,7 +620,7 @@ export default function CreateRoutePage() {
                     onClick={handleSelectAll}
                     colorScheme="blue"
                   >
-                    {selectedBookings.length === bookings.length ? 'Deselect All' : 'Select All'}
+                    {selectedBookings.length === (bookings?.length || 0) ? 'Deselect All' : 'Select All'}
                   </Button>
                 </HStack>
               </HStack>
@@ -617,7 +630,7 @@ export default function CreateRoutePage() {
                   <Spinner size="xl" color="blue.400" />
                   <Text color="gray.400" mt={4}>Loading bookings...</Text>
                 </Box>
-              ) : bookings.length === 0 ? (
+              ) : (bookings?.length || 0) === 0 ? (
                 <Alert status="info" borderRadius="md">
                   <AlertIcon />
                   No confirmed bookings available for route creation
@@ -639,7 +652,7 @@ export default function CreateRoutePage() {
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {bookings.map((booking, index) => {
+                      {bookings?.map((booking, index) => {
                         const isSelected = selectedBookings.includes(booking.id);
                         const orderInRoute = selectedBookings.indexOf(booking.id) + 1;
                         return (

@@ -26,10 +26,12 @@ import { calculateCapacityMetrics } from '@/lib/dataset/uk-removal-dataset-loade
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-04-10',
-});
+// Initialize Stripe (optional - gracefully handle missing key)
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-04-10',
+    })
+  : null;
 
 // Enhanced request validation schema (100% operational compliance)
 const EnhancedPricingRequestSchema = z.object({
@@ -304,8 +306,8 @@ export async function POST(request: NextRequest) {
       availability,
       stripeMetadata: {
         ...pricingResult.stripeMetadata,
-        paymentIntentId: stripeResult.paymentIntent.id,
-        clientSecret: stripeResult.paymentIntent.client_secret
+        paymentIntentId: stripeResult.paymentIntent?.id || null,
+        clientSecret: stripeResult.paymentIntent?.client_secret || null
       }
     };
 
@@ -324,7 +326,7 @@ export async function POST(request: NextRequest) {
         requestId,
         correlationId,
         processingTimeMs: Date.now() - startTime,
-        stripePaymentIntentId: stripeResult.paymentIntent.id
+        stripePaymentIntentId: stripeResult.paymentIntent?.id || null
       }
     });
 
@@ -620,7 +622,7 @@ function calculateCapacityFromItems(items: any[]): BookingCapacity {
 async function createStripePaymentIntent(
   pricingResult: any,
   correlationId: string
-): Promise<{ paymentIntent: Stripe.PaymentIntent }> {
+): Promise<{ paymentIntent: Stripe.PaymentIntent | null }> {
   try {
     // Validate amount parity (must match pricing engine exactly)
     const amountGbpMinor = pricingResult.amountGbpMinor;
@@ -628,7 +630,12 @@ async function createStripePaymentIntent(
       throw new Error(`Invalid amount: ${amountGbpMinor}`);
     }
 
-    // Create idempotent Payment Intent
+    // Create idempotent Payment Intent (skip if Stripe not configured)
+    if (!stripe) {
+      console.warn('⚠️ Stripe not configured - skipping Payment Intent creation');
+      return { paymentIntent: null };
+    }
+    
     const idempotencyKey = pricingResult.stripeMetadata.idempotencyKey;
 
     const paymentIntent = await stripe.paymentIntents.create({

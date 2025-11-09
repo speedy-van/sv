@@ -11,7 +11,7 @@ The Booking Luxury system has been streamlined to provide a seamless 2-step book
 ```
 Step 1: What, Where & When
 ├── Address Selection (Pickup/Dropoff)
-├── Property Details (floors, elevator, building type)
+├── Property Details (floors, lift, building type)
 ├── Item Selection (with smart search)
 ├── Date & Time Selection (pickup date, time slot, urgency)
 ├── Real-time Pricing
@@ -51,7 +51,7 @@ Payment Success → Automatic Booking Confirmation → Success Page
 #### WhereAndWhatStep
 **File**: `src/app/booking-luxury/components/WhereAndWhatStep.tsx`
 - Address autocomplete with Mapbox
-- Property details (floors, elevator, building type)
+- Property details (floors, lift, building type)
 - Smart item search with catalog
 - Date and time selection (pickup date, time slot, urgency)
 - Real-time pricing engine
@@ -281,7 +281,7 @@ pnpm start
 ## 📞 Support
 
 ### Customer Support
-- **Phone**: 01202129746
+- **Phone**: 01202129764
 - **Email**: support@speedy-van.co.uk
 - **Hours**: 24/7 support available
 

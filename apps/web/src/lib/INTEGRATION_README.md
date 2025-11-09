@@ -84,7 +84,7 @@ await unifiedEmailService.sendOrderConfirmation({
 - Comprehensive error handling
 
 **Supported UK Number Formats** (auto-converted to 0044):
-- `01202129746` → `00441202129746`
+- `01202129764` → `00441202129746`
 - `00441202129746` → `00441202129746`
 - `+441202129746` → `00441202129746`
 - `441202129746` → `00441202129746`
@@ -102,7 +102,7 @@ const voodooSMS = getVoodooSMSService();
 
 // Send booking confirmation SMS
 await voodooSMS.sendBookingConfirmation({
-  phoneNumber: '01202129746',
+  phoneNumber: '01202129764',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   pickupAddress: '123 Main St, London',
@@ -112,7 +112,7 @@ await voodooSMS.sendBookingConfirmation({
 
 // Send payment confirmation
 await voodooSMS.sendPaymentConfirmation({
-  phoneNumber: '01202129746',
+  phoneNumber: '01202129764',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   amount: 150.00,
@@ -120,7 +120,7 @@ await voodooSMS.sendPaymentConfirmation({
 
 // Send driver assignment notification
 await voodooSMS.sendDriverAssignment({
-  phoneNumber: '01202129746',
+  phoneNumber: '01202129764',
   customerName: 'John Doe',
   orderNumber: 'booking_123',
   driverName: 'Mike Smith',
@@ -250,7 +250,7 @@ The SMS service automatically normalizes UK phone numbers:
 
 ```typescript
 // All these formats are supported and normalized to +441202129746
-'01202129746'      // Mobile with leading 0
+'01202129764'      // Mobile with leading 0
 '00441202129746'   // International with 0044
 '+441202129746'    // International with +44
 '441202129746'     // International without +
@@ -268,7 +268,7 @@ All integrations include comprehensive error handling:
 ## 🔧 Testing
 
 ### Test Phone Numbers
-- Use UK test numbers: `01202129746`, `00441202129746`
+- Use UK test numbers: `01202129764`, `00441202129746`
 - Test email: `test@speedy-van.co.uk`
 
 ### Test Stripe

@@ -41,10 +41,45 @@ export async function POST(
     // Check if order needs floor warning
     // Only warn if floors is explicitly 0, null, or undefined
     // If floors > 0, customer provided floor number, so no warning needed
-    const pickupFloors = booking.pickupProperty?.floors;
-    const dropoffFloors = booking.dropoffProperty?.floors;
-    const hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
-    const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
+    const pickupFloors = (booking as any).pickupProperty?.floors;
+    const dropoffFloors = (booking as any).dropoffProperty?.floors;
+    let hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
+    let hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
+
+    const preferences = (booking.customerPreferences as any) || {};
+    const pickupMeta = preferences?.pickupAddressMeta || {};
+    const dropoffMeta = preferences?.dropoffAddressMeta || {};
+
+    const hasPickupFlatNumber = typeof pickupMeta.flatNumber === 'string' && pickupMeta.flatNumber.trim().length > 0;
+    const hasDropoffFlatNumber = typeof dropoffMeta.flatNumber === 'string' && dropoffMeta.flatNumber.trim().length > 0;
+
+    const parseFloorValue = (value: unknown): number | undefined => {
+      if (typeof value === 'number') {
+        return Number.isNaN(value) ? undefined : value;
+      }
+      if (typeof value === 'string') {
+        const parsed = parseInt(value, 10);
+        return Number.isNaN(parsed) ? undefined : parsed;
+      }
+      return undefined;
+    };
+
+    const pickupFloorMeta = parseFloorValue(pickupMeta.floorNumber);
+    const dropoffFloorMeta = parseFloorValue(dropoffMeta.floorNumber);
+
+    if (pickupFloorMeta && pickupFloorMeta > 0) {
+      hasPickupFloorIssue = false;
+    }
+    if (dropoffFloorMeta && dropoffFloorMeta > 0) {
+      hasDropoffFloorIssue = false;
+    }
+
+    if (hasPickupFlatNumber) {
+      hasPickupFloorIssue = false;
+    }
+    if (hasDropoffFlatNumber) {
+      hasDropoffFloorIssue = false;
+    }
 
     if (!hasPickupFloorIssue && !hasDropoffFloorIssue) {
       return NextResponse.json({
@@ -59,8 +94,10 @@ export async function POST(
       reference: booking.reference,
       customerEmail: booking.customerEmail,
       customerName: booking.customerName,
-      pickupProperty: booking.pickupProperty || undefined,
-      dropoffProperty: booking.dropoffProperty || undefined,
+      pickupProperty: (booking as any).pickupProperty || undefined,
+      dropoffProperty: (booking as any).dropoffProperty || undefined,
+      pickupAddressMeta: pickupMeta,
+      dropoffAddressMeta: dropoffMeta,
     });
 
     if (result.success && result.sent) {

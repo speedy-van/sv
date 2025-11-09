@@ -4,6 +4,10 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import DispatchClient from './DispatchClient';
 
+// CRITICAL: Force dynamic rendering because we use getServerSession()
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getDispatchData() {
   // Get jobs by status for board view
   const jobsByStatus = await prisma.booking.groupBy({

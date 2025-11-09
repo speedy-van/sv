@@ -400,6 +400,8 @@ const Header: React.FC = memo(() => {
           <HStack
             spacing={4}
             display="flex"
+            ml={{ base: 0, md: 'auto' }}
+            flexShrink={0}
           >
             <HeaderButton
               variant="neon"

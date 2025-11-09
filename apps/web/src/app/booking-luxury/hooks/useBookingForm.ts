@@ -18,6 +18,7 @@ const frontendPropertyDetailsSchema = z.object({
   hasParking: z.boolean().optional().default(true),
   accessNotes: z.string().max(1000).optional(),
   requiresPermit: z.boolean().optional().default(false),
+  flatNumber: z.string().max(50).optional(),
 });
 
 // Item schema
@@ -130,6 +131,7 @@ const frontendAddressSchema = z.object({
     hasElevator: z.boolean().optional(),
     floorNumber: z.string().optional(),
     apartmentNumber: z.string().optional(),
+    flatNumber: z.string().optional(),
   }).optional(),
 });
 

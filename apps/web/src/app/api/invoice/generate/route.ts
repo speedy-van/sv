@@ -82,7 +82,7 @@ function generateProfessionalInvoice(data: {
     header: {
       companyName: 'SPEEDY VAN REMOVALS LTD',
       companyAddress: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
-      companyPhone: '01202129746',
+      companyPhone: '01202129764',
       companyEmail: 'support@speedy-van.co.uk',
       companyWebsite: 'www.speedy-van.co.uk',
       logo: '🚚', // In production, use actual logo

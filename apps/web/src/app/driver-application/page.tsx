@@ -782,7 +782,7 @@ export default function DriverApplicationPage() {
                     addressLine2: e.target.value,
                   }))
                 }
-                placeholder="Apartment, suite, etc. (optional)"
+                placeholder="Flat, suite, etc. (optional)"
               />
             </FormControl>
 

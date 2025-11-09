@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
                 <p><strong>Changed At:</strong> ${new Date().toLocaleString('en-GB')}</p>
                 
                 <div class="warning">
-                  <strong>⚠️ Security Notice:</strong> If you did not make this change, please contact support immediately at support@speedy-van.co.uk or call 01202129746
+                  <strong>⚠️ Security Notice:</strong> If you did not make this change, please contact support immediately at support@speedy-van.co.uk or call 01202129764
                 </div>
               </div>
               <div class="footer">

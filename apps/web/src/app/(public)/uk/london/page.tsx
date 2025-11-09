@@ -33,6 +33,7 @@ import ContactPointSchema from '@/components/Schema/ContactPointSchema';
 import FAQSchema from '@/components/Schema/FAQSchema';
 import ReviewSchema from '@/components/Schema/ReviewSchema';
 import ServiceSchema from '@/components/Schema/ServiceSchema';
+import { ROUTES } from '@/lib/routing';
 
 export const metadata: Metadata = {
   title: 'Man and Van London | House Removals London | Speedy Van',
@@ -246,7 +247,7 @@ export default function LondonPage() {
           <HStack spacing={4}>
             <Box
               as={Link}
-              href="/book"
+              href={ROUTES.SHARED.BOOKING_LUXURY}
               bg="blue.600"
               color="white"
               px={8}
@@ -263,7 +264,7 @@ export default function LondonPage() {
             </Box>
             <Box
               as={Link}
-              href="tel:+44-20-XXXX-XXXX"
+              href="tel:01202129764"
               bg="red.600"
               color="white"
               px={8}
@@ -275,7 +276,7 @@ export default function LondonPage() {
             >
               <HStack spacing={2}>
                 <Icon as={Phone} />
-                <Text>Call London Team</Text>
+                <Text>Call 01202129764</Text>
               </HStack>
             </Box>
           </HStack>
@@ -560,7 +561,7 @@ export default function LondonPage() {
             <HStack spacing={4}>
               <Box
                 as={Link}
-                href="/book"
+                href={ROUTES.SHARED.BOOKING_LUXURY}
                 bg="blue.600"
                 color="white"
                 px={8}
@@ -574,7 +575,7 @@ export default function LondonPage() {
               </Box>
               <Box
                 as={Link}
-                href="https://wa.me/44XXXXXXXXXX"
+                href="https://wa.me/441202129746"
                 bg="green.600"
                 color="white"
                 px={8}

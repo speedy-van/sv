@@ -7,6 +7,7 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react';
+import { ROUTES } from '@/lib/routing';
 
 export const metadata: Metadata = {
   title: 'How It Works | Speedy Van',
@@ -62,7 +63,11 @@ export default function HowItWorksPage() {
           Enter pickup and drop-off, choose van size and time slot. See a clear
           price breakdown (no hidden fees).
           <Box mt={3}>
-            <ChakraLink as={NextLink} href="/book" textDecoration="underline">
+            <ChakraLink
+              as={NextLink}
+              href={ROUTES.SHARED.BOOKING_LUXURY}
+              textDecoration="underline"
+            >
               Start a booking
             </ChakraLink>
           </Box>
@@ -74,7 +79,7 @@ export default function HowItWorksPage() {
           <Box mt={3}>
             <ChakraLink
               as={NextLink}
-              href="/checkout"
+              href={`${ROUTES.SHARED.BOOKING_LUXURY}?step=2`}
               textDecoration="underline"
             >
               Go to checkout
@@ -88,7 +93,7 @@ export default function HowItWorksPage() {
           <Box mt={3}>
             <ChakraLink
               as={NextLink}
-              href="/customer-portal/orders"
+              href={ROUTES.CUSTOMER.BOOKINGS}
               textDecoration="underline"
             >
               View your orders

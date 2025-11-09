@@ -5370,3 +5370,346 @@ export function searchItems(query: string): RemovalItem[] {
     item.folder.toLowerCase().includes(lowerQuery)
   );
 }
+
+/**
+ * ✅ NEW: Get subcategories for a main category
+ * Groups items by type (beds, wardrobes, tables, etc.)
+ */
+export function getSubcategories(category: string): string[] {
+  const items = filterItemsByCategory(category);
+  
+  // Extract subcategories from item names (first word usually)
+  const subcategories = new Set<string>();
+  
+  items.forEach(item => {
+    const words = item.name.split(' ');
+    const firstWord = words[0];
+    
+    // Common furniture types
+    const types = ['bed', 'wardrobe', 'dresser', 'table', 'chair', 'sofa', 'desk', 'cabinet', 'shelf', 'stand'];
+    
+    types.forEach(type => {
+      if (item.name.toLowerCase().includes(type)) {
+        subcategories.add(type.charAt(0).toUpperCase() + type.slice(1) + 's');
+      }
+    });
+  });
+  
+  return ['All', ...Array.from(subcategories).sort()];
+}
+
+/**
+ * ✅ NEW: Filter items by weight range
+ */
+export function filterItemsByWeight(items: RemovalItem[], minWeight?: number, maxWeight?: number): RemovalItem[] {
+  return items.filter(item => {
+    if (minWeight !== undefined && item.weight < minWeight) return false;
+    if (maxWeight !== undefined && item.weight > maxWeight) return false;
+    return true;
+  });
+}
+
+/**
+ * ✅ NEW: Sort items by various criteria
+ */
+export function sortItems(
+  items: RemovalItem[],
+  sortBy: 'weight-asc' | 'weight-desc' | 'name-asc' | 'name-desc' | 'popular'
+): RemovalItem[] {
+  const sorted = [...items];
+  
+  switch (sortBy) {
+    case 'weight-asc':
+      return sorted.sort((a, b) => a.weight - b.weight);
+    case 'weight-desc':
+      return sorted.sort((a, b) => b.weight - a.weight);
+    case 'name-asc':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case 'name-desc':
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    case 'popular':
+      // Popular items (based on common moving items)
+      const popularKeywords = ['bed', 'sofa', 'table', 'wardrobe', 'chair', 'tv', 'washing machine', 'fridge'];
+      return sorted.sort((a, b) => {
+        const aPopular = popularKeywords.some(keyword => a.name.toLowerCase().includes(keyword));
+        const bPopular = popularKeywords.some(keyword => b.name.toLowerCase().includes(keyword));
+        if (aPopular && !bPopular) return -1;
+        if (!aPopular && bPopular) return 1;
+        return a.weight - b.weight; // Secondary sort by weight
+      });
+    default:
+      return sorted;
+  }
+}
+
+/**
+ * ✅ NEW: Get popular items (most commonly moved)
+ */
+export function getPopularItems(limit = 20): RemovalItem[] {
+  const popularKeywords = [
+    'bed', 'sofa', 'table', 'wardrobe', 'chair', 'tv', 
+    'washing machine', 'fridge', 'desk', 'bookshelf',
+    'dining table', 'coffee table', 'mattress', 'dresser'
+  ];
+  
+  const popular = ALL_REMOVAL_ITEMS.filter(item =>
+    popularKeywords.some(keyword => item.name.toLowerCase().includes(keyword))
+  );
+  
+  return popular.slice(0, limit);
+}
+
+/**
+ * ✅ NEW: Get predefined packages for quick selection
+ */
+export function getItemPackages() {
+  let customItemCounter = 0;
+  
+  const findItem = (keywords: string[], suffix?: string) => {
+    const found = ALL_REMOVAL_ITEMS.find(item =>
+      keywords.some(k => item.name.toLowerCase().includes(k.toLowerCase()))
+    );
+    
+    if (found) {
+      // Return copy with unique ID
+      return {
+        ...found,
+        id: suffix ? `${found.id}_${suffix}_${customItemCounter++}` : `${found.id}_${customItemCounter++}`
+      };
+    }
+    
+    // Custom item with unique ID
+    return {
+      id: `custom_${keywords[0].replace(/\s+/g, '_')}_${customItemCounter++}`,
+      name: keywords[0],
+      weight: 25,
+      volume: 1.0,
+      category: 'General',
+      size: 'medium' as const,
+      unitPrice: 15
+    };
+  };
+
+  return {
+    '1bedroom': {
+      name: '1 Bedroom',
+      description: 'Essential items for a 1-bedroom flat',
+      items: [
+        findItem(['bed', 'double bed']),
+        findItem(['mattress']),
+        findItem(['wardrobe']),
+        findItem(['bedside table', 'nightstand']),
+        findItem(['chest of drawers', 'dresser']),
+        findItem(['dressing table', 'vanity']),
+        findItem(['mirror']),
+        findItem(['lamp', 'bedside lamp']),
+        findItem(['tv', 'television']),
+        findItem(['tv stand', 'tv unit']),
+        findItem(['chair', 'armchair']),
+        findItem(['carpet', 'rug']),
+        findItem(['curtains']),
+        findItem(['laundry basket']),
+        findItem(['suitcase', 'luggage']),
+      ]
+    },
+    '2bedroom': {
+      name: '2 Bedrooms',
+      description: 'Complete furniture for a 2-bedroom flat',
+      items: [
+        findItem(['double bed', 'king bed']),
+        findItem(['mattress', 'double mattress']),
+        findItem(['wardrobe', 'master wardrobe']),
+        findItem(['bedside table', 'master nightstand']),
+        findItem(['lamp', 'bedside lamp']),
+        findItem(['dressing table']),
+        findItem(['mirror']),
+        findItem(['tv', 'master tv']),
+        findItem(['tv stand']),
+        findItem(['chair', 'armchair']),
+        findItem(['carpet', 'master rug']),
+        findItem(['curtains', 'master curtains']),
+        findItem(['single bed']),
+        findItem(['mattress', 'single mattress']),
+        findItem(['wardrobe', 'small wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk', 'study desk']),
+        findItem(['office chair', 'desk chair']),
+        findItem(['bookshelf']),
+        findItem(['chest of drawers']),
+        findItem(['laundry basket']),
+        findItem(['suitcase', 'luggage']),
+        findItem(['wall art', 'picture frame']),
+        findItem(['fan', 'air purifier']),
+      ]
+    },
+    '3bedroom': {
+      name: '3 Bedrooms',
+      description: 'Full house furniture for a 3-bedroom home',
+      items: [
+        findItem(['king bed', 'master bed']),
+        findItem(['mattress', 'king mattress']),
+        findItem(['wardrobe', 'large wardrobe']),
+        findItem(['bedside table']),
+        findItem(['bedside table']),
+        findItem(['lamp', 'bedside lamp']),
+        findItem(['lamp', 'bedside lamp']),
+        findItem(['dressing table']),
+        findItem(['mirror', 'full length mirror']),
+        findItem(['tv', 'master tv']),
+        findItem(['tv stand']),
+        findItem(['armchair', 'lounge chair']),
+        findItem(['rug', 'bedroom rug']),
+        findItem(['curtains']),
+        findItem(['double bed']),
+        findItem(['mattress', 'double mattress']),
+        findItem(['wardrobe', 'medium wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk', 'study desk']),
+        findItem(['office chair']),
+        findItem(['bookshelf']),
+        findItem(['chest of drawers']),
+        findItem(['single bed']),
+        findItem(['mattress', 'single mattress']),
+        findItem(['wardrobe', 'small wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['laundry basket']),
+        findItem(['suitcase', 'luggage']),
+        findItem(['ironing board']),
+        findItem(['fan', 'air purifier']),
+        findItem(['wall art']),
+        findItem(['storage box', 'plastic box']),
+      ].slice(0, 35)
+    },
+    '4bedroom': {
+      name: '4 Bedrooms',
+      description: 'Large family home furniture package',
+      items: [
+        findItem(['king bed']),
+        findItem(['mattress', 'king mattress']),
+        findItem(['wardrobe', 'large wardrobe']),
+        findItem(['bedside table']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['lamp']),
+        findItem(['dressing table']),
+        findItem(['mirror']),
+        findItem(['tv']),
+        findItem(['tv stand']),
+        findItem(['armchair']),
+        findItem(['rug']),
+        findItem(['curtains']),
+        findItem(['double bed']),
+        findItem(['mattress', 'double mattress']),
+        findItem(['wardrobe', 'medium wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['bookshelf']),
+        findItem(['chest of drawers']),
+        findItem(['double bed']),
+        findItem(['mattress']),
+        findItem(['wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['single bed']),
+        findItem(['mattress', 'single mattress']),
+        findItem(['wardrobe', 'small wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['laundry basket']),
+        findItem(['suitcase']),
+        findItem(['ironing board']),
+        findItem(['fan']),
+        findItem(['wall art']),
+        findItem(['shoe rack']),
+      ].slice(0, 40)
+    },
+    '5bedroom': {
+      name: '5 Bedrooms',
+      description: 'Full estate or large house package',
+      items: [
+        findItem(['king bed']),
+        findItem(['mattress', 'king mattress']),
+        findItem(['wardrobe', 'large wardrobe']),
+        findItem(['bedside table']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['lamp']),
+        findItem(['dressing table']),
+        findItem(['mirror']),
+        findItem(['tv']),
+        findItem(['tv stand']),
+        findItem(['armchair']),
+        findItem(['rug']),
+        findItem(['curtains']),
+        findItem(['double bed']),
+        findItem(['mattress', 'double mattress']),
+        findItem(['wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['bookshelf']),
+        findItem(['double bed']),
+        findItem(['mattress']),
+        findItem(['wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['single bed']),
+        findItem(['mattress', 'single mattress']),
+        findItem(['wardrobe', 'small wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['single bed']),
+        findItem(['mattress']),
+        findItem(['wardrobe']),
+        findItem(['bedside table']),
+        findItem(['lamp']),
+        findItem(['desk']),
+        findItem(['office chair']),
+        findItem(['chest of drawers']),
+        findItem(['chest of drawers']),
+        findItem(['laundry basket']),
+        findItem(['suitcase']),
+        findItem(['ironing board']),
+        findItem(['fan']),
+        findItem(['wall art']),
+        findItem(['shoe rack']),
+        findItem(['storage box']),
+        findItem(['clock', 'alarm clock']),
+        findItem(['plant', 'decorative plant']),
+        findItem(['blanket', 'storage box']),
+        findItem(['pillow', 'cushion']),
+        findItem(['bed linen', 'sheet']),
+        findItem(['floor lamp']),
+        findItem(['hanger', 'clothes rail']),
+        findItem(['makeup mirror']),
+        findItem(['ottoman', 'bench']),
+        findItem(['tv']),
+        findItem(['coffee table', 'side table']),
+        findItem(['desk lamp']),
+        findItem(['laptop stand']),
+        findItem(['cable organizer', 'power strip']),
+        findItem(['mini fridge', 'small fridge']),
+        findItem(['air conditioner']),
+        findItem(['heater', 'radiator']),
+        findItem(['wall shelf', 'shelf']),
+        findItem(['vacuum', 'carpet cleaner']),
+        findItem(['curtains']),
+        findItem(['door mirror']),
+      ].slice(0, 70)
+    }
+  };
+}

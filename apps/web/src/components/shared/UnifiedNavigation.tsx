@@ -6,7 +6,7 @@
 
 import { Box, Flex, HStack, Link, Text, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Button, useBreakpointValue } from '@chakra-ui/react';
 import { useColorModeValue } from '@chakra-ui/react';
-import { ReactNode, useRef } from 'react';
+import { ReactNode, useRef, useState, useEffect } from 'react';
 import { ROUTES, type UserRole } from '@/lib/routing';
 import { FiMenu } from 'react-icons/fi';
 
@@ -35,8 +35,52 @@ export function UnifiedNavigation({
   const borderColor = useColorModeValue('gray.700', 'gray.700');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef<HTMLButtonElement>(null);
-  const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false }) ?? false;
+  const [isMounted, setIsMounted] = useState(false);
+  const isMobile = useBreakpointValue({ base: true, md: false }, { 
+    ssr: false,
+    fallback: 'md'
+  }) === true;
+  const isBrowser = typeof window !== 'undefined';
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering navigation items until mounted
+  if (!isMounted) {
+    return (
+      <Box
+        bg={bg}
+        borderBottom="1px"
+        borderColor={borderColor}
+        boxShadow="sm"
+        pl={{ base: 3, md: 4 }}
+        pr={{ base: 1, md: 4 }}
+        py={{ base: 4, md: 3 }}
+      >
+        <Flex 
+          justify="space-between"
+          align="center" 
+          minH={{ base: "48px", md: "auto" }}
+          w="100%"
+        >
+          <Link href={effectiveUserRole === 'driver' ? ROUTES.DRIVER_DASHBOARD : ROUTES.HOME} _hover={{ textDecoration: 'none' }}>
+            <Text 
+              fontSize={{ base: "md", md: "xl" }} 
+              fontWeight="bold" 
+              color="primary.500"
+              noOfLines={1}
+            >
+              {effectiveUserRole === 'driver' ? 'Speedy Van Driver' : 'Speedy Van'}
+            </Text>
+          </Link>
+        </Flex>
+        {children}
+      </Box>
+    );
+  }
+
+  // Only get navigation items after component is mounted
   const getNavigationItems = (): NavigationItem[] => {
     if (!isAuthenticated) {
       return [
@@ -120,7 +164,7 @@ export function UnifiedNavigation({
         </Link>
         
         {/* Desktop Navigation */}
-        {!isMobile && (
+        {!isMobile && isMounted && isBrowser && (
           <HStack spacing={6}>
             {navigationItems.map((item) => (
               <Link
@@ -187,26 +231,17 @@ export function UnifiedNavigation({
             )}
             
             <VStack spacing={1} align="stretch" pt={2}>
-              {navigationItems.map((item) => (
+              {isMounted && isBrowser && navigationItems.map((item) => (
                 <Button
                   key={item.href}
                   as={Link}
                   href={item.href}
                   variant="ghost"
                   justifyContent="flex-start"
-                  size="lg"
-                  minH="52px"
+                  borderRadius={0}
+                  py={6}
                   px={6}
-                  borderRadius="none"
-                  fontWeight="medium"
-                  color="gray.700"
-                  _hover={{ 
-                    bg: "rgba(0,194,255,0.08)",
-                    color: "primary.600"
-                  }}
-                  _active={{
-                    bg: "rgba(0,194,255,0.12)"
-                  }}
+                  _hover={{ bg: 'rgba(0,194,255,0.1)' }}
                   onClick={onClose}
                 >
                   {item.label}

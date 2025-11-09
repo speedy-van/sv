@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Check if request has body
@@ -23,14 +25,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Auth log error:', error);
     
-    // Return a more detailed error response
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process log',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      }, 
-      { status: 500 }
-    );
+    // Return success even on error to prevent blocking authentication flow
+    return NextResponse.json({ success: true });
   }
 }

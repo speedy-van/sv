@@ -102,19 +102,51 @@ export async function POST(request: NextRequest) {
       bookingsCount: bookings.length 
     });
 
+    // Validate driver exists if driverId provided
+    let validatedDriverId = null;
+    if (driverId) {
+      console.log(`👤 [Create Route] Validating driver ${driverId}...`);
+      console.log(`👤 [Create Route] Driver ID type:`, typeof driverId);
+      console.log(`👤 [Create Route] Driver ID length:`, driverId.length);
+
+      const driverExists = await prisma.driver.findUnique({
+        where: { id: driverId },
+        select: { id: true, userId: true }
+      });
+
+      if (!driverExists) {
+        console.error(`❌ [Create Route] Driver ${driverId} not found in database`);
+
+        // Try to find all drivers for debugging
+        const allDrivers = await prisma.driver.findMany({
+          select: { id: true, userId: true },
+          take: 5
+        });
+        console.error(`❌ [Create Route] Available drivers:`, allDrivers.map(d => ({ id: d.id.substring(0, 8) + '...', userId: d.userId.substring(0, 8) + '...' })));
+
+        return NextResponse.json(
+          { success: false, error: `Driver ${driverId} not found. Please select a valid driver.` },
+          { status: 400 }
+        );
+      }
+
+      console.log(`✅ [Create Route] Driver ${driverId} validated successfully`);
+      validatedDriverId = driverId;
+    }
+
     // Create route
     console.log(`📦 [Create Route] Creating route in database...`);
-    console.log(`📦 [Create Route] Driver assignment:`, driverId ? `Driver ${driverId}` : 'Unassigned (pending)');
-    
+    console.log(`📦 [Create Route] Driver assignment:`, validatedDriverId ? `Driver ${validatedDriverId}` : 'Unassigned (pending)');
+
     // Generate unified SV reference number
     const routeReference = await createUniqueReference('route');
     console.log(`📦 [Create Route] Generated reference: ${routeReference}`);
-    
+
     const route = await prisma.route.create({
       data: {
         reference: routeReference,
-        status: driverId ? 'assigned' : 'pending_assignment',
-        driverId: driverId || null, // Only assign if valid driverId provided
+        status: validatedDriverId ? 'assigned' : 'pending_assignment',
+        driverId: validatedDriverId, // Use validated driver ID
         totalDrops: bookings.length,
         completedDrops: 0,
         startTime: new Date(),
@@ -166,12 +198,12 @@ export async function POST(request: NextRequest) {
     console.log(`✅ [Create Route] All ${bookings.length} bookings updated and Drop records created`);
 
     // If driver assigned, notify them
-    if (driverId) {
+    if (validatedDriverId) {
       try {
         const { getPusherServer } = await import('@/lib/pusher');
         const pusher = getPusherServer();
-        
-        await pusher.trigger(`driver-${driverId}`, 'route-assigned', {
+
+        await pusher.trigger(`driver-${validatedDriverId}`, 'route-assigned', {
           routeId: route.id,
           stops: bookings.length,
           totalValue: totalValue,

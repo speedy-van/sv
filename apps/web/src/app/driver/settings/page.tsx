@@ -86,9 +86,9 @@ export default function DriverSettings() {
   const [profileData, setProfileData] = useState({
     name: 'Ahmed Mohammed',
     email: 'ahmed@speedyvan.com', 
-    phone: '+44 7901 846297',
+    phone: '01202129764',
     address: '123 Glasgow Street, Glasgow, UK',
-    emergencyContact: '+44 7901 846298',
+    emergencyContact: '01202129764',
     drivingLicense: 'GB123456789',
     vehicleReg: 'SV21 ABC'
   });

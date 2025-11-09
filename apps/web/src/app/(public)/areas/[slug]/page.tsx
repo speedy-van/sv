@@ -21,6 +21,7 @@ import {
 import { CheckCircleIcon, PhoneIcon, CalendarIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { ALL_SERVICE_AREAS, getServiceAreaBySlug, getNearbyServiceAreas } from '@/data/uk-service-areas';
+import { ROUTES } from '@/lib/routing';
 
 interface AreaPageProps {
   params: {
@@ -54,7 +55,7 @@ export default function AreaPage({ params }: AreaPageProps) {
           <HStack justify="center" spacing={4}>
             <Button
               as={Link}
-              href="/booking"
+              href={ROUTES.SHARED.BOOKING_LUXURY}
               colorScheme="blue"
               size="lg"
               leftIcon={<CalendarIcon />}
@@ -63,12 +64,12 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:+441202129746"
+              href="tel:01202129764"
               variant="outline"
               size="lg"
               leftIcon={<PhoneIcon />}
             >
-              Call +44 7901 846297
+              Call 01202129764
             </Button>
           </HStack>
         </Box>
@@ -235,7 +236,7 @@ export default function AreaPage({ params }: AreaPageProps) {
               </Heading>
               <Text>
                 Yes! We offer same-day moving and delivery services across {area.name} and surrounding areas. 
-                Subject to availability. Call us on +44 7901 846297 for urgent bookings.
+                Subject to availability. Call us on 01202129764 for urgent bookings.
               </Text>
             </Box>
             
@@ -272,7 +273,7 @@ export default function AreaPage({ params }: AreaPageProps) {
           <HStack justify="center" spacing={4}>
             <Button
               as={Link}
-              href="/booking"
+              href={ROUTES.SHARED.BOOKING_LUXURY}
               colorScheme="white"
               variant="solid"
               size="lg"
@@ -281,7 +282,7 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:+441202129746"
+              href="tel:01202129764"
               variant="outline"
               colorScheme="white"
               size="lg"

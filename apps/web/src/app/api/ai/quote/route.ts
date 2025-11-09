@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const quoteSchema = z.object({
-  pickupAddress: z.string().min(3),
+  pickupAddress: z.string().min(3).optional().default('Not specified'),
   pickupPostcode: z.string().optional(),
-  dropoffAddress: z.string().min(3),
+  dropoffAddress: z.string().min(3).optional().default('Not specified'),
   dropoffPostcode: z.string().optional(),
-  numberOfRooms: z.number().min(0).max(20),
+  numberOfRooms: z.number().min(0).max(20).default(1),
   specialItems: z.array(z.string()).optional().default([]),
   movingDate: z.string().optional(),
   vehicleType: z.enum(['small', 'medium', 'large', 'luton']).optional(),
@@ -137,8 +137,17 @@ export async function POST(request: NextRequest) {
     console.error('❌ AI Quote calculation error:', error);
     
     if (error instanceof z.ZodError) {
+      const missingFields = error.errors.map(e => e.path.join('.')).join(', ');
+      console.error('Missing/invalid fields:', missingFields);
+      
       return NextResponse.json(
-        { success: false, error: 'Invalid quote data', details: error.errors },
+        { 
+          success: false, 
+          error: 'Invalid quote data', 
+          message: `Please provide valid data. Missing or invalid: ${missingFields}`,
+          details: error.errors,
+          hint: 'Required: numberOfRooms (number). Optional: pickupAddress, dropoffAddress, specialItems, vehicleType, distance'
+        },
         { status: 400 }
       );
     }
@@ -148,9 +157,40 @@ export async function POST(request: NextRequest) {
         success: false, 
         error: 'Failed to calculate quote',
         message: 'Unable to calculate quote. Please ensure all required information is provided.',
+        hint: 'Send: { numberOfRooms: 2, pickupAddress: "London", dropoffAddress: "Manchester" }'
       },
       { status: 500 }
     );
   }
 }
+
+// Add GET endpoint for documentation
+export async function GET() {
+  return NextResponse.json({
+    service: 'AI Quote Calculator',
+    version: '1.0',
+    endpoint: 'POST /api/ai/quote',
+    requiredFields: {
+      numberOfRooms: 'number (0-20)',
+    },
+    optionalFields: {
+      pickupAddress: 'string (min 3 chars)',
+      dropoffAddress: 'string (min 3 chars)',
+      pickupPostcode: 'string',
+      dropoffPostcode: 'string',
+      specialItems: 'array of strings',
+      movingDate: 'string (ISO date)',
+      vehicleType: 'small | medium | large | luton',
+      distance: 'number (miles)',
+    },
+    example: {
+      numberOfRooms: 2,
+      pickupAddress: 'London',
+      dropoffAddress: 'Manchester',
+      specialItems: ['Piano', 'Large Sofa'],
+      vehicleType: 'medium'
+    }
+  });
+}
+
 

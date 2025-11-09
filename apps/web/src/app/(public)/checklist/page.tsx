@@ -8,6 +8,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ROUTES } from '@/lib/routing';
 
 export default function ChecklistPage() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
@@ -140,7 +141,7 @@ export default function ChecklistPage() {
             Get an instant quote in under 60 seconds
           </p>
           <a 
-            href="/book" 
+            href={ROUTES.SHARED.BOOKING_LUXURY} 
             className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold hover:bg-green-50 transition inline-block"
           >
             Get Instant Quote →

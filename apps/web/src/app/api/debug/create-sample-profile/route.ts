@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         data: {
           firstName: 'John',
           lastName: 'Driver',
-          phone: '01202129746',
+          phone: '01202129764',
         },
       });
     } catch (error) {

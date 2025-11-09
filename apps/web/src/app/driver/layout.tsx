@@ -5,10 +5,10 @@ import { redirect } from 'next/navigation';
 import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 
-// Dynamic rendering handled automatically by Next.js when using getServerSession()
-// Removed force-dynamic to fix CSS loading as script tags issue
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
+// CRITICAL: Force dynamic rendering because we use getServerSession() which requires cookies()
+// This prevents DYNAMIC_SERVER_USAGE error in production builds
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function DriverLayout({
   children,

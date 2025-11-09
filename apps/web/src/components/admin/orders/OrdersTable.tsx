@@ -278,6 +278,7 @@ export function OrdersTable({
   const [areaFilter, setAreaFilter] = useState('');
   const [orderTypeFilter, setOrderTypeFilter] = useState<'all' | 'new' | 'existing'>('all');
   const [viewMode, setViewMode] = useState<ViewType>('card');
+  const [showUnpaidOrders, setShowUnpaidOrders] = useState(false);
   const [selectedOrderCode, setSelectedOrderCode] = useState<
     string | undefined
   >();
@@ -416,10 +417,14 @@ export function OrdersTable({
   ]);
 
   // Filter orders based on search query and type using useMemo for better performance
-  const filteredOrders = useMemo(() => {
-    if (!orders.length) return [];
+  const { filteredOrders, unpaidOrdersCount } = useMemo(() => {
+    if (!orders.length) return { filteredOrders: [], unpaidOrdersCount: 0 };
 
     let filtered = orders;
+    let unpaidCount = 0;
+
+    // Count unpaid orders first
+    unpaidCount = orders.filter(order => !order.paidAt).length;
 
     // Apply order type filter first
     if (orderTypeFilter !== 'all') {
@@ -438,6 +443,15 @@ export function OrdersTable({
             !(order.status === 'CONFIRMED' && !order.driver)
         );
       }
+    }
+
+    // Apply payment filter - hide unpaid orders by default unless explicitly shown
+    if (!showUnpaidOrders) {
+      // Hide unpaid orders by default (only show orders that have been paid)
+      filtered = filtered.filter(order => {
+        // Consider orders as "paid" if they have a paidAt date
+        return !!order.paidAt;
+      });
     }
 
     // Apply search query filter
@@ -466,18 +480,18 @@ export function OrdersTable({
     filtered.sort((a, b) => {
       const priorityA = calculatePriority(a.scheduledAt);
       const priorityB = calculatePriority(b.scheduledAt);
-      
+
       // Sort by priority level first (urgent → future)
       if (priorityA.sortOrder !== priorityB.sortOrder) {
         return priorityA.sortOrder - priorityB.sortOrder;
       }
-      
+
       // Then by scheduled date (earliest first)
       return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
     });
 
-    return filtered;
-  }, [orders, searchQuery, orderTypeFilter]);
+    return { filteredOrders: filtered, unpaidOrdersCount: unpaidCount };
+  }, [orders, searchQuery, orderTypeFilter, showUnpaidOrders]);
 
   const handleBulkAction = async (action: string) => {
     if (selectedOrders.length === 0) {
@@ -1769,8 +1783,36 @@ export function OrdersTable({
       >
         Send Floor Warnings ({selectedOrders.length})
       </Button>
+      <Button
+        leftIcon={<Icon as={FaPoundSign} />}
+        variant={showUnpaidOrders ? "solid" : "outline"}
+        colorScheme={showUnpaidOrders ? "red" : "gray"}
+        onClick={() => setShowUnpaidOrders(!showUnpaidOrders)}
+        bg={showUnpaidOrders ? "rgba(239, 68, 68, 0.2)" : "#111111"}
+        color="#FFFFFF"
+        borderColor={showUnpaidOrders ? "#ef4444" : "#333333"}
+        borderWidth="2px"
+        borderRadius="lg"
+        px={4}
+        py={2}
+        fontWeight="semibold"
+        letterSpacing="0.5px"
+        boxShadow="0 4px 12px rgba(0, 0, 0, 0.3)"
+        _hover={{
+          bg: showUnpaidOrders ? "rgba(239, 68, 68, 0.3)" : '#1a1a1a',
+          borderColor: showUnpaidOrders ? '#ef4444' : '#2563eb',
+          transform: 'translateY(-2px)',
+          boxShadow: showUnpaidOrders ? '0 6px 20px rgba(239, 68, 68, 0.4)' : '0 6px 20px rgba(37, 99, 235, 0.4)',
+        }}
+        _active={{
+          transform: 'translateY(0)',
+        }}
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+      >
+        {showUnpaidOrders ? 'Hide Unpaid Orders' : `Show Unpaid Orders (${unpaidOrdersCount})`}
+      </Button>
     </HStack>
-  ), [handleBulkAction, selectedOrders.length, setViewMode, viewMode]);
+  ), [handleBulkAction, selectedOrders.length, setViewMode, viewMode, showUnpaidOrders, unpaidOrdersCount]);
 
   useEffect(() => {
     if (onActionsChange) {

@@ -2,15 +2,16 @@ import React from 'react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
+import nextDynamic from 'next/dynamic';
+const UnifiedNavigationClient = nextDynamic(() => import('@/components/shared/UnifiedNavigation').then(m => m.UnifiedNavigation), { ssr: false });
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
 import { ROUTES } from '@/lib/routing';
 import SpeedyAIChatbotProvider from '@/components/admin/SpeedyAIChatbotProvider';
 
-// Dynamic rendering handled automatically by Next.js when using getServerSession()
-// Removed force-dynamic to fix CSS loading as script tags issue
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
+// CRITICAL: Force dynamic rendering because we use getServerSession() which requires cookies()
+// This prevents DYNAMIC_SERVER_USAGE error in production builds
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function AdminLayout({
   children,
@@ -46,9 +47,9 @@ export default async function AdminLayout({
       {/* Load Pusher for real-time notifications */}
       <script src="https://js.pusher.com/8.2.0/pusher.min.js" async></script>
       
-      <UnifiedNavigation role="admin" isAuthenticated={true}>
+      <UnifiedNavigationClient role="admin" isAuthenticated={true}>
         <UnifiedErrorBoundary role="admin">{children}</UnifiedErrorBoundary>
-      </UnifiedNavigation>
+      </UnifiedNavigationClient>
       
       {/* Speedy AI Chatbot */}
       <SpeedyAIChatbotProvider />

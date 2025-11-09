@@ -91,6 +91,7 @@ export default function AddressesStep({
     const floorFromBuildingDetails = address?.buildingDetails?.floorNumber;
     const floorFromFormatted = address?.formatted?.floor;
     const combinedFloor = floorFromBuildingDetails ?? floorFromFormatted;
+    const flatNumber = address?.buildingDetails?.apartmentNumber || address?.formatted?.flatNumber;
 
     return {
       ...existing,
@@ -99,6 +100,7 @@ export default function AddressesStep({
         ? address.buildingDetails.hasElevator
         : existing?.hasLift ?? false,
       type: address?.buildingDetails?.type || existing?.type || 'house',
+      flatNumber: flatNumber || existing?.flatNumber,
     };
   };
 

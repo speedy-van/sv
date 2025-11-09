@@ -4,6 +4,10 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 
+// CRITICAL: Force dynamic rendering because we use getServerSession()
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getDashboardData() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

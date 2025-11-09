@@ -31,6 +31,10 @@ import {
   StatHelpText,
   StatArrow,
   SimpleGrid,
+  Circle,
+  Wrap,
+  WrapItem,
+  Tag,
 } from '@chakra-ui/react';
 import {
   FiMapPin,
@@ -45,6 +49,7 @@ import {
   FiTrendingUp,
   FiPackage,
   FiNavigation,
+  FiLayers,
 } from 'react-icons/fi';
 
 interface OrderDetailPageProps {
@@ -103,6 +108,24 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         capacityUsed: { weight: 94, volume: 2.6, items: 4 }
       }
     ],
+    packageBundle: {
+      id: 'package_1bed',
+      name: '1 Bedroom Luxury Bundle',
+      category: 'Home Size Bundles',
+      selectionMode: 'Curated Packages',
+      itemsIncluded: 18,
+      estimatedWeightKg: 620,
+      estimatedVolumeM3: 10.4,
+      description: 'Customer chose a predefined room bundle via the luxury booking flow.',
+      items: [
+        { name: 'King Bed Frame', quantity: 1 },
+        { name: 'Memory Foam Mattress', quantity: 1 },
+        { name: 'Bedside Table', quantity: 2 },
+        { name: 'Wardrobe', quantity: 1 },
+        { name: 'Dresser', quantity: 1 },
+        { name: 'Decorative Mirror', quantity: 1 }
+      ]
+    },
     vehicle: {
       type: 'Luton Van',
       capacity: { maxWeight: 3500, maxVolume: 14.5, maxItems: 150 },
@@ -208,6 +231,105 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           <TabPanel>
             <Grid templateColumns={{ base: '1fr', lg: '2fr 1fr' }} gap={6}>
               <VStack spacing={6} align="stretch">
+                {/* Customer Package Bundle */}
+                <Card variant="outline" borderColor="purple.500">
+                  <CardBody>
+                    {order.packageBundle ? (
+                      <VStack align="stretch" spacing={4}>
+                        <HStack justify="space-between" align="flex-start" flexWrap="wrap">
+                          <HStack spacing={4} align="flex-start">
+                            <Circle size="48px" bg="purple.50" color="purple.600">
+                              <FiPackage />
+                            </Circle>
+                            <VStack align="start" spacing={1}>
+                              <Heading size="md">Customer Package Bundle</Heading>
+                              <Text fontSize="sm" color="gray.600">
+                                {order.packageBundle.description}
+                              </Text>
+                            </VStack>
+                          </HStack>
+                          <Badge colorScheme="purple" mt={{ base: 3, md: 0 }}>
+                            Bundle Selected
+                          </Badge>
+                        </HStack>
+
+                        <Wrap spacing={3}>
+                          <WrapItem>
+                            <Tag size="md" variant="subtle" colorScheme="purple">
+                              <FiLayers style={{ marginRight: '6px' }} />
+                              {order.packageBundle.category}
+                            </Tag>
+                          </WrapItem>
+                          <WrapItem>
+                            <Tag size="md" variant="subtle" colorScheme="blue">
+                              {order.packageBundle.selectionMode}
+                            </Tag>
+                          </WrapItem>
+                        </Wrap>
+
+                        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                          <VStack align="start" spacing={1}>
+                            <Text fontSize="sm" color="gray.500">
+                              Bundle Name
+                            </Text>
+                            <Text fontWeight="semibold">{order.packageBundle.name}</Text>
+                          </VStack>
+                          <VStack align="start" spacing={1}>
+                            <Text fontSize="sm" color="gray.500">
+                              Items Included
+                            </Text>
+                            <Text fontWeight="semibold">{order.packageBundle.itemsIncluded}</Text>
+                          </VStack>
+                          <VStack align="start" spacing={1}>
+                            <Text fontSize="sm" color="gray.500">
+                              Estimated Load
+                            </Text>
+                            <Text fontWeight="semibold">
+                              {order.packageBundle.estimatedWeightKg} kg • {order.packageBundle.estimatedVolumeM3} m³
+                            </Text>
+                          </VStack>
+                        </SimpleGrid>
+
+                        <Divider />
+
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Key items included:
+                          </Text>
+                          <List spacing={2}>
+                            {order.packageBundle.items.slice(0, 4).map((item, idx) => (
+                              <ListItem key={`${item.name}-${idx}`} fontSize="sm">
+                                <ListIcon as={FiCheckCircle} color="green.400" />
+                                {item.quantity} × {item.name}
+                              </ListItem>
+                            ))}
+                          </List>
+                          {order.packageBundle.items.length > 4 && (
+                            <Text fontSize="xs" color="gray.500" mt={2}>
+                              + {order.packageBundle.items.length - 4} additional items in this bundle
+                            </Text>
+                          )}
+                        </Box>
+                      </VStack>
+                    ) : (
+                      <HStack justify="space-between" align="center">
+                        <HStack spacing={4}>
+                          <Circle size="48px" bg="gray.100" color="gray.500">
+                            <FiPackage />
+                          </Circle>
+                          <VStack align="start" spacing={1}>
+                            <Heading size="md">No Package Bundle Selected</Heading>
+                            <Text fontSize="sm" color="gray.600">
+                              This booking was created without selecting a curated package. Review individual items below.
+                            </Text>
+                          </VStack>
+                        </HStack>
+                        <Badge colorScheme="gray">Individual Items</Badge>
+                      </HStack>
+                    )}
+                  </CardBody>
+                </Card>
+
                 {/* Route Information */}
                 <Card>
                   <CardBody>

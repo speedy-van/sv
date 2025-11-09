@@ -202,7 +202,7 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
       <Box>
         <Heading size="md" mb={4}>Quick Actions</Heading>
         <HStack spacing={4}>
-          <Button as="a" href="/booking" colorScheme="primary">
+          <Button as="a" href={ROUTES.SHARED.BOOKING_LUXURY} colorScheme="primary">
             New Booking
           </Button>
           <Button as="a" href={ROUTES.CUSTOMER_ORDERS} variant="outline">

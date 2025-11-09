@@ -15,6 +15,7 @@ export const metadata = {
     type: 'article',
   },
 };
+import { ROUTES } from '@/lib/routing';
 
 export default function MovingTipsPage() {
   return (
@@ -234,7 +235,7 @@ export default function MovingTipsPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
-              href="/book" 
+              href={ROUTES.SHARED.BOOKING_LUXURY} 
               className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold hover:bg-blue-50 transition"
             >
               Get Instant Quote

@@ -261,29 +261,189 @@ export const ADMIN_KNOWLEDGE_BASE = {
     viewAnalytics: '4. Dashboard → Analytics tab → Revenue/Performance metrics',
     approveDriver: '5. Drivers → Applications → Review → Approve',
     issueRefund: '6. Orders → [code] → Actions → Process Refund'
+  },
+
+  // ============================================================================
+  // DECISION TREES
+  // ============================================================================
+  decisionTrees: {
+    orderDelayed: {
+      question: 'Why is order delayed?',
+      options: {
+        driverIssue: {
+          action: 'Contact driver → If no response in 15min → Reassign',
+          api: 'POST /api/admin/orders/[code]/remove-driver then assign-driver'
+        },
+        traffic: {
+          action: 'Update ETA → Notify customer → Monitor progress',
+          api: 'POST /api/admin/orders/[code]/send-notification'
+        },
+        customerUnavailable: {
+          action: 'Attempt contact → Leave delivery note → Reschedule',
+          api: 'PUT /api/admin/orders/[code] with new scheduledAt'
+        }
+      }
+    },
+    
+    multipleUnassigned: {
+      question: 'Many orders unassigned - what to do?',
+      decision: [
+        'IF <5 orders in same area → Manual assignment',
+        'IF 5-15 orders → Use auto-routing (POST /api/admin/routes/auto-create)',
+        'IF >15 orders → Review driver capacity, hire more drivers'
+      ]
+    },
+
+    driverPerformance: {
+      question: 'Driver has low rating - action?',
+      thresholds: {
+        rating_below_4: 'Send performance improvement plan',
+        rating_below_3_5: 'Temporary suspension + mandatory training',
+        rating_below_3: 'Consider termination'
+      },
+      api: 'PUT /api/admin/drivers/[id] with status'
+    }
+  },
+
+  // ============================================================================
+  // ADVANCED WORKFLOWS
+  // ============================================================================
+  advancedWorkflows: {
+    bulkRouteCreation: {
+      scenario: 'Create 10+ routes for tomorrow',
+      steps: [
+        '1. GET /api/admin/orders?status=CONFIRMED&scheduledDate=tomorrow',
+        '2. Group by area (postcode prefix)',
+        '3. For each group: POST /api/admin/routes/create',
+        '4. Review all routes: GET /api/admin/routes?date=tomorrow',
+        '5. Bulk assign drivers: POST /api/admin/routes/bulk',
+        '6. Notify all drivers via Pusher'
+      ],
+      tips: 'Use auto-create for speed, but review manually for quality'
+    },
+
+    monthEndFinance: {
+      scenario: 'Month-end financial close',
+      steps: [
+        '1. Generate revenue report: GET /api/admin/finance/ledger?month=current',
+        '2. Review unpaid orders: GET /api/admin/orders?paymentStatus=pending',
+        '3. Process driver payouts: GET /api/admin/finance/payouts',
+        '4. Approve bonuses: GET /api/admin/bonuses/pending',
+        '5. Export data for accounting: GET /api/admin/analytics/reports/export',
+        '6. Archive old records: POST /api/admin/cleanup'
+      ]
+    },
+
+    scaleDriverFleet: {
+      scenario: 'Need to hire 20 drivers quickly',
+      steps: [
+        '1. Review applications: GET /api/admin/careers?status=pending',
+        '2. Batch approve qualified: POST /api/admin/careers/bulk-approve',
+        '3. Send contracts automatically',
+        '4. Setup onboarding schedule',
+        '5. Assign mentors from top performers',
+        '6. Monitor first-week performance'
+      ]
+    }
+  },
+
+  // ============================================================================
+  // PERFORMANCE BENCHMARKS
+  // ============================================================================
+  benchmarks: {
+    orderAssignment: {
+      excellent: '<5 minutes average',
+      good: '5-15 minutes',
+      poor: '>15 minutes',
+      action: 'If poor, enable auto-assignment or hire more drivers'
+    },
+    driverUtilization: {
+      excellent: '>75% active',
+      good: '50-75% active',
+      poor: '<50% active',
+      action: 'If poor, review scheduling or reduce driver count'
+    },
+    customerSatisfaction: {
+      excellent: '>4.5 stars',
+      good: '4.0-4.5 stars',
+      poor: '<4.0 stars',
+      action: 'If poor, review driver quality and service process'
+    }
   }
 };
 
 /**
- * Get context-aware help based on query keywords
+ * ✅ ENHANCED: Get context-aware help based on query keywords
  */
 export function getContextualHelp(query: string): string {
   const lower = query.toLowerCase();
   
+  // Route creation queries
   if (lower.includes('route') && lower.includes('create')) {
     return JSON.stringify(ADMIN_KNOWLEDGE_BASE.routes.types, null, 2);
   }
   
+  // Driver assignment queries
   if (lower.includes('assign') && lower.includes('driver')) {
     return JSON.stringify(ADMIN_KNOWLEDGE_BASE.drivers.assignment, null, 2);
   }
   
+  // Pricing queries
   if (lower.includes('pricing') || lower.includes('quote')) {
     return JSON.stringify(ADMIN_KNOWLEDGE_BASE.pricing, null, 2);
   }
   
+  // Workflow queries
   if (lower.includes('workflow')) {
     return JSON.stringify(ADMIN_KNOWLEDGE_BASE.workflows, null, 2);
+  }
+  
+  // ✅ NEW: Decision tree queries
+  if (lower.includes('delayed') || lower.includes('late')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.decisionTrees.orderDelayed, null, 2);
+  }
+  
+  if (lower.includes('unassigned') || lower.includes('pending assignment')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.decisionTrees.multipleUnassigned, null, 2);
+  }
+  
+  if (lower.includes('driver') && (lower.includes('rating') || lower.includes('performance'))) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.decisionTrees.driverPerformance, null, 2);
+  }
+  
+  // ✅ NEW: Advanced workflow queries
+  if (lower.includes('bulk') && lower.includes('route')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.advancedWorkflows.bulkRouteCreation, null, 2);
+  }
+  
+  if (lower.includes('month end') || lower.includes('finance') && lower.includes('close')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.advancedWorkflows.monthEndFinance, null, 2);
+  }
+  
+  if (lower.includes('hire') && lower.includes('driver')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.advancedWorkflows.scaleDriverFleet, null, 2);
+  }
+  
+  // ✅ NEW: Performance benchmark queries
+  if (lower.includes('benchmark') || lower.includes('target') || lower.includes('kpi')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.benchmarks, null, 2);
+  }
+  
+  // ✅ NEW: Troubleshooting queries
+  if (lower.includes('not') && lower.includes('assigned')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.troubleshooting.orderNotAssigned, null, 2);
+  }
+  
+  if (lower.includes('driver') && lower.includes('not accepting')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.troubleshooting.driverNotAccepting, null, 2);
+  }
+  
+  if (lower.includes('inefficient') || (lower.includes('route') && lower.includes('slow'))) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.troubleshooting.routeInefficient, null, 2);
+  }
+  
+  if (lower.includes('payment') && lower.includes('failed')) {
+    return JSON.stringify(ADMIN_KNOWLEDGE_BASE.troubleshooting.paymentFailed, null, 2);
   }
   
   return '';

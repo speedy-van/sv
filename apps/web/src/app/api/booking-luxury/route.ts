@@ -161,6 +161,47 @@ const mapPropertyTypeToPrisma = (frontendType: FrontendPropertyType): PropertyTy
   return 'DETACHED';
 };
 
+const resolveFlatNumber = (address: any): string | undefined => {
+  const candidates = [
+    address?.flatNumber,
+    address?.formatted?.flatNumber,
+    address?.buildingDetails?.flatNumber,
+    address?.buildingDetails?.apartmentNumber,
+    address?.line2,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      if (/^flat\s+/i.test(value)) {
+        const trimmed = value.trim().replace(/^flat\s+/i, '').trim();
+        return trimmed.length > 0 ? trimmed : value.trim();
+      }
+      return value.trim();
+    }
+  }
+
+  return undefined;
+};
+
+const resolveFloorNumber = (address: any): string | undefined => {
+  const candidates = [
+    address?.buildingDetails?.floorNumber,
+    address?.formatted?.floor,
+    address?.floorNumber,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+    if (typeof value === 'number' && !Number.isNaN(value) && value > 0) {
+      return String(value);
+    }
+  }
+
+  return undefined;
+};
+
 // Type definitions for post-booking data
 interface PostBookingData {
   booking: {
@@ -595,6 +636,20 @@ export async function POST(request: NextRequest) {
         dropoffAddressId: dropoffAddress.id,
         pickupPropertyId: pickupProperty.id,
         dropoffPropertyId: dropoffProperty.id,
+
+        customerPreferences: {
+          serviceType: serviceType.toLowerCase(),
+          pickupAddressMeta: {
+            flatNumber: resolveFlatNumber(bookingData.pickupAddress),
+            floorNumber: resolveFloorNumber(bookingData.pickupAddress),
+            hasLift: bookingData.pickupDetails?.hasLift ?? (bookingData.pickupAddress as any)?.buildingDetails?.hasElevator ?? false,
+          },
+          dropoffAddressMeta: {
+            flatNumber: resolveFlatNumber(bookingData.dropoffAddress),
+            floorNumber: resolveFloorNumber(bookingData.dropoffAddress),
+            hasLift: bookingData.dropoffDetails?.hasLift ?? (bookingData.dropoffAddress as any)?.buildingDetails?.hasElevator ?? false,
+          },
+        },
 
       },
     });

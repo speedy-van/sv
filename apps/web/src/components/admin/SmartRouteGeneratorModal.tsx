@@ -321,7 +321,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
       console.log(`📦 Creating routes with ${bookingIds.length} bookings`);
       
       // Determine driver assignment strategy
-      let finalDriverId = undefined;
+      let finalDriverId: string | undefined = undefined;
       
       if (selectedDriverIds.length > 0) {
         // Admin manually selected a driver - use it
@@ -345,6 +345,13 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
       }
       
       // Use /create endpoint instead of smart-generate (404 issue workaround)
+      console.log('🚀 [SmartRouteGenerator] Creating route with:', {
+        bookingIds,
+        driverId: finalDriverId,
+        driverIdType: typeof finalDriverId,
+        driverIdLength: finalDriverId?.length
+      });
+
       const response = await fetch('/api/admin/routes/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

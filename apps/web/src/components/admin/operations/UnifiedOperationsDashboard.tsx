@@ -63,44 +63,49 @@ export default function UnifiedOperationsDashboard() {
       pusherType: typeof (window as any).Pusher
     });
 
-    if (typeof window !== 'undefined' && (window as any).Pusher) {
-      const PUSHER_KEY = '407cb06c423e6c032e9c';
-      const PUSHER_CLUSTER = 'eu';
-      
-      console.log('✅ Pusher found! Initializing...');
-      console.log('🔑 Pusher Key:', PUSHER_KEY);
-      console.log('🌍 Pusher Cluster:', PUSHER_CLUSTER);
-      
-      const pusher = new (window as any).Pusher(PUSHER_KEY, {
-        cluster: PUSHER_CLUSTER,
-      });
+    // Only proceed if we're in browser and Pusher is available
+    if (typeof window === 'undefined' || !(window as any).Pusher) {
+      console.log('ℹ️ Pusher not available, skipping real-time notifications');
+      return;
+    }
 
-      pusher.connection.bind('connected', () => {
-        console.log('✅ Pusher connected successfully!');
-      });
+    const PUSHER_KEY = '407cb06c423e6c032e9c';
+    const PUSHER_CLUSTER = 'eu';
 
-      pusher.connection.bind('error', (err: any) => {
-        console.error('❌ Pusher connection error:', err);
-      });
+    console.log('✅ Pusher found! Initializing...');
+    console.log('🔑 Pusher Key:', PUSHER_KEY);
+    console.log('🌍 Pusher Cluster:', PUSHER_CLUSTER);
 
-      const notificationsChannel = pusher.subscribe('admin-notifications');
-      const routesChannel = pusher.subscribe('admin-routes');
-      const ordersChannel = pusher.subscribe('admin-orders');
+    const pusher = new (window as any).Pusher(PUSHER_KEY, {
+      cluster: PUSHER_CLUSTER,
+    });
 
-      notificationsChannel.bind('pusher:subscription_succeeded', () => {
-        console.log('✅ Subscribed to: admin-notifications');
-      });
+    pusher.connection.bind('connected', () => {
+      console.log('✅ Pusher connected successfully!');
+    });
 
-      routesChannel.bind('pusher:subscription_succeeded', () => {
-        console.log('✅ Subscribed to: admin-routes');
-      });
+    pusher.connection.bind('error', (err: any) => {
+      console.error('❌ Pusher connection error:', err);
+    });
 
-      ordersChannel.bind('pusher:subscription_succeeded', () => {
-        console.log('✅ Subscribed to: admin-orders');
-      });
+    const notificationsChannel = pusher.subscribe('admin-notifications');
+    const routesChannel = pusher.subscribe('admin-routes');
+    const ordersChannel = pusher.subscribe('admin-orders');
 
-      // Listen for route declined from admin-routes channel
-      routesChannel.bind('route-declined', (data: any) => {
+    notificationsChannel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Subscribed to: admin-notifications');
+    });
+
+    routesChannel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Subscribed to: admin-routes');
+    });
+
+    ordersChannel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Subscribed to: admin-orders');
+    });
+
+    // Listen for route declined from admin-routes channel
+    routesChannel.bind('route-declined', (data: any) => {
         console.log('🚨 Route declined notification:', data);
         
         setDeclinedNotifications(prev => [...prev, data.routeId]);
@@ -325,8 +330,7 @@ export default function UnifiedOperationsDashboard() {
         ordersChannel.unbind_all();
         ordersChannel.unsubscribe();
       };
-    }
-  }, [toast]);
+    }, [toast]);
 
   const handleCleanup = async () => {
     try {

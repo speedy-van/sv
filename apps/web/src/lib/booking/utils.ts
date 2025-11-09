@@ -156,7 +156,7 @@ export const calculatePropertySurcharges = (pickupProperty: any, dropoffProperty
     const pickupHasElevator = pickupProperty?.hasLift || false;
     const pickupFloorFee = roundToTwoDecimals(pickupFloors * (pickupHasElevator ? 2 : 5));
     propertySurcharge = roundToTwoDecimals(propertySurcharge + pickupFloorFee);
-    propertyDetails.push(`Pickup: Floor ${pickupFloors} ${pickupHasElevator ? '(£2/floor with elevator)' : '(£5/floor without elevator)'}`);
+    propertyDetails.push(`Pickup: Floor ${pickupFloors} ${pickupHasElevator ? '(£2/floor with lift)' : '(£5/floor without lift)'}`);
   }
   
   // Dropoff property surcharge (only if floors > 0)
@@ -165,7 +165,7 @@ export const calculatePropertySurcharges = (pickupProperty: any, dropoffProperty
     const dropoffHasElevator = dropoffProperty?.hasLift || false;
     const dropoffFloorFee = roundToTwoDecimals(dropoffFloors * (dropoffHasElevator ? 2 : 5));
     propertySurcharge = roundToTwoDecimals(propertySurcharge + dropoffFloorFee);
-    propertyDetails.push(`Dropoff: Floor ${dropoffFloors} ${dropoffHasElevator ? '(£2/floor with elevator)' : '(£5/floor without elevator)'}`);
+    propertyDetails.push(`Dropoff: Floor ${dropoffFloors} ${dropoffHasElevator ? '(£2/floor with lift)' : '(£5/floor without lift)'}`);
   }
   
   return { propertySurcharge, propertyDetails };

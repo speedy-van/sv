@@ -4,6 +4,10 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import FinanceClient from './FinanceClient';
 
+// CRITICAL: Force dynamic rendering because we use getServerSession()
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getFinanceData() {
   // Get recent invoices
   const recentInvoices = await prisma.booking.findMany({

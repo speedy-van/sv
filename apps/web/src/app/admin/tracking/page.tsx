@@ -704,13 +704,13 @@ export default function TrackingHub() {
                       {selectedBooking.properties.pickup && (
                         <Text fontSize="sm" color="gray.600">
                           Pickup: {selectedBooking.properties.pickup.buildingTypeDisplay} - Floor {selectedBooking.properties.pickup.floors} 
-                          {selectedBooking.properties.pickup.hasElevator ? ' (Elevator Available)' : ' (No Elevator)'}
+                          {selectedBooking.properties.pickup.hasElevator ? ' (Lift Available)' : ' (No Lift)'}
                         </Text>
                       )}
                       {selectedBooking.properties.dropoff && (
                         <Text fontSize="sm" color="gray.600">
                           Dropoff: {selectedBooking.properties.dropoff.buildingTypeDisplay} - Floor {selectedBooking.properties.dropoff.floors} 
-                          {selectedBooking.properties.dropoff.hasElevator ? ' (Elevator Available)' : ' (No Elevator)'}
+                          {selectedBooking.properties.dropoff.hasElevator ? ' (Lift Available)' : ' (No Lift)'}
                         </Text>
                       )}
                     </VStack>

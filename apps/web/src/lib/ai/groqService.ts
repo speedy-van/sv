@@ -5,6 +5,12 @@ import { ADMIN_KNOWLEDGE_BASE, getContextualHelp } from './admin-knowledge-base'
 // Admin Panel API Key - Namespaced for isolation
 const GROQ_API_KEY_ADMIN = process.env.GROQ_API_KEY_ADMIN || process.env.GROQ_API_KEY || '';
 
+// Validate API key on initialization
+if (!GROQ_API_KEY_ADMIN) {
+  console.error('❌ CRITICAL: GROQ_API_KEY_ADMIN or GROQ_API_KEY not configured!');
+  console.error('Please add to .env.local: GROQ_API_KEY_ADMIN=your_api_key');
+}
+
 interface AdminContext {
   adminId: string;
   adminName: string;
@@ -431,7 +437,7 @@ Available admin panel sections:
     adminContext: AdminContext,
     conversationHistory: ChatMessage[] = [],
     issue?: AdminIssue
-  ): Promise<{ response: string; language: 'en' | 'ar' }> {
+  ): Promise<{ response: string; language: 'en' | 'ar'; error?: { type: string; message: string; timestamp: string } }> {
     try {
       // Detect language from message
       const detectedLanguage = this.detectLanguage(message);
@@ -444,6 +450,8 @@ Available admin panel sections:
       const needsStats = /\b(stats|statistics|status|overview|dashboard|how many|total|count|revenue)\b/i.test(message);
       const needsDrivers = /\b(driver|assign|available|who can|recommend)\b/i.test(message);
       const needsHelp = /\b(how|what|explain|guide|tutorial|workflow)\b/i.test(message);
+      const needsPredictions = /\b(forecast|predict|projection|trend|future|next month|revenue forecast)\b/i.test(message);
+      const needsSuggestions = /\b(suggest|recommend|should i|what to do|action|priority)\b/i.test(message);
       
       // ✅ SMART: Fetch real data if references found
       let realDataContext = '';
@@ -454,6 +462,18 @@ Available admin panel sections:
         if (contextHelp) {
           realDataContext += `\n📚 RELEVANT KNOWLEDGE:\n${contextHelp}\n`;
         }
+      }
+      
+      // ✅ NEW: Add predictive analytics if needed
+      if (needsPredictions || needsStats) {
+        console.log('📈 Adding predictive analytics');
+        realDataContext += await this.getPredictiveAnalytics(language);
+      }
+      
+      // ✅ NEW: Add proactive suggestions if needed
+      if (needsSuggestions || needsStats) {
+        console.log('🎯 Adding proactive suggestions');
+        realDataContext += await this.getProactiveSuggestions(language);
       }
       
       if (references.orders.length > 0) {
@@ -515,15 +535,27 @@ Available admin panel sections:
         contextLength: messages[0].content.length
       });
 
-      // Call Groq API with enhanced prompt
+      // ✅ Validate API key before making request
+      if (!GROQ_API_KEY_ADMIN) {
+        throw new Error('GROQ_API_KEY not configured. Please set GROQ_API_KEY_ADMIN in environment variables.');
+      }
+
+      // ✅ Summarize conversation if too long (>10 messages)
+      let optimizedMessages = messages;
+      if (conversationHistory.length > 10) {
+        optimizedMessages = await this.summarizeConversation(messages, language);
+      }
+
+      // Call Groq API with enhanced prompt and increased capacity
       const completion = await this.client.chat.completions.create({
-        messages: messages as any,
+        messages: optimizedMessages as any,
         model: 'llama-3.3-70b-versatile', // Fast and capable model
         temperature: 0.7,
-        max_tokens: 2500, // Increased for detailed responses
-        top_p: 0.9,
-        frequency_penalty: 0.3, // Reduce repetition
-        presence_penalty: 0.2, // Encourage diverse responses
+        max_tokens: 4096, // ✅ DOUBLED for comprehensive responses with data
+        top_p: 0.95, // ✅ Increased for more creative responses
+        frequency_penalty: 0.4, // ✅ Increased to reduce repetition
+        presence_penalty: 0.3, // ✅ Increased to encourage diverse topics
+        stream: false, // Consider enabling streaming in future
       });
 
       const response = completion.choices[0]?.message?.content || 'I apologize, I could not generate a response.';
@@ -538,58 +570,231 @@ Available admin panel sections:
         language,
       };
     } catch (error: any) {
-      console.error('Groq API error:', error);
+      console.error('❌ Groq API error:', error);
       
       const lang = adminContext.language || 'en';
-      const errorMessage = lang === 'ar' 
-        ? `عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.`
-        : `Sorry, an error occurred. Please try again.`;
+      
+      // ✅ ENHANCED: Detailed error messages for admins
+      let errorMessage = '';
+      
+      if (error.message?.includes('API key')) {
+        errorMessage = lang === 'ar'
+          ? '⚠️ خطأ في المفتاح: يرجى التحقق من GROQ_API_KEY_ADMIN في إعدادات البيئة. اتصل بفريق التطوير للمساعدة.'
+          : '⚠️ API Key Error: Please verify GROQ_API_KEY_ADMIN in environment settings. Contact dev team for assistance.';
+      } else if (error.message?.includes('rate limit')) {
+        errorMessage = lang === 'ar'
+          ? '⏱️ تجاوز حد الاستخدام: تم الوصول إلى الحد الأقصى لعدد الطلبات. حاول مرة أخرى بعد دقيقة.'
+          : '⏱️ Rate Limit: Maximum requests reached. Try again in a minute.';
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = lang === 'ar'
+          ? '⏰ انتهت المهلة: الاستعلام يستغرق وقتاً طويلاً. حاول تبسيط سؤالك.'
+          : '⏰ Timeout: Query taking too long. Try simplifying your question.';
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = lang === 'ar'
+          ? '🌐 خطأ في الاتصال: تحقق من اتصال الإنترنت وحاول مرة أخرى.'
+          : '🌐 Network Error: Check internet connection and try again.';
+      } else {
+        errorMessage = lang === 'ar' 
+          ? `⚠️ خطأ في النظام: ${error.message || 'حدث خطأ غير متوقع'}. تحقق من السجلات أو اتصل بالدعم الفني.`
+          : `⚠️ System Error: ${error.message || 'Unexpected error occurred'}. Check logs or contact technical support.`;
+      }
 
       return {
         response: errorMessage,
         language: lang,
+        error: {
+          type: error.name || 'UnknownError',
+          message: error.message,
+          timestamp: new Date().toISOString()
+        }
       };
     }
   }
 
   /**
-   * Get live system statistics for AI context
+   * ✅ NEW: Summarize long conversations to fit context window
+   */
+  private async summarizeConversation(
+    messages: ChatMessage[],
+    language: 'en' | 'ar'
+  ): Promise<ChatMessage[]> {
+    try {
+      // Keep system message and last 6 user/assistant exchanges (12 messages)
+      const systemMessages = messages.filter(m => m.role === 'system');
+      const conversationMessages = messages.filter(m => m.role !== 'system');
+      
+      if (conversationMessages.length <= 12) {
+        return messages; // No need to summarize
+      }
+
+      // Take last 12 messages (6 exchanges)
+      const recentMessages = conversationMessages.slice(-12);
+      
+      // Take older messages for summarization
+      const oldMessages = conversationMessages.slice(0, -12);
+      
+      // Create summary of old messages
+      const summaryText = oldMessages
+        .map(m => `${m.role}: ${m.content.substring(0, 100)}...`)
+        .join('\n');
+      
+      const summaryPrompt = language === 'ar'
+        ? `ملخص المحادثة السابقة:\n${summaryText}`
+        : `Previous conversation summary:\n${summaryText}`;
+      
+      const summarizedHistory: ChatMessage[] = [
+        ...systemMessages,
+        {
+          role: 'system',
+          content: summaryPrompt
+        },
+        ...recentMessages
+      ];
+
+      console.log('📝 Conversation summarized:', {
+        originalLength: messages.length,
+        summarizedLength: summarizedHistory.length,
+        savedTokens: messages.length - summarizedHistory.length
+      });
+
+      return summarizedHistory;
+    } catch (error) {
+      console.warn('Failed to summarize conversation, using original:', error);
+      return messages; // Fallback to original
+    }
+  }
+
+  /**
+   * ✅ ENHANCED: Get comprehensive system statistics + proactive alerts
    */
   private async getLiveSystemStats(): Promise<string> {
     try {
+      const now = new Date();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
       const [
         totalOrders,
         activeOrders,
+        pendingOrders,
+        unassignedOrders,
         totalDrivers,
         activeDrivers,
         activeRoutes,
-        todayRevenue
+        todayRevenue,
+        weekRevenue,
+        oldUnassigned,
+        recentComplaints,
+        driverUtilization
       ] = await Promise.all([
+        // Basic stats
         prisma.booking.count(),
-        prisma.booking.count({ where: { status: { in: ['CONFIRMED'] } } }),
+        prisma.booking.count({ where: { status: 'CONFIRMED' } }),
+        prisma.booking.count({ where: { status: 'CONFIRMED', driverId: null } }),
+        prisma.booking.count({ where: { status: 'CONFIRMED', driverId: null, createdAt: { lt: twoHoursAgo } } }),
         prisma.driver.count({ where: { onboardingStatus: 'approved' } }),
         prisma.driver.count({ where: { status: 'active', onboardingStatus: 'approved' } }),
         prisma.route.count({ where: { status: { in: ['assigned', 'in_progress'] } } }),
+        
+        // Revenue analytics
         prisma.booking.aggregate({
           where: { 
             paidAt: { gte: today, lt: tomorrow },
             status: 'CONFIRMED'
           },
           _sum: { totalGBP: true }
+        }),
+        prisma.booking.aggregate({
+          where: { 
+            paidAt: { gte: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) },
+            status: 'CONFIRMED'
+          },
+          _sum: { totalGBP: true }
+        }),
+        
+        // Alert indicators
+        prisma.booking.count({
+          where: {
+            status: 'CONFIRMED',
+            driverId: null,
+            createdAt: { lt: twoHoursAgo }
+          }
+        }),
+        
+        // Customer satisfaction
+        prisma.booking.count({
+          where: {
+            createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+            // Could add complaint flag if available
+          }
+        }),
+        
+        // Driver efficiency
+        prisma.driver.aggregate({
+          where: {
+            status: 'active',
+            onboardingStatus: 'approved'
+          },
+          _count: true
         })
       ]);
 
+      // ✅ Calculate metrics
+      const avgDailyRevenue = ((weekRevenue._sum.totalGBP || 0) / 7 / 100);
+      const todayRevenueValue = ((todayRevenue._sum.totalGBP || 0) / 100);
+      const revenueVsAvg = avgDailyRevenue > 0 
+        ? ((todayRevenueValue - avgDailyRevenue) / avgDailyRevenue * 100).toFixed(1)
+        : '0';
+      
+      const driverUtilRate = totalDrivers > 0
+        ? ((activeDrivers / totalDrivers) * 100).toFixed(1)
+        : '0';
+
+      // ✅ PROACTIVE ALERTS
+      const alerts: string[] = [];
+      
+      if (oldUnassigned > 0) {
+        alerts.push(`⚠️ ALERT: ${oldUnassigned} orders unassigned for >2 hours! Action needed.`);
+      }
+      
+      if (pendingOrders > 10) {
+        alerts.push(`📢 NOTICE: ${pendingOrders} orders pending assignment. Consider auto-routing.`);
+      }
+      
+      if (activeDrivers < 3 && pendingOrders > 5) {
+        alerts.push(`🚨 CRITICAL: Low driver availability (${activeDrivers} active) with ${pendingOrders} pending orders!`);
+      }
+      
+      if (parseFloat(revenueVsAvg) < -30) {
+        alerts.push(`📉 REVENUE ALERT: Today's revenue ${revenueVsAvg}% below average. Review pricing/marketing.`);
+      }
+
       return `
-📊 Live System Stats (${new Date().toLocaleTimeString()}):
-- Orders: ${totalOrders} total, ${activeOrders} active
-- Drivers: ${totalDrivers} total, ${activeDrivers} online
-- Active Routes: ${activeRoutes}
-- Today's Revenue: £${((todayRevenue._sum.totalGBP || 0) / 100).toFixed(2)}
+📊 Live System Stats (${now.toLocaleTimeString()}):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 ORDERS:
+  • Total: ${totalOrders} | Active: ${activeOrders}
+  • Pending Assignment: ${pendingOrders}
+  • ⚠️ Old Unassigned: ${oldUnassigned}
+
+🚗 DRIVERS:
+  • Total Approved: ${totalDrivers}
+  • Currently Active: ${activeDrivers}
+  • Utilization Rate: ${driverUtilRate}%
+
+🛣️ ROUTES:
+  • Active Routes: ${activeRoutes}
+
+💰 REVENUE:
+  • Today: £${todayRevenueValue.toFixed(2)}
+  • 7-Day Average: £${avgDailyRevenue.toFixed(2)}/day
+  • vs Average: ${revenueVsAvg}%
+
+${alerts.length > 0 ? `\n🚨 PROACTIVE ALERTS:\n${alerts.join('\n')}\n` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -598,7 +803,7 @@ Available admin panel sections:
   }
 
   /**
-   * Get available drivers for assignment suggestions
+   * ✅ ENHANCED: Get available drivers with performance metrics
    */
   private async getAvailableDriversContext(language: 'en' | 'ar'): Promise<string> {
     try {
@@ -608,26 +813,195 @@ Available admin panel sections:
           onboardingStatus: 'approved'
         },
         include: {
-          User: { select: { name: true } },
+          User: { select: { name: true, phone: true } },
           Booking: {
-            where: { status: { in: ['CONFIRMED'] } },
-            select: { id: true }
+            where: { status: 'CONFIRMED' },
+            select: { id: true, reference: true, scheduledAt: true }
           }
         },
-        take: 10
+        take: 15, // ✅ Increased from 10
+        orderBy: { createdAt: 'desc' }
       });
 
-      const driverList = drivers.map((d: any) => 
-        `- ${d.User?.name || 'Unknown'}: ${d.Booking?.length || 0} active jobs`
-      ).join('\n');
+      const now = new Date();
+      
+      const driverList = drivers.map((d: any) => {
+        const activeJobs = d.Booking?.length || 0;
+        const nextJobTime = d.Booking?.[0]?.scheduledAt 
+          ? new Date(d.Booking[0].scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : 'N/A';
+        
+        const status = activeJobs === 0 ? '🟢 Free' : activeJobs < 2 ? '🟡 Busy' : '🔴 Full';
+        const recommendation = activeJobs === 0 ? '✅ BEST' : activeJobs < 2 ? '⚠️ OK' : '❌ Avoid';
+        
+        return `  ${recommendation} ${d.User?.name || 'Unknown'}: ${status} (${activeJobs} jobs${activeJobs > 0 ? `, next @${nextJobTime}` : ''})`;
+      }).join('\n');
 
       if (language === 'ar') {
-        return `\n🚗 السائقون المتاحون:\n${driverList}`;
+        return `
+🚗 السائقون المتاحون (${drivers.length} سائق نشط):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${driverList}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
       }
 
-      return `\n🚗 Available Drivers:\n${driverList}`;
+      return `
+🚗 Available Drivers (${drivers.length} active):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${driverList}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Recommendation: Prioritize drivers marked ✅ BEST for fastest service
+`;
     } catch (error) {
       console.error('Error fetching drivers:', error);
+      return '';
+    }
+  }
+
+  /**
+   * ✅ NEW: Predictive Analytics - Forecast revenue, demand, capacity
+   */
+  private async getPredictiveAnalytics(language: 'en' | 'ar'): Promise<string> {
+    try {
+      const now = new Date();
+      const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const [weekData, monthData, todayOrders] = await Promise.all([
+        prisma.booking.aggregate({
+          where: { paidAt: { gte: last7Days }, status: 'CONFIRMED' },
+          _sum: { totalGBP: true },
+          _count: true
+        }),
+        prisma.booking.aggregate({
+          where: { paidAt: { gte: last30Days }, status: 'CONFIRMED' },
+          _sum: { totalGBP: true },
+          _count: true
+        }),
+        prisma.booking.count({
+          where: { 
+            createdAt: { gte: new Date(now.setHours(0,0,0,0)) },
+            status: { in: ['CONFIRMED', 'DRAFT'] }
+          }
+        })
+      ]);
+
+      const weekRevenue = (weekData._sum.totalGBP || 0) / 100;
+      const weekOrders = weekData._count || 0;
+      const monthRevenue = (monthData._sum.totalGBP || 0) / 100;
+      const monthOrders = monthData._count || 0;
+
+      // Simple linear projection
+      const avgDailyRevenue = weekRevenue / 7;
+      const avgDailyOrders = weekOrders / 7;
+      const projectedMonthRevenue = (avgDailyRevenue * 30).toFixed(2);
+      const projectedMonthOrders = Math.round(avgDailyOrders * 30);
+
+      // Demand trend
+      const trend = weekOrders > (monthOrders / 4) ? '📈 Increasing' : '📉 Decreasing';
+
+      if (language === 'ar') {
+        return `
+📈 التحليلات التنبؤية:
+  • متوسط الإيرادات اليومية: £${avgDailyRevenue.toFixed(2)}
+  • متوسط الطلبات اليومية: ${avgDailyOrders.toFixed(1)}
+  • توقعات نهاية الشهر: £${projectedMonthRevenue} (${projectedMonthOrders} طلب)
+  • اتجاه الطلب: ${trend}
+  • طلبات اليوم حتى الآن: ${todayOrders}
+`;
+      }
+
+      return `
+📈 Predictive Analytics:
+  • Avg Daily Revenue: £${avgDailyRevenue.toFixed(2)}
+  • Avg Daily Orders: ${avgDailyOrders.toFixed(1)}
+  • Month-End Projection: £${projectedMonthRevenue} (${projectedMonthOrders} orders)
+  • Demand Trend: ${trend}
+  • Today's Orders So Far: ${todayOrders}
+`;
+    } catch (error) {
+      console.error('Error in predictive analytics:', error);
+      return '';
+    }
+  }
+
+  /**
+   * ✅ NEW: Get actionable suggestions based on current system state
+   */
+  private async getProactiveSuggestions(language: 'en' | 'ar'): Promise<string> {
+    try {
+      const suggestions: string[] = [];
+      const now = new Date();
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+
+      // Check for issues requiring action
+      const [
+        unassignedOld,
+        pendingDriverApps,
+        lowDriverCount,
+        upcomingOrders
+      ] = await Promise.all([
+        prisma.booking.findMany({
+          where: { status: 'CONFIRMED', driverId: null, createdAt: { lt: twoHoursAgo } },
+          select: { reference: true, scheduledAt: true },
+          take: 5
+        }),
+        prisma.driverApplication.count({ where: { status: 'pending' } }),
+        prisma.driver.count({ where: { status: 'active', onboardingStatus: 'approved' } }),
+        prisma.booking.count({
+          where: {
+            status: 'CONFIRMED',
+            scheduledAt: { 
+              gte: now,
+              lte: new Date(now.getTime() + 2 * 60 * 60 * 1000) // Next 2 hours
+            }
+          }
+        })
+      ]);
+
+      if (unassignedOld.length > 0) {
+        const refs = unassignedOld.map(o => o.reference).join(', ');
+        suggestions.push(language === 'ar' 
+          ? `⚠️ عيّن فوراً: ${refs} (غير معيّنة منذ >2 ساعة)`
+          : `⚠️ Assign Now: ${refs} (unassigned >2 hours)`
+        );
+      }
+
+      if (pendingDriverApps > 3) {
+        suggestions.push(language === 'ar'
+          ? `📝 مراجعة التطبيقات: ${pendingDriverApps} طلبات سائق معلقة`
+          : `📝 Review Applications: ${pendingDriverApps} pending driver applications`
+        );
+      }
+
+      if (lowDriverCount < 5 && upcomingOrders > 10) {
+        suggestions.push(language === 'ar'
+          ? `🚨 نقص السائقين: ${lowDriverCount} سائق فقط لـ ${upcomingOrders} طلب قادم`
+          : `🚨 Driver Shortage: Only ${lowDriverCount} drivers for ${upcomingOrders} upcoming orders`
+        );
+      }
+
+      if (upcomingOrders > 0 && lowDriverCount > 0) {
+        suggestions.push(language === 'ar'
+          ? `💡 نصيحة: استخدم التوجيه التلقائي لتوفير الوقت (POST /api/admin/routes/auto-create)`
+          : `💡 Tip: Use auto-routing to save time (POST /api/admin/routes/auto-create)`
+        );
+      }
+
+      if (suggestions.length === 0) {
+        return language === 'ar'
+          ? `\n✅ الوضع جيد: لا توجد مشاكل عاجلة تتطلب انتباهك.\n`
+          : `\n✅ All Clear: No urgent issues requiring attention.\n`;
+      }
+
+      const header = language === 'ar' 
+        ? '\n🎯 اقتراحات استباقية:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+        : '\n🎯 Proactive Suggestions:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+      return header + suggestions.join('\n') + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
       return '';
     }
   }

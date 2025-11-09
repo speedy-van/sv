@@ -36,7 +36,7 @@ Need a reliable man and van? Speedy Van offers same-day service from £25/hour!
 
 Covering London, Manchester, Birmingham, Glasgow, Edinburgh, and all UK cities.
 
-Book now at speedy-van.co.uk or call +44 7901 846297`,
+Book now at speedy-van.co.uk or call 01202129764`,
     image: '/images/gbp/speedy-van-hero-banner.png',
     ctaType: 'book',
     ctaUrl: 'https://speedy-van.co.uk/booking',
@@ -60,7 +60,7 @@ Use code: FIRST10
 Book online: speedy-van.co.uk
 
 Valid until end of month. Terms apply.
-Call +44 7901 846297 for details.`,
+Call 01202129764 for details.`,
     image: '/images/gbp/speedy-van-london-delivery.png',
     ctaType: 'book',
     ctaUrl: 'https://speedy-van.co.uk/booking',
@@ -85,7 +85,7 @@ Special student discounts on all moves. Perfect for university relocations.
 Edinburgh, Leeds, Bristol, Manchester - we cover it all!
 
 Book now: speedy-van.co.uk
-Student ID required. Call +44 7901 846297`,
+Student ID required. Call 01202129764`,
     image: '/images/gbp/furniture-transport.png',
     ctaType: 'learn_more',
     ctaUrl: 'https://speedy-van.co.uk/blog/student-moves',
@@ -109,7 +109,7 @@ Student ID required. Call +44 7901 846297`,
 Experience the UK's most reliable moving service.
 
 Get your free quote today: speedy-van.co.uk
-📞 +44 7901 846297`,
+📞 01202129764`,
     image: '/images/gbp/speedy-van-glasgow-moving.png',
     ctaType: 'call',
     keywords: ['testimonial', 'customer review', 'reliable service', '5-star'],
@@ -132,7 +132,7 @@ Speedy Van offers same-day delivery services across the UK.
 From London to Edinburgh, we've got you covered.
 
 Book online now: speedy-van.co.uk
-Or call for immediate service: +44 7901 846297
+Or call for immediate service: 01202129764
 
 Subject to availability. Book early to secure your slot!`,
     image: '/images/gbp/speedy-van-manchester-service.png',
@@ -158,7 +158,7 @@ Professional business moving services with minimal downtime.
 From small offices to large corporate relocations, we handle it all.
 
 Get a free business quote: speedy-van.co.uk
-📞 +44 7901 846297
+📞 01202129764
 
 Serving businesses across London, Manchester, Birmingham, and all UK cities.`,
     image: '/images/gbp/operations_excellence.png',
@@ -183,7 +183,7 @@ Beat the rush! Book your move with Speedy Van today.
 July and August are our busiest months. Secure your preferred date now!
 
 Book online: speedy-van.co.uk
-Call: +44 7901 846297
+Call: 01202129764
 
 Covering all UK cities with professional, reliable service.`,
     image: '/images/gbp/glasgow-service.png',
@@ -209,7 +209,7 @@ Q: Can I track my delivery?
 A: Absolutely! Real-time tracking available through our website and app.
 
 More questions? Visit speedy-van.co.uk
-Or call us: +44 7901 846297`,
+Or call us: 01202129764`,
     image: '/images/gbp/executive_team.png',
     ctaType: 'learn_more',
     ctaUrl: 'https://speedy-van.co.uk',
@@ -233,7 +233,7 @@ Don't struggle with flat-pack furniture! Let our experts handle it.
 From £30 per item. Available across the UK.
 
 Book online: speedy-van.co.uk
-Call: +44 7901 846297
+Call: 01202129764
 
 Combine with our moving services for a complete solution!`,
     image: '/images/gbp/furniture-transport.png',
@@ -259,7 +259,7 @@ Make your move stress-free with our expert packing team.
 We'll pack it, move it, and unpack it!
 
 Book now: speedy-van.co.uk
-📞 +44 7901 846297
+📞 01202129764
 
 Available across London, Manchester, Birmingham, and all UK cities.`,
     image: '/images/gbp/operations_excellence.png',

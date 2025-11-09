@@ -149,7 +149,7 @@ export default function MovingFurnitureFastPage() {
               <HStack spacing={4}>
                 <Button
                   as="a"
-                  href="tel:+441698123456"
+                  href="tel:+441202129746"
                   size="lg"
                   colorScheme="whiteAlpha"
                   leftIcon={<FaPhone />}
@@ -310,7 +310,7 @@ export default function MovingFurnitureFastPage() {
           <HStack justify="center" spacing={4}>
             <Button
               as="a"
-              href="tel:+441698123456"
+              href="tel:+441202129746"
               size="lg"
               colorScheme="whiteAlpha"
               leftIcon={<FaPhone />}
