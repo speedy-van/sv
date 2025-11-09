@@ -313,9 +313,9 @@ export const ComprehensivePricingBreakdownSchema = z.object({
 
 export const CapacityCheckSchema = z.object({
   isValid: z.boolean(),
-  weightUtilization: z.number().min(0).max(100),
-  volumeUtilization: z.number().min(0).max(100),
-  itemUtilization: z.number().min(0).max(100),
+  weightUtilization: z.number().min(0).max(300), // Allow up to 300% for multiple vehicles
+  volumeUtilization: z.number().min(0).max(300), // Allow up to 300% for multiple vehicles
+  itemUtilization: z.number().min(0).max(300), // Allow up to 300% for multiple vehicles
   warnings: z.array(z.string()),
   recommendations: z.array(z.string()),
   overCapacityItems: z.array(z.string()).optional()
