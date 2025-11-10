@@ -198,15 +198,15 @@ export default function SpeedyAIChatbot({
     { label: '💰 Today\'s Revenue', prompt: 'What\'s today\'s revenue?' },
     { label: '🎯 Suggestions', prompt: 'What improvements do you recommend?' },
   ];
-  // Dark theme with black background and white text
-  const bgColor = '#000000'; // Pure black background
-  const borderColor = '#333333'; // Dark gray border
-  const textColor = '#FFFFFF'; // White text
-  const inputBg = '#1a1a1a'; // Very dark gray for input
-  const messageBgUser = '#2563eb'; // Bright blue for user messages
-  const messageBgAssistant = '#1a1a1a'; // Dark gray for assistant messages
-  const messagesBg = '#0a0a0a'; // Almost black for messages area
-  const headerBg = '#111111'; // Slightly lighter black for header
+  // ChatGPT-inspired dark theme colors
+  const bgColor = '#343541'; // ChatGPT main background
+  const borderColor = '#565869'; // ChatGPT border color
+  const textColor = '#ECECF1'; // ChatGPT text color (off-white)
+  const inputBg = '#40414f'; // ChatGPT input background
+  const messageBgUser = '#343541'; // Same as main bg for user
+  const messageBgAssistant = '#444654'; // Slightly lighter for assistant (ChatGPT style)
+  const messagesBg = '#343541'; // Main background for messages
+  const headerBg = '#202123'; // Darker header like ChatGPT
   
   // Non-hook values derived from hooks
   const messageBgUserText = '#FFFFFF'; // White text on user messages
