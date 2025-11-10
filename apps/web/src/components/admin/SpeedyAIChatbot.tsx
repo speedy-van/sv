@@ -44,7 +44,11 @@ import {
   FiSidebar,
   FiClock,
   FiTool,
+  FiVolume2,
+  FiAlertTriangle,
 } from 'react-icons/fi';
+import { LiveStatusDashboard } from './LiveStatusDashboard';
+import { MemoryService, ProactiveInsight } from '@/lib/ai/memoryService';
 
 // Global styles for animations - only add once
 if (typeof document !== 'undefined' && !document.getElementById('speedy-ai-animations')) {
@@ -182,10 +186,16 @@ export default function SpeedyAIChatbot({
   const [notificationCount, setNotificationCount] = useState(0);
   const [assistantInsights, setAssistantInsights] = useState<AssistantMetadata | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showLiveStatus, setShowLiveStatus] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [heySpeedyEnabled, setHeySpeedyEnabled] = useState(false);
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [conversationHistory, setConversationHistory] = useState<Array<{id: string; title: string; timestamp: Date}>>([]);
+  const [proactiveInsights, setProactiveInsights] = useState<ProactiveInsight[]>([]);
+  const [sensitiveWarnings, setSensitiveWarnings] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
   
   // All refs - must be called unconditionally
   const messagesEndRef = useRef<HTMLDivElement>(null);
