@@ -161,6 +161,7 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
   const [pendingDrops, setPendingDrops] = useState<PendingDrop[]>([]);
   const [availableDrivers, setAvailableDrivers] = useState<AvailableDriver[]>([]);
   const [proposedRoutes, setProposedRoutes] = useState<ProposedRoute[]>([]);
+  const [selectedRouteIds, setSelectedRouteIds] = useState<string[]>([]);
   const [pendingRoutes, setPendingRoutes] = useState<any[]>([]); // Routes without drivers
   
   // Loading states
@@ -245,14 +246,17 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
   }, []);
 
   // Load data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      console.log('📂 Modal opened - loading data...');
-      fetchPendingDrops();
-      fetchAvailableDrivers();
-      fetchPendingRoutes();
-    }
-  }, [isOpen, fetchPendingDrops, fetchAvailableDrivers, fetchPendingRoutes]);
+useEffect(() => {
+  if (isOpen) {
+    console.log('📂 Modal opened - loading data...');
+    fetchPendingDrops();
+    fetchAvailableDrivers();
+    fetchPendingRoutes();
+    setStep('config');
+    setProposedRoutes([]);
+    setSelectedRouteIds([]);
+  }
+}, [isOpen, fetchPendingDrops, fetchAvailableDrivers, fetchPendingRoutes]);
 
   // Generate preview
   const generatePreview = async () => {
@@ -273,7 +277,9 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
 
       const data = await response.json();
       if (data.success) {
-        setProposedRoutes(data.proposedRoutes || []);
+        const routes = data.proposedRoutes || [];
+        setProposedRoutes(routes);
+        setSelectedRouteIds(routes.map((route: ProposedRoute) => route.id));
         setStep('preview');
       } else {
         toast({
@@ -296,106 +302,115 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     }
   };
 
-  // Create routes
+  // Create routes from selected previews
   const createRoutes = async () => {
     setIsCreatingRoutes(true);
     setStep('creating');
-    
+
     try {
-      // Get selected booking IDs from pending drops (use bookingId field, not drop id)
-      const bookingIds = pendingDrops
-        .map(drop => drop.bookingId)
-        .filter((id): id is string => Boolean(id));
-      
-      if (bookingIds.length === 0) {
+      const routesToCreate = proposedRoutes.filter(route => selectedRouteIds.includes(route.id));
+
+      if (routesToCreate.length === 0) {
         toast({
-          title: 'No Bookings Available',
-          description: 'No pending drops with valid booking IDs found. Create bookings first.',
+          title: 'No Routes Selected',
+          description: 'Select at least one route from the preview before confirming.',
           status: 'warning',
-          duration: 5000,
+          duration: 4000,
         });
         setIsCreatingRoutes(false);
+        setStep('preview');
         return;
       }
-      
-      console.log(`📦 Creating routes with ${bookingIds.length} bookings`);
-      
-      // Determine driver assignment strategy
-      let finalDriverId: string | undefined = undefined;
-      
-      if (selectedDriverIds.length > 0) {
-        // Admin manually selected a driver - use it
-        finalDriverId = selectedDriverIds[0];
-        console.log('👤 Using admin-selected driver:', finalDriverId);
-      } else if (autoAssign && availableDrivers.length > 0) {
-        // Auto-assign: Find best available driver (least workload)
-        const onlineDrivers = availableDrivers.filter(d => 
-          d.DriverAvailability?.status === 'online' || d.isAvailable
-        );
-        
-        if (onlineDrivers.length > 0) {
-          // Sort by least active routes
-          const bestDriver = onlineDrivers.sort((a, b) => 
-            (a.activeRoutes || 0) - (b.activeRoutes || 0)
-          )[0];
-          
-          finalDriverId = bestDriver.id;
-          console.log('🤖 Auto-assigned best available driver:', bestDriver.name, `(${bestDriver.activeRoutes || 0} active routes)`);
+
+      console.log(`📦 Creating ${routesToCreate.length} selected route(s)`);
+      const creationResults: { id: string; success: boolean; message?: string }[] = [];
+
+      for (const route of routesToCreate) {
+        const bookingIds = route.drops
+          .map(dropId => pendingDrops.find(drop => drop.id === dropId)?.bookingId)
+          .filter((id): id is string => Boolean(id));
+
+        if (bookingIds.length === 0) {
+          console.warn(`⚠️ [SmartRouteGenerator] Route ${route.id} has no valid booking IDs`);
+          creationResults.push({
+            id: route.id,
+            success: false,
+            message: 'No valid bookings in this cluster',
+          });
+          continue;
         }
-      }
-      
-      // Use /create endpoint instead of smart-generate (404 issue workaround)
-      console.log('🚀 [SmartRouteGenerator] Creating route with:', {
-        bookingIds,
-        driverId: finalDriverId,
-        driverIdType: typeof finalDriverId,
-        driverIdLength: finalDriverId?.length
-      });
 
-      const response = await fetch('/api/admin/routes/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookingIds,
-          driverId: finalDriverId,
-          startTime: new Date().toISOString(),
-          isAutomatic: true,
-        }),
-      });
+        let finalDriverId: string | undefined = route.driverId;
 
-      const data = await response.json();
-      console.log('📊 Create route response:', data);
-      
-      if (data.success) {
-        const routeInfo = data.data?.route ? `Route with ${pendingDrops.length} drops` : 'Route';
-        
-        // Get driver assignment info
-        let driverInfo = 'Pending assignment';
-        if (finalDriverId) {
-          const assignedDriver = availableDrivers.find(d => d.id === finalDriverId);
-          if (assignedDriver) {
-            driverInfo = selectedDriverIds.length > 0 
-              ? `Assigned to ${assignedDriver.name} (your choice)`
-              : `Auto-assigned to ${assignedDriver.name} (best available)`;
+        if (!finalDriverId) {
+          if (selectedDriverIds.length > 0) {
+            finalDriverId = selectedDriverIds[0];
+          } else if (autoAssign && availableDrivers.length > 0) {
+            const onlineDrivers = availableDrivers.filter(d =>
+              d.DriverAvailability?.status === 'online' || d.isAvailable
+            );
+
+            if (onlineDrivers.length > 0) {
+              const bestDriver = [...onlineDrivers].sort((a, b) =>
+                (a.activeRoutes || 0) - (b.activeRoutes || 0)
+              )[0];
+              finalDriverId = bestDriver.id;
+            }
           }
         }
-        
+
+        console.log('🚀 [SmartRouteGenerator] Creating route cluster:', {
+          routeId: route.id,
+          bookingCount: bookingIds.length,
+          driverId: finalDriverId,
+        });
+
+        const response = await fetch('/api/admin/routes/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingIds,
+            driverId: finalDriverId,
+            startTime: new Date().toISOString(),
+            isAutomatic: true,
+          }),
+        });
+
+        const data = await response.json();
+        console.log(`📊 Create route response [${route.id}]:`, data);
+
+        if (response.ok && data.success) {
+          creationResults.push({ id: route.id, success: true });
+        } else {
+          creationResults.push({
+            id: route.id,
+            success: false,
+            message: data.details || data.error || 'Failed to create route',
+          });
+        }
+      }
+
+      const successCount = creationResults.filter(r => r.success).length;
+      const failureCount = creationResults.length - successCount;
+
+      if (successCount > 0) {
         toast({
-          title: '🎉 Route Created Successfully!',
-          description: `${routeInfo} created. ${pendingDrops.length} bookings updated to CONFIRMED. ${driverInfo}`,
-          status: 'success',
-          duration: 7000,
+          title: `🎉 ${successCount} route(s) created`,
+          description: failureCount > 0
+            ? `${failureCount} route(s) failed. Check console for details.`
+            : 'All selected routes were created successfully.',
+          status: failureCount > 0 ? 'warning' : 'success',
+          duration: 6000,
           isClosable: true,
         });
         onSuccess();
         handleClose();
       } else {
-        console.error('❌ Route creation failed:', data);
         toast({
           title: 'Creation Failed',
-          description: data.details || data.error || 'Failed to create routes',
+          description: creationResults.map(r => r.message).filter(Boolean).join('\n') || 'Failed to create selected routes.',
           status: 'error',
-          duration: 7000,
+          duration: 6000,
           isClosable: true,
         });
         setStep('preview');
@@ -414,21 +429,24 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
     }
   };
 
-  // Initialize data when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchPendingDrops();
-      fetchAvailableDrivers();
-      setStep('config');
-      setProposedRoutes([]);
-    }
-  }, [isOpen, fetchPendingDrops, fetchAvailableDrivers]);
-
-  const handleClose = () => {
+// Initialize data when modal opens
+useEffect(() => {
+  if (isOpen) {
+    fetchPendingDrops();
+    fetchAvailableDrivers();
+    fetchPendingRoutes();
     setStep('config');
     setProposedRoutes([]);
-    onClose();
-  };
+    setSelectedRouteIds([]);
+  }
+}, [isOpen, fetchPendingDrops, fetchAvailableDrivers, fetchPendingRoutes]);
+
+const handleClose = () => {
+  setStep('config');
+  setProposedRoutes([]);
+  setSelectedRouteIds([]);
+  onClose();
+};
 
   const handleDriverToggle = (driverId: string) => {
     setSelectedDriverIds(prev => 
@@ -1016,18 +1034,38 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                     Route Preview
                   </Text>
                   <Text color="gray.400" fontSize="sm">
-                    {proposedRoutes.length} routes will be created
+                    {selectedRouteIds.length} of {proposedRoutes.length} routes selected
                   </Text>
                 </Box>
-                <Button
-                  leftIcon={<FiSettings />}
-                  variant="ghost"
-                  colorScheme="gray"
-                  size="sm"
-                  onClick={() => setStep('config')}
-                >
-                  Back to Settings
-                </Button>
+                <HStack spacing={2}>
+                  <Button
+                    variant="ghost"
+                    colorScheme="gray"
+                    size="sm"
+                    onClick={() => setSelectedRouteIds(proposedRoutes.map(route => route.id))}
+                    isDisabled={proposedRoutes.length === 0 || selectedRouteIds.length === proposedRoutes.length}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    colorScheme="gray"
+                    size="sm"
+                    onClick={() => setSelectedRouteIds([])}
+                    isDisabled={selectedRouteIds.length === 0}
+                  >
+                    Clear Selection
+                  </Button>
+                  <Button
+                    leftIcon={<FiSettings />}
+                    variant="ghost"
+                    colorScheme="gray"
+                    size="sm"
+                    onClick={() => setStep('config')}
+                  >
+                    Back to Settings
+                  </Button>
+                </HStack>
               </HStack>
 
               <Divider borderColor="gray.700" />
@@ -1073,60 +1111,77 @@ const SmartRouteGeneratorModal: React.FC<SmartRouteGeneratorModalProps> = ({
                       Route Details
                     </Text>
                     <Grid templateColumns="repeat(auto-fill, minmax(350px, 1fr))" gap={4}>
-                  {proposedRoutes.map((route, index) => (
-                    <Card 
-                      key={route.id} 
-                      bg="gray.800" 
-                      borderWidth="1px" 
-                      borderColor="gray.700"
-                    >
-                      <CardBody>
-                        <HStack justify="space-between" mb={3}>
-                          <Badge colorScheme="purple" fontSize="sm" px={2} py={1}>
-                            Route {index + 1}
-                          </Badge>
-                          {route.driverName && (
-                            <Badge colorScheme="blue" fontSize="xs">
-                              {route.driverName}
-                            </Badge>
-                          )}
-                        </HStack>
+                      {proposedRoutes.map((route, index) => {
+                        const isSelected = selectedRouteIds.includes(route.id);
+                        return (
+                          <Card
+                            key={route.id}
+                            bg={isSelected ? 'purple.900' : 'gray.800'}
+                            borderWidth="2px"
+                            borderColor={isSelected ? 'purple.400' : 'gray.700'}
+                            cursor="pointer"
+                            transition="all 0.2s ease-in-out"
+                            onClick={() =>
+                              setSelectedRouteIds(prev =>
+                                prev.includes(route.id)
+                                  ? prev.filter(id => id !== route.id)
+                                  : [...prev, route.id]
+                              )
+                            }
+                            _hover={{
+                              borderColor: isSelected ? 'purple.300' : 'gray.500',
+                              transform: 'translateY(-2px)',
+                            }}
+                          >
+                            <CardBody>
+                              <HStack justify="space-between" mb={3}>
+                                <Badge colorScheme="purple" fontSize="sm" px={2} py={1}>
+                                  Route {index + 1}
+                                </Badge>
+                                <Badge
+                                  colorScheme={isSelected ? 'green' : 'gray'}
+                                  fontSize="xs"
+                                >
+                                  {isSelected ? 'Selected' : 'Click to select'}
+                                </Badge>
+                              </HStack>
 
-                        <VStack align="stretch" spacing={3}>
-                          <HStack>
-                            <Icon as={FiPackage} color="purple.400" />
-                            <Text color="white" fontSize="sm">
-                              {route.totalDrops} drops
-                            </Text>
-                          </HStack>
+                              <VStack align="stretch" spacing={3}>
+                                <HStack>
+                                  <Icon as={FiPackage} color="purple.400" />
+                                  <Text color="white" fontSize="sm">
+                                    {route.totalDrops} drops
+                                  </Text>
+                                </HStack>
 
-                          <HStack>
-                            <Icon as={FiMapPin} color="purple.400" />
-                            <Text color="white" fontSize="sm">
-                              {route.estimatedDistance.toFixed(1)} miles
-                            </Text>
-                          </HStack>
+                                <HStack>
+                                  <Icon as={FiMapPin} color="purple.400" />
+                                  <Text color="white" fontSize="sm">
+                                    {route.estimatedDistance.toFixed(1)} miles
+                                  </Text>
+                                </HStack>
 
-                          <HStack>
-                            <Icon as={FiClock} color="purple.400" />
-                            <Text color="white" fontSize="sm">
-                              ~{route.estimatedDuration} minutes
-                            </Text>
-                          </HStack>
+                                <HStack>
+                                  <Icon as={FiClock} color="purple.400" />
+                                  <Text color="white" fontSize="sm">
+                                    ~{route.estimatedDuration} minutes
+                                  </Text>
+                                </HStack>
 
-                          <Divider borderColor="gray.700" />
+                                <Divider borderColor="gray.700" />
 
-                          <HStack justify="space-between">
-                            <Text color="gray.400" fontSize="sm">Total Value:</Text>
-                            <Text color="white" fontWeight="bold">
-                              £{(route.totalValue / 100).toFixed(2)}
-                            </Text>
-                          </HStack>
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </Grid>
+                                <HStack justify="space-between">
+                                  <Text color="gray.400" fontSize="sm">Total Value:</Text>
+                                  <Text color="white" fontWeight="bold">
+                                    £{(route.totalValue / 100).toFixed(2)}
+                                  </Text>
+                                </HStack>
+                              </VStack>
+                            </CardBody>
+                          </Card>
+                        );
+                      })}
+                    </Grid>
                   </Box>
                 </VStack>
               )}

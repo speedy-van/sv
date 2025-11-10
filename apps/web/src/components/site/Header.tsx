@@ -220,6 +220,7 @@ const Header: React.FC = memo(() => {
       boxShadow={isScrolled ? `0 4px 20px ${themeColors.shadowColor}` : 'sm'}
       backdropFilter={isScrolled ? 'blur(20px)' : 'none'}
       display={{ base: 'none', md: 'block' }}
+      suppressHydrationWarning
       sx={{
         '@media (max-width: 767px)': {
           display: 'none !important',
@@ -237,9 +238,10 @@ const Header: React.FC = memo(() => {
       <Box maxW="container.xl" mx="auto" px={{ base: 4, md: 6, lg: 8 }}>
         <Flex
           h={{ base: '80px', md: '130px', lg: '140px' }}
-          align={isMounted ? "center" : undefined}
+          align="center"
           justify="space-between"
           gap={6}
+          suppressHydrationWarning
         >
           {/* Enhanced Logo */}
           <MotionFlex
@@ -288,8 +290,9 @@ const Header: React.FC = memo(() => {
               <MotionBox
                 key={item.label}
                 initial={false}
-                animate={isMounted ? { opacity: 1, y: 0 } : { opacity: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.06 } as any}
+                suppressHydrationWarning
               >
                 {item.hasDropdown ? (
                   <Menu>

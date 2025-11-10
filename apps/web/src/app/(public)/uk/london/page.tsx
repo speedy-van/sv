@@ -14,7 +14,6 @@ import {
 
 // Force ISR to prevent SSG timeout
 export const revalidate = 300; // 5 minutes ISR
-export const dynamic = 'force-dynamic';
 import {
   MapPin,
   Truck,
@@ -34,23 +33,30 @@ import FAQSchema from '@/components/Schema/FAQSchema';
 import ReviewSchema from '@/components/Schema/ReviewSchema';
 import ServiceSchema from '@/components/Schema/ServiceSchema';
 import { ROUTES } from '@/lib/routing';
+import {
+  APP_BASE_URL,
+  BRAND_NAME,
+  DEFAULT_SOCIAL_IMAGE,
+} from '@/lib/seo/constants';
+
+const canonicalUrl = `${APP_BASE_URL}/uk/london`;
 
 export const metadata: Metadata = {
-  title: 'Man and Van London | House Removals London | Speedy Van',
+  title: `Man and Van London | House Removals London | ${BRAND_NAME}`,
   description:
     'Professional man and van service in London. House removals, furniture delivery, and moving services across all London boroughs. Same day service available from £25/hour.',
   keywords:
     'man and van London, house removals London, furniture delivery London, moving services London, van hire London, removal company London',
-  alternates: { canonical: 'https://speedy-van.co.uk/uk/london' },
+  alternates: { canonical: canonicalUrl },
   openGraph: {
-    title: 'Man and Van London | House Removals London | Speedy Van',
+    title: `Man and Van London | House Removals London | ${BRAND_NAME}`,
     description:
       'Professional man and van service in London from £25/hour. Same day service across all London boroughs. Book online now.',
-    url: 'https://speedy-van.co.uk/uk/london',
-    siteName: 'Speedy Van',
+    url: canonicalUrl,
+    siteName: BRAND_NAME,
     images: [
       {
-        url: '/og/og-london.jpg',
+        url: `${APP_BASE_URL}/og/og-london.jpg`,
         width: 1200,
         height: 630,
         alt: 'Man and Van London',
@@ -63,6 +69,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@speedyvan',
     creator: '@speedyvan',
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
 

@@ -233,7 +233,7 @@ export class VoodooSMSService {
     driverName?: string;
     driverPhone?: string;
   }): Promise<SMSResponse> {
-    const message = `Hi ${data.customerName}, your Speedy Van booking ${data.orderNumber} is confirmed! Pickup: ${data.pickupAddress} on ${data.scheduledDate}. We'll notify you when your driver is assigned. Call 01202129764 for support.`;
+    const message = `Your Speedy Van booking ${data.orderNumber} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`;
 
     return this.sendSMS({
       to: data.phoneNumber,

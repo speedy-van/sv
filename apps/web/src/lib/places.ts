@@ -3,6 +3,7 @@ import {
   PlacesIndexSchema,
   UkPlace,
 } from '@/data/places.schema';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export type UkPlaceType = 'city' | 'town' | 'village' | 'borough' | 'district' | 'neighbourhood';
 
@@ -238,9 +239,9 @@ function _getNearbyPlacesFromDB(
 
 export function canonicalFor(place: UkPlace): string {
   if ((place as any).population && (place as any).population < 10000 && (place as any).parentSlug) {
-    return `https://speedy-van.co.uk/uk/${(place as any).parentSlug}`;
+    return `${APP_BASE_URL}/uk/${(place as any).parentSlug}`;
   }
-  return `https://speedy-van.co.uk/uk/${place.slug}`;
+  return `${APP_BASE_URL}/uk/${place.slug}`;
 }
 
 export function routeSlug(from: UkPlace, to: UkPlace) {

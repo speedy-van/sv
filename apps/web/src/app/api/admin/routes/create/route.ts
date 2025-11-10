@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { createUniqueReference } from '@/lib/ref';
 
@@ -43,19 +44,29 @@ async function getOrCreateSystemDriver() {
   }
 }
 
+const createRouteSchema = z.object({
+  bookingIds: z.array(z.string().min(1)).min(1),
+  driverId: z.string().min(1).optional(),
+  startTime: z.string().datetime().optional(),
+  isAutomatic: z.boolean().optional(),
+});
+
 export async function POST(request: NextRequest) {
   try {
     console.log('📦 [Create Route] Starting route creation...');
-    const body = await request.json();
-    const { bookingIds, driverId } = body;
-    console.log('📦 [Create Route] Received:', { bookingIds, driverId });
+    const json = await request.json();
+    const parsed = createRouteSchema.safeParse(json);
 
-    if (!bookingIds || !Array.isArray(bookingIds) || bookingIds.length === 0) {
+    if (!parsed.success) {
+      console.error('❌ [Create Route] Validation failed:', parsed.error.flatten());
       return NextResponse.json(
-        { success: false, error: 'bookingIds array is required' },
+        { success: false, error: 'Invalid payload', issues: parsed.error.flatten() },
         { status: 400 }
       );
     }
+
+    const { bookingIds, driverId, startTime, isAutomatic } = parsed.data;
+    console.log('📦 [Create Route] Received:', { bookingIds, driverId });
 
     // Get bookings - accept CONFIRMED, DRAFT, and PENDING_PAYMENT
     console.log('📦 [Create Route] Fetching bookings...');
@@ -69,6 +80,7 @@ export async function POST(request: NextRequest) {
         pickupAddress: true,
         dropoffAddress: true,
         BookingItem: true,
+        customer: { select: { id: true } },
       },
     });
 
@@ -81,25 +93,57 @@ export async function POST(request: NextRequest) {
 
     console.log(`📦 [Create Route] Found ${bookings.length} bookings to assign to route`);
 
+    // Ensure each booking has required relational data
+    const invalidBookings: string[] = [];
+    const sanitizedBookings = bookings.filter((booking) => {
+      if (!booking.customer?.id) {
+        console.warn(`⚠️ [Create Route] Booking ${booking.id} missing customerId`);
+        invalidBookings.push(`${booking.reference || booking.id}: missing customer`);
+        return false;
+      }
+      if (!booking.pickupAddress || !booking.dropoffAddress) {
+        console.warn(`⚠️ [Create Route] Booking ${booking.id} missing pickup/dropoff address`);
+        invalidBookings.push(`${booking.reference || booking.id}: missing address`);
+        return false;
+      }
+      if (!booking.scheduledAt) {
+        console.warn(`⚠️ [Create Route] Booking ${booking.id} missing scheduledAt`);
+        invalidBookings.push(`${booking.reference || booking.id}: missing scheduled time`);
+        return false;
+      }
+      return true;
+    });
+
+    if (sanitizedBookings.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No valid bookings available to create route',
+          details: invalidBookings,
+        },
+        { status: 400 }
+      );
+    }
+
     // Calculate simple route metrics from bookings (no complex pricing needed)
-    const totalValue = bookings.reduce((sum, b) => {
+    const totalValue = sanitizedBookings.reduce((sum, b) => {
       const value = Number(b.totalGBP || 0);
       return (Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER) ? sum + value : sum;
     }, 0);
     
     // Estimate distance based on bookings (8-10 miles per drop average)
     const estimatedDistancePerDrop = 8.5; // miles
-    const totalDistance = bookings.length * estimatedDistancePerDrop;
+    const totalDistance = sanitizedBookings.length * estimatedDistancePerDrop;
     
     // Estimate duration (30-45 mins per drop)
     const estimatedDurationPerDrop = 35; // minutes
-    const totalDuration = bookings.length * estimatedDurationPerDrop;
+    const totalDuration = sanitizedBookings.length * estimatedDurationPerDrop;
     
     console.log(`📊 [Create Route] Route metrics:`, { 
       totalValue, 
       totalDistance: `${totalDistance} miles`, 
       totalDuration: `${totalDuration} mins`,
-      bookingsCount: bookings.length 
+      bookingsCount: sanitizedBookings.length 
     });
 
     // Validate driver exists if driverId provided
@@ -142,60 +186,63 @@ export async function POST(request: NextRequest) {
     const routeReference = await createUniqueReference('route');
     console.log(`📦 [Create Route] Generated reference: ${routeReference}`);
 
-    const route = await prisma.route.create({
-      data: {
-        reference: routeReference,
-        status: validatedDriverId ? 'assigned' : 'pending_assignment',
-        driverId: validatedDriverId, // Use validated driver ID
-        totalDrops: bookings.length,
-        completedDrops: 0,
-        startTime: new Date(),
-        optimizedDistanceKm: totalDistance * 1.609, // Convert miles to km
-        estimatedDuration: Math.round(totalDuration),
-        totalOutcome: totalValue,
-        adminNotes: `Auto-generated route from Smart Route Generator with ${bookings.length} bookings`,
-      },
+    const route = await prisma.$transaction(async (tx) => {
+      const newRoute = await tx.route.create({
+        data: {
+          reference: routeReference,
+          status: validatedDriverId ? 'assigned' : 'pending_assignment',
+          driverId: validatedDriverId,
+          totalDrops: sanitizedBookings.length,
+          completedDrops: 0,
+          startTime: startTime ? new Date(startTime) : new Date(),
+          optimizedDistanceKm: totalDistance * 1.609, // Convert miles to km
+          estimatedDuration: Math.round(totalDuration),
+          totalOutcome: totalValue,
+          adminNotes: `Auto-generated route from Smart Route Generator${Boolean(isAutomatic) ? ' [automatic]' : ''} with ${sanitizedBookings.length} bookings`,
+        },
+      });
+
+      console.log(`✅ [Create Route] Route created: ${newRoute.id}`);
+
+      for (let i = 0; i < sanitizedBookings.length; i++) {
+        const booking = sanitizedBookings[i];
+        const scheduledAt = booking.scheduledAt ?? new Date();
+
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: {
+            routeId: newRoute.id,
+            deliverySequence: i + 1,
+            orderType: sanitizedBookings.length > 1 ? 'multi-drop' : 'single',
+            status: 'CONFIRMED',
+          },
+        });
+
+        await tx.drop.create({
+          data: {
+            routeId: newRoute.id,
+            bookingId: booking.id,
+            customerId: booking.customer!.id,
+            pickupAddress: booking.pickupAddress
+              ? `${booking.pickupAddress.label}${booking.pickupAddress.postcode ? `, ${booking.pickupAddress.postcode}` : ''}`
+              : 'Unknown pickup',
+            deliveryAddress: booking.dropoffAddress
+              ? `${booking.dropoffAddress.label}${booking.dropoffAddress.postcode ? `, ${booking.dropoffAddress.postcode}` : ''}`
+              : 'Unknown dropoff',
+            timeWindowStart: scheduledAt,
+            timeWindowEnd: new Date(scheduledAt.getTime() + 4 * 60 * 60 * 1000),
+            quotedPrice: Number(booking.totalGBP || 0),
+            status: 'booked',
+          },
+        });
+
+        console.log(`  ✅ ${booking.reference || booking.id}: assigned to route`);
+      }
+
+      return newRoute;
     });
     
-    console.log(`✅ [Create Route] Route created: ${route.id}`);
-
-    // Update bookings - assign to route and update status
-    console.log(`📦 [Create Route] Assigning ${bookings.length} bookings to route...`);
-    
-    for (let i = 0; i < bookings.length; i++) {
-      const oldStatus = bookings[i].status;
-      const booking = bookings[i];
-      
-      // Update booking
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: {
-          routeId: route.id,
-          deliverySequence: i + 1,
-          orderType: bookings.length > 1 ? 'multi-drop' : 'single',
-          status: 'CONFIRMED', // Change PENDING_PAYMENT → CONFIRMED
-        },
-      });
-      
-      // Create Drop record for this booking
-      await prisma.drop.create({
-        data: {
-          routeId: route.id,
-          bookingId: booking.id,
-          customerId: booking.customerId!,
-          pickupAddress: `${booking.pickupAddress.label}, ${booking.pickupAddress.postcode}`,
-          deliveryAddress: `${booking.dropoffAddress.label}, ${booking.dropoffAddress.postcode}`,
-          timeWindowStart: booking.scheduledAt,
-          timeWindowEnd: new Date(booking.scheduledAt.getTime() + 4 * 60 * 60 * 1000), // 4 hours window
-          quotedPrice: Number(booking.totalGBP || 0),
-          status: 'booked',
-        },
-      });
-      
-      console.log(`  ✅ ${booking.reference}: ${oldStatus} → CONFIRMED + Drop created`);
-    }
-    
-    console.log(`✅ [Create Route] All ${bookings.length} bookings updated and Drop records created`);
+    console.log(`✅ [Create Route] All ${sanitizedBookings.length} bookings updated and Drop records created`);
 
     // If driver assigned, notify them
     if (validatedDriverId) {
@@ -223,6 +270,7 @@ export async function POST(request: NextRequest) {
             pickupAddress: true,
             dropoffAddress: true,
             BookingItem: true,
+            customer: { select: { id: true, name: true, email: true } },
           },
         },
       },

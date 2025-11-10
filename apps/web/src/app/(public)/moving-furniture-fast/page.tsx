@@ -5,8 +5,6 @@
  * Target keywords: "moving furniture fast", "urgent furniture delivery", "same day furniture moving"
  */
 
-// Force dynamic rendering to avoid build timeout
-export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 import { Metadata } from 'next';
@@ -18,12 +16,10 @@ import {
   VStack,
   HStack,
   SimpleGrid,
-  Icon,
   Button,
   Badge,
   List,
   ListItem,
-  ListIcon,
   Stat,
   StatLabel,
   StatNumber,
@@ -39,10 +35,19 @@ import {
 } from 'react-icons/fa';
 import QuickBookingWidget from '@/components/booking/QuickBookingWidget';
 import { BUSINESS_INFO } from '@/config/seo';
+import {
+  APP_BASE_URL,
+  BRAND_NAME,
+  SUPPORT_PHONE,
+  SUPPORT_PHONE_E164,
+} from '@/lib/seo/constants';
+
+const canonicalUrl = `${APP_BASE_URL}/moving-furniture-fast`;
 
 export const metadata: Metadata = {
-  title: 'Moving Furniture Fast - Same Day Service in 2-4 Hours | Speedy Van',
-  description: 'Need furniture moved urgently? Book now for same-day delivery in 2-4 hours. Professional movers, real-time tracking, fully insured. From £25. Available 24/7.',
+  title: `Moving Furniture Fast - Same Day Service in 2-4 Hours | ${BRAND_NAME}`,
+  description:
+    'Need furniture moved urgently? Book now for same-day delivery in 2-4 hours. Professional movers, real-time tracking, fully insured. From £25. Available 24/7.',
   keywords: [
     'moving furniture fast',
     'urgent furniture delivery',
@@ -53,49 +58,63 @@ export const metadata: Metadata = {
     'fast furniture transport',
     '24 hour furniture delivery',
   ],
+  alternates: { canonical: canonicalUrl },
   openGraph: {
-    title: 'Moving Furniture Fast - Same Day Service in 2-4 Hours',
-    description: 'Urgent furniture delivery across Scotland. Professional movers ready now. Book in 60 seconds.',
+    title: `Moving Furniture Fast - Same Day Service in 2-4 Hours | ${BRAND_NAME}`,
+    description:
+      'Urgent furniture delivery across Scotland. Professional movers ready now. Book in 60 seconds.',
     type: 'website',
     locale: 'en_GB',
+    url: canonicalUrl,
+    siteName: BRAND_NAME,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@speedyvan',
+    creator: '@speedyvan',
+    title: `Moving Furniture Fast - Same Day Service in 2-4 Hours | ${BRAND_NAME}`,
+    description:
+      'Urgent furniture delivery across Scotland. Professional movers ready now. Book in 60 seconds.',
   },
 };
 
 export default function MovingFurnitureFastPage() {
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Fast Furniture Moving Service',
+    description: 'Same-day furniture moving and delivery service across Scotland',
+    provider: {
+      '@type': 'LocalBusiness',
+      name: BRAND_NAME,
+      telephone: SUPPORT_PHONE_E164,
+      priceRange: '££',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'United Kingdom',
+    },
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: canonicalUrl,
+      availableLanguage: 'en',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '25',
+      priceCurrency: 'GBP',
+      availability: 'https://schema.org/InStock',
+      validFrom: new Date().toISOString(),
+    },
+  };
+
   return (
     <>
       {/* Schema.org markup */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'Fast Furniture Moving Service',
-            description: 'Same-day furniture moving and delivery service across Scotland',
-            provider: {
-              '@type': 'LocalBusiness',
-              name: BUSINESS_INFO.name,
-              telephone: BUSINESS_INFO.contact.phone,
-              priceRange: '££',
-            },
-            areaServed: {
-              '@type': 'Country',
-              name: 'United Kingdom',
-            },
-            availableChannel: {
-              '@type': 'ServiceChannel',
-              serviceUrl: 'https://speedy-van.co.uk/moving-furniture-fast',
-              availableLanguage: 'en',
-            },
-            offers: {
-              '@type': 'Offer',
-              price: '25',
-              priceCurrency: 'GBP',
-              availability: 'https://schema.org/InStock',
-              validFrom: new Date().toISOString(),
-            },
-          }),
+          __html: JSON.stringify(serviceSchema),
         }}
       />
 
@@ -149,13 +168,13 @@ export default function MovingFurnitureFastPage() {
               <HStack spacing={4}>
                 <Button
                   as="a"
-                  href="tel:+441202129746"
+                  href={`tel:${SUPPORT_PHONE_E164}`}
                   size="lg"
                   colorScheme="whiteAlpha"
                   leftIcon={<FaPhone />}
                   animation="shake 0.5s infinite"
                 >
-                  Call Now - Urgent
+                  Call Now - Urgent {SUPPORT_PHONE && `(${SUPPORT_PHONE})`}
                 </Button>
                 <Button
                   as="a"
@@ -216,7 +235,7 @@ export default function MovingFurnitureFastPage() {
                 title: 'Live Support',
                 description: 'Track your delivery in real-time and contact us anytime during the move.',
               },
-            ].map((feature, index) => (
+            ].map(({ icon: IconComponent, title, description }, index) => (
               <VStack
                 key={index}
                 p={6}
@@ -227,9 +246,11 @@ export default function MovingFurnitureFastPage() {
                 borderLeft="4px solid"
                 borderColor="red.500"
               >
-                <Icon as={feature.icon} boxSize={10} color="red.500" />
-                <Heading size="md">{feature.title}</Heading>
-                <Text color="gray.700">{feature.description}</Text>
+                <Box color="red.500" fontSize="3xl">
+                  <IconComponent />
+                </Box>
+                <Heading size="md">{title}</Heading>
+                <Text color="gray.700">{description}</Text>
               </VStack>
             ))}
           </SimpleGrid>
@@ -310,14 +331,14 @@ export default function MovingFurnitureFastPage() {
           <HStack justify="center" spacing={4}>
             <Button
               as="a"
-              href="tel:+441202129746"
+              href={`tel:${SUPPORT_PHONE_E164}`}
               size="lg"
               colorScheme="whiteAlpha"
               leftIcon={<FaPhone />}
               px={12}
               py={7}
             >
-              Call Now
+              Call Now {SUPPORT_PHONE && `(${SUPPORT_PHONE})`}
             </Button>
             <Button
               as="a"

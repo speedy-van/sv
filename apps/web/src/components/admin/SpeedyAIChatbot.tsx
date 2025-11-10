@@ -19,6 +19,8 @@ import {
   Flex,
   Divider,
   Textarea,
+  SimpleGrid,
+  Tag,
   useColorModeValue,
 } from '@chakra-ui/react';
 import {
@@ -78,6 +80,75 @@ interface Message {
   copied?: boolean;
 }
 
+interface LiveStatsSummary {
+  text: string;
+  generatedAt: string;
+  metrics: {
+    totalOrders: number;
+    activeOrders: number;
+    pendingOrders: number;
+    oldUnassigned: number;
+    totalDrivers: number;
+    activeDrivers: number;
+    driverUtilizationRate: number;
+    activeRoutes: number;
+    todayRevenue: number;
+    averageDailyRevenue: number;
+    revenueVsAverage: number;
+    bookingsLast24h: number;
+  };
+  alerts: string[];
+}
+
+interface DriverAvailabilitySummary {
+  text: string;
+  generatedAt: string;
+  drivers: Array<{
+    id: string;
+    name: string;
+    phone?: string | null;
+    activeJobs: number;
+    status: 'free' | 'busy' | 'full';
+    recommendation: 'BEST' | 'OK' | 'AVOID';
+    nextJobTime?: string | null;
+    nextJobDisplay?: string | null;
+  }>;
+}
+
+interface PredictiveAnalyticsSummary {
+  text: string;
+  generatedAt: string;
+  avgDailyRevenue: number;
+  avgDailyOrders: number;
+  projectedMonthRevenue: number;
+  projectedMonthOrders: number;
+  demandTrend: 'increasing' | 'decreasing';
+  todayOrders: number;
+}
+
+interface ProactiveSuggestionsSummary {
+  text: string;
+  generatedAt: string;
+  suggestions: string[];
+  isClear: boolean;
+}
+
+interface AssistantMetadata {
+  requestId: string;
+  language: 'en' | 'ar';
+  references: {
+    orders: string[];
+    routes: string[];
+  };
+  historyCount: number;
+  contextualHelp?: string;
+  liveStats?: LiveStatsSummary;
+  driverAvailability?: DriverAvailabilitySummary;
+  predictiveAnalytics?: PredictiveAnalyticsSummary;
+  proactiveSuggestions?: ProactiveSuggestionsSummary;
+  processingTimeMs?: number;
+}
+
 interface SpeedyAIChatbotProps {
   isOpen?: boolean;
   onClose?: () => void;
@@ -104,6 +175,7 @@ export default function SpeedyAIChatbot({
   const [showExamples, setShowExamples] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount, setNotificationCount] = useState(0);
+  const [assistantInsights, setAssistantInsights] = useState<AssistantMetadata | null>(null);
   
   // All refs - must be called unconditionally
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -176,30 +248,35 @@ export default function SpeedyAIChatbot({
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
+    const sanitizedMessage = inputMessage.trim();
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputMessage.trim(),
+      content: sanitizedMessage,
       timestamp: new Date(),
       language,
     };
 
+    const conversationPayload = [...messages, userMessage].map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      message: msg.content,
+    }));
+
     setMessages((prev) => [...prev, userMessage]);
-    const messageToSend = inputMessage.trim();
     setInputMessage('');
     setIsLoading(true);
+    setShowSuggestions(false);
+    setAssistantInsights(null);
 
-    // ✅ Feature 5: Streaming Response (placeholder for future enhancement)
-    // Create temporary assistant message that will be updated with streamed content
     const streamingMessageId = (Date.now() + 1).toString();
     const streamingMessage: Message = {
       id: streamingMessageId,
       role: 'assistant',
-      content: '', // Will be filled gradually
+      content: '',
       timestamp: new Date(),
       language,
     };
-    
     setMessages((prev) => [...prev, streamingMessage]);
 
     try {
@@ -209,57 +286,128 @@ export default function SpeedyAIChatbot({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: messageToSend,
-          conversationHistory: messages.map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          })),
+          message: sanitizedMessage,
+          conversationHistory: conversationPayload,
           language,
+          mode: 'stream',
         }),
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         throw new Error('Failed to get AI response');
       }
 
-      const result = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let aggregatedResponse = '';
+      let finalMetadata: AssistantMetadata | null = null;
+      let finalLanguage: 'en' | 'ar' = language;
 
-      if (result.success) {
-        // ✅ Simulate streaming effect (can be enhanced with real SSE in future)
-        const fullResponse = result.response;
-        const words = fullResponse.split(' ');
-        let currentContent = '';
-        
-        // Update message word by word for streaming effect
-        for (let i = 0; i < words.length; i++) {
-          currentContent += (i > 0 ? ' ' : '') + words[i];
-          setMessages((prev) => 
-            prev.map(msg => 
-              msg.id === streamingMessageId 
-                ? { ...msg, content: currentContent, language: result.language || language }
-                : msg
-            )
-          );
-          
-          // Small delay between words for visual effect
-          if (i < words.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 30));
+      const applyContentUpdate = (content: string) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === streamingMessageId
+              ? { ...msg, content, language: finalLanguage }
+              : msg
+          )
+        );
+      };
+
+      const processLine = (line: string) => {
+        if (!line) return;
+
+        let payload: { event: string; data: any };
+        try {
+          payload = JSON.parse(line);
+        } catch (err) {
+          console.warn('Failed to parse stream chunk', err);
+          return;
+        }
+
+        switch (payload.event) {
+          case 'token': {
+            const token = typeof payload.data === 'string' ? payload.data : '';
+            if (token) {
+              aggregatedResponse += token;
+              applyContentUpdate(aggregatedResponse);
+            }
+            break;
+          }
+          case 'final': {
+            const data = payload.data ?? {};
+            if (typeof data.response === 'string') {
+              aggregatedResponse = data.response;
+              applyContentUpdate(aggregatedResponse);
+            }
+            if (data.language === 'ar' || data.language === 'en') {
+              finalLanguage = data.language;
+              setLanguage(data.language);
+            }
+            if (data.metadata) {
+              finalMetadata = {
+                ...(data.metadata as AssistantMetadata),
+                processingTimeMs:
+                  typeof data.processingTimeMs === 'number'
+                    ? data.processingTimeMs
+                    : undefined,
+              };
+            }
+            break;
+          }
+          case 'error': {
+            const message =
+              typeof payload.data?.message === 'string'
+                ? payload.data.message
+                : language === 'ar'
+                ? 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.'
+                : 'Sorry, an error occurred. Please try again.';
+            throw new Error(message);
+          }
+          default:
+            break;
+        }
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.length > 0) {
+            processLine(line);
           }
         }
+      }
 
-        // Update language if changed
-        if (result.language && result.language !== language) {
-          setLanguage(result.language);
-        }
-      } else {
-        throw new Error(result.error || 'Failed to get response');
+      const remaining = buffer.trim();
+      if (remaining) {
+        processLine(remaining);
+      }
+
+      if (!aggregatedResponse) {
+        aggregatedResponse =
+          language === 'ar'
+            ? 'تمت معالجة الطلب بنجاح.'
+            : 'Request processed successfully.';
+        applyContentUpdate(aggregatedResponse);
+      }
+
+      if (finalMetadata) {
+        setAssistantInsights(finalMetadata);
       }
     } catch (error: any) {
       console.error('Chat error:', error);
-      
-      const errorMessage = language === 'ar'
-        ? 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.'
-        : 'Sorry, an error occurred. Please try again.';
+
+      const errorMessage =
+        error?.message ||
+        (language === 'ar'
+          ? 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.'
+          : 'Sorry, an error occurred. Please try again.');
 
       toast({
         title: language === 'ar' ? 'خطأ' : 'Error',
@@ -269,12 +417,10 @@ export default function SpeedyAIChatbot({
         isClosable: true,
       });
 
-      // Update streaming message with error
-      const errorMsg = getErrorMessage(error);
-      setMessages((prev) => 
-        prev.map(msg => 
-          msg.id === streamingMessageId 
-            ? { ...msg, content: errorMsg.content }
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === streamingMessageId
+            ? { ...msg, content: errorMessage }
             : msg
         )
       );
@@ -323,6 +469,7 @@ export default function SpeedyAIChatbot({
   const handleClearChat = () => {
     setMessages([]);
     setInputMessage('');
+    setAssistantInsights(null);
   };
 
   // ✅ NEW: Handle quick action click
@@ -448,6 +595,284 @@ export default function SpeedyAIChatbot({
     
     return () => clearInterval(interval);
   }, []);
+
+  const renderInsightsPanel = (metadata: AssistantMetadata) => {
+    const isArabic = language === 'ar';
+    const stats = metadata.liveStats?.metrics;
+    const driverEntries = metadata.driverAvailability?.drivers ?? [];
+    const predictive = metadata.predictiveAnalytics;
+    const suggestions = metadata.proactiveSuggestions;
+
+    const metricCard = (label: string, value: string, accentColor = '#f9fafb') => (
+      <Box
+        key={label}
+        p={3}
+        borderRadius="md"
+        bg="rgba(15, 118, 255, 0.08)"
+        border="1px solid rgba(37, 99, 235, 0.15)"
+      >
+        <Text fontSize="xs" color="#9ca3af" fontWeight="semibold">
+          {label}
+        </Text>
+        <Text fontSize="md" fontWeight="bold" color={accentColor} mt={1}>
+          {value}
+        </Text>
+      </Box>
+    );
+
+    const statusLabels = isArabic
+      ? { free: 'متاح', busy: 'مشغول', full: 'ممتلئ' }
+      : { free: 'Free', busy: 'Busy', full: 'Full' };
+    const recommendationLabels = isArabic
+      ? { BEST: 'الأفضل', OK: 'مناسب', AVOID: 'تجنّب' }
+      : { BEST: 'BEST', OK: 'OK', AVOID: 'Avoid' };
+
+    return (
+      <VStack align="stretch" spacing={4}>
+        <HStack justify="space-between" align="center">
+          <HStack spacing={3}>
+            <Text fontSize="sm" fontWeight="bold" color="#60a5fa" letterSpacing="0.5px">
+              {isArabic ? 'رؤى فورية' : 'Real-Time Insights'}
+            </Text>
+            <Badge bg="rgba(96, 165, 250, 0.18)" color="#bfdbfe" borderRadius="md" px={2} py={1}>
+              #{metadata.requestId.slice(0, 8).toUpperCase()}
+            </Badge>
+            {typeof metadata.processingTimeMs === 'number' && (
+              <Badge bg="rgba(16, 185, 129, 0.15)" color="#a7f3d0" borderRadius="md" px={2} py={1}>
+                {isArabic
+                  ? `${metadata.processingTimeMs} مللي ثانية`
+                  : `${metadata.processingTimeMs} ms`}
+              </Badge>
+            )}
+          </HStack>
+          <Button
+            size="xs"
+            variant="ghost"
+            color="#9ca3af"
+            _hover={{ color: '#f9fafb' }}
+            onClick={() => setAssistantInsights(null)}
+          >
+            {isArabic ? 'إخفاء' : 'Hide'}
+          </Button>
+        </HStack>
+
+        {metadata.references && (metadata.references.orders.length > 0 || metadata.references.routes.length > 0) && (
+          <Box
+            bg="rgba(37, 99, 235, 0.08)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(37, 99, 235, 0.2)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#60a5fa" mb={2}>
+              {isArabic ? 'مراجع ذات صلة' : 'Relevant References'}
+            </Text>
+            <HStack spacing={2} flexWrap="wrap">
+              {metadata.references.orders.map((ref) => (
+                <Tag key={`order-${ref}`} size="sm" variant="subtle" colorScheme="blue">
+                  {isArabic ? `طلب ${ref}` : `Order ${ref}`}
+                </Tag>
+              ))}
+              {metadata.references.routes.map((ref) => (
+                <Tag key={`route-${ref}`} size="sm" variant="subtle" colorScheme="purple">
+                  {isArabic ? `مسار ${ref}` : `Route ${ref}`}
+                </Tag>
+              ))}
+            </HStack>
+          </Box>
+        )}
+
+        {metadata.contextualHelp && (
+          <Box
+            bg="rgba(16, 185, 129, 0.1)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(16, 185, 129, 0.2)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#34d399" mb={2}>
+              {isArabic ? 'من قاعدة المعرفة' : 'Knowledge Base'}
+            </Text>
+            <Text fontSize="sm" color="#d1d5db" whiteSpace="pre-wrap">
+              {metadata.contextualHelp}
+            </Text>
+          </Box>
+        )}
+
+        {stats && (
+          <Box
+            bg="rgba(37, 99, 235, 0.05)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(37, 99, 235, 0.15)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#60a5fa" mb={3}>
+              {isArabic ? 'نظرة عامة على النظام' : 'System Snapshot'}
+            </Text>
+            <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
+              {metricCard(isArabic ? 'إجمالي الطلبات' : 'Total Orders', stats.totalOrders.toString())}
+              {metricCard(isArabic ? 'الطلبات النشطة' : 'Active Orders', stats.activeOrders.toString())}
+              {metricCard(
+                isArabic ? 'بانتظار التعيين' : 'Pending Assignment',
+                stats.pendingOrders.toString(),
+                stats.pendingOrders > 0 ? '#facc15' : '#f9fafb'
+              )}
+              {metricCard(
+                isArabic ? 'غير المعيّنة (>2 س)' : 'Unassigned >2h',
+                stats.oldUnassigned.toString(),
+                stats.oldUnassigned > 0 ? '#f87171' : '#34d399'
+              )}
+              {metricCard(
+                isArabic ? 'توافر السائقين' : 'Driver Utilization',
+                `${stats.driverUtilizationRate.toFixed(1)}%`,
+                stats.driverUtilizationRate < 40 ? '#f97316' : '#34d399'
+              )}
+              {metricCard(
+                isArabic ? 'إيراد اليوم' : 'Today’s Revenue',
+                `£${stats.todayRevenue.toFixed(2)}`
+              )}
+              {metricCard(
+                isArabic ? 'مقارنة بالمتوسط' : 'Vs Average',
+                `${stats.revenueVsAverage.toFixed(1)}%`,
+                stats.revenueVsAverage < 0 ? '#f87171' : '#34d399'
+              )}
+              {metricCard(
+                isArabic ? 'المسارات النشطة' : 'Active Routes',
+                stats.activeRoutes.toString()
+              )}
+              {metricCard(
+                isArabic ? 'طلبات 24 ساعة' : 'Orders (24h)',
+                stats.bookingsLast24h.toString()
+              )}
+            </SimpleGrid>
+            {metadata.liveStats?.alerts?.length ? (
+              <VStack align="stretch" spacing={1} mt={3}>
+                {metadata.liveStats.alerts.map((alert, idx) => (
+                  <Text key={idx} fontSize="xs" color="#fbbf24">
+                    {alert}
+                  </Text>
+                ))}
+              </VStack>
+            ) : null}
+          </Box>
+        )}
+
+        {driverEntries.length > 0 && (
+          <Box
+            bg="rgba(255, 255, 255, 0.03)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(148, 163, 184, 0.15)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#e5e7eb" mb={2}>
+              {isArabic ? 'أفضل السائقين المتاحين' : 'Top Available Drivers'}
+            </Text>
+            <VStack align="stretch" spacing={2}>
+              {driverEntries.slice(0, 5).map((driver) => (
+                <HStack
+                  key={driver.id}
+                  justify="space-between"
+                  align="flex-start"
+                  bg="rgba(37, 99, 235, 0.08)"
+                  borderRadius="md"
+                  p={2}
+                  border="1px solid rgba(37, 99, 235, 0.15)"
+                >
+                  <VStack align="start" spacing={0}>
+                    <Text fontSize="sm" color="#f9fafb" fontWeight="semibold">
+                      {driver.name || (isArabic ? 'غير معروف' : 'Unknown')}
+                    </Text>
+                    <Text fontSize="xs" color="#9ca3af">
+                      {isArabic
+                        ? `وظائف نشطة: ${driver.activeJobs}${driver.nextJobDisplay ? `، القادم ${driver.nextJobDisplay}` : ''}`
+                        : `Active: ${driver.activeJobs}${driver.nextJobDisplay ? `, next @${driver.nextJobDisplay}` : ''}`}
+                    </Text>
+                  </VStack>
+                  <VStack align="end" spacing={1}>
+                    <Badge colorScheme={driver.status === 'free' ? 'green' : driver.status === 'busy' ? 'yellow' : 'red'}>
+                      {statusLabels[driver.status]}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      colorScheme={driver.recommendation === 'BEST' ? 'green' : driver.recommendation === 'OK' ? 'yellow' : 'red'}
+                    >
+                      {recommendationLabels[driver.recommendation]}
+                    </Badge>
+                  </VStack>
+                </HStack>
+              ))}
+            </VStack>
+          </Box>
+        )}
+
+        {predictive && (
+          <Box
+            bg="rgba(59, 130, 246, 0.08)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(59, 130, 246, 0.2)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#60a5fa" mb={2}>
+              {isArabic ? 'توقعات الأداء' : 'Performance Forecast'}
+            </Text>
+            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3}>
+              {metricCard(
+                isArabic ? 'متوسط الإيرادات اليومية' : 'Avg Daily Revenue',
+                `£${predictive.avgDailyRevenue.toFixed(2)}`
+              )}
+              {metricCard(
+                isArabic ? 'متوسط الطلبات اليومية' : 'Avg Daily Orders',
+                predictive.avgDailyOrders.toFixed(1).toString()
+              )}
+              {metricCard(
+                isArabic ? 'توقع نهاية الشهر' : 'Month Projection',
+                `£${predictive.projectedMonthRevenue.toFixed(2)}`
+              )}
+              {metricCard(
+                isArabic ? 'طلبات اليوم' : 'Today’s Orders',
+                predictive.todayOrders.toString()
+              )}
+              {metricCard(
+                isArabic ? 'الاتجاه' : 'Trend',
+                predictive.demandTrend === 'increasing'
+                  ? (isArabic ? '📈 تصاعدي' : '📈 Increasing')
+                  : (isArabic ? '📉 تنازلي' : '📉 Decreasing'),
+                predictive.demandTrend === 'increasing' ? '#34d399' : '#f87171'
+              )}
+              {metricCard(
+                isArabic ? 'إيراد متوقع (30 يوم)' : 'Projected Orders',
+                predictive.projectedMonthOrders.toString()
+              )}
+            </SimpleGrid>
+          </Box>
+        )}
+
+        {suggestions && (
+          <Box
+            bg="rgba(253, 224, 71, 0.08)"
+            borderRadius="md"
+            p={3}
+            border="1px solid rgba(253, 224, 71, 0.2)"
+          >
+            <Text fontSize="xs" fontWeight="semibold" color="#facc15" mb={2}>
+              {isArabic ? 'اقتراحات استباقية' : 'Proactive Suggestions'}
+            </Text>
+            {suggestions.suggestions.length > 0 ? (
+              <VStack align="stretch" spacing={1}>
+                {suggestions.suggestions.map((item, idx) => (
+                  <Text key={idx} fontSize="sm" color="#f9fafb">
+                    • {item}
+                  </Text>
+                ))}
+              </VStack>
+            ) : (
+              <Text fontSize="sm" color="#d1d5db">
+                {isArabic ? 'لا توجد مشاكل عاجلة حالياً.' : 'No urgent issues at the moment.'}
+              </Text>
+            )}
+          </Box>
+        )}
+      </VStack>
+    );
+  };
 
   // Render content based on state - no early returns to ensure hooks are always called in same order
   if (!isOpen) {
@@ -1244,6 +1669,17 @@ export default function SpeedyAIChatbot({
           <div ref={messagesEndRef} />
         </VStack>
       </Box>
+
+      {assistantInsights && (
+        <CardBody
+          p={4}
+          borderTop="1px solid"
+          borderColor={borderColor}
+          bg="rgba(15, 23, 42, 0.6)"
+        >
+          {renderInsightsPanel(assistantInsights)}
+        </CardBody>
+      )}
 
       {/* Input */}
       <CardBody 

@@ -806,6 +806,15 @@ export async function POST(request: NextRequest) {
       // Don't fail the booking if notification fails
     }
 
+    // IMPORTANT: Do NOT send email here - it will be sent after payment confirmation via webhook
+    // This ensures the email contains the correct final price from Stripe
+    console.log('ℹ️ Email will be sent after payment confirmation via webhook');
+    console.log('💰 Initial booking total (will be updated by checkout session):', {
+      reference: booking.reference,
+      currentTotal: booking.totalGBP,
+      note: 'Final price will be set by create-checkout-session endpoint'
+    });
+
     // Return the created booking with all details
     return NextResponse.json({
       success: true,

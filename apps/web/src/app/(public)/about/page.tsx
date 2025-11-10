@@ -22,9 +22,7 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { JsonLd } from './metadata';
-import AnalyticsClient from './AnalyticsClient';
-import { parseConsentCookie } from '@/lib/consent';
-import { cookies } from 'next/headers';
+import AnalyticsConsentGate from './AnalyticsConsentGate';
 import HeaderButton from '@/components/common/HeaderButton';
 import { ROUTES } from '@/lib/routing';
 
@@ -49,15 +47,10 @@ export const metadata: Metadata = buildMetadata({
   alternates: { canonical: '/about' },
 });
 
-// Force dynamic rendering (fixes DYNAMIC_SERVER_USAGE error)
-export const dynamic = 'force-dynamic';
-
-export default async function AboutPage() {
-  const cookieStore = await cookies();
-  const consent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
+export default function AboutPage() {
   return (
     <Container maxW="6xl" py={{ base: 8, md: 14 }}>
-      {consent && consent.preferences?.analytics && <AnalyticsClient />}
+      <AnalyticsConsentGate />
       <JsonLd />
       {/* Hero */}
       <VStack spacing={4} align="start">

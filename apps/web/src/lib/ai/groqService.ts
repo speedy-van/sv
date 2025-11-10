@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk';
+import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 import { ADMIN_KNOWLEDGE_BASE, getContextualHelp } from './admin-knowledge-base';
 
@@ -28,6 +29,85 @@ interface AdminIssue {
   type: 'order' | 'driver' | 'customer' | 'payment' | 'route' | 'system' | 'general';
   description?: string;
   context?: any;
+}
+
+interface LiveSystemStatsResult {
+  text: string;
+  generatedAt: string;
+  metrics: {
+    totalOrders: number;
+    activeOrders: number;
+    pendingOrders: number;
+    oldUnassigned: number;
+    totalDrivers: number;
+    activeDrivers: number;
+    driverUtilizationRate: number;
+    activeRoutes: number;
+    todayRevenue: number;
+    averageDailyRevenue: number;
+    revenueVsAverage: number;
+    bookingsLast24h: number;
+  };
+  alerts: string[];
+}
+
+interface DriverAvailabilityEntry {
+  id: string;
+  name: string;
+  phone?: string | null;
+  activeJobs: number;
+  status: 'free' | 'busy' | 'full';
+  recommendation: 'BEST' | 'OK' | 'AVOID';
+  nextJobTime?: string | null;
+  nextJobDisplay?: string | null;
+}
+
+interface DriverAvailabilityResult {
+  text: string;
+  generatedAt: string;
+  drivers: DriverAvailabilityEntry[];
+}
+
+interface PredictiveAnalyticsResult {
+  text: string;
+  generatedAt: string;
+  avgDailyRevenue: number;
+  avgDailyOrders: number;
+  projectedMonthRevenue: number;
+  projectedMonthOrders: number;
+  demandTrend: 'increasing' | 'decreasing';
+  todayOrders: number;
+}
+
+interface ProactiveSuggestionsResult {
+  text: string;
+  generatedAt: string;
+  suggestions: string[];
+  isClear: boolean;
+}
+
+interface ChatMetadata {
+  requestId: string;
+  language: 'en' | 'ar';
+  references: {
+    orders: string[];
+    routes: string[];
+  };
+  historyCount: number;
+  contextualHelp?: string | null;
+  liveStats?: LiveSystemStatsResult;
+  driverAvailability?: DriverAvailabilityResult;
+  predictiveAnalytics?: PredictiveAnalyticsResult;
+  proactiveSuggestions?: ProactiveSuggestionsResult;
+}
+
+interface PreparedChatContext {
+  language: 'en' | 'ar';
+  optimizedMessages: ChatMessage[];
+  metadata: ChatMetadata;
+  conversationHistory: ChatMessage[];
+  adminContext: AdminContext;
+  issue?: AdminIssue;
 }
 
 class GroqService {
@@ -430,120 +510,160 @@ Available admin panel sections:
   }
 
   /**
+   * Prepare chat context, metadata, and optimized messages
+   */
+  private async prepareChatContext(
+    message: string,
+    adminContext: AdminContext,
+    conversationHistoryRaw: any[] = [],
+    issue?: AdminIssue
+  ): Promise<PreparedChatContext> {
+    const requestId = randomUUID();
+
+    const conversationHistory: ChatMessage[] = (conversationHistoryRaw || [])
+      .map((msg: any) => ({
+        role: (msg?.role === 'assistant' || msg?.role === 'system') ? msg.role : 'user',
+        content: typeof msg?.content === 'string' ? msg.content : (typeof msg?.message === 'string' ? msg.message : ''),
+      }))
+      .filter((msg): msg is ChatMessage => Boolean(msg.content && msg.content.trim()))
+      .slice(-50); // keep last 50 entries for safety
+
+    const detectedLanguage = this.detectLanguage(message);
+    const language = adminContext.language ?? detectedLanguage;
+
+    const references = this.extractReferences(message);
+    const needsStats = /\b(stats|statistics|status|overview|dashboard|how many|total|count|revenue)\b/i.test(message);
+    const needsDrivers = /\b(driver|assign|available|who can|recommend)\b/i.test(message);
+    const needsHelp = /\b(how|what|explain|guide|tutorial|workflow)\b/i.test(message);
+    const needsPredictions = /\b(forecast|predict|projection|trend|future|next month|revenue forecast)\b/i.test(message);
+    const needsSuggestions = /\b(suggest|recommend|should i|what to do|action|priority)\b/i.test(message);
+
+    let realDataContext = '';
+    let contextualHelp: string | null = null;
+
+    if (needsHelp) {
+      const help = getContextualHelp(message);
+      if (help) {
+        contextualHelp = help;
+        realDataContext += `\n📚 RELEVANT KNOWLEDGE:\n${help}\n`;
+      }
+    }
+
+    let predictiveAnalytics: PredictiveAnalyticsResult | undefined;
+    if (needsPredictions || needsStats) {
+      predictiveAnalytics = await this.getPredictiveAnalytics(language);
+      if (predictiveAnalytics?.text) {
+        realDataContext += predictiveAnalytics.text;
+      }
+    }
+
+    let proactiveSuggestions: ProactiveSuggestionsResult | undefined;
+    if (needsSuggestions || needsStats) {
+      proactiveSuggestions = await this.getProactiveSuggestions(language);
+      if (proactiveSuggestions?.text) {
+        realDataContext += proactiveSuggestions.text;
+      }
+    }
+
+    if (references.orders.length > 0) {
+      for (const orderRef of references.orders.slice(0, 3)) {
+        const orderData = await this.fetchOrderDetails(orderRef);
+        if (orderData) {
+          realDataContext += this.formatOrderContext(orderData, language) + '\n';
+        }
+      }
+    }
+
+    if (references.routes.length > 0) {
+      for (const routeRef of references.routes.slice(0, 3)) {
+        const routeData = await this.fetchRouteDetails(routeRef);
+        if (routeData) {
+          realDataContext += this.formatRouteContext(routeData, language) + '\n';
+        }
+      }
+    }
+
+    let liveStats: LiveSystemStatsResult | undefined;
+    if (needsStats) {
+      liveStats = await this.getLiveSystemStats(language);
+      if (liveStats?.text) {
+        realDataContext += liveStats.text;
+      }
+    }
+
+    let driverAvailability: DriverAvailabilityResult | undefined;
+    if (needsDrivers) {
+      driverAvailability = await this.getAvailableDriversContext(language);
+      if (driverAvailability?.text) {
+        realDataContext += driverAvailability.text;
+      }
+    }
+
+    const systemPrompt = this.systemPrompts[language];
+    const adminContextPrompt = this.getAdminContextPrompt(adminContext, issue);
+    const sectionsContext = this.getAdminSectionsContext(language);
+
+    const systemContent = `${systemPrompt}\n\n${adminContextPrompt}\n\n${sectionsContext}${realDataContext ? `\n\n🔥 REAL-TIME DATA:\n${realDataContext}` : ''}`;
+
+    const messages: ChatMessage[] = [
+      {
+        role: 'system',
+        content: systemContent,
+      },
+      ...conversationHistory,
+      {
+        role: 'user',
+        content: message,
+      },
+    ];
+
+    let optimizedMessages = messages;
+    if (conversationHistory.length > 10) {
+      optimizedMessages = await this.summarizeConversation(messages, language);
+    }
+
+    const metadata: ChatMetadata = {
+      requestId,
+      language,
+      references,
+      historyCount: conversationHistory.length,
+      contextualHelp: contextualHelp ?? undefined,
+      liveStats,
+      driverAvailability,
+      predictiveAnalytics,
+      proactiveSuggestions,
+    };
+
+    return {
+      language,
+      optimizedMessages,
+      metadata,
+      conversationHistory,
+      adminContext,
+      issue,
+    };
+  }
+
+  /**
    * Chat with Speedy AI - Enhanced with real-time data
    */
   async chat(
     message: string,
     adminContext: AdminContext,
-    conversationHistory: ChatMessage[] = [],
+    conversationHistory: any[] = [],
     issue?: AdminIssue
-  ): Promise<{ response: string; language: 'en' | 'ar'; error?: { type: string; message: string; timestamp: string } }> {
+  ): Promise<{ response: string; language: 'en' | 'ar'; metadata: ChatMetadata; error?: { type: string; message: string; timestamp: string } }> {
+    let metadata: ChatMetadata | undefined;
+    let resolvedLanguage: 'en' | 'ar' = adminContext.language ?? 'en';
     try {
-      // Detect language from message
-      const detectedLanguage = this.detectLanguage(message);
-      const language = adminContext.language || detectedLanguage;
-
-      // ✅ SMART: Extract order/route references from message
-      const references = this.extractReferences(message);
-      
-      // ✅ SMART: Check if message needs live stats
-      const needsStats = /\b(stats|statistics|status|overview|dashboard|how many|total|count|revenue)\b/i.test(message);
-      const needsDrivers = /\b(driver|assign|available|who can|recommend)\b/i.test(message);
-      const needsHelp = /\b(how|what|explain|guide|tutorial|workflow)\b/i.test(message);
-      const needsPredictions = /\b(forecast|predict|projection|trend|future|next month|revenue forecast)\b/i.test(message);
-      const needsSuggestions = /\b(suggest|recommend|should i|what to do|action|priority)\b/i.test(message);
-      
-      // ✅ SMART: Fetch real data if references found
-      let realDataContext = '';
-      
-      // ✅ SMART: Add contextual help if needed
-      if (needsHelp) {
-        const contextHelp = getContextualHelp(message);
-        if (contextHelp) {
-          realDataContext += `\n📚 RELEVANT KNOWLEDGE:\n${contextHelp}\n`;
-        }
-      }
-      
-      // ✅ NEW: Add predictive analytics if needed
-      if (needsPredictions || needsStats) {
-        console.log('📈 Adding predictive analytics');
-        realDataContext += await this.getPredictiveAnalytics(language);
-      }
-      
-      // ✅ NEW: Add proactive suggestions if needed
-      if (needsSuggestions || needsStats) {
-        console.log('🎯 Adding proactive suggestions');
-        realDataContext += await this.getProactiveSuggestions(language);
-      }
-      
-      if (references.orders.length > 0) {
-        console.log('🔍 Fetching order data:', references.orders);
-        for (const orderRef of references.orders.slice(0, 3)) { // Max 3 orders
-          const orderData = await this.fetchOrderDetails(orderRef);
-          if (orderData) {
-            realDataContext += this.formatOrderContext(orderData, language) + '\n';
-          }
-        }
-      }
-
-      if (references.routes.length > 0) {
-        console.log('🔍 Fetching route data:', references.routes);
-        for (const routeRef of references.routes.slice(0, 3)) { // Max 3 routes
-          const routeData = await this.fetchRouteDetails(routeRef);
-          if (routeData) {
-            realDataContext += this.formatRouteContext(routeData, language) + '\n';
-          }
-        }
-      }
-
-      // ✅ SMART: Add live stats if needed
-      if (needsStats) {
-        console.log('📊 Adding live system stats to context');
-        realDataContext += await this.getLiveSystemStats();
-      }
-
-      // ✅ SMART: Add available drivers if needed
-      if (needsDrivers) {
-        console.log('🚗 Adding available drivers to context');
-        realDataContext += await this.getAvailableDriversContext(language);
-      }
-
-      // Build system prompt
-      const systemPrompt = this.systemPrompts[language];
-      const adminContextPrompt = this.getAdminContextPrompt(adminContext, issue);
-      const sectionsContext = this.getAdminSectionsContext(language);
-
-      // Build messages array with real data context
-      const messages: ChatMessage[] = [
-        {
-          role: 'system',
-          content: `${systemPrompt}\n\n${adminContextPrompt}\n\n${sectionsContext}${realDataContext ? `\n\n🔥 REAL-TIME DATA:\n${realDataContext}` : ''}`,
-        },
-        ...conversationHistory,
-        {
-          role: 'user',
-          content: message,
-        },
-      ];
-
-      console.log('🤖 Calling Groq with enhanced context:', {
-        hasOrderData: references.orders.length > 0,
-        hasRouteData: references.routes.length > 0,
-        hasStats: needsStats,
-        hasDrivers: needsDrivers,
-        language,
-        contextLength: messages[0].content.length
-      });
+      const context = await this.prepareChatContext(message, adminContext, conversationHistory, issue);
+      const { language, optimizedMessages } = context;
+      metadata = context.metadata;
+      resolvedLanguage = language;
 
       // ✅ Validate API key before making request
       if (!GROQ_API_KEY_ADMIN) {
         throw new Error('GROQ_API_KEY not configured. Please set GROQ_API_KEY_ADMIN in environment variables.');
-      }
-
-      // ✅ Summarize conversation if too long (>10 messages)
-      let optimizedMessages = messages;
-      if (conversationHistory.length > 10) {
-        optimizedMessages = await this.summarizeConversation(messages, language);
       }
 
       // Call Groq API with enhanced prompt and increased capacity
@@ -560,19 +680,22 @@ Available admin panel sections:
 
       const response = completion.choices[0]?.message?.content || 'I apologize, I could not generate a response.';
 
-      console.log('✅ AI response generated successfully:', {
-        responseLength: response.length,
-        hasRealData: realDataContext.length > 0
-      });
-
       return {
         response,
-        language,
+        language: resolvedLanguage,
+        metadata,
       };
     } catch (error: any) {
       console.error('❌ Groq API error:', error);
-      
-      const lang = adminContext.language || 'en';
+      const lang = metadata?.language || adminContext.language || 'en';
+      const fallbackMetadata: ChatMetadata =
+        metadata ??
+        {
+          requestId: randomUUID(),
+          language: lang,
+          references: { orders: [], routes: [] },
+          historyCount: Array.isArray(conversationHistory) ? conversationHistory.length : 0,
+        };
       
       // ✅ ENHANCED: Detailed error messages for admins
       let errorMessage = '';
@@ -602,6 +725,7 @@ Available admin panel sections:
       return {
         response: errorMessage,
         language: lang,
+        metadata: fallbackMetadata,
         error: {
           type: error.name || 'UnknownError',
           message: error.message,
@@ -609,6 +733,54 @@ Available admin panel sections:
         }
       };
     }
+  }
+
+  /**
+   * Streaming chat variant that yields incremental tokens
+   */
+  async chatStream(
+    message: string,
+    adminContext: AdminContext,
+    conversationHistory: any[] = [],
+    issue?: AdminIssue
+  ): Promise<{ language: 'en' | 'ar'; metadata: ChatMetadata; stream: AsyncGenerator<string, void, unknown> }> {
+    const context = await this.prepareChatContext(message, adminContext, conversationHistory, issue);
+    const { language, optimizedMessages, metadata } = context;
+
+    if (!GROQ_API_KEY_ADMIN) {
+      throw new Error('GROQ_API_KEY not configured. Please set GROQ_API_KEY_ADMIN in environment variables.');
+    }
+
+    const completion = await this.client.chat.completions.create({
+      messages: optimizedMessages as any,
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 4096,
+      top_p: 0.95,
+      frequency_penalty: 0.4,
+      presence_penalty: 0.3,
+      stream: true,
+    });
+
+    const stream = (async function* (): AsyncGenerator<string, void, unknown> {
+      try {
+        for await (const part of completion as any) {
+          const delta = part?.choices?.[0]?.delta?.content ?? part?.choices?.[0]?.message?.content ?? '';
+          if (typeof delta === 'string' && delta.length > 0) {
+            yield delta;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Groq streaming error:', error);
+        throw error;
+      }
+    })();
+
+    return {
+      language,
+      metadata,
+      stream,
+    };
   }
 
   /**
@@ -667,7 +839,7 @@ Available admin panel sections:
   /**
    * ✅ ENHANCED: Get comprehensive system statistics + proactive alerts
    */
-  private async getLiveSystemStats(): Promise<string> {
+  private async getLiveSystemStats(language: 'en' | 'ar'): Promise<LiveSystemStatsResult | undefined> {
     try {
       const now = new Date();
       const today = new Date();
@@ -687,8 +859,7 @@ Available admin panel sections:
         todayRevenue,
         weekRevenue,
         oldUnassigned,
-        recentComplaints,
-        driverUtilization
+        bookingsLast24h,
       ] = await Promise.all([
         // Basic stats
         prisma.booking.count(),
@@ -724,88 +895,144 @@ Available admin panel sections:
           }
         }),
         
-        // Customer satisfaction
+        // Activity in last 24 hours
         prisma.booking.count({
           where: {
             createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-            // Could add complaint flag if available
           }
-        }),
-        
-        // Driver efficiency
-        prisma.driver.aggregate({
-          where: {
-            status: 'active',
-            onboardingStatus: 'approved'
-          },
-          _count: true
         })
       ]);
 
       // ✅ Calculate metrics
-      const avgDailyRevenue = ((weekRevenue._sum.totalGBP || 0) / 7 / 100);
-      const todayRevenueValue = ((todayRevenue._sum.totalGBP || 0) / 100);
-      const revenueVsAvg = avgDailyRevenue > 0 
-        ? ((todayRevenueValue - avgDailyRevenue) / avgDailyRevenue * 100).toFixed(1)
-        : '0';
-      
+      const avgDailyRevenue = (weekRevenue._sum.totalGBP ?? 0) / 7 / 100;
+      const todayRevenueValue = (todayRevenue._sum.totalGBP ?? 0) / 100;
+      const revenueVsAvg = avgDailyRevenue > 0
+        ? ((todayRevenueValue - avgDailyRevenue) / avgDailyRevenue) * 100
+        : 0;
+
       const driverUtilRate = totalDrivers > 0
-        ? ((activeDrivers / totalDrivers) * 100).toFixed(1)
-        : '0';
+        ? (activeDrivers / totalDrivers) * 100
+        : 0;
+
+      const metrics = {
+        totalOrders,
+        activeOrders,
+        pendingOrders,
+        oldUnassigned,
+        totalDrivers,
+        activeDrivers,
+        driverUtilizationRate: Number(driverUtilRate.toFixed(1)),
+        activeRoutes,
+        todayRevenue: Number(todayRevenueValue.toFixed(2)),
+        averageDailyRevenue: Number(avgDailyRevenue.toFixed(2)),
+        revenueVsAverage: Number(revenueVsAvg.toFixed(1)),
+        bookingsLast24h,
+      };
 
       // ✅ PROACTIVE ALERTS
       const alerts: string[] = [];
       
       if (oldUnassigned > 0) {
-        alerts.push(`⚠️ ALERT: ${oldUnassigned} orders unassigned for >2 hours! Action needed.`);
+        alerts.push(
+          language === 'ar'
+            ? `⚠️ تنبيه: ${oldUnassigned} طلب بدون سائق لأكثر من ساعتين.`
+            : `⚠️ ALERT: ${oldUnassigned} orders unassigned for >2 hours! Action needed.`
+        );
       }
       
       if (pendingOrders > 10) {
-        alerts.push(`📢 NOTICE: ${pendingOrders} orders pending assignment. Consider auto-routing.`);
+        alerts.push(
+          language === 'ar'
+            ? `📢 ملاحظة: هناك ${pendingOrders} طلب في انتظار التعيين. يُنصح باستخدام التوجيه التلقائي.`
+            : `📢 NOTICE: ${pendingOrders} orders pending assignment. Consider auto-routing.`
+        );
       }
       
       if (activeDrivers < 3 && pendingOrders > 5) {
-        alerts.push(`🚨 CRITICAL: Low driver availability (${activeDrivers} active) with ${pendingOrders} pending orders!`);
+        alerts.push(
+          language === 'ar'
+            ? `🚨 عاجل: توفر السائقين منخفض (${activeDrivers} متاح) مقابل ${pendingOrders} طلب قيد الانتظار!`
+            : `🚨 CRITICAL: Low driver availability (${activeDrivers} active) with ${pendingOrders} pending orders!`
+        );
       }
       
-      if (parseFloat(revenueVsAvg) < -30) {
-        alerts.push(`📉 REVENUE ALERT: Today's revenue ${revenueVsAvg}% below average. Review pricing/marketing.`);
+      if (revenueVsAvg < -30) {
+        alerts.push(
+          language === 'ar'
+            ? `📉 تنبيه الإيرادات: إيراد اليوم أقل من المتوسط بنسبة ${metrics.revenueVsAverage.toFixed(1)}%. راجع التسعير أو التسويق.`
+            : `📉 REVENUE ALERT: Today's revenue ${metrics.revenueVsAverage.toFixed(1)}% below average. Review pricing/marketing.`
+        );
       }
 
-      return `
+      const generatedAt = now.toISOString();
+      const englishText = `
 📊 Live System Stats (${now.toLocaleTimeString()}):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 ORDERS:
-  • Total: ${totalOrders} | Active: ${activeOrders}
-  • Pending Assignment: ${pendingOrders}
-  • ⚠️ Old Unassigned: ${oldUnassigned}
+  • Total: ${metrics.totalOrders} | Active: ${metrics.activeOrders}
+  • Pending Assignment: ${metrics.pendingOrders}
+  • ⚠️ Old Unassigned: ${metrics.oldUnassigned}
 
 🚗 DRIVERS:
-  • Total Approved: ${totalDrivers}
-  • Currently Active: ${activeDrivers}
-  • Utilization Rate: ${driverUtilRate}%
+  • Total Approved: ${metrics.totalDrivers}
+  • Currently Active: ${metrics.activeDrivers}
+  • Utilization Rate: ${metrics.driverUtilizationRate.toFixed(1)}%
 
 🛣️ ROUTES:
-  • Active Routes: ${activeRoutes}
+  • Active Routes: ${metrics.activeRoutes}
 
 💰 REVENUE:
-  • Today: £${todayRevenueValue.toFixed(2)}
-  • 7-Day Average: £${avgDailyRevenue.toFixed(2)}/day
-  • vs Average: ${revenueVsAvg}%
+  • Today: £${metrics.todayRevenue.toFixed(2)}
+  • 7-Day Average: £${metrics.averageDailyRevenue.toFixed(2)}/day
+  • vs Average: ${metrics.revenueVsAverage.toFixed(1)}%
 
+📅 Orders (24h): ${metrics.bookingsLast24h}
 ${alerts.length > 0 ? `\n🚨 PROACTIVE ALERTS:\n${alerts.join('\n')}\n` : ''}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
+
+      const arabicText = `
+📊 إحصائيات النظام (${now.toLocaleTimeString('ar-EG')}):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 الطلبات:
+  • الإجمالي: ${metrics.totalOrders} | النشطة: ${metrics.activeOrders}
+  • بانتظار التعيين: ${metrics.pendingOrders}
+  • ⚠️ غير المعيّنة لأكثر من ساعتين: ${metrics.oldUnassigned}
+
+🚗 السائقون:
+  • المعتمدون: ${metrics.totalDrivers}
+  • المتاحون حالياً: ${metrics.activeDrivers}
+  • معدل الاستغلال: ${metrics.driverUtilizationRate.toFixed(1)}%
+
+🛣️ المسارات:
+  • المسارات النشطة: ${metrics.activeRoutes}
+
+💰 الإيرادات:
+  • اليوم: £${metrics.todayRevenue.toFixed(2)}
+  • متوسط 7 أيام: £${metrics.averageDailyRevenue.toFixed(2)}/اليوم
+  • مقارنة بالمتوسط: ${metrics.revenueVsAverage.toFixed(1)}%
+
+📅 الطلبات خلال 24 ساعة: ${metrics.bookingsLast24h}
+${alerts.length > 0 ? `\n🚨 تنبيهات:\n${alerts.join('\n')}\n` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+      return {
+        text: language === 'ar' ? arabicText : englishText,
+        generatedAt,
+        metrics,
+        alerts,
+      };
     } catch (error) {
       console.error('Error fetching stats:', error);
-      return '';
+      return undefined;
     }
   }
 
   /**
    * ✅ ENHANCED: Get available drivers with performance metrics
    */
-  private async getAvailableDriversContext(language: 'en' | 'ar'): Promise<string> {
+  private async getAvailableDriversContext(language: 'en' | 'ar'): Promise<DriverAvailabilityResult | undefined> {
     try {
       const drivers = await prisma.driver.findMany({
         where: {
@@ -823,46 +1050,82 @@ ${alerts.length > 0 ? `\n🚨 PROACTIVE ALERTS:\n${alerts.join('\n')}\n` : ''}
         orderBy: { createdAt: 'desc' }
       });
 
-      const now = new Date();
-      
-      const driverList = drivers.map((d: any) => {
-        const activeJobs = d.Booking?.length || 0;
-        const nextJobTime = d.Booking?.[0]?.scheduledAt 
-          ? new Date(d.Booking[0].scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : 'N/A';
-        
-        const status = activeJobs === 0 ? '🟢 Free' : activeJobs < 2 ? '🟡 Busy' : '🔴 Full';
-        const recommendation = activeJobs === 0 ? '✅ BEST' : activeJobs < 2 ? '⚠️ OK' : '❌ Avoid';
-        
-        return `  ${recommendation} ${d.User?.name || 'Unknown'}: ${status} (${activeJobs} jobs${activeJobs > 0 ? `, next @${nextJobTime}` : ''})`;
-      }).join('\n');
+      const timeFormatter = new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+      const entries: DriverAvailabilityEntry[] = drivers.map((driver: any) => {
+        const activeJobs = driver.Booking?.length || 0;
+        const nextBooking = driver.Booking?.[0];
+        const nextJobDate = nextBooking?.scheduledAt ? new Date(nextBooking.scheduledAt) : undefined;
+        const status: DriverAvailabilityEntry['status'] =
+          activeJobs === 0 ? 'free' : activeJobs < 2 ? 'busy' : 'full';
+        const recommendation: DriverAvailabilityEntry['recommendation'] =
+          activeJobs === 0 ? 'BEST' : activeJobs < 2 ? 'OK' : 'AVOID';
 
-      if (language === 'ar') {
-        return `
-🚗 السائقون المتاحون (${drivers.length} سائق نشط):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${driverList}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`;
-      }
+        return {
+          id: driver.id,
+          name: driver.User?.name || 'Unknown',
+          phone: driver.User?.phone || null,
+          activeJobs,
+          status,
+          recommendation,
+          nextJobTime: nextJobDate ? nextJobDate.toISOString() : null,
+          nextJobDisplay: nextJobDate ? timeFormatter.format(nextJobDate) : null,
+        };
+      });
 
-      return `
-🚗 Available Drivers (${drivers.length} active):
+      const statusLabels =
+        language === 'ar'
+          ? { free: '🟢 متاح', busy: '🟡 مشغول', full: '🔴 ممتلئ' }
+          : { free: '🟢 Free', busy: '🟡 Busy', full: '🔴 Full' };
+
+      const recommendationLabels =
+        language === 'ar'
+          ? { BEST: '✅ الأفضل', OK: '⚠️ مناسب', AVOID: '❌ تجنّب' }
+          : { BEST: '✅ BEST', OK: '⚠️ OK', AVOID: '❌ Avoid' };
+
+      const lines = entries
+        .map((entry) => {
+          const nextJobText =
+            entry.activeJobs > 0
+              ? (language === 'ar'
+                  ? `، الموعد القادم ${entry.nextJobDisplay ?? 'غير محدد'}`
+                  : `, next @${entry.nextJobDisplay ?? 'N/A'}`)
+              : '';
+          return `  ${recommendationLabels[entry.recommendation]} ${entry.name || (language === 'ar' ? 'غير معروف' : 'Unknown')}: ${statusLabels[entry.status]} (${entry.activeJobs} ${language === 'ar' ? 'وظيفة' : 'jobs'}${nextJobText})`;
+        })
+        .join('\n');
+
+      const text =
+        language === 'ar'
+          ? `
+🚗 السائقون المتاحون (${entries.length} سائق نشط):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${driverList}
+${lines}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 Recommendation: Prioritize drivers marked ✅ BEST for fastest service
+💡 نصيحة: ابدأ بالسائقين المعلمين بـ ✅ الأفضل لضمان أسرع استجابة.
+`
+          : `
+🚗 Available Drivers (${entries.length} active):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${lines}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 Recommendation: Prioritize drivers marked ✅ BEST for fastest service.
 `;
+
+      return {
+        text,
+        generatedAt: new Date().toISOString(),
+        drivers: entries,
+      };
     } catch (error) {
       console.error('Error fetching drivers:', error);
-      return '';
+      return undefined;
     }
   }
 
   /**
    * ✅ NEW: Predictive Analytics - Forecast revenue, demand, capacity
    */
-  private async getPredictiveAnalytics(language: 'en' | 'ar'): Promise<string> {
+  private async getPredictiveAnalytics(language: 'en' | 'ar'): Promise<PredictiveAnalyticsResult | undefined> {
     try {
       const now = new Date();
       const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -895,41 +1158,50 @@ ${driverList}
       // Simple linear projection
       const avgDailyRevenue = weekRevenue / 7;
       const avgDailyOrders = weekOrders / 7;
-      const projectedMonthRevenue = (avgDailyRevenue * 30).toFixed(2);
+      const projectedMonthRevenue = avgDailyRevenue * 30;
       const projectedMonthOrders = Math.round(avgDailyOrders * 30);
 
       // Demand trend
-      const trend = weekOrders > (monthOrders / 4) ? '📈 Increasing' : '📉 Decreasing';
+      const trend = weekOrders > (monthOrders / 4) ? 'increasing' : 'decreasing';
 
-      if (language === 'ar') {
-        return `
-📈 التحليلات التنبؤية:
-  • متوسط الإيرادات اليومية: £${avgDailyRevenue.toFixed(2)}
-  • متوسط الطلبات اليومية: ${avgDailyOrders.toFixed(1)}
-  • توقعات نهاية الشهر: £${projectedMonthRevenue} (${projectedMonthOrders} طلب)
-  • اتجاه الطلب: ${trend}
-  • طلبات اليوم حتى الآن: ${todayOrders}
-`;
-      }
-
-      return `
+      const englishText = `
 📈 Predictive Analytics:
   • Avg Daily Revenue: £${avgDailyRevenue.toFixed(2)}
   • Avg Daily Orders: ${avgDailyOrders.toFixed(1)}
-  • Month-End Projection: £${projectedMonthRevenue} (${projectedMonthOrders} orders)
-  • Demand Trend: ${trend}
+  • Month-End Projection: £${projectedMonthRevenue.toFixed(2)} (${projectedMonthOrders} orders)
+  • Demand Trend: ${trend === 'increasing' ? '📈 Increasing' : '📉 Decreasing'}
   • Today's Orders So Far: ${todayOrders}
 `;
+
+      const arabicText = `
+📈 التحليلات التنبؤية:
+  • متوسط الإيرادات اليومية: £${avgDailyRevenue.toFixed(2)}
+  • متوسط الطلبات اليومية: ${avgDailyOrders.toFixed(1)}
+  • توقعات نهاية الشهر: £${projectedMonthRevenue.toFixed(2)} (${projectedMonthOrders} طلب)
+  • اتجاه الطلب: ${trend === 'increasing' ? '📈 في تصاعد' : '📉 في انخفاض'}
+  • طلبات اليوم حتى الآن: ${todayOrders}
+`;
+
+      return {
+        text: language === 'ar' ? arabicText : englishText,
+        generatedAt: new Date().toISOString(),
+        avgDailyRevenue: Number(avgDailyRevenue.toFixed(2)),
+        avgDailyOrders: Number(avgDailyOrders.toFixed(2)),
+        projectedMonthRevenue: Number(projectedMonthRevenue.toFixed(2)),
+        projectedMonthOrders,
+        demandTrend: trend === 'increasing' ? 'increasing' : 'decreasing',
+        todayOrders,
+      };
     } catch (error) {
       console.error('Error in predictive analytics:', error);
-      return '';
+      return undefined;
     }
   }
 
   /**
    * ✅ NEW: Get actionable suggestions based on current system state
    */
-  private async getProactiveSuggestions(language: 'en' | 'ar'): Promise<string> {
+  private async getProactiveSuggestions(language: 'en' | 'ar'): Promise<ProactiveSuggestionsResult | undefined> {
     try {
       const suggestions: string[] = [];
       const now = new Date();
@@ -990,19 +1262,29 @@ ${driverList}
       }
 
       if (suggestions.length === 0) {
-        return language === 'ar'
-          ? `\n✅ الوضع جيد: لا توجد مشاكل عاجلة تتطلب انتباهك.\n`
-          : `\n✅ All Clear: No urgent issues requiring attention.\n`;
+        return {
+          text: language === 'ar'
+            ? `\n✅ الوضع جيد: لا توجد مشاكل عاجلة تتطلب انتباهك.\n`
+            : `\n✅ All Clear: No urgent issues requiring attention.\n`,
+          generatedAt: new Date().toISOString(),
+          suggestions: [],
+          isClear: true,
+        };
       }
 
       const header = language === 'ar' 
         ? '\n🎯 اقتراحات استباقية:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
         : '\n🎯 Proactive Suggestions:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
 
-      return header + suggestions.join('\n') + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+      return {
+        text: header + suggestions.join('\n') + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n',
+        generatedAt: new Date().toISOString(),
+        suggestions,
+        isClear: false,
+      };
     } catch (error) {
       console.error('Error generating suggestions:', error);
-      return '';
+      return undefined;
     }
   }
 
@@ -1075,5 +1357,14 @@ ${driverList}
 }
 
 export const groqService = new GroqService();
-export type { AdminContext, ChatMessage, AdminIssue };
+export type {
+  AdminContext,
+  ChatMessage,
+  AdminIssue,
+  ChatMetadata,
+  LiveSystemStatsResult,
+  DriverAvailabilityResult,
+  PredictiveAnalyticsResult,
+  ProactiveSuggestionsResult,
+};
 

@@ -5,8 +5,16 @@
  * and organic search visibility
  */
 
+import {
+  APP_BASE_URL,
+  BRAND_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE,
+  SUPPORT_PHONE_E164,
+} from '@/lib/seo/constants';
+
 export const BUSINESS_INFO = {
-  name: 'Speedy Van',
+  name: BRAND_NAME,
   legalName: 'Speedy Van Ltd',
   description: 'Professional same-day delivery and courier service in Scotland. Fast, reliable van delivery for parcels, furniture, and business logistics.',
   
@@ -22,9 +30,9 @@ export const BUSINESS_INFO = {
   
   // Contact Information
   contact: {
-    phone: '+44 1202 129746', // Updated company phone
-    email: 'hello@speedyvan.co.uk',
-    supportEmail: 'support@speedyvan.co.uk',
+    phone: SUPPORT_PHONE_E164,
+    email: SUPPORT_EMAIL,
+    supportEmail: SUPPORT_EMAIL,
   },
   
   // Social Media
@@ -65,8 +73,8 @@ export const BUSINESS_INFO = {
 };
 
 export const SEO_DEFAULTS = {
-  siteName: 'Speedy Van',
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://speedyvan.co.uk',
+  siteName: BRAND_NAME,
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || APP_BASE_URL,
   defaultTitle: 'Speedy Van - Fast & Reliable Delivery Service in Scotland',
   defaultDescription: 'Professional same-day delivery and courier service across Scotland. Book online for instant quotes. Trusted by 1000+ customers. Available 7 days a week.',
   defaultKeywords: [

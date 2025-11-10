@@ -107,6 +107,12 @@ interface EmailResult {
   provider: string;
 }
 
+interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
 // Email provider configurations
 const emailConfig = {
   resend: {
@@ -120,35 +126,48 @@ const emailConfig = {
 };
 
 // Resend implementation
-async function sendViaResend(to: string, subject: string, html: string): Promise<EmailResult> {
+async function sendViaResend(to: string, subject: string, html: string, attachments?: EmailAttachment[]): Promise<EmailResult> {
   if (!emailConfig.resend.apiKey) {
     throw new Error('Resend API key not configured');
   }
 
   try {
-    const payload = {
+    const payload: any = {
       from: `Speedy Van <${emailConfig.resend.from}>`,
       to: [to],
       subject,
       html,
-      // Add headers for better deliverability
+      // Add text version for better deliverability (prevents spam)
+      text: html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim(),
+      // Add headers for better deliverability and spam prevention
       headers: {
         'X-Priority': '3',
         'X-MSMail-Priority': 'Normal',
         'Importance': 'Normal',
-        'X-Mailer': 'Speedy Van Email System',
-        'X-Entity-Ref-ID': `speedy-van-${Date.now()}`,
+        'X-Mailer': 'Speedy Van',
+        'X-Entity-Ref-ID': `booking-${Date.now()}`,
         'List-Unsubscribe': '<mailto:unsubscribe@speedy-van.co.uk>',
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        'Precedence': 'bulk',
+        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
       },
       // Add reply-to for better deliverability
       reply_to: 'support@speedy-van.co.uk',
       // Add tags for tracking
       tags: [
-        { name: 'service', value: 'transactional' },
-        { name: 'source', value: 'speedy-van-system' }
+        { name: 'category', value: 'order-confirmation' },
+        { name: 'environment', value: process.env.NODE_ENV || 'production' }
       ]
     };
+
+    // Add attachments if provided
+    if (attachments && attachments.length > 0) {
+      payload.attachments = attachments.map(att => ({
+        filename: att.filename,
+        content: att.content.toString('base64'),
+        type: att.contentType
+      }));
+    }
 
     console.log('📧 ===== RESEND API DEBUG =====');
     console.log('📧 Resend payload:', {
@@ -199,7 +218,7 @@ async function sendViaResend(to: string, subject: string, html: string): Promise
 }
 
 // SendGrid implementation (fallback)
-async function sendViaSendGrid(to: string, subject: string, html: string): Promise<EmailResult> {
+async function sendViaSendGrid(to: string, subject: string, html: string, attachments?: EmailAttachment[]): Promise<EmailResult> {
   if (!emailConfig.sendgrid.apiKey) {
     throw new Error('SendGrid API key not configured');
   }
@@ -208,15 +227,33 @@ async function sendViaSendGrid(to: string, subject: string, html: string): Promi
   sgMail.setApiKey(emailConfig.sendgrid.apiKey);
 
   try {
-    const msg = {
+    const msg: any = {
       to,
       from: `Speedy Van <${emailConfig.sendgrid.from}>`,
       subject,
       html,
-      replyTo: 'support@speedy-van.co.uk'
+      text: html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim(),
+      replyTo: 'support@speedy-van.co.uk',
+      trackingSettings: {
+        clickTracking: { enable: false },
+        openTracking: { enable: false }
+      },
+      mailSettings: {
+        bypassListManagement: { enable: false }
+      }
     };
 
-    console.log('SendGrid message:', { to, from: `Speedy Van <${emailConfig.sendgrid.from}>`, subject });
+    // Add attachments if provided
+    if (attachments && attachments.length > 0) {
+      msg.attachments = attachments.map(att => ({
+        filename: att.filename,
+        content: att.content.toString('base64'),
+        type: att.contentType,
+        disposition: 'attachment'
+      }));
+    }
+
+    console.log('SendGrid message:', { to, from: `Speedy Van <${emailConfig.sendgrid.from}>`, subject, hasAttachments: !!attachments });
     const result = await sgMail.send(msg);
     console.log('SendGrid result:', result);
     return {
@@ -233,7 +270,7 @@ async function sendViaSendGrid(to: string, subject: string, html: string): Promi
 
 
 // Main email sending function with fallback
-async function sendEmail(to: string, subject: string, html: string): Promise<EmailResult> {
+async function sendEmail(to: string, subject: string, html: string, attachments?: EmailAttachment[]): Promise<EmailResult> {
   const errors: string[] = [];
 
   // Try Resend first if configured (primary provider)
@@ -241,13 +278,14 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
     hasApiKey: !!emailConfig.resend.apiKey,
     keyLength: emailConfig.resend.apiKey?.length || 0,
     keyStart: emailConfig.resend.apiKey?.substring(0, 20) || 'NOT_SET',
-    from: emailConfig.resend.from
+    from: emailConfig.resend.from,
+    hasAttachments: !!attachments && attachments.length > 0
   });
 
   if (emailConfig.resend.apiKey) {
     try {
       console.log('📧 Attempting to send email via Resend...');
-      return await sendViaResend(to, subject, html);
+      return await sendViaResend(to, subject, html, attachments);
     } catch (error) {
       const errorMsg = `Resend failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
       console.warn('⚠️', errorMsg);
@@ -263,7 +301,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
   if (emailConfig.sendgrid.apiKey && !errors.some(err => err.includes('Unauthorized'))) {
     try {
       console.log('📧 Attempting to send email via SendGrid...');
-      return await sendViaSendGrid(to, subject, html);
+      return await sendViaSendGrid(to, subject, html, attachments);
     } catch (error) {
       const isError = error instanceof Error;
       const errorMsg = `SendGrid failed: ${isError ? (error as Error).message : String(error)}`;
@@ -286,6 +324,58 @@ async function sendEmail(to: string, subject: string, html: string): Promise<Ema
   };
 }
 
+// Base email template wrapper (anti-spam optimized)
+function generateEmailWrapper(title: string, content: string): string {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title}</title>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f5f5;">
+        <tr>
+          <td align="center" style="padding: 20px 10px;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Speedy Van</h1>
+                  <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">${title}</p>
+                </td>
+              </tr>
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 30px 20px;">
+                  ${content}
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+                  <p style="margin: 0; font-size: 12px; color: #6c757d;">Speedy Van - Professional Moving Services</p>
+                  <p style="margin: 5px 0 0 0; font-size: 12px; color: #6c757d;">
+                    Email: <a href="mailto:support@speedy-van.co.uk" style="color: #6c757d; text-decoration: none;">support@speedy-van.co.uk</a> | 
+                    Phone: <a href="tel:01202129764" style="color: #6c757d; text-decoration: none;">01202129764</a>
+                  </p>
+                  <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">
+                    You're receiving this email because you are a Speedy Van customer.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
 // HTML email templates
 function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
   const itemsHTML = data.items?.map(item =>
@@ -298,68 +388,92 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
 
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
-      <title>Order Confirmation - ${data.orderNumber}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Booking Confirmation - ${data.orderNumber}</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h1 style="color: #007bff; margin: 0;">Speedy Van</h1>
-          <h2 style="margin: 10px 0;">Order Confirmation</h2>
-        </div>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f5f5;">
+        <tr>
+          <td align="center" style="padding: 20px 10px;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 20px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Speedy Van</h1>
+                  <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">Booking Confirmation</p>
+                </td>
+              </tr>
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 30px 20px;">
+                  <p style="margin: 0 0 15px 0; font-size: 16px;">Dear ${data.customerName},</p>
 
-        <div style="background: white; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;">
-          <p>Dear ${data.customerName},</p>
+                  <p style="margin: 0 0 20px 0; font-size: 16px;">Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.</p>
 
-          <p>Thank you for choosing Speedy Van! Your order has been confirmed.</p>
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <tr>
+                      <td>
+                        <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Booking Details:</strong></p>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Booking Number:</strong> ${data.orderNumber}</p>
+                        <p style="margin: 0; font-size: 14px;"><strong>Scheduled Date:</strong> ${data.scheduledDate}</p>
+                      </td>
+                    </tr>
+                  </table>
 
-          <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <strong>Order Details:</strong><br>
-            <strong>Order Number:</strong> ${data.orderNumber}<br>
-            <strong>Scheduled Date:</strong> ${data.scheduledDate}<br>
-            <strong>Total Amount:</strong> ${data.currency}${data.totalAmount.toFixed(2)}
-          </div>
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+                    <tr>
+                      <td>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Pickup Address:</strong></p>
+                        <p style="margin: 0; font-size: 14px; color: #555;">${data.pickupAddress.replace(/\n/g, '<br>')}</p>
+                      </td>
+                    </tr>
+                  </table>
 
-          <div style="margin: 20px 0;">
-            <strong>Pickup Address:</strong><br>
-            ${data.pickupAddress.replace(/\n/g, '<br>')}
-          </div>
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+                    <tr>
+                      <td>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Dropoff Address:</strong></p>
+                        <p style="margin: 0; font-size: 14px; color: #555;">${data.dropoffAddress.replace(/\n/g, '<br>')}</p>
+                      </td>
+                    </tr>
+                  </table>
 
-          <div style="margin: 20px 0;">
-            <strong>Dropoff Address:</strong><br>
-            ${data.dropoffAddress.replace(/\n/g, '<br>')}
-          </div>
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #e7f3ff; padding: 15px; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
+                    <tr>
+                      <td>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;"><strong>Track Your Booking:</strong></p>
+                        <p style="margin: 0;"><a href="https://speedy-van.co.uk/track" style="color: #10b981; text-decoration: none; font-size: 14px;">https://speedy-van.co.uk/track</a></p>
+                      </td>
+                    </tr>
+                  </table>
 
-          ${data.items && data.items.length > 0 ? `
-          <div style="margin: 20px 0;">
-            <strong>Items:</strong>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-              <thead>
-                <tr style="background: #f8f9fa;">
-                  <th style="padding: 8px; text-align: left; border-bottom: 2px solid #dee2e6;">Item</th>
-                  <th style="padding: 8px; text-align: center; border-bottom: 2px solid #dee2e6;">Quantity</th>
-                  <th style="padding: 8px; text-align: right; border-bottom: 2px solid #dee2e6;">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHTML}
-              </tbody>
+                  <p style="margin: 20px 0 0 0; font-size: 14px;">For assistance, call <strong>01202129764</strong> or email <a href="mailto:support@speedy-van.co.uk" style="color: #10b981; text-decoration: none;">support@speedy-van.co.uk</a></p>
+
+                  <p style="margin: 20px 0 0 0; font-size: 14px;">Best regards,<br><strong>The Speedy Van Team</strong></p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+                  <p style="margin: 0; font-size: 12px; color: #6c757d;">Speedy Van - Professional Moving Services</p>
+                  <p style="margin: 5px 0 0 0; font-size: 12px; color: #6c757d;">
+                    Email: <a href="mailto:support@speedy-van.co.uk" style="color: #6c757d; text-decoration: none;">support@speedy-van.co.uk</a> | 
+                    Phone: <a href="tel:01202129764" style="color: #6c757d; text-decoration: none;">01202129764</a>
+                  </p>
+                  <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">
+                    You're receiving this email because you booked a service with Speedy Van.
+                  </p>
+                </td>
+              </tr>
             </table>
-          </div>
-          ` : ''}
-
-          <p>If you have any questions about your order, please contact our support team at support@speedy-van.co.uk or call 01202129764.</p>
-
-          <p>Best regards,<br>The Speedy Van Team</p>
-        </div>
-
-        <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
-          <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
-        </div>
-      </div>
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;
@@ -1289,12 +1403,24 @@ function generateRefundNotificationHTML(data: RefundNotificationData): string {
 }
 
 export const unifiedEmailService = {
-  async sendOrderConfirmation(data: OrderConfirmationData) {
+  async sendOrderConfirmation(data: OrderConfirmationData, invoicePDF?: Buffer) {
     try {
       console.log('Sending order confirmation email to:', data.customerEmail);
       const subject = `Order Confirmation - ${data.orderNumber}`;
       const html = generateOrderConfirmationHTML(data);
-      return await sendEmail(data.customerEmail, subject, html);
+      
+      // Prepare attachments if invoice PDF is provided
+      const attachments: EmailAttachment[] = [];
+      if (invoicePDF) {
+        attachments.push({
+          filename: `invoice-${data.orderNumber}.pdf`,
+          content: invoicePDF,
+          contentType: 'application/pdf'
+        });
+        console.log(`📎 Attaching invoice PDF: invoice-${data.orderNumber}.pdf`);
+      }
+      
+      return await sendEmail(data.customerEmail, subject, html, attachments.length > 0 ? attachments : undefined);
     } catch (error) {
       console.error('Order confirmation email failed:', error);
       return {

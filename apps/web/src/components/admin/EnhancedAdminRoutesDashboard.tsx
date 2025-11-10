@@ -61,6 +61,8 @@ import {
   Divider,
   Alert,
   AlertIcon,
+  AlertTitle,
+  AlertDescription,
   Icon,
   Circle,
   Portal,
@@ -221,6 +223,7 @@ const EnhancedAdminRoutesDashboard = ({
   const [isSwitchingMode, setIsSwitchingMode] = useState(false);
   const [isTriggering, setIsTriggering] = useState(false);
   const [isReassigning, setIsReassigning] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
@@ -337,6 +340,9 @@ const EnhancedAdminRoutesDashboard = ({
         setRoutes(routesWithCorrectCounts);
         setDrivers(routesData.drivers);
         setMetrics(routesData.metrics);
+        setLoadError(null);
+      } else {
+        setLoadError(routesData.error || 'Failed to load routes');
       }
 
       if (schedulerData.success) {
@@ -344,6 +350,17 @@ const EnhancedAdminRoutesDashboard = ({
       }
     } catch (error) {
       console.error('Failed to load routes:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setLoadError(message);
+      if (!loadError) {
+        toast({
+          title: 'Failed to load operations data',
+          description: message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -800,6 +817,28 @@ const EnhancedAdminRoutesDashboard = ({
           />
         </HStack>
       </Flex>
+
+      {loadError && (
+        <Alert status="error" borderRadius="md" mb={6}>
+          <AlertIcon />
+          <Box>
+            <AlertTitle fontSize="sm">Unable to load routes</AlertTitle>
+            <AlertDescription fontSize="sm">
+              {loadError}
+            </AlertDescription>
+          </Box>
+          <Button
+            size="sm"
+            ml="auto"
+            onClick={() => {
+              setIsLoading(true);
+              loadData();
+            }}
+          >
+            Retry
+          </Button>
+        </Alert>
+      )}
 
       {/* Route Generation Status */}
       {schedulerStats && (

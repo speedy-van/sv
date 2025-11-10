@@ -40,6 +40,7 @@ async function sendOrderConfirmationEmail(bookingId: string) {
     const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
     // Prepare email data
+    const confirmedTotalInPounds = booking.totalGBP / 100;
     const emailData: OrderConfirmationData = {
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
@@ -52,12 +53,49 @@ async function sendOrderConfirmationEmail(bookingId: string) {
         month: 'long',
         year: 'numeric'
       }),
-      totalAmount: booking.totalGBP / 100,
+      totalAmount: confirmedTotalInPounds,
       currency: 'GBP',
     };
 
-    // Send confirmation email
-    const emailResult = await unifiedEmailService.sendOrderConfirmation(emailData);
+    // Generate invoice PDF to attach to email
+    let invoicePDF: Buffer | undefined;
+    try {
+      const { buildInvoicePDF } = await import('@/lib/pdf');
+      invoicePDF = await buildInvoicePDF({
+        invoiceNumber: `INV-${booking.reference}`,
+        date: booking.createdAt.toISOString().split('T')[0],
+        dueDate: booking.createdAt.toISOString().split('T')[0],
+        company: {
+          name: 'Speedy Van',
+          legalName: 'SPEEDY VAN REMOVALS LTD',
+          address: 'Office 2.18, 1 Barrack St, Hamilton ML3 0HS',
+          email: 'support@speedy-van.co.uk',
+          vatNumber: 'GB123456789',
+        },
+        customer: {
+          name: booking.customerName,
+          email: booking.customerEmail,
+          address: booking.pickupAddress?.label || 'Address not specified',
+        },
+        items: [{
+          description: 'Moving Service',
+          quantity: 1,
+          unitPrice: confirmedTotalInPounds,
+          total: confirmedTotalInPounds,
+        }],
+        subtotal: confirmedTotalInPounds,
+        tax: 0,
+        total: confirmedTotalInPounds,
+        currency: 'GBP',
+      });
+      console.log('✅ Invoice PDF generated for webhook email');
+    } catch (pdfError) {
+      console.error('❌ Failed to generate invoice PDF for webhook:', pdfError);
+      // Continue without PDF
+    }
+
+    // Send confirmation email with invoice attached
+    const emailResult = await unifiedEmailService.sendOrderConfirmation(emailData, invoicePDF);
 
     if (emailResult.success) {
       console.log('✅ Order confirmation email sent successfully:', {

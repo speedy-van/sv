@@ -7,11 +7,11 @@ import {
   getAllPlaces,
   routeSlug,
 } from '@/lib/places';
+import { APP_BASE_URL, BRAND_NAME } from '@/lib/seo/constants';
 import '@/styles/uk-place-pages.css';
 
 // ✅ Force Node runtime for SSG/ISR
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 export const revalidate = 86400; // 24h ISR
 
 // If we pre-generate specific slugs, set dynamicParams=false
@@ -25,12 +25,12 @@ export async function generateMetadata({
   const place = await getPlaceBySlug(params.place);
   if (!place) return {};
 
-  const title = `Man and Van in ${place.name} | Speedy Van`;
+  const title = `Man and Van in ${place.name} | ${BRAND_NAME}`;
   const description = `Local and long-distance removals in ${place.name}. Transparent pricing, real-time tracking, insured movers.`;
-  const url = `https://speedy-van.co.uk/uk/${place.slug}`;
+  const url = `${APP_BASE_URL}/uk/${place.slug}`;
 
   return {
-    metadataBase: new URL('https://speedy-van.co.uk'),
+    metadataBase: new URL(APP_BASE_URL),
     title,
     description,
     alternates: {
@@ -75,10 +75,10 @@ function JsonLd({ place, nearby }: { place: any; nearby: any[] }) {
     },
     provider: {
       '@type': 'Organization',
-      name: 'Speedy Van',
-      url: 'https://speedy-van.co.uk',
+      name: BRAND_NAME,
+      url: APP_BASE_URL,
     },
-    url: `https://speedy-van.co.uk/uk/${place.slug}`,
+    url: `${APP_BASE_URL}/uk/${place.slug}`,
     offers: { '@type': 'AggregateOffer', priceCurrency: 'GBP' },
     breadcrumb: {
       '@type': 'BreadcrumbList',
@@ -87,19 +87,19 @@ function JsonLd({ place, nearby }: { place: any; nearby: any[] }) {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://speedy-van.co.uk',
+          item: APP_BASE_URL,
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'UK',
-          item: 'https://speedy-van.co.uk/uk',
+          item: `${APP_BASE_URL}/uk`,
         },
         {
           '@type': 'ListItem',
           position: 3,
           name: place.name,
-          item: `https://speedy-van.co.uk/uk/${place.slug}`,
+          item: `${APP_BASE_URL}/uk/${place.slug}`,
         },
       ],
     },

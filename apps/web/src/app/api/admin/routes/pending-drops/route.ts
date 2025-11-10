@@ -74,6 +74,14 @@ export async function GET(request: NextRequest) {
         scheduledAt: true,
         totalGBP: true,
         customerName: true,
+        customerId: true,
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         pickupAddress: {
           select: {
             label: true,
@@ -119,7 +127,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform bookings into drop format
-    const drops = pendingBookings.map((booking: any) => {
+    const drops = pendingBookings
+      .filter((booking: any) => {
+        if (!booking.pickupAddress || !booking.dropoffAddress) {
+          console.warn(`⚠️ Skipping booking ${booking.id}: missing pickup/dropoff address`);
+          return false;
+        }
+        if (!booking.customerId) {
+          console.warn(`⚠️ Skipping booking ${booking.id}: missing customer`);
+          return false;
+        }
+        if (!booking.scheduledAt) {
+          console.warn(`⚠️ Skipping booking ${booking.id}: missing scheduledAt`);
+          return false;
+        }
+        return true;
+      })
+      .map((booking: any) => {
       const totalVolume = booking.BookingItem.reduce((sum: number, item: any) => 
         sum + ((item.estimatedVolume || 0) * item.quantity), 0
       );

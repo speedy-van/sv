@@ -45,20 +45,51 @@ export default function BookingSuccessPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('Loading your booking details...');
-  const [smsSent, setSmsSent] = useState(false); // Prevent double SMS sending
+  const [smsSent, setSmsSent] = useState(false);
+  const [toastShown, setToastShown] = useState(false);
   const searchParams = useSearchParams();
   const toast = useToast();
 
   const sessionId = searchParams?.get('session_id');
   const bookingRef = searchParams?.get('booking_ref');
+  
+  // Safe localStorage helper (handles tracking prevention)
+  const safeLocalStorage = {
+    getItem: (key: string): string | null => {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (key: string, value: string): void => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Silently fail if localStorage is blocked
+      }
+    },
+    removeItem: (key: string): void => {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Silently fail
+      }
+    }
+  };
+  
+  // Generate unique key for SMS tracking (per session)
+  const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
   // Load Trustpilot script
   useEffect(() => {
-    const businessUnitId = undefined; // Trustpilot integration handled server-side
+    // Clean and validate Business Unit ID (remove newlines and whitespace)
+    const rawBusinessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
+    const businessUnitId = rawBusinessUnitId?.trim().replace(/[\r\n]/g, '');
 
-    // Only load if Business Unit ID is configured
-    if (!businessUnitId) {
-      console.warn('⚠️ Trustpilot Business Unit ID not configured');
+    // Only load if Business Unit ID is configured and valid
+    if (!businessUnitId || businessUnitId.length < 10) {
+      // Silently skip if not configured (optional feature)
       return;
     }
 
@@ -127,47 +158,72 @@ export default function BookingSuccessPage() {
             scheduledAt: new Date().toISOString(), // Default to now if not available
           });
 
-          // Show success toast
-          toast({
-            title: 'Payment Successful!',
-            description: 'Your booking has been confirmed! Our admin team will review your order and send confirmation details.',
-            status: 'success',
-            duration: 5000,
-            isClosable: true,
-          });
+          // Show success toast (only once per session)
+          const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
+          const alreadyShowedToast = toastTrackingKey ? safeLocalStorage.getItem(toastTrackingKey) : null;
+          
+          if (!toastShown && !alreadyShowedToast) {
+            setToastShown(true);
+            safeLocalStorage.setItem(toastTrackingKey || '', 'true');
+            toast({
+              title: 'Booking Confirmed!',
+              description: "Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.",
+              status: 'success',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
 
-          // Send SMS confirmation automatically when success page loads (only once)
-          if (data.customer_details?.phone && !smsSent) {
-            try {
-              setSmsSent(true); // Prevent double sending
-              
-              // Send SMS via API endpoint
-              const smsResponse = await fetch('/api/notifications/sms/send', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  to: data.customer_details.phone,
-                  message: `Hi ${data.metadata?.customerName || data.customer_details?.name || 'Customer'}, your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} is confirmed! Pickup: ${data.metadata?.pickupAddress || 'Pickup address not available'} on ${data.metadata?.scheduledDate || new Date().toLocaleDateString('en-GB')}. We'll notify you when your driver is assigned. Call 01202129764 for support.`,
-                  type: 'booking_confirmation'
-                })
-              });
-              
-              if (smsResponse.ok) {
-                console.log('✅ SMS confirmation sent successfully');
-              } else {
-                console.warn('⚠️ SMS confirmation failed from success page');
-                setSmsSent(false); // Allow retry on failure
+          // Send SMS confirmation automatically when success page loads (only once per session)
+          if (data.customer_details?.phone && smsTrackingKey) {
+            // Check if SMS was already sent (using safe localStorage + state)
+            const alreadySentInStorage = safeLocalStorage.getItem(smsTrackingKey);
+            
+            if (!smsSent && !alreadySentInStorage) {
+              try {
+                // Mark as sent BEFORE making the request to prevent race conditions
+                setSmsSent(true);
+                safeLocalStorage.setItem(smsTrackingKey, 'true');
+                
+                // Send SMS via API endpoint
+                const smsResponse = await fetch('/api/notifications/sms/send', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    to: data.customer_details.phone,
+                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`,
+                    type: 'booking_confirmation'
+                  })
+                });
+                
+                if (smsResponse.ok) {
+                  // SMS sent successfully
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('✅ SMS confirmation sent successfully');
+                  }
+                } else {
+                  console.warn('⚠️ SMS confirmation failed from success page');
+                  // Remove flag to allow retry on failure
+                  setSmsSent(false);
+                  safeLocalStorage.removeItem(smsTrackingKey);
+                }
+              } catch (smsError) {
+                console.error('❌ Error sending SMS from success page:', smsError);
+                // Remove flag to allow retry on error
+                setSmsSent(false);
+                safeLocalStorage.removeItem(smsTrackingKey);
               }
-            } catch (smsError) {
-              console.error('❌ Error sending SMS from success page:', smsError);
-              setSmsSent(false); // Allow retry on error
+            } else {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('ℹ️ SMS already sent for this session - preventing duplicate');
+              }
             }
           } else if (!data.customer_details?.phone) {
-            console.log('ℹ️ No phone number available for SMS');
-          } else if (smsSent) {
-            console.log('ℹ️ SMS already sent - preventing duplicate');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('ℹ️ No phone number available for SMS');
+            }
           }
           
           // Stop loading on success
@@ -276,7 +332,7 @@ export default function BookingSuccessPage() {
             Booking Confirmed!
           </Text>
           <Text fontSize={{ base: "md", md: "lg" }} color="gray.600">
-            Thank you for choosing Speedy Van. Your booking has been successfully confirmed.
+            Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.
           </Text>
         </VStack>
 
@@ -336,14 +392,14 @@ export default function BookingSuccessPage() {
                 <HStack>
                   <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
                   <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Admin Review:</strong> Our team will review your booking and send detailed confirmation with floor information.
+                    <strong>Driver Assignment:</strong> We'll notify you once your driver is assigned with their contact details.
                   </Text>
                 </HStack>
                 
                 <HStack>
                   <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
                   <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Driver Assignment:</strong> We'll assign a driver to your booking and notify you with their details.
+                    <strong>Track Your Booking:</strong> Monitor your booking status at <a href="https://speedy-van.co.uk/track" style={{ color: '#3182ce', textDecoration: 'underline' }}>https://speedy-van.co.uk/track</a>
                   </Text>
                 </HStack>
                 
@@ -357,7 +413,7 @@ export default function BookingSuccessPage() {
                 <HStack>
                   <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
                   <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Real-time Tracking:</strong> Track your driver's location in real-time on the day of your move.
+                    <strong>Need Help?</strong> Call 01202129764 or email support@speedy-van.co.uk for assistance.
                   </Text>
                 </HStack>
               </VStack>
@@ -429,7 +485,7 @@ export default function BookingSuccessPage() {
         </HStack>
 
         {/* Trustpilot Review Widget */}
-        {false && (
+        {process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID?.trim() && (
           <Box
             mt={8}
             p={6}
@@ -452,7 +508,7 @@ export default function BookingSuccessPage() {
                 className="trustpilot-widget"
                 data-locale="en-GB"
                 data-template-id="56278e9abfbbba0bdcd568bc"
-                data-businessunit-id="68b0fc8a6ad677c356e83f14"
+                data-businessunit-id={process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID?.trim().replace(/[\r\n]/g, '')}
                 data-style-height="52px"
                 data-style-width="100%"
                 data-theme="light"

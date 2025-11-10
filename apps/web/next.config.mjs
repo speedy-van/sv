@@ -28,6 +28,9 @@ const nextConfig = {
   // Enable compression
   compress: true,
 
+  // Hide powered-by header for security
+  poweredByHeader: false,
+
   // Production source maps for debugging
   productionBrowserSourceMaps: true,
 

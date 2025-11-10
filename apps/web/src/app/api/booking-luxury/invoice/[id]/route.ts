@@ -14,9 +14,9 @@ export async function GET(
     // Try to find booking by ID first (UUID format), then by reference (SV format)
     let booking;
     
-    // Check if it's a UUID (booking ID) or reference (SV12345)
+    // Check if it's a UUID (booking ID) or reference (SV-000009)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-    const isReference = /^SV\d+$/i.test(id);
+    const isReference = /^SV-\d+$/i.test(id);
     
     if (isUUID) {
       console.log('🔍 Searching by booking ID (UUID)');
@@ -109,7 +109,10 @@ export async function GET(
       customerName: booking.customerName || booking.customer?.name
     });
 
-    // Generate PDF using the invoice function
+    // Convert totalGBP from pence to pounds
+    const totalInPounds = booking.totalGBP / 100;
+
+    // Generate PDF using the invoice function (no VAT breakdown)
     const pdfBuffer = await buildInvoicePDF({
       invoiceNumber: `INV-${booking.reference}`,
       date: booking.createdAt.toISOString().split('T')[0],
@@ -117,7 +120,7 @@ export async function GET(
       company: {
         name: 'Speedy Van',
         legalName: 'SPEEDY VAN REMOVALS LTD',
-        address: 'Office 2.18 1 Barrack St, Hamilton ML3 0HS',
+        address: 'Office 2.18, 1 Barrack St, Hamilton ML3 0HS',
         email: 'support@speedy-van.co.uk',
         vatNumber: 'GB123456789',
       },
@@ -129,12 +132,12 @@ export async function GET(
       items: [{
         description: 'Moving Service',
         quantity: 1,
-        unitPrice: booking.totalGBP,
-        total: booking.totalGBP,
+        unitPrice: totalInPounds,
+        total: totalInPounds,
       }],
-      subtotal: booking.totalGBP,
-      tax: booking.totalGBP * 0.2, // 20% VAT
-      total: booking.totalGBP,
+      subtotal: totalInPounds,
+      tax: 0,
+      total: totalInPounds,
       currency: 'GBP',
     });
 

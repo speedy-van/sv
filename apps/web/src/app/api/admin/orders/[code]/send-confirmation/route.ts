@@ -59,6 +59,7 @@ export async function POST(
     const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
     // Prepare email data
+    const confirmedTotalInPounds = booking.totalGBP / 100;
     const emailData: OrderConfirmationData = {
       customerEmail: booking.customerEmail,
       orderNumber: booking.reference,
@@ -71,12 +72,49 @@ export async function POST(
         month: 'long',
         year: 'numeric'
       }),
-      totalAmount: booking.totalGBP / 100,
+      totalAmount: confirmedTotalInPounds,
       currency: 'GBP',
     };
 
-    // Send confirmation email
-    const emailResult = await unifiedEmailService.sendOrderConfirmation(emailData);
+    // Generate invoice PDF to attach to email
+    let invoicePDF: Buffer | undefined;
+    try {
+      const { buildInvoicePDF } = await import('@/lib/pdf');
+      invoicePDF = await buildInvoicePDF({
+        invoiceNumber: `INV-${booking.reference}`,
+        date: booking.createdAt.toISOString().split('T')[0],
+        dueDate: booking.createdAt.toISOString().split('T')[0],
+        company: {
+          name: 'Speedy Van',
+          legalName: 'SPEEDY VAN REMOVALS LTD',
+          address: 'Office 2.18, 1 Barrack St, Hamilton ML3 0HS',
+          email: 'support@speedy-van.co.uk',
+          vatNumber: 'GB123456789',
+        },
+        customer: {
+          name: booking.customerName,
+          email: booking.customerEmail,
+          address: booking.pickupAddress?.label || 'Address not specified',
+        },
+        items: [{
+          description: 'Moving Service',
+          quantity: 1,
+          unitPrice: confirmedTotalInPounds,
+          total: confirmedTotalInPounds,
+        }],
+        subtotal: confirmedTotalInPounds,
+        tax: 0,
+        total: confirmedTotalInPounds,
+        currency: 'GBP',
+      });
+      console.log('✅ Invoice PDF generated for admin confirmation email');
+    } catch (pdfError) {
+      console.error('❌ Failed to generate invoice PDF:', pdfError);
+      // Continue without PDF
+    }
+
+    // Send confirmation email with invoice attached
+    const emailResult = await unifiedEmailService.sendOrderConfirmation(emailData, invoicePDF);
     
     if (!emailResult.success) {
       console.error('Email send failed:', emailResult.error);
@@ -94,7 +132,7 @@ export async function POST(
       const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
       const smsService = getVoodooSMSService();
       
-      const smsMessage = `✅ Order Confirmed!\n\nOrder: ${booking.reference}\nDate: ${emailData.scheduledDate}\nAmount: £${emailData.totalAmount.toFixed(2)}\n\nPickup: ${emailData.pickupAddress}\nDropoff: ${emailData.dropoffAddress}\n\nSpeedy Van`;
+      const smsMessage = `Your Speedy Van booking ${booking.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`;
       
       const smsResult = await smsService.sendSMS({
         to: booking.customerPhone || booking.customerEmail, // Use phone if available, otherwise email

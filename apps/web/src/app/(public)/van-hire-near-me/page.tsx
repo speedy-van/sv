@@ -6,8 +6,6 @@
  * Conversion-focused with 2-click booking
  */
 
-// Force dynamic rendering to avoid build timeout
-export const dynamic = 'force-dynamic';
 export const revalidate = 3600; // Revalidate every hour
 
 import { Metadata } from 'next';
@@ -19,12 +17,8 @@ import {
   VStack,
   HStack,
   SimpleGrid,
-  Icon,
   Button,
   Badge,
-  List,
-  ListItem,
-  ListIcon,
 } from '@chakra-ui/react';
 import {
   FaCheckCircle,
@@ -36,10 +30,19 @@ import {
 } from 'react-icons/fa';
 import QuickBookingWidget from '@/components/booking/QuickBookingWidget';
 import { BUSINESS_INFO } from '@/config/seo';
+import {
+  APP_BASE_URL,
+  BRAND_NAME,
+  SUPPORT_PHONE,
+  SUPPORT_PHONE_E164,
+} from '@/lib/seo/constants';
+
+const canonicalUrl = `${APP_BASE_URL}/van-hire-near-me`;
 
 export const metadata: Metadata = {
-  title: 'Van Hire Near Me - Same Day Service from £25 | Speedy Van',
-  description: 'Need a van near you? Book instantly online. Professional drivers, same-day service, real-time tracking. Serving Glasgow, Hamilton, Edinburgh. From £25. Book now!',
+  title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
+  description:
+    'Need a van near you? Book instantly online. Professional drivers, same-day service, real-time tracking. Serving Glasgow, Hamilton, Edinburgh. From £25. Book now!',
   keywords: [
     'van hire near me',
     'man and van near me',
@@ -50,54 +53,63 @@ export const metadata: Metadata = {
     'same day van hire',
     'cheap van hire',
   ],
+  alternates: { canonical: canonicalUrl },
   openGraph: {
-    title: 'Van Hire Near Me - Same Day Service from £25',
-    description: 'Book a van near you in minutes. Professional drivers, instant quotes, same-day service.',
+    title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
+    description:
+      'Book a van near you in minutes. Professional drivers, instant quotes, same-day service.',
     type: 'website',
     locale: 'en_GB',
+    url: canonicalUrl,
+    siteName: BRAND_NAME,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@speedyvan',
+    creator: '@speedyvan',
+    title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
+    description:
+      'Book a van near you in minutes. Professional drivers, instant quotes, same-day service.',
   },
 };
 
 export default function VanHireNearMePage() {
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Van Hire Near Me',
+    provider: {
+      '@type': 'LocalBusiness',
+      name: BRAND_NAME,
+      telephone: SUPPORT_PHONE_E164,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: `${BUSINESS_INFO.address.office}, ${BUSINESS_INFO.address.street}`,
+        addressLocality: BUSINESS_INFO.address.city,
+        postalCode: BUSINESS_INFO.address.postcode,
+        addressCountry: 'GB',
+      },
+    },
+    areaServed: ['Glasgow', 'Hamilton', 'Edinburgh', 'Scotland'],
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: canonicalUrl,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '25',
+      priceCurrency: 'GBP',
+      description: 'Van hire starting from £25',
+    },
+  };
+
   return (
     <>
       {/* Schema.org markup for rich snippets */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: 'Van Hire Near Me',
-            provider: {
-              '@type': 'LocalBusiness',
-              name: BUSINESS_INFO.name,
-              telephone: BUSINESS_INFO.contact.phone,
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: `${BUSINESS_INFO.address.office}, ${BUSINESS_INFO.address.street}`,
-                addressLocality: BUSINESS_INFO.address.city,
-                postalCode: BUSINESS_INFO.address.postcode,
-                addressCountry: 'GB',
-              },
-            },
-            areaServed: ['Glasgow', 'Hamilton', 'Edinburgh', 'Scotland'],
-            availableChannel: {
-              '@type': 'ServiceChannel',
-              serviceUrl: 'https://speedyvan.co.uk/van-hire-near-me',
-            },
-            offers: {
-              '@type': 'Offer',
-              price: '25',
-              priceCurrency: 'GBP',
-              description: 'Van hire starting from £25',
-            },
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.8',
-              reviewCount: '1247',
-            },
-          }),
+          __html: JSON.stringify(serviceSchema),
         }}
       />
 
@@ -137,15 +149,21 @@ export default function VanHireNearMePage() {
               {/* Trust Signals */}
               <HStack spacing={6} flexWrap="wrap">
                 <HStack>
-                  <Icon as={FaStar} color="yellow.400" />
+                  <Box color="yellow.400" fontSize="lg">
+                    <FaStar />
+                  </Box>
                   <Text fontWeight="bold">4.8/5 Rating</Text>
                 </HStack>
                 <HStack>
-                  <Icon as={FaCheckCircle} color="green.400" />
+                  <Box color="green.400" fontSize="lg">
+                    <FaCheckCircle />
+                  </Box>
                   <Text fontWeight="bold">1,247+ Reviews</Text>
                 </HStack>
                 <HStack>
-                  <Icon as={FaClock} color="blue.400" />
+                  <Box color="blue.400" fontSize="lg">
+                    <FaClock />
+                  </Box>
                   <Text fontWeight="bold">Same Day Service</Text>
                 </HStack>
               </HStack>
@@ -154,12 +172,12 @@ export default function VanHireNearMePage() {
               <HStack spacing={4}>
                 <Button
                   as="a"
-                  href="tel:+441202129746"
+                  href={`tel:${SUPPORT_PHONE_E164}`}
                   size="lg"
                   colorScheme="green"
                   leftIcon={<FaPhone />}
                 >
-                  Call Now
+                  Call Now {SUPPORT_PHONE && `(${SUPPORT_PHONE})`}
                 </Button>
                 <Button
                   as="a"
@@ -220,7 +238,7 @@ export default function VanHireNearMePage() {
                 title: '24/7 Support',
                 description: 'Customer support available around the clock. We are here to help.',
               },
-            ].map((feature, index) => (
+            ].map(({ icon: IconComponent, title, description }, index) => (
               <VStack
                 key={index}
                 p={6}
@@ -229,9 +247,11 @@ export default function VanHireNearMePage() {
                 align="start"
                 spacing={3}
               >
-                <Icon as={feature.icon} boxSize={10} color="green.500" />
-                <Heading size="md">{feature.title}</Heading>
-                <Text color="gray.600">{feature.description}</Text>
+                <Box color="green.500" fontSize="3xl">
+                  <IconComponent />
+                </Box>
+                <Heading size="md">{title}</Heading>
+                <Text color="gray.600">{description}</Text>
               </VStack>
             ))}
           </SimpleGrid>

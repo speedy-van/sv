@@ -6,6 +6,14 @@
  */
 
 import Script from 'next/script';
+import {
+  APP_BASE_URL,
+  BRAND_NAME,
+  DEFAULT_SOCIAL_IMAGE,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE,
+  SUPPORT_PHONE_E164,
+} from '@/lib/seo/constants';
 
 interface StructuredDataProps {
   type?: 'organization' | 'local-business' | 'moving-company' | 'service' | 'breadcrumb';
@@ -44,24 +52,28 @@ export function StructuredData({ type = 'moving-company', data }: StructuredData
   );
 }
 
+const brandLogo = `${APP_BASE_URL}/images/gbp/speedy_van_logo.png`;
+const heroImages = [
+  DEFAULT_SOCIAL_IMAGE,
+  `${APP_BASE_URL}/images/gbp/speedy-van-hero-banner.png`,
+  `${APP_BASE_URL}/images/gbp/glasgow-service.png`,
+  `${APP_BASE_URL}/images/gbp/london-service.png`,
+  `${APP_BASE_URL}/images/gbp/speedy-van-manchester-service.png`,
+];
+
 function getMovingCompanySchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'MovingCompany',
-    name: 'Speedy Van',
+    name: BRAND_NAME,
     alternateName: 'Speedy Van Removals Ltd',
     description:
       'Professional moving and delivery services across the UK. House removals, furniture transport, and man and van services from £25/hour.',
-    url: 'https://speedy-van.co.uk',
-    logo: 'https://speedy-van.co.uk/images/gbp/speedy_van_logo.png',
-    image: [
-      'https://speedy-van.co.uk/images/gbp/speedy-van-hero-banner.png',
-      'https://speedy-van.co.uk/images/gbp/glasgow-service.png',
-      'https://speedy-van.co.uk/images/gbp/london-service.png',
-      'https://speedy-van.co.uk/images/gbp/speedy-van-manchester-service.png',
-    ],
-    telephone: '+441202129746',
-    email: 'support@speedy-van.co.uk',
+    url: APP_BASE_URL,
+    logo: brandLogo,
+    image: heroImages,
+    telephone: SUPPORT_PHONE_E164,
+    email: SUPPORT_EMAIL,
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Office 2.18 1 Barrack St',
@@ -107,14 +119,6 @@ function getMovingCompanySchema() {
         closes: '20:00',
       },
     ],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '50000',
-      bestRating: '5',
-      worstRating: '1',
-      ratingExplanation: 'Based on verified customer reviews from completed moves',
-    },
     sameAs: [
       'https://www.facebook.com/speedyvan',
       'https://www.instagram.com/speedyvan',
@@ -294,14 +298,14 @@ function getMovingCompanySchema() {
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        telephone: '+441202129746',
+        telephone: SUPPORT_PHONE_E164,
         contactType: 'customer service',
         areaServed: 'GB',
         availableLanguage: ['English', 'Arabic'],
       },
       {
         '@type': 'ContactPoint',
-        telephone: '+447770498047',
+        telephone: SUPPORT_PHONE_E164,
         contactType: 'sales',
         areaServed: 'GB',
         availableLanguage: ['English', 'Arabic'],
@@ -314,10 +318,10 @@ function getOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Speedy Van',
+    name: BRAND_NAME,
     legalName: 'SPEEDY VAN REMOVALS LTD',
-    url: 'https://speedy-van.co.uk',
-    logo: 'https://speedy-van.co.uk/images/gbp/speedy_van_logo.png',
+    url: APP_BASE_URL,
+    logo: brandLogo,
     foundingDate: '2025-10-08',
     founder: {
       '@type': 'Person',
@@ -333,9 +337,9 @@ function getOrganizationSchema() {
     },
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+441202129746',
+      telephone: SUPPORT_PHONE_E164,
       contactType: 'customer service',
-      email: 'support@speedy-van.co.uk',
+      email: SUPPORT_EMAIL,
     },
     sameAs: [
       'https://www.facebook.com/speedyvan',
@@ -351,11 +355,11 @@ function getLocalBusinessSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    '@id': 'https://speedy-van.co.uk/#localbusiness',
-    name: 'Speedy Van',
-    image: 'https://speedy-van.co.uk/images/gbp/speedy-van-hero-banner.png',
-    telephone: '+441202129746',
-    email: 'support@speedy-van.co.uk',
+    '@id': `${APP_BASE_URL}/#localbusiness`,
+    name: BRAND_NAME,
+    image: heroImages[1],
+    telephone: SUPPORT_PHONE_E164,
+    email: SUPPORT_EMAIL,
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Office 2.18 1 Barrack St',
@@ -369,7 +373,7 @@ function getLocalBusinessSchema() {
       latitude: 55.7781,
       longitude: -4.036,
     },
-    url: 'https://speedy-van.co.uk',
+    url: APP_BASE_URL,
     priceRange: '££',
     openingHoursSpecification: [
       {
@@ -395,8 +399,8 @@ function getServiceSchema(data: any) {
     serviceType: data?.serviceType || 'Moving Service',
     provider: {
       '@type': 'Organization',
-      name: 'Speedy Van',
-      url: 'https://speedy-van.co.uk',
+      name: BRAND_NAME,
+      url: APP_BASE_URL,
     },
     areaServed: {
       '@type': 'Country',
