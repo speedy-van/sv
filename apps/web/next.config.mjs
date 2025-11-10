@@ -7,22 +7,14 @@ const nextConfig = {
     esmExternals: 'loose',
     // Optimize bundle size for large data (666+ items)
     optimizePackageImports: ['@chakra-ui/react', '@chakra-ui/icons', 'framer-motion'],
-    // TEMPORARILY DISABLED: Enable turbo for faster builds - FORCING FULL REBUILD
-    // turbo: {
-    //   rules: {
-    //     '*.tsx': {
-    //       loaders: ['swc-loader'],
-    //       as: '*.js',
-    //     },
-    //   },
-    // },
-    // Re-enable CSS optimizer for production (was causing issues on Render)
-    optimizeCss: true,
+    // CRITICAL: DISABLE CSS optimizer - it causes CSS not to load on Render production
+    optimizeCss: false,
     // Enable faster refresh for large files
     swcMinify: true,
     // Enable instrumentation for server initialization
     instrumentationHook: true,
-    // optimisticClientCache defaults to true for proper CSS loading
+    // CRITICAL: Disable optimistic client cache to prevent stale CSS
+    optimisticClientCache: false,
   },
 
   // Enable compression
@@ -101,7 +93,7 @@ const nextConfig = {
           },
         ],
       },
-      // CRITICAL: CSS files MUST have correct MIME type for Safari iOS
+      // CRITICAL: CSS files MUST have correct MIME type and FORCE reload on new deployments
       {
         source: '/_next/static/css/:path*.css',
         headers: [
@@ -111,11 +103,15 @@ const nextConfig = {
           },
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'public, max-age=0, must-revalidate',
           },
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
+          },
+          {
+            key: 'Vary',
+            value: '*',
           },
         ],
       },
@@ -156,17 +152,20 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // CRITICAL: Disable aggressive caching to fix Safari 17+ cache issues (iPhone 15-17)
-  // Temporary fix for WhereAndWhatStep.tsx being served from cache instead of new build
-  generateEtags: false, // Disable ETags to prevent stale cache
+  // CRITICAL: FORCE fresh cache on every deployment (fixes CSS not loading on Render)
+  generateEtags: false,
   
-  // Disable on-demand entry caching
+  // CRITICAL: Disable all caching for development consistency
   onDemandEntries: {
-    maxInactiveAge: 0, // Disable cache immediately
-    pagesBufferLength: 0, // Don't buffer pages in memory
+    maxInactiveAge: 1000 * 60 * 60, // Keep pages in memory for 1 hour (default)
+    pagesBufferLength: 5, // Keep 5 pages buffered (default)
   },
   
-  // Disable standalone output - causes CSS loading issues on Render
+  // Enable production optimizations
+  productionBrowserSourceMaps: false,
+  optimizeFonts: true,
+  
+  // CRITICAL: DO NOT use standalone mode - it breaks CSS loading
   // output: 'standalone',
   
   // CRITICAL: Generate unique build ID for cache busting

@@ -1,6 +1,24 @@
 (function () {
   'use strict';
 
+  // CRITICAL: Force reload CSS if it's not loading (Render production fix)
+  function forceReloadCSS() {
+    try {
+      var links = document.querySelectorAll('link[rel="stylesheet"]');
+      var now = Date.now();
+      links.forEach(function (link) {
+        var href = link.getAttribute('href');
+        if (href && href.indexOf('/_next/static/css/') !== -1) {
+          // Add timestamp to force reload
+          var newHref = href.split('?')[0] + '?v=' + now;
+          link.setAttribute('href', newHref);
+        }
+      });
+    } catch (error) {
+      console.warn('Error forcing CSS reload', error);
+    }
+  }
+
   function ensureEmotionStyles() {
     try {
       var emotionStyles = document.querySelectorAll('style[data-emotion]');
@@ -14,6 +32,13 @@
           style.setAttribute('type', 'text/css');
         }
       });
+      
+      // Force styles to be applied
+      if (emotionStyles.length > 0) {
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // Force reflow
+        document.body.style.display = '';
+      }
     } catch (error) {
       console.warn('Error ensuring Emotion styles', error);
     }
@@ -52,6 +77,7 @@
     }
   }
 
+  schedule(forceReloadCSS);
   schedule(ensureEmotionStyles);
   schedule(fixCssAsScripts);
 

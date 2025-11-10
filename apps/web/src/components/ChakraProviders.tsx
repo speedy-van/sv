@@ -19,8 +19,9 @@ interface ChakraProvidersProps {
 // This prevents CSS-in-JS from displaying as text on Safari/iOS
 function createEmotionCache() {
   return createCache({
-    key: 'chakra-ui',
+    key: 'chakra',
     prepend: true, // Prepend styles to <head> to ensure they load first
+    speedy: false, // Disable speedy mode for production reliability
   });
 }
 
