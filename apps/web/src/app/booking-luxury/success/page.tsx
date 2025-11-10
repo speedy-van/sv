@@ -81,6 +81,17 @@ export default function BookingSuccessPage() {
   // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
+  // Track page view for Google Ads
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'page_view', {
+        page_title: 'Booking Success',
+        page_location: window.location.href,
+        page_path: window.location.pathname
+      });
+    }
+  }, []);
+
   // Load Trustpilot script
   useEffect(() => {
     // Clean and validate Business Unit ID (remove newlines and whitespace)
@@ -145,6 +156,8 @@ export default function BookingSuccessPage() {
 
         if (data && data.payment_status === 'paid') {
           // Extract booking details from session metadata
+          const bookingAmount = data.amount_total / 100; // Convert from pence to pounds
+          
           setBookingDetails({
             id: data.client_reference_id || 'unknown',
             reference: data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN',
@@ -154,9 +167,31 @@ export default function BookingSuccessPage() {
               email: data.metadata?.customerEmail || data.customer_details?.email || '',
               phone: data.customer_details?.phone || '',
             },
-            totalAmount: data.amount_total / 100, // Convert from pence to pounds
+            totalAmount: bookingAmount,
             scheduledAt: new Date().toISOString(), // Default to now if not available
           });
+
+          // Track Google Ads conversion
+          // NOTE: If you need a specific conversion label, update 'send_to' to:
+          // 'AW-17715630822/YOUR_CONVERSION_LABEL'
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            try {
+              (window as any).gtag('event', 'conversion', {
+                'send_to': 'AW-17715630822',
+                'value': bookingAmount,
+                'currency': 'GBP',
+                'transaction_id': data.metadata?.bookingReference || sessionId
+              });
+              console.log('✅ Google Ads conversion tracked:', {
+                value: bookingAmount,
+                currency: 'GBP',
+                bookingRef: data.metadata?.bookingReference,
+                transactionId: sessionId
+              });
+            } catch (gtagError) {
+              console.error('❌ Google Ads conversion tracking failed:', gtagError);
+            }
+          }
 
           // Show success toast (only once per session)
           const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;

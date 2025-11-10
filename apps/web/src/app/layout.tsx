@@ -151,6 +151,24 @@ export default async function RootLayout({
         {/* Mobile and PWA Meta */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
+
+        {/* Google Ads Global Site Tag */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-17715630822', {
+              'send_page_view': true,
+              'cookie_flags': 'SameSite=None;Secure'
+            });
+            console.log('✅ Google Ads Global Tag initialized');
+          `}
+        </Script>
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <Script src="/scripts/fix-css.js" strategy="beforeInteractive" />
