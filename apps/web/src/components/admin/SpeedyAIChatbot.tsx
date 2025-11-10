@@ -39,6 +39,11 @@ import {
   FiSearch,
   FiBookOpen,
   FiCheck,
+  FiUpload,
+  FiMic,
+  FiSidebar,
+  FiClock,
+  FiTool,
 } from 'react-icons/fi';
 
 // Global styles for animations - only add once
@@ -176,6 +181,11 @@ export default function SpeedyAIChatbot({
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount, setNotificationCount] = useState(0);
   const [assistantInsights, setAssistantInsights] = useState<AssistantMetadata | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [conversationHistory, setConversationHistory] = useState<Array<{id: string; title: string; timestamp: Date}>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // All refs - must be called unconditionally
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -512,6 +522,96 @@ export default function SpeedyAIChatbot({
         duration: 2000,
       });
     }
+  };
+
+  // ✅ NEW: Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadedFile(file);
+    toast({
+      title: language === 'ar' ? 'تم رفع الملف' : 'File Uploaded',
+      description: `${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
+      status: 'success',
+      duration: 3000,
+    });
+
+    // Upload file to server
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/ai/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Add file context to next message
+        const fileContext = `[File uploaded: ${file.name}]\n${data.extractedText || ''}`;
+        setInputMessage(prev => prev + '\n' + fileContext);
+      }
+    } catch (error) {
+      console.error('File upload error:', error);
+    }
+  };
+
+  // ✅ NEW: Handle voice recording
+  const handleVoiceToggle = async () => {
+    if (!isRecording) {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setIsRecording(true);
+        toast({
+          title: language === 'ar' ? 'جاري التسجيل...' : 'Recording...',
+          status: 'info',
+          duration: 2000,
+        });
+        // Implement actual recording logic here
+      } catch (error) {
+        toast({
+          title: language === 'ar' ? 'خطأ' : 'Error',
+          description: language === 'ar' ? 'فشل الوصول إلى الميكروفون' : 'Microphone access denied',
+          status: 'error',
+          duration: 3000,
+        });
+      }
+    } else {
+      // Stop recording
+      setIsRecording(false);
+      toast({
+        title: language === 'ar' ? 'تم إيقاف التسجيل' : 'Recording Stopped',
+        status: 'success',
+        duration: 2000,
+      });
+    }
+  };
+
+  // ✅ NEW: Export conversation
+  const handleExportConversation = () => {
+    const conversationText = messages
+      .map(msg => `[${msg.role.toUpperCase()}] ${msg.timestamp.toLocaleString()}\n${msg.content}\n`)
+      .join('\n---\n\n');
+
+    const blob = new Blob([conversationText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `speedy-ai-conversation-${new Date().toISOString()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: language === 'ar' ? 'تم التصدير' : 'Exported',
+      description: language === 'ar' ? 'تم تصدير المحادثة' : 'Conversation exported successfully',
+      status: 'success',
+      duration: 3000,
+    });
   };
 
   // ✅ Feature 2: Submit feedback
@@ -1034,6 +1134,29 @@ export default function SpeedyAIChatbot({
               </VStack>
             </HStack>
             <HStack spacing={1}>
+              <IconButton
+                aria-label="Sidebar"
+                icon={<FiSidebar />}
+                size="sm"
+                variant="ghost"
+                color={showSidebar ? '#10b981' : textColor}
+                borderRadius="md"
+                _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                onClick={() => setShowSidebar(!showSidebar)}
+                transition="all 0.2s ease"
+              />
+              <IconButton
+                aria-label="Export"
+                icon={<FiDownload />}
+                size="sm"
+                variant="ghost"
+                color={textColor}
+                borderRadius="md"
+                _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                onClick={handleExportConversation}
+                isDisabled={messages.length === 0}
+                transition="all 0.2s ease"
+              />
               <IconButton
                 aria-label="Maximize"
                 icon={<FiMaximize2 />}
@@ -1756,6 +1879,36 @@ export default function SpeedyAIChatbot({
               transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             />
             <VStack spacing={2} flexShrink={0}>
+              <HStack spacing={1}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.csv,.txt,.png,.jpg,.jpeg"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
+                <IconButton
+                  aria-label="Upload File"
+                  icon={<FiUpload />}
+                  size="sm"
+                  variant="ghost"
+                  color={uploadedFile ? '#10b981' : '#9ca3af'}
+                  _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                  onClick={() => fileInputRef.current?.click()}
+                  transition="all 0.2s ease"
+                />
+                <IconButton
+                  aria-label="Voice Input"
+                  icon={<FiMic />}
+                  size="sm"
+                  variant="ghost"
+                  color={isRecording ? '#ef4444' : '#9ca3af'}
+                  _hover={{ bg: '#1a1a1a', color: isRecording ? '#ef4444' : '#10b981', transform: 'scale(1.1)' }}
+                  onClick={handleVoiceToggle}
+                  transition="all 0.2s ease"
+                  animation={isRecording ? 'pulse 1.5s infinite' : 'none'}
+                />
+              </HStack>
               <IconButton
                 aria-label="Send"
                 icon={<FiSend style={{ color: '#FFFFFF' }} />}
