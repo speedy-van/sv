@@ -150,6 +150,20 @@ export default function ContactPage() {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Track Google Ads conversion for lead form submission
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        try {
+          (window as any).gtag('event', 'conversion', {
+            'send_to': 'AW-17715630822/Submit_lead_form_Website',
+            'value': 1.0,
+            'currency': 'GBP'
+          });
+          console.log('✅ Google Ads conversion tracked: Contact form submission');
+        } catch (gtagError) {
+          console.error('❌ Google Ads conversion tracking failed:', gtagError);
+        }
+      }
+      
       toast({
         title: 'Message Sent!',
         description: 'We\'ll get back to you within 2 hours.',

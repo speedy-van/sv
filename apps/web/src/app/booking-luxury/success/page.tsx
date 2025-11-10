@@ -172,12 +172,10 @@ export default function BookingSuccessPage() {
           });
 
           // Track Google Ads conversion
-          // NOTE: If you need a specific conversion label, update 'send_to' to:
-          // 'AW-17715630822/YOUR_CONVERSION_LABEL'
           if (typeof window !== 'undefined' && (window as any).gtag) {
             try {
               (window as any).gtag('event', 'conversion', {
-                'send_to': 'AW-17715630822',
+                'send_to': 'AW-17715630822/Submit_lead_form_Website',
                 'value': bookingAmount,
                 'currency': 'GBP',
                 'transaction_id': data.metadata?.bookingReference || sessionId
