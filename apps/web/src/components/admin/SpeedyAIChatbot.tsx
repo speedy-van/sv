@@ -600,29 +600,7 @@ export default function SpeedyAIChatbot({
     }
   };
 
-  // ✅ NEW: Export conversation
-  const handleExportConversation = () => {
-    const conversationText = messages
-      .map(msg => `[${msg.role.toUpperCase()}] ${msg.timestamp.toLocaleString()}\n${msg.content}\n`)
-      .join('\n---\n\n');
-
-    const blob = new Blob([conversationText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `speedy-ai-conversation-${new Date().toISOString()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: language === 'ar' ? 'تم التصدير' : 'Exported',
-      description: language === 'ar' ? 'تم تصدير المحادثة' : 'Conversation exported successfully',
-      status: 'success',
-      duration: 3000,
-    });
-  };
+  // ✅ NEW: Export conversation (removed duplicate - using Feature 3 version below)
 
   // ✅ Feature 2: Submit feedback
   const handleFeedback = async (messageId: string, feedback: 'up' | 'down') => {
