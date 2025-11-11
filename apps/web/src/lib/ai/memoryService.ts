@@ -5,6 +5,45 @@
 
 import { prisma } from '@/lib/prisma';
 
+type ConversationMessage = {
+  role: string;
+  content: string;
+};
+
+type AIConversationMemoryRecord = {
+  id: string;
+  adminId: string;
+  summary: string;
+  keyTopics: string[];
+  importantDecisions: string[];
+  messageCount: number;
+  metadata: Record<string, unknown> | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type AIConversationMemoryDelegate = {
+  create: (args: {
+    data: {
+      adminId: string;
+      summary: string;
+      keyTopics: string[];
+      importantDecisions: string[];
+      messageCount: number;
+      metadata: Record<string, unknown>;
+    };
+  }) => Promise<unknown>;
+  findMany: (args: {
+    where: { adminId: string };
+    orderBy: { createdAt: 'desc' };
+    take: number;
+  }) => Promise<AIConversationMemoryRecord[]>;
+};
+
+type PrismaWithMemory = typeof prisma & {
+  aIConversationMemory?: AIConversationMemoryDelegate;
+};
+
 export interface ConversationMemory {
   id: string;
   adminId: string;
@@ -12,7 +51,7 @@ export interface ConversationMemory {
   keyTopics: string[];
   importantDecisions: string[];
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ProactiveInsight {
@@ -22,24 +61,32 @@ export interface ProactiveInsight {
   description: string;
   actionable: boolean;
   suggestedAction?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export class MemoryService {
+  private static getMemoryClient(): AIConversationMemoryDelegate | null {
+    const client = (prisma as PrismaWithMemory).aIConversationMemory;
+    if (!client) {
+      console.warn('AIConversationMemory model is not available in Prisma schema.');
+      return null;
+    }
+    return client;
+  }
+
   /**
    * Store conversation summary for long-term memory
    */
   static async storeConversationSummary(
     adminId: string,
-    messages: Array<{ role: string; content: string }>,
+    messages: ConversationMessage[],
     summary: string,
     keyTopics: string[],
     importantDecisions: string[]
   ): Promise<void> {
     try {
-      const memoryClient = (prisma as any).aIConversationMemory;
+      const memoryClient = this.getMemoryClient();
       if (!memoryClient) {
-        console.warn('AIConversationMemory model is not available in Prisma schema.');
         return;
       }
 
@@ -72,31 +119,19 @@ export class MemoryService {
   ): Promise<ConversationMemory[]> {
     try {
       // Get recent memories
-      const memoryClient = (prisma as any).aIConversationMemory;
+      const memoryClient = this.getMemoryClient();
       if (!memoryClient) {
         return [];
       }
 
-      type MemoryRecord = {
-        id: string;
-        adminId: string;
-        summary: string;
-        keyTopics: string[];
-        importantDecisions: string[];
-        messageCount: number;
-        metadata: Record<string, unknown> | null;
-        createdAt: Date;
-        updatedAt: Date;
-      };
-
-      const memories = (await memoryClient.findMany({
+      const memories = await memoryClient.findMany({
         where: { adminId },
         orderBy: { createdAt: 'desc' },
         take: limit * 2, // Get more than needed for filtering
-      })) as MemoryRecord[];
+      });
 
       // Simple relevance scoring based on keyword matching
-      const scoredMemories = memories.map((memory) => {
+      const scoredMemories = memories.map((memory: AIConversationMemoryRecord) => {
         const contextLower = currentContext.toLowerCase();
         let score = 0;
 
@@ -161,7 +196,8 @@ export class MemoryService {
       // Pattern 1: Detect peak times
       const hourCounts = new Array(24).fill(0);
       recentBookings.forEach((booking) => {
-        const hour = booking.scheduledAt.getHours();
+        const scheduled = booking.scheduledAt ?? booking.createdAt;
+        const hour = scheduled instanceof Date ? scheduled.getHours() : new Date(scheduled).getHours();
         hourCounts[hour]++;
       });
 
@@ -218,8 +254,10 @@ export class MemoryService {
       }
 
       // Pattern 4: Weekend booking surge
-      const weekendBookings = recentBookings.filter((b) => {
-        const day = b.scheduledAt.getDay();
+      const weekendBookings = recentBookings.filter((booking) => {
+        const scheduled = booking.scheduledAt ?? booking.createdAt;
+        const date = scheduled instanceof Date ? scheduled : new Date(scheduled);
+        const day = date.getDay();
         return day === 0 || day === 6; // Sunday or Saturday
       }).length;
 
@@ -238,7 +276,7 @@ export class MemoryService {
       }
 
       // Pattern 5: Revenue trend
-      const totalRevenuePence = recentBookings.reduce((sum, b) => sum + (b.totalGBP ?? 0), 0);
+      const totalRevenuePence = recentBookings.reduce((sum, booking) => sum + (booking.totalGBP ?? 0), 0);
       const avgRevenuePerDay = totalRevenuePence / 7 / 100;
 
       if (avgRevenuePerDay < 500) {
@@ -300,7 +338,7 @@ export class MemoryService {
    * Generate conversation summary using AI
    */
   static async generateSummary(
-    messages: Array<{ role: string; content: string }>
+    messages: ConversationMessage[]
   ): Promise<{
     summary: string;
     keyTopics: string[];
