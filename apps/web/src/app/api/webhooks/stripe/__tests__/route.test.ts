@@ -37,22 +37,23 @@ const MockedStripe = Stripe as jest.MockedClass<typeof Stripe>;
 const mockBookingUpdate = jest.fn();
 const mockPaymentCreate = jest.fn();
 const mockEventLogCreate = jest.fn();
+const mockEventLogFindUnique = jest.fn();
 
-jest.mock('@speedy-van/shared/database', () => ({
+jest.mock('@/lib/prisma', () => ({
   prisma: {
     booking: {
       update: mockBookingUpdate,
-      findUnique: jest.fn()
+      findUnique: jest.fn(),
     },
     payment: {
       create: mockPaymentCreate,
-      findUnique: jest.fn()
+      findUnique: jest.fn(),
     },
     webhookEventLog: {
       create: mockEventLogCreate,
-      findUnique: jest.fn()
-    }
-  }
+      findUnique: mockEventLogFindUnique,
+    },
+  },
 }));
 
 describe('Stripe Webhook Handlers', () => {
@@ -314,7 +315,7 @@ describe('Stripe Webhook Handlers', () => {
         processedAt: new Date()
       });
 
-      jest.mocked(require('@/lib/db').prisma.webhookEventLog.findUnique).mockImplementation(mockEventLogFind);
+      mockEventLogFindUnique.mockImplementation(mockEventLogFind);
 
       const { req } = createMocks({
         method: 'POST',
@@ -344,7 +345,7 @@ describe('Stripe Webhook Handlers', () => {
       
       // Mock event log to show this event is new
       const mockEventLogFind = jest.fn().mockResolvedValue(null);
-      jest.mocked(require('@/lib/db').prisma.webhookEventLog.findUnique).mockImplementation(mockEventLogFind);
+      mockEventLogFindUnique.mockImplementation(mockEventLogFind);
 
       mockBookingUpdate.mockResolvedValue({ id: 'booking_123' });
       mockPaymentCreate.mockResolvedValue({ id: 'payment_123' });
