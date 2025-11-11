@@ -81,11 +81,11 @@ export async function GET(request: NextRequest) {
         },
       },
       select: {
-        totalPrice: true,
+        totalGBP: true,
       },
     });
 
-    const todayRevenue = todayBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+    const todayRevenue = todayBookings.reduce((sum, booking) => sum + (booking.totalGBP || 0), 0);
 
     // Generate alerts
     const alerts = [];
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
     const recentActivity = recentBookings.map((booking) => ({
       id: booking.id,
       type: 'booking',
-      description: `New booking from ${booking.customer?.name || 'Unknown'} - ${booking.pickupAddress}`,
+      description: `New booking from ${booking.customer?.name || 'Unknown'} - ${booking.customerName}`,
       timestamp: booking.createdAt,
     }));
 
