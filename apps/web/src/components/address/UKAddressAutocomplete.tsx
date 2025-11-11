@@ -510,19 +510,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     };
 
     if (showSuggestions) {
-      // CRITICAL FIX: Lock body scroll to prevent scroll-to-top bug
-      const savedScrollY = window.scrollY;
-      const savedOverflow = document.body.style.overflow;
-      const savedPosition = document.body.style.position;
-      const savedTop = document.body.style.top;
-      const savedWidth = document.body.style.width;
-      
-      // Lock scroll by fixing body position
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${savedScrollY}px`;
-      document.body.style.width = '100%';
-      
       // Position dropdown relative to viewport to avoid ancestor clipping
       const rect = inputRef.current?.getBoundingClientRect();
       if (rect) {
@@ -530,7 +517,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       }
       
       // Use 'mousedown' event instead of 'click' to avoid interfering with onClick handlers
-      // mousedown fires before click, so we can close the dropdown without blocking onClick
       document.addEventListener('mousedown', handleMouseDownOutside);
       
       const reposition = () => {
@@ -540,23 +526,9 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
         }
       };
       
+      window.addEventListener('scroll', reposition, true);
       window.addEventListener('resize', reposition);
-      // Don't listen to scroll events since we've locked scroll
-      
-      // Cleanup function to restore scroll
-      return () => {
-        document.removeEventListener('mousedown', handleMouseDownOutside);
-        window.removeEventListener('resize', reposition);
-        
-        // Restore body styles
-        document.body.style.overflow = savedOverflow;
-        document.body.style.position = savedPosition;
-        document.body.style.top = savedTop;
-        document.body.style.width = savedWidth;
-        
-        // Restore scroll position
-        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
-      };
+      setTimeout(reposition, 0);
     }
 
     return () => {

@@ -511,51 +511,9 @@ export default function BookingLuxuryPage() {
       window.history.scrollRestoration = 'manual';
     }
 
-    // Prevent scroll by locking body overflow during form interactions
-    let scrollLockTimeout: NodeJS.Timeout | null = null;
-    const savedScrollY = { value: 0 };
-
-    const preventScrollOnFocus = (e: FocusEvent) => {
-      if (!isAutoTransitioning && e.target instanceof HTMLElement) {
-        // Check if target is an input or related to address autocomplete
-        const isFormInput = e.target.tagName === 'INPUT' || 
-                           e.target.tagName === 'TEXTAREA' ||
-                           e.target.closest('[role="combobox"]') !== null;
-        
-        if (isFormInput) {
-          // Save current scroll position
-          savedScrollY.value = window.scrollY;
-          
-          // Clear any existing timeout
-          if (scrollLockTimeout) {
-            clearTimeout(scrollLockTimeout);
-          }
-          
-          // Lock scroll by setting a timeout to restore position
-          scrollLockTimeout = setTimeout(() => {
-            window.scrollTo({ top: savedScrollY.value, behavior: 'instant' as ScrollBehavior });
-          }, 0);
-        }
-      }
-    };
-
-    // Prevent scroll on input events
-    const preventScrollOnInput = () => {
-      if (!isAutoTransitioning) {
-        // Restore scroll position immediately
-        window.scrollTo({ top: savedScrollY.value, behavior: 'instant' as ScrollBehavior });
-      }
-    };
-
-    document.addEventListener('focusin', preventScrollOnFocus, { capture: true });
-    document.addEventListener('input', preventScrollOnInput, { capture: true });
-
+    // No scroll prevention needed - let browser handle it naturally
     return () => {
-      document.removeEventListener('focusin', preventScrollOnFocus, { capture: true });
-      document.removeEventListener('input', preventScrollOnInput, { capture: true });
-      if (scrollLockTimeout) {
-        clearTimeout(scrollLockTimeout);
-      }
+      // Cleanup if needed
     };
   }, [isClient, isAutoTransitioning]);
 
