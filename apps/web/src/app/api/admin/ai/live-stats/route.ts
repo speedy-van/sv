@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
       }),
       prisma.booking.count({
         where: {
-          status: 'IN_PROGRESS',
+          status: 'CONFIRMED',
+          driverId: { not: null }, // Active = confirmed with assigned driver
         },
       }),
       prisma.booking.count({
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
       by: ['driverId'],
       where: {
         driverId: { not: null },
-        status: { in: ['CONFIRMED', 'IN_PROGRESS'] },
+        status: 'CONFIRMED',
       },
     });
 

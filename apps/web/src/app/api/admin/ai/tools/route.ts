@@ -242,7 +242,7 @@ async function getDriverDetails(params: any) {
     include: {
       bookings: {
         where: {
-          status: { in: ['CONFIRMED', 'IN_PROGRESS'] },
+          status: 'CONFIRMED',
         },
         select: {
           id: true,
