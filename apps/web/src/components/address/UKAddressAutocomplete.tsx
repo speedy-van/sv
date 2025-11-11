@@ -17,7 +17,6 @@ import {
   useToast,
   IconButton,
   Fade,
-  ScaleFade,
   Icon,
   InputGroup,
   InputRightElement,
@@ -661,7 +660,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
         {/* Premium Suggestions Dropdown */}
         {showSuggestions && suggestions.length > 0 && (
           <Portal>
-          <ScaleFade in={true} initialScale={0.95}>
             <Box
               ref={dropdownRef}
               position="fixed"
@@ -690,6 +688,8 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                   borderRadius: '3px',
                 },
                 WebkitOverflowScrolling: 'touch',
+                willChange: 'transform',
+                transform: 'translateZ(0)',
               }}
             >
               {suggestions.map((suggestion, index) => (
@@ -790,7 +790,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </HStack>
               </Box>
             </Box>
-          </ScaleFade>
           </Portal>
         )}
         

@@ -514,13 +514,15 @@ export default function BookingLuxuryPage() {
     // Prevent default scroll behavior on focus events
     const preventScrollOnFocus = (e: FocusEvent) => {
       // Only prevent scroll if we're not transitioning between steps
-      if (!isAutoTransitioning) {
-        e.preventDefault();
-        // Manually focus without scrolling
-        const target = e.target as HTMLElement;
-        if (target && typeof target.focus === 'function') {
-          target.focus({ preventScroll: true });
-        }
+      if (!isAutoTransitioning && e.target instanceof HTMLElement) {
+        // Don't prevent default, just ensure focus happens without scroll
+        const target = e.target;
+        // Use setTimeout to ensure this runs after React's focus handling
+        setTimeout(() => {
+          if (document.activeElement !== target) {
+            target.focus({ preventScroll: true });
+          }
+        }, 0);
       }
     };
 
