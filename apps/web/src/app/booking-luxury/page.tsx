@@ -502,6 +502,35 @@ export default function BookingLuxuryPage() {
     }
   }, [searchParams, toast, isClient]);
 
+  // Prevent automatic scroll restoration and scroll-into-view behavior
+  useEffect(() => {
+    if (!isClient) return;
+
+    // Disable automatic scroll restoration
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // Prevent default scroll behavior on focus events
+    const preventScrollOnFocus = (e: FocusEvent) => {
+      // Only prevent scroll if we're not transitioning between steps
+      if (!isAutoTransitioning) {
+        e.preventDefault();
+        // Manually focus without scrolling
+        const target = e.target as HTMLElement;
+        if (target && typeof target.focus === 'function') {
+          target.focus({ preventScroll: true });
+        }
+      }
+    };
+
+    // Add event listener with capture phase to catch all focus events
+    document.addEventListener('focusin', preventScrollOnFocus, { capture: true });
+
+    return () => {
+      document.removeEventListener('focusin', preventScrollOnFocus, { capture: true });
+    };
+  }, [isClient, isAutoTransitioning]);
 
   // Success page is now handled by dedicated /booking/success route
 
@@ -547,6 +576,9 @@ export default function BookingLuxuryPage() {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
+      // Scroll to top when navigating between steps
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      
       setCurrentStep(currentStep - 1);
       clearErrors();
     }
@@ -652,8 +684,15 @@ export default function BookingLuxuryPage() {
       overflowY="auto"
       sx={{
         WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'auto',
+        overscrollBehavior: 'contain',
         scrollBehavior: 'auto',
+        // Prevent automatic scroll on form element focus
+        '& input, & textarea, & select, & button': {
+          scrollMargin: 0,
+        },
+        '& *:focus': {
+          scrollMargin: 0,
+        },
       }}
     >
       <Container 
