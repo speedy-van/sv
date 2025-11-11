@@ -612,13 +612,11 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 <Spinner size="sm" color="blue.400" thickness="2px" />
               ) : value ? (
                 <HStack spacing={1}>
-                  <ScaleFade in={true} initialScale={0.8}>
                     <Icon 
                       as={FaCheckCircle} 
                       color="green.400" 
                       boxSize={4}
                     />
-                  </ScaleFade>
                   <IconButton
                     aria-label="Clear address"
                     icon={<CloseIcon />}
