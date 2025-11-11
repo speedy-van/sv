@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
       prisma.booking.count({
         where: {
           status: 'CONFIRMED',
+          driverId: { not: null }, // Active = confirmed with assigned driver
         },
       }),
       prisma.booking.count({
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
     const recentActivity: RecentActivityItem[] = recentBookings.map((booking) => ({
       id: booking.id,
       type: 'booking',
-      description: `New booking from ${booking.customer?.name ?? booking.customerEmail} - ${
+      description: `New booking from ${booking.customer?.name ?? 'Unknown'} - ${
         booking.pickupAddress?.label ?? 'Pickup address pending'
       }`,
       timestamp: booking.createdAt.toISOString(),

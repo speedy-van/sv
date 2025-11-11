@@ -17,7 +17,6 @@ import {
   useToast,
   IconButton,
   Fade,
-  ScaleFade,
   Icon,
   InputGroup,
   InputRightElement,
@@ -516,13 +515,17 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       if (rect) {
         setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
       }
+      
       // Use 'mousedown' event instead of 'click' to avoid interfering with onClick handlers
-      // mousedown fires before click, so we can close the dropdown without blocking onClick
       document.addEventListener('mousedown', handleMouseDownOutside);
+      
       const reposition = () => {
         const r = inputRef.current?.getBoundingClientRect();
-        if (r) setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
+        if (r) {
+          setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
+        }
       };
+      
       window.addEventListener('scroll', reposition, true);
       window.addEventListener('resize', reposition);
       setTimeout(reposition, 0);
@@ -613,13 +616,11 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 <Spinner size="sm" color="blue.400" thickness="2px" />
               ) : value ? (
                 <HStack spacing={1}>
-                  <ScaleFade in={true} initialScale={0.8}>
                     <Icon 
                       as={FaCheckCircle} 
                       color="green.400" 
                       boxSize={4}
                     />
-                  </ScaleFade>
                   <IconButton
                     aria-label="Clear address"
                     icon={<CloseIcon />}
@@ -661,7 +662,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
         {/* Premium Suggestions Dropdown */}
         {showSuggestions && suggestions.length > 0 && (
           <Portal>
-          <ScaleFade in={true} initialScale={0.95}>
             <Box
               ref={dropdownRef}
               position="fixed"
@@ -690,6 +690,8 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                   borderRadius: '3px',
                 },
                 WebkitOverflowScrolling: 'touch',
+                willChange: 'transform',
+                transform: 'translateZ(0)',
               }}
             >
               {suggestions.map((suggestion, index) => (
@@ -790,7 +792,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </HStack>
               </Box>
             </Box>
-          </ScaleFade>
           </Portal>
         )}
         

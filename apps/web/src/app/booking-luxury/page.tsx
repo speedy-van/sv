@@ -511,24 +511,9 @@ export default function BookingLuxuryPage() {
       window.history.scrollRestoration = 'manual';
     }
 
-    // Prevent default scroll behavior on focus events
-    const preventScrollOnFocus = (e: FocusEvent) => {
-      // Only prevent scroll if we're not transitioning between steps
-      if (!isAutoTransitioning) {
-        e.preventDefault();
-        // Manually focus without scrolling
-        const target = e.target as HTMLElement;
-        if (target && typeof target.focus === 'function') {
-          target.focus({ preventScroll: true });
-        }
-      }
-    };
-
-    // Add event listener with capture phase to catch all focus events
-    document.addEventListener('focusin', preventScrollOnFocus, { capture: true });
-
+    // No scroll prevention needed - let browser handle it naturally
     return () => {
-      document.removeEventListener('focusin', preventScrollOnFocus, { capture: true });
+      // Cleanup if needed
     };
   }, [isClient, isAutoTransitioning]);
 
@@ -539,9 +524,6 @@ export default function BookingLuxuryPage() {
     if (currentStep === 1) {
       // Step 1: Just check addresses exist
       if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
-        // Scroll to top FIRST
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(2);
@@ -558,9 +540,6 @@ export default function BookingLuxuryPage() {
     } else {
       // Other steps - just advance
       if (currentStep < STEPS.length) {
-        // CRITICAL: Scroll to top FIRST (especially for Step 3)
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(currentStep + 1);
@@ -836,12 +815,12 @@ export default function BookingLuxuryPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
               transition={{
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1] // Smooth easing like Uber
+                duration: 0.4,
+                ease: [0.25, 0.1, 0.25, 1] // Premium iOS-style easing
               }}
               style={{ width: '100%' }}
             >
