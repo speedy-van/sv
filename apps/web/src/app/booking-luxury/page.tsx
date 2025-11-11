@@ -511,26 +511,51 @@ export default function BookingLuxuryPage() {
       window.history.scrollRestoration = 'manual';
     }
 
-    // Prevent default scroll behavior on focus events
+    // Prevent scroll by locking body overflow during form interactions
+    let scrollLockTimeout: NodeJS.Timeout | null = null;
+    const savedScrollY = { value: 0 };
+
     const preventScrollOnFocus = (e: FocusEvent) => {
-      // Only prevent scroll if we're not transitioning between steps
       if (!isAutoTransitioning && e.target instanceof HTMLElement) {
-        // Don't prevent default, just ensure focus happens without scroll
-        const target = e.target;
-        // Use setTimeout to ensure this runs after React's focus handling
-        setTimeout(() => {
-          if (document.activeElement !== target) {
-            target.focus({ preventScroll: true });
+        // Check if target is an input or related to address autocomplete
+        const isFormInput = e.target.tagName === 'INPUT' || 
+                           e.target.tagName === 'TEXTAREA' ||
+                           e.target.closest('[role="combobox"]') !== null;
+        
+        if (isFormInput) {
+          // Save current scroll position
+          savedScrollY.value = window.scrollY;
+          
+          // Clear any existing timeout
+          if (scrollLockTimeout) {
+            clearTimeout(scrollLockTimeout);
           }
-        }, 0);
+          
+          // Lock scroll by setting a timeout to restore position
+          scrollLockTimeout = setTimeout(() => {
+            window.scrollTo({ top: savedScrollY.value, behavior: 'instant' as ScrollBehavior });
+          }, 0);
+        }
       }
     };
 
-    // Add event listener with capture phase to catch all focus events
+    // Prevent scroll on input events
+    const preventScrollOnInput = () => {
+      if (!isAutoTransitioning) {
+        // Restore scroll position immediately
+        window.scrollTo({ top: savedScrollY.value, behavior: 'instant' as ScrollBehavior });
+      }
+    };
+
     document.addEventListener('focusin', preventScrollOnFocus, { capture: true });
+    document.addEventListener('input', preventScrollOnInput, { capture: true });
 
     return () => {
       document.removeEventListener('focusin', preventScrollOnFocus, { capture: true });
+      document.removeEventListener('input', preventScrollOnInput, { capture: true });
+      if (scrollLockTimeout) {
+        clearTimeout(scrollLockTimeout);
+      }
     };
   }, [isClient, isAutoTransitioning]);
 

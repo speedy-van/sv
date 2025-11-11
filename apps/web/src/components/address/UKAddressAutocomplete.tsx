@@ -488,6 +488,8 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
 
   // Click outside to close dropdown - use mousedown to avoid interfering with onClick
   useEffect(() => {
+    // Save scroll position at the start to prevent unwanted scrolling
+    const savedScrollY = window.scrollY;
     const handleMouseDownOutside = (event: MouseEvent) => {
         // Check if click is inside dropdown or input
         const target = event.target as Node;
@@ -515,16 +517,32 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       if (rect) {
         setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
       }
+      
+      // CRITICAL: Restore scroll position immediately after positioning to prevent unwanted scroll
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      });
+      
       // Use 'mousedown' event instead of 'click' to avoid interfering with onClick handlers
       // mousedown fires before click, so we can close the dropdown without blocking onClick
       document.addEventListener('mousedown', handleMouseDownOutside);
+      
       const reposition = () => {
+        const currentScrollY = window.scrollY;
         const r = inputRef.current?.getBoundingClientRect();
-        if (r) setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
+        if (r) {
+          setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
+          // Restore scroll after repositioning
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: currentScrollY, behavior: 'instant' as ScrollBehavior });
+          });
+        }
       };
+      
       window.addEventListener('scroll', reposition, true);
       window.addEventListener('resize', reposition);
-      setTimeout(reposition, 0);
+      // Call reposition immediately instead of using setTimeout
+      reposition();
     }
 
     return () => {
