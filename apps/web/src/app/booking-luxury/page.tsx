@@ -524,9 +524,6 @@ export default function BookingLuxuryPage() {
     if (currentStep === 1) {
       // Step 1: Just check addresses exist
       if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
-        // Scroll to top FIRST
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(2);
@@ -543,9 +540,6 @@ export default function BookingLuxuryPage() {
     } else {
       // Other steps - just advance
       if (currentStep < STEPS.length) {
-        // CRITICAL: Scroll to top FIRST (especially for Step 3)
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(currentStep + 1);
@@ -561,9 +555,6 @@ export default function BookingLuxuryPage() {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      // Scroll to top when navigating between steps
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      
       setCurrentStep(currentStep - 1);
       clearErrors();
     }
@@ -821,12 +812,12 @@ export default function BookingLuxuryPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
               transition={{
-                duration: 0.3,
-                ease: [0.4, 0, 0.2, 1] // Smooth easing like Uber
+                duration: 0.4,
+                ease: [0.25, 0.1, 0.25, 1] // Premium iOS-style easing
               }}
               style={{ width: '100%' }}
             >
