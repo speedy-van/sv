@@ -3,7 +3,7 @@
  * Stores conversation summaries and retrieves context for future sessions
  */
 
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export interface ConversationMemory {
   id: string;
@@ -12,7 +12,7 @@ export interface ConversationMemory {
   keyTopics: string[];
   importantDecisions: string[];
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ProactiveInsight {
@@ -22,7 +22,7 @@ export interface ProactiveInsight {
   description: string;
   actionable: boolean;
   suggestedAction?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export class MemoryService {
@@ -73,7 +73,7 @@ export class MemoryService {
       });
 
       // Simple relevance scoring based on keyword matching
-      const scoredMemories = memories.map((memory) => {
+      const scoredMemories = memories.map((memory: { id: string; adminId: string; summary: string; keyTopics: string[]; importantDecisions: string[]; createdAt: Date; messageCount: number; metadata: unknown }) => {
         const contextLower = currentContext.toLowerCase();
         let score = 0;
 
