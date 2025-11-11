@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     // Save file
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
+    await writeFile(filepath, new Uint8Array(buffer));
 
     // Extract text content based on file type
     let extractedText = '';

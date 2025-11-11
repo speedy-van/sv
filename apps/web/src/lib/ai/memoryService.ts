@@ -3,7 +3,7 @@
  * Stores conversation summaries and retrieves context for future sessions
  */
 
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export interface ConversationMemory {
   id: string;
@@ -37,7 +37,13 @@ export class MemoryService {
     importantDecisions: string[]
   ): Promise<void> {
     try {
-      await prisma.aIConversationMemory.create({
+      const memoryClient = (prisma as any).aIConversationMemory;
+      if (!memoryClient) {
+        console.warn('AIConversationMemory model is not available in Prisma schema.');
+        return;
+      }
+
+      await memoryClient.create({
         data: {
           adminId,
           summary,
@@ -66,11 +72,28 @@ export class MemoryService {
   ): Promise<ConversationMemory[]> {
     try {
       // Get recent memories
-      const memories = await prisma.aIConversationMemory.findMany({
+      const memoryClient = (prisma as any).aIConversationMemory;
+      if (!memoryClient) {
+        return [];
+      }
+
+      type MemoryRecord = {
+        id: string;
+        adminId: string;
+        summary: string;
+        keyTopics: string[];
+        importantDecisions: string[];
+        messageCount: number;
+        metadata: Record<string, unknown> | null;
+        createdAt: Date;
+        updatedAt: Date;
+      };
+
+      const memories = (await memoryClient.findMany({
         where: { adminId },
         orderBy: { createdAt: 'desc' },
         take: limit * 2, // Get more than needed for filtering
-      });
+      })) as MemoryRecord[];
 
       // Simple relevance scoring based on keyword matching
       const scoredMemories = memories.map((memory) => {
@@ -78,7 +101,7 @@ export class MemoryService {
         let score = 0;
 
         // Check if key topics match
-        memory.keyTopics.forEach((topic) => {
+        (memory.keyTopics as string[]).forEach((topic) => {
           if (contextLower.includes(topic.toLowerCase())) {
             score += 10;
           }
@@ -100,7 +123,15 @@ export class MemoryService {
       return scoredMemories
         .sort((a, b) => b.score - a.score)
         .slice(0, limit)
-        .map(({ score, ...memory }) => memory as ConversationMemory);
+        .map(({ score, ...memory }) => ({
+          id: memory.id,
+          adminId: memory.adminId,
+          summary: memory.summary,
+          keyTopics: memory.keyTopics,
+          importantDecisions: memory.importantDecisions,
+          timestamp: memory.createdAt,
+          metadata: (memory.metadata ?? undefined) as Record<string, unknown> | undefined,
+        }));
     } catch (error) {
       console.error('Failed to retrieve memories:', error);
       return [];
@@ -130,7 +161,7 @@ export class MemoryService {
       // Pattern 1: Detect peak times
       const hourCounts = new Array(24).fill(0);
       recentBookings.forEach((booking) => {
-        const hour = new Date(booking.pickupDateTime).getHours();
+        const hour = booking.scheduledAt.getHours();
         hourCounts[hour]++;
       });
 
@@ -165,7 +196,7 @@ export class MemoryService {
 
       // Pattern 3: Driver utilization
       const activeDrivers = await prisma.driver.count({
-        where: { status: 'ACTIVE' },
+        where: { status: 'active' },
       });
 
       const assignedDrivers = new Set(
@@ -188,7 +219,7 @@ export class MemoryService {
 
       // Pattern 4: Weekend booking surge
       const weekendBookings = recentBookings.filter((b) => {
-        const day = new Date(b.pickupDateTime).getDay();
+        const day = b.scheduledAt.getDay();
         return day === 0 || day === 6; // Sunday or Saturday
       }).length;
 
@@ -207,8 +238,8 @@ export class MemoryService {
       }
 
       // Pattern 5: Revenue trend
-      const totalRevenue = recentBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-      const avgRevenuePerDay = totalRevenue / 7;
+      const totalRevenuePence = recentBookings.reduce((sum, b) => sum + (b.totalGBP ?? 0), 0);
+      const avgRevenuePerDay = totalRevenuePence / 7 / 100;
 
       if (avgRevenuePerDay < 500) {
         insights.push({
@@ -218,7 +249,7 @@ export class MemoryService {
           description: `Your average daily revenue is below target. Consider promotional campaigns or pricing adjustments.`,
           actionable: true,
           suggestedAction: 'Review pricing strategy and marketing efforts',
-          data: { totalRevenue, avgRevenuePerDay },
+          data: { totalRevenue: totalRevenuePence / 100, avgRevenuePerDay },
         });
       }
     } catch (error) {

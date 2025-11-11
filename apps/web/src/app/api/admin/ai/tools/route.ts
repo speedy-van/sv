@@ -122,18 +122,34 @@ async function getBookingDetails(params: any) {
         },
       },
       driver: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-          vehicleType: true,
+        include: {
+          User: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
         },
       },
       route: {
         select: {
           id: true,
-          name: true,
+          reference: true,
           status: true,
+        },
+      },
+      pickupAddress: {
+        select: {
+          label: true,
+          postcode: true,
+        },
+      },
+      dropoffAddress: {
+        select: {
+          label: true,
+          postcode: true,
         },
       },
     },
@@ -148,14 +164,24 @@ async function getBookingDetails(params: any) {
       id: booking.id,
       reference: booking.reference,
       status: booking.status,
-      pickupAddress: booking.pickupAddress,
-      dropoffAddress: booking.dropoffAddress,
+      pickupAddress: booking.pickupAddress?.label ?? null,
+      dropoffAddress: booking.dropoffAddress?.label ?? null,
       scheduledAt: booking.scheduledAt,
       totalGBP: booking.totalGBP ? booking.totalGBP / 100 : 0,
-      distance: booking.distance,
-      duration: booking.duration,
+      distanceKm: booking.distanceMeters ? booking.distanceMeters / 1000 : null,
+      durationMinutes: booking.durationSeconds ? Math.round(booking.durationSeconds / 60) : null,
       customer: booking.customer,
-      driver: booking.driver,
+      driver: booking.driver
+        ? {
+            id: booking.driver.id,
+            name: booking.driver.User?.name ?? null,
+            email: booking.driver.User?.email ?? null,
+            phone: booking.driver.User?.phone ?? null,
+            vehicleType: booking.driver.vehicleType,
+            status: booking.driver.status,
+            onboardingStatus: booking.driver.onboardingStatus,
+          }
+        : null,
       route: booking.route,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
@@ -178,7 +204,19 @@ async function searchBookings(params: any) {
         select: { name: true, email: true },
       },
       driver: {
-        select: { name: true },
+        include: {
+          User: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+      pickupAddress: {
+        select: { label: true },
+      },
+      dropoffAddress: {
+        select: { label: true },
       },
     },
     orderBy: { createdAt: 'desc' },
@@ -193,12 +231,17 @@ async function searchBookings(params: any) {
       id: b.id,
       reference: b.reference,
       status: b.status,
-      pickupAddress: b.pickupAddress,
-      dropoffAddress: b.dropoffAddress,
+      pickupAddress: b.pickupAddress?.label ?? null,
+      dropoffAddress: b.dropoffAddress?.label ?? null,
       scheduledAt: b.scheduledAt,
       totalGBP: b.totalGBP ? b.totalGBP / 100 : 0,
       customer: b.customer,
-      driver: b.driver,
+      driver: b.driver
+        ? {
+            id: b.driver.id,
+            name: b.driver.User?.name ?? null,
+          }
+        : null,
     })),
     total,
     limit,
@@ -218,7 +261,11 @@ async function assignDriver(params: any) {
     data: { driverId },
     include: {
       driver: {
-        select: { name: true, phone: true },
+        include: {
+          User: {
+            select: { name: true, phone: true, email: true },
+          },
+        },
       },
     },
   });
@@ -228,9 +275,16 @@ async function assignDriver(params: any) {
     booking: {
       id: booking.id,
       reference: booking.reference,
-      driver: booking.driver,
+      driver: booking.driver
+        ? {
+            id: booking.driver.id,
+            name: booking.driver.User?.name ?? null,
+            email: booking.driver.User?.email ?? null,
+            phone: booking.driver.User?.phone ?? null,
+          }
+        : null,
     },
-    message: `Driver ${booking.driver?.name} assigned successfully`,
+    message: `Driver ${booking.driver?.User?.name ?? 'unknown'} assigned successfully`,
   };
 }
 
@@ -240,9 +294,16 @@ async function getDriverDetails(params: any) {
   const driver = await prisma.driver.findUnique({
     where: { id: driverId },
     include: {
-      bookings: {
+      User: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      Booking: {
         where: {
-          status: { in: ['CONFIRMED', 'IN_PROGRESS'] },
+          status: 'CONFIRMED',
         },
         select: {
           id: true,
@@ -261,13 +322,13 @@ async function getDriverDetails(params: any) {
   return {
     driver: {
       id: driver.id,
-      name: driver.name,
-      email: driver.email,
-      phone: driver.phone,
+      name: driver.User?.name ?? null,
+      email: driver.User?.email ?? null,
+      phone: driver.User?.phone ?? null,
       status: driver.status,
       vehicleType: driver.vehicleType,
       onboardingStatus: driver.onboardingStatus,
-      activeBookings: driver.bookings,
+      activeBookings: driver.Booking,
     },
   };
 }
@@ -283,16 +344,31 @@ async function searchDrivers(params: any) {
     where,
     select: {
       id: true,
-      name: true,
-      phone: true,
       status: true,
       vehicleType: true,
       onboardingStatus: true,
+      User: {
+        select: {
+          name: true,
+          phone: true,
+          email: true,
+        },
+      },
     },
     take: limit,
   });
 
-  return { drivers };
+  return {
+    drivers: drivers.map((driver) => ({
+      id: driver.id,
+      name: driver.User?.name ?? null,
+      phone: driver.User?.phone ?? null,
+      email: driver.User?.email ?? null,
+      status: driver.status,
+      vehicleType: driver.vehicleType,
+      onboardingStatus: driver.onboardingStatus,
+    })),
+  };
 }
 
 async function getCustomerDetails(params: any) {
@@ -301,7 +377,7 @@ async function getCustomerDetails(params: any) {
   const customer = await prisma.user.findFirst({
     where: customerId ? { id: customerId } : { email },
     include: {
-      bookings: {
+      Booking: {
         orderBy: { createdAt: 'desc' },
         take: 10,
         select: {
@@ -310,6 +386,9 @@ async function getCustomerDetails(params: any) {
           status: true,
           scheduledAt: true,
           totalGBP: true,
+          pickupAddress: {
+            select: { label: true },
+          },
         },
       },
     },
@@ -325,9 +404,10 @@ async function getCustomerDetails(params: any) {
       name: customer.name,
       email: customer.email,
       phone: customer.phone,
-      recentBookings: customer.bookings.map((b) => ({
+      recentBookings: customer.Booking.map((b) => ({
         ...b,
         totalGBP: b.totalGBP ? b.totalGBP / 100 : 0,
+        pickupAddress: b.pickupAddress?.label ?? null,
       })),
     },
   };
@@ -363,14 +443,23 @@ async function getRouteDetails(params: any) {
     where: { id: routeId },
     include: {
       driver: {
-        select: { name: true, phone: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
       },
-      bookings: {
+      Booking: {
         select: {
           id: true,
           reference: true,
-          pickupAddress: true,
-          dropoffAddress: true,
+          pickupAddress: {
+            select: { label: true },
+          },
+          dropoffAddress: {
+            select: { label: true },
+          },
           status: true,
         },
       },
@@ -387,13 +476,15 @@ async function getRouteDetails(params: any) {
 async function createRoute(params: any) {
   const { name, driverId, bookingIds } = params;
 
-  // This is a simplified version - you'd need to implement full route creation logic
+  const reference = name || `ROUTE-${new Date().toISOString()}`;
+
   const route = await prisma.route.create({
     data: {
-      name: name || `Route ${new Date().toISOString()}`,
-      driverId,
-      status: 'pending',
-      // Add other required fields based on your schema
+      reference,
+      driverId: driverId || null,
+      status: 'planned',
+      startTime: new Date(),
+      totalDrops: Array.isArray(bookingIds) ? bookingIds.length : 0,
     },
   });
 
@@ -401,7 +492,8 @@ async function createRoute(params: any) {
     success: true,
     route: {
       id: route.id,
-      name: route.name,
+      reference: route.reference,
+      status: route.status,
     },
     message: 'Route created successfully',
   };

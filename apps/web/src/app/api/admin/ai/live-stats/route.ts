@@ -1,23 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
+type AlertType = 'info' | 'warning' | 'error';
+
+interface LiveStatAlert {
+  id: string;
+  type: AlertType;
+  message: string;
+  timestamp: string;
+}
+
+interface RecentActivityItem {
+  id: string;
+  type: 'booking';
+  description: string;
+  timestamp: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    if (!session?.user || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
     }
 
-    // Get today's date range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Fetch bookings
     const [totalBookings, pendingBookings, activeBookings, completedToday] = await Promise.all([
       prisma.booking.count({
         where: {
@@ -35,7 +51,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.booking.count({
         where: {
-          status: 'IN_PROGRESS',
+          status: 'CONFIRMED',
         },
       }),
       prisma.booking.count({
@@ -49,29 +65,26 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // Fetch drivers
     const [activeDrivers, totalDrivers] = await Promise.all([
       prisma.driver.count({
         where: {
-          status: 'ACTIVE',
+          status: 'active',
         },
       }),
       prisma.driver.count(),
     ]);
 
-    // Calculate utilization rate
     const driversWithBookings = await prisma.booking.groupBy({
       by: ['driverId'],
       where: {
         driverId: { not: null },
-        status: { in: ['CONFIRMED', 'IN_PROGRESS'] },
+        status: 'CONFIRMED',
       },
     });
 
     const utilizationRate = activeDrivers > 0 ? (driversWithBookings.length / activeDrivers) * 100 : 0;
 
-    // Calculate today's revenue
-    const todayBookings = await prisma.booking.findMany({
+    const todayCompletedBookings = await prisma.booking.findMany({
       where: {
         status: 'COMPLETED',
         updatedAt: {
@@ -80,21 +93,24 @@ export async function GET(request: NextRequest) {
         },
       },
       select: {
-        totalPrice: true,
+        totalGBP: true,
       },
     });
 
-    const todayRevenue = todayBookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
+    const todayRevenuePence = todayCompletedBookings.reduce<number>(
+      (sum, booking) => sum + (booking.totalGBP ?? 0),
+      0
+    );
+    const todayRevenue = todayRevenuePence / 100;
 
-    // Generate alerts
-    const alerts = [];
+    const alerts: LiveStatAlert[] = [];
 
     if (pendingBookings > 5) {
       alerts.push({
         id: 'pending-bookings',
         type: 'warning',
         message: `${pendingBookings} bookings are pending driver assignment`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -103,7 +119,7 @@ export async function GET(request: NextRequest) {
         id: 'low-utilization',
         type: 'info',
         message: `Driver utilization is low at ${utilizationRate.toFixed(0)}%`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -112,25 +128,36 @@ export async function GET(request: NextRequest) {
         id: 'low-drivers',
         type: 'error',
         message: `Only ${activeDrivers} drivers are currently active`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       });
     }
 
-    // Get recent activity
     const recentBookings = await prisma.booking.findMany({
       orderBy: { createdAt: 'desc' },
       take: 10,
       include: {
-        customer: true,
-        driver: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        pickupAddress: {
+          select: {
+            label: true,
+            postcode: true,
+          },
+        },
       },
     });
 
-    const recentActivity = recentBookings.map((booking) => ({
+    const recentActivity: RecentActivityItem[] = recentBookings.map((booking) => ({
       id: booking.id,
       type: 'booking',
-      description: `New booking from ${booking.customer?.name || 'Unknown'} - ${booking.pickupAddress}`,
-      timestamp: booking.createdAt,
+      description: `New booking from ${booking.customer?.name ?? booking.customerEmail} - ${
+        booking.pickupAddress?.label ?? 'Pickup address pending'
+      }`,
+      timestamp: booking.createdAt.toISOString(),
     }));
 
     return NextResponse.json({
