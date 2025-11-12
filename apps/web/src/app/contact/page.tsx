@@ -59,7 +59,7 @@ const contactMethods = [
     icon: FiPhone,
     color: 'blue',
     contact: '+44 1202129746',
-    availability: '24/7 Support',
+    availability: '9AM-6PM, 7 Days/Week',
     action: () => window.open('tel:+441202129746')
   },
   {
@@ -92,10 +92,10 @@ const contactMethods = [
 ];
 
 const officeHours = [
-  { day: 'Monday - Friday', hours: '8:00 AM - 8:00 PM' },
-  { day: 'Saturday', hours: '9:00 AM - 6:00 PM' },
-  { day: 'Sunday', hours: '10:00 AM - 4:00 PM' },
-  { day: 'Emergency', hours: '24/7 Available' }
+  { day: 'Monday - Sunday', hours: '9:00 AM - 6:00 PM' },
+  { day: 'Phone Support', hours: '7 Days a Week' },
+  { day: 'Online Booking', hours: '24/7 Available' },
+  { day: 'Emergency', hours: 'Call Anytime' }
 ];
 
 const services = [

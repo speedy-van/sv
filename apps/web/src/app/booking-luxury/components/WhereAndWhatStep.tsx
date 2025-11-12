@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { itemCardVariants, buttonVariants, quantityVariants } from '../animations';
 import {
   Box,
   VStack,
@@ -207,7 +210,23 @@ export default function WhereAndWhatStep({
     });
   };
 
-  const updateQuantity = (itemId: any, quantity: number, item?: any) => {
+  // CRITICAL FIX: Scroll preservation using useLayoutEffect
+  const scrollPositionRef = useRef<number>(0);
+  const isUpdatingRef = useRef<boolean>(false);
+
+  // Restore scroll position BEFORE browser paints
+  useLayoutEffect(() => {
+    if (isUpdatingRef.current && scrollPositionRef.current > 0) {
+      window.scrollTo(0, scrollPositionRef.current);
+      isUpdatingRef.current = false;
+    }
+  }, [step1.items]);
+
+  const updateQuantity = useCallback((itemId: any, quantity: number, item?: any) => {
+    // Save current scroll position
+    scrollPositionRef.current = window.scrollY;
+    isUpdatingRef.current = true;
+    
     if (quantity === 0) {
       removeItem(itemId);
     } else {
@@ -215,35 +234,42 @@ export default function WhereAndWhatStep({
       const existingItem = currentItems.find((i: any) => i.id === itemId);
       
       if (existingItem) {
-        // Update existing item - create new array to ensure change detection
+        // Update existing item
         const updatedItems = currentItems.map((i: any) =>
           i.id === itemId ? { ...i, quantity } : i
         );
-        // Force update by creating a new array reference
         updateFormData('step1', {
           items: [...updatedItems]
         });
       } else if (item) {
-        // Add new item if it doesn't exist
+        // Add new item
         const newItem = { ...item, quantity };
         updateFormData('step1', {
           items: [...currentItems, newItem]
         });
       } else {
-        // Fallback: try to find item from displayed items
         console.warn(`Item ${itemId} not found in current items and no item provided`);
-        // Don't add item without proper data - log warning only
       }
     }
-  };
+  }, [step1.items, updateFormData]);
 
   const getItemQuantity = (itemId: any) => {
     const item = step1.items.find(i => i.id === itemId);
     return item ? item.quantity : 0;
   };
 
+
   return (
-    <Container maxW={{ base: "full", md: "6xl" }} px={{ base: 4, md: 8 }} py={{ base: 6, md: 8 }}>
+    <Container 
+      maxW={{ base: "full", md: "6xl" }} 
+      px={{ base: 4, md: 8 }} 
+      py={{ base: 6, md: 8 }}
+      sx={{
+        // CRITICAL FIX: Prevent scroll jumps during state updates
+        scrollBehavior: 'auto',
+        overscrollBehavior: 'contain',
+      }}
+    >
       <VStack spacing={{ base: 6, md: 8 }} align="stretch">
         
         {/* Header */}
@@ -680,33 +706,79 @@ export default function WhereAndWhatStep({
               {/* Search Mode */}
               {itemSelectionMode === 'smart' && (
                 <VStack spacing={4} w="full">
-                  <Input
-                    size="lg"
-                    placeholder="Search from 666 items (e.g., 'sofa', 'bed', 'kitchen')"
-                    bg="rgba(17, 24, 39, 0.8)"
-                    border="2px solid"
-                    borderColor="rgba(168, 85, 247, 0.3)"
-                    color="white"
-                    _placeholder={{ color: "gray.400" }}
-                    _hover={{ borderColor: 'rgba(168, 85, 247, 0.5)' }}
-                    _focus={{ 
-                      borderColor: 'rgba(168, 85, 247, 0.6)',
-                      boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)"
-                    }}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                  {/* Sticky Search Bar on Mobile */}
+                  <Box 
+                    position={{ base: 'sticky', md: 'relative' }}
+                    top={{ base: '0', md: 'auto' }}
+                    zIndex={{ base: 10, md: 'auto' }}
+                    w="full"
+                    bg={{ base: 'rgba(17, 24, 39, 0.95)', md: 'transparent' }}
+                    py={{ base: 2, md: 0 }}
+                    backdropFilter={{ base: 'blur(10px)', md: 'none' }}
+                  >
+                  <InputGroup size="lg">
+                    <InputLeftElement pointerEvents="none">
+                      <Icon as={FaSearch} color="gray.400" />
+                    </InputLeftElement>
+                    <Input
+                      placeholder="Search items by name, category, or room (e.g., 'bed', 'sofa', 'kitchen')"
+                      bg="rgba(17, 24, 39, 0.8)"
+                      border="2px solid"
+                      borderColor="rgba(168, 85, 247, 0.3)"
+                      color="white"
+                      _placeholder={{ color: "gray.400" }}
+                      _hover={{ borderColor: 'rgba(168, 85, 247, 0.5)' }}
+                      _focus={{ 
+                        borderColor: 'rgba(168, 85, 247, 0.6)',
+                        boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)"
+                      }}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </InputGroup>
                   
-                  <Text fontSize="sm" color="gray.400">
-                    Found {displayedItems.length} items
-                  </Text>
+                  {searchQuery && (
+                    <HStack w="full" justify="space-between">
+                      <Text fontSize="sm" color="gray.400">
+                        Found {displayedItems.length} item{displayedItems.length !== 1 ? 's' : ''}
+                      </Text>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="purple"
+                        onClick={() => setSearchQuery('')}
+                      >
+                        Clear search
+                      </Button>
+                    </HStack>
+                  )}
+                  </Box>
 
                   {/* Items Grid - 2 Columns on Mobile */}
-                  <SimpleGrid columns={[2, 2, 2, 4, 5]} spacing={{ base: 2, md: 3 }} w="full">
-                    {displayedItems.slice(0, 50).map((item) => {
+                  <SimpleGrid 
+                    columns={[2, 2, 2, 4, 5]} 
+                    spacing={{ base: 2, md: 3 }} 
+                    w="full"
+                    sx={{
+                      // CRITICAL FIX: Prevent scroll jumps during item updates
+                      contain: 'layout style',
+                      willChange: 'contents',
+                    }}
+                  >
+                    {displayedItems.slice(0, 50).map((item, index) => {
                       const quantity = getItemQuantity(item.id);
                       return (
-                        <VStack key={item.id} spacing={2} align="center" w="full">
+                        <motion.div
+                          key={item.id}
+                          custom={index}
+                          initial="hidden"
+                          animate="visible"
+                          whileHover="hover"
+                          whileTap="tap"
+                          variants={itemCardVariants}
+                          style={{ width: '100%' }}
+                        >
+                          <VStack spacing={2} align="center" w="full">
                           <Box 
                             w="100%" 
                             h={{ base: "120px", sm: "140px", md: "160px" }} 
@@ -750,6 +822,7 @@ export default function WhereAndWhatStep({
                               cursor={quantity > 0 ? "pointer" : "not-allowed"}
                               opacity={quantity > 0 ? 1 : 0.3}
                               onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 if (quantity > 0) {
                                   updateQuantity(item.id, quantity - 1, item);
@@ -773,28 +846,37 @@ export default function WhereAndWhatStep({
                             >
                               <Icon as={FaMinus} fontSize={{ base: "lg", sm: "lg", md: "lg" }} color="white" />
                             </Box>
-                            <Text 
-                              fontSize={{ base: "xs", sm: "sm" }} 
-                              color="white" 
-                              fontWeight="bold"
-                              textAlign="center"
-                              sx={{
-                                '@media (max-width: 767px)': {
-                                  minWidth: 'auto',
-                                  padding: '0',
-                                },
-                                '@media (min-width: 768px)': {
-                                  minWidth: '24px',
-                                  padding: '0 4px',
-                                },
-                              }}
+                            <motion.span
+                              key={`quantity-${item.id}-${quantity}`}
+                              initial="initial"
+                              animate="change"
+                              variants={quantityVariants}
+                              style={{ display: 'inline-block' }}
                             >
-                              {quantity}
-                            </Text>
+                              <Text 
+                                fontSize={{ base: "xs", sm: "sm" }} 
+                                color="white" 
+                                fontWeight="bold"
+                                textAlign="center"
+                                sx={{
+                                  '@media (max-width: 767px)': {
+                                    minWidth: 'auto',
+                                    padding: '0',
+                                  },
+                                  '@media (min-width: 768px)': {
+                                    minWidth: '24px',
+                                    padding: '0 4px',
+                                  },
+                                }}
+                              >
+                                {quantity}
+                              </Text>
+                            </motion.span>
                             <Box
                               as="button"
                               cursor="pointer"
                               onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 updateQuantity(item.id, quantity + 1, item);
                               }}
@@ -817,6 +899,7 @@ export default function WhereAndWhatStep({
                             </Box>
                           </Box>
                         </VStack>
+                        </motion.div>
                       );
                     })}
                   </SimpleGrid>
@@ -1071,12 +1154,31 @@ export default function WhereAndWhatStep({
                   </Text>
                   
                   {/* Items Grid - 2 Columns on Mobile */}
-                  <SimpleGrid columns={[2, 2, 2, 4, 5]} spacing={{ base: 2, md: 3 }} w="full">
-                    {displayedItems.slice(0, 100).map((item) => {
+                  <SimpleGrid 
+                    columns={[2, 2, 2, 4, 5]} 
+                    spacing={{ base: 2, md: 3 }} 
+                    w="full"
+                    sx={{
+                      // CRITICAL FIX: Prevent scroll jumps during item updates
+                      contain: 'layout style',
+                      willChange: 'contents',
+                    }}
+                  >
+                    {displayedItems.slice(0, 100).map((item, index) => {
                       const quantity = getItemQuantity(item.id);
                       return (
-                        <VStack key={item.id} spacing={2} align="center" w="full">
-                          <Box 
+                        <motion.div
+                          key={item.id}
+                          custom={index}
+                          initial="hidden"
+                          animate="visible"
+                          whileHover="hover"
+                          whileTap="tap"
+                          variants={itemCardVariants}
+                          style={{ width: '100%' }}
+                        >
+                          <VStack spacing={2} align="center" w="full">
+                            <Box 
                             w="100%" 
                             h={{ base: "120px", sm: "140px", md: "160px" }} 
                             borderRadius="lg" 
@@ -1119,6 +1221,7 @@ export default function WhereAndWhatStep({
                               cursor={quantity > 0 ? "pointer" : "not-allowed"}
                               opacity={quantity > 0 ? 1 : 0.3}
                               onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 if (quantity > 0) {
                                   updateQuantity(item.id, quantity - 1, item);
@@ -1142,28 +1245,37 @@ export default function WhereAndWhatStep({
                             >
                               <Icon as={FaMinus} fontSize={{ base: "lg", sm: "lg", md: "lg" }} color="white" />
                             </Box>
-                            <Text 
-                              fontSize={{ base: "xs", sm: "sm" }} 
-                              color="white" 
-                              fontWeight="bold"
-                              textAlign="center"
-                              sx={{
-                                '@media (max-width: 767px)': {
-                                  minWidth: 'auto',
-                                  padding: '0',
-                                },
-                                '@media (min-width: 768px)': {
-                                  minWidth: '24px',
-                                  padding: '0 4px',
-                                },
-                              }}
+                            <motion.span
+                              key={`quantity-${item.id}-${quantity}`}
+                              initial="initial"
+                              animate="change"
+                              variants={quantityVariants}
+                              style={{ display: 'inline-block' }}
                             >
-                              {quantity}
-                            </Text>
+                              <Text 
+                                fontSize={{ base: "xs", sm: "sm" }} 
+                                color="white" 
+                                fontWeight="bold"
+                                textAlign="center"
+                                sx={{
+                                  '@media (max-width: 767px)': {
+                                    minWidth: 'auto',
+                                    padding: '0',
+                                  },
+                                  '@media (min-width: 768px)': {
+                                    minWidth: '24px',
+                                    padding: '0 4px',
+                                  },
+                                }}
+                              >
+                                {quantity}
+                              </Text>
+                            </motion.span>
                             <Box
                               as="button"
                               cursor="pointer"
                               onClick={(e: React.MouseEvent) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 updateQuantity(item.id, quantity + 1, item);
                               }}
@@ -1186,6 +1298,7 @@ export default function WhereAndWhatStep({
                             </Box>
                           </Box>
                         </VStack>
+                        </motion.div>
                       );
                     })}
                   </SimpleGrid>

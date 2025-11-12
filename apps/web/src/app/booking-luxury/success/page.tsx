@@ -177,10 +177,10 @@ export default function BookingSuccessPage() {
               const transactionId =
                 data.metadata?.bookingReference || bookingRef || sessionId;
               (window as any).gtag('event', 'conversion', {
-                send_to: 'AW-17715630822/Submit_lead_form_Website',
-                value: bookingAmount,
-                currency: 'GBP',
-                transaction_id: transactionId || 'unknown',
+                'send_to': 'AW-17715630822/4VHOCMuItL4bEOalvP9B',
+                'value': bookingAmount,
+                'currency': 'GBP',
+                'transaction_id': transactionId
               });
               console.log('✅ Google Ads conversion tracked:', {
                 value: bookingAmount,

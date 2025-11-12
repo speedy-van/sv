@@ -74,7 +74,7 @@ const HomeFooter: React.FC = () => {
     { icon: FiShield, text: 'Fully Insured', color: '#00D18F' },
     { icon: FiAward, text: '50K+ Customers', color: '#00C2FF' },
     { icon: FiHeart, text: '5-Star Rated', color: '#FFD700' },
-    { icon: FiClock, text: '24/7 Support', color: '#9F7AEA' },
+    { icon: FiClock, text: '24/7 Online Booking', color: '#9F7AEA' },
   ];
 
   return (
@@ -281,6 +281,9 @@ const HomeFooter: React.FC = () => {
                   >
                     01202129764
                   </Link>
+                  <Text fontSize="xs" color="whiteAlpha.700">
+                    9AM - 6PM, 7 Days a Week
+                  </Text>
                 </VStack>
 
                 <VStack align="start" spacing={1}>
