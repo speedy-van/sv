@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -35,6 +35,7 @@ import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { stepTransition } from './animations';
 import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
@@ -83,10 +84,13 @@ export default function BookingLuxuryPage() {
   
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
+  const scrollPositionRef = useRef(0);
+  const isUpdatingRef = useRef(false);
 
+  // CRITICAL FIX: Global scroll preservation during state updates
   const {
     formData,
-    updateFormData,
+    updateFormData: originalUpdateFormData,
     validateStep,
     isStepValid,
     errors,
@@ -98,6 +102,13 @@ export default function BookingLuxuryPage() {
     removePromotionCode,
   } = useBookingForm();
 
+  // Wrap updateFormData with scroll preservation
+  const updateFormData = useCallback((step: string, data: any) => {
+    isUpdatingRef.current = true;
+    scrollPositionRef.current = window.scrollY;
+    originalUpdateFormData(step, data);
+  }, [originalUpdateFormData]);
+
 
   // Enterprise Engine: Automatic availability & pricing with full addresses
   const [availabilityData, setAvailabilityData] = useState<any>(null);
@@ -108,6 +119,28 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
+  // CRITICAL FIX: Track scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!isUpdatingRef.current) {
+        scrollPositionRef.current = window.scrollY;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // CRITICAL FIX: Preserve scroll position during formData updates
+  useEffect(() => {
+    if (isUpdatingRef.current) {
+      window.scrollTo(0, scrollPositionRef.current);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPositionRef.current);
+        isUpdatingRef.current = false;
+      });
+    }
+  }, [formData]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
@@ -502,20 +535,19 @@ export default function BookingLuxuryPage() {
     }
   }, [searchParams, toast, isClient]);
 
-  // Prevent automatic scroll restoration and scroll-into-view behavior
+  // CRITICAL FIX: Allow automatic scroll restoration for better UX
   useEffect(() => {
     if (!isClient) return;
 
-    // Disable automatic scroll restoration
+    // Enable automatic scroll restoration to prevent jumps during state updates
     if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
+      window.history.scrollRestoration = 'auto';
     }
 
-    // No scroll prevention needed - let browser handle it naturally
     return () => {
       // Cleanup if needed
     };
-  }, [isClient, isAutoTransitioning]);
+  }, [isClient]);
 
   // Success page is now handled by dedicated /booking/success route
 
@@ -662,12 +694,18 @@ export default function BookingLuxuryPage() {
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
         scrollBehavior: 'auto',
+        // CRITICAL FIX: Prevent scroll jumps during state updates
+        contain: 'layout',
+        overflowAnchor: 'none', // Disable scroll anchoring
         // Prevent automatic scroll on form element focus
         '& input, & textarea, & select, & button': {
           scrollMargin: 0,
         },
         '& *:focus': {
           scrollMargin: 0,
+        },
+        '& *': {
+          overflowAnchor: 'none', // Disable for all children
         },
       }}
     >
@@ -812,13 +850,9 @@ export default function BookingLuxuryPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStep}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.98 }}
-              transition={{
-                duration: 0.4,
-                ease: [0.25, 0.1, 0.25, 1] // Premium iOS-style easing
-              }}
+              initial={stepTransition.initial}
+              animate={stepTransition.animate}
+              exit={stepTransition.exit}
               style={{ width: '100%' }}
             >
               <Box w="full">

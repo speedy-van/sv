@@ -334,6 +334,13 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     
     // Then update input value
     setInputValue(suggestion.displayText);
+    
+    // CRITICAL FIX: Prevent auto-scroll when input regains focus
+    // Keep focus on input without triggering scroll behavior
+    if (inputRef.current) {
+      // Use preventScroll to avoid browser's default scroll-into-view behavior
+      inputRef.current.focus({ preventScroll: true });
+    }
     setIsLoading(true);
     setApiError('');
 
@@ -397,6 +404,13 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       };
 
       onChange(completeAddress);
+
+      // CRITICAL FIX: Maintain scroll position after state update
+      // Prevent any scroll jumps by keeping current scroll position
+      if (inputRef.current) {
+        // Ensure input stays in current position without scrolling
+        inputRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+      }
 
       // Brief success indication without toast (cleaner UX)
       console.log(`✅ Address selected from ${fullAddressData.provider}:`, completeAddress.full);

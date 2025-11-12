@@ -5357,18 +5357,59 @@ export function filterItemsByCategory(category: string): RemovalItem[] {
   return ALL_REMOVAL_ITEMS.filter(item => item.category === category);
 }
 
+/**
+ * Enhanced smart search with relevance scoring
+ * Searches across name, category, and folder with intelligent matching
+ */
 export function searchItems(query: string): RemovalItem[] {
   if (!query || query.trim() === '') {
     return ALL_REMOVAL_ITEMS;
   }
   
   const lowerQuery = query.toLowerCase().trim();
+  const queryWords = lowerQuery.split(/\s+/);
   
-  return ALL_REMOVAL_ITEMS.filter(item => 
-    item.name.toLowerCase().includes(lowerQuery) ||
-    item.category.toLowerCase().includes(lowerQuery) ||
-    item.folder.toLowerCase().includes(lowerQuery)
-  );
+  // Score each item based on relevance
+  const scoredItems = ALL_REMOVAL_ITEMS.map(item => {
+    let score = 0;
+    const lowerName = item.name.toLowerCase();
+    const lowerCategory = item.category.toLowerCase();
+    const lowerFolder = item.folder.toLowerCase();
+    
+    // Exact match in name (highest priority)
+    if (lowerName === lowerQuery) score += 100;
+    
+    // Name starts with query (high priority)
+    if (lowerName.startsWith(lowerQuery)) score += 50;
+    
+    // Name contains query
+    if (lowerName.includes(lowerQuery)) score += 30;
+    
+    // Category exact match
+    if (lowerCategory === lowerQuery) score += 40;
+    
+    // Category contains query
+    if (lowerCategory.includes(lowerQuery)) score += 20;
+    
+    // Folder contains query
+    if (lowerFolder.includes(lowerQuery)) score += 10;
+    
+    // Match individual words (for multi-word queries)
+    queryWords.forEach(word => {
+      if (word.length > 2) { // Ignore very short words
+        if (lowerName.includes(word)) score += 5;
+        if (lowerCategory.includes(word)) score += 3;
+      }
+    });
+    
+    return { item, score };
+  });
+  
+  // Filter items with score > 0 and sort by relevance
+  return scoredItems
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ item }) => item);
 }
 
 /**
@@ -5428,14 +5469,40 @@ export function sortItems(
     case 'name-desc':
       return sorted.sort((a, b) => b.name.localeCompare(a.name));
     case 'popular':
-      // Popular items (based on common moving items)
-      const popularKeywords = ['bed', 'sofa', 'table', 'wardrobe', 'chair', 'tv', 'washing machine', 'fridge'];
+      // Popular items (based on most commonly moved items)
+      const popularKeywords = [
+        { keyword: 'bed', score: 100 },
+        { keyword: 'sofa', score: 95 },
+        { keyword: 'table', score: 90 },
+        { keyword: 'wardrobe', score: 85 },
+        { keyword: 'chair', score: 80 },
+        { keyword: 'tv', score: 75 },
+        { keyword: 'washing machine', score: 70 },
+        { keyword: 'fridge', score: 70 },
+        { keyword: 'mattress', score: 90 },
+        { keyword: 'desk', score: 65 },
+        { keyword: 'bookshelf', score: 60 },
+        { keyword: 'dining', score: 75 },
+        { keyword: 'coffee table', score: 70 },
+        { keyword: 'dresser', score: 65 },
+        { keyword: 'chest of drawers', score: 60 },
+      ];
+      
       return sorted.sort((a, b) => {
-        const aPopular = popularKeywords.some(keyword => a.name.toLowerCase().includes(keyword));
-        const bPopular = popularKeywords.some(keyword => b.name.toLowerCase().includes(keyword));
-        if (aPopular && !bPopular) return -1;
-        if (!aPopular && bPopular) return 1;
-        return a.weight - b.weight; // Secondary sort by weight
+        // Calculate popularity score
+        let aScore = 0;
+        let bScore = 0;
+        const aLower = a.name.toLowerCase();
+        const bLower = b.name.toLowerCase();
+        
+        popularKeywords.forEach(({ keyword, score }) => {
+          if (aLower.includes(keyword)) aScore += score;
+          if (bLower.includes(keyword)) bScore += score;
+        });
+        
+        // Sort by popularity score, then by name
+        if (aScore !== bScore) return bScore - aScore;
+        return a.name.localeCompare(b.name);
       });
     default:
       return sorted;
