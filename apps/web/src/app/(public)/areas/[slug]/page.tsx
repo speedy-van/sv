@@ -64,12 +64,12 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:01202129764"
+              href="tel:01202 129746"
               variant="outline"
               size="lg"
               leftIcon={<PhoneIcon />}
             >
-              Call 01202129764
+              Call 01202 129746
             </Button>
           </HStack>
         </Box>
@@ -236,7 +236,7 @@ export default function AreaPage({ params }: AreaPageProps) {
               </Heading>
               <Text>
                 Yes! We offer same-day moving and delivery services across {area.name} and surrounding areas. 
-                Subject to availability. Call us on 01202129764 for urgent bookings.
+                Subject to availability. Call us on 01202 129746 for urgent bookings.
               </Text>
             </Box>
             
@@ -282,7 +282,7 @@ export default function AreaPage({ params }: AreaPageProps) {
             </Button>
             <Button
               as="a"
-              href="tel:01202129764"
+              href="tel:01202 129746"
               variant="outline"
               colorScheme="white"
               size="lg"

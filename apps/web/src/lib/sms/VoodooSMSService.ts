@@ -233,7 +233,7 @@ export class VoodooSMSService {
     driverName?: string;
     driverPhone?: string;
   }): Promise<SMSResponse> {
-    const message = `Your Speedy Van booking ${data.orderNumber} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`;
+    const message = `Your Speedy Van booking ${data.orderNumber} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`;
 
     return this.sendSMS({
       to: data.phoneNumber,
@@ -250,7 +250,7 @@ export class VoodooSMSService {
     orderNumber: string;
     amount: number;
   }): Promise<SMSResponse> {
-    const message = `Hi ${data.customerName}, payment of £${data.amount.toFixed(2)} received for booking ${data.orderNumber}. Thank you for choosing Speedy Van! Support: 01202129764`;
+    const message = `Hi ${data.customerName}, payment of £${data.amount.toFixed(2)} received for booking ${data.orderNumber}. Thank you for choosing Speedy Van! Support: 01202 129746`;
 
     return this.sendSMS({
       to: data.phoneNumber,
@@ -268,7 +268,7 @@ export class VoodooSMSService {
     driverName: string;
     driverPhone: string;
   }): Promise<SMSResponse> {
-    const message = `Hi ${data.customerName}, your driver ${data.driverName} has been assigned to booking ${data.orderNumber}. Driver contact: ${data.driverPhone}. Speedy Van support: 01202129764`;
+    const message = `Hi ${data.customerName}, your driver ${data.driverName} has been assigned to booking ${data.orderNumber}. Driver contact: ${data.driverPhone}. Speedy Van support: 01202 129746`;
 
     return this.sendSMS({
       to: data.phoneNumber,

@@ -128,7 +128,7 @@ export async function buildInvoicePDF(data: InvoiceData): Promise<Buffer> {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text('Thank you for choosing Speedy Van!', 105, 270, { align: 'center' });
-  doc.text('For any queries, contact us at support@speedy-van.co.uk or call 01202129764', 105, 276, { align: 'center' });
+  doc.text('For any queries, contact us at support@speedy-van.co.uk or call 01202 129746', 105, 276, { align: 'center' });
   
   // Convert to Buffer
   const pdfOutput = doc.output('arraybuffer');

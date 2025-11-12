@@ -454,7 +454,7 @@ export default function LoginScreen() {
                   style={styles.contactButton}
                   onPress={() => {
                     soundService.playButtonClick();
-                    Alert.alert('Contact Support', 'Call: 01202129764\nEmail: support@speedy-van.co.uk');
+                    Alert.alert('Contact Support', 'Call: 01202 129746\nEmail: support@speedy-van.co.uk');
                   }}
                   activeOpacity={0.7}
                 >

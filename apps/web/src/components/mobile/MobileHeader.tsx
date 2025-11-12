@@ -94,7 +94,7 @@ export default function MobileHeader() {
               fontSize="sm"
               boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
               leftIcon={<FaPhone />}
-              onClick={() => window.open('tel:01202129764')}
+              onClick={() => window.open('tel:01202 129746')}
               borderRadius="full"
               _hover={{
                 bg: 'linear-gradient(135deg, #059669, #047857)',
@@ -512,7 +512,7 @@ export default function MobileHeader() {
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      window.open('tel:01202129764');
+                      window.open('tel:01202 129746');
                       onClose();
                     }}
                     leftIcon={<FaPhone />}

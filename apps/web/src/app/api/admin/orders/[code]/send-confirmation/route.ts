@@ -132,7 +132,7 @@ export async function POST(
       const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
       const smsService = getVoodooSMSService();
       
-      const smsMessage = `Your Speedy Van booking ${booking.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`;
+      const smsMessage = `Your Speedy Van booking ${booking.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`;
       
       const smsResult = await smsService.sendSMS({
         to: booking.customerPhone || booking.customerEmail, // Use phone if available, otherwise email

@@ -235,7 +235,7 @@ This release brings the Android app to **full feature parity** with the iOS vers
 
 ### For Drivers:
 - 📧 Email: support@speedy-van.co.uk
-- 📞 Phone: 01202129746
+- 📞 Phone: 01202 129746
 - 💬 In-app support chat
 
 ### For Technical Issues:

@@ -261,9 +261,9 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
       onItemAdd(item);
     }
     
-    // Keep focus and suggestions for continuous searching
+    // Keep focus and suggestions for continuous searching - NO SCROLL
     setTimeout(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
       setIsFocused(true);
     }, 100);
   };
@@ -420,7 +420,7 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
               icon={<FaTimes />}
               onClick={() => {
                 onChange('');
-                inputRef.current?.focus();
+                inputRef.current?.focus({ preventScroll: true });
               }}
               color="gray.400"
               _hover={{ color: "gray.600" }}

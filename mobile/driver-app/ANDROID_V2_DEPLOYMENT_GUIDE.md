@@ -393,7 +393,7 @@ eas build --platform android --profile production --resource-class large
 
 ### For App Issues:
 - 📧 Driver Support: support@speedy-van.co.uk
-- 📞 Phone: 01202129746
+- 📞 Phone: 01202 129746
 
 ---
 

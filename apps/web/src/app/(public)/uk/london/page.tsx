@@ -271,7 +271,7 @@ export default function LondonPage() {
             </Box>
             <Box
               as={Link}
-              href="tel:01202129764"
+              href="tel:01202 129746"
               bg="red.600"
               color="white"
               px={8}
@@ -283,7 +283,7 @@ export default function LondonPage() {
             >
               <HStack spacing={2}>
                 <Icon as={Phone} />
-                <Text>Call 01202129764</Text>
+                <Text>Call 01202 129746</Text>
               </HStack>
             </Box>
           </HStack>

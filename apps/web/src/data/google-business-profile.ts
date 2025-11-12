@@ -198,7 +198,7 @@ Whether you need to move a single item or an entire home, our experienced team h
     },
     {
       question: 'How do I book a service?',
-      answer: 'You can book instantly online at speedy-van.co.uk, call us on 01202129764, or request a quote through our website. We respond within minutes.',
+      answer: 'You can book instantly online at speedy-van.co.uk, call us on 01202 129746, or request a quote through our website. We respond within minutes.',
     },
     {
       question: 'Do you provide packing materials?',
@@ -277,7 +277,7 @@ export const REVIEW_RESPONSE_TEMPLATES = {
     "Thank you for the 5-star review! We're thrilled that you had a positive experience with our team. We're always here when you need reliable moving services in {location}."
   ],
   negative: [
-    "We sincerely apologize for your experience with our {service_type} service. This doesn't meet our standards. Please contact us directly at support@speedy-van.co.uk or call 01202129764 so we can make this right.",
+    "We sincerely apologize for your experience with our {service_type} service. This doesn't meet our standards. Please contact us directly at support@speedy-van.co.uk or call 01202 129746 so we can make this right.",
     "Thank you for bringing this to our attention. We take all feedback seriously and would like to resolve this issue. Please reach out to us directly so we can discuss how we can improve your experience."
   ],
   neutral: [

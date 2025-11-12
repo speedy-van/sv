@@ -63,29 +63,33 @@ export default function ChatScreen() {
   const setupPusher = () => {
     if (!user?.driver?.id) return;
 
-    // Listen for admin messages
-    pusherService.bind('admin_message', (data: any) => {
-      console.log('📨 Received admin message:', data);
-      
-      const newMessage: Message = {
-        id: data.messageId || data.id,
-        content: data.message || data.content,
-        sender: 'admin',
-        senderName: data.senderName || 'Support',
-        timestamp: data.timestamp,
-        createdAt: data.timestamp,
-      };
-      
-      setMessages(prev => {
-        // Prevent duplicates
-        if (prev.some(m => m.id === newMessage.id)) {
-          return prev;
-        }
-        return [...prev, newMessage];
+    try {
+      // Listen for admin messages
+      pusherService.bind('admin_message', (data: any) => {
+        console.log('📨 Received admin message:', data);
+        
+        const newMessage: Message = {
+          id: data.messageId || data.id,
+          content: data.message || data.content,
+          sender: 'admin',
+          senderName: data.senderName || 'Support',
+          timestamp: data.timestamp,
+          createdAt: data.timestamp,
+        };
+        
+        setMessages(prev => {
+          // Prevent duplicates
+          if (prev.some(m => m.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
+        
+        setTimeout(() => scrollToBottom(), 100);
       });
-      
-      setTimeout(() => scrollToBottom(), 100);
-    });
+    } catch (error) {
+      console.log('⚠️ Pusher setup skipped - not critical for chat functionality');
+    }
   };
 
   const sendMessage = async () => {
@@ -410,7 +414,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingHorizontal: spacing.md + 4,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#000000',
     maxHeight: 100,
     minHeight: 40,
     borderWidth: 1,

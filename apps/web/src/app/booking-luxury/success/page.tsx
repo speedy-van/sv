@@ -228,7 +228,7 @@ export default function BookingSuccessPage() {
                 },
                 body: JSON.stringify({
                   to: data.customer_details.phone,
-                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`,
+                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
                   type: 'booking_confirmation'
                 })
               });
@@ -448,7 +448,7 @@ export default function BookingSuccessPage() {
                 <HStack>
                   <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
                   <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Need Help?</strong> Call 01202129764 or email support@speedy-van.co.uk for assistance.
+                    <strong>Need Help?</strong> Call 01202 129746 or email support@speedy-van.co.uk for assistance.
                   </Text>
                 </HStack>
               </VStack>
@@ -469,7 +469,7 @@ export default function BookingSuccessPage() {
                   <Icon as={PhoneIcon} color="blue.500" />
                   <VStack spacing={0} align="start">
                     <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>Call us</Text>
-                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202129764</Text>
+                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202 129746</Text>
                   </VStack>
                 </HStack>
                 
