@@ -294,13 +294,14 @@ export function useBookingForm() {
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'failed'>('pending');
   const [isCalculatingPricing, setIsCalculatingPricing] = useState(false);
 
-  const updateFormData = useCallback((step: keyof FormData, data: Partial<FormData[keyof FormData]>) => {
+  const updateFormData = useCallback((step: keyof FormData | string, data: Partial<FormData[keyof FormData]>) => {
+    const stepKey = step as keyof FormData;
     setFormData(prev => {
       // Always update - don't skip updates for items array or other critical fields
       // The comparison logic was too aggressive and causing missed updates
       const shouldUpdate = Object.keys(data).some(key => {
         const newValue = (data as any)[key];
-        const currentValue = (prev[step] as any)[key];
+        const currentValue = (prev[stepKey] as any)[key];
         
         // Special handling for arrays (like items) - always update if array is provided
         if (Array.isArray(newValue)) {
@@ -333,8 +334,8 @@ export function useBookingForm() {
       }
       
       // Normalize address fields to never be null
-      let nextStepData: any = { ...prev[step], ...data };
-      if (step === 'step1') {
+      let nextStepData: any = { ...prev[stepKey], ...data };
+      if (stepKey === 'step1') {
         if ((data as any).pickupAddress === null) {
           nextStepData.pickupAddress = {
             address: '',
@@ -363,7 +364,7 @@ export function useBookingForm() {
 
       const newData = {
         ...prev,
-        [step]: nextStepData,
+        [stepKey]: nextStepData,
       };
       console.log(`Updating ${step}:`, data);
       return newData;
