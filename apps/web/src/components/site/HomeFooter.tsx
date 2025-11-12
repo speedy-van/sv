@@ -279,7 +279,7 @@ const HomeFooter: React.FC = () => {
                     fontWeight="medium"
                     _hover={{ color: '#00D18F' }}
                   >
-                    01202129764
+                    01202 129746
                   </Link>
                   <Text fontSize="xs" color="whiteAlpha.700">
                     9AM - 6PM, 7 Days a Week

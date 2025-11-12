@@ -154,6 +154,7 @@ export default async function RootLayout({
 
         {/* Google Ads Global Site Tag */}
         <Script
+          async
           src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
           strategy="afterInteractive"
         />
@@ -162,11 +163,7 @@ export default async function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'AW-17715630822', {
-              'send_page_view': true,
-              'cookie_flags': 'SameSite=None;Secure'
-            });
-            console.log('✅ Google Ads Global Tag initialized');
+            gtag('config', 'AW-17715630822');
           `}
         </Script>
       </head>

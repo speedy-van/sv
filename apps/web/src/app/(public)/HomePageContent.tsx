@@ -803,7 +803,7 @@ export default function HomePageContent() {
                   {
                     icon: FaPhone,
                     title: 'Call Us',
-                    contact: '01202129764',
+                    contact: '01202 129746',
                     action: 'Call Now',
                   },
                   {

@@ -174,17 +174,19 @@ export default function BookingSuccessPage() {
           // Track Google Ads conversion
           if (typeof window !== 'undefined' && (window as any).gtag) {
             try {
+              const transactionId =
+                data.metadata?.bookingReference || bookingRef || sessionId;
               (window as any).gtag('event', 'conversion', {
                 'send_to': 'AW-17715630822/4VHOCMuItL4bEOalvP9B',
                 'value': bookingAmount,
                 'currency': 'GBP',
-                'transaction_id': data.metadata?.bookingReference || sessionId
+                'transaction_id': transactionId
               });
               console.log('✅ Google Ads conversion tracked:', {
                 value: bookingAmount,
                 currency: 'GBP',
                 bookingRef: data.metadata?.bookingReference,
-                transactionId: sessionId
+                transactionId,
               });
             } catch (gtagError) {
               console.error('❌ Google Ads conversion tracking failed:', gtagError);
@@ -198,13 +200,13 @@ export default function BookingSuccessPage() {
           if (!toastShown && !alreadyShowedToast) {
             setToastShown(true);
             safeLocalStorage.setItem(toastTrackingKey || '', 'true');
-            toast({
+          toast({
               title: 'Booking Confirmed!',
               description: "Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.",
-              status: 'success',
-              duration: 5000,
-              isClosable: true,
-            });
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+          });
           }
 
           // Send SMS confirmation automatically when success page loads (only once per session)
@@ -217,33 +219,33 @@ export default function BookingSuccessPage() {
                 // Mark as sent BEFORE making the request to prevent race conditions
                 setSmsSent(true);
                 safeLocalStorage.setItem(smsTrackingKey, 'true');
-                
-                // Send SMS via API endpoint
-                const smsResponse = await fetch('/api/notifications/sms/send', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    to: data.customer_details.phone,
-                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202129764 or email support@speedy-van.co.uk`,
-                    type: 'booking_confirmation'
-                  })
-                });
-                
-                if (smsResponse.ok) {
+              
+              // Send SMS via API endpoint
+              const smsResponse = await fetch('/api/notifications/sms/send', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  to: data.customer_details.phone,
+                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
+                  type: 'booking_confirmation'
+                })
+              });
+              
+              if (smsResponse.ok) {
                   // SMS sent successfully
                   if (process.env.NODE_ENV === 'development') {
-                    console.log('✅ SMS confirmation sent successfully');
+                console.log('✅ SMS confirmation sent successfully');
                   }
-                } else {
-                  console.warn('⚠️ SMS confirmation failed from success page');
+              } else {
+                console.warn('⚠️ SMS confirmation failed from success page');
                   // Remove flag to allow retry on failure
                   setSmsSent(false);
                   safeLocalStorage.removeItem(smsTrackingKey);
-                }
-              } catch (smsError) {
-                console.error('❌ Error sending SMS from success page:', smsError);
+              }
+            } catch (smsError) {
+              console.error('❌ Error sending SMS from success page:', smsError);
                 // Remove flag to allow retry on error
                 setSmsSent(false);
                 safeLocalStorage.removeItem(smsTrackingKey);
@@ -255,7 +257,7 @@ export default function BookingSuccessPage() {
             }
           } else if (!data.customer_details?.phone) {
             if (process.env.NODE_ENV === 'development') {
-              console.log('ℹ️ No phone number available for SMS');
+            console.log('ℹ️ No phone number available for SMS');
             }
           }
           
@@ -446,7 +448,7 @@ export default function BookingSuccessPage() {
                 <HStack>
                   <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
                   <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Need Help?</strong> Call 01202129764 or email support@speedy-van.co.uk for assistance.
+                    <strong>Need Help?</strong> Call 01202 129746 or email support@speedy-van.co.uk for assistance.
                   </Text>
                 </HStack>
               </VStack>
@@ -467,7 +469,7 @@ export default function BookingSuccessPage() {
                   <Icon as={PhoneIcon} color="blue.500" />
                   <VStack spacing={0} align="start">
                     <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>Call us</Text>
-                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202129764</Text>
+                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202 129746</Text>
                   </VStack>
                 </HStack>
                 

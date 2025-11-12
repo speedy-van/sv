@@ -483,7 +483,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
       const { getVoodooSMSService } = await import('@/lib/sms/VoodooSMSService');
       const smsService = getVoodooSMSService();
       
-      const smsMessage = `Hi ${firstName}, your Speedy Van driver application has been received! We'll review it within 24-48 hours and notify you of the status. Application ID: ${application.id}. Call 01202129764 for support.`;
+      const smsMessage = `Hi ${firstName}, your Speedy Van driver application has been received! We'll review it within 24-48 hours and notify you of the status. Application ID: ${application.id}. Call 01202 129746 for support.`;
       
       const smsResult = await smsService.sendSMS({
         to: phone,

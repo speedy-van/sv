@@ -360,7 +360,7 @@ function generateEmailWrapper(title: string, content: string): string {
                   <p style="margin: 0; font-size: 12px; color: #6c757d;">Speedy Van - Professional Moving Services</p>
                   <p style="margin: 5px 0 0 0; font-size: 12px; color: #6c757d;">
                     Email: <a href="mailto:support@speedy-van.co.uk" style="color: #6c757d; text-decoration: none;">support@speedy-van.co.uk</a> | 
-                    Phone: <a href="tel:01202129764" style="color: #6c757d; text-decoration: none;">01202129764</a>
+                    Phone: <a href="tel:01202 129746" style="color: #6c757d; text-decoration: none;">01202 129746</a>
                   </p>
                   <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">
                     You're receiving this email because you are a Speedy Van customer.
@@ -451,7 +451,7 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
                     </tr>
                   </table>
 
-                  <p style="margin: 20px 0 0 0; font-size: 14px;">For assistance, call <strong>01202129764</strong> or email <a href="mailto:support@speedy-van.co.uk" style="color: #10b981; text-decoration: none;">support@speedy-van.co.uk</a></p>
+                  <p style="margin: 20px 0 0 0; font-size: 14px;">For assistance, call <strong>01202 129746</strong> or email <a href="mailto:support@speedy-van.co.uk" style="color: #10b981; text-decoration: none;">support@speedy-van.co.uk</a></p>
 
                   <p style="margin: 20px 0 0 0; font-size: 14px;">Best regards,<br><strong>The Speedy Van Team</strong></p>
                 </td>
@@ -463,7 +463,7 @@ function generateOrderConfirmationHTML(data: OrderConfirmationData): string {
                   <p style="margin: 0; font-size: 12px; color: #6c757d;">Speedy Van - Professional Moving Services</p>
                   <p style="margin: 5px 0 0 0; font-size: 12px; color: #6c757d;">
                     Email: <a href="mailto:support@speedy-van.co.uk" style="color: #6c757d; text-decoration: none;">support@speedy-van.co.uk</a> | 
-                    Phone: <a href="tel:01202129764" style="color: #6c757d; text-decoration: none;">01202129764</a>
+                    Phone: <a href="tel:01202 129746" style="color: #6c757d; text-decoration: none;">01202 129746</a>
                   </p>
                   <p style="margin: 10px 0 0 0; font-size: 11px; color: #999;">
                     You're receiving this email because you booked a service with Speedy Van.
@@ -516,7 +516,7 @@ function generatePaymentConfirmationHTML(data: PaymentConfirmationData): string 
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -567,7 +567,7 @@ function generatePasswordResetHTML(data: { email: string; resetUrl: string; driv
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1023,7 +1023,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 01202129764</p>
+            <p>📞 Phone: 01202 129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1034,7 +1034,7 @@ function generateOrderCancellationHTML(data: OrderCancellationData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1082,7 +1082,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
           <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <p><strong>If you need to update your floor number, please contact support immediately:</strong></p>
             <div style="text-align: center; margin: 15px 0;">
-              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 01202129764</p>
+              <p style="margin: 5px 0;"><strong>📞 Phone:</strong> 01202 129746</p>
               <p style="margin: 5px 0;"><strong>📧 Email:</strong> support@speedy-van.co.uk</p>
             </div>
           </div>
@@ -1096,7 +1096,7 @@ function generateFloorWarningHTML(data: FloorWarningData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1168,7 +1168,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 01202129764</p>
+            <p>📞 Phone: 01202 129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1179,7 +1179,7 @@ function generateDriverApplicationConfirmationHTML(data: DriverApplicationConfir
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1289,7 +1289,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
           <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <p><strong>Contact Information:</strong></p>
             <p>📧 Email: support@speedy-van.co.uk</p>
-            <p>📞 Phone: 01202129764</p>
+            <p>📞 Phone: 01202 129746</p>
             <p>🌐 Website: www.speedy-van.co.uk</p>
           </div>
 
@@ -1300,7 +1300,7 @@ function generateDriverApplicationStatusHTML(data: DriverApplicationStatusData):
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1348,7 +1348,7 @@ function generateAdditionalPaymentRequestHTML(data: AdditionalPaymentRequestData
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>
@@ -1394,7 +1394,7 @@ function generateRefundNotificationHTML(data: RefundNotificationData): string {
 
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
-          Email: support@speedy-van.co.uk | Phone: 01202129764</p>
+          Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
         </div>
       </div>
     </body>

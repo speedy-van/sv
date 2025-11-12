@@ -502,52 +502,41 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
 
   // Click outside to close dropdown - use mousedown to avoid interfering with onClick
   useEffect(() => {
+    if (!showSuggestions) {
+      return;
+    }
+
     const handleMouseDownOutside = (event: MouseEvent) => {
-        // Check if click is inside dropdown or input
-        const target = event.target as Node;
-        if (
-          dropdownRef.current && 
-          dropdownRef.current.contains(target)
-        ) {
-          // Click is inside dropdown - don't close
-          return;
-        }
-        if (
-          inputRef.current &&
-          inputRef.current.contains(target)
-        ) {
-          // Click is on input - don't close
-          return;
-        }
-        // Click is outside - close dropdown
-        setShowSuggestions(false);
+      const target = event.target as Node;
+      if (
+        (dropdownRef.current && dropdownRef.current.contains(target)) ||
+        (inputRef.current && inputRef.current.contains(target))
+      ) {
+        return;
+      }
+      setShowSuggestions(false);
     };
 
-    if (showSuggestions) {
-      // Position dropdown relative to viewport to avoid ancestor clipping
+    const reposition = () => {
       const rect = inputRef.current?.getBoundingClientRect();
       if (rect) {
-        setDropdownStyle({ top: Math.round(rect.top + rect.height + 8), left: Math.round(rect.left), width: Math.round(rect.width) });
+        setDropdownStyle({
+          top: Math.round(rect.top + rect.height + 8),
+          left: Math.round(rect.left),
+          width: Math.round(rect.width),
+        });
       }
-      
-      // Use 'mousedown' event instead of 'click' to avoid interfering with onClick handlers
-      document.addEventListener('mousedown', handleMouseDownOutside);
-      
-      const reposition = () => {
-        const r = inputRef.current?.getBoundingClientRect();
-        if (r) {
-          setDropdownStyle({ top: Math.round(r.top + r.height + 8), left: Math.round(r.left), width: Math.round(r.width) });
-        }
-      };
-      
-      window.addEventListener('scroll', reposition, true);
-      window.addEventListener('resize', reposition);
-      setTimeout(reposition, 0);
-    }
+    };
+
+    reposition();
+    document.addEventListener('mousedown', handleMouseDownOutside);
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
 
     return () => {
       document.removeEventListener('mousedown', handleMouseDownOutside);
-      // listeners removed by reference in caller; safe fallback
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
     };
   }, [showSuggestions]);
 

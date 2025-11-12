@@ -331,14 +331,14 @@ export default function ProfileScreen() {
               <MenuItem
                 iconName="call-outline"
                 title="Call Support"
-                subtitle="01202129764"
-                onPress={() => Linking.openURL('tel:01202129764')}
+                subtitle="01202 129746"
+                onPress={() => Linking.openURL('tel:01202129746')}
               />
               <View style={styles.menuDivider} />
               <MenuItem
                 iconName="information-circle-outline"
                 title="About Speedy Van Driver"
-                subtitle="Version 1.0.1 (Build 54)"
+                subtitle="Version 2.0.0 (Build 2.0.0)"
               />
             </View>
           </BlurView>

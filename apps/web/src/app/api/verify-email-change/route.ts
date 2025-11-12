@@ -155,7 +155,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Email verification error:', error);
     return new NextResponse(
-      generateHTML('error', 'Server Error', 'An error occurred while verifying your email. Please contact support at support@speedy-van.co.uk or call 01202129764'),
+      generateHTML('error', 'Server Error', 'An error occurred while verifying your email. Please contact support at support@speedy-van.co.uk or call 01202 129746'),
       {
         headers: { 'Content-Type': 'text/html' },
       }
@@ -263,7 +263,7 @@ function generateHTML(type: 'success' | 'error' | 'info', title: string, message
           <div class="contact">
             Need help? Contact us:<br>
             📧 <a href="mailto:support@speedy-van.co.uk">support@speedy-van.co.uk</a><br>
-            📞 <a href="tel:01202129764">01202129764</a>
+            📞 <a href="tel:01202 129746">01202 129746</a>
           </div>
         </div>
       </div>
@@ -302,7 +302,7 @@ function generateSecurityNotificationHTML(userName: string, oldEmail: string, ne
           <p><strong>Changed At:</strong> ${new Date().toLocaleString('en-GB')}</p>
           
           <div class="warning">
-            <strong>⚠️ Security Notice:</strong> If you did not make this change, please contact support immediately at support@speedy-van.co.uk or call 01202129764
+            <strong>⚠️ Security Notice:</strong> If you did not make this change, please contact support immediately at support@speedy-van.co.uk or call 01202 129746
           </div>
         </div>
         <div class="footer">

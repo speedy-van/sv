@@ -183,11 +183,15 @@ export default function VehicleInfoScreen() {
           style={[styles.saveButton, saving && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={saving}
+          activeOpacity={0.8}
         >
           {saving ? (
-            <ActivityIndicator color={colors.text.inverse} />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <>
+              <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            </>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -277,19 +281,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    flexDirection: 'row',
+    marginTop: spacing.lg,
+    padding: spacing.md + 4,
     alignItems: 'center',
-    marginTop: spacing.md,
-    ...shadows.md,
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 14,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   saveButtonDisabled: {
     opacity: 0.6,
+    backgroundColor: '#9CA3AF',
   },
   saveButtonText: {
-    ...typography.bodyBold,
-    color: colors.text.inverse,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });
 

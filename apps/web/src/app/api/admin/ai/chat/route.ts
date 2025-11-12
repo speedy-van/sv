@@ -30,10 +30,13 @@ const adminChatRequestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  console.log('🤖 [AI CHAT] POST /api/admin/ai/chat called');
   try {
     const session = await getServerSession(authOptions);
+    console.log('🤖 [AI CHAT] Session:', { hasSession: !!session, role: (session?.user as any)?.role });
 
     if (!session?.user || (session.user as any).role !== 'admin') {
+      console.log('❌ [AI CHAT] Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

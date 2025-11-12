@@ -600,8 +600,6 @@ export default function SpeedyAIChatbot({
     }
   };
 
-  // ✅ NEW: Export conversation (removed duplicate - using Feature 3 version below)
-
   // ✅ Feature 2: Submit feedback
   const handleFeedback = async (messageId: string, feedback: 'up' | 'down') => {
     setMessages(prev => prev.map(msg => 

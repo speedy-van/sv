@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import './no-scroll.css?v=2';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -34,8 +35,6 @@ import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMa
 import Image from 'next/image';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { stepTransition } from './animations';
 import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
@@ -84,13 +83,13 @@ export default function BookingLuxuryPage() {
   
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
-  const scrollPositionRef = useRef(0);
-  const isUpdatingRef = useRef(false);
+  
+  // CRITICAL: Save scroll position ref - persists across renders
+  const scrollPositionRef = React.useRef({ x: 0, y: 0 });
 
-  // CRITICAL FIX: Global scroll preservation during state updates
   const {
     formData,
-    updateFormData: originalUpdateFormData,
+    updateFormData,
     validateStep,
     isStepValid,
     errors,
@@ -102,13 +101,6 @@ export default function BookingLuxuryPage() {
     removePromotionCode,
   } = useBookingForm();
 
-  // Wrap updateFormData with scroll preservation
-  const updateFormData = useCallback((step: string, data: any) => {
-    isUpdatingRef.current = true;
-    scrollPositionRef.current = window.scrollY;
-    originalUpdateFormData(step, data);
-  }, [originalUpdateFormData]);
-
 
   // Enterprise Engine: Automatic availability & pricing with full addresses
   const [availabilityData, setAvailabilityData] = useState<any>(null);
@@ -119,28 +111,6 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
-  // CRITICAL FIX: Track scroll position
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isUpdatingRef.current) {
-        scrollPositionRef.current = window.scrollY;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // CRITICAL FIX: Preserve scroll position during formData updates
-  useEffect(() => {
-    if (isUpdatingRef.current) {
-      window.scrollTo(0, scrollPositionRef.current);
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollPositionRef.current);
-        isUpdatingRef.current = false;
-      });
-    }
-  }, [formData]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
@@ -535,19 +505,48 @@ export default function BookingLuxuryPage() {
     }
   }, [searchParams, toast, isClient]);
 
-  // CRITICAL FIX: Allow automatic scroll restoration for better UX
+  // MASTER SOLUTION: Save scroll position and restore after every render
   useEffect(() => {
-    if (!isClient) return;
+    if (typeof window === 'undefined') return;
 
-    // Enable automatic scroll restoration to prevent jumps during state updates
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'auto';
-    }
+    console.log('🎯 SCROLL POSITION MANAGER ACTIVE');
+
+    // Track user scroll continuously
+    const handleUserScroll = () => {
+      scrollPositionRef.current = {
+        x: window.scrollX,
+        y: window.scrollY,
+      };
+    };
+
+    window.addEventListener('scroll', handleUserScroll, { passive: true });
+
+    // Override scrollIntoView to prevent automatic scrolling
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function(arg?: boolean | ScrollIntoViewOptions) {
+      console.log('🚫 BLOCKED scrollIntoView() - maintaining position');
+      // Do nothing - completely ignore
+    };
 
     return () => {
-      // Cleanup if needed
+      console.log('🔓 SCROLL POSITION MANAGER CLEANUP');
+      window.removeEventListener('scroll', handleUserScroll);
+      Element.prototype.scrollIntoView = originalScrollIntoView;
     };
-  }, [isClient]);
+  }, []); // Run once only
+
+  // Restore scroll position after EVERY render (including state changes)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Restore scroll immediately after render
+    const { x, y } = scrollPositionRef.current;
+    if (y > 0 || x > 0) {
+      // Use native scrollTo (not overridden)
+      window.scroll({ top: y, left: x, behavior: 'auto' });
+      console.log('↩️ Restored scroll to:', y);
+    }
+  }); // NO DEPS - runs after every render to restore position
 
   // Success page is now handled by dedicated /booking/success route
 
@@ -587,6 +586,7 @@ export default function BookingLuxuryPage() {
 
   const handlePrevious = () => {
     if (currentStep > 1) {
+      // No forced scroll - let user maintain their position
       setCurrentStep(currentStep - 1);
       clearErrors();
     }
@@ -688,26 +688,6 @@ export default function BookingLuxuryPage() {
       bg={bgColor} 
       py={{ base: 0, md: 8 }} 
       pb={{ base: "80px", md: 8 }}
-      overflowX="hidden"
-      overflowY="auto"
-      sx={{
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain',
-        scrollBehavior: 'auto',
-        // CRITICAL FIX: Prevent scroll jumps during state updates
-        contain: 'layout',
-        overflowAnchor: 'none', // Disable scroll anchoring
-        // Prevent automatic scroll on form element focus
-        '& input, & textarea, & select, & button': {
-          scrollMargin: 0,
-        },
-        '& *:focus': {
-          scrollMargin: 0,
-        },
-        '& *': {
-          overflowAnchor: 'none', // Disable for all children
-        },
-      }}
     >
       <Container 
         maxW={{ base: "full", md: "6xl" }} 
@@ -846,54 +826,52 @@ export default function BookingLuxuryPage() {
             </Text>
           </Box>
 
-          {/* Main Content with Smooth Transitions - Framer Motion */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={stepTransition.initial}
-              animate={stepTransition.animate}
-              exit={stepTransition.exit}
-              style={{ width: '100%' }}
-            >
-              <Box w="full">
-                {currentStep === 1 ? (
-                  <AddressesStep
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    errors={errors}
-                    onNext={handleNext}
-                  />
-                ) : currentStep === 2 ? (
-                  <WhereAndWhatStep
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    errors={errors}
-                    onNext={handleNext}
-                    onBack={() => setCurrentStep(1)}
-                    calculatePricing={calculateComprehensivePricing}
-                    pricingTiers={pricingTiers}
-                    availabilityData={availabilityData}
-                    isLoadingAvailability={isLoadingAvailability}
-                  />
-                ) : currentStep === 3 ? (
-                  <WhoAndPaymentStepSimple
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    errors={errors}
-                    paymentSuccess={false}
-                    isCalculatingPricing={isCalculatingPricing}
-                    economyPrice={calculateEconomyPrice()}
-                    standardPrice={calculateStandardPrice()}
-                    priorityPrice={calculatePriorityPrice()}
-                    calculatePricing={calculatePricing}
-                    validatePromotionCode={validatePromotionCode}
-                    applyPromotionCode={applyPromotionCode}
-                    removePromotionCode={removePromotionCode}
-                  />
-                ) : null}
+          {/* Main Content - NO ANIMATIONS, STABLE KEYS to prevent scroll jumps */}
+          <Box w="full" position="relative" data-booking-step={currentStep}>
+            {currentStep === 1 && (
+              <Box key="step1-addresses" w="full" data-booking-step="1">
+                <AddressesStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  onNext={handleNext}
+                />
               </Box>
-            </motion.div>
-          </AnimatePresence>
+            )}
+            {currentStep === 2 && (
+              <Box key="step2-items" w="full" data-booking-step="2">
+                <WhereAndWhatStep
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  onNext={handleNext}
+                  onBack={() => setCurrentStep(1)}
+                  calculatePricing={calculateComprehensivePricing}
+                  pricingTiers={pricingTiers}
+                  availabilityData={availabilityData}
+                  isLoadingAvailability={isLoadingAvailability}
+                />
+              </Box>
+            )}
+            {currentStep === 3 && (
+              <Box key="step3-payment" w="full" data-booking-step="3">
+                <WhoAndPaymentStepSimple
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  errors={errors}
+                  paymentSuccess={false}
+                  isCalculatingPricing={isCalculatingPricing}
+                  economyPrice={calculateEconomyPrice()}
+                  standardPrice={calculateStandardPrice()}
+                  priorityPrice={calculatePriorityPrice()}
+                  calculatePricing={calculatePricing}
+                  validatePromotionCode={validatePromotionCode}
+                  applyPromotionCode={applyPromotionCode}
+                  removePromotionCode={removePromotionCode}
+                />
+              </Box>
+            )}
+          </Box>
 
 
           {/* Error Display - Removed, errors handled by toast */}

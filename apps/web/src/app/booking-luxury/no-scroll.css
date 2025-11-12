@@ -1,0 +1,100 @@
+/* NUCLEAR OPTION: Completely disable ALL automatic scrolling */
+
+/* Save current scroll position on every interaction */
+html {
+  scroll-behavior: auto !important;
+  overflow-anchor: none !important;
+}
+
+body {
+  scroll-behavior: auto !important;
+  overflow-anchor: none !important;
+}
+
+/* Kill ALL scroll margin and padding */
+*,
+*::before,
+*::after {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  scroll-snap-type: none !important;
+  scroll-snap-align: none !important;
+  scroll-snap-stop: normal !important;
+  overflow-anchor: none !important;
+}
+
+/* Prevent focus from EVER scrolling */
+*:focus,
+*:focus-visible,
+*:focus-within,
+*:active {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  scroll-margin-block: 0 !important;
+  scroll-margin-inline: 0 !important;
+  scroll-padding-block: 0 !important;
+  scroll-padding-inline: 0 !important;
+}
+
+/* Nuclear option for all form elements */
+input,
+textarea,
+select,
+button {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  scroll-margin-block: 0 !important;
+  scroll-margin-inline: 0 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+input:active,
+textarea:active,
+select:active,
+button:active {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  scroll-margin-block: 0 !important;
+  scroll-margin-inline: 0 !important;
+}
+
+/* Chakra UI specific overrides */
+.chakra-input,
+.chakra-textarea,
+.chakra-select,
+.chakra-button,
+.chakra-card,
+.chakra-box,
+.chakra-stack,
+.chakra-container {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  overflow-anchor: none !important;
+}
+
+.chakra-input:focus,
+.chakra-textarea:focus,
+.chakra-select:focus,
+.chakra-button:focus,
+.chakra-card:focus-within,
+.chakra-box:focus-within {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+}
+
+/* Prevent layout shifts from causing scroll */
+[data-booking-step] {
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+/* Disable smooth scrolling completely */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+

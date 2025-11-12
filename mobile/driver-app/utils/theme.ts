@@ -20,13 +20,11 @@ export const colors = {
   purple: '#AF52DE',
   pink: '#FF2D55',
 
-  // Dark Theme Backgrounds (iOS 17 Style)
-  background: {
-    primary: '#000000',
-    secondary: '#1C1C1E',
-    tertiary: '#2C2C2E',
-    elevated: '#3A3A3C',
-  },
+  // Light Theme Backgrounds (iOS 17 Style)
+  background: '#F2F2F7',          // iOS system background (light mode)
+  surface: '#FFFFFF',             // Cards and elevated surfaces
+  surfaceAlt: '#F9F9F9',         // Alternative surface (disabled inputs)
+  border: '#E5E5EA',             // iOS system separator color
 
   // Glass surfaces with blur
   glass: {
@@ -36,21 +34,18 @@ export const colors = {
     dark: 'rgba(0, 0, 0, 0.3)',
   },
 
-  // Text colors (iOS 17)
+  // Text colors (iOS 17) - Light Mode Compatible
   text: {
-    primary: '#FFFFFF',
-    secondary: 'rgba(255, 255, 255, 0.8)',
-    tertiary: 'rgba(255, 255, 255, 0.6)',
-    quaternary: 'rgba(255, 255, 255, 0.4)',
-    inverse: '#000000',
+    primary: '#000000',           // Pure black for maximum readability
+    secondary: '#3C3C43',         // iOS system gray (60% opacity)
+    tertiary: '#8E8E93',          // iOS system gray (40% opacity)
+    quaternary: '#C7C7CC',        // iOS system gray (20% opacity)
+    disabled: '#C7C7CC',          // For disabled text and placeholders
+    inverse: '#FFFFFF',           // For text on dark backgrounds
+    placeholder: '#C7C7CC',       // For input placeholders
   },
 
-  // Border colors
-  border: {
-    light: 'rgba(255, 255, 255, 0.1)',
-    medium: 'rgba(255, 255, 255, 0.15)',
-    strong: 'rgba(255, 255, 255, 0.2)',
-  },
+  // Border colors (removed - using single border color above)
 
   // Gradient overlays
   gradients: {
@@ -111,10 +106,35 @@ export const typography = {
     lineHeight: 22,
     letterSpacing: -0.41,
   },
+  // Legacy aliases for backward compatibility
+  h2: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    lineHeight: 30,
+    letterSpacing: 0.35,
+  },
+  h3: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    lineHeight: 25,
+    letterSpacing: 0.38,
+  },
+  h4: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    lineHeight: 23,
+    letterSpacing: 0.36,
+  },
   // Body
   body: {
     fontSize: 17,
     fontWeight: '400' as const,
+    lineHeight: 22,
+    letterSpacing: -0.41,
+  },
+  bodyBold: {
+    fontSize: 17,
+    fontWeight: '600' as const,
     lineHeight: 22,
     letterSpacing: -0.41,
   },
@@ -164,6 +184,18 @@ export const typography = {
     letterSpacing: -0.08,
   },
   // Caption
+  caption: {
+    fontSize: 12,
+    fontWeight: '400' as const,
+    lineHeight: 16,
+    letterSpacing: 0,
+  },
+  captionBold: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    lineHeight: 16,
+    letterSpacing: 0,
+  },
   caption1: {
     fontSize: 12,
     fontWeight: '400' as const,
@@ -187,6 +219,13 @@ export const typography = {
     fontWeight: '600' as const,
     lineHeight: 13,
     letterSpacing: 0.07,
+  },
+  // Small text
+  small: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    lineHeight: 18,
+    letterSpacing: -0.08,
   },
 };
 
@@ -214,6 +253,7 @@ export const borderRadius = {
   xxl: 24,
   xxxl: 28,
   round: 9999,
+  full: 9999, // Alias for round
 };
 
 // iOS 17 Advanced Shadows with Depth
@@ -296,17 +336,17 @@ export const glassEffect = {
   light: {
     backgroundColor: colors.glass.light,
     borderWidth: 1,
-    borderColor: colors.border.light,
+    borderColor: 'rgba(229, 229, 234, 0.5)', // Semi-transparent border
   },
   medium: {
     backgroundColor: colors.glass.medium,
     borderWidth: 1,
-    borderColor: colors.border.medium,
+    borderColor: 'rgba(229, 229, 234, 0.7)',
   },
   strong: {
     backgroundColor: colors.glass.strong,
     borderWidth: 1,
-    borderColor: colors.border.strong,
+    borderColor: colors.border,
   },
 };
 

@@ -117,7 +117,7 @@ html, body {
   overflow-x: clip; /* Better than hidden for iOS 17 - prevents layout collapse */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  overscroll-behavior: none;
+  /* Allow natural overscroll behavior */
 }
 
 /* Prevent Safari from converting flex containers to scroll snapping containers */
@@ -1558,12 +1558,11 @@ textarea::placeholder {
 }
 
 /* Buttons keep their intended colors */
-/* CRITICAL FIX: Prevent Scroll Jumps on Booking Page */
+/* ALLOW NATURAL SCROLL BEHAVIOR - NO RESTRICTIONS */
 
-/* Prevent automatic scroll to bottom on re-render */
+/* Allow smooth natural scrolling */
 html {
-  scroll-behavior: auto !important;
-  overscroll-behavior-y: contain;
+  scroll-behavior: smooth !important;
   /* CRITICAL: Prevent vertical text on mobile Safari */
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
@@ -1571,8 +1570,7 @@ html {
 }
 
 body {
-  scroll-behavior: auto !important;
-  overscroll-behavior-y: contain;
+  scroll-behavior: smooth !important;
   /* CRITICAL: Prevent vertical text on mobile Safari */
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
@@ -1605,19 +1603,37 @@ h1, h2, h3, h4, h5, h6, .chakra-heading, .chakra-text, p, span, div {
   white-space: nowrap !important;
 }
 
-/* Prevent scroll jumps on focus - especially on mobile Safari */
+/* CRITICAL: Prevent ALL automatic scrolling on focus */
 input:focus,
 textarea:focus,
-select:focus {
-  scroll-margin-top: 100px;
-  scroll-margin-bottom: 100px;
+select:focus,
+button:focus {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
 }
 
-/* Mobile Safari specific fixes - iPhone 14/15/16/17 */
+/* Prevent Chakra UI from auto-scrolling */
+.chakra-input:focus,
+.chakra-textarea:focus,
+.chakra-select:focus,
+.chakra-button:focus,
+.chakra-card:focus-within,
+.chakra-box:focus-within {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+}
+
+/* Prevent ANY element from triggering auto-scroll */
+*:focus,
+*:focus-within {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+}
+
+/* Mobile Safari natural scrolling - iPhone 14/15/16/17 */
 @media (max-width: 768px) {
   html, body {
-    scroll-behavior: auto !important;
-    overscroll-behavior-y: contain !important;
+    scroll-behavior: smooth !important;
     -webkit-overflow-scrolling: touch;
     /* Ensure full viewport height */
     min-height: 100vh;
@@ -1630,21 +1646,19 @@ select:focus {
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  /* Prevent input focus from scrolling page */
+  /* Allow natural focus scroll behavior */
   input:focus,
   textarea:focus,
   select:focus,
   button:focus {
-    scroll-margin-top: 80px;
-    scroll-margin-bottom: 80px;
+    /* No restrictions - natural browser behavior */
   }
   
-  /* Prevent Chakra UI components from causing scroll */
+  /* Allow natural Chakra UI scroll behavior */
   .chakra-input:focus,
   .chakra-textarea:focus,
   .chakra-select:focus {
-    scroll-margin-top: 80px !important;
-    scroll-margin-bottom: 80px !important;
+    /* No restrictions - natural browser behavior */
   }
 }
 
