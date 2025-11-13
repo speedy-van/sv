@@ -4,17 +4,17 @@ import { FaPhone, FaClock, FaCheckCircle, FaStar, FaTruck } from 'react-icons/fa
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Man and Van London | 24/7 Removals & Delivery | Speedy Van',
-  description: 'Professional man and van service in London. 24/7 online booking, instant quotes, fully insured. From £25/hour. Call 01202 129746 for same-day service.',
-  keywords: 'man and van london, removals london, van hire london, delivery service london, house removals london',
+  title: 'Man and Van Reading | 24/7 Removals & Delivery | Speedy Van',
+  description: 'Professional man and van service in Reading. 24/7 online booking, instant quotes, fully insured. From £25/hour. Call 01202 129746 for same-day service.',
+  keywords: 'man and van reading, removals reading, van hire reading, delivery service reading, house removals reading',
   openGraph: {
-    title: 'Man and Van London | 24/7 Removals & Delivery',
-    description: 'Professional man and van service in London. Instant quotes, fully insured, from £25/hour.',
+    title: 'Man and Van Reading | 24/7 Removals & Delivery',
+    description: 'Professional man and van service in Reading. Instant quotes, fully insured, from £25/hour.',
     type: 'website',
   },
 }
 
-export default function ManAndVanLondonPage() {
+export default function ManAndVanReadingPage() {
   return (
     <Box>
       {/* Hero Section */}
@@ -22,10 +22,10 @@ export default function ManAndVanLondonPage() {
         <Container maxW="container.xl">
           <VStack spacing={{6}} align="start">
             <Heading as="h1" size="2xl" fontWeight="bold">
-              Man and Van London
+              Man and Van Reading
             </Heading>
             <Text fontSize="xl" maxW="2xl">
-              Professional removal and delivery service in London. Available 24/7 with instant online booking.
+              Professional removal and delivery service in Reading. Available 24/7 with instant online booking.
               Fully insured, reliable, and affordable from just £25/hour.
             </Text>
             <HStack spacing={{4}} flexWrap="wrap">
@@ -61,7 +61,7 @@ export default function ManAndVanLondonPage() {
       <Box py={{16}} bg="gray.50">
         <Container maxW="container.xl">
           <Heading as="h2" size="xl" mb={{8}} textAlign="center">
-            Why Choose Our London Man and Van Service?
+            Why Choose Our Reading Man and Van Service?
           </Heading>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{8}}>
             <VStack align="start" spacing={{3}}>
@@ -100,13 +100,13 @@ export default function ManAndVanLondonPage() {
       <Box py={{16}}>
         <Container maxW="container.xl">
           <Heading as="h2" size="xl" mb={{8}}>
-            Our London Services
+            Our Reading Services
           </Heading>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{8}}>
             <Box p={{6}} borderWidth={{1}} borderRadius="lg">
               <Heading as="h3" size="md" mb={{3}}>House Removals</Heading>
               <Text color="gray.600">
-                Full house or flat removals in London. From single items to entire properties.
+                Full house or flat removals in Reading. From single items to entire properties.
                 Professional packing service available.
               </Text>
             </Box>
@@ -114,20 +114,20 @@ export default function ManAndVanLondonPage() {
               <Heading as="h3" size="md" mb={{3}}>Office Moves</Heading>
               <Text color="gray.600">
                 Business relocations with minimal disruption. Evening and weekend moves available
-                to keep your London business running.
+                to keep your Reading business running.
               </Text>
             </Box>
             <Box p={{6}} borderWidth={{1}} borderRadius="lg">
               <Heading as="h3" size="md" mb={{3}}>Furniture Delivery</Heading>
               <Text color="gray.600">
-                Collect and deliver furniture anywhere in London. Same-day service available
+                Collect and deliver furniture anywhere in Reading. Same-day service available
                 for urgent deliveries.
               </Text>
             </Box>
             <Box p={{6}} borderWidth={{1}} borderRadius="lg">
               <Heading as="h3" size="md" mb={{3}}>Student Moves</Heading>
               <Text color="gray.600">
-                Affordable student removal service in London. Perfect for university accommodation
+                Affordable student removal service in Reading. Perfect for university accommodation
                 moves and storage collection.
               </Text>
             </Box>
@@ -139,7 +139,7 @@ export default function ManAndVanLondonPage() {
       <Box py={{16}} bg="gray.50">
         <Container maxW="container.xl">
           <Heading as="h2" size="xl" mb={{8}} textAlign="center">
-            Transparent Pricing in London
+            Transparent Pricing in Reading
           </Heading>
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{8}}>
             <Box bg="white" p={{8}} borderRadius="lg" borderWidth={{1}}>
@@ -191,15 +191,15 @@ export default function ManAndVanLondonPage() {
       <Box py={{16}}>
         <Container maxW="container.xl">
           <Heading as="h2" size="xl" mb={{6}}>
-            Serving All of London
+            Serving All of Reading
           </Heading>
           <Text fontSize="lg" color="gray.600" mb={{6}}>
-            Our man and van service covers all areas of London and surrounding regions.
+            Our man and van service covers all areas of Reading and surrounding regions.
             Whether you're in the city centre or suburbs, we provide fast, reliable service
             with no hidden charges.
           </Text>
           <Text fontSize="lg" color="gray.600" mb={{8}}>
-            We also offer competitive rates for moves between London and other UK cities.
+            We also offer competitive rates for moves between Reading and other UK cities.
             Get an instant quote online or call us for long-distance pricing.
           </Text>
         </Container>
@@ -210,7 +210,7 @@ export default function ManAndVanLondonPage() {
         <Container maxW="container.xl">
           <VStack spacing={{6}}>
             <Heading as="h2" size="xl" textAlign="center">
-              Ready to Book Your London Man and Van?
+              Ready to Book Your Reading Man and Van?
             </Heading>
             <Text fontSize="lg" textAlign="center" maxW="2xl">
               Get an instant online quote in 60 seconds. No registration required.
