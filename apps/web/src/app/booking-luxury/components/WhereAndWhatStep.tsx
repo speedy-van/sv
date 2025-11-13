@@ -45,7 +45,6 @@ import {
   DrawerHeader,
   DrawerBody,
   DrawerCloseButton,
-  useBreakpointValue,
 } from '@chakra-ui/react';
 
 import {
@@ -131,7 +130,6 @@ export default function WhereAndWhatStep({
   
   const { step1 } = formData;
   const toast = useToast();
-  const isDesktopLayout = useBreakpointValue({ base: false, lg: true }) ?? false;
   const {
     isOpen: isMobileCartOpen,
     onOpen: onMobileCartOpen,
@@ -480,7 +478,7 @@ export default function WhereAndWhatStep({
       <VStack
         spacing={{ base: 6, md: 8 }}
         align="stretch"
-        pb={step1.items.length > 0 && !isDesktopLayout ? 140 : 0}
+        pb={{ base: step1.items.length > 0 ? 140 : 0, lg: 0 }}
       >
         
         {/* Header */}
@@ -1519,14 +1517,14 @@ export default function WhereAndWhatStep({
         </Card>
 
       </VStack>
-      {step1.items.length > 0 && isDesktopLayout && (
+      {step1.items.length > 0 && (
         <Portal>
           <Box
+            display={{ base: 'none', lg: 'block' }}
             position="fixed"
-            top={{ base: 'unset', lg: '120px' }}
+            top="120px"
             right={{ base: '16px', xl: '40px' }}
-            bottom={{ base: '24px', lg: 'unset' }}
-            w={{ base: 'calc(100% - 32px)', lg: '340px' }}
+            w="340px"
             maxW="420px"
             zIndex={1400}
           >
@@ -1548,10 +1546,16 @@ export default function WhereAndWhatStep({
         </Portal>
       )}
 
-      {step1.items.length > 0 && !isDesktopLayout && (
+      {step1.items.length > 0 && (
         <>
           <Portal>
-            <Box position="fixed" bottom="104px" right="24px" zIndex={1500}>
+            <Box 
+              display={{ base: 'block', lg: 'none' }}
+              position="fixed" 
+              bottom="104px" 
+              right="24px" 
+              zIndex={1500}
+            >
               <Button
                 onClick={onMobileCartOpen}
                 bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"

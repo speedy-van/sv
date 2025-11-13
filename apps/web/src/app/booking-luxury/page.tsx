@@ -1,7 +1,6 @@
 'use client';
 
-import './no-scroll.css?v=2';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -26,7 +25,6 @@ import {
   Divider,
   Stack,
   Circle,
-  useBreakpointValue,
   Spinner,
   SimpleGrid,
   IconButton,
@@ -71,8 +69,12 @@ const STEPS = [
 
 export default function BookingLuxuryPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isClient, setIsClient] = useState<boolean>(typeof window !== 'undefined');
+  const [isClient, setIsClient] = useState<boolean>(false);
   const router = useRouter();
+  
+  // Ref to track scroll position
+  const scrollPositionRef = useRef<number>(0);
+  const preventScrollRef = useRef<boolean>(false);
   
   // Wave effects for step headers
   const [addressWaveActive, setAddressWaveActive] = useState(false);
@@ -84,8 +86,6 @@ export default function BookingLuxuryPage() {
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
   
-  // CRITICAL: Save scroll position ref - persists across renders
-  const scrollPositionRef = React.useRef({ x: 0, y: 0 });
 
   const {
     formData,
@@ -271,6 +271,95 @@ export default function BookingLuxuryPage() {
     formData.step1.items
   ]);
 
+  // Set isClient to true after component mounts to avoid hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Add CSS to prevent scroll anchoring globally
+    if (typeof document !== 'undefined') {
+      const style = document.createElement('style');
+      style.textContent = `
+        * {
+          overflow-anchor: none !important;
+        }
+        html {
+          scroll-behavior: auto !important;
+        }
+      `;
+      style.id = 'prevent-scroll-jump';
+      document.head.appendChild(style);
+      
+      return () => {
+        const existingStyle = document.getElementById('prevent-scroll-jump');
+        if (existingStyle) {
+          existingStyle.remove();
+        }
+      };
+    }
+  }, []);
+
+  // CRITICAL FIX: Prevent auto-scroll to top on ANY state change
+  // This is a comprehensive solution that works across all browsers
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Store current scroll position
+    const savedScrollY = window.scrollY;
+    
+    // Use multiple techniques to prevent scroll
+    const preventScroll = (e: Event) => {
+      if (savedScrollY > 0 && window.scrollY === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.scrollTo(0, savedScrollY);
+      }
+    };
+
+    // Method 1: Intercept scroll events
+    window.addEventListener('scroll', preventScroll, { capture: true });
+    
+    // Method 2: Use setTimeout with multiple attempts to restore position
+    const intervals: NodeJS.Timeout[] = [];
+    for (let i = 0; i < 5; i++) {
+      intervals.push(setTimeout(() => {
+        if (window.scrollY === 0 && savedScrollY > 0) {
+          window.scrollTo(0, savedScrollY);
+        }
+      }, i * 10));
+    }
+
+    // Method 3: Use requestAnimationFrame for immediate restoration
+    const restore = () => {
+      if (window.scrollY === 0 && savedScrollY > 0) {
+        window.scrollTo(0, savedScrollY);
+      }
+    };
+    requestAnimationFrame(restore);
+    requestAnimationFrame(() => requestAnimationFrame(restore));
+
+    return () => {
+      window.removeEventListener('scroll', preventScroll, { capture: true });
+      intervals.forEach(clearTimeout);
+    };
+  }, [
+    formData.step1.pickupAddress,
+    formData.step1.dropoffAddress,
+    formData.step1.items,
+    formData.step2,
+  ]);
+
+  // Disable browser's scroll restoration completely
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      const original = window.history.scrollRestoration;
+      window.history.scrollRestoration = 'manual';
+      
+      return () => {
+        window.history.scrollRestoration = original;
+      };
+    }
+  }, []);
+
   // Auto-trigger pricing when relevant data changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -415,6 +504,25 @@ export default function BookingLuxuryPage() {
     }
   }, [currentStep]);
 
+  // CRITICAL: Prevent auto-scroll to top when changing steps 2 and 3
+  // Users should maintain their scroll position in the form
+  useEffect(() => {
+    // Disable scroll restoration for steps 2 and 3
+    if (currentStep === 2 || currentStep === 3) {
+      // Preserve current scroll position
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+    }
+    
+    // Cleanup: restore default scroll behavior when component unmounts
+    return () => {
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+    };
+  }, [currentStep]);
+
   // Calculate pricing whenever items or addresses change (only if both addresses are available with coordinates)
   useEffect(() => {
     const hasPickupAddress = formData.step1.pickupAddress?.full || formData.step1.pickupAddress?.line1 || formData.step1.pickupAddress?.address || formData.step1.pickupAddress?.formatted_address;
@@ -505,48 +613,6 @@ export default function BookingLuxuryPage() {
     }
   }, [searchParams, toast, isClient]);
 
-  // MASTER SOLUTION: Save scroll position and restore after every render
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    console.log('🎯 SCROLL POSITION MANAGER ACTIVE');
-
-    // Track user scroll continuously
-    const handleUserScroll = () => {
-      scrollPositionRef.current = {
-        x: window.scrollX,
-        y: window.scrollY,
-      };
-    };
-
-    window.addEventListener('scroll', handleUserScroll, { passive: true });
-
-    // Override scrollIntoView to prevent automatic scrolling
-    const originalScrollIntoView = Element.prototype.scrollIntoView;
-    Element.prototype.scrollIntoView = function(arg?: boolean | ScrollIntoViewOptions) {
-      console.log('🚫 BLOCKED scrollIntoView() - maintaining position');
-      // Do nothing - completely ignore
-    };
-
-    return () => {
-      console.log('🔓 SCROLL POSITION MANAGER CLEANUP');
-      window.removeEventListener('scroll', handleUserScroll);
-      Element.prototype.scrollIntoView = originalScrollIntoView;
-    };
-  }, []); // Run once only
-
-  // Restore scroll position after EVERY render (including state changes)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Restore scroll immediately after render
-    const { x, y } = scrollPositionRef.current;
-    if (y > 0 || x > 0) {
-      // Use native scrollTo (not overridden)
-      window.scroll({ top: y, left: x, behavior: 'auto' });
-      console.log('↩️ Restored scroll to:', y);
-    }
-  }); // NO DEPS - runs after every render to restore position
 
   // Success page is now handled by dedicated /booking/success route
 
@@ -560,6 +626,7 @@ export default function BookingLuxuryPage() {
           setCurrentStep(2);
           clearErrors();
           setIsAutoTransitioning(false);
+          // Prevent scroll to top - user stays at their current position
         }, 300);
       } else {
         toast({
@@ -576,6 +643,7 @@ export default function BookingLuxuryPage() {
           setCurrentStep(currentStep + 1);
           clearErrors();
           setIsAutoTransitioning(false);
+          // Prevent scroll to top - user stays at their current position
         }, 300);
       }
     }
@@ -674,7 +742,6 @@ export default function BookingLuxuryPage() {
   const bgColor = 'gray.900'; // Dark theme background
   const cardBg = 'gray.800'; // Dark theme card background
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // REMOVED: Scroll restoration interferes with step transitions
 
@@ -688,6 +755,12 @@ export default function BookingLuxuryPage() {
       bg={bgColor} 
       py={{ base: 0, md: 8 }} 
       pb={{ base: "80px", md: 8 }}
+      suppressHydrationWarning
+      sx={{
+        // Prevent scroll jump on re-render
+        scrollBehavior: 'auto',
+        overflowAnchor: 'none',
+      }}
     >
       <Container 
         maxW={{ base: "full", md: "6xl" }} 
@@ -827,7 +900,18 @@ export default function BookingLuxuryPage() {
           </Box>
 
           {/* Main Content - NO ANIMATIONS, STABLE KEYS to prevent scroll jumps */}
-          <Box w="full" position="relative" data-booking-step={currentStep}>
+          <Box 
+            w="full" 
+            position="relative" 
+            data-booking-step={currentStep}
+            onClick={(e) => {
+              // Prevent any default scroll behavior on clicks
+              const target = e.target as HTMLElement;
+              if (target.tagName === 'A' && target.getAttribute('href')?.startsWith('#')) {
+                e.preventDefault();
+              }
+            }}
+          >
             {currentStep === 1 && (
               <Box key="step1-addresses" w="full" data-booking-step="1">
                 <AddressesStep

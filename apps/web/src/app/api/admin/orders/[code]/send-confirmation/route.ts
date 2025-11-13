@@ -89,7 +89,6 @@ export async function POST(
           legalName: 'SPEEDY VAN REMOVALS LTD',
           address: 'Office 2.18, 1 Barrack St, Hamilton ML3 0HS',
           email: 'support@speedy-van.co.uk',
-          vatNumber: 'GB123456789',
         },
         customer: {
           name: booking.customerName,

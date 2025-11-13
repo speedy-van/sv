@@ -652,7 +652,17 @@ export default function WhoAndPaymentStepSimple({
                   fontSize="sm"
                 >
                   I accept the{' '}
-                  <Text as="span" color="blue.400" textDecoration="underline" cursor="pointer">
+                  <Text 
+                    as="span" 
+                    color="blue.400" 
+                    textDecoration="underline" 
+                    cursor="pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open('/terms', '_blank');
+                    }}
+                  >
                     Terms and Conditions
                   </Text>
                 </Checkbox>
@@ -663,7 +673,17 @@ export default function WhoAndPaymentStepSimple({
                   fontSize="sm"
                 >
                   I have read the{' '}
-                  <Text as="span" color="blue.400" textDecoration="underline" cursor="pointer">
+                  <Text 
+                    as="span" 
+                    color="blue.400" 
+                    textDecoration="underline" 
+                    cursor="pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open('/privacy', '_blank');
+                    }}
+                  >
                     Privacy Policy
                   </Text>
                 </Checkbox>

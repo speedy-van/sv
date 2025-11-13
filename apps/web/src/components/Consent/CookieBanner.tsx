@@ -13,7 +13,7 @@ import {
   HStack,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useConsent } from './ConsentProvider';
 import CookiePreferencesModal from './CookiePreferencesModal';
 
@@ -21,6 +21,17 @@ export default function CookieBanner() {
   const { hasConsent, setHasConsent, preferences, updatePreferences } = useConsent();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   const handleAcceptAll = async () => {
     setIsLoading(true);
@@ -64,9 +75,10 @@ export default function CookieBanner() {
         zIndex={1000}
         boxShadow="lg"
         backdropFilter="blur(10px)"
+        suppressHydrationWarning
       >
-        <VStack spacing={4} maxW="4xl" mx="auto">
-          <Text fontSize="sm" color="white" textAlign="center">
+        <VStack spacing={4} maxW="4xl" mx="auto" suppressHydrationWarning>
+          <Text fontSize="sm" color="white" textAlign="center" suppressHydrationWarning>
             We use cookies to enhance your experience, analyze site traffic, and personalize content. 
             By continuing to use our site, you consent to our use of cookies.
           </Text>
@@ -78,6 +90,7 @@ export default function CookieBanner() {
             align="center"
             justify={{ base: 'space-between', md: 'center' }}
             wrap="wrap"
+            suppressHydrationWarning
           >
             <Button
               size="sm"
@@ -85,6 +98,7 @@ export default function CookieBanner() {
               onClick={onOpen}
               isLoading={isLoading}
               order={{ base: 1, md: 1 }}
+              suppressHydrationWarning
             >
               Manage Preferences
             </Button>
@@ -92,12 +106,14 @@ export default function CookieBanner() {
               gap={2}
               order={{ base: 2, md: 2 }}
               ml={{ base: 0, md: 'auto' }}
+              suppressHydrationWarning
             >
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleRejectAll}
                 isLoading={isLoading}
+                suppressHydrationWarning
               >
                 Reject All
               </Button>
@@ -106,6 +122,7 @@ export default function CookieBanner() {
                 colorScheme="primary"
                 onClick={handleAcceptAll}
                 isLoading={isLoading}
+                suppressHydrationWarning
               >
                 Accept All
               </Button>

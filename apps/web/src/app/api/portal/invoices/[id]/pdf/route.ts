@@ -60,7 +60,6 @@ export async function GET(
         address: '123 Moving Street, London, UK',
         email: 'hello@speedy-van.co.uk',
         phone: '01202 129746',
-        vatNumber: 'GB123456789',
       },
       customer: {
         name: booking.customerName,

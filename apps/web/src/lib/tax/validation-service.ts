@@ -74,7 +74,7 @@ export class TaxValidationService {
         errors.push({
           field: 'vatNumber',
           code: 'INVALID_FORMAT',
-          message: 'VAT number format is invalid. UK VAT numbers should be in format GB123456789',
+          message: 'VAT number format is invalid. UK VAT numbers should be in format GBXXXXXXXXX',
           severity: 'error'
         });
         

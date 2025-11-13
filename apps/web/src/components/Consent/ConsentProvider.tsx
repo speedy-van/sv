@@ -41,28 +41,33 @@ interface ConsentProviderProps {
 }
 
 export function ConsentProvider({ children, initialConsent }: ConsentProviderProps) {
-  const [preferences, setPreferences] = useState<ConsentPreferences>(
-    initialConsent?.preferences || defaultPreferences
-  );
-  const [hasConsent, setHasConsent] = useState(initialConsent?.hasConsent || false);
+  const [preferences, setPreferences] = useState<ConsentPreferences>(defaultPreferences);
+  const [hasConsent, setHasConsent] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Load saved preferences from localStorage
-    const savedPreferences = localStorage.getItem('consent-preferences');
-    const savedHasConsent = localStorage.getItem('consent-given');
+    setMounted(true);
+    
+    // Load saved preferences from localStorage only on client
+    if (typeof window !== 'undefined') {
+      const savedPreferences = localStorage.getItem('consent-preferences');
+      const savedHasConsent = localStorage.getItem('consent-given');
 
-    if (savedPreferences) {
-      try {
-        setPreferences(JSON.parse(savedPreferences));
-      } catch (error) {
-        console.error('Failed to parse saved consent preferences:', error);
+      if (savedPreferences) {
+        try {
+          setPreferences(JSON.parse(savedPreferences));
+        } catch (error) {
+          console.error('Failed to parse saved consent preferences:', error);
+        }
+      }
+
+      if (savedHasConsent === 'true') {
+        setHasConsent(true);
+      } else if (initialConsent?.hasConsent) {
+        setHasConsent(true);
       }
     }
-
-    if (savedHasConsent === 'true') {
-      setHasConsent(true);
-    }
-  }, []);
+  }, [initialConsent]);
 
   const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
     const updatedPreferences = { ...preferences, ...newPrefs };

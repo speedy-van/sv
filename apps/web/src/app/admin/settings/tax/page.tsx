@@ -768,7 +768,7 @@ export default function TaxManagementPage() {
             <VStack spacing={4}>
               <FormControl>
                 <FormLabel>VAT Registration Number</FormLabel>
-                <Input placeholder="GB123456789" />
+                <Input placeholder="GBXXXXXXXXX" />
               </FormControl>
               <FormControl>
                 <FormLabel>Corporation Tax UTR</FormLabel>

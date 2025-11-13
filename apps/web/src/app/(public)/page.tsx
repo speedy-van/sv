@@ -1,5 +1,11 @@
 import { Metadata, Viewport } from 'next';
-import MobileHomePageContent from './MobileHomePageContent';
+import dynamic from 'next/dynamic';
+
+// Load the home page content on client side only to avoid hydration issues
+const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export const metadata: Metadata = {
   title: 'Man and Van London | Furniture Removal & Moving Services UK',

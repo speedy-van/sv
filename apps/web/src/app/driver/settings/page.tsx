@@ -89,7 +89,7 @@ export default function DriverSettings() {
     phone: '01202 129746',
     address: '123 Glasgow Street, Glasgow, UK',
     emergencyContact: '01202 129746',
-    drivingLicense: 'GB123456789',
+    drivingLicense: 'DRIVE123456789012',
     vehicleReg: 'SV21 ABC'
   });
   

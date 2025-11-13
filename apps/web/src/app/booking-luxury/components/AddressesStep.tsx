@@ -18,7 +18,6 @@ import {
   Card,
   CardBody,
   Icon,
-  useBreakpointValue,
   Divider,
   Spinner,
 } from '@chakra-ui/react';
@@ -29,29 +28,6 @@ import {
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import type { FormData } from '../hooks/useBookingForm';
 
-const findScrollableParent = (node: HTMLElement | null): HTMLElement | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  let current: HTMLElement | null = node;
-  while (current) {
-    const style = window.getComputedStyle(current);
-    const overflowY = style.overflowY;
-    const overflowX = style.overflowX;
-    const canScrollY = (overflowY === 'auto' || overflowY === 'scroll') && current.scrollHeight > current.clientHeight;
-    const canScrollX = (overflowX === 'auto' || overflowX === 'scroll') && current.scrollWidth > current.clientWidth;
-
-    if (canScrollY || canScrollX) {
-      return current;
-    }
-
-    current = current.parentElement;
-  }
-
-  const scrollingElement = document.scrollingElement || document.documentElement;
-  return scrollingElement as HTMLElement;
-};
 
 interface AddressesStepProps {
   formData: FormData;
@@ -68,41 +44,14 @@ export default function AddressesStep({
   onNext,
   onBack,
 }: AddressesStepProps) {
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  
-  // Card border radius
-  const cardBorderRadius = isMobile ? '2xl' : '3xl';
+  // Card border radius - use responsive values instead of useBreakpointValue
+  const cardBorderRadius = { base: '2xl', md: '3xl' };
 
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
 
   const currentPickupProperty = useMemo(() => formData.step1.pickupProperty ?? {}, [formData.step1.pickupProperty]);
   const currentDropoffProperty = useMemo(() => formData.step1.dropoffProperty ?? {}, [formData.step1.dropoffProperty]);
-
-  const rootRef = useRef<HTMLDivElement | null>(null);
-
-  const preserveScrollDuring = useCallback((operation: () => void) => {
-    if (typeof window === 'undefined') {
-      operation();
-      return;
-    }
-
-    const container = findScrollableParent(rootRef.current);
-    const previousTop = container ? container.scrollTop : window.scrollY;
-    const previousLeft = container ? container.scrollLeft : window.scrollX;
-
-    operation();
-
-    const restoreScroll = () => {
-      if (container) {
-        container.scrollTo({ top: previousTop, left: previousLeft, behavior: 'auto' });
-      } else {
-        window.scrollTo({ top: previousTop, left: previousLeft });
-      }
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(restoreScroll));
-  }, []);
 
   const parseFloorNumber = (value?: string | number | null): number => {
     if (value === null || value === undefined) {
@@ -154,7 +103,7 @@ export default function AddressesStep({
   };
 
   return (
-    <Box w="full" ref={rootRef}>
+    <Box w="full">
       <VStack spacing={6} w="full" align="stretch">
         {/* Single Clean Card - Modern Design like Uber/Airbnb */}
         <Card
@@ -181,15 +130,14 @@ export default function AddressesStep({
                     label="Pickup Address"
                     value={formData.step1.pickupAddress as any}
                     onChange={(address) => {
-                      preserveScrollDuring(() => {
-                        if (address) {
-                          updateFormData('step1', {
-                            pickupAddress: address as any,
-                            pickupProperty: buildPropertyUpdate(address, currentPickupProperty) as any,
-                          });
-                        } else {
-                          updateFormData('step1', {
-                            pickupAddress: {
+                      if (address) {
+                        updateFormData('step1', {
+                          pickupAddress: address as any,
+                          pickupProperty: buildPropertyUpdate(address, currentPickupProperty) as any,
+                        });
+                      } else {
+                        updateFormData('step1', {
+                          pickupAddress: {
                               address: '',
                               city: '',
                               postcode: '',
@@ -207,7 +155,6 @@ export default function AddressesStep({
                             } as any,
                           });
                         }
-                      });
                     }}
                     placeholder="Where are we picking up from?"
                     isRequired={true}
@@ -236,15 +183,14 @@ export default function AddressesStep({
                     label="Dropoff Address"
                     value={formData.step1.dropoffAddress as any}
                     onChange={(address) => {
-                      preserveScrollDuring(() => {
-                        if (address) {
-                          updateFormData('step1', {
-                            dropoffAddress: address as any,
-                            dropoffProperty: buildPropertyUpdate(address, currentDropoffProperty) as any,
-                          });
-                        } else {
-                          updateFormData('step1', {
-                            dropoffAddress: {
+                      if (address) {
+                        updateFormData('step1', {
+                          dropoffAddress: address as any,
+                          dropoffProperty: buildPropertyUpdate(address, currentDropoffProperty) as any,
+                        });
+                      } else {
+                        updateFormData('step1', {
+                          dropoffAddress: {
                               address: '',
                               city: '',
                               postcode: '',
@@ -262,7 +208,6 @@ export default function AddressesStep({
                             } as any,
                           });
                         }
-                      });
                     }}
                     placeholder="Where are we delivering to?"
                     isRequired={true}

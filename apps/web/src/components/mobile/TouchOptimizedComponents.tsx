@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   ButtonProps,
-  useBreakpointValue,
   useColorModeValue,
 } from '@chakra-ui/react';
 
@@ -18,18 +17,11 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
   size = 'md',
   ...props
 }) => {
-  const isMobile = useBreakpointValue({ base: true, lg: false });
-  
-  // Mobile-optimized button sizing
-  const mobileSize = isMobile ? 'lg' : size;
-  const minHeight = isMobile ? '48px' : undefined;
-  const minWidth = isMobile ? '120px' : undefined;
-
   return (
     <Button
-      size={mobileSize}
-      minH={minHeight}
-      minW={minWidth}
+      size={{ base: 'lg', lg: size as any }}
+      minH={{ base: '48px', lg: 'auto' }}
+      minW={{ base: '120px', lg: 'auto' }}
       w={fullWidth ? 'full' : undefined}
       borderRadius="xl"
       fontWeight="semibold"
@@ -47,7 +39,6 @@ export const TouchButton: React.FC<TouchButtonProps> = ({
 };
 
 export const TouchCard: React.FC<any> = ({ children, ...props }) => {
-  const isMobile = useBreakpointValue({ base: true, lg: false });
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
@@ -56,7 +47,7 @@ export const TouchCard: React.FC<any> = ({ children, ...props }) => {
       bg={bgColor}
       border={`1px solid ${borderColor}`}
       borderRadius="xl"
-      p={isMobile ? 6 : 4}
+      p={{ base: 6, lg: 4 }}
       transition="all 0.2s ease"
       _hover={{
         transform: 'translateY(-2px)',

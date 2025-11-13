@@ -106,12 +106,12 @@ const mockLegalSettings: LegalSettings = {
     email: 'support@speedy-van.co.uk',
     website: 'https://speedy-van.co.uk',
     registrationNumber: 'SC865658',
-    vatNumber: 'GB123456789',
+    vatNumber: '', // VAT number if applicable
   },
   vat: {
-    enabled: true,
+    enabled: false,
     rate: 20,
-    registrationNumber: 'GB123456789',
+    registrationNumber: '',
     country: 'GB',
   },
   privacy: {

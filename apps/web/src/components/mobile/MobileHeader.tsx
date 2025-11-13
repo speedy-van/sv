@@ -17,7 +17,6 @@ import {
   Link,
   Text,
   Button,
-  useBreakpointValue,
 } from '@chakra-ui/react';
 import { FiMenu, FiX, FiUser, FiLogIn, FiUserPlus, FiMapPin, FiFileText, FiShield } from 'react-icons/fi';
 import { FaPhone, FaTruck, FaStar, FaQuestionCircle } from 'react-icons/fa';

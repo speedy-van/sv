@@ -220,6 +220,9 @@ export default function StripePaymentButton({
   const handlePayment = async () => {
     if (disabled || isProcessing) return;
 
+    // CRITICAL: Save scroll position before payment processing
+    const scrollY = window.scrollY;
+
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -233,6 +236,11 @@ export default function StripePaymentButton({
       if (!amount || amount <= 0) {
         throw new Error('Valid amount is required');
       }
+
+      // Restore scroll position immediately
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
 
       // Ensure amount has at most 2 decimal places
       const formattedAmount = Math.round(amount * 100) / 100;
@@ -461,7 +469,11 @@ export default function StripePaymentButton({
           w="full"
           bg="linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)"
           color="white"
-          onClick={handlePayment}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handlePayment();
+          }}
           isDisabled={disabled || isProcessing}
           leftIcon={
             isProcessing ? (

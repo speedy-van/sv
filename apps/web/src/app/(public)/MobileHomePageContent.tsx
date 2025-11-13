@@ -14,7 +14,6 @@ import {
   Badge,
   Icon,
   Stack,
-  useBreakpointValue,
   chakra,
   shouldForwardProp,
 } from '@chakra-ui/react';
@@ -187,8 +186,6 @@ const stats = [
 
 // Mobile Hero Section
 const MobileHero: React.FC = () => {
-  // Show video on all screen sizes with mobile optimization
-  const isMobile = useBreakpointValue({ base: true, md: false });
   return (
     <Box
       className="mobile-hero"
@@ -208,7 +205,7 @@ const MobileHero: React.FC = () => {
           loop
           muted
           playsInline
-          preload={isMobile ? "none" : "metadata"}
+          preload="metadata"
           poster="/android-chrome-512x512.png"
           aria-hidden
           tabIndex={-1}
@@ -225,11 +222,6 @@ const MobileHero: React.FC = () => {
             objectFit: 'cover',
             zIndex: 0,
             filter: 'brightness(0.6)',
-            // Mobile optimizations
-            ...(isMobile && {
-              WebkitPlaysInline: true,
-              playsInline: true,
-            }),
           }}
           onLoadedData={() => {
             // Video loaded successfully - production ready
@@ -1127,10 +1119,8 @@ const MobileCTA: React.FC = () => {
 
 // Main Mobile Home Page Component
 export default function MobileHomePageContent() {
-
-
   return (
-    <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100vw" overflowX="hidden">
+    <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100vw" overflowX="hidden" suppressHydrationWarning>
       {/* Mobile Header with scroll behavior */}
       <MobileHeader />
       
