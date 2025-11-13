@@ -29,17 +29,17 @@ export default function ManAndVanIpswichPage() {
               Fully insured, reliable, and affordable from just £25/hour.
             </Text>
             <HStack spacing={4} flexWrap="wrap">
-              <Button
-                as={Link}
-                href="/booking-luxury"
-                size="lg"
-                bg="white"
-                color="brand.500"
-                _hover={{ bg: 'gray.100' }}
-                leftIcon={<Icon as={FaTruck} />}
-              >
-                Get Instant Quote
-              </Button>
+              <Link href="/booking-luxury">
+                <Button
+                  size="lg"
+                  bg="white"
+                  color="brand.500"
+                  _hover={{ bg: 'gray.100' }}
+                  leftIcon={<Icon as={FaTruck} />}
+                >
+                  Get Instant Quote
+                </Button>
+              </Link>
               <Button
                 as="a"
                 href="tel:01202129746"
