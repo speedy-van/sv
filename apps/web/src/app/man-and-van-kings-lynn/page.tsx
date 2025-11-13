@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { FaTruck, FaClock, FaCheckCircle, FaStar, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const metadata = {
-  title: 'Man and Van King's Lynn | 24/7 Removals & Delivery | Speedy Van',
-  description: 'Professional man and van service in King's Lynn. 24/7 availability, fully insured, competitive rates. Book your King's Lynn removal or delivery today!',
+  title: `Man and Van King's Lynn | 24/7 Removals & Delivery | Speedy Van`,
+  description: `Professional man and van service in King's Lynn. 24/7 availability, fully insured, competitive rates. Book your King's Lynn removal or delivery today!`,
 };
 
 export default function ManAndVanKingsLynnPage() {

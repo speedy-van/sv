@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { FaTruck, FaClock, FaCheckCircle, FaStar, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const metadata = {
-  title: 'Man and Van Dinnington St John's | 24/7 Removals & Delivery | Speedy Van',
-  description: 'Professional man and van service in Dinnington St John's. 24/7 availability, fully insured, competitive rates. Book your Dinnington St John's removal or delivery today!',
+  title: `Man and Van Dinnington St John's | 24/7 Removals & Delivery | Speedy Van`,
+  description: `Professional man and van service in Dinnington St John's. 24/7 availability, fully insured, competitive rates. Book your Dinnington St John's removal or delivery today!`,
 };
 
 export default function ManAndVanDinningtonStJohnsPage() {

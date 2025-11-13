@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { FaTruck, FaClock, FaCheckCircle, FaStar, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export const metadata = {
-  title: 'Man and Van Connah's Quay | 24/7 Removals & Delivery | Speedy Van',
-  description: 'Professional man and van service in Connah's Quay. 24/7 availability, fully insured, competitive rates. Book your Connah's Quay removal or delivery today!',
+  title: `Man and Van Connah's Quay | 24/7 Removals & Delivery | Speedy Van`,
+  description: `Professional man and van service in Connah's Quay. 24/7 availability, fully insured, competitive rates. Book your Connah's Quay removal or delivery today!`,
 };
 
 export default function ManAndVanConnahsQuayPage() {
