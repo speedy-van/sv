@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import citiesData from './cities.json';
 
 interface CityData {
   name: string;
@@ -10,19 +9,66 @@ interface CityData {
   region: string;
 }
 
-interface AllCitiesData {
-  england: CityData[];
-  scotland: CityData[];
-  wales: CityData[];
-}
-
-const cities: AllCitiesData = citiesData as AllCitiesData;
-
-// Get all cities as flat array
-const allCities = [
-  ...cities.england,
-  ...cities.scotland,
-  ...cities.wales
+// Hardcoded cities array for static generation
+const allCities: CityData[] = [
+  // England
+  {"name": "London", "slug": "london", "postcode": "SW1A", "region": "Greater London"},
+  {"name": "Birmingham", "slug": "birmingham", "postcode": "B1", "region": "West Midlands"},
+  {"name": "Manchester", "slug": "manchester", "postcode": "M1", "region": "Greater Manchester"},
+  {"name": "Liverpool", "slug": "liverpool", "postcode": "L1", "region": "Merseyside"},
+  {"name": "Leeds", "slug": "leeds", "postcode": "LS1", "region": "West Yorkshire"},
+  {"name": "Sheffield", "slug": "sheffield", "postcode": "S1", "region": "South Yorkshire"},
+  {"name": "Bristol", "slug": "bristol", "postcode": "BS1", "region": "South West"},
+  {"name": "Newcastle", "slug": "newcastle", "postcode": "NE1", "region": "Tyne and Wear"},
+  {"name": "Nottingham", "slug": "nottingham", "postcode": "NG1", "region": "Nottinghamshire"},
+  {"name": "Leicester", "slug": "leicester", "postcode": "LE1", "region": "Leicestershire"},
+  {"name": "Coventry", "slug": "coventry", "postcode": "CV1", "region": "West Midlands"},
+  {"name": "Bradford", "slug": "bradford", "postcode": "BD1", "region": "West Yorkshire"},
+  {"name": "Southampton", "slug": "southampton", "postcode": "SO14", "region": "Hampshire"},
+  {"name": "Portsmouth", "slug": "portsmouth", "postcode": "PO1", "region": "Hampshire"},
+  {"name": "Reading", "slug": "reading", "postcode": "RG1", "region": "Berkshire"},
+  {"name": "Derby", "slug": "derby", "postcode": "DE1", "region": "Derbyshire"},
+  {"name": "Plymouth", "slug": "plymouth", "postcode": "PL1", "region": "Devon"},
+  {"name": "Luton", "slug": "luton", "postcode": "LU1", "region": "Bedfordshire"},
+  {"name": "Wolverhampton", "slug": "wolverhampton", "postcode": "WV1", "region": "West Midlands"},
+  {"name": "Stoke-on-Trent", "slug": "stoke-on-trent", "postcode": "ST1", "region": "Staffordshire"},
+  {"name": "Brighton", "slug": "brighton", "postcode": "BN1", "region": "East Sussex"},
+  {"name": "Hull", "slug": "hull", "postcode": "HU1", "region": "East Yorkshire"},
+  {"name": "York", "slug": "york", "postcode": "YO1", "region": "North Yorkshire"},
+  {"name": "Peterborough", "slug": "peterborough", "postcode": "PE1", "region": "Cambridgeshire"},
+  {"name": "Cambridge", "slug": "cambridge", "postcode": "CB1", "region": "Cambridgeshire"},
+  {"name": "Oxford", "slug": "oxford", "postcode": "OX1", "region": "Oxfordshire"},
+  {"name": "Bournemouth", "slug": "bournemouth", "postcode": "BH1", "region": "Dorset"},
+  {"name": "Swindon", "slug": "swindon", "postcode": "SN1", "region": "Wiltshire"},
+  {"name": "Ipswich", "slug": "ipswich", "postcode": "IP1", "region": "Suffolk"},
+  {"name": "Norwich", "slug": "norwich", "postcode": "NR1", "region": "Norfolk"},
+  {"name": "Exeter", "slug": "exeter", "postcode": "EX1", "region": "Devon"},
+  {"name": "Cheltenham", "slug": "cheltenham", "postcode": "GL50", "region": "Gloucestershire"},
+  {"name": "Gloucester", "slug": "gloucester", "postcode": "GL1", "region": "Gloucestershire"},
+  {"name": "Bath", "slug": "bath", "postcode": "BA1", "region": "Somerset"},
+  {"name": "Chester", "slug": "chester", "postcode": "CH1", "region": "Cheshire"},
+  {"name": "Lancaster", "slug": "lancaster", "postcode": "LA1", "region": "Lancashire"},
+  {"name": "Durham", "slug": "durham", "postcode": "DH1", "region": "County Durham"},
+  {"name": "Sunderland", "slug": "sunderland", "postcode": "SR1", "region": "Tyne and Wear"},
+  {"name": "Middlesbrough", "slug": "middlesbrough", "postcode": "TS1", "region": "North Yorkshire"},
+  {"name": "Blackpool", "slug": "blackpool", "postcode": "FY1", "region": "Lancashire"},
+  // Scotland
+  {"name": "Glasgow", "slug": "glasgow", "postcode": "G1", "region": "Glasgow City"},
+  {"name": "Edinburgh", "slug": "edinburgh", "postcode": "EH1", "region": "City of Edinburgh"},
+  {"name": "Aberdeen", "slug": "aberdeen", "postcode": "AB10", "region": "Aberdeenshire"},
+  {"name": "Dundee", "slug": "dundee", "postcode": "DD1", "region": "Dundee City"},
+  {"name": "Inverness", "slug": "inverness", "postcode": "IV1", "region": "Highland"},
+  {"name": "Stirling", "slug": "stirling", "postcode": "FK8", "region": "Stirling"},
+  {"name": "Perth", "slug": "perth", "postcode": "PH1", "region": "Perth and Kinross"},
+  {"name": "Paisley", "slug": "paisley", "postcode": "PA1", "region": "Renfrewshire"},
+  {"name": "Hamilton", "slug": "hamilton", "postcode": "ML3", "region": "South Lanarkshire"},
+  {"name": "Livingston", "slug": "livingston", "postcode": "EH54", "region": "West Lothian"},
+  // Wales
+  {"name": "Cardiff", "slug": "cardiff", "postcode": "CF10", "region": "Cardiff"},
+  {"name": "Swansea", "slug": "swansea", "postcode": "SA1", "region": "Swansea"},
+  {"name": "Newport", "slug": "newport", "postcode": "NP20", "region": "Newport"},
+  {"name": "Wrexham", "slug": "wrexham", "postcode": "LL11", "region": "Wrexham"},
+  {"name": "Barry", "slug": "barry", "postcode": "CF62", "region": "Vale of Glamorgan"}
 ];
 
 // Force static generation for all cities
