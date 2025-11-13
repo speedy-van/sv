@@ -110,7 +110,7 @@ export default function ManAndVanCambuslangPage() {
             <Text fontWeight="bold" mb={4}>Small Van</Text>
             <Text color="gray.600">Perfect for small moves and deliveries in Cambuslang</Text>
           </Box>
-          <Box borderWidth={1} borderRadius="lg" p={6} textAlign="center" borderColor="brand.500" borderWidth={2}>
+          <Box borderRadius="lg" p={6} textAlign="center" borderColor="brand.500" borderWidth={2}>
             <Heading size="lg" mb={2}>£35/hr</Heading>
             <Text fontWeight="bold" mb={4}>Medium Van</Text>
             <Text color="gray.600">Ideal for 1-2 bedroom moves in Cambuslang</Text>
