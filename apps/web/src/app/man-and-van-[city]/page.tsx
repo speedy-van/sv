@@ -25,6 +25,9 @@ const allCities = [
   ...cities.wales
 ];
 
+// Force static generation for all cities
+export const dynamicParams = false;
+
 // Generate static params for all cities
 export async function generateStaticParams() {
   return allCities.map((city) => ({
@@ -36,9 +39,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { city: string };
+  params: Promise<{ city: string }>;
 }): Promise<Metadata> {
-  const city = allCities.find((c) => c.slug === params.city);
+  const { city: citySlug } = await params;
+  const city = allCities.find((c) => c.slug === citySlug);
   
   if (!city) {
     return {
@@ -58,12 +62,13 @@ export async function generateMetadata({
   };
 }
 
-export default function CityLandingPage({
+export default async function CityLandingPage({
   params,
 }: {
-  params: { city: string };
+  params: Promise<{ city: string }>;
 }) {
-  const city = allCities.find((c) => c.slug === params.city);
+  const { city: citySlug } = await params;
+  const city = allCities.find((c) => c.slug === citySlug);
 
   if (!city) {
     notFound();
