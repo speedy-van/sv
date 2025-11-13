@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Box, Container, Heading, Text, Button, VStack, HStack, SimpleGrid, Icon, Flex } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, Button, VStack, HStack, SimpleGrid, Flex } from '@chakra-ui/react'
 import { FaPhone, FaClock, FaCheckCircle, FaStar, FaTruck } from 'react-icons/fa'
 import Link from 'next/link'
 
@@ -35,7 +35,7 @@ export default function ManAndVanNorwichPage() {
                   bg="white"
                   color="brand.500"
                   _hover={{ bg: 'gray.100' }}
-                  leftIcon={<Icon as={FaTruck} />}
+                  leftIcon={<FaTruck />}
                 >
                   Get Instant Quote
                 </Button>
@@ -48,7 +48,7 @@ export default function ManAndVanNorwichPage() {
                 borderColor="white"
                 color="white"
                 _hover={{ bg: 'whiteAlpha.200' }}
-                leftIcon={<Icon as={FaPhone} />}
+                leftIcon={<FaPhone />}
               >
                 Call 01202 129746
               </Button>
@@ -65,28 +65,28 @@ export default function ManAndVanNorwichPage() {
           </Heading>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
             <VStack align="start" spacing={3}>
-              <Icon as={FaClock} boxSize={8} color="brand.500" />
+              <FaClock size={32} color="var(--chakra-colors-brand-500)" />
               <Heading as="h3" size="md">24/7 Availability</Heading>
               <Text color="gray.600">
                 Book online anytime. Phone support 9AM-6PM, 7 days a week.
               </Text>
             </VStack>
             <VStack align="start" spacing={3}>
-              <Icon as={FaCheckCircle} boxSize={8} color="brand.500" />
+              <FaCheckCircle size={32} color="var(--chakra-colors-brand-500)" />
               <Heading as="h3" size="md">Fully Insured</Heading>
               <Text color="gray.600">
                 Comprehensive goods in transit insurance for complete peace of mind.
               </Text>
             </VStack>
             <VStack align="start" spacing={3}>
-              <Icon as={FaStar} boxSize={8} color="brand.500" />
+              <FaStar size={32} color="var(--chakra-colors-brand-500)" />
               <Heading as="h3" size="md">Professional Service</Heading>
               <Text color="gray.600">
                 Experienced drivers, careful handling, and excellent customer service.
               </Text>
             </VStack>
             <VStack align="start" spacing={3}>
-              <Icon as={FaTruck} boxSize={8} color="brand.500" />
+              <FaTruck size={32} color="var(--chakra-colors-brand-500)" />
               <Heading as="h3" size="md">Modern Fleet</Heading>
               <Text color="gray.600">
                 Well-maintained vans from small to Luton size for any job.
@@ -179,7 +179,7 @@ export default function ManAndVanNorwichPage() {
               href="/booking-luxury"
               size="lg"
               colorScheme="brand"
-              leftIcon={<Icon as={FaTruck} />}
+              leftIcon={<FaTruck />}
             >
               Get Your Instant Quote
             </Button>
