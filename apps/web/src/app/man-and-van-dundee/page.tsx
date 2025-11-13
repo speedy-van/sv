@@ -20,7 +20,7 @@ export default function ManAndVanDundeePage() {
       {/* Hero Section */}
       <Box bg="brand.500" color="white" py={{ base: 12, md: 20 }}>
         <Container maxW="container.xl">
-          <VStack spacing={{6}} align="start">
+          <VStack spacing={6} align="start">
             <Heading as="h1" size="2xl" fontWeight="bold">
               Man and Van Dundee
             </Heading>
@@ -28,15 +28,15 @@ export default function ManAndVanDundeePage() {
               Professional removal and delivery service in Dundee. Available 24/7 with instant online booking.
               Fully insured, reliable, and affordable from just £25/hour.
             </Text>
-            <HStack spacing={{4}} flexWrap="wrap">
+            <HStack spacing={4} flexWrap="wrap">
               <Button
-                as={{Link}}
+                as={Link}
                 href="/booking-luxury"
                 size="lg"
                 bg="white"
                 color="brand.500"
                 _hover={{ bg: 'gray.100' }}
-                leftIcon={{<Icon as={{FaTruck}} />}}
+                leftIcon={<Icon as={FaTruck} />}
               >
                 Get Instant Quote
               </Button>
@@ -48,7 +48,7 @@ export default function ManAndVanDundeePage() {
                 borderColor="white"
                 color="white"
                 _hover={{ bg: 'whiteAlpha.200' }}
-                leftIcon={{<Icon as={{FaPhone}} />}}
+                leftIcon={<Icon as={FaPhone} />}
               >
                 Call 01202 129746
               </Button>
@@ -58,35 +58,35 @@ export default function ManAndVanDundeePage() {
       </Box>
 
       {/* Features Section */}
-      <Box py={{16}} bg="gray.50">
+      <Box py={16} bg="gray.50">
         <Container maxW="container.xl">
-          <Heading as="h2" size="xl" mb={{8}} textAlign="center">
+          <Heading as="h2" size="xl" mb={8} textAlign="center">
             Why Choose Our Dundee Man and Van Service?
           </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{8}}>
-            <VStack align="start" spacing={{3}}>
-              <Icon as={{FaClock}} boxSize={{8}} color="brand.500" />
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
+            <VStack align="start" spacing={3}>
+              <Icon as={FaClock} boxSize={8} color="brand.500" />
               <Heading as="h3" size="md">24/7 Availability</Heading>
               <Text color="gray.600">
                 Book online anytime. Phone support 9AM-6PM, 7 days a week.
               </Text>
             </VStack>
-            <VStack align="start" spacing={{3}}>
-              <Icon as={{FaCheckCircle}} boxSize={{8}} color="brand.500" />
+            <VStack align="start" spacing={3}>
+              <Icon as={FaCheckCircle} boxSize={8} color="brand.500" />
               <Heading as="h3" size="md">Fully Insured</Heading>
               <Text color="gray.600">
                 Comprehensive goods in transit insurance for complete peace of mind.
               </Text>
             </VStack>
-            <VStack align="start" spacing={{3}}>
-              <Icon as={{FaStar}} boxSize={{8}} color="brand.500" />
+            <VStack align="start" spacing={3}>
+              <Icon as={FaStar} boxSize={8} color="brand.500" />
               <Heading as="h3" size="md">Professional Service</Heading>
               <Text color="gray.600">
                 Experienced drivers, careful handling, and excellent customer service.
               </Text>
             </VStack>
-            <VStack align="start" spacing={{3}}>
-              <Icon as={{FaTruck}} boxSize={{8}} color="brand.500" />
+            <VStack align="start" spacing={3}>
+              <Icon as={FaTruck} boxSize={8} color="brand.500" />
               <Heading as="h3" size="md">Modern Fleet</Heading>
               <Text color="gray.600">
                 Well-maintained vans from small to Luton size for any job.
@@ -97,35 +97,35 @@ export default function ManAndVanDundeePage() {
       </Box>
 
       {/* Services Section */}
-      <Box py={{16}}>
+      <Box py={16}>
         <Container maxW="container.xl">
-          <Heading as="h2" size="xl" mb={{8}}>
+          <Heading as="h2" size="xl" mb={8}>
             Our Dundee Services
           </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{8}}>
-            <Box p={{6}} borderWidth={{1}} borderRadius="lg">
-              <Heading as="h3" size="md" mb={{3}}>House Removals</Heading>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+            <Box p={6} borderWidth={1} borderRadius="lg">
+              <Heading as="h3" size="md" mb={3}>House Removals</Heading>
               <Text color="gray.600">
                 Full house or flat removals in Dundee. From single items to entire properties.
                 Professional packing service available.
               </Text>
             </Box>
-            <Box p={{6}} borderWidth={{1}} borderRadius="lg">
-              <Heading as="h3" size="md" mb={{3}}>Office Moves</Heading>
+            <Box p={6} borderWidth={1} borderRadius="lg">
+              <Heading as="h3" size="md" mb={3}>Office Moves</Heading>
               <Text color="gray.600">
                 Business relocations with minimal disruption. Evening and weekend moves available
                 to keep your Dundee business running.
               </Text>
             </Box>
-            <Box p={{6}} borderWidth={{1}} borderRadius="lg">
-              <Heading as="h3" size="md" mb={{3}}>Furniture Delivery</Heading>
+            <Box p={6} borderWidth={1} borderRadius="lg">
+              <Heading as="h3" size="md" mb={3}>Furniture Delivery</Heading>
               <Text color="gray.600">
                 Collect and deliver furniture anywhere in Dundee. Same-day service available
                 for urgent deliveries.
               </Text>
             </Box>
-            <Box p={{6}} borderWidth={{1}} borderRadius="lg">
-              <Heading as="h3" size="md" mb={{3}}>Student Moves</Heading>
+            <Box p={6} borderWidth={1} borderRadius="lg">
+              <Heading as="h3" size="md" mb={3}>Student Moves</Heading>
               <Text color="gray.600">
                 Affordable student removal service in Dundee. Perfect for university accommodation
                 moves and storage collection.
@@ -136,36 +136,36 @@ export default function ManAndVanDundeePage() {
       </Box>
 
       {/* Pricing Section */}
-      <Box py={{16}} bg="gray.50">
+      <Box py={16} bg="gray.50">
         <Container maxW="container.xl">
-          <Heading as="h2" size="xl" mb={{8}} textAlign="center">
+          <Heading as="h2" size="xl" mb={8} textAlign="center">
             Transparent Pricing in Dundee
           </Heading>
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{8}}>
-            <Box bg="white" p={{8}} borderRadius="lg" borderWidth={{1}}>
-              <Heading as="h3" size="lg" mb={{2}}>Small Van</Heading>
-              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={{4}}>£25/hr</Text>
-              <VStack align="start" spacing={{2}}>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
+            <Box bg="white" p={8} borderRadius="lg" borderWidth={1}>
+              <Heading as="h3" size="lg" mb={2}>Small Van</Heading>
+              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={4}>£25/hr</Text>
+              <VStack align="start" spacing={2}>
                 <Text>✓ Perfect for small moves</Text>
                 <Text>✓ 1-2 bedroom flat</Text>
                 <Text>✓ Single items</Text>
                 <Text>✓ 2-hour minimum</Text>
               </VStack>
             </Box>
-            <Box bg="white" p={{8}} borderRadius="lg" borderWidth={{2}} borderColor="brand.500">
-              <Heading as="h3" size="lg" mb={{2}}>Medium Van</Heading>
-              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={{4}}>£35/hr</Text>
-              <VStack align="start" spacing={{2}}>
+            <Box bg="white" p={8} borderRadius="lg" borderWidth={2} borderColor="brand.500">
+              <Heading as="h3" size="lg" mb={2}>Medium Van</Heading>
+              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={4}>£35/hr</Text>
+              <VStack align="start" spacing={2}>
                 <Text>✓ Most popular choice</Text>
                 <Text>✓ 2-3 bedroom house</Text>
                 <Text>✓ Office moves</Text>
                 <Text>✓ 2-hour minimum</Text>
               </VStack>
             </Box>
-            <Box bg="white" p={{8}} borderRadius="lg" borderWidth={{1}}>
-              <Heading as="h3" size="lg" mb={{2}}>Luton Van</Heading>
-              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={{4}}>£45/hr</Text>
-              <VStack align="start" spacing={{2}}>
+            <Box bg="white" p={8} borderRadius="lg" borderWidth={1}>
+              <Heading as="h3" size="lg" mb={2}>Luton Van</Heading>
+              <Text fontSize="3xl" fontWeight="bold" color="brand.500" mb={4}>£45/hr</Text>
+              <VStack align="start" spacing={2}>
                 <Text>✓ Large capacity</Text>
                 <Text>✓ 3-4 bedroom house</Text>
                 <Text>✓ Tail lift available</Text>
@@ -173,13 +173,13 @@ export default function ManAndVanDundeePage() {
               </VStack>
             </Box>
           </SimpleGrid>
-          <Flex justify="center" mt={{8}}>
+          <Flex justify="center" mt={8}>
             <Button
-              as={{Link}}
+              as={Link}
               href="/booking-luxury"
               size="lg"
               colorScheme="brand"
-              leftIcon={{<Icon as={{FaTruck}} />}}
+              leftIcon={<Icon as={FaTruck} />}
             >
               Get Your Instant Quote
             </Button>
@@ -188,17 +188,17 @@ export default function ManAndVanDundeePage() {
       </Box>
 
       {/* Coverage Section */}
-      <Box py={{16}}>
+      <Box py={16}>
         <Container maxW="container.xl">
-          <Heading as="h2" size="xl" mb={{6}}>
+          <Heading as="h2" size="xl" mb={6}>
             Serving All of Dundee
           </Heading>
-          <Text fontSize="lg" color="gray.600" mb={{6}}>
+          <Text fontSize="lg" color="gray.600" mb={6}>
             Our man and van service covers all areas of Dundee and surrounding regions.
             Whether you're in the city centre or suburbs, we provide fast, reliable service
             with no hidden charges.
           </Text>
-          <Text fontSize="lg" color="gray.600" mb={{8}}>
+          <Text fontSize="lg" color="gray.600" mb={8}>
             We also offer competitive rates for moves between Dundee and other UK cities.
             Get an instant quote online or call us for long-distance pricing.
           </Text>
@@ -206,9 +206,9 @@ export default function ManAndVanDundeePage() {
       </Box>
 
       {/* CTA Section */}
-      <Box py={{16}} bg="brand.500" color="white">
+      <Box py={16} bg="brand.500" color="white">
         <Container maxW="container.xl">
-          <VStack spacing={{6}}>
+          <VStack spacing={6}>
             <Heading as="h2" size="xl" textAlign="center">
               Ready to Book Your Dundee Man and Van?
             </Heading>
@@ -216,9 +216,9 @@ export default function ManAndVanDundeePage() {
               Get an instant online quote in 60 seconds. No registration required.
               Book now and we'll confirm your booking immediately.
             </Text>
-            <HStack spacing={{4}} flexWrap="wrap">
+            <HStack spacing={4} flexWrap="wrap">
               <Button
-                as={{Link}}
+                as={Link}
                 href="/booking-luxury"
                 size="lg"
                 bg="white"
@@ -239,7 +239,7 @@ export default function ManAndVanDundeePage() {
                 Or Call 01202 129746
               </Button>
             </HStack>
-            <Text fontSize="sm" opacity={{0.9}}>
+            <Text fontSize="sm" opacity={0.9}>
               Phone support: 9AM-6PM, 7 days a week | Online booking: 24/7
             </Text>
           </VStack>
