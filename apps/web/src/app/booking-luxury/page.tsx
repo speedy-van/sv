@@ -1,5 +1,6 @@
 'use client';
 
+import './luxury-design-system.css';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,

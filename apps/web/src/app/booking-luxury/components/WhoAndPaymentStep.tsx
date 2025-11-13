@@ -732,17 +732,17 @@ export default function WhoAndPaymentStep({
 
       {/* 1. Customer Information - Enhanced */}
       <Card 
-        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+        bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
         backdropFilter="blur(20px) saturate(180%)"
-        shadow="0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.3), 0 0 100px rgba(168, 85, 247, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        shadow="0 8px 32px var(--primary), 0 0 60px rgba(168, 85, 247, 0.3), 0 0 100px var(--primary-muted), inset 0 1px 0 var(--border)"
         borderRadius="2xl"
         border="2px solid"
-        borderColor="rgba(168, 85, 247, 0.5)"
+        borderColor="var(--primary)"
         overflow="hidden"
         position="relative"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          shadow: "0 12px 40px rgba(168, 85, 247, 0.5), 0 0 80px rgba(168, 85, 247, 0.4), 0 0 120px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          shadow: "0 12px 40px var(--primary), 0 0 80px var(--primary), 0 0 120px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
           borderColor: "rgba(168, 85, 247, 0.7)",
           transform: "translateY(-2px)",
         }}
@@ -793,7 +793,7 @@ export default function WhoAndPaymentStep({
               w="180px"
               h="180px"
               borderRadius="full"
-              bg="radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)"
+              bg="radial-gradient(circle, var(--primary-muted) 0%, transparent 70%)"
               filter="blur(35px)"
               zIndex={0}
             />
@@ -805,27 +805,27 @@ export default function WhoAndPaymentStep({
                 minW={{ base: "48px", sm: "52px", md: "56px" }}
                 minH={{ base: "48px", sm: "52px", md: "56px" }}
                 borderRadius={{ base: "lg", md: "xl" }}
-                bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                boxShadow="0 4px 20px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                boxShadow="0 4px 20px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(168, 85, 247, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 30px rgba(168, 85, 247, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaUser} fontSize={{ base: "20px", sm: "22px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px rgba(168, 85, 247, 0.5))" />
+                <Icon as={FaUser} fontSize={{ base: "20px", sm: "22px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={2} align="start" flex={1}>
                 <Heading 
                   size={{ base: "lg", md: "xl" }} 
                   fontWeight="700"
                   letterSpacing="0.5px"
-                  bg="linear-gradient(135deg, #A78BFA 0%, #9333EA 50%, #7C3AED 100%)"
+                  bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 50%, oklch(0.65 0.18 75) 100%)"
                   bgClip="text"
                   sx={{
                     WebkitBackgroundClip: "text",
@@ -863,22 +863,22 @@ export default function WhoAndPaymentStep({
                 value={step2.customerDetails.firstName}
                 onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
                 isInvalid={!!errors['customerDetails.firstName']}
-                bg="rgba(255, 255, 255, 0.05)"
+                bg="var(--muted)"
                 border="2px solid"
-                borderColor={errors['customerDetails.firstName'] ? "rgba(239, 68, 68, 0.5)" : "rgba(255, 255, 255, 0.1)"}
+                borderColor={errors['customerDetails.firstName'] ? "oklch(0.60 0.25 25)" : "var(--border)"}
                 color="white"
                 _placeholder={{ color: "rgba(255, 255, 255, 0.5)", fontSize: { base: "sm", sm: "md" } }}
                 _hover={{ 
-                  borderColor: errors['customerDetails.firstName'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.5)",
+                  borderColor: errors['customerDetails.firstName'] ? "rgba(239, 68, 68, 0.7)" : "var(--primary)",
                   bg: "rgba(255, 255, 255, 0.08)"
                 }}
                 _focus={{ 
                   borderColor: errors['customerDetails.firstName'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.6)", 
                   boxShadow: errors['customerDetails.firstName'] ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "0 0 0 3px rgba(168, 85, 247, 0.2)", 
-                  bg: "rgba(255, 255, 255, 0.1)"
+                  bg: "var(--border)"
                 }}
-                _active={{ bg: "rgba(255, 255, 255, 0.1)" }}
-                sx={{ "&::selection": { bg: "rgba(168, 85, 247, 0.5)", color: "white" } }}
+                _active={{ bg: "var(--border)" }}
+                sx={{ "&::selection": { bg: "var(--primary)", color: "white" } }}
                 size={{ base: "md", sm: "md" }}
                 minH={{ base: "48px", sm: "44px" }}
                 h={{ base: "48px", sm: "auto" }}
@@ -904,22 +904,22 @@ export default function WhoAndPaymentStep({
                 value={step2.customerDetails.lastName}
                 onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
                 isInvalid={!!errors['customerDetails.lastName']}
-                bg="rgba(255, 255, 255, 0.05)"
+                bg="var(--muted)"
                 border="2px solid"
-                borderColor={errors['customerDetails.lastName'] ? "rgba(239, 68, 68, 0.5)" : "rgba(255, 255, 255, 0.1)"}
+                borderColor={errors['customerDetails.lastName'] ? "oklch(0.60 0.25 25)" : "var(--border)"}
                 color="white"
                 _placeholder={{ color: "rgba(255, 255, 255, 0.5)", fontSize: { base: "sm", sm: "md" } }}
                 _hover={{ 
-                  borderColor: errors['customerDetails.lastName'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.5)",
+                  borderColor: errors['customerDetails.lastName'] ? "rgba(239, 68, 68, 0.7)" : "var(--primary)",
                   bg: "rgba(255, 255, 255, 0.08)"
                 }}
                 _focus={{ 
                   borderColor: errors['customerDetails.lastName'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.6)", 
                   boxShadow: errors['customerDetails.lastName'] ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "0 0 0 3px rgba(168, 85, 247, 0.2)", 
-                  bg: "rgba(255, 255, 255, 0.1)"
+                  bg: "var(--border)"
                 }}
-                _active={{ bg: "rgba(255, 255, 255, 0.1)" }}
-                sx={{ "&::selection": { bg: "rgba(168, 85, 247, 0.5)", color: "white" } }}
+                _active={{ bg: "var(--border)" }}
+                sx={{ "&::selection": { bg: "var(--primary)", color: "white" } }}
                 size={{ base: "md", sm: "md" }}
                 minH={{ base: "48px", sm: "44px" }}
                 h={{ base: "48px", sm: "auto" }}
@@ -953,22 +953,22 @@ export default function WhoAndPaymentStep({
                     }
                   }}
                 isInvalid={!!errors['customerDetails.email']}
-                  bg="rgba(255, 255, 255, 0.05)"
+                  bg="var(--muted)"
                   border="2px solid"
-                  borderColor={errors['customerDetails.email'] ? "rgba(239, 68, 68, 0.5)" : "rgba(255, 255, 255, 0.1)"}
+                  borderColor={errors['customerDetails.email'] ? "oklch(0.60 0.25 25)" : "var(--border)"}
                 color="white"
                   _placeholder={{ color: "rgba(255, 255, 255, 0.5)", fontSize: { base: "sm", sm: "md" } }}
                   _hover={{ 
-                    borderColor: errors['customerDetails.email'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.5)",
+                    borderColor: errors['customerDetails.email'] ? "rgba(239, 68, 68, 0.7)" : "var(--primary)",
                     bg: "rgba(255, 255, 255, 0.08)"
                   }}
                   _focus={{ 
                     borderColor: errors['customerDetails.email'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.6)", 
                     boxShadow: errors['customerDetails.email'] ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "0 0 0 3px rgba(168, 85, 247, 0.2)", 
-                    bg: "rgba(255, 255, 255, 0.1)"
+                    bg: "var(--border)"
                   }}
-                  _active={{ bg: "rgba(255, 255, 255, 0.1)" }}
-                  sx={{ "&::selection": { bg: "rgba(168, 85, 247, 0.5)", color: "white" } }}
+                  _active={{ bg: "var(--border)" }}
+                  sx={{ "&::selection": { bg: "var(--primary)", color: "white" } }}
                 size={{ base: "md", sm: "md" }}
                 minH={{ base: "48px", sm: "44px" }}
                 h={{ base: "48px", sm: "auto" }}
@@ -989,10 +989,10 @@ export default function WhoAndPaymentStep({
                         left={`${emailDropdownStyle.left}px`}
                         width={`${emailDropdownStyle.width}px`}
                         zIndex={1400}
-                        bg="rgba(26, 32, 44, 0.98)"
+                        bg="var(--card)"
                         backdropFilter="blur(10px)"
                         border="2px solid"
-                        borderColor="rgba(168, 85, 247, 0.4)"
+                        borderColor="var(--primary)"
                         borderRadius="xl"
                         boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
                         maxH="200px"
@@ -1003,7 +1003,7 @@ export default function WhoAndPaymentStep({
                             width: '6px',
                           },
                           '&::-webkit-scrollbar-track': {
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: 'var(--muted)',
                             borderRadius: '3px',
                           },
                           '&::-webkit-scrollbar-thumb': {
@@ -1075,22 +1075,22 @@ export default function WhoAndPaymentStep({
                 value={step2.customerDetails.phone}
                 onChange={(e) => updateCustomerDetails('phone', e.target.value)}
                 isInvalid={!!errors['customerDetails.phone']}
-                bg="rgba(255, 255, 255, 0.05)"
+                bg="var(--muted)"
                 border="2px solid"
-                borderColor={errors['customerDetails.phone'] ? "rgba(239, 68, 68, 0.5)" : "rgba(255, 255, 255, 0.1)"}
+                borderColor={errors['customerDetails.phone'] ? "oklch(0.60 0.25 25)" : "var(--border)"}
                 color="white"
                 _placeholder={{ color: "rgba(255, 255, 255, 0.5)", fontSize: { base: "sm", sm: "md" } }}
                 _hover={{ 
-                  borderColor: errors['customerDetails.phone'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.5)",
+                  borderColor: errors['customerDetails.phone'] ? "rgba(239, 68, 68, 0.7)" : "var(--primary)",
                   bg: "rgba(255, 255, 255, 0.08)"
                 }}
                 _focus={{ 
                   borderColor: errors['customerDetails.phone'] ? "rgba(239, 68, 68, 0.7)" : "rgba(168, 85, 247, 0.6)", 
                   boxShadow: errors['customerDetails.phone'] ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "0 0 0 3px rgba(168, 85, 247, 0.2)", 
-                  bg: "rgba(255, 255, 255, 0.1)"
+                  bg: "var(--border)"
                 }}
-                _active={{ bg: "rgba(255, 255, 255, 0.1)" }}
-                sx={{ "&::selection": { bg: "rgba(168, 85, 247, 0.5)", color: "white" } }}
+                _active={{ bg: "var(--border)" }}
+                sx={{ "&::selection": { bg: "var(--primary)", color: "white" } }}
                 size={{ base: "md", sm: "md" }}
                 minH={{ base: "48px", sm: "44px" }}
                 h={{ base: "48px", sm: "auto" }}
@@ -1116,22 +1116,22 @@ export default function WhoAndPaymentStep({
               placeholder="Enter your company name (if applicable)"
               value={step2.customerDetails.company || ''}
               onChange={(e) => updateCustomerDetails('company', e.target.value)}
-              bg="rgba(255, 255, 255, 0.05)"
+              bg="var(--muted)"
               border="2px solid"
-              borderColor="rgba(255, 255, 255, 0.1)"
+              borderColor="var(--border)"
               color="white"
               _placeholder={{ color: "rgba(255, 255, 255, 0.5)", fontSize: { base: "sm", sm: "md" } }}
               _hover={{ 
-                borderColor: "rgba(168, 85, 247, 0.5)",
+                borderColor: "var(--primary)",
                 bg: "rgba(255, 255, 255, 0.08)"
               }}
               _focus={{ 
                 borderColor: "rgba(168, 85, 247, 0.6)", 
                 boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)", 
-                bg: "rgba(255, 255, 255, 0.1)"
+                bg: "var(--border)"
               }}
-              _active={{ bg: "rgba(255, 255, 255, 0.1)" }}
-              sx={{ "&::selection": { bg: "rgba(168, 85, 247, 0.5)", color: "white" } }}
+              _active={{ bg: "var(--border)" }}
+              sx={{ "&::selection": { bg: "var(--primary)", color: "white" } }}
               size={{ base: "md", sm: "md" }}
               minH={{ base: "48px", sm: "44px" }}
               h={{ base: "48px", sm: "auto" }}
@@ -1146,17 +1146,17 @@ export default function WhoAndPaymentStep({
 
       {/* Special Instructions - Enhanced */}
       <Card 
-        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+        bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
         backdropFilter="blur(20px) saturate(180%)"
-        shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        shadow="0 8px 32px var(--primary), 0 0 60px var(--border), 0 0 100px var(--primary-muted), inset 0 1px 0 var(--border)"
         borderRadius="2xl"
         border="2px solid"
-        borderColor="rgba(59, 130, 246, 0.5)"
+        borderColor="var(--primary)"
         overflow="hidden"
         position="relative"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          shadow: "0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.4), 0 0 120px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          shadow: "0 12px 40px var(--primary), 0 0 80px var(--primary), 0 0 120px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
           borderColor: "rgba(59, 130, 246, 0.7)",
           transform: "translateY(-2px)",
         }}
@@ -1207,7 +1207,7 @@ export default function WhoAndPaymentStep({
               w={{ base: "120px", sm: "150px", md: "180px" }}
               h={{ base: "120px", sm: "150px", md: "180px" }}
               borderRadius="full"
-              bg="radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)"
+              bg="radial-gradient(circle, var(--primary-muted) 0%, transparent 70%)"
               filter="blur(35px)"
               zIndex={0}
             />
@@ -1220,32 +1220,32 @@ export default function WhoAndPaymentStep({
                 minH={{ base: "44px", sm: "48px", md: "56px" }}
                 flexShrink={0}
                 borderRadius={{ base: "lg", md: "xl" }}
-                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                boxShadow="0 4px 20px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(59, 130, 246, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaFileContract} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                <Icon as={FaFileContract} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={{ base: 1, sm: 1.5 }} align="start" flex={1} minW={0}>
                 <Heading 
                   size={{ base: "sm", sm: "md", md: "xl" }} 
                   fontWeight="700"
                   letterSpacing="0.5px"
-                  bg="linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)"
+                  bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 50%, oklch(0.65 0.18 75) 100%)"
                   bgClip="text"
                   sx={{
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    textShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
+                    textShadow: "0 4px 20px var(--border)",
                   }}
                   lineHeight="1.2"
                   noOfLines={2}
@@ -1282,9 +1282,9 @@ export default function WhoAndPaymentStep({
               onChange={(e) => updateFormData('step2', { specialInstructions: e.target.value })}
               rows={4}
               minH={{ base: "100px", sm: "120px" }}
-              bg="rgba(255, 255, 255, 0.05)"
+              bg="var(--muted)"
               border="2px solid"
-              borderColor="rgba(59, 130, 246, 0.3)"
+              borderColor="var(--border)"
               color="white"
               _placeholder={{ 
                 color: "rgba(255, 255, 255, 0.5)",
@@ -1292,23 +1292,23 @@ export default function WhoAndPaymentStep({
                 fontWeight: "400"
               }}
               _hover={{ 
-                borderColor: "rgba(59, 130, 246, 0.5)",
+                borderColor: "var(--primary)",
                 bg: "rgba(255, 255, 255, 0.08)",
                 boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)"
               }}
               _focus={{ 
                 borderColor: "rgba(59, 130, 246, 0.7)", 
-                boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 16px rgba(59, 130, 246, 0.3)", 
-                bg: "rgba(255, 255, 255, 0.1)",
+                boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 16px var(--border)", 
+                bg: "var(--border)",
                 outline: "none"
               }}
               _active={{ 
-                bg: "rgba(255, 255, 255, 0.1)",
+                bg: "var(--border)",
                 borderColor: "rgba(59, 130, 246, 0.7)"
               }}
               sx={{ 
                 "&::selection": { 
-                  bg: "rgba(59, 130, 246, 0.5)", 
+                  bg: "var(--primary)", 
                   color: "white" 
                 } 
               }}
@@ -1332,17 +1332,17 @@ export default function WhoAndPaymentStep({
 
       {/* Promotion Code Section - Enhanced */}
       <Card 
-        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+        bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
         backdropFilter="blur(20px) saturate(180%)"
-        shadow="0 8px 32px rgba(251, 146, 60, 0.4), 0 0 60px rgba(251, 146, 60, 0.3), 0 0 100px rgba(251, 146, 60, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        shadow="0 8px 32px var(--primary), 0 0 60px var(--border), 0 0 100px var(--primary-muted), inset 0 1px 0 var(--border)"
         borderRadius="2xl"
         border="2px solid"
-        borderColor="rgba(251, 146, 60, 0.5)"
+        borderColor="var(--primary)"
         overflow="hidden"
         position="relative"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          shadow: "0 12px 40px rgba(251, 146, 60, 0.5), 0 0 80px rgba(251, 146, 60, 0.4), 0 0 120px rgba(251, 146, 60, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          shadow: "0 12px 40px var(--primary), 0 0 80px var(--primary), 0 0 120px rgba(251, 146, 60, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
           borderColor: "rgba(251, 146, 60, 0.7)",
           transform: "translateY(-2px)",
         }}
@@ -1393,7 +1393,7 @@ export default function WhoAndPaymentStep({
               w={{ base: "120px", sm: "150px", md: "180px" }}
               h={{ base: "120px", sm: "150px", md: "180px" }}
               borderRadius="full"
-              bg="radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, transparent 70%)"
+              bg="radial-gradient(circle, var(--primary-muted) 0%, transparent 70%)"
               filter="blur(35px)"
               zIndex={0}
             />
@@ -1406,32 +1406,32 @@ export default function WhoAndPaymentStep({
                 minH={{ base: "44px", sm: "48px", md: "56px" }}
                 flexShrink={0}
                 borderRadius={{ base: "lg", md: "xl" }}
-                bg="linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)"
+                bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                boxShadow="0 4px 20px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                boxShadow="0 4px 20px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(251, 146, 60, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 30px rgba(251, 146, 60, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaCalculator} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px rgba(251, 146, 60, 0.5))" />
+                <Icon as={FaCalculator} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={{ base: 1, sm: 1.5 }} align="start" flex={1} minW={0}>
                 <Heading 
                   size={{ base: "sm", sm: "md", md: "xl" }} 
                   fontWeight="700"
                   letterSpacing="0.5px"
-                  bg="linear-gradient(135deg, #FB923C 0%, #EA580C 50%, #DC2626 100%)"
+                  bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 50%, oklch(0.65 0.18 75) 100%)"
                   bgClip="text"
                   sx={{
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    textShadow: "0 4px 20px rgba(251, 146, 60, 0.3)",
+                    textShadow: "0 4px 20px var(--border)",
                   }}
                   lineHeight="1.2"
                   noOfLines={2}
@@ -1455,13 +1455,13 @@ export default function WhoAndPaymentStep({
           {step2.promotionDetails ? (
             // Show applied promotion - Enhanced
             <Card 
-              bg="linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.15) 100%)"
+              bg="linear-gradient(135deg, var(--primary-muted) 0%, var(--primary-muted) 100%)"
               backdropFilter="blur(10px)"
               borderRadius="xl" 
               border="2px solid" 
-              borderColor="rgba(16, 185, 129, 0.5)" 
+              borderColor="var(--primary)" 
               p={6}
-              shadow="0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+              shadow="0 4px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 var(--border)"
               position="relative"
               overflow="hidden"
               _before={{
@@ -1508,7 +1508,7 @@ export default function WhoAndPaymentStep({
                   </Button>
                 </HStack>
                 
-                <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                <Divider borderColor="var(--border)" />
                 
                 <VStack spacing={3} align="stretch">
                 <HStack justify="space-between" align="center">
@@ -1529,7 +1529,7 @@ export default function WhoAndPaymentStep({
                   </Text>
                 </HStack>
                   
-                  <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                  <Divider borderColor="var(--border)" />
                 
                 <HStack justify="space-between" align="center">
                     <Text fontSize="md" fontWeight="700" color="white" letterSpacing="0.3px">
@@ -1549,9 +1549,9 @@ export default function WhoAndPaymentStep({
                 placeholder="Enter promotion code (e.g., SAVE20, WELCOME10)"
                 value={promotionCode}
                 onChange={(e) => setPromotionCode(e.target.value.toUpperCase())}
-                bg="rgba(255, 255, 255, 0.05)"
+                bg="var(--muted)"
                 border="2px solid"
-                borderColor="rgba(251, 146, 60, 0.3)"
+                borderColor="var(--border)"
                 color="white"
                 _placeholder={{ 
                   color: "rgba(255, 255, 255, 0.5)",
@@ -1559,23 +1559,23 @@ export default function WhoAndPaymentStep({
                   fontWeight: "400"
                 }}
                 _hover={{ 
-                  borderColor: "rgba(251, 146, 60, 0.5)",
+                  borderColor: "var(--primary)",
                   bg: "rgba(255, 255, 255, 0.08)",
                   boxShadow: "0 4px 12px rgba(251, 146, 60, 0.2)"
                 }}
                 _focus={{ 
                   borderColor: "rgba(251, 146, 60, 0.7)", 
-                  boxShadow: "0 0 0 3px rgba(251, 146, 60, 0.2), 0 4px 16px rgba(251, 146, 60, 0.3)", 
-                  bg: "rgba(255, 255, 255, 0.1)",
+                  boxShadow: "0 0 0 3px rgba(251, 146, 60, 0.2), 0 4px 16px var(--border)", 
+                  bg: "var(--border)",
                   outline: "none"
                 }}
                 _active={{ 
-                  bg: "rgba(255, 255, 255, 0.1)",
+                  bg: "var(--border)",
                   borderColor: "rgba(251, 146, 60, 0.7)"
                 }}
                 sx={{ 
                   "&::selection": { 
-                    bg: "rgba(251, 146, 60, 0.5)", 
+                    bg: "var(--primary)", 
                     color: "white" 
                   } 
                 }}
@@ -1594,7 +1594,7 @@ export default function WhoAndPaymentStep({
                 }}
               />
               <Button
-                bg="linear-gradient(135deg, #FB923C 0%, #EA580C 100%)"
+                bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 100%)"
                 color="white"
                 onClick={handleApplyPromotionCode}
                 isLoading={isValidatingPromotion}
@@ -1605,13 +1605,13 @@ export default function WhoAndPaymentStep({
                 borderRadius="xl"
                 fontWeight="700"
                 letterSpacing="0.3px"
-                boxShadow="0 4px 16px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                boxShadow="0 4px 16px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(251, 146, 60, 0.5)"
+                borderColor="var(--primary)"
                 w="full"
                 _hover={{
                   bg: "linear-gradient(135deg, #EA580C 0%, #DC2626 100%)",
-                  boxShadow: "0 6px 20px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                  boxShadow: "0 6px 20px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                   transform: "translateY(-1px)",
                 }}
                 _active={{
@@ -1620,7 +1620,7 @@ export default function WhoAndPaymentStep({
                 _disabled={{
                   opacity: 0.5,
                   cursor: "not-allowed",
-                  bg: "rgba(251, 146, 60, 0.3)",
+                  bg: "var(--border)",
                 }}
                 transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               >
@@ -1633,17 +1633,17 @@ export default function WhoAndPaymentStep({
 
       {/* 2. Payment Method - Enhanced */}
       <Card 
-        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+        bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
         backdropFilter="blur(20px) saturate(180%)"
-        shadow="0 8px 32px rgba(16, 185, 129, 0.4), 0 0 60px rgba(16, 185, 129, 0.3), 0 0 100px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        shadow="0 8px 32px rgba(16, 185, 129, 0.4), 0 0 60px rgba(16, 185, 129, 0.3), 0 0 100px rgba(16, 185, 129, 0.15), inset 0 1px 0 var(--border)"
         borderRadius="2xl"
         border="2px solid"
-        borderColor="rgba(16, 185, 129, 0.5)"
+        borderColor="var(--primary)"
         overflow="hidden"
         position="relative"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          shadow: "0 12px 40px rgba(16, 185, 129, 0.5), 0 0 80px rgba(16, 185, 129, 0.4), 0 0 120px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          shadow: "0 12px 40px var(--primary), 0 0 80px rgba(16, 185, 129, 0.4), 0 0 120px var(--primary-muted), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
           borderColor: "rgba(16, 185, 129, 0.7)",
           transform: "translateY(-2px)",
         }}
@@ -1713,14 +1713,14 @@ export default function WhoAndPaymentStep({
                 justifyContent="center"
                 boxShadow="0 4px 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(16, 185, 129, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaCreditCard} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" />
+                <Icon as={FaCreditCard} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={{ base: 1, sm: 1.5 }} align="start" flex={1} minW={0}>
                 <Heading 
@@ -1761,7 +1761,7 @@ export default function WhoAndPaymentStep({
             borderRadius="xl" 
             borderWidth="2px" 
             borderColor="rgba(16, 185, 129, 0.4)"
-            boxShadow="0 4px 16px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+            boxShadow="0 4px 16px var(--primary-muted), inset 0 1px 0 var(--border)"
             position="relative"
             overflow="hidden"
             transition="all 0.3s"
@@ -1796,14 +1796,14 @@ export default function WhoAndPaymentStep({
                 justifyContent="center"
                 boxShadow="0 4px 16px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(16, 185, 129, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 24px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaShieldAlt} fontSize="20px" color="white" filter="drop-shadow(0 2px 4px rgba(16, 185, 129, 0.5))" />
+                <Icon as={FaShieldAlt} fontSize="20px" color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={1} align="start" flex={1}>
                 <Text fontWeight="700" color="white" fontSize="md" letterSpacing="0.3px">
@@ -1824,7 +1824,7 @@ export default function WhoAndPaymentStep({
                 letterSpacing="0.3px"
                 boxShadow="0 4px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(16, 185, 129, 0.5)"
+                borderColor="var(--primary)"
                 fontSize="sm"
                 textTransform="uppercase"
               >
@@ -1914,7 +1914,7 @@ export default function WhoAndPaymentStep({
                       w="200px"
                       h="200px"
                       borderRadius="full"
-                      bg="radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.1) 50%, rgba(168, 85, 247, 0.1) 100%)"
+                      bg="radial-gradient(circle, var(--primary-muted) 0%, rgba(16, 185, 129, 0.1) 50%, rgba(168, 85, 247, 0.1) 100%)"
                       filter="blur(40px)"
                       zIndex={0}
                     />
@@ -1929,7 +1929,7 @@ export default function WhoAndPaymentStep({
                       sx={{
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
-                        textShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
+                        textShadow: "0 4px 20px var(--border)",
                       }}
                       position="relative"
                       zIndex={1}
@@ -1958,10 +1958,10 @@ export default function WhoAndPaymentStep({
                       backdropFilter="blur(10px)"
                       borderRadius="xl"
                       border={formData.step1.serviceType === 'standard' ? "3px solid" : "2px solid"}
-                      borderColor={formData.step1.serviceType === 'standard' ? "rgba(59, 130, 246, 1)" : "rgba(59, 130, 246, 0.3)"}
+                      borderColor={formData.step1.serviceType === 'standard' ? "rgba(59, 130, 246, 1)" : "var(--border)"}
                       p={6}
                       shadow={formData.step1.serviceType === 'standard' 
-                        ? "0 12px 48px rgba(59, 130, 246, 0.6), 0 0 80px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(59, 130, 246, 0.2)" 
+                        ? "0 12px 48px rgba(59, 130, 246, 0.6), 0 0 80px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(59, 130, 246, 0.2)" 
                         : "0 4px 16px rgba(59, 130, 246, 0.2)"}
                       cursor={isUpdatingService ? "not-allowed" : "pointer"}
                       onClick={() => handleServiceTypeChange('standard')}
@@ -1969,8 +1969,8 @@ export default function WhoAndPaymentStep({
                       _hover={isUpdatingService ? {} : { 
                         transform: formData.step1.serviceType === 'standard' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
                         shadow: formData.step1.serviceType === 'standard' 
-                          ? '0 16px 56px rgba(59, 130, 246, 0.7), 0 0 100px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(59, 130, 246, 0.3)'
-                          : '0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                          ? '0 16px 56px rgba(59, 130, 246, 0.7), 0 0 100px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px var(--border)'
+                          : '0 12px 40px var(--primary), 0 0 80px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                         borderColor: formData.step1.serviceType === 'standard' ? 'rgba(59, 130, 246, 1)' : 'rgba(59, 130, 246, 0.7)'
                       }}
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -1985,7 +1985,7 @@ export default function WhoAndPaymentStep({
                           left: '-4px',
                           right: '-4px',
                           bottom: '-4px',
-                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%)',
+                          background: 'linear-gradient(135deg, var(--border) 0%, var(--primary-muted) 100%)',
                           borderRadius: 'xl',
                           opacity: 0.8,
                           zIndex: -1,
@@ -2019,12 +2019,12 @@ export default function WhoAndPaymentStep({
                             letterSpacing="0.3px"
                             boxShadow="0 4px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                             border="2px solid"
-                            borderColor="rgba(16, 185, 129, 0.5)"
+                            borderColor="var(--primary)"
                           >
                             ECONOMY
                           </Badge>
                           <Badge 
-                            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                            bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                             color="white" 
                             borderRadius="full" 
                             fontSize="xs" 
@@ -2032,9 +2032,9 @@ export default function WhoAndPaymentStep({
                             py={2}
                             fontWeight="700"
                             letterSpacing="0.3px"
-                            boxShadow="0 4px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                            boxShadow="0 4px 12px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                             border="2px solid"
-                            borderColor="rgba(59, 130, 246, 0.5)"
+                            borderColor="var(--primary)"
                           >
                             MULTI-DROP
                           </Badge>
@@ -2053,7 +2053,7 @@ export default function WhoAndPaymentStep({
                         </Text>
                       </VStack>
 
-                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      <Divider borderColor="var(--border)" />
 
                       <VStack align="start" spacing={3}>
                         <HStack spacing={2} align="center">
@@ -2103,10 +2103,10 @@ export default function WhoAndPaymentStep({
                     backdropFilter="blur(10px)"
                     borderRadius="xl"
                     border={formData.step1.serviceType === 'premium' ? "3px solid" : "2px solid"}
-                    borderColor={formData.step1.serviceType === 'premium' ? "rgba(168, 85, 247, 1)" : "rgba(147, 51, 234, 0.3)"}
+                    borderColor={formData.step1.serviceType === 'premium' ? "rgba(168, 85, 247, 1)" : "var(--primary)"}
                     p={6}
                     shadow={formData.step1.serviceType === 'premium' 
-                      ? "0 12px 48px rgba(168, 85, 247, 0.6), 0 0 80px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(168, 85, 247, 0.2)" 
+                      ? "0 12px 48px rgba(168, 85, 247, 0.6), 0 0 80px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(168, 85, 247, 0.2)" 
                       : "0 4px 16px rgba(168, 85, 247, 0.2)"}
                     cursor={isUpdatingService ? "not-allowed" : "pointer"}
                     onClick={() => handleServiceTypeChange('premium')}
@@ -2114,8 +2114,8 @@ export default function WhoAndPaymentStep({
                     _hover={isUpdatingService ? {} : { 
                       transform: formData.step1.serviceType === 'premium' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
                       shadow: formData.step1.serviceType === 'premium' 
-                        ? '0 16px 56px rgba(168, 85, 247, 0.7), 0 0 100px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(168, 85, 247, 0.3)'
-                        : '0 12px 40px rgba(168, 85, 247, 0.5), 0 0 80px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                        ? '0 16px 56px rgba(168, 85, 247, 0.7), 0 0 100px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(168, 85, 247, 0.3)'
+                        : '0 12px 40px var(--primary), 0 0 80px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                       borderColor: formData.step1.serviceType === 'premium' ? 'rgba(168, 85, 247, 1)' : 'rgba(168, 85, 247, 0.7)'
                     }}
                     transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -2153,7 +2153,7 @@ export default function WhoAndPaymentStep({
                       )}
                       <VStack spacing={2} align="center">
                         <Badge 
-                          bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                          bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                           color="white" 
                           borderRadius="full" 
                           fontSize="xs" 
@@ -2163,7 +2163,7 @@ export default function WhoAndPaymentStep({
                           letterSpacing="0.3px"
                           boxShadow="0 4px 12px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                           border="2px solid"
-                          borderColor="rgba(168, 85, 247, 0.5)"
+                          borderColor="var(--primary)"
                         >
                           STANDARD
                         </Badge>
@@ -2181,7 +2181,7 @@ export default function WhoAndPaymentStep({
                         </Text>
                       </VStack>
 
-                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      <Divider borderColor="var(--border)" />
 
                       <VStack align="start" spacing={3}>
                         <HStack spacing={2} align="center">
@@ -2209,15 +2209,15 @@ export default function WhoAndPaymentStep({
                   {/* Priority/Express (Fastest) */}
                   <Card
                     bg={formData.step1.serviceType === 'white-glove' 
-                      ? "linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)" 
+                      ? "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)" 
                       : "linear-gradient(135deg, rgba(31, 41, 55, 0.8) 0%, rgba(26, 32, 44, 0.7) 100%)"}
                     backdropFilter="blur(10px)"
                     borderRadius="xl"
                     border={formData.step1.serviceType === 'white-glove' ? "3px solid" : "2px solid"}
-                    borderColor={formData.step1.serviceType === 'white-glove' ? "rgba(251, 146, 60, 1)" : "rgba(251, 146, 60, 0.3)"}
+                    borderColor={formData.step1.serviceType === 'white-glove' ? "rgba(251, 146, 60, 1)" : "var(--border)"}
                     p={6}
                     shadow={formData.step1.serviceType === 'white-glove' 
-                      ? "0 12px 48px rgba(251, 146, 60, 0.6), 0 0 80px rgba(251, 146, 60, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(251, 146, 60, 0.2)" 
+                      ? "0 12px 48px rgba(251, 146, 60, 0.6), 0 0 80px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 4px rgba(251, 146, 60, 0.2)" 
                       : "0 4px 16px rgba(251, 146, 60, 0.2)"}
                     cursor={isUpdatingService ? "not-allowed" : "pointer"}
                     onClick={() => handleServiceTypeChange('white-glove')}
@@ -2225,8 +2225,8 @@ export default function WhoAndPaymentStep({
                     _hover={isUpdatingService ? {} : { 
                       transform: formData.step1.serviceType === 'white-glove' ? 'scale(1.03) translateY(-4px)' : 'translateY(-4px)', 
                       shadow: formData.step1.serviceType === 'white-glove' 
-                        ? '0 16px 56px rgba(251, 146, 60, 0.7), 0 0 100px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px rgba(251, 146, 60, 0.3)'
-                        : '0 12px 40px rgba(251, 146, 60, 0.5), 0 0 80px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                        ? '0 16px 56px rgba(251, 146, 60, 0.7), 0 0 100px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 5px var(--border)'
+                        : '0 12px 40px var(--primary), 0 0 80px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                       borderColor: formData.step1.serviceType === 'white-glove' ? 'rgba(251, 146, 60, 1)' : 'rgba(251, 146, 60, 0.7)'
                     }}
                     transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -2241,7 +2241,7 @@ export default function WhoAndPaymentStep({
                         left: '-4px',
                         right: '-4px',
                         bottom: '-4px',
-                        background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(234, 88, 12, 0.2) 100%)',
+                        background: 'linear-gradient(135deg, var(--border) 0%, rgba(234, 88, 12, 0.2) 100%)',
                         borderRadius: 'xl',
                         opacity: 0.8,
                         zIndex: -1,
@@ -2264,7 +2264,7 @@ export default function WhoAndPaymentStep({
                       )}
                       <VStack spacing={2} align="center">
                         <Badge 
-                          bg="linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)"
+                          bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                           color="white" 
                           borderRadius="full" 
                           fontSize="xs" 
@@ -2272,9 +2272,9 @@ export default function WhoAndPaymentStep({
                           py={2}
                           fontWeight="700"
                           letterSpacing="0.3px"
-                          boxShadow="0 4px 12px rgba(251, 146, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                          boxShadow="0 4px 12px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                           border="2px solid"
-                          borderColor="rgba(251, 146, 60, 0.5)"
+                          borderColor="var(--primary)"
                         >
                           PRIORITY
                         </Badge>
@@ -2292,7 +2292,7 @@ export default function WhoAndPaymentStep({
                         </Text>
                       </VStack>
 
-                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      <Divider borderColor="var(--border)" />
 
                       <VStack align="start" spacing={3}>
                         <HStack spacing={2} align="center">
@@ -2319,13 +2319,13 @@ export default function WhoAndPaymentStep({
 
                   {/* Current Selection Summary - Enhanced */}
                   <Card 
-                    bg="linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.15) 100%)"
+                    bg="linear-gradient(135deg, var(--primary-muted) 0%, var(--primary-muted) 100%)"
                     backdropFilter="blur(10px)"
                     borderRadius="xl" 
                     border="2px solid" 
                     borderColor="rgba(16, 185, 129, 0.6)" 
                     p={6} 
-                    shadow="0 8px 32px rgba(16, 185, 129, 0.4), 0 0 60px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                    shadow="0 8px 32px rgba(16, 185, 129, 0.4), 0 0 60px var(--primary-muted), inset 0 1px 0 var(--border)"
                     position="relative"
                     overflow="hidden"
                     _before={{
@@ -2360,7 +2360,7 @@ export default function WhoAndPaymentStep({
                         </Text>
                       </VStack>
 
-                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      <Divider borderColor="var(--border)" />
 
                       <VStack align="start" spacing={3}>
                         <HStack spacing={2} align="center">
@@ -2377,7 +2377,7 @@ export default function WhoAndPaymentStep({
                         </HStack>
                       </VStack>
 
-                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      <Divider borderColor="var(--border)" />
 
                       <Box textAlign="center" pt={2}>
                         <HStack spacing={3} justify="center" align="center">
@@ -2420,7 +2420,7 @@ export default function WhoAndPaymentStep({
                 }, 0);
                 
                 return (
-                <Card bg="gray.800" borderRadius="xl" border="2px" borderColor="rgba(251, 146, 60, 0.6)" p={4} shadow="0 0 20px rgba(251, 146, 60, 0.3)" mt={6}>
+                <Card bg="gray.800" borderRadius="xl" border="2px" borderColor="rgba(251, 146, 60, 0.6)" p={4} shadow="0 0 20px var(--border)" mt={6}>
                     <VStack spacing={3} align="center">
                       <Text fontSize="md" fontWeight="bold" color="orange.300" textAlign="center">
                         🚫 Economy (Multi-Drop) Option Not Available
@@ -2476,14 +2476,14 @@ export default function WhoAndPaymentStep({
 
       {/* 3. Booking Summary - Enhanced */}
       <Card 
-        bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+        bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
         backdropFilter="blur(20px) saturate(180%)"
-        shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        shadow="0 8px 32px var(--primary), 0 0 60px var(--border), 0 0 100px var(--primary-muted), inset 0 1px 0 var(--border)"
         borderWidth="2px" 
-        borderColor="rgba(59, 130, 246, 0.5)"
+        borderColor="var(--primary)"
         p={{ base: 4, sm: 5, md: 8 }}
         _hover={{ 
-          shadow: "0 12px 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.4), 0 0 120px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          shadow: "0 12px 40px var(--primary), 0 0 80px var(--primary), 0 0 120px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
           borderColor: "rgba(59, 130, 246, 0.7)",
           transform: "translateY(-2px)"
         }}
@@ -2537,7 +2537,7 @@ export default function WhoAndPaymentStep({
               w={{ base: "120px", sm: "150px", md: "180px" }}
               h={{ base: "120px", sm: "150px", md: "180px" }}
               borderRadius="full"
-              bg="radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.1) 50%, rgba(168, 85, 247, 0.1) 100%)"
+              bg="radial-gradient(circle, var(--primary-muted) 0%, rgba(16, 185, 129, 0.1) 50%, rgba(168, 85, 247, 0.1) 100%)"
               filter="blur(35px)"
               zIndex={0}
             />
@@ -2550,20 +2550,20 @@ export default function WhoAndPaymentStep({
                 minH={{ base: "44px", sm: "48px", md: "56px" }}
                 flexShrink={0}
                 borderRadius={{ base: "lg", md: "xl" }}
-                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
-                boxShadow="0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                boxShadow="0 4px 20px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                 border="2px solid"
-                borderColor="rgba(59, 130, 246, 0.5)"
+                borderColor="var(--primary)"
                 transition="all 0.3s"
                 _hover={{
                   transform: "scale(1.1) rotate(5deg)",
                   boxShadow: "0 6px 30px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
                 }}
               >
-                <Icon as={FaBolt} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px rgba(59, 130, 246, 0.5))" />
+                <Icon as={FaBolt} fontSize={{ base: "18px", sm: "20px", md: "24px" }} color="white" filter="drop-shadow(0 2px 4px var(--primary))" />
               </Box>
               <VStack spacing={{ base: 1, sm: 1.5 }} align="start" flex={1} minW={0}>
                 <Heading 
@@ -2575,7 +2575,7 @@ export default function WhoAndPaymentStep({
                   sx={{
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    textShadow: "0 4px 20px rgba(59, 130, 246, 0.3)",
+                    textShadow: "0 4px 20px var(--border)",
                   }}
                   lineHeight="1.2"
                   noOfLines={2}
@@ -2635,13 +2635,13 @@ export default function WhoAndPaymentStep({
             <VStack spacing={6} align="stretch">
               {/* Enhanced Booking Summary */}
               <Card 
-                bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)"
+                bg="linear-gradient(135deg, var(--primary-muted) 0%, rgba(37, 99, 235, 0.1) 100%)"
                 backdropFilter="blur(10px)"
                 borderRadius="xl" 
                 border="2px solid" 
                 borderColor="rgba(59, 130, 246, 0.6)" 
                 p={6} 
-                shadow="0 8px 32px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                shadow="0 8px 32px var(--primary), 0 0 60px rgba(59, 130, 246, 0.2), inset 0 1px 0 var(--border)"
                 position="relative"
                 overflow="hidden"
                 _before={{
@@ -2671,10 +2671,10 @@ export default function WhoAndPaymentStep({
                     <Badge 
                       bg={
                         formData.step1.serviceType === 'standard' 
-                          ? "linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.3) 100%)"
+                          ? "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                           : formData.step1.serviceType === 'premium'
-                          ? "linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
-                          : "linear-gradient(135deg, rgba(251, 146, 60, 0.4) 0%, rgba(234, 88, 12, 0.3) 100%)"
+                          ? "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
+                          : "linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                       }
                       color="white" 
                       fontSize="sm" 
@@ -2683,14 +2683,14 @@ export default function WhoAndPaymentStep({
                       borderRadius="full"
                       fontWeight="700"
                       letterSpacing="0.3px"
-                      boxShadow="0 4px 12px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                      boxShadow="0 4px 12px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                       border="2px solid"
                       borderColor={
                         formData.step1.serviceType === 'standard'
-                          ? "rgba(59, 130, 246, 0.5)"
+                          ? "var(--primary)"
                           : formData.step1.serviceType === 'premium'
-                          ? "rgba(168, 85, 247, 0.5)"
-                          : "rgba(251, 146, 60, 0.5)"
+                          ? "var(--primary)"
+                          : "var(--primary)"
                       }
                       textTransform="capitalize"
                       mx="auto"
@@ -2699,21 +2699,21 @@ export default function WhoAndPaymentStep({
                     </Badge>
                   </VStack>
                   
-                  <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                  <Divider borderColor="var(--border)" />
                   
                   <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, sm: 4, md: 5 }}>
                     <VStack spacing={{ base: 3, sm: 4 }} align="start">
                       <Box
                         p={{ base: 3, sm: 4 }}
-                        bg="rgba(255, 255, 255, 0.05)"
+                        bg="var(--muted)"
                         borderRadius={{ base: "lg", md: "xl" }}
                         border="2px solid"
-                        borderColor="rgba(59, 130, 246, 0.3)"
+                        borderColor="var(--border)"
                         w="full"
                         transition="all 0.2s"
                         _hover={{
                           bg: "rgba(255, 255, 255, 0.08)",
-                          borderColor: "rgba(59, 130, 246, 0.5)",
+                          borderColor: "var(--primary)",
                           transform: "translateY(-2px)",
                           boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)",
                         }}
@@ -2730,7 +2730,7 @@ export default function WhoAndPaymentStep({
                       </Box>
                       <Box
                         p={{ base: 3, sm: 4 }}
-                        bg="rgba(255, 255, 255, 0.05)"
+                        bg="var(--muted)"
                         borderRadius={{ base: "lg", md: "xl" }}
                         border="2px solid"
                         borderColor="rgba(16, 185, 129, 0.3)"
@@ -2738,9 +2738,9 @@ export default function WhoAndPaymentStep({
                         transition="all 0.2s"
                         _hover={{
                           bg: "rgba(255, 255, 255, 0.08)",
-                          borderColor: "rgba(16, 185, 129, 0.5)",
+                          borderColor: "var(--primary)",
                           transform: "translateY(-2px)",
-                          boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
+                          boxShadow: "0 4px 12px var(--primary-muted)",
                         }}
                       >
                         <HStack spacing={{ base: 1.5, sm: 2 }} align="center" mb={{ base: 1.5, sm: 2 }}>
@@ -2758,7 +2758,7 @@ export default function WhoAndPaymentStep({
                     <VStack spacing={{ base: 3, sm: 4 }} align="start">
                       <Box
                         p={{ base: 3, sm: 4 }}
-                        bg="rgba(255, 255, 255, 0.05)"
+                        bg="var(--muted)"
                         borderRadius={{ base: "lg", md: "xl" }}
                         border="2px solid"
                         borderColor="rgba(168, 85, 247, 0.3)"
@@ -2766,7 +2766,7 @@ export default function WhoAndPaymentStep({
                         transition="all 0.2s"
                         _hover={{
                           bg: "rgba(255, 255, 255, 0.08)",
-                          borderColor: "rgba(168, 85, 247, 0.5)",
+                          borderColor: "var(--primary)",
                           transform: "translateY(-2px)",
                           boxShadow: "0 4px 12px rgba(168, 85, 247, 0.2)",
                         }}
@@ -2783,15 +2783,15 @@ export default function WhoAndPaymentStep({
                       </Box>
                       <Box
                         p={{ base: 3, sm: 4 }}
-                        bg="rgba(255, 255, 255, 0.05)"
+                        bg="var(--muted)"
                         borderRadius={{ base: "lg", md: "xl" }}
                         border="2px solid"
-                        borderColor="rgba(251, 146, 60, 0.3)"
+                        borderColor="var(--border)"
                         w="full"
                         transition="all 0.2s"
                         _hover={{
                           bg: "rgba(255, 255, 255, 0.08)",
-                          borderColor: "rgba(251, 146, 60, 0.5)",
+                          borderColor: "var(--primary)",
                           transform: "translateY(-2px)",
                           boxShadow: "0 4px 12px rgba(251, 146, 60, 0.2)",
                         }}
@@ -2814,13 +2814,13 @@ export default function WhoAndPaymentStep({
               {/* Selected Items Details - Enhanced */}
               {formData.step1.items.length > 0 && (
                 <Card 
-                  bg="linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(147, 51, 234, 0.1) 100%)"
+                  bg="linear-gradient(135deg, var(--primary-muted) 0%, rgba(147, 51, 234, 0.1) 100%)"
                   backdropFilter="blur(10px)"
                   borderRadius={{ base: "lg", md: "xl" }} 
                   border="2px solid" 
                   borderColor="rgba(168, 85, 247, 0.6)" 
                   p={{ base: 4, sm: 5, md: 6 }} 
-                  shadow="0 8px 32px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                  shadow="0 8px 32px var(--primary), 0 0 60px rgba(168, 85, 247, 0.2), inset 0 1px 0 var(--border)"
                   position="relative"
                   overflow="hidden"
                   _before={{
@@ -2855,7 +2855,7 @@ export default function WhoAndPaymentStep({
                         Selected Items
                       </Heading>
                       <Badge
-                        bg="linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.3) 100%)"
+                        bg="linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)"
                         color="white"
                         fontSize={{ base: "xs", sm: "sm" }}
                         px={{ base: 2, sm: 3 }}
@@ -2865,27 +2865,27 @@ export default function WhoAndPaymentStep({
                         letterSpacing="0.3px"
                         boxShadow="0 4px 12px rgba(168, 85, 247, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                         border="2px solid"
-                        borderColor="rgba(168, 85, 247, 0.5)"
+                        borderColor="var(--primary)"
                       >
                         {formData.step1.items.length} {formData.step1.items.length === 1 ? 'Item' : 'Items'}
                       </Badge>
                     </HStack>
                     
-                    <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                    <Divider borderColor="var(--border)" />
                     
                     <VStack spacing={{ base: 2, sm: 3 }} align="stretch">
                       {formData.step1.items.map((item, index) => (
                         <Box
                           key={index}
                           p={{ base: 3, sm: 4 }}
-                          bg="rgba(255, 255, 255, 0.05)"
+                          bg="var(--muted)"
                           borderRadius={{ base: "lg", md: "xl" }}
                           border="2px solid"
                           borderColor="rgba(168, 85, 247, 0.3)"
                           transition="all 0.2s"
                           _hover={{
                             bg: "rgba(255, 255, 255, 0.08)",
-                            borderColor: "rgba(168, 85, 247, 0.5)",
+                            borderColor: "var(--primary)",
                             transform: "translateY(-2px)",
                             boxShadow: "0 4px 12px rgba(168, 85, 247, 0.2)",
                           }}
@@ -2915,7 +2915,7 @@ export default function WhoAndPaymentStep({
                                 fontWeight="700"
                                 letterSpacing="0.3px"
                                 border="2px solid"
-                                borderColor="rgba(168, 85, 247, 0.4)"
+                                borderColor="var(--primary)"
                                 whiteSpace="nowrap"
                               >
                                 Qty: {item.quantity}
@@ -2930,7 +2930,7 @@ export default function WhoAndPaymentStep({
               )}
             </VStack>
           ) : (
-            <Box p={6} bg={isCalculatingPricing ? "blue.700" : "gray.700"} borderRadius="lg" borderWidth="2px" borderColor={isCalculatingPricing ? "rgba(59, 130, 246, 0.6)" : "rgba(251, 146, 60, 0.6)"} shadow={isCalculatingPricing ? "0 0 20px rgba(59, 130, 246, 0.3)" : "0 0 20px rgba(251, 146, 60, 0.3)"}>
+            <Box p={6} bg={isCalculatingPricing ? "blue.700" : "gray.700"} borderRadius="lg" borderWidth="2px" borderColor={isCalculatingPricing ? "rgba(59, 130, 246, 0.6)" : "rgba(251, 146, 60, 0.6)"} shadow={isCalculatingPricing ? "0 0 20px var(--border)" : "0 0 20px var(--border)"}>
               <VStack spacing={4} align="center">
                 <Circle size="48px" bg={isCalculatingPricing ? "blue.900" : "orange.900"} color={isCalculatingPricing ? "blue.300" : "orange.300"}>
                   <Icon as={FaBolt} fontSize="24px" />
