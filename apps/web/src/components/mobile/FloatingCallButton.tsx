@@ -41,9 +41,9 @@ export const FloatingCallButton: React.FC = () => {
   return (
     <Box
       position="fixed"
-      bottom={{ base: '20px', md: '30px' }}
+      bottom={{ base: '90px', md: '100px' }} // Moved higher to avoid chatbot icon
       right={{ base: '20px', md: '30px' }}
-      zIndex={1000}
+      zIndex={999} // Below chatbot (which is 1000)
       display={{ base: 'block', lg: 'none' }} // Only show on mobile/tablet
     >
       <Button
