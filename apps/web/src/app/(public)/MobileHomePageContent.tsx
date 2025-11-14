@@ -34,9 +34,18 @@ import {
 } from 'react-icons/fa';
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import HomeFooter from '@/components/site/HomeFooter';
-import SpeedyAIBotWrapper from '@/components/site/SpeedyAIBotWrapper';
 import dynamic from 'next/dynamic';
+
+// Lazy load non-critical components
+const HomeFooter = dynamic(() => import('@/components/site/HomeFooter'), {
+  ssr: true,
+  loading: () => null,
+});
+
+const SpeedyAIBotWrapper = dynamic(() => import('@/components/site/SpeedyAIBotWrapper'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const TrustpilotWidget = dynamic(
   () => import('@/components/site/TrustpilotWidget'),
@@ -46,8 +55,10 @@ const TrustpilotWidget = dynamic(
   }
 );
 
-// Import ServiceMapSection directly
-import ServiceMapSection from '../../components/ServiceMapSection';
+const ServiceMapSection = dynamic(() => import('../../components/ServiceMapSection'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Create motion components with proper prop filtering
 const MotionBox = chakra(motion.div, {
@@ -205,7 +216,7 @@ const MobileHero: React.FC = () => {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           poster="/android-chrome-512x512.png"
           aria-hidden
           tabIndex={-1}

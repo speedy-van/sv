@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter } from 'next/font/google';
+import '@/styles/critical.css';
 import '@/styles/globals.css';
 import '@/styles/mobile-enhancements.css';
 import '@/styles/mobile-fixes.css';
@@ -31,6 +32,8 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   display: 'swap',
+  preload: true,
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 });
 
 const defaultTitle =
@@ -119,6 +122,21 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
+        {/* Preload critical fonts */}
+        <link
+          rel="preload"
+          href="/_next/static/media/inter-latin-400-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/_next/static/media/inter-latin-600-normal.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {/* Favicon and App Icons */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
@@ -152,13 +170,12 @@ export default async function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* Google Ads Global Site Tag */}
+        {/* Google Ads Global Site Tag - Deferred for performance */}
         <Script
-          async
           src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-ads-init" strategy="afterInteractive">
+        <Script id="google-ads-init" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
