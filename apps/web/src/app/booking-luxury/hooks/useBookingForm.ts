@@ -626,8 +626,8 @@ export function useBookingForm() {
           address: pickupAddress.full || pickupAddress.line1 || pickupAddress.address || pickupAddress.formatted_address || '',
           postcode: pickupAddress.postcode || '',
           coordinates: {
-            lat: pickupAddress.coordinates?.lat || 51.5074,
-            lng: pickupAddress.coordinates?.lng || -0.1278
+            lat: pickupAddress.coordinates?.lat || 0,
+            lng: pickupAddress.coordinates?.lng || 0
           },
           propertyDetails: {
             type: formData.step1.pickupProperty?.type || 'house',
@@ -644,8 +644,8 @@ export function useBookingForm() {
           address: dropoffAddress.full || dropoffAddress.line1 || dropoffAddress.address || dropoffAddress.formatted_address || '',
           postcode: dropoffAddress.postcode || '',
           coordinates: {
-            lat: dropoffAddress.coordinates?.lat || 51.5074,
-            lng: dropoffAddress.coordinates?.lng || -0.1278
+            lat: dropoffAddress.coordinates?.lat || 0,
+            lng: dropoffAddress.coordinates?.lng || 0
           },
           propertyDetails: {
             type: formData.step1.dropoffProperty?.type || 'house',
@@ -748,12 +748,12 @@ export function useBookingForm() {
       });
 
       const finalPricing = {
-        baseFee: Math.round(apiPricing.breakdown.baseFee) / 100, // Convert from pence
-        distanceFee: Math.round(apiPricing.breakdown.distanceFee) / 100,
-        volumeFee: Math.round(apiPricing.breakdown.itemsFee) / 100, // Items fee from API
-        serviceFee: Math.round(apiPricing.breakdown.serviceFee) / 100,
-        urgencyFee: Math.round(apiPricing.breakdown.vehicleFee) / 100, // Vehicle fee as urgency fee for UI compatibility
-        vat: Math.round(apiPricing.vatAmount) / 100,
+        baseFee: Math.round(apiPricing.breakdown.baseFee / 100 * 100) / 100, // Convert from pence: divide first, then round
+        distanceFee: Math.round(apiPricing.breakdown.distanceFee / 100 * 100) / 100,
+        volumeFee: Math.round(apiPricing.breakdown.itemsFee / 100 * 100) / 100, // Items fee from API
+        serviceFee: Math.round(apiPricing.breakdown.serviceFee / 100 * 100) / 100,
+        urgencyFee: Math.round(apiPricing.breakdown.vehicleFee / 100 * 100) / 100, // Vehicle fee as urgency fee for UI compatibility
+        vat: Math.round(apiPricing.vatAmount / 100 * 100) / 100,
         total: Math.round(basePrice * 100) / 100, // Store base price for calculations
         distance: Math.round(apiPricing.route.totalDistance * 100) / 100,
       };
@@ -786,20 +786,24 @@ export function useBookingForm() {
         pricing: `Unable to calculate pricing: ${errorMessage}. Please check your items and addresses and try again.`
       });
 
-      // Still show a fallback price based on item totals
+      // Improved fallback price based on items and estimated distance
       const itemsTotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-      const fallbackTotal = Math.max(35, itemsTotal * 1.2); // 20% markup as fallback
+      const estimatedDistance = 10; // Default 10 miles if coordinates unavailable
+      const distanceCharge = estimatedDistance * 2; // £2 per mile
+      const subtotal = Math.max(35, itemsTotal * 1.2 + distanceCharge); // Items + distance
+      const vat = Math.round(subtotal * 0.2 * 100) / 100;
+      const fallbackTotal = subtotal + vat;
 
       updateFormData('step1', {
         pricing: {
-          baseFee: Math.round(fallbackTotal * 0.6 * 100) / 100,
-          distanceFee: Math.round(fallbackTotal * 0.15 * 100) / 100,
-          volumeFee: Math.round(fallbackTotal * 0.1 * 100) / 100,
-          serviceFee: Math.round(fallbackTotal * 0.1 * 100) / 100,
+          baseFee: Math.round(subtotal * 0.5 * 100) / 100,
+          distanceFee: Math.round(distanceCharge * 100) / 100,
+          volumeFee: Math.round(itemsTotal * 1.2 * 100) / 100,
+          serviceFee: Math.round(subtotal * 0.1 * 100) / 100,
           urgencyFee: 0,
-          vat: Math.round(fallbackTotal * 0.2 * 100) / 100,
-          total: Math.round(fallbackTotal * 1.2 * 100) / 100,
-          distance: 10,
+          vat: vat,
+          total: Math.round(fallbackTotal * 100) / 100,
+          distance: estimatedDistance,
         },
       });
 

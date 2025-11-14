@@ -39,6 +39,9 @@ interface ExtractedData {
   specialItems?: string[];
   movingDate?: string;
   vehicleType?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
 }
 
 interface QuoteData {
@@ -66,6 +69,8 @@ export default function SpeedyAIBot() {
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [canCalculate, setCanCalculate] = useState(false);
+  const [isReadyForPayment, setIsReadyForPayment] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<{name?: string; email?: string; phone?: string}>({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [supportsSpeech, setSupportsSpeech] = useState(false);
@@ -199,10 +204,24 @@ export default function SpeedyAIBot() {
         // Update extracted data
         if (data.extractedData) {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
+          // Update customer details separately for payment handoff
+          if (data.extractedData.customerName || data.extractedData.customerEmail || data.extractedData.customerPhone) {
+            setCustomerDetails((prev) => ({
+              ...prev,
+              name: data.extractedData.customerName || prev.name,
+              email: data.extractedData.customerEmail || prev.email,
+              phone: data.extractedData.customerPhone || prev.phone,
+            }));
+          }
         }
 
         // Enable manual calculate button when ready
         setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
+        
+        // Check if AI says ready for payment
+        if (data.message && data.message.includes('READY_FOR_PAYMENT')) {
+          setIsReadyForPayment(true);
+        }
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -580,15 +599,12 @@ export default function SpeedyAIBot() {
               </HStack>
             </Flex>
 
-            {/* Messages */}
-            <VStack
+            {/* Messages - Fixed Layout */}
+            <Box
               flex={1}
               overflowY="auto"
               overflowX="hidden"
-              p={{ base: 3, md: 4 }}
-              spacing={{ base: 3, md: 4 }}
               bg="gray.50"
-              align="stretch"
               sx={{
                 WebkitOverflowScrolling: 'touch',
                 '&::-webkit-scrollbar': {
@@ -603,55 +619,73 @@ export default function SpeedyAIBot() {
                 },
               }}
             >
-              {messages.map((message) => (
-                <MotionFlex
-                  key={message.id}
-                  justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {message.role === 'assistant' && (
-                    <Box mr={2} flexShrink={0}>
+              <VStack
+                p={{ base: 3, md: 4 }}
+                spacing={{ base: 4, md: 4 }}
+                align="stretch"
+                minH="full"
+              >
+                {messages.map((message) => (
+                  <MotionFlex
+                    key={message.id}
+                    justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
+                    align="flex-start"
+                    gap={2}
+                    w="full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    mb={2}
+                  >
+                    {message.role === 'assistant' && (
+                      <Box flexShrink={0} mt={1}>
+                        <SpeedyAIIcon size={32} />
+                      </Box>
+                    )}
+                    
+                    <Box
+                      maxW={{ base: '75%', md: '70%' }}
+                      bg={message.role === 'user' ? 'blue.500' : 'white'}
+                      color={message.role === 'user' ? 'white' : 'gray.800'}
+                      px={{ base: 3, md: 4 }}
+                      py={{ base: 2.5, md: 3 }}
+                      borderRadius="lg"
+                      shadow="sm"
+                      fontSize={{ base: 'sm', md: 'sm' }}
+                      whiteSpace="pre-wrap"
+                      wordBreak="break-word"
+                      lineHeight="1.5"
+                      position="relative"
+                    >
+                      {message.content}
+                    </Box>
+                    
+                    {message.role === 'user' && (
+                      <Box flexShrink={0} mt={1}>
+                        <Avatar size="sm" bg="blue.600" color="white" name="You" />
+                      </Box>
+                    )}
+                  </MotionFlex>
+                ))}
+                {isLoading && (
+                  <Flex justify="flex-start" gap={2} mb={2}>
+                    <Box flexShrink={0} mt={1}>
                       <SpeedyAIIcon size={32} />
                     </Box>
-                  )}
-                  
-                  <Box
-                    maxW={{ base: '85%', md: '80%' }}
-                    bg={message.role === 'user' ? 'blue.500' : 'white'}
-                    color={message.role === 'user' ? 'white' : 'gray.800'}
-                    px={{ base: 3, md: 4 }}
-                    py={{ base: 2.5, md: 3 }}
-                    borderRadius="lg"
-                    shadow="sm"
-                    fontSize={{ base: 'sm', md: 'sm' }}
-                    whiteSpace="pre-wrap"
-                    wordBreak="break-word"
-                  >
-                    {message.content}
-                  </Box>
-                </MotionFlex>
-              ))}
-              
-              {isLoading && (
-                <Flex justify="flex-start">
-                  <Box mr={2} flexShrink={0}>
-                    <SpeedyAIIcon size={32} />
-                  </Box>
-                  <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
-                    <HStack spacing={1}>
-                      <Spinner size="xs" color="blue.500" />
-                      <Text fontSize="sm" color="gray.600">
-                        Thinking...
-                      </Text>
-                    </HStack>
-                  </Box>
-                </Flex>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </VStack>
+                    <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
+                      <HStack spacing={1}>
+                        <Spinner size="xs" color="blue.500" />
+                        <Text fontSize="sm" color="gray.600">
+                          Thinking...
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </Flex>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </VStack>
+            </Box>
 
             {/* Calculate Quote Now CTA */}
             {canCalculate && !quoteData && (
@@ -682,16 +716,33 @@ export default function SpeedyAIBot() {
                     £{quoteData.total.toFixed(2)}
                   </Text>
                 </HStack>
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  w="full"
-                  onClick={() => {
-                    window.location.href = '/';
-                  }}
-                >
-                  Book Now
-                </Button>
+                <VStack spacing={2} w="full">
+                  {!isReadyForPayment ? (
+                    <Text fontSize="xs" color="gray.600" textAlign="center">
+                      Continue chatting to provide your contact details
+                    </Text>
+                  ) : (
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      w="full"
+                      onClick={() => {
+                        // Create booking data and redirect to booking page
+                        const bookingData = {
+                          ...extractedData,
+                          ...customerDetails,
+                          quote: quoteData,
+                        };
+                        // Store in sessionStorage for booking page
+                        sessionStorage.setItem('speedyai_booking', JSON.stringify(bookingData));
+                        window.location.href = '/booking-luxury';
+                      }}
+                      leftIcon={<Icon as={FiCheckCircle} />}
+                    >
+                      Proceed to Payment
+                    </Button>
+                  )}
+                </VStack>
               </Box>
             )}
 

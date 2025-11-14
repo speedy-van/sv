@@ -195,7 +195,11 @@ const getCorrectSubtotal = (bookingData: BookingData): number => {
 
 const getCorrectVAT = (bookingData: BookingData): number => {
   const total = getCorrectTotal(bookingData);
-  return Math.round(total * 0.2 * 100) / 100; // 20% VAT rounded to 2 decimal places
+  // Calculate VAT correctly: VAT = (Total / 1.2) * 0.2
+  // This extracts the VAT from a total that already includes VAT
+  const subtotal = total / 1.2;
+  const vat = subtotal * 0.2;
+  return Math.round(vat * 100) / 100; // Round to 2 decimal places
 };
 
 interface StripePaymentButtonProps {
