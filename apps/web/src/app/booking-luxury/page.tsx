@@ -701,21 +701,67 @@ export default function BookingLuxuryPage() {
             px={{ base: 2, md: 0 }}
           >
             <VStack spacing={2} w="full" data-booking-header>
-              {/* Top: Brand & Back Button & Call Button */}
+              {/* Top: Call Button - Right Aligned */}
               <Flex 
-                justify="space-between" 
+                justify="flex-end" 
+                align="center" 
+                px={{ base: 2, md: 6 }}
+                w="full"
+              >
+                <Button
+                  as="a"
+                  href="tel:+441202129746"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                      (window as any).gtag('event', 'conversion', {
+                        'send_to': 'AW-16477431359/YOUR_CONVERSION_LABEL',
+                        'event_callback': () => {
+                          console.log('Call conversion tracked');
+                        }
+                      });
+                    }
+                  }}
+                  size={{ base: 'sm', md: 'md' }}
+                  h={{ base: '40px', md: '44px' }}
+                  px={{ base: 4, md: 6 }}
+                  bg="linear-gradient(135deg, #10B981, #059669)"
+                  color="white"
+                  fontWeight="bold"
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
+                  leftIcon={<Icon as={FaPhone} boxSize={{ base: 4, md: 5 }} />}
+                  borderRadius="full"
+                  _hover={{
+                    bg: 'linear-gradient(135deg, #059669, #047857)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
+                    textDecoration: 'none',
+                  }}
+                  _active={{
+                    transform: 'scale(0.95)',
+                  }}
+                  transition="all 0.2s ease"
+                >
+                  Call Now
+                </Button>
+              </Flex>
+
+              {/* Middle: Brand & Back Button - Same Row */}
+              <Flex 
+                justify="center" 
                 align="center" 
                 px={{ base: 2, md: 6 }}
                 w="full"
               >
                 <HStack 
-                  spacing={2}
+                  spacing={3}
                   sx={{
                     flexDirection: 'row !important',
                     alignItems: 'center !important',
                     writingMode: 'horizontal-tb !important',
                   }}
                 >
+                  {/* Back Button - Left in same row */}
                   {currentStep === 1 && (
                     <IconButton
                       aria-label="Back to home"
@@ -727,6 +773,8 @@ export default function BookingLuxuryPage() {
                       _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
                     />
                   )}
+                  
+                  {/* Speedy Van Brand */}
                   <Icon as={FaTruck} boxSize={6} color="blue.400" />
                   <Text 
                     fontSize={{ base: 'lg', md: 'xl' }}
@@ -744,34 +792,6 @@ export default function BookingLuxuryPage() {
                     Speedy Van
                   </Text>
                 </HStack>
-
-                {/* Call Button - Mobile Friendly */}
-                <Button
-                  as="a"
-                  href="tel:+441202129746"
-                  size={{ base: 'sm', md: 'md' }}
-                  h={{ base: '36px', md: '40px' }}
-                  px={{ base: 3, md: 4 }}
-                  bg="linear-gradient(135deg, #10B981, #059669)"
-                  color="white"
-                  fontWeight="bold"
-                  fontSize={{ base: 'xs', md: 'sm' }}
-                  boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
-                  leftIcon={<Icon as={FaPhone} boxSize={{ base: 3, md: 4 }} />}
-                  borderRadius="full"
-                  _hover={{
-                    bg: 'linear-gradient(135deg, #059669, #047857)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
-                    textDecoration: 'none',
-                  }}
-                  _active={{
-                    transform: 'scale(0.95)',
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  <Text display={{ base: 'none', sm: 'inline' }}>Call Now</Text>
-                </Button>
               </Flex>
 
               {/* Bottom: Progress Steps - Under Speedy Van */}
