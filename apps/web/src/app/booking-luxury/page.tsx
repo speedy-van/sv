@@ -701,7 +701,7 @@ export default function BookingLuxuryPage() {
             px={{ base: 2, md: 0 }}
           >
             <VStack spacing={2} w="full" data-booking-header>
-              {/* Top: Brand & Back Button */}
+              {/* Top: Brand & Back Button & Call Button */}
               <Flex 
                 justify="space-between" 
                 align="center" 
@@ -744,6 +744,34 @@ export default function BookingLuxuryPage() {
                     Speedy Van
                   </Text>
                 </HStack>
+
+                {/* Call Button - Mobile Friendly */}
+                <Button
+                  as="a"
+                  href="tel:+441202129746"
+                  size={{ base: 'sm', md: 'md' }}
+                  h={{ base: '36px', md: '40px' }}
+                  px={{ base: 3, md: 4 }}
+                  bg="linear-gradient(135deg, #10B981, #059669)"
+                  color="white"
+                  fontWeight="bold"
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
+                  leftIcon={<Icon as={FaPhone} boxSize={{ base: 3, md: 4 }} />}
+                  borderRadius="full"
+                  _hover={{
+                    bg: 'linear-gradient(135deg, #059669, #047857)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
+                    textDecoration: 'none',
+                  }}
+                  _active={{
+                    transform: 'scale(0.95)',
+                  }}
+                  transition="all 0.2s ease"
+                >
+                  <Text display={{ base: 'none', sm: 'inline' }}>Call Now</Text>
+                </Button>
               </Flex>
 
               {/* Bottom: Progress Steps - Under Speedy Van */}
