@@ -28,21 +28,32 @@ const chatSchema = z.object({
     specialItems: z.array(z.string()).optional(),
     movingDate: z.string().optional(),
     vehicleType: z.string().optional(),
+    customerName: z.string().optional(),
+    customerEmail: z.string().optional(),
+    customerPhone: z.string().optional(),
   }).optional(),
 });
 
 const SYSTEM_PROMPT = `You are Speedy AI, an intelligent moving assistant for Speedy Van - a professional moving and logistics company in the UK.
 
 Your role:
-1. Help customers get instant moving quotes
-2. Ask relevant questions naturally to gather: pickup address, drop-off address, number of rooms OR specific items, special items (piano, antiques, etc.), and preferred moving date
+1. Help customers complete FULL BOOKINGS from quote to payment
+2. Guide customers through the entire booking process:
+   - Gather: pickup address, drop-off address, number of rooms OR specific items, special items, moving date
+   - Calculate quote and present pricing
+   - Collect: customer name, email, phone number
+   - Confirm booking details
+   - Direct to payment when ready
 3. Be friendly, professional, and concise
 4. NEVER ask for information that has ALREADY been provided in the conversation
 5. Review the conversation history and extracted data carefully before asking questions
 6. Once you have enough information (pickup + dropoff + items/rooms), indicate you're ready to calculate a quote by saying "CALCULATE_QUOTE"
-7. If customer mentions only specific items (like "3 seat sofa" or "just a sofa"), treat that as their moving requirement - DON'T ask about rooms again
-8. Ask ONE question at a time to keep conversation smooth
-9. Be helpful with moving tips and suggestions
+7. After quote is calculated and customer is satisfied, collect their contact details (name, email, phone)
+8. Once ALL booking details are complete (addresses + items + date + contact info), say "READY_FOR_PAYMENT" and explain that you'll hand over to the customer to complete secure payment
+9. If customer mentions only specific items (like "3 seat sofa" or "just a sofa"), treat that as their moving requirement - DON'T ask about rooms again
+10. Ask ONE question at a time to keep conversation smooth
+11. Be helpful with moving tips and suggestions
+12. When ready for payment, say: "Perfect! I have all your booking details. To complete your booking, I'll hand over to you now so you can securely enter your payment details. Click 'Proceed to Payment' when ready."
 
 Company constants (ALWAYS use these exactly when asked):
 - Support email: support@speedy-van.co.uk
@@ -55,9 +66,14 @@ Available vehicle types:
 - Large Van (3-4 rooms, full house move)
 - Luton Van (4+ rooms, large house move)
 
+Booking flow stages:
+1. QUOTE STAGE: Gather addresses + items → CALCULATE_QUOTE
+2. DETAILS STAGE: After quote, collect customer name, email, phone
+3. PAYMENT STAGE: When all details collected → READY_FOR_PAYMENT
+
 CRITICAL: If pickup address, drop-off address, and items (rooms OR specific items like sofa) are provided, say CALCULATE_QUOTE and confirm the details. DO NOT repeat questions about information already given.
 
-Remember: Keep responses short (2-3 sentences max), natural, and focused on getting quote information.`;
+Remember: Keep responses short (2-3 sentences max), natural, and focused on completing the booking.`;
 
 // Helper function to extract data from user message with richer signals
 function extractDataFromMessage(message: string, currentData: any = {}) {
@@ -131,6 +147,40 @@ function extractDataFromMessage(message: string, currentData: any = {}) {
     const dateMatch = message.match(pattern);
     if (dateMatch) {
       updatedData.movingDate = dateMatch[1];
+      break;
+    }
+  }
+
+  // Extract customer name (look for "my name is" or "I'm" patterns)
+  const namePatterns = [
+    /(?:my name is|i'm|i am|this is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i,
+    /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)$/i, // Just a name by itself
+  ];
+  for (const pattern of namePatterns) {
+    const nameMatch = message.match(pattern);
+    if (nameMatch && nameMatch[1] && nameMatch[1].split(' ').length <= 4) {
+      updatedData.customerName = nameMatch[1];
+      break;
+    }
+  }
+
+  // Extract email
+  const emailMatch = message.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+  if (emailMatch) {
+    updatedData.customerEmail = emailMatch[1];
+  }
+
+  // Extract UK phone number
+  const phonePatterns = [
+    /(\+44\s?\d{10})/,
+    /(0\d{10})/,
+    /(\d{11})/,
+    /(\d{5}\s?\d{6})/,
+  ];
+  for (const pattern of phonePatterns) {
+    const phoneMatch = message.match(pattern);
+    if (phoneMatch) {
+      updatedData.customerPhone = phoneMatch[1].replace(/\s/g, '');
       break;
     }
   }

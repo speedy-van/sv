@@ -39,6 +39,9 @@ interface ExtractedData {
   specialItems?: string[];
   movingDate?: string;
   vehicleType?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
 }
 
 interface QuoteData {
@@ -66,6 +69,8 @@ export default function SpeedyAIBot() {
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [canCalculate, setCanCalculate] = useState(false);
+  const [isReadyForPayment, setIsReadyForPayment] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<{name?: string; email?: string; phone?: string}>({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [supportsSpeech, setSupportsSpeech] = useState(false);
@@ -199,10 +204,24 @@ export default function SpeedyAIBot() {
         // Update extracted data
         if (data.extractedData) {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
+          // Update customer details separately for payment handoff
+          if (data.extractedData.customerName || data.extractedData.customerEmail || data.extractedData.customerPhone) {
+            setCustomerDetails((prev) => ({
+              ...prev,
+              name: data.extractedData.customerName || prev.name,
+              email: data.extractedData.customerEmail || prev.email,
+              phone: data.extractedData.customerPhone || prev.phone,
+            }));
+          }
         }
 
         // Enable manual calculate button when ready
         setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
+        
+        // Check if AI says ready for payment
+        if (data.message && data.message.includes('READY_FOR_PAYMENT')) {
+          setIsReadyForPayment(true);
+        }
       } else {
         throw new Error(data.error || 'Failed to get response');
       }
@@ -697,18 +716,35 @@ export default function SpeedyAIBot() {
                     £{quoteData.total.toFixed(2)}
                   </Text>
                 </HStack>
-                <Button
-                  size="sm"
-                  colorScheme="blue"
-                  w="full"
-                  onClick={() => {
-                    window.location.href = '/';
-                  }}
-                >
-                  Book Now
-                </Button>
+                <VStack spacing={2} w="full">
+                  {!isReadyForPayment ? (
+                    <Text fontSize="xs" color="gray.600" textAlign="center">
+                      Continue chatting to provide your contact details
+                    </Text>
+                  ) : (
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      w="full"
+                      onClick={() => {
+                        // Create booking data and redirect to booking page
+                        const bookingData = {
+                          ...extractedData,
+                          ...customerDetails,
+                          quote: quoteData,
+                        };
+                        // Store in sessionStorage for booking page
+                        sessionStorage.setItem('speedyai_booking', JSON.stringify(bookingData));
+                        window.location.href = '/booking-luxury';
+                      }}
+                      leftIcon={<Icon as={FiCheckCircle} />}
+                    >
+                      Proceed to Payment
+                    </Button>
+                  )}
+                </VStack>
               </Box>
-            )}
+            )
 
             {/* Input */}
             <Flex 
