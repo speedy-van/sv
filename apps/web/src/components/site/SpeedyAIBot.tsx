@@ -580,15 +580,12 @@ export default function SpeedyAIBot() {
               </HStack>
             </Flex>
 
-            {/* Messages */}
-            <VStack
+            {/* Messages - Fixed Layout */}
+            <Box
               flex={1}
               overflowY="auto"
               overflowX="hidden"
-              p={{ base: 3, md: 4 }}
-              spacing={{ base: 3, md: 4 }}
               bg="gray.50"
-              align="stretch"
               sx={{
                 WebkitOverflowScrolling: 'touch',
                 '&::-webkit-scrollbar': {
@@ -603,55 +600,73 @@ export default function SpeedyAIBot() {
                 },
               }}
             >
-              {messages.map((message) => (
-                <MotionFlex
-                  key={message.id}
-                  justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {message.role === 'assistant' && (
-                    <Box mr={2} flexShrink={0}>
+              <VStack
+                p={{ base: 3, md: 4 }}
+                spacing={{ base: 4, md: 4 }}
+                align="stretch"
+                minH="full"
+              >
+                {messages.map((message) => (
+                  <MotionFlex
+                    key={message.id}
+                    justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
+                    align="flex-start"
+                    gap={2}
+                    w="full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    mb={2}
+                  >
+                    {message.role === 'assistant' && (
+                      <Box flexShrink={0} mt={1}>
+                        <SpeedyAIIcon size={32} />
+                      </Box>
+                    )}
+                    
+                    <Box
+                      maxW={{ base: '75%', md: '70%' }}
+                      bg={message.role === 'user' ? 'blue.500' : 'white'}
+                      color={message.role === 'user' ? 'white' : 'gray.800'}
+                      px={{ base: 3, md: 4 }}
+                      py={{ base: 2.5, md: 3 }}
+                      borderRadius="lg"
+                      shadow="sm"
+                      fontSize={{ base: 'sm', md: 'sm' }}
+                      whiteSpace="pre-wrap"
+                      wordBreak="break-word"
+                      lineHeight="1.5"
+                      position="relative"
+                    >
+                      {message.content}
+                    </Box>
+                    
+                    {message.role === 'user' && (
+                      <Box flexShrink={0} mt={1}>
+                        <Avatar size="sm" bg="blue.600" color="white" name="You" />
+                      </Box>
+                    )}
+                  </MotionFlex>
+                ))}
+                {isLoading && (
+                  <Flex justify="flex-start" gap={2} mb={2}>
+                    <Box flexShrink={0} mt={1}>
                       <SpeedyAIIcon size={32} />
                     </Box>
-                  )}
-                  
-                  <Box
-                    maxW={{ base: '85%', md: '80%' }}
-                    bg={message.role === 'user' ? 'blue.500' : 'white'}
-                    color={message.role === 'user' ? 'white' : 'gray.800'}
-                    px={{ base: 3, md: 4 }}
-                    py={{ base: 2.5, md: 3 }}
-                    borderRadius="lg"
-                    shadow="sm"
-                    fontSize={{ base: 'sm', md: 'sm' }}
-                    whiteSpace="pre-wrap"
-                    wordBreak="break-word"
-                  >
-                    {message.content}
-                  </Box>
-                </MotionFlex>
-              ))}
-              
-              {isLoading && (
-                <Flex justify="flex-start">
-                  <Box mr={2} flexShrink={0}>
-                    <SpeedyAIIcon size={32} />
-                  </Box>
-                  <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
-                    <HStack spacing={1}>
-                      <Spinner size="xs" color="blue.500" />
-                      <Text fontSize="sm" color="gray.600">
-                        Thinking...
-                      </Text>
-                    </HStack>
-                  </Box>
-                </Flex>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </VStack>
+                    <Box bg="white" px={4} py={3} borderRadius="lg" shadow="sm">
+                      <HStack spacing={1}>
+                        <Spinner size="xs" color="blue.500" />
+                        <Text fontSize="sm" color="gray.600">
+                          Thinking...
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </Flex>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </VStack>
+            </Box>
 
             {/* Calculate Quote Now CTA */}
             {canCalculate && !quoteData && (
