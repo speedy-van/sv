@@ -75,6 +75,7 @@ export default function SpeedyAIBot() {
   const [isListening, setIsListening] = useState(false);
   const [supportsSpeech, setSupportsSpeech] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [isActionsExpanded, setIsActionsExpanded] = useState(false);
   const recognitionRef = useRef<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -340,6 +341,102 @@ export default function SpeedyAIBot() {
     }
   };
 
+  const handleProceedToPayment = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Parse customer name
+      const nameParts = (customerDetails.name || '').trim().split(' ');
+      const firstName = nameParts[0] || 'Customer';
+      const lastName = nameParts.slice(1).join(' ') || 'Speedy';
+      
+      // Prepare items array
+      const items = (extractedData.specialItems || []).map(item => {
+        const [quantityPart, ...nameParts] = item.split(' ');
+        const quantity = parseInt(quantityPart) || 1;
+        const name = nameParts.join(' ') || item;
+        
+        return {
+          id: `item_${Date.now()}_${Math.random()}`,
+          name: name,
+          category: 'furniture',
+          quantity: quantity,
+          weight: 20,
+          volume: 0.5,
+        };
+      });
+      
+      // Create booking
+      const response = await fetch('/api/ai/create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerDetails: {
+            firstName,
+            lastName,
+            email: customerDetails.email || '',
+            phone: customerDetails.phone || '',
+          },
+          pickupAddress: {
+            full: extractedData.pickupAddress || '',
+            postcode: extractedData.pickupAddress?.split(',').pop()?.trim() || '',
+          },
+          dropoffAddress: {
+            full: extractedData.dropoffAddress || '',
+            postcode: extractedData.dropoffAddress?.split(',').pop()?.trim() || '',
+          },
+          items: items.length > 0 ? items : [{
+            id: `room_${Date.now()}`,
+            name: `${extractedData.numberOfRooms || 2} Bedroom Move`,
+            category: 'room-package',
+            quantity: 1,
+            weight: (extractedData.numberOfRooms || 2) * 50,
+            volume: (extractedData.numberOfRooms || 2) * 2,
+          }],
+          serviceType: 'standard',
+          pickupDate: extractedData.movingDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          pricing: {
+            subtotal: quoteData?.total || 150,
+            vat: (quoteData?.total || 150) * 0.2,
+            total: quoteData?.total || 150,
+            distance: quoteData?.distance || 10,
+          },
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success && result.payment?.url) {
+        // Show success message with payment link (NO AUTO-REDIRECT)
+        const successMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `🎉 Booking created successfully! Your booking number is **${result.booking.bookingNumber}**.\n\nYour payment link is ready. Click the button below when you're ready to complete payment.`,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, successMessage]);
+        
+        // Store payment URL for manual access
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('pending_payment_url', result.payment.url);
+          sessionStorage.setItem('pending_booking_number', result.booking.bookingNumber);
+        }
+      } else {
+        throw new Error(result.error || 'Failed to create booking');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      toast({
+        title: 'Booking Error',
+        description: error.message || 'Failed to create booking. Please try again.',
+        status: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -545,6 +642,19 @@ export default function SpeedyAIBot() {
               align="center"
               justify="space-between"
               color="white"
+              animation="blueFlash 3s ease-in-out infinite"
+              sx={{
+                '@keyframes blueFlash': {
+                  '0%, 100%': { 
+                    filter: 'brightness(1)',
+                    boxShadow: '0 0 0 rgba(59, 130, 246, 0)',
+                  },
+                  '50%': { 
+                    filter: 'brightness(1.3)',
+                    boxShadow: '0 0 30px rgba(59, 130, 246, 0.6)',
+                  },
+                },
+              }}
             >
               <HStack spacing={{ base: 2, md: 3 }}>
                 <SpeedyAIIcon size={40} />
@@ -646,12 +756,13 @@ export default function SpeedyAIBot() {
                     <Box
                       maxW={{ base: '75%', md: '70%' }}
                       bg={message.role === 'user' ? 'blue.500' : 'white'}
-                      color={message.role === 'user' ? 'white' : 'gray.800'}
+                      color={message.role === 'user' ? 'white' : 'black'}
                       px={{ base: 3, md: 4 }}
                       py={{ base: 2.5, md: 3 }}
                       borderRadius="lg"
                       shadow="sm"
                       fontSize={{ base: 'sm', md: 'sm' }}
+                      fontWeight="500"
                       whiteSpace="pre-wrap"
                       wordBreak="break-word"
                       lineHeight="1.5"
@@ -722,97 +833,210 @@ export default function SpeedyAIBot() {
                       Continue chatting to provide your contact details
                     </Text>
                   ) : (
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      w="full"
-                      onClick={() => {
-                        // Create booking data and redirect to booking page
-                        const bookingData = {
-                          ...extractedData,
-                          ...customerDetails,
-                          quote: quoteData,
-                        };
-                        // Store in sessionStorage for booking page
-                        sessionStorage.setItem('speedyai_booking', JSON.stringify(bookingData));
-                        window.location.href = '/booking-luxury';
-                      }}
-                      leftIcon={<Icon as={FiCheckCircle} />}
-                    >
-                      Proceed to Payment
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        colorScheme="green"
+                        w="full"
+                        onClick={handleProceedToPayment}
+                        leftIcon={<Icon as={FiCheckCircle} />}
+                        isLoading={isLoading}
+                        loadingText="Creating booking..."
+                      >
+                        Create Booking
+                      </Button>
+                      {typeof window !== 'undefined' && sessionStorage.getItem('pending_payment_url') && (
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          w="full"
+                          as="a"
+                          href={sessionStorage.getItem('pending_payment_url') || '#'}
+                          target="_blank"
+                          leftIcon={<Icon as={FiCheckCircle} />}
+                        >
+                          Complete Payment
+                        </Button>
+                      )}
+                    </>
                   )}
                 </VStack>
               </Box>
             )}
 
             {/* Input */}
-            <Flex 
-              p={{ base: 3, md: 4 }} 
-              pb={{ base: 'calc(env(safe-area-inset-bottom) + 12px)', md: 4 }}
-              bg="white" 
-              borderTop="1px" 
-              borderColor="gray.200"
-              gap={2}
-            >
-              {!!pendingFiles.length && (
-                <HStack spacing={2} align="center">
-                  {pendingFiles.slice(0,3).map((f, idx) => (
-                    <Box key={idx} border="1px solid" borderColor="gray.200" borderRadius="md" p={1}>
-                      {f.url ? (
-                        <Box as="img" src={f.url} alt={f.name} w="36px" h="36px" objectFit="cover" borderRadius="sm" />
-                      ) : (
-                        <Text fontSize="xs" maxW="80px" noOfLines={1}>{f.name}</Text>
-                      )}
+            <Box position="relative">
+              {/* Expandable Actions Menu */}
+              <AnimatePresence>
+                {isActionsExpanded && (
+                  <MotionBox
+                    position="absolute"
+                    bottom="calc(100% + 8px)"
+                    left={4}
+                    bg="white"
+                    borderRadius="xl"
+                    boxShadow="0 4px 20px rgba(0,0,0,0.15)"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    p={2}
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                    zIndex={10}
+                  >
+                    <VStack spacing={1}>
+                      <IconButton
+                        aria-label="Upload files"
+                        icon={<Box as="span" fontSize="xl">📎</Box>}
+                        colorScheme="gray"
+                        variant="ghost"
+                        size="lg"
+                        w="full"
+                        onClick={() => {
+                          onUploadClick();
+                          setIsActionsExpanded(false);
+                        }}
+                        _hover={{ bg: 'gray.100' }}
+                        _active={{ transform: 'scale(0.95)' }}
+                      />
+                      <IconButton
+                        aria-label={supportsSpeech ? (isListening ? 'Stop voice input' : 'Start voice input') : 'Voice not supported'}
+                        icon={<Box as="span" fontSize="xl">🎤</Box>}
+                        colorScheme={isListening ? 'red' : 'gray'}
+                        variant={isListening ? 'solid' : 'ghost'}
+                        size="lg"
+                        w="full"
+                        onClick={() => {
+                          toggleListening();
+                          if (!isListening) setIsActionsExpanded(false);
+                        }}
+                        _hover={{ bg: isListening ? undefined : 'gray.100' }}
+                        _active={{ transform: 'scale(0.95)' }}
+                        title={supportsSpeech ? undefined : 'Voice input not supported in this browser'}
+                        isDisabled={!supportsSpeech}
+                      />
+                    </VStack>
+                  </MotionBox>
+                )}
+              </AnimatePresence>
+
+              <Flex 
+                p={{ base: 3, md: 4 }} 
+                pb={{ base: 'calc(env(safe-area-inset-bottom) + 12px)', md: 4 }}
+                bg="white" 
+                borderTop="1px" 
+                borderColor="gray.200"
+                gap={2}
+                align="center"
+              >
+                {!!pendingFiles.length && (
+                  <HStack spacing={2} align="center">
+                    {pendingFiles.slice(0,3).map((f, idx) => (
+                      <Box key={idx} border="1px solid" borderColor="gray.200" borderRadius="md" p={1}>
+                        {f.url ? (
+                          <Box as="img" src={f.url} alt={f.name} w="36px" h="36px" objectFit="cover" borderRadius="sm" />
+                        ) : (
+                          <Text fontSize="xs" maxW="80px" noOfLines={1}>{f.name}</Text>
+                        )}
+                      </Box>
+                    ))}
+                  </HStack>
+                )}
+                
+                {/* Plus Button - Toggle Actions */}
+                <IconButton
+                  aria-label="Toggle actions"
+                  icon={
+                    <Box 
+                      as="span" 
+                      fontSize="3xl" 
+                      fontWeight="bold"
+                      transform={isActionsExpanded ? 'rotate(45deg)' : 'rotate(0deg)'}
+                      transition="transform 0.2s"
+                      color="blue.600"
+                    >
+                      +
                     </Box>
-                  ))}
-                </HStack>
-              )}
-              <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={isListening ? 'Listening… speak now' : 'Type your message...'}
-                size={{ base: 'md', md: 'md' }}
-                fontSize={{ base: '16px', md: '14px' }}
-                disabled={isLoading}
-                flex={1}
-                _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
-                }}
-              />
-              <IconButton
-                aria-label="Upload files"
-                icon={<Box as="span" fontSize="lg">📎</Box>}
-                colorScheme="gray"
-                variant="outline"
-                onClick={onUploadClick}
-                _active={{ transform: 'scale(0.95)' }}
-              />
-              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display: 'none' }} />
-              <IconButton
-                aria-label={supportsSpeech ? (isListening ? 'Stop voice input' : 'Start voice input') : 'Voice not supported'}
-                icon={<Box as="span" fontSize="lg">🎤</Box>}
-                colorScheme={isListening ? 'red' : 'gray'}
-                variant={isListening ? 'solid' : 'outline'}
-                onClick={toggleListening}
-                _active={{ transform: 'scale(0.95)' }}
-                title={supportsSpeech ? undefined : 'Voice input not supported in this browser'}
-              />
-              <IconButton
-                aria-label="Send message"
-                icon={<FiSend />}
-                colorScheme="blue"
-                onClick={() => handleSendMessage()}
-                isLoading={isLoading}
-                isDisabled={!inputValue.trim()}
-                size={{ base: 'md', md: 'md' }}
-                minW={{ base: '48px', md: 'auto' }}
-                _active={{ transform: 'scale(0.95)' }}
-              />
-            </Flex>
+                  }
+                  colorScheme="blue"
+                  variant="solid"
+                  size="lg"
+                  onClick={() => setIsActionsExpanded(!isActionsExpanded)}
+                  _hover={{ bg: 'blue.600' }}
+                  _active={{ transform: 'scale(0.95)' }}
+                  bg="blue.500"
+                  color="white"
+                  minW="56px"
+                  height="56px"
+                />
+
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display: 'none' }} />
+                
+                <Input
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={isListening ? 'Listening… speak now' : 'Type your message...'}
+                  disabled={isLoading}
+                  flex={1}
+                  style={{
+                    height: '56px',
+                    minHeight: '56px',
+                    fontSize: '17px',
+                    fontWeight: 600,
+                    color: '#000000',
+                    backgroundColor: '#FFFFFF',
+                    border: '2px solid #E5E7EB',
+                    borderRadius: '12px',
+                    padding: '0 20px',
+                  }}
+                  sx={{
+                    height: '56px !important',
+                    minHeight: '56px !important',
+                    fontSize: '17px !important',
+                    fontWeight: '600 !important',
+                    color: '#000000 !important',
+                    backgroundColor: '#FFFFFF !important',
+                    border: '2px solid #E5E7EB !important',
+                    borderRadius: '12px !important',
+                    padding: '0 20px !important',
+                    WebkitTextFillColor: '#000000 !important',
+                    '&::placeholder': {
+                      color: '#9CA3AF !important',
+                      fontWeight: '400 !important',
+                    },
+                    '&:focus': {
+                      borderColor: '#3B82F6 !important',
+                      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1) !important',
+                      backgroundColor: '#FFFFFF !important',
+                      outline: 'none !important',
+                    },
+                    '&:disabled': {
+                      opacity: '0.6 !important',
+                      cursor: 'not-allowed !important',
+                    },
+                    '&::selection': {
+                      backgroundColor: '#DBEAFE !important',
+                      color: '#000000 !important',
+                    }
+                  }}
+                />
+                
+                <IconButton
+                  aria-label="Send message"
+                  icon={<FiSend />}
+                  colorScheme="blue"
+                  onClick={() => handleSendMessage()}
+                  isLoading={isLoading}
+                  isDisabled={!inputValue.trim()}
+                  size={{ base: 'md', md: 'md' }}
+                  minW={{ base: '48px', md: 'auto' }}
+                  _active={{ transform: 'scale(0.95)' }}
+                />
+              </Flex>
+            </Box>
           </MotionFlex>
         )}
       </AnimatePresence>

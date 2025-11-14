@@ -72,10 +72,6 @@ export default function BookingLuxuryPage() {
   const [isClient, setIsClient] = useState<boolean>(false);
   const router = useRouter();
   
-  // Ref to track scroll position
-  const scrollPositionRef = useRef<number>(0);
-  const preventScrollRef = useRef<boolean>(false);
-  
   // Wave effects for step headers
   const [addressWaveActive, setAddressWaveActive] = useState(false);
   const [itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
@@ -274,91 +270,9 @@ export default function BookingLuxuryPage() {
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
     setIsClient(true);
-    
-    // Add CSS to prevent scroll anchoring globally
-    if (typeof document !== 'undefined') {
-      const style = document.createElement('style');
-      style.textContent = `
-        * {
-          overflow-anchor: none !important;
-        }
-        html {
-          scroll-behavior: auto !important;
-        }
-      `;
-      style.id = 'prevent-scroll-jump';
-      document.head.appendChild(style);
-      
-      return () => {
-        const existingStyle = document.getElementById('prevent-scroll-jump');
-        if (existingStyle) {
-          existingStyle.remove();
-        }
-      };
-    }
   }, []);
 
-  // CRITICAL FIX: Prevent auto-scroll to top on ANY state change
-  // This is a comprehensive solution that works across all browsers
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Store current scroll position
-    const savedScrollY = window.scrollY;
-    
-    // Use multiple techniques to prevent scroll
-    const preventScroll = (e: Event) => {
-      if (savedScrollY > 0 && window.scrollY === 0) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.scrollTo(0, savedScrollY);
-      }
-    };
-
-    // Method 1: Intercept scroll events
-    window.addEventListener('scroll', preventScroll, { capture: true });
-    
-    // Method 2: Use setTimeout with multiple attempts to restore position
-    const intervals: NodeJS.Timeout[] = [];
-    for (let i = 0; i < 5; i++) {
-      intervals.push(setTimeout(() => {
-        if (window.scrollY === 0 && savedScrollY > 0) {
-          window.scrollTo(0, savedScrollY);
-        }
-      }, i * 10));
-    }
-
-    // Method 3: Use requestAnimationFrame for immediate restoration
-    const restore = () => {
-      if (window.scrollY === 0 && savedScrollY > 0) {
-        window.scrollTo(0, savedScrollY);
-      }
-    };
-    requestAnimationFrame(restore);
-    requestAnimationFrame(() => requestAnimationFrame(restore));
-
-    return () => {
-      window.removeEventListener('scroll', preventScroll, { capture: true });
-      intervals.forEach(clearTimeout);
-    };
-  }, [
-    formData.step1.pickupAddress,
-    formData.step1.dropoffAddress,
-    formData.step1.items,
-    formData.step2,
-  ]);
-
-  // Disable browser's scroll restoration completely
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
-      const original = window.history.scrollRestoration;
-      window.history.scrollRestoration = 'manual';
-      
-      return () => {
-        window.history.scrollRestoration = original;
-      };
-    }
-  }, []);
+  // Removed aggressive scroll prevention that was causing multiple scroll-up issues
 
   // Auto-trigger pricing when relevant data changes
   useEffect(() => {

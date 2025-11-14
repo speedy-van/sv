@@ -198,6 +198,9 @@ export default function WhereAndWhatStep({
 
   // Handlers
   const addItem = (item: any) => {
+    // Save scroll position before update
+    const scrollY = window.scrollY;
+    
     const currentItems = step1.items || [];
     const existingItem = currentItems.find((i: any) => i.id === item.id);
     if (existingItem) {
@@ -214,18 +217,34 @@ export default function WhereAndWhatStep({
         items: [...currentItems, newItem]
       });
     }
+    
+    // Restore scroll position after update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const removeItem = (itemId: any) => {
+    // Save scroll position before update
+    const scrollY = window.scrollY;
+    
     const currentItems = step1.items || [];
     const filteredItems = currentItems.filter((i: any) => i.id !== itemId);
     // Force update by creating a new array reference
     updateFormData('step1', {
       items: [...filteredItems]
     });
+    
+    // Restore scroll position after update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const updateQuantity = (itemId: any, quantity: number, item?: any) => {
+    // Save scroll position before update
+    const scrollY = window.scrollY;
+    
     if (quantity === 0) {
       removeItem(itemId);
     } else {
@@ -253,6 +272,11 @@ export default function WhereAndWhatStep({
         // Don't add item without proper data - log warning only
       }
     }
+    
+    // Restore scroll position after update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const getItemQuantity = (itemId: any) => {
@@ -1527,6 +1551,10 @@ export default function WhereAndWhatStep({
             w="340px"
             maxW="420px"
             zIndex={1400}
+            sx={{
+              contain: 'layout style paint',
+              willChange: 'contents',
+            }}
           >
             <Card
               bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
@@ -1555,6 +1583,10 @@ export default function WhereAndWhatStep({
               bottom="104px" 
               right="24px" 
               zIndex={1500}
+              sx={{
+                contain: 'layout style paint',
+                willChange: 'contents',
+              }}
             >
               <Button
                 onClick={onMobileCartOpen}

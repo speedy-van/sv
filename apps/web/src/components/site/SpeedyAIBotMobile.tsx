@@ -601,8 +601,9 @@ export default function SpeedyAIBotMobile() {
                     padding: '12px 16px',
                     borderRadius: '16px',
                     backgroundColor: message.role === 'user' ? '#3B82F6' : '#ffffff',
-                    color: message.role === 'user' ? '#ffffff' : '#1f2937',
+                    color: message.role === 'user' ? '#ffffff' : '#000000',
                     fontSize: '15px',
+                    fontWeight: '500',
                     lineHeight: '1.5',
                     wordWrap: 'break-word',
                     boxShadow: message.role === 'user' 
@@ -800,25 +801,33 @@ export default function SpeedyAIBotMobile() {
               disabled={isLoading}
               style={{
                 flex: 1,
-                height: '48px',
-                padding: '0 16px',
-                borderRadius: '24px',
-                border: '2px solid #e5e7eb',
-                fontSize: '15px',
+                height: '56px',
+                minHeight: '56px',
+                padding: '0 20px',
+                borderRadius: '28px',
+                border: '2px solid #E5E7EB',
+                fontSize: '17px',
+                color: '#000000',
                 outline: 'none',
-                backgroundColor: '#f9fafb',
+                backgroundColor: '#FFFFFF',
                 transition: 'all 0.2s ease',
-                fontWeight: 500,
+                fontWeight: 600,
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none',
+                WebkitTextFillColor: '#000000',
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = '#3B82F6';
-                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
                 e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                e.currentTarget.style.color = '#000000';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#e5e7eb';
-                e.currentTarget.style.backgroundColor = '#f9fafb';
+                e.currentTarget.style.borderColor = '#E5E7EB';
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
                 e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.color = '#000000';
               }}
             />
 

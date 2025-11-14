@@ -66,7 +66,19 @@ export default function WhoAndPaymentStepSimple({
   priorityPrice = 0,
 }: WhoAndPaymentStepProps) {
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const toast = useToast();
+  
+  // Prevent scroll jumps on re-render
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    if (scrollY > 0) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
+  });
   
   const sanitizePrice = (value: number | undefined | null) => {
     if (typeof value === 'number') {
@@ -131,6 +143,9 @@ export default function WhoAndPaymentStepSimple({
 
   const applyItemUpdates = useCallback(
     (items: typeof selectedItems) => {
+      // Save scroll position before update
+      const scrollY = window.scrollY;
+      
       const sanitizedItems = (items || [])
         .map((item) => ({
           ...item,
@@ -140,6 +155,11 @@ export default function WhoAndPaymentStepSimple({
 
       updateFormData('step1', {
         items: sanitizedItems.map((item) => ({ ...item })),
+      });
+      
+      // Restore scroll position after update
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
       });
     },
     [updateFormData]
@@ -191,16 +211,27 @@ export default function WhoAndPaymentStepSimple({
   );
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
+    // Save scroll position before update
+    const scrollY = window.scrollY;
+    
     updateFormData('step2', {
       customerDetails: {
         ...formData.step2.customerDetails,
         [field]: value
       }
     });
+    
+    // Restore scroll position after update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   }, [formData.step2.customerDetails, updateFormData]);
   
   // Handle service selection change - just update selected service (no price recalculation)
   const handleServiceChange = useCallback((serviceId: 'economy' | 'standard' | 'express') => {
+    // Save scroll position before update
+    const scrollY = window.scrollY;
+    
     setSelectedService(serviceId);
     
     // Get price for selected service (from Step 2 calculation)
@@ -211,6 +242,11 @@ export default function WhoAndPaymentStepSimple({
       : safeStandardPrice;
     
     console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
+    
+    // Restore scroll position after update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   }, [safeEconomyPrice, safeStandardPrice, safeExpressPrice]);
 
   // CRITICAL: Use calculated prices (not static props)
@@ -647,6 +683,14 @@ export default function WhoAndPaymentStepSimple({
               {/* Terms & Conditions */}
               <VStack spacing={3} align="start">
                 <Checkbox
+                  isChecked={acceptedTerms}
+                  onChange={(e) => {
+                    const scrollY = window.scrollY;
+                    setAcceptedTerms(e.target.checked);
+                    requestAnimationFrame(() => {
+                      window.scrollTo(0, scrollY);
+                    });
+                  }}
                   colorScheme="blue"
                   color="gray.300"
                   fontSize="sm"
@@ -668,6 +712,14 @@ export default function WhoAndPaymentStepSimple({
                 </Checkbox>
 
                 <Checkbox
+                  isChecked={acceptedPrivacy}
+                  onChange={(e) => {
+                    const scrollY = window.scrollY;
+                    setAcceptedPrivacy(e.target.checked);
+                    requestAnimationFrame(() => {
+                      window.scrollTo(0, scrollY);
+                    });
+                  }}
                   colorScheme="blue"
                   color="gray.300"
                   fontSize="sm"

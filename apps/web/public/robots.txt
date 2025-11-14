@@ -26,8 +26,7 @@ Disallow: /portal/
 Disallow: /offline
 
 # Host
-Host: http://localhost:3000
+Host: https://speedy-van.co.uk
 
 # Sitemaps
-Sitemap: http://localhost:3000/sitemap.xml
-Sitemap: http://localhost:3000/sitemap-0.xml
+Sitemap: https://speedy-van.co.uk/sitemap.xml

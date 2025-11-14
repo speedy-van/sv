@@ -229,9 +229,5 @@ module.exports = {
         ],
       },
     ],
-    additionalSitemaps: [
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://speedy-van.co.uk'}/sitemap.xml`,
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://speedy-van.co.uk'}/sitemap-0.xml`,
-    ],
   },
 };

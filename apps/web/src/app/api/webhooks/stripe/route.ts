@@ -15,6 +15,14 @@ export const dynamic = 'force-dynamic';
 // Helper function to send order confirmation email
 async function sendOrderConfirmationEmail(bookingId: string) {
   try {
+    console.log('📧 [EMAIL DEBUG] Starting email send process for booking:', bookingId);
+    console.log('📧 [EMAIL DEBUG] Environment check:', {
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      hasSendGridKey: !!process.env.SENDGRID_API_KEY,
+      resendKeyLength: process.env.RESEND_API_KEY?.length || 0,
+      sendGridKeyLength: process.env.SENDGRID_API_KEY?.length || 0,
+    });
+    
     // Fetch booking with all related data
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
@@ -31,6 +39,14 @@ async function sendOrderConfirmationEmail(bookingId: string) {
       console.error('❌ Booking not found for confirmation email:', bookingId);
       return;
     }
+    
+    console.log('📧 [EMAIL DEBUG] Booking found:', {
+      id: booking.id,
+      reference: booking.reference,
+      email: booking.customerEmail,
+      name: booking.customerName,
+      status: booking.status,
+    });
 
     // Check for floor number issues - Only warn if floors is explicitly 0, null, or undefined
     // If floors > 0, customer provided floor number, so no warning needed
@@ -94,20 +110,66 @@ async function sendOrderConfirmationEmail(bookingId: string) {
     }
 
     // Send confirmation email with invoice attached
+    console.log('📧 [EMAIL DEBUG] Calling unifiedEmailService.sendOrderConfirmation...');
     const emailResult = await unifiedEmailService.sendOrderConfirmation(emailData, invoicePDF);
+    console.log('📧 [EMAIL DEBUG] Email result:', emailResult);
 
     if (emailResult.success) {
       console.log('✅ Order confirmation email sent successfully:', {
         orderRef: booking.reference,
         email: booking.customerEmail,
+        provider: emailResult.provider,
+        messageId: emailResult.messageId,
         hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue,
       });
     } else {
-      console.error('❌ Failed to send order confirmation email:', emailResult.error);
+      console.error('❌ Failed to send order confirmation email:', {
+        error: emailResult.error,
+        provider: emailResult.provider,
+        bookingRef: booking.reference,
+        email: booking.customerEmail,
+      });
+      
+      // Log the failure to database for manual follow-up
+      await prisma.auditLog.create({
+        data: {
+          actorId: 'system',
+          actorRole: 'system',
+          action: 'email_send_failed',
+          targetType: 'booking',
+          targetId: bookingId,
+          details: {
+            error: emailResult.error,
+            provider: emailResult.provider,
+            email: booking.customerEmail,
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
     }
 
   } catch (error) {
     console.error('❌ Error sending order confirmation email:', error);
+    
+    // Log the critical error
+    try {
+      await prisma.auditLog.create({
+        data: {
+          actorId: 'system',
+          actorRole: 'system',
+          action: 'email_send_exception',
+          targetType: 'booking',
+          targetId: bookingId,
+          details: {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+    } catch (logError) {
+      console.error('❌ Failed to log email error:', logError);
+    }
   }
 }
 
@@ -115,6 +177,11 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🔔 [WEBHOOK DEBUG] ========== STRIPE WEBHOOK RECEIVED ==========');
     console.log('🔔 [WEBHOOK DEBUG] Timestamp:', new Date().toISOString());
+    console.log('🔔 [WEBHOOK DEBUG] Environment check:', {
+      hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      hasSendGridKey: !!process.env.SENDGRID_API_KEY,
+    });
     
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');

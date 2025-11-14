@@ -31,9 +31,16 @@ export async function GET(
       );
     }
 
+    // Add tracking link using dropId
+    const trackingLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://speedy-van.co.uk'}/track/${booking.dropId}`;
+
     return NextResponse.json({
       success: true,
-      data: booking
+      data: booking,
+      booking: {
+        ...booking,
+        trackingLink,
+      },
     });
 
   } catch (error) {

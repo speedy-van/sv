@@ -40,20 +40,20 @@ Your role:
 1. Help customers complete FULL BOOKINGS from quote to payment
 2. Guide customers through the entire booking process:
    - Gather: pickup address, drop-off address, number of rooms OR specific items, special items, moving date
-   - Calculate quote and present pricing
+   - Calculate quote and present pricing with THREE service tiers (Economy, Standard, Priority)
    - Collect: customer name, email, phone number
    - Confirm booking details
-   - Direct to payment when ready
+   - Create booking and redirect to Stripe payment
 3. Be friendly, professional, and concise
 4. NEVER ask for information that has ALREADY been provided in the conversation
 5. Review the conversation history and extracted data carefully before asking questions
 6. Once you have enough information (pickup + dropoff + items/rooms), indicate you're ready to calculate a quote by saying "CALCULATE_QUOTE"
 7. After quote is calculated and customer is satisfied, collect their contact details (name, email, phone)
-8. Once ALL booking details are complete (addresses + items + date + contact info), say "READY_FOR_PAYMENT" and explain that you'll hand over to the customer to complete secure payment
+8. Once ALL booking details are complete (addresses + items + date + contact info), say "READY_FOR_PAYMENT" and explain that you'll create their booking and redirect to secure payment
 9. If customer mentions only specific items (like "3 seat sofa" or "just a sofa"), treat that as their moving requirement - DON'T ask about rooms again
 10. Ask ONE question at a time to keep conversation smooth
 11. Be helpful with moving tips and suggestions
-12. When ready for payment, say: "Perfect! I have all your booking details. To complete your booking, I'll hand over to you now so you can securely enter your payment details. Click 'Proceed to Payment' when ready."
+12. When ready for payment, say: "Perfect! I have all your booking details. I'll create your booking now and redirect you to secure payment. Your booking number will be sent to your email."
 
 Company constants (ALWAYS use these exactly when asked):
 - Support email: support@speedy-van.co.uk
@@ -65,6 +65,11 @@ Available vehicle types:
 - Medium Van (2-3 rooms, standard furniture)
 - Large Van (3-4 rooms, full house move)
 - Luton Van (4+ rooms, large house move)
+
+Service tiers:
+- ECONOMY: Budget-friendly, standard service, longer time windows
+- STANDARD: Most popular, balanced service, 2-hour time window
+- PRIORITY: Premium service, 1-hour time window, priority scheduling
 
 Booking flow stages:
 1. QUOTE STAGE: Gather addresses + items → CALCULATE_QUOTE
@@ -589,12 +594,22 @@ export async function POST(request: NextRequest) {
     if (shouldCalculateQuote) {
       logMetric('quote_enabled');
     }
+    
+    // Check if customer is ready for payment
+    const hasCustomerDetails = extractedData.customerName && 
+                               extractedData.customerEmail && 
+                               extractedData.customerPhone;
+    const isReadyForPayment = (aiResponse.includes('READY_FOR_PAYMENT') || hasCustomerDetails) && hasEnoughInfo;
+    if (isReadyForPayment) {
+      logMetric('payment_ready');
+    }
 
     return NextResponse.json({
       success: true,
-      message: aiResponse.replace('CALCULATE_QUOTE', '').trim(),
+      message: aiResponse.replace('CALCULATE_QUOTE', '').replace('READY_FOR_PAYMENT', '').trim(),
       extractedData,
       shouldCalculateQuote,
+      isReadyForPayment,
       missingFields,
       nextQuestion: shouldCalculateQuote ? null : nextQuestionFor(missingFields),
       conversationId: chatCompletion.id,
