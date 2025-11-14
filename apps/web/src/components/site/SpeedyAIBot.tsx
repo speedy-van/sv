@@ -744,7 +744,7 @@ export default function SpeedyAIBot() {
                   )}
                 </VStack>
               </Box>
-            )
+            )}
 
             {/* Input */}
             <Flex 
