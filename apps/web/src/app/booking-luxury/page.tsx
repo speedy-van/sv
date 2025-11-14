@@ -714,9 +714,11 @@ export default function BookingLuxuryPage() {
                   onClick={() => {
                     if (typeof window !== 'undefined' && (window as any).gtag) {
                       (window as any).gtag('event', 'conversion', {
-                        'send_to': 'AW-16477431359/YOUR_CONVERSION_LABEL',
+                        'send_to': 'AW-17715630822/phone_call_conversion',
+                        'event_category': 'engagement',
+                        'event_label': 'booking_luxury_call_button',
                         'event_callback': () => {
-                          console.log('Call conversion tracked');
+                          console.log('✅ Call conversion tracked from booking-luxury');
                         }
                       });
                     }

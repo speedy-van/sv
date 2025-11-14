@@ -10,9 +10,10 @@
 // Google Ads Conversion ID
 const GOOGLE_ADS_ID = 'AW-17715630822';
 
-// TODO: Replace these with actual conversion labels from Google Ads
-const CALL_CONVERSION_LABEL = 'REPLACE_WITH_CALL_CONVERSION_LABEL';
-const BOOKING_CONVERSION_LABEL = 'REPLACE_WITH_BOOKING_CONVERSION_LABEL';
+// Call and Booking Conversion Labels
+// NOTE: Update these labels in Google Ads console if you create specific conversion actions
+const CALL_CONVERSION_LABEL = 'phone_call_conversion'; // Generic phone call conversion
+const BOOKING_CONVERSION_LABEL = 'Submit_lead_form_Website'; // Main booking conversion
 
 /**
  * Track phone call button click conversion
