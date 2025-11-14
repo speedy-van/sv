@@ -84,6 +84,8 @@ export default function MobileHeader() {
           <HStack spacing={2}>
             {/* Call Now Button */}
             <Button
+              as="a"
+              href="tel:+441202129746"
               size="sm"
               h="40px"
               px={4}
@@ -93,12 +95,12 @@ export default function MobileHeader() {
               fontSize="sm"
               boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
               leftIcon={<FaPhone />}
-              onClick={() => window.open('tel:01202 129746')}
               borderRadius="full"
               _hover={{
                 bg: 'linear-gradient(135deg, #059669, #047857)',
                 transform: 'translateY(-2px)',
                 boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
+                textDecoration: 'none',
               }}
               _active={{
                 transform: 'scale(0.95)',
@@ -493,6 +495,8 @@ export default function MobileHeader() {
                   </Button>
                   
                   <Button
+                    as="a"
+                    href="tel:+441202129746"
                     size="md"
                     variant="outline"
                     color="white"
@@ -504,14 +508,12 @@ export default function MobileHeader() {
                       bg: 'rgba(16, 185, 129, 0.2)',
                       transform: 'translateY(-1px)',
                       borderColor: '#10B981',
+                      textDecoration: 'none',
                     }}
                     _active={{
                       transform: 'scale(0.98)',
                     }}
-                    onClick={(e: React.MouseEvent) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open('tel:01202 129746');
+                    onClick={() => {
                       onClose();
                     }}
                     leftIcon={<FaPhone />}

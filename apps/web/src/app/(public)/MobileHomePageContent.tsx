@@ -459,6 +459,8 @@ viewport={{ once: true }}
                 </TouchButton>
 
                 <TouchButton
+                  as="a"
+                  href="tel:+441202129746"
                   size="lg"
                   variant="outline"
                   borderColor="white"
@@ -471,11 +473,11 @@ viewport={{ once: true }}
                     borderColor: 'green.400',
                     color: 'green.400',
                     transform: 'translateY(-2px)',
+                    textDecoration: 'none',
                   }}
                   borderRadius="xl"
                   fontWeight="semibold"
                   flex={1}
-                  onClick={() => window.open('tel:+441202129746')}
                 >
                   Call Now
                 </TouchButton>
@@ -1106,6 +1108,8 @@ const MobileCTA: React.FC = () => {
               </TouchButton>
 
               <TouchButton
+                as="a"
+                href="tel:+441202129746"
                 size="xl"
                 variant="outline"
                 borderColor="neon.400"
@@ -1114,9 +1118,9 @@ const MobileCTA: React.FC = () => {
                 _hover={{
                   bg: 'neon.400',
                   color: 'white',
+                  textDecoration: 'none',
                 }}
                 fullWidth
-                onClick={() => window.open('tel:+441202129746')}
               >
                 Call Us
               </TouchButton>
