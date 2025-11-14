@@ -51,6 +51,24 @@ function BookingSuccessContent() {
         
         if (data.success) {
           setBookingDetails(data.booking);
+          
+          // Track Google Ads conversion for successful booking
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            try {
+              (window as any).gtag('event', 'conversion', {
+                'send_to': 'AW-17715630822/Submit_lead_form_Website',
+                'value': data.booking.total || 1.0,
+                'currency': 'GBP',
+                'transaction_id': data.booking.bookingNumber || bookingId
+              });
+              console.log('✅ Google Ads conversion tracked: Booking completed', {
+                bookingId,
+                value: data.booking.total
+              });
+            } catch (gtagError) {
+              console.error('❌ Google Ads conversion tracking failed:', gtagError);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to fetch booking:', error);
