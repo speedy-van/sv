@@ -23,8 +23,8 @@ const nextConfig = {
   // Hide powered-by header for security
   poweredByHeader: false,
 
-  // Production source maps for debugging
-  productionBrowserSourceMaps: true,
+  // Disable production source maps for better performance
+  productionBrowserSourceMaps: false,
 
   // Performance optimizations for large dataset
   images: {
@@ -162,7 +162,6 @@ const nextConfig = {
   },
   
   // Enable production optimizations
-  productionBrowserSourceMaps: false,
   optimizeFonts: true,
   
   // CRITICAL: DO NOT use standalone mode - it breaks CSS loading

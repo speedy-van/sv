@@ -1,9 +1,9 @@
 import { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
 
-// Load the home page content on client side only to avoid hydration issues
+// PERFORMANCE: Load the home page content with SSR enabled for better initial load
 const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
-  ssr: false,
+  ssr: true,
   loading: () => null,
 });
 

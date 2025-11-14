@@ -131,6 +131,7 @@ export default function TrustpilotWidget({
     const script = document.createElement('script');
     script.src = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
     script.async = true;
+    script.defer = true;
     script.onload = () => {
       console.log('✅ Trustpilot widget script loaded successfully');
       // Initialize widget after script loads
