@@ -2,7 +2,7 @@
 
 /**
  * Step 1: Pickup and Drop-off Addresses
- * Luxury Booking Design with OKLCH Colors & Animations
+ * Luxury Booking Design
  */
 
 import React, { useMemo, useRef, useCallback } from 'react';
@@ -24,7 +24,6 @@ import {
 import {
   FaArrowRight,
   FaArrowLeft,
-  FaMapMarkerAlt,
 } from 'react-icons/fa';
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import type { FormData } from '../hooks/useBookingForm';
@@ -104,46 +103,22 @@ export default function AddressesStep({
   };
 
   return (
-    <Box w="full" className="animate-fade-in">
+    <Box w="full">
       <VStack spacing={6} w="full" align="stretch">
-        {/* Luxury Header with Gold Gradient */}
-        <Box className="animate-slide-up delay-100">
-          <HStack spacing={3} mb={2}>
-            <Icon as={FaMapMarkerAlt} color="var(--primary)" boxSize={6} />
-            <Heading 
-              size="lg" 
-              className="heading-luxury"
-              fontWeight="700"
-            >
-              Where are we moving?
-            </Heading>
-          </HStack>
-          <Text color="var(--text-secondary)" fontSize="md">
-            Enter your pickup and delivery addresses to get started
-          </Text>
-        </Box>
-
-        {/* Glass Morphism Card with Animations */}
+        {/* Single Clean Card - Modern Design like Uber/Airbnb */}
         <Card
-          className="glass-dark card-luxury animate-scale-in delay-200 hover-scale"
-          bg="var(--card)"
+          bg="rgba(26, 26, 26, 0.6)"
           border="1px solid"
-          borderColor="var(--border)"
+          borderColor="rgba(59, 130, 246, 0.2)"
           borderRadius="2xl"
           overflow="visible"
-          backdropFilter="blur(16px)"
-          transition="all 0.3s ease"
-          _hover={{
-            borderColor: 'var(--primary)',
-            boxShadow: '0 8px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.1)',
-          }}
+          backdropFilter="blur(10px)"
         >
           <CardBody p={{ base: 6, md: 8 }}>
             <VStack spacing={8} align="stretch">
               {/* Pickup Address */}
               <Box
                 position="relative"
-                className="animate-slide-up delay-300"
                 sx={{
                   overflow: 'visible !important',
                   zIndex: 2
@@ -192,12 +167,11 @@ export default function AddressesStep({
                 </FormControl>
               </Box>
 
-              <Divider className="divider-luxury" borderColor="var(--border)" />
+              <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
               {/* Dropoff Address */}
               <Box
                 position="relative"
-                className="animate-slide-up delay-400"
                 sx={{
                   overflow: 'visible !important',
                   zIndex: 1
@@ -250,33 +224,26 @@ export default function AddressesStep({
         </Card>
       </VStack>
 
-      {/* Luxury Continue Button with Gold Gradient */}
+      {/* Continue Button - Always visible when addresses are complete */}
       {onNext && (
         <Button
           onClick={onNext}
           isDisabled={!canProceed}
-          className="btn-luxury animate-slide-up delay-500"
-          bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 100%)"
-          color="var(--background)"
+          bg="blue.500"
+          color="white"
           size="lg"
           w="full"
           mt={6}
           py={7}
           fontSize="md"
-          fontWeight="700"
+          fontWeight="600"
           borderRadius="xl"
-          rightIcon={<Icon as={FaArrowRight} />}
           _hover={{
-            transform: 'translateY(-2px) scale(1.02)',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary)',
-          }}
-          _active={{
-            transform: 'translateY(0) scale(1)',
+            bg: 'blue.600',
           }}
           _disabled={{
             opacity: 0.5,
             cursor: 'not-allowed',
-            transform: 'none',
           }}
         >
           {canProceed ? 'Continue to Items & Time' : 'Enter Both Addresses'}
@@ -285,3 +252,6 @@ export default function AddressesStep({
     </Box>
   );
 }
+
+
+

@@ -287,10 +287,10 @@ export default function WhereAndWhatStep({
               justify="space-between"
               w="full"
               p={3}
-              bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
+              bg="linear-gradient(135deg, rgba(31, 41, 55, 0.6) 0%, rgba(26, 32, 44, 0.4) 100%)"
               borderRadius="lg"
               border="1px solid"
-              borderColor="var(--border)"
+              borderColor="rgba(16, 185, 129, 0.2)"
               flexWrap="nowrap"
               spacing={3}
               className="selected-item-card"
@@ -310,7 +310,7 @@ export default function WhereAndWhatStep({
                     h={{ base: "40px", md: "50px" }}
                     borderRadius="md"
                     overflow="hidden"
-                    bg="var(--muted)"
+                    bg="rgba(17, 24, 39, 0.6)"
                     flexShrink={0}
                   >
                     <Image
@@ -400,7 +400,7 @@ export default function WhereAndWhatStep({
                   bg="rgba(107, 114, 128, 0.5)"
                   color="white"
                   border="1px solid"
-                  borderColor="var(--border)"
+                  borderColor="rgba(107, 114, 128, 0.3)"
                   _hover={{ bg: "rgba(107, 114, 128, 0.7)" }}
                   aria-label="Decrease quantity"
                 />
@@ -411,7 +411,7 @@ export default function WhereAndWhatStep({
                   size="sm"
                   icon={<FaPlus />}
                   onClick={() => updateQuantity(item.id, item.quantity + 1, item)}
-                  bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 100%)"
+                  bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                   color="white"
                   _hover={{ bg: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
                   aria-label="Increase quantity"
@@ -432,13 +432,13 @@ export default function WhereAndWhatStep({
 
         {pricingTiers && (
           <VStack spacing={2} w="full" mt={4}>
-            <Divider borderColor="var(--border)" />
+            <Divider borderColor="rgba(16, 185, 129, 0.3)" />
             <Heading size="sm" color="white" textAlign="center">
               💰 Enterprise Engine Pricing
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3} w="full">
               {pricingTiers.economy && (
-                <Box p={3} bg="var(--border)" borderRadius="lg" border="1px solid" borderColor="var(--border)">
+                <Box p={3} bg="rgba(59, 130, 246, 0.2)" borderRadius="lg" border="1px solid" borderColor="rgba(59, 130, 246, 0.3)">
                   <Text fontSize="xs" color="gray.400" mb={1}>Economy</Text>
                   <Text fontSize="lg" color="white" fontWeight="bold">
                     £{pricingTiers.economy.price?.toFixed(2) || '0.00'}
@@ -446,7 +446,7 @@ export default function WhereAndWhatStep({
                 </Box>
               )}
               {pricingTiers.standard && (
-                <Box p={3} bg="var(--border)" borderRadius="lg" border="1px solid" borderColor="var(--border)">
+                <Box p={3} bg="rgba(16, 185, 129, 0.2)" borderRadius="lg" border="1px solid" borderColor="rgba(16, 185, 129, 0.3)">
                   <Text fontSize="xs" color="gray.400" mb={1}>Standard</Text>
                   <Text fontSize="lg" color="white" fontWeight="bold">
                     £{pricingTiers.standard.price?.toFixed(2) || '0.00'}
@@ -500,12 +500,12 @@ export default function WhereAndWhatStep({
 
         {/* Date & Time Selection */}
         <Card 
-          bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
+          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px)"
           borderRadius="xl"
           border="2px solid"
-          borderColor="var(--border)"
-          boxShadow="0 8px 32px var(--border)"
+          borderColor="rgba(168, 85, 247, 0.4)"
+          boxShadow="0 8px 32px rgba(168, 85, 247, 0.3)"
         >
           <CardBody p={{ base: 4, md: 6 }}>
             <VStack spacing={{ base: 4, md: 6 }} align="stretch">
@@ -533,8 +533,8 @@ export default function WhereAndWhatStep({
                       tomorrow.setDate(tomorrow.getDate() + 1);
                       return tomorrow.toISOString().split('T')[0];
                     })()}
-                    bg="var(--card)"
-                    borderColor="var(--border)"
+                    bg="rgba(26, 26, 26, 0.8)"
+                    borderColor="rgba(59, 130, 246, 0.3)"
                     color="white"
                     size="lg"
                     borderRadius="xl"
@@ -546,7 +546,7 @@ export default function WhereAndWhatStep({
                     }}
                     _focus={{
                       borderColor: "blue.500",
-                      boxShadow: "0 0 0 1px var(--border)",
+                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
                       bg: "rgba(26, 26, 26, 0.95)",
                     }}
                     sx={{
@@ -588,7 +588,7 @@ export default function WhereAndWhatStep({
                     value={step1.pickupTimeSlot || ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
                     bg="white"
-                    borderColor="var(--border)"
+                    borderColor="rgba(59, 130, 246, 0.4)"
                     color="gray.900"
                     size="lg"
                     borderRadius="xl"
@@ -645,12 +645,12 @@ export default function WhereAndWhatStep({
 
         {/* Item Selection */}
         <Card 
-          bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
+          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px)"
           borderRadius="xl"
           border="2px solid"
-          borderColor="var(--border)"
-          boxShadow="0 8px 32px var(--border)"
+          borderColor="rgba(59, 130, 246, 0.4)"
+          boxShadow="0 8px 32px rgba(59, 130, 246, 0.3)"
         >
           <CardBody p={{ base: 4, md: 6 }}>
             <VStack spacing={{ base: 4, md: 6 }}>
@@ -672,7 +672,7 @@ export default function WhereAndWhatStep({
 
               {/* Stats */}
               <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4} w="full">
-                <VStack spacing={1} bg="rgba(59, 130, 246, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="var(--border)">
+                <VStack spacing={1} bg="rgba(59, 130, 246, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="rgba(59, 130, 246, 0.3)">
                   <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color="blue.400">
                     {ALL_REMOVAL_ITEMS.length}
                   </Text>
@@ -681,7 +681,7 @@ export default function WhereAndWhatStep({
                   </Text>
                 </VStack>
                 
-                <VStack spacing={1} bg="rgba(168, 85, 247, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="var(--border)">
+                <VStack spacing={1} bg="rgba(168, 85, 247, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="rgba(168, 85, 247, 0.3)">
                   <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color="purple.400">
                     {categories.length - 1}
                   </Text>
@@ -690,7 +690,7 @@ export default function WhereAndWhatStep({
                   </Text>
                 </VStack>
                 
-                <VStack spacing={1} bg="rgba(16, 185, 129, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="var(--border)">
+                <VStack spacing={1} bg="rgba(16, 185, 129, 0.1)" p={3} borderRadius="lg" border="1px solid" borderColor="rgba(16, 185, 129, 0.3)">
                   <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color="green.400">
                     {bedroomPackages.length}
                   </Text>
@@ -710,7 +710,7 @@ export default function WhereAndWhatStep({
                   py={{ base: 2, md: 2 }}
                   bg={itemSelectionMode === 'smart' 
                     ? 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)' 
-                    : 'var(--card)'}
+                    : 'rgba(31, 41, 55, 0.6)'}
                   color="white"
                   border="2px solid"
                   borderColor={itemSelectionMode === 'smart' ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
@@ -741,7 +741,7 @@ export default function WhereAndWhatStep({
                   py={{ base: 2, md: 2 }}
                   bg={itemSelectionMode === 'packages' 
                     ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
-                    : 'var(--card)'}
+                    : 'rgba(31, 41, 55, 0.6)'}
                   color="white"
                   border="2px solid"
                   borderColor={itemSelectionMode === 'packages' ? 'rgba(245, 158, 11, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
@@ -771,7 +771,7 @@ export default function WhereAndWhatStep({
                   py={{ base: 2, md: 2 }}
                   bg={itemSelectionMode === 'choose' 
                     ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
-                    : 'var(--card)'}
+                    : 'rgba(31, 41, 55, 0.6)'}
                   color="white"
                   border="2px solid"
                   borderColor={itemSelectionMode === 'choose' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
@@ -779,7 +779,7 @@ export default function WhereAndWhatStep({
                   _hover={{
                     bg: itemSelectionMode === 'choose'
                       ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                      : 'var(--border)'
+                      : 'rgba(16, 185, 129, 0.2)'
                   }}
                   transition="all 0.3s"
                   flexDirection="column"
@@ -827,7 +827,7 @@ export default function WhereAndWhatStep({
                               overflow="hidden"
                               border="2px solid"
                               borderColor="rgba(245, 158, 11, 0.3)"
-                              bg="var(--card)"
+                              bg="rgba(31, 41, 55, 0.6)"
                               transition="all 0.3s"
                               _hover={{
                                 borderColor: "orange.400",
@@ -840,7 +840,7 @@ export default function WhereAndWhatStep({
                                   h={{ base: "80px", sm: "100px", md: "120px" }} 
                                   borderRadius="lg" 
                                   overflow="hidden" 
-                                  bg="var(--muted)"
+                                  bg="rgba(17, 24, 39, 0.6)"
                                   display="flex" 
                                   alignItems="center" 
                                   justifyContent="center"
@@ -920,7 +920,7 @@ export default function WhereAndWhatStep({
                     placeholder="Search from 666 items (e.g., 'sofa', 'bed', 'kitchen')"
                     bg="rgba(17, 24, 39, 0.8)"
                     border="2px solid"
-                    borderColor="var(--border)"
+                    borderColor="rgba(168, 85, 247, 0.3)"
                     color="white"
                     _placeholder={{ color: "gray.400" }}
                     _hover={{ borderColor: 'rgba(168, 85, 247, 0.5)' }}
@@ -947,7 +947,7 @@ export default function WhereAndWhatStep({
                             h={{ base: "120px", sm: "140px", md: "160px" }} 
                             borderRadius="lg" 
                             overflow="hidden" 
-                            bg="var(--muted)"
+                            bg="rgba(17, 24, 39, 0.6)"
                             display="flex" 
                             alignItems="center" 
                             justifyContent="center"
@@ -1081,7 +1081,7 @@ export default function WhereAndWhatStep({
                         setSelectedSubcategory('All'); // Reset subcategory when category changes
                       }}
                       bg="white"
-                      borderColor="var(--border)"
+                      borderColor="rgba(59, 130, 246, 0.4)"
                       color="gray.900"
                       w={{ base: "full", md: "300px" }}
                       size="lg"
@@ -1091,7 +1091,7 @@ export default function WhereAndWhatStep({
                       cursor="pointer"
                       _hover={{ 
                         borderColor: 'rgba(59, 130, 246, 0.7)',
-                        boxShadow: "0 4px 14px var(--border)"
+                        boxShadow: "0 4px 14px rgba(59, 130, 246, 0.2)"
                       }}
                       _focus={{ 
                         borderColor: '#3b82f6',
@@ -1131,7 +1131,7 @@ export default function WhereAndWhatStep({
                   </HStack>
                   
                   {/* ✅ NEW: Advanced Filters Panel */}
-                  <Card bg="rgba(31, 41, 55, 0.5)" borderColor="var(--border)" borderWidth="1px" borderRadius="lg">
+                  <Card bg="rgba(31, 41, 55, 0.5)" borderColor="rgba(59, 130, 246, 0.3)" borderWidth="1px" borderRadius="lg">
                     <CardBody p={4}>
                       <VStack spacing={4} align="stretch">
                         
@@ -1145,7 +1145,7 @@ export default function WhereAndWhatStep({
                               value={selectedSubcategory}
                               onChange={(e) => setSelectedSubcategory(e.target.value)}
                               bg="white"
-                              borderColor="var(--border)"
+                              borderColor="rgba(168, 85, 247, 0.4)"
                               color="gray.900"
                               size="md"
                               borderRadius="lg"
@@ -1211,7 +1211,7 @@ export default function WhereAndWhatStep({
                               }}
                               _focus={{
                                 borderColor: "#10b981",
-                                boxShadow: "0 0 0 3px var(--border)",
+                                boxShadow: "0 0 0 3px rgba(16, 185, 129, 0.2)",
                                 outline: "none",
                               }}
                               transition="all 0.2s ease"
@@ -1258,7 +1258,7 @@ export default function WhereAndWhatStep({
                               <NumberInputField
                                 placeholder="Min"
                                 bg="rgba(17, 24, 39, 0.8)"
-                                borderColor="var(--border)"
+                                borderColor="rgba(59, 130, 246, 0.3)"
                                 color="white"
                               />
                             </NumberInput>
@@ -1273,7 +1273,7 @@ export default function WhereAndWhatStep({
                               <NumberInputField
                                 placeholder="Max"
                                 bg="rgba(17, 24, 39, 0.8)"
-                                borderColor="var(--border)"
+                                borderColor="rgba(59, 130, 246, 0.3)"
                                 color="white"
                               />
                             </NumberInput>
@@ -1316,7 +1316,7 @@ export default function WhereAndWhatStep({
                             h={{ base: "120px", sm: "140px", md: "160px" }} 
                             borderRadius="lg" 
                             overflow="hidden" 
-                            bg="var(--muted)"
+                            bg="rgba(17, 24, 39, 0.6)"
                             display="flex" 
                             alignItems="center" 
                             justifyContent="center"
@@ -1429,7 +1429,7 @@ export default function WhereAndWhatStep({
                     <Button
                       variant="outline"
                       color="white"
-                      borderColor="var(--border)"
+                      borderColor="rgba(16, 185, 129, 0.3)"
                       onClick={() => {
                         // Load more functionality can be added here
                         toast({
@@ -1473,7 +1473,7 @@ export default function WhereAndWhatStep({
                   rightIcon={<Icon as={FaArrowRight} />}
                   onClick={onNext}
                   isDisabled={step1.items.length === 0 || !step1.pickupDate || !step1.pickupTimeSlot}
-                  bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 100%)"
+                  bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                   color="white"
                   size="lg"
                   w="full"
@@ -1528,8 +1528,8 @@ export default function WhereAndWhatStep({
             maxW="420px"
             zIndex={1400}
           >
-            <Card className="glass-dark card-luxury animate-scale-in delay-200 hover-scale"
-              bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
+            <Card
+              bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
               backdropFilter="blur(20px)"
               borderRadius="xl"
               border="2px solid"
@@ -1558,7 +1558,7 @@ export default function WhereAndWhatStep({
             >
               <Button
                 onClick={onMobileCartOpen}
-                bg="linear-gradient(135deg, var(--primary) 0%, oklch(0.70 0.18 75) 100%)"
+                bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                 color="white"
                 borderRadius="full"
                 px={5}
@@ -1576,7 +1576,7 @@ export default function WhereAndWhatStep({
             <DrawerOverlay bg="rgba(15, 23, 42, 0.75)" backdropFilter="blur(6px)" />
             <DrawerContent
               borderTopRadius="2xl"
-              bg="linear-gradient(135deg, var(--card) 0%, var(--background) 100%)"
+              bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
               border="1px solid rgba(16, 185, 129, 0.4)"
               maxH="80vh"
               pb={4}
