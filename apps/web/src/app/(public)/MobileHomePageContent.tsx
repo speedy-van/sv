@@ -17,6 +17,7 @@ import {
   Stack,
   chakra,
   shouldForwardProp,
+  Button,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { motion, isValidMotionProp } from 'framer-motion';
@@ -459,7 +460,7 @@ viewport={{ once: true }}
                   Track Move
                 </TouchButton>
 
-                <TouchButton
+                <Button
                   as="a"
                   href="tel:+441202129746"
                   onClick={trackCallConversion}
@@ -482,7 +483,7 @@ viewport={{ once: true }}
                   flex={1}
                 >
                   Call Now
-                </TouchButton>
+                </Button>
               </HStack>
             </VStack>
           </MotionBox>
@@ -1109,7 +1110,7 @@ const MobileCTA: React.FC = () => {
                 Track Move
               </TouchButton>
 
-              <TouchButton
+              <Button
                 as="a"
                 href="tel:+441202129746"
                 onClick={trackCallConversion}
@@ -1123,10 +1124,10 @@ const MobileCTA: React.FC = () => {
                   color: 'white',
                   textDecoration: 'none',
                 }}
-                fullWidth
+                width="full"
               >
                 Call Us
-              </TouchButton>
+              </Button>
             </Stack>
           </VStack>
         </MotionBox>

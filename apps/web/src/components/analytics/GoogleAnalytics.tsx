@@ -152,8 +152,8 @@ export const trackCTAClick = (ctaLabel: string) => {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
     dataLayer: any[];
   }
 }
+
 

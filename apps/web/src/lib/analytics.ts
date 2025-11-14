@@ -3,7 +3,6 @@
 
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
     dataLayer: any[];
   }
 }
@@ -145,7 +144,7 @@ export const trackPageView = (
   customParameters?: Record<string, any>
 ) => {
   try {
-    if (typeof window !== 'undefined' && window.gtag) {
+    if (typeof window !== 'undefined' && window.gtag && process.env.NEXT_PUBLIC_GA_ID) {
       window.gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
         page_path: pagePath,
         page_title: pageTitle,
