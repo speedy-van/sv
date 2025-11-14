@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { trackCallConversion } from '@/lib/utils/google-ads-tracking';
 import {
   Box,
   Flex,
@@ -86,6 +87,7 @@ export default function MobileHeader() {
             <Button
               as="a"
               href="tel:+441202129746"
+              onClick={trackCallConversion}
               size="sm"
               h="40px"
               px={4}
@@ -514,6 +516,7 @@ export default function MobileHeader() {
                       transform: 'scale(0.98)',
                     }}
                     onClick={() => {
+                      trackCallConversion();
                       onClose();
                     }}
                     leftIcon={<FaPhone />}

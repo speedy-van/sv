@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import { trackCallConversion } from '@/lib/utils/google-ads-tracking';
 import {
   Box,
   Container,
@@ -461,6 +462,7 @@ viewport={{ once: true }}
                 <TouchButton
                   as="a"
                   href="tel:+441202129746"
+                  onClick={trackCallConversion}
                   size="lg"
                   variant="outline"
                   borderColor="white"
@@ -1110,6 +1112,7 @@ const MobileCTA: React.FC = () => {
               <TouchButton
                 as="a"
                 href="tel:+441202129746"
+                onClick={trackCallConversion}
                 size="xl"
                 variant="outline"
                 borderColor="neon.400"

@@ -22,6 +22,7 @@ import Providers from '@/components/Providers';
 import SchemaProvider from '@/components/Schema/SchemaProvider';
 import { VisitorTracker } from '@/components/VisitorTracker';
 import { StructuredData } from '@/components/StructuredData';
+import { FloatingCallButton } from '@/components/mobile/FloatingCallButton';
 import {
   APP_BASE_URL,
   BRAND_NAME,
@@ -201,6 +202,7 @@ export default async function RootLayout({
                 }}
               />
               {children}
+              <FloatingCallButton />
             </ConsentProvider>
           </Providers>
         </SchemaProvider>
