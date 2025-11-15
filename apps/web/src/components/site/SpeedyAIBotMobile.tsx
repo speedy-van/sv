@@ -29,10 +29,12 @@ export default function SpeedyAIBotMobile() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hi! 👋 I\'m Speedy AI. I can help you get an instant quote for your move. Where are you moving from?',
+      content: "Hi! I'm Speedy AI. I'll get you an instant moving quote. Where are you moving from?",
       timestamp: new Date(),
     },
   ]);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
@@ -134,6 +136,10 @@ export default function SpeedyAIBotMobile() {
         };
 
         setMessages((prev) => [...prev, aiMessage]);
+        
+        // Update progress step
+        setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+        
         if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
           try {
             const utter = new SpeechSynthesisUtterance(data.message);
@@ -471,56 +477,20 @@ export default function SpeedyAIBotMobile() {
                   Speedy AI
                 </div>
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
                   fontSize: '12px',
-                  color: 'rgba(255,255,255,0.9)',
+                  color: 'rgba(255,255,255,0.95)',
+                  fontWeight: '500',
                 }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#10B981',
-                    animation: 'pulse 2s ease-in-out infinite',
-                  }} />
-                  Online
+                  Get accurate quotes in 2 minutes
                 </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
-                onClick={toggleTts}
+                onClick={() => setIsOpen(false)}
                 style={{
                   width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  color: '#ffffff',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background-color 0.2s',
-                }}
-                onTouchStart={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)';
-                }}
-                onTouchEnd={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
-                }}
-                title={ttsEnabled ? 'Voice replies on' : 'Voice replies off'}
-              >
-                {ttsEnabled ? '🔊' : '🔇'}
-              </button>
-
-              <button
-                onClick={() => setIsOpen(false)}
-              style={{
-                width: '40px',
                 height: '40px',
                 borderRadius: '50%',
                 border: 'none',
@@ -542,6 +512,62 @@ export default function SpeedyAIBotMobile() {
             >
               ×
               </button>
+            </div>
+          </div>
+
+          {/* Progress Indicator */}
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '12px 16px',
+            borderBottom: '1px solid #E5E7EB',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                Step {currentStep} of {totalSteps}
+              </div>
+              <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                ~{Math.max(1, totalSteps - currentStep + 1)} min left
+              </div>
+            </div>
+            <div style={{
+              width: '100%',
+              height: '6px',
+              backgroundColor: '#E5E7EB',
+              borderRadius: '10px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                backgroundColor: '#3B82F6',
+                borderRadius: '10px',
+                width: `${(currentStep / totalSteps) * 100}%`,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+          </div>
+
+          {/* Trust Signals */}
+          <div style={{
+            backgroundColor: '#EFF6FF',
+            padding: '10px 16px',
+            borderBottom: '1px solid #DBEAFE',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '16px',
+              fontSize: '12px',
+              color: '#374151',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: '#10B981' }}>✓</span>
+                <span style={{ fontWeight: '500' }}>No obligation quote</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>⭐</span>
+                <span style={{ fontWeight: '500' }}>4.9/5 (2,400+ reviews)</span>
+              </div>
             </div>
           </div>
 
@@ -597,18 +623,21 @@ export default function SpeedyAIBotMobile() {
                 
                 <div
                   style={{
-                    maxWidth: '75%',
-                    padding: '12px 16px',
-                    borderRadius: '16px',
-                    backgroundColor: message.role === 'user' ? '#3B82F6' : '#ffffff',
-                    color: message.role === 'user' ? '#ffffff' : '#000000',
-                    fontSize: '15px',
-                    fontWeight: '500',
+                    maxWidth: '85%',
+                    padding: '14px 16px',
+                    borderRadius: '18px',
+                    backgroundColor: message.role === 'user' ? '#3B82F6' : '#000000',
+                    color: '#ffffff',
+                    fontSize: '16px',
+                    fontWeight: 'normal',
                     lineHeight: '1.5',
                     wordWrap: 'break-word',
                     boxShadow: message.role === 'user' 
-                      ? '0 2px 8px rgba(59, 130, 246, 0.3)' 
-                      : '0 2px 8px rgba(0,0,0,0.1)',
+                      ? '0 1px 3px rgba(0,0,0,0.1)' 
+                      : '0 2px 8px rgba(0,0,0,0.3)',
+                    border: message.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                    borderBottomLeftRadius: message.role === 'assistant' ? '4px' : '18px',
+                    borderBottomRightRadius: message.role === 'user' ? '4px' : '18px',
                   }}
                 >
                   {message.content}
@@ -688,6 +717,55 @@ export default function SpeedyAIBotMobile() {
                     }} />
                   </div>
                   <span style={{ fontSize: '14px', color: '#6b7280' }}>Thinking...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Reply Buttons - Show on first message only */}
+            {messages.length === 1 && !isLoading && (
+              <div style={{ marginTop: '12px' }}>
+                <div style={{
+                  fontSize: '12px',
+                  color: 'rgba(255,255,255,0.8)',
+                  fontWeight: '500',
+                  marginBottom: '10px',
+                  paddingLeft: '4px',
+                }}>
+                  Popular UK Cities:
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                }}>
+                  {['London', 'Manchester', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'].map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => handleSendMessage(city)}
+                      style={{
+                        padding: '10px 18px',
+                        borderRadius: '20px',
+                        border: '1.5px solid rgba(255,255,255,0.1)',
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      }}
+                      onTouchStart={(e) => {
+                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                      }}
+                      onTouchEnd={(e) => {
+                        e.currentTarget.style.backgroundColor = '#000000';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                      }}
+                    >
+                      {city}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -778,17 +856,16 @@ export default function SpeedyAIBotMobile() {
             </div>
           )}
 
-          {/* Input Area - Enhanced */}
+          {/* Input Area - Simplified */}
           <div
             style={{
               padding: '12px',
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
               backgroundColor: '#ffffff',
-              borderTop: '2px solid #e5e7eb',
+              borderTop: '1px solid #e5e7eb',
               display: 'flex',
-              gap: '8px',
+              gap: '10px',
               alignItems: 'center',
-              boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
             }}
           >
             <input
@@ -797,37 +874,37 @@ export default function SpeedyAIBotMobile() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type message..."
+              placeholder="Type your answer here..."
               disabled={isLoading}
               style={{
                 flex: 1,
-                height: '56px',
-                minHeight: '56px',
-                padding: '0 20px',
-                borderRadius: '28px',
-                border: '2px solid #E5E7EB',
-                fontSize: '17px',
-                color: '#000000',
+                height: '50px',
+                minHeight: '50px',
+                padding: '0 18px',
+                borderRadius: '25px',
+                border: '1px solid rgba(255,255,255,0.3)',
+                fontSize: '16px',
+                color: '#ffffff',
                 outline: 'none',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'rgba(255,255,255,0.1)',
                 transition: 'all 0.2s ease',
-                fontWeight: 600,
+                fontWeight: 400,
                 WebkitAppearance: 'none',
                 MozAppearance: 'none',
                 appearance: 'none',
-                WebkitTextFillColor: '#000000',
+                WebkitTextFillColor: '#ffffff',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = '#3B82F6';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                e.currentTarget.style.color = '#000000';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = '#ffffff';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = '#E5E7EB';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.color = '#000000';
+                e.currentTarget.style.color = '#ffffff';
               }}
             />
 
@@ -867,86 +944,7 @@ export default function SpeedyAIBotMobile() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {isLoading ? '⏳' : '📤'}
-            </button>
-
-            {/* Upload Button */}
-            <button
-              onClick={onUploadClick}
-              style={{
-                width: '48px',
-                height: '48px',
-                minWidth: '48px',
-                borderRadius: '50%',
-                border: 'none',
-                background: '#3B82F6',
-                color: '#ffffff',
-                fontSize: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                padding: 0,
-                margin: 0,
-              }}
-              onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.9)';
-                e.currentTarget.style.background = '#2563EB';
-              }}
-              onTouchEnd={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.background = '#3B82F6';
-              }}
-            >
-              📎
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display:'none' }} />
-            
-            {/* Mic Button */}
-            <button
-              onClick={toggleListening}
-              disabled={!supportsSpeech}
-              style={{
-                width: '48px',
-                height: '48px',
-                minWidth: '48px',
-                borderRadius: '50%',
-                border: 'none',
-                background: isListening 
-                  ? 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
-                  : supportsSpeech
-                  ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-                  : '#d1d5db',
-                color: '#ffffff',
-                fontSize: '22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: supportsSpeech ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s ease',
-                boxShadow: isListening 
-                  ? '0 0 20px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(239, 68, 68, 0.4)' 
-                  : supportsSpeech
-                  ? '0 4px 12px rgba(16, 185, 129, 0.3)'
-                  : 'none',
-                opacity: supportsSpeech ? 1 : 0.5,
-                padding: 0,
-                margin: 0,
-              }}
-              onTouchStart={(e) => {
-                if (supportsSpeech) {
-                  e.currentTarget.style.transform = 'scale(0.9)';
-                }
-              }}
-              onTouchEnd={(e) => {
-                if (supportsSpeech) {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }
-              }}
-            >
-              🎤
+              {isLoading ? '⏳' : '➤'}
             </button>
           </div>
         </div>

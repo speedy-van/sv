@@ -335,10 +335,21 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     // Then update input value
     setInputValue(suggestion.displayText);
     
-    // CRITICAL FIX: Blur the input to prevent focus-related scroll issues
-    // This prevents the browser from trying to scroll the input into view
+    // CRITICAL FIX: Blur the input WITHOUT causing scroll (mobile only)
+    // On desktop, blur can trigger auto-scroll which is undesirable
     if (inputRef.current) {
-      inputRef.current.blur();
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        inputRef.current.blur();
+      } else {
+        // On desktop: blur without scrolling by preserving scroll position
+        const scrollY = window.scrollY;
+        inputRef.current.blur();
+        // Immediately restore scroll position if it changed
+        if (window.scrollY !== scrollY) {
+          window.scrollTo(0, scrollY);
+        }
+      }
     }
     setIsLoading(true);
     setApiError('');
@@ -489,7 +500,22 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     setSuggestions([]);
     setShowSuggestions(false);
     onChange(null);
-    inputRef.current?.focus();
+    
+    // Focus input WITHOUT causing scroll (mobile only)
+    if (inputRef.current) {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        inputRef.current.focus();
+      } else {
+        // On desktop: focus without scrolling
+        const scrollY = window.scrollY;
+        inputRef.current.focus({ preventScroll: true });
+        // Double-check scroll position didn't change
+        if (window.scrollY !== scrollY) {
+          window.scrollTo(0, scrollY);
+        }
+      }
+    }
   }, [onChange]);
 
   // Click outside to close dropdown - use mousedown to avoid interfering with onClick
@@ -522,12 +548,19 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
 
     reposition();
     document.addEventListener('mousedown', handleMouseDownOutside);
-    window.addEventListener('scroll', reposition, true);
+    // DISABLED: scroll listener causes auto-scroll issues on desktop
+    // Only needed on mobile where keyboard can push content
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      window.addEventListener('scroll', reposition, true);
+    }
     window.addEventListener('resize', reposition);
 
     return () => {
       document.removeEventListener('mousedown', handleMouseDownOutside);
-      window.removeEventListener('scroll', reposition, true);
+      if (isMobile) {
+        window.removeEventListener('scroll', reposition, true);
+      }
       window.removeEventListener('resize', reposition);
     };
   }, [showSuggestions]);

@@ -70,15 +70,8 @@ export default function WhoAndPaymentStepSimple({
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const toast = useToast();
   
-  // Prevent scroll jumps on re-render
-  useEffect(() => {
-    const scrollY = window.scrollY;
-    if (scrollY > 0) {
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
-    }
-  });
+  // REMOVED: This useEffect was causing auto-scroll on desktop on every render
+  // Mobile scroll position is now handled properly in individual event handlers
   
   const sanitizePrice = (value: number | undefined | null) => {
     if (typeof value === 'number') {
@@ -143,8 +136,9 @@ export default function WhoAndPaymentStepSimple({
 
   const applyItemUpdates = useCallback(
     (items: typeof selectedItems) => {
-      // Save scroll position before update
-      const scrollY = window.scrollY;
+      // Save scroll position before update (mobile only)
+      const isMobile = window.innerWidth < 768;
+      const scrollY = isMobile ? window.scrollY : undefined;
       
       const sanitizedItems = (items || [])
         .map((item) => ({
@@ -157,10 +151,12 @@ export default function WhoAndPaymentStepSimple({
         items: sanitizedItems.map((item) => ({ ...item })),
       });
       
-      // Restore scroll position after update
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
+      // Restore scroll position after update (mobile only)
+      if (isMobile && scrollY !== undefined) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+        });
+      }
     },
     [updateFormData]
   );
@@ -211,8 +207,9 @@ export default function WhoAndPaymentStepSimple({
   );
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
-    // Save scroll position before update
-    const scrollY = window.scrollY;
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
     
     updateFormData('step2', {
       customerDetails: {
@@ -221,16 +218,19 @@ export default function WhoAndPaymentStepSimple({
       }
     });
     
-    // Restore scroll position after update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
   }, [formData.step2.customerDetails, updateFormData]);
   
   // Handle service selection change - just update selected service (no price recalculation)
   const handleServiceChange = useCallback((serviceId: 'economy' | 'standard' | 'express') => {
-    // Save scroll position before update
-    const scrollY = window.scrollY;
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
     
     setSelectedService(serviceId);
     
@@ -243,10 +243,12 @@ export default function WhoAndPaymentStepSimple({
     
     console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
     
-    // Restore scroll position after update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
   }, [safeEconomyPrice, safeStandardPrice, safeExpressPrice]);
 
   // CRITICAL: Use calculated prices (not static props)
@@ -408,11 +410,16 @@ export default function WhoAndPaymentStepSimple({
                 Choose Your Service
               </Text>
 
-              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+              <Box
+                display="grid"
+                gridTemplateColumns="repeat(3, 1fr)"
+                gap={{ base: 2, sm: 3, md: 4 }}
+                w="full"
+              >
                 {services.map((service) => (
                   <Box
                     key={service.id}
-                    p={5}
+                    p={{ base: 3, sm: 4, md: 5 }}
                     borderRadius="xl"
                     border="2px solid"
                     borderColor={selectedService === service.id ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
@@ -425,17 +432,18 @@ export default function WhoAndPaymentStepSimple({
                       bg: 'rgba(59, 130, 246, 0.05)',
                     }}
                     position="relative"
+                    minH={{ base: "160px", sm: "180px", md: "auto" }}
                   >
                     {service.popular && (
                       <Badge
                         position="absolute"
-                        top={-2}
-                        right={-2}
+                        top={{ base: -1, md: -2 }}
+                        right={{ base: -1, md: -2 }}
                         bg="blue.500"
                         color="white"
-                        fontSize="2xs"
-                        px={2}
-                        py={1}
+                        fontSize="3xs"
+                        px={{ base: 1.5, md: 2 }}
+                        py={{ base: 0.5, md: 1 }}
                         borderRadius="full"
                       >
                         Popular
@@ -444,13 +452,13 @@ export default function WhoAndPaymentStepSimple({
                     {service.discount && (
                       <Badge
                         position="absolute"
-                        top={-2}
-                        left={-2}
+                        top={{ base: -1, md: -2 }}
+                        left={{ base: -1, md: -2 }}
                         bg="green.500"
                         color="white"
-                        fontSize="2xs"
-                        px={2}
-                        py={1}
+                        fontSize="3xs"
+                        px={{ base: 1.5, md: 2 }}
+                        py={{ base: 0.5, md: 1 }}
                         borderRadius="full"
                       >
                         {service.discount}
@@ -459,35 +467,49 @@ export default function WhoAndPaymentStepSimple({
                     {service.premium && (
                       <Badge
                         position="absolute"
-                        top={-2}
-                        left={-2}
+                        top={{ base: -1, md: -2 }}
+                        left={{ base: -1, md: -2 }}
                         bg="orange.500"
                         color="white"
-                        fontSize="2xs"
-                        px={2}
-                        py={1}
+                        fontSize="3xs"
+                        px={{ base: 1.5, md: 2 }}
+                        py={{ base: 0.5, md: 1 }}
                         borderRadius="full"
                       >
                         {service.premium}
                       </Badge>
                     )}
-                    <VStack spacing={3} align="start">
-                      <Text fontSize="2xl">{service.icon}</Text>
-                      <Box>
-                        <Text fontSize="md" fontWeight="bold" color="white">
+                    <VStack spacing={{ base: 2, md: 3 }} align="center" w="full">
+                      <Text fontSize={{ base: "3xl", md: "2xl" }}>{service.icon}</Text>
+                      <Box textAlign="center" w="full">
+                        <Text 
+                          fontSize={{ base: "sm", md: "md" }} 
+                          fontWeight="bold" 
+                          color="white"
+                          noOfLines={1}
+                        >
                           {service.name}
                         </Text>
-                        <Text fontSize="xs" color="gray.400">
+                        <Text 
+                          fontSize={{ base: "2xs", sm: "xs" }} 
+                          color="gray.400"
+                          noOfLines={2}
+                          lineHeight="1.3"
+                        >
                           {service.description}
                         </Text>
                       </Box>
-                      <Text fontSize="2xl" fontWeight="bold" color="white">
+                      <Text 
+                        fontSize={{ base: "xl", md: "2xl" }} 
+                        fontWeight="bold" 
+                        color="white"
+                      >
                         £{service.price.toFixed(2)}
                       </Text>
                     </VStack>
                   </Box>
                 ))}
-              </SimpleGrid>
+              </Box>
             </VStack>
           </CardBody>
         </Card>
@@ -685,11 +707,14 @@ export default function WhoAndPaymentStepSimple({
                 <Checkbox
                   isChecked={acceptedTerms}
                   onChange={(e) => {
-                    const scrollY = window.scrollY;
+                    const isMobile = window.innerWidth < 768;
+                    const scrollY = isMobile ? window.scrollY : undefined;
                     setAcceptedTerms(e.target.checked);
-                    requestAnimationFrame(() => {
-                      window.scrollTo(0, scrollY);
-                    });
+                    if (isMobile && scrollY !== undefined) {
+                      requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                      });
+                    }
                   }}
                   colorScheme="blue"
                   color="gray.300"
@@ -714,11 +739,14 @@ export default function WhoAndPaymentStepSimple({
                 <Checkbox
                   isChecked={acceptedPrivacy}
                   onChange={(e) => {
-                    const scrollY = window.scrollY;
+                    const isMobile = window.innerWidth < 768;
+                    const scrollY = isMobile ? window.scrollY : undefined;
                     setAcceptedPrivacy(e.target.checked);
-                    requestAnimationFrame(() => {
-                      window.scrollTo(0, scrollY);
-                    });
+                    if (isMobile && scrollY !== undefined) {
+                      requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                      });
+                    }
                   }}
                   colorScheme="blue"
                   color="gray.300"

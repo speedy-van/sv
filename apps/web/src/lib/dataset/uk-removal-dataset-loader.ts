@@ -101,11 +101,18 @@ export async function loadRemovalDataset(): Promise<RemovalDataset> {
   }
 
   try {
-    // Load from public folder
-    const response = await fetch('/UK_Removal_Dataset/items_dataset.json');
+    // Load from public folder - use absolute URL for both client and server
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const datasetUrl = `${baseUrl}/UK_Removal_Dataset/items_dataset.json`;
+    
+    console.log('[UK Dataset] Loading from:', datasetUrl);
+    const response = await fetch(datasetUrl, {
+      cache: 'force-cache', // Cache for performance
+      next: { revalidate: 3600 } // Revalidate every hour
+    });
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch dataset: ${response.statusText}`);
+      throw new Error(`Failed to fetch dataset (${response.status}): ${response.statusText}`);
     }
 
     const rawData = await response.json();

@@ -12,7 +12,12 @@ export default function PublicLayout({
     <>
       <SkipLink />
       <Box
-        minH="100dvh"
+        sx={{
+          minHeight: '100svh',
+          '@supports not (height: 100svh)': {
+            minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          },
+        }}
         display="grid"
         gridTemplateRows="auto 1fr"
         w="100%"

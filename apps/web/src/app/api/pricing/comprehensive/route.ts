@@ -149,40 +149,26 @@ async function transformRequestToPricingInput(
   
   const transformedItems = await Promise.all(
     itemsToTransform.map(async (item) => {
-      // Find dataset item by ID or name
-      const datasetItem = dataset.find((ds: any) =>
-        ds.id === item.id || ds.name?.toLowerCase() === item.name?.toLowerCase()
+      // Import the mapper at runtime to avoid circular dependencies
+      const { findDatasetItemById, createFallbackDatasetItem } = await import('@/lib/dataset/item-id-mapper');
+      
+      // Find dataset item using smart matching
+      const datasetItem = findDatasetItemById(
+        item.id,
+        item.name,
+        { items: dataset, metadata: { version: '1.0', date: '', total_items: dataset.length, categories: 0 } }
       );
 
       if (!datasetItem) {
         // Create fallback dataset item if not found
-        console.warn(`⚠️ Item not found in dataset: ${item.name} (${item.id}), using fallback`);
-        const fallbackDatasetItem = {
-          id: item.id,
-          name: item.name,
-          category: 'furniture',
-          filename: 'default.jpg',
-          keywords: [],
-          dimensions: '100x100x100',
-          weight: item.weight_override || 10,
-          volume: String(item.volume_override || 0.1),
-          workers_required: 2 as const,
-          dismantling_required: 'No' as const,
-          dismantling_time_minutes: 0,
-          reassembly_time_minutes: 0,
-          luton_van_fit: true,
-          van_capacity_estimate: 0.1,
-          load_priority: 'Mid-load' as const,
-          fragility_level: 'Low' as const,
-          stackability: 'Yes' as const,
-          packaging_requirement: 'None' as const,
-          special_handling_notes: '',
-          unload_difficulty: 'Easy' as const,
-          door_width_clearance_cm: 80,
-          staircase_compatibility: 'Yes' as const,
-          elevator_requirement: 'Not needed' as const,
-          insurance_category: 'Standard' as const
-        };
+        console.warn(`⚠️ Item not found in dataset: ${item.name} (${item.id}), using smart fallback`);
+        const { createFallbackDatasetItem } = await import('@/lib/dataset/item-id-mapper');
+        const fallbackDatasetItem = createFallbackDatasetItem(
+          item.id,
+          item.name,
+          item.weight_override,
+          item.volume_override
+        );
 
         // Calculate basic costs
         const laborCost = (fallbackDatasetItem.workers_required * 18 * 0.5) * item.quantity; // £18/hour, 0.5 hours

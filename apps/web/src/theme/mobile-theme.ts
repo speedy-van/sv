@@ -542,22 +542,22 @@ const components = {
     },
     sizes: {
       xs: {
-        dialog: { maxW: { base: '100vw', md: 'xs' } },
+        dialog: { maxW: { base: '100%', md: 'xs' } },
       },
       sm: {
-        dialog: { maxW: { base: '100vw', md: 'sm' } },
+        dialog: { maxW: { base: '100%', md: 'sm' } },
       },
       md: {
-        dialog: { maxW: { base: '100vw', md: 'md' } },
+        dialog: { maxW: { base: '100%', md: 'md' } },
       },
       lg: {
-        dialog: { maxW: { base: '100vw', md: 'lg' } },
+        dialog: { maxW: { base: '100%', md: 'lg' } },
       },
       xl: {
-        dialog: { maxW: { base: '100vw', md: 'xl' } },
+        dialog: { maxW: { base: '100%', md: 'xl' } },
       },
       full: {
-        dialog: { maxW: '100vw', h: '100vh' },
+        dialog: { maxW: '100%', h: '100vh' },
       },
     },
   },

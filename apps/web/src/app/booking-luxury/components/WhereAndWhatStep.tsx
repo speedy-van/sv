@@ -198,8 +198,9 @@ export default function WhereAndWhatStep({
 
   // Handlers
   const addItem = (item: any) => {
-    // Save scroll position before update
-    const scrollY = window.scrollY;
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
     
     const currentItems = step1.items || [];
     const existingItem = currentItems.find((i: any) => i.id === item.id);
@@ -218,15 +219,18 @@ export default function WhereAndWhatStep({
       });
     }
     
-    // Restore scroll position after update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
   };
 
   const removeItem = (itemId: any) => {
-    // Save scroll position before update
-    const scrollY = window.scrollY;
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
     
     const currentItems = step1.items || [];
     const filteredItems = currentItems.filter((i: any) => i.id !== itemId);
@@ -235,15 +239,18 @@ export default function WhereAndWhatStep({
       items: [...filteredItems]
     });
     
-    // Restore scroll position after update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
   };
 
   const updateQuantity = (itemId: any, quantity: number, item?: any) => {
-    // Save scroll position before update
-    const scrollY = window.scrollY;
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
     
     if (quantity === 0) {
       removeItem(itemId);
@@ -273,10 +280,12 @@ export default function WhereAndWhatStep({
       }
     }
     
-    // Restore scroll position after update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
   };
 
   const getItemQuantity = (itemId: any) => {
@@ -306,151 +315,113 @@ export default function WhereAndWhatStep({
           style={{ display: 'flex', flexDirection: 'column' } as React.CSSProperties}
         >
           {step1.items.map((item) => (
-            <HStack
+            <Box
               key={item.id}
-              justify="space-between"
               w="full"
-              p={3}
-              bg="linear-gradient(135deg, rgba(31, 41, 55, 0.6) 0%, rgba(26, 32, 44, 0.4) 100%)"
-              borderRadius="lg"
+              p={{ base: 2, md: 3 }}
+              bg="rgba(17, 24, 39, 0.95)"
+              borderRadius="xl"
               border="1px solid"
               borderColor="rgba(16, 185, 129, 0.2)"
-              flexWrap="nowrap"
-              spacing={3}
-              className="selected-item-card"
-              style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' } as React.CSSProperties}
+              _hover={{
+                borderColor: "rgba(16, 185, 129, 0.4)",
+                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.15)",
+              }}
+              transition="all 0.2s"
             >
-              <HStack
-                spacing={3}
-                flex={1}
-                minW={0}
-                overflow="hidden"
-                className="selected-item-content"
-                style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' } as React.CSSProperties}
-              >
+              {/* Item Image */}
+              <HStack spacing={3} mb={2}>
                 {item.image && (
                   <Box
-                    w={{ base: "40px", md: "50px" }}
-                    h={{ base: "40px", md: "50px" }}
-                    borderRadius="md"
+                    w={{ base: "60px", md: "70px" }}
+                    h={{ base: "60px", md: "70px" }}
+                    borderRadius="lg"
                     overflow="hidden"
-                    bg="rgba(17, 24, 39, 0.6)"
                     flexShrink={0}
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
                   >
                     <Image
                       src={item.image}
                       alt={item.name}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
+                      width={70}
+                      height={70}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   </Box>
                 )}
-                <VStack
-                  align="start"
-                  spacing={0}
-                  flex={1}
-                  minW={0}
-                  overflow="hidden"
-                  maxW="100%"
-                  className="selected-item-text"
-                  style={{ display: 'flex', flexDirection: 'column', flexWrap: 'nowrap' } as React.CSSProperties}
-                >
-                  <Box
-                    as="span"
+                
+                {/* Item Name & Weight */}
+                <VStack align="start" spacing={1} flex={1}>
+                  <Text
                     color="white"
-                    fontWeight="medium"
-                    fontSize={{ base: "sm", md: "md" }}
-                    width="100%"
-                    className="selected-item-name"
-                    style={{
-                      whiteSpace: 'normal',
-                      wordBreak: 'break-word',
-                      wordWrap: 'break-word',
-                      overflowWrap: 'break-word',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'block',
-                      lineHeight: '1.4',
-                      maxHeight: '2.8em',
-                      writingMode: 'horizontal-tb',
-                      textOrientation: 'mixed',
-                      direction: 'ltr',
-                      unicodeBidi: 'normal',
-                    } as React.CSSProperties}
-                    sx={{
-                      whiteSpace: 'normal !important',
-                      wordBreak: 'break-word !important',
-                      wordWrap: 'break-word !important',
-                      overflowWrap: 'break-word !important',
-                      overflow: 'hidden !important',
-                      textOverflow: 'ellipsis !important',
-                      display: 'block !important',
-                      lineHeight: '1.4 !important',
-                      maxHeight: '2.8em !important',
-                      writingMode: 'horizontal-tb !important',
-                      textOrientation: 'mixed !important',
-                      direction: 'ltr !important',
-                      unicodeBidi: 'normal !important',
-                    }}
+                    fontWeight="bold"
+                    fontSize={{ base: "md", md: "lg" }}
+                    noOfLines={2}
                   >
                     {item.name}
-                  </Box>
+                  </Text>
                   {item.weight && (
-                    <Text
-                      fontSize="xs"
-                      color="gray.400"
-                      whiteSpace="nowrap"
-                      overflow="hidden"
-                      textOverflow="ellipsis"
-                      className="selected-item-weight"
-                      sx={{
-                        whiteSpace: 'nowrap !important',
-                        overflow: 'hidden !important',
-                        textOverflow: 'ellipsis !important',
-                      }}
-                    >
-                      {item.weight}kg
-                    </Text>
+                    <HStack spacing={1}>
+                      <Text fontSize="xs" color="gray.400">Weight:</Text>
+                      <Text fontSize="sm" color="green.400" fontWeight="semibold">
+                        {item.weight}kg
+                      </Text>
+                    </HStack>
                   )}
                 </VStack>
               </HStack>
 
-              <HStack spacing={2}>
-                <IconButton
-                  size="sm"
-                  icon={<FaMinus />}
-                  onClick={() => updateQuantity(item.id, item.quantity - 1, item)}
-                  bg="rgba(107, 114, 128, 0.5)"
-                  color="white"
-                  border="1px solid"
-                  borderColor="rgba(107, 114, 128, 0.3)"
-                  _hover={{ bg: "rgba(107, 114, 128, 0.7)" }}
-                  aria-label="Decrease quantity"
-                />
-                <Text color="white" fontWeight="bold" minW="30px" textAlign="center" fontSize={{ base: "sm", md: "md" }}>
-                  {item.quantity}
+              {/* Quantity Controls */}
+              <HStack 
+                justify="space-between" 
+                bg="rgba(31, 41, 55, 0.6)"
+                p={2}
+                borderRadius="lg"
+              >
+                <Text fontSize="sm" color="gray.300" fontWeight="medium">
+                  Quantity:
                 </Text>
-                <IconButton
-                  size="sm"
-                  icon={<FaPlus />}
-                  onClick={() => updateQuantity(item.id, item.quantity + 1, item)}
-                  bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                  color="white"
-                  _hover={{ bg: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
-                  aria-label="Increase quantity"
-                />
-                <IconButton
-                  size="sm"
-                  icon={<FaTrash />}
-                  onClick={() => removeItem(item.id)}
-                  bg="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
-                  color="white"
-                  _hover={{ bg: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)" }}
-                  aria-label="Remove item"
-                />
+                <HStack spacing={2}>
+                  <IconButton
+                    size="sm"
+                    icon={<FaMinus />}
+                    onClick={() => updateQuantity(item.id, item.quantity - 1, item)}
+                    bg="rgba(107, 114, 128, 0.6)"
+                    color="white"
+                    _hover={{ bg: "rgba(107, 114, 128, 0.8)" }}
+                    aria-label="Decrease quantity"
+                    borderRadius="md"
+                    minW="32px"
+                    h="32px"
+                  />
+                  <Text 
+                    color="white" 
+                    fontWeight="bold" 
+                    fontSize="lg"
+                    minW="40px"
+                    textAlign="center"
+                    bg="rgba(16, 185, 129, 0.1)"
+                    px={3}
+                    py={1}
+                    borderRadius="md"
+                  >
+                    {item.quantity}
+                  </Text>
+                  <IconButton
+                    size="sm"
+                    icon={<FaPlus />}
+                    onClick={() => updateQuantity(item.id, item.quantity + 1, item)}
+                    bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                    color="white"
+                    _hover={{ bg: "linear-gradient(135deg, #059669 0%, #047857 100%)" }}
+                    aria-label="Increase quantity"
+                    borderRadius="md"
+                    minW="32px"
+                    h="32px"
+                  />
+                </HStack>
               </HStack>
-            </HStack>
+            </Box>
           ))}
         </VStack>
 

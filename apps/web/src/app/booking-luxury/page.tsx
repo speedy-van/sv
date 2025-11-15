@@ -259,13 +259,7 @@ export default function BookingLuxuryPage() {
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [
-    formData.step1.pickupAddress?.address,
-    formData.step1.pickupAddress?.houseNumber,
-    formData.step1.pickupAddress?.coordinates,
-    formData.step1.dropoffAddress,
-    formData.step1.items
-  ]);
+  }, [formData.step1]);
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -273,15 +267,7 @@ export default function BookingLuxuryPage() {
   }, []);
 
   // Removed aggressive scroll prevention that was causing multiple scroll-up issues
-
-  // Auto-trigger pricing when relevant data changes
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      calculateComprehensivePricing();
-    }, 500); // Debounce API calls
-
-    return () => clearTimeout(timeoutId);
-  }, [calculateComprehensivePricing]);
+  // Removed duplicate pricing trigger - pricing is already triggered by items/addresses useEffect below
 
   // Three-tier pricing calculations (fallback for legacy)
   const calculateEconomyPrice = useCallback(() => {
@@ -437,7 +423,10 @@ export default function BookingLuxuryPage() {
     };
   }, [currentStep]);
 
-  // Calculate pricing whenever items or addresses change (only if both addresses are available with coordinates)
+  // Calculate pricing with debouncing to prevent excessive API calls
+  // Use refs to track if we need to recalculate
+  const lastPricingData = useRef<string>('');
+  
   useEffect(() => {
     const hasPickupAddress = formData.step1.pickupAddress?.full || formData.step1.pickupAddress?.line1 || formData.step1.pickupAddress?.address || formData.step1.pickupAddress?.formatted_address;
     const hasDropoffAddress = formData.step1.dropoffAddress?.full || formData.step1.dropoffAddress?.line1 || formData.step1.dropoffAddress?.address || formData.step1.dropoffAddress?.formatted_address;
@@ -458,11 +447,29 @@ export default function BookingLuxuryPage() {
         hasDropoffAddress &&
         hasValidPickupCoordinates &&
         hasValidDropoffCoordinates) {
-      calculatePricing().catch(error => {
-        console.error('Failed to calculate pricing:', error);
+      
+      // Create a hash of relevant data to detect actual changes
+      const currentData = JSON.stringify({
+        items: formData.step1.items.map(i => ({ id: i.id, quantity: i.quantity })),
+        pickup: { lat: formData.step1.pickupAddress?.coordinates?.lat, lng: formData.step1.pickupAddress?.coordinates?.lng },
+        dropoff: { lat: formData.step1.dropoffAddress?.coordinates?.lat, lng: formData.step1.dropoffAddress?.coordinates?.lng }
       });
+      
+      // Only trigger if data actually changed
+      if (currentData !== lastPricingData.current) {
+        lastPricingData.current = currentData;
+        
+        // Debounce pricing calculation to prevent excessive API calls
+        const timeoutId = setTimeout(() => {
+          calculatePricing().catch(error => {
+            console.error('Failed to calculate pricing:', error);
+          });
+        }, 800); // Wait 800ms after last change before calculating
+        
+        return () => clearTimeout(timeoutId);
+      }
     }
-  }, [isClient, formData.step1.items, formData.step1.pickupAddress, formData.step1.dropoffAddress, calculatePricing]);
+  }, [isClient, formData.step1, calculatePricing]);
 
 
 
@@ -593,26 +600,40 @@ export default function BookingLuxuryPage() {
     // Extract from displayText or full (Google format: "22 Sword St, Glasgow G31 1TD, UK")
     const firstPart = full.split(',')[0]?.trim() || '';
     
-    // Extract street number
+    // Extract street number with improved pattern matching
     let number = components.street_number || components.house_number || addr.houseNumber || addr.number || '';
     if (!number && firstPart) {
-      const match = firstPart.match(/^(\d+[a-zA-Z]?)\s/);
+      // Match patterns like: "22", "22A", "22-24", "Flat 5, 22"
+      const match = firstPart.match(/(?:Flat\s+\d+,?\s+)?(\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?)/);
       if (match) {
         number = match[1];
       }
     }
-    if (!number) number = '1'; // Fallback
+    // If still no number, try to extract from any part of the address
+    if (!number) {
+      const numberMatch = full.match(/\b(\d+[a-zA-Z]?)\b/);
+      if (numberMatch) {
+        number = numberMatch[1];
+      }
+    }
+    if (!number) number = '1'; // Final fallback
     
-    // Extract street name
+    // Extract street name with improved logic
     let street = components.route || components.road || components.street || addr.street || '';
-    if (!street && firstPart && number) {
-      // Remove number from firstPart to get street (e.g., "22 Sword St" -> "Sword St")
-      street = firstPart.replace(/^\d+[a-zA-Z]?\s+/, '').trim();
-    }
     if (!street && firstPart) {
-      street = firstPart;
+      // Remove number and any prefix (like "Flat 5,") to get street name
+      street = firstPart
+        .replace(/^(?:Flat\s+\d+,?\s+)?\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?\s*,?\s*/, '')
+        .trim();
     }
-    if (!street) street = 'Main Street'; // Fallback
+    // If street is empty but we have full address, use the first meaningful part
+    if (!street && full) {
+      const parts = full.split(',');
+      if (parts.length > 0) {
+        street = parts[0].replace(/^\d+[a-zA-Z]?\s+/, '').trim() || 'Main Street';
+      }
+    }
+    if (!street) street = 'Main Street'; // Final fallback
     
     // Extract city
     const city = 
@@ -665,12 +686,16 @@ export default function BookingLuxuryPage() {
     <Box 
       display="block" 
       w="100%" 
-      minH="100dvh" 
       bg={bgColor} 
       py={{ base: 0, md: 8 }} 
       pb={{ base: "80px", md: 8 }}
       suppressHydrationWarning
       sx={{
+        // Fix for iPhone 14 Pro Max Dynamic Island
+        minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        '@supports not (padding: env(safe-area-inset-top))': {
+          minHeight: '100vh',
+        },
         // Prevent scroll jump on re-render
         scrollBehavior: 'auto',
         overflowAnchor: 'none',
@@ -699,6 +724,13 @@ export default function BookingLuxuryPage() {
             mb={{ base: 3, md: 6 }}
             mx={{ base: -2, md: 0 }}
             px={{ base: 2, md: 0 }}
+            sx={{
+              // Safe Area for iPhone 14 Pro Max Dynamic Island
+              paddingTop: 'max(0.5rem, env(safe-area-inset-top))',
+              '@supports not (padding: env(safe-area-inset-top))': {
+                paddingTop: '0.5rem',
+              },
+            }}
           >
             <VStack spacing={2} w="full" data-booking-header>
               {/* Top: Call Button - Right Aligned */}

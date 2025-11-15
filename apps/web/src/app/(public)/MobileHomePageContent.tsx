@@ -203,13 +203,19 @@ const MobileHero: React.FC = () => {
     <Box
       className="mobile-hero"
       position="relative"
-      minH={{ base: '100dvh', md: '100vh' }}
-      h={{ base: '100dvh', md: '100vh' }}
       display="flex"
       alignItems="center"
       overflow="hidden"
       w="100%"
-      maxW="100vw"
+      maxW="100%"
+      sx={{
+        minHeight: { base: '100svh', md: '100vh' },
+        height: { base: '100svh', md: '100vh' },
+        '@supports not (height: 100svh)': {
+          minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+          height: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        },
+      }}
     >
       {/* Video Background - Now shows on all screen sizes */}
       {(
@@ -1139,7 +1145,7 @@ const MobileCTA: React.FC = () => {
 // Main Mobile Home Page Component
 export default function MobileHomePageContent() {
   return (
-    <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100vw" overflowX="hidden" suppressHydrationWarning>
+    <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100%" overflowX="hidden" suppressHydrationWarning>
       {/* Mobile Header with scroll behavior */}
       <MobileHeader />
       

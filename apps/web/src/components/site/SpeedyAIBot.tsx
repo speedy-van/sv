@@ -60,10 +60,12 @@ export default function SpeedyAIBot() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hi! 👋 I\'m Speedy AI, your moving assistant. I can help you get an instant quote for your move. Where are you moving from?',
+      content: "Hi! I'm Speedy AI. I'll get you an instant moving quote. Where are you moving from?",
       timestamp: new Date(),
     },
   ]);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
@@ -189,6 +191,10 @@ export default function SpeedyAIBot() {
         };
 
         setMessages((prev) => [...prev, aiMessage]);
+        
+        // Update progress step
+        setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+        
         if (ttsEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
           try {
             const utter = new SpeechSynthesisUtterance(data.message);
@@ -571,7 +577,7 @@ export default function SpeedyAIBot() {
                 bgClip="text"
                 fontWeight="bold"
               >
-                Ask me! 💬
+                Need a quote?
               </Box>
               
               {/* Animated White Wave Light Effect */}
@@ -622,8 +628,19 @@ export default function SpeedyAIBot() {
             left={{ base: 0, md: 'auto' }}
             w={{ base: '100%', md: '400px' }}
             h={{ base: '100%', md: '600px' }}
-            maxH={{ base: '100dvh', md: '600px' }}
             bg="white"
+            sx={{
+              '@media (max-width: 768px)': {
+                maxHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+                height: '100svh',
+              },
+              '@media (min-width: 769px)': {
+                maxHeight: '600px',
+              },
+              '@supports not (height: 100svh)': {
+                height: '100vh',
+              },
+            }}
             borderRadius={{ base: '0', md: 'xl' }}
             shadow="2xl"
             flexDirection="column"
@@ -663,39 +680,18 @@ export default function SpeedyAIBot() {
                     fontWeight="extrabold" 
                     fontSize={{ base: 'lg', md: 'xl' }}
                     letterSpacing="tight"
-                    bgGradient="linear(to-r, white, cyan.100, white)"
-                    bgClip="text"
-                    textShadow="0 2px 10px rgba(255,255,255,0.3)"
+                    color="white"
+                    textShadow="0 2px 10px rgba(0,0,0,0.2)"
                     fontFamily="'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
                   >
                     Speedy AI
                   </Text>
-                  <HStack spacing={1} fontSize="xs">
-                    <Box w={2} h={2} bg="green.300" borderRadius="full" 
-                      animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
-                      sx={{
-                        '@keyframes pulse': {
-                          '0%, 100%': { opacity: 1 },
-                          '50%': { opacity: 0.5 },
-                        },
-                      }}
-                    />
-                    <Text fontWeight="medium" color="whiteAlpha.900">Online</Text>
-                  </HStack>
+                  <Text fontSize="xs" color="whiteAlpha.900" fontWeight="medium">
+                    Get accurate quotes in 2 minutes
+                  </Text>
                 </Box>
               </HStack>
               <HStack spacing={1}>
-                <IconButton
-                  aria-label={ttsEnabled ? 'Disable voice replies' : 'Enable voice replies'}
-                  icon={<Box as="span" fontSize="lg">{ttsEnabled ? '🔊' : '🔇'}</Box>}
-                  size={{ base: 'md', md: 'sm' }}
-                  variant="ghost"
-                  color="white"
-                  _hover={{ bg: 'whiteAlpha.300' }}
-                  _active={{ bg: 'whiteAlpha.400' }}
-                  onClick={toggleTts}
-                  title={ttsEnabled ? 'Voice replies on' : 'Voice replies off'}
-                />
                 <IconButton
                   aria-label="Close chat"
                   icon={<FiX />}
@@ -708,6 +704,41 @@ export default function SpeedyAIBot() {
                 />
               </HStack>
             </Flex>
+
+            {/* Progress Indicator */}
+            <Box bg="white" px={4} py={3} borderBottom="1px" borderColor="gray.200">
+              <HStack justify="space-between" mb={2}>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                  Step {currentStep} of {totalSteps}
+                </Text>
+                <Text fontSize="xs" color="gray.500">
+                  ~{Math.max(1, totalSteps - currentStep + 1)} min left
+                </Text>
+              </HStack>
+              <Box w="full" h="2" bg="gray.200" borderRadius="full" overflow="hidden">
+                <Box 
+                  h="full" 
+                  bg="blue.500" 
+                  borderRadius="full"
+                  w={`${(currentStep / totalSteps) * 100}%`}
+                  transition="width 0.3s ease"
+                />
+              </Box>
+            </Box>
+
+            {/* Trust Signals */}
+            <Box bg="blue.50" px={4} py={2} borderBottom="1px" borderColor="gray.200">
+              <HStack spacing={4} fontSize="xs" color="gray.700" justify="center">
+                <HStack spacing={1}>
+                  <Icon as={FiCheckCircle} color="green.500" />
+                  <Text fontWeight="medium">No obligation quote</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Text>⭐</Text>
+                  <Text fontWeight="medium">4.9/5 (2,400+ reviews)</Text>
+                </HStack>
+              </HStack>
+            </Box>
 
             {/* Messages - Fixed Layout */}
             <Box
@@ -745,7 +776,6 @@ export default function SpeedyAIBot() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    mb={2}
                   >
                     {message.role === 'assistant' && (
                       <Box flexShrink={0} mt={1}>
@@ -754,19 +784,25 @@ export default function SpeedyAIBot() {
                     )}
                     
                     <Box
-                      maxW={{ base: '75%', md: '70%' }}
+                      maxW={{ base: '85%', md: '75%' }}
                       bg={message.role === 'user' ? 'blue.500' : 'white'}
-                      color={message.role === 'user' ? 'white' : 'black'}
-                      px={{ base: 3, md: 4 }}
-                      py={{ base: 2.5, md: 3 }}
-                      borderRadius="lg"
+                      color={message.role === 'user' ? 'white' : 'gray.800'}
+                      px={{ base: 4, md: 4 }}
+                      py={{ base: 3, md: 3 }}
+                      borderRadius="xl"
                       shadow="sm"
-                      fontSize={{ base: 'sm', md: 'sm' }}
-                      fontWeight="500"
+                      border={message.role === 'user' ? 'none' : '1px'}
+                      borderColor="gray.200"
+                      fontSize={{ base: 'md', md: 'md' }}
+                      fontWeight="normal"
                       whiteSpace="pre-wrap"
                       wordBreak="break-word"
                       lineHeight="1.5"
                       position="relative"
+                      sx={{
+                        borderBottomLeftRadius: message.role === 'assistant' ? '4px' : undefined,
+                        borderBottomRightRadius: message.role === 'user' ? '4px' : undefined,
+                      }}
                     >
                       {message.content}
                     </Box>
@@ -792,6 +828,33 @@ export default function SpeedyAIBot() {
                       </HStack>
                     </Box>
                   </Flex>
+                )}
+
+                {/* Quick Reply Buttons - Show on first message only */}
+                {messages.length === 1 && !isLoading && (
+                  <VStack spacing={2} align="stretch" w="full" px={2}>
+                    <Text fontSize="xs" color="gray.500" fontWeight="medium" px={2}>
+                      Popular UK Cities:
+                    </Text>
+                    <Flex gap={2} flexWrap="wrap">
+                      {['London', 'Manchester', 'Birmingham', 'Edinburgh', 'Glasgow', 'Bristol'].map((city) => (
+                        <Button
+                          key={city}
+                          size="sm"
+                          variant="outline"
+                          colorScheme="blue"
+                          onClick={() => handleSendMessage(city)}
+                          fontSize="sm"
+                          fontWeight="medium"
+                          borderRadius="full"
+                          px={4}
+                          _hover={{ bg: 'blue.50', borderColor: 'blue.400' }}
+                        >
+                          {city}
+                        </Button>
+                      ))}
+                    </Flex>
+                  </VStack>
                 )}
                 
                 <div ref={messagesEndRef} />
@@ -930,47 +993,6 @@ export default function SpeedyAIBot() {
                 gap={2}
                 align="center"
               >
-                {!!pendingFiles.length && (
-                  <HStack spacing={2} align="center">
-                    {pendingFiles.slice(0,3).map((f, idx) => (
-                      <Box key={idx} border="1px solid" borderColor="gray.200" borderRadius="md" p={1}>
-                        {f.url ? (
-                          <Box as="img" src={f.url} alt={f.name} w="36px" h="36px" objectFit="cover" borderRadius="sm" />
-                        ) : (
-                          <Text fontSize="xs" maxW="80px" noOfLines={1}>{f.name}</Text>
-                        )}
-                      </Box>
-                    ))}
-                  </HStack>
-                )}
-                
-                {/* Plus Button - Toggle Actions */}
-                <IconButton
-                  aria-label="Toggle actions"
-                  icon={
-                    <Box 
-                      as="span" 
-                      fontSize="3xl" 
-                      fontWeight="bold"
-                      transform={isActionsExpanded ? 'rotate(45deg)' : 'rotate(0deg)'}
-                      transition="transform 0.2s"
-                      color="blue.600"
-                    >
-                      +
-                    </Box>
-                  }
-                  colorScheme="blue"
-                  variant="solid"
-                  size="lg"
-                  onClick={() => setIsActionsExpanded(!isActionsExpanded)}
-                  _hover={{ bg: 'blue.600' }}
-                  _active={{ transform: 'scale(0.95)' }}
-                  bg="blue.500"
-                  color="white"
-                  minW="56px"
-                  height="56px"
-                />
-
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/jpg,text/plain,application/pdf" multiple onChange={handleFilesSelected} style={{ display: 'none' }} />
                 
                 <Input
@@ -978,30 +1000,31 @@ export default function SpeedyAIBot() {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={isListening ? 'Listening… speak now' : 'Type your message...'}
+                  placeholder="Type your answer here..."
                   disabled={isLoading}
                   flex={1}
+                  fontSize="16px"
                   style={{
-                    height: '56px',
-                    minHeight: '56px',
-                    fontSize: '17px',
-                    fontWeight: 600,
+                    height: '48px',
+                    minHeight: '48px',
+                    fontSize: '16px',
+                    fontWeight: 400,
                     color: '#000000',
-                    backgroundColor: '#FFFFFF',
-                    border: '2px solid #E5E7EB',
+                    backgroundColor: '#F9FAFB',
+                    border: '1px solid #D1D5DB',
                     borderRadius: '12px',
-                    padding: '0 20px',
+                    padding: '0 16px',
                   }}
                   sx={{
-                    height: '56px !important',
-                    minHeight: '56px !important',
-                    fontSize: '17px !important',
-                    fontWeight: '600 !important',
+                    height: '48px !important',
+                    minHeight: '48px !important',
+                    fontSize: '16px !important',
+                    fontWeight: '400 !important',
                     color: '#000000 !important',
-                    backgroundColor: '#FFFFFF !important',
-                    border: '2px solid #E5E7EB !important',
+                    backgroundColor: '#F9FAFB !important',
+                    border: '1px solid #D1D5DB !important',
                     borderRadius: '12px !important',
-                    padding: '0 20px !important',
+                    padding: '0 16px !important',
                     WebkitTextFillColor: '#000000 !important',
                     '&::placeholder': {
                       color: '#9CA3AF !important',
