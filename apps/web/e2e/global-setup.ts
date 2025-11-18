@@ -180,47 +180,96 @@ async function globalSetup(config: FullConfig) {
       } as any, // Type assertion to bypass strict type checking for fields with defaults
     });
 
+    // Create booking addresses and property details first
+    const pickupAddress1 = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_pickup_test001_${Date.now()}`,
+        label: '123 Pickup Street, London, UK',
+        postcode: 'SW1A 1AA',
+        lat: 51.5074,
+        lng: -0.1278,
+      },
+    });
+
+    const dropoffAddress1 = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_dropoff_test001_${Date.now()}`,
+        label: '456 Dropoff Street, London, UK',
+        postcode: 'SW1A 1AA',
+        lat: 51.5074,
+        lng: -0.1278,
+      },
+    });
+
+    const pickupProperty1 = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_pickup_test001_${Date.now()}`,
+        propertyType: 'FLAT',
+        accessType: 'WITH_LIFT',
+        floors: 0,
+      },
+    });
+
+    const dropoffProperty1 = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_dropoff_test001_${Date.now()}`,
+        propertyType: 'FLAT',
+        accessType: 'WITH_LIFT',
+        floors: 0,
+      },
+    });
+
+    const pickupAddress2 = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_pickup_test002_${Date.now()}`,
+        label: '789 Another Pickup, London, UK',
+        postcode: 'SW1A 1AA',
+        lat: 51.5074,
+        lng: -0.1278,
+      },
+    });
+
+    const dropoffAddress2 = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_dropoff_test002_${Date.now()}`,
+        label: '321 Another Dropoff, London, UK',
+        postcode: 'SW1A 1AA',
+        lat: 51.5074,
+        lng: -0.1278,
+      },
+    });
+
+    const pickupProperty2 = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_pickup_test002_${Date.now()}`,
+        propertyType: 'FLAT',
+        accessType: 'WITH_LIFT',
+        floors: 0,
+      },
+    });
+
+    const dropoffProperty2 = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_dropoff_test002_${Date.now()}`,
+        propertyType: 'FLAT',
+        accessType: 'WITH_LIFT',
+        floors: 0,
+      },
+    });
+
     // Create test bookings
     const testBookings = await Promise.all([
       prisma.booking.create({
         data: {
+          id: `booking_test001_${Date.now()}`,
           reference: 'TEST001',
-          customer: {
-            connect: {
-              id: customerUser.id,
-            },
-          },
+          customerId: customerUser.id,
           status: 'DRAFT',
-          pickupAddress: {
-            create: {
-              label: '123 Pickup Street, London, UK',
-              postcode: 'SW1A 1AA',
-              lat: 51.5074,
-              lng: -0.1278,
-            },
-          },
-          dropoffAddress: {
-            create: {
-              label: '456 Dropoff Street, London, UK',
-              postcode: 'SW1A 1AA',
-              lat: 51.5074,
-              lng: -0.1278,
-            },
-          },
-          pickupProperty: {
-            create: {
-              propertyType: 'FLAT',
-              accessType: 'GROUND_FLOOR',
-              floors: 0,
-            },
-          },
-          dropoffProperty: {
-            create: {
-              propertyType: 'FLAT',
-              accessType: 'GROUND_FLOOR',
-              floors: 0,
-            },
-          },
+          updatedAt: new Date(),
+          pickupAddressId: pickupAddress1.id,
+          dropoffAddressId: dropoffAddress1.id,
+          pickupPropertyId: pickupProperty1.id,
+          dropoffPropertyId: dropoffProperty1.id,
           scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
           estimatedDurationMinutes: 120,
           crewSize: 'TWO',
@@ -239,43 +288,15 @@ async function globalSetup(config: FullConfig) {
       }),
       prisma.booking.create({
         data: {
+          id: `booking_test002_${Date.now()}`,
           reference: 'TEST002',
-          customer: {
-            connect: {
-              id: customerUser.id,
-            },
-          },
+          customerId: customerUser.id,
           status: 'DRAFT',
-          pickupAddress: {
-            create: {
-              label: '789 Another Pickup, London, UK',
-              postcode: 'SW1A 1AA',
-              lat: 51.5074,
-              lng: -0.1278,
-            },
-          },
-          dropoffAddress: {
-            create: {
-              label: '321 Another Dropoff, London, UK',
-              postcode: 'SW1A 1AA',
-              lat: 51.5074,
-              lng: -0.1278,
-            },
-          },
-          pickupProperty: {
-            create: {
-              propertyType: 'FLAT',
-              accessType: 'GROUND_FLOOR',
-              floors: 0,
-            },
-          },
-          dropoffProperty: {
-            create: {
-              propertyType: 'FLAT',
-              accessType: 'GROUND_FLOOR',
-              floors: 0,
-            },
-          },
+          updatedAt: new Date(),
+          pickupAddressId: pickupAddress2.id,
+          dropoffAddressId: dropoffAddress2.id,
+          pickupPropertyId: pickupProperty2.id,
+          dropoffPropertyId: dropoffProperty2.id,
           scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Day after tomorrow
           estimatedDurationMinutes: 120,
           crewSize: 'TWO',
