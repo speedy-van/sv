@@ -1,5 +1,7 @@
 name: ci
 on: [push, pull_request]
+env:
+  PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: '1'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,6 +12,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Clients
+        run: |
+          cd packages/shared && pnpm prisma generate
+          cd ../../apps/web && pnpm prisma generate
       - run: pnpm run build:packages
       - run: pnpm run typecheck
       - run: pnpm run build:apps
@@ -37,6 +43,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Clients
+        run: |
+          cd packages/shared && pnpm prisma generate
+          cd ../../apps/web && pnpm prisma generate
       - name: TypeScript type checking
         run: |
           cd apps/web
