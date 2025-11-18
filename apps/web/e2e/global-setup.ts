@@ -163,7 +163,7 @@ async function globalSetup(config: FullConfig) {
             lastSeenAt: new Date(),
             lastLat: 51.5074,
             lastLng: -0.1278,
-          },
+          } as any, // Type assertion to bypass strict type checking for fields with defaults
         },
       },
     });
