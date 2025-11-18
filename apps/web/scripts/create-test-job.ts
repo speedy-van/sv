@@ -29,7 +29,7 @@ async function createTestJob() {
         User: {
           connect: { id: driver.userId }
         }
-      }
+      } as any,
     });
 
     const dropoffAddress = await prisma.address.create({
@@ -41,7 +41,7 @@ async function createTestJob() {
         User: {
           connect: { id: driver.userId }
         }
-      }
+      } as any,
     });
 
     // Create BookingAddress and PropertyDetails first
@@ -204,7 +204,7 @@ async function createTestJob() {
         currency: 'GBP',
         calculatedAt: new Date(),
         paidOut: false
-      }
+      } as any,
     });
 
     console.log('💰 Created driver earnings:', {

@@ -70,7 +70,7 @@ async function createTestRatings() {
             review: ratingData.review,
             category: ratingData.category,
             status: 'active',
-          },
+          } as any,
         });
       }
     }

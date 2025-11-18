@@ -7,7 +7,7 @@ async function updateTestDriverStatus() {
     // Find the test driver
     const user = await prisma.user.findUnique({
       where: { email: 'driver@test.com' },
-      include: { driver: true },
+      include: { Driver: true },
     });
 
     if (!user || !user.driver) {

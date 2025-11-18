@@ -28,7 +28,7 @@ async function testAuthFeatures() {
         name: 'Reset Test User',
         password: hashedPassword,
         role: 'customer',
-      },
+      } as any,
     });
 
     console.log(`✅ Created test user: ${resetUser.email}`);
