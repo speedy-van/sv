@@ -1,0 +1,40 @@
+
+> speedy-van-monorepo@1.0.0 typecheck /home/runner/work/sv/sv
+> turbo run type-check
+
+• Packages in scope: @speedy-van/app, @speedy-van/pricing, @speedy-van/shared, @speedy-van/utils, speedy-van-driver-app
+• Running type-check in 5 packages
+• Remote caching disabled
+::group::@speedy-van/shared:type-check
+cache hit, replaying logs ed8ae90540189af3
+
+> @speedy-van/shared@1.0.0 type-check /home/runner/work/sv/sv/packages/shared
+> tsc --noEmit
+
+::endgroup::
+::group::@speedy-van/utils:type-check
+cache miss, executing a2646bcff87c729e
+
+> @speedy-van/utils@1.0.0 type-check /home/runner/work/sv/sv/packages/utils
+> tsc --noEmit
+
+::endgroup::
+::group::@speedy-van/pricing:type-check
+cache miss, executing 2dd088b9bfb9105e
+
+> @speedy-van/pricing@1.0.0 type-check /home/runner/work/sv/sv/packages/pricing
+> tsc --noEmit
+
+::endgroup::
+::group::@speedy-van/app:type-check
+cache miss, executing c428728d2c29c745
+
+> @speedy-van/app@1.0.0 type-check /home/runner/work/sv/sv/apps/web
+> tsc --noEmit
+
+::endgroup::
+
+ Tasks:    4 successful, 4 total
+Cached:    1 cached, 4 total
+  Time:    1m43.73s 
+
