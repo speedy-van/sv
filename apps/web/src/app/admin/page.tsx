@@ -139,17 +139,17 @@ async function getDashboardData() {
     updatedAt: job.updatedAt.toISOString(),
     scheduledAt: job.scheduledAt.toISOString(),
     paidAt: job.paidAt?.toISOString(),
-    driver: job.driver ? {
-      ...job.driver,
-      createdAt: job.driver.createdAt.toISOString(),
-      updatedAt: job.driver.updatedAt.toISOString(),
-      approvedAt: job.driver.approvedAt?.toISOString(),
+    driver: job.Driver ? {
+      ...job.Driver,
+      createdAt: job.Driver.createdAt.toISOString(),
+      updatedAt: job.Driver.updatedAt.toISOString(),
+      approvedAt: job.Driver.approvedAt?.toISOString(),
       user: {
-        ...job.driver.User,
-        createdAt: job.driver.User.createdAt.toISOString(),
-        lastLogin: job.driver.User.lastLogin?.toISOString(),
-        resetTokenExpiry: job.driver.User.resetTokenExpiry?.toISOString(),
-        emailVerificationExpiry: job.driver.User.emailVerificationExpiry?.toISOString(),
+        ...job.Driver.User,
+        createdAt: job.Driver.User.createdAt.toISOString(),
+        lastLogin: job.Driver.User.lastLogin?.toISOString(),
+        resetTokenExpiry: job.Driver.User.resetTokenExpiry?.toISOString(),
+        emailVerificationExpiry: job.Driver.User.emailVerificationExpiry?.toISOString(),
       },
     } : null,
   }));
