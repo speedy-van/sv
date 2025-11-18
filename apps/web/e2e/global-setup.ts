@@ -165,7 +165,7 @@ async function globalSetup(config: FullConfig) {
             lastLng: -0.1278,
           } as any, // Type assertion to bypass strict type checking for fields with defaults
         },
-      },
+      } as any, // Type assertion for auto-generated Driver fields (id, updatedAt)
     });
 
     // Create test customer user

@@ -228,7 +228,7 @@ async function createTestContent() {
           status: 'active',
           version: 1,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.emailTemplate.create({
         data: {
@@ -256,7 +256,7 @@ async function createTestContent() {
           status: 'active',
           version: 1,
           createdBy: 'system',
-        },
+        } as any,
       }),
     ]);
 
