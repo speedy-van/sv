@@ -8,7 +8,7 @@ async function createTestDriver() {
     // Check if user already exists
     let user = await prisma.user.findUnique({
       where: { email: 'deloalo99' },
-      include: { Driver: true },
+      include: { driver: true },
     });
 
     if (!user) {
@@ -23,7 +23,7 @@ async function createTestDriver() {
           role: 'driver',
           password: hashedPassword,
         } as any,
-        include: { Driver: true },
+        include: { driver: true },
       });
 
       console.log('✅ Test driver user created:', user.email);
