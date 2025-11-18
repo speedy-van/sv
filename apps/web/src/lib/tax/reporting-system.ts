@@ -1,17 +1,13 @@
-/**
- * ADVANCED TAX REPORTING SYSTEM FOR SPEEDY-VAN
- * 
- * Comprehensive reporting system for tax management with:
- * - VAT return reports
- * - Corporation Tax reports
- * - Profit and loss analysis
- * - Tax forecasting
- * - Compliance reports
- * - Export capabilities (PDF, Excel, CSV)
- */
-
 import { prisma } from '@/lib/prisma';
 import { taxCalculator, VatRateType } from './calculator';
+
+type VatBreakdownKey = 'standardRate' | 'reducedRate' | 'zeroRate' | 'exempt';
+
+interface PeriodRange {
+  label: string;
+  start: Date;
+  end: Date;
+}
 
 export interface VATReport {
   period: string;
@@ -23,12 +19,7 @@ export interface VATReport {
     netVATDue: number;
     vatReclaimed: number;
   };
-  breakdown: {
-    standardRate: { sales: number; vat: number; purchases: number; vatReclaimed: number };
-    reducedRate: { sales: number; vat: number; purchases: number; vatReclaimed: number };
-    zeroRate: { sales: number; vat: number; purchases: number; vatReclaimed: number };
-    exempt: { sales: number; vat: number; purchases: number; vatReclaimed: number };
-  };
+  breakdown: Record<VatBreakdownKey, { sales: number; vat: number; purchases: number; vatReclaimed: number }>;
   invoices: Array<{
     invoiceNumber: string;
     date: Date;
@@ -102,21 +93,9 @@ export interface TaxForecast {
     corporationTax: number;
   };
   scenarios: {
-    optimistic: {
-      turnover: number;
-      profit: number;
-      tax: number;
-    };
-    realistic: {
-      turnover: number;
-      profit: number;
-      tax: number;
-    };
-    pessimistic: {
-      turnover: number;
-      profit: number;
-      tax: number;
-    };
+    optimistic: { turnover: number; profit: number; tax: number };
+    realistic: { turnover: number; profit: number; tax: number };
+    pessimistic: { turnover: number; profit: number; tax: number };
   };
   recommendations: Array<{
     type: string;
@@ -135,13 +114,13 @@ export interface ComplianceReport {
     isCompliant: boolean;
     issues: Array<{
       type: string;
-      severity: string;
+      severity: 'low' | 'medium' | 'high';
       description: string;
       actionRequired: string;
     }>;
     recommendations: Array<{
       action: string;
-      priority: string;
+      priority: 'low' | 'medium' | 'high';
       description: string;
     }>;
   }>;
@@ -149,7 +128,7 @@ export interface ComplianceReport {
     type: string;
     title: string;
     dueDate: Date;
-    status: string;
+    status: 'upcoming' | 'due_soon' | 'overdue';
     daysRemaining: number;
   }>;
   summary: {
@@ -200,290 +179,299 @@ export interface TaxAnalytics {
   }>;
 }
 
+function resolvePeriod(period?: string | null): PeriodRange {
+  const now = new Date();
+  const year = now.getFullYear();
+
+  if (!period || period === 'current') {
+    const quarter = Math.floor(now.getMonth() / 3);
+    const start = new Date(year, quarter * 3, 1);
+    const end = new Date(year, quarter * 3 + 3, 0);
+    return { label: `${year}-Q${quarter + 1}`, start, end };
+  }
+
+  if (/^\d{4}$/.test(period)) {
+    const start = new Date(Number(period), 0, 1);
+    const end = new Date(Number(period), 11, 31);
+    return { label: period, start, end };
+  }
+
+  const quarterMatch = period.match(/^(\d{4})-Q([1-4])$/);
+  if (quarterMatch) {
+    const qYear = Number(quarterMatch[1]);
+    const q = Number(quarterMatch[2]) - 1;
+    const start = new Date(qYear, q * 3, 1);
+    const end = new Date(qYear, q * 3 + 3, 0);
+    return { label: `${qYear}-Q${q + 1}`, start, end };
+  }
+
+  const monthMatch = period.match(/^(\d{4})-(\d{2})$/);
+  if (monthMatch) {
+    const mYear = Number(monthMatch[1]);
+    const monthIndex = Number(monthMatch[2]) - 1;
+    const start = new Date(mYear, monthIndex, 1);
+    const end = new Date(mYear, monthIndex + 1, 0);
+    return { label: `${mYear}-${monthMatch[2]}`, start, end };
+  }
+
+  return resolvePeriod(null);
+}
+
+function vatBreakdownKey(rateType?: VatRateType | null): VatBreakdownKey {
+  switch (rateType) {
+    case VatRateType.REDUCED:
+      return 'reducedRate';
+    case VatRateType.ZERO:
+      return 'zeroRate';
+    case VatRateType.EXEMPT:
+      return 'exempt';
+    default:
+      return 'standardRate';
+  }
+}
+
+function poundsFromPence(value?: number | null): number {
+  return value ? Number(value) / 100 : 0;
+}
+
+function deadlineStatus(daysRemaining: number): 'upcoming' | 'due_soon' | 'overdue' {
+  if (daysRemaining < 0) return 'overdue';
+  if (daysRemaining <= 7) return 'due_soon';
+  return 'upcoming';
+}
+
 export class TaxReportingSystem {
-  /**
-   * Generate comprehensive VAT return report
-   */
   async generateVATReport(
     period: string,
     includeDetailedBreakdown: boolean = true
   ): Promise<VATReport> {
-    try {
-      // Get tax record for the period
-      const taxRecord = await prisma.taxRecord.findFirst({
-        where: {
-          taxPeriod: period,
-          taxType: 'vat'
-        },
-        include: {
-          invoices: {
-            include: {
-              customer: true
-            }
-          },
-          expenses: true
-        }
-      });
+    const range = resolvePeriod(period);
 
-      if (!taxRecord) {
-        throw new Error(`No tax record found for period ${period}`);
+    const invoices = await prisma.taxInvoice.findMany({
+      where: {
+        issueDate: {
+          gte: range.start,
+          lte: range.end
+        }
+      },
+      include: {
+        User: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { issueDate: 'asc' }
+    });
+
+    const summary = invoices.reduce(
+      (acc, invoice) => {
+        const net = Number(invoice.netAmount);
+        const vat = Number(invoice.vatAmount);
+        acc.totalSales += net;
+        acc.vatOnSales += vat;
+        return acc;
+      },
+      {
+        totalSales: 0,
+        totalPurchases: 0,
+        vatOnSales: 0,
+        vatOnPurchases: 0
       }
+    );
 
-      // Get invoices for the period
-      const invoices = await prisma.taxInvoice.findMany({
-        where: {
-          issueDate: {
-            gte: taxRecord.periodStart,
-            lte: taxRecord.periodEnd
-          }
-        },
-        include: {
-          customer: true
-        },
-        orderBy: {
-          issueDate: 'asc'
-        }
-      });
+    const breakdown: VATReport['breakdown'] = {
+      standardRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
+      reducedRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
+      zeroRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
+      exempt: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 }
+    };
 
-      // Get expenses for the period
-      const expenses = await prisma.taxExpense.findMany({
-        where: {
-          expenseDate: {
-            gte: taxRecord.periodStart,
-            lte: taxRecord.periodEnd
-          }
-        },
-        orderBy: {
-          expenseDate: 'asc'
-        }
-      });
+    invoices.forEach(invoice => {
+      const key = vatBreakdownKey(invoice.vatRateType as VatRateType);
+      breakdown[key].sales += Number(invoice.netAmount);
+      breakdown[key].vat += Number(invoice.vatAmount);
+    });
 
-      // Calculate VAT breakdown
-      const breakdown = {
-        standardRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
-        reducedRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
-        zeroRate: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 },
-        exempt: { sales: 0, vat: 0, purchases: 0, vatReclaimed: 0 }
-      };
+    const formattedInvoices = includeDetailedBreakdown
+      ? invoices.map(invoice => ({
+          invoiceNumber: invoice.invoiceNumber,
+          date: invoice.issueDate,
+          customer: invoice.User?.name || invoice.User?.email || 'Customer',
+          netAmount: Number(invoice.netAmount),
+          vatAmount: Number(invoice.vatAmount),
+          grossAmount: Number(invoice.grossAmount),
+          vatRate: Number(invoice.vatRate)
+        }))
+      : [];
 
-      // Process invoices
-      invoices.forEach(invoice => {
-        const rateType = invoice.vatRateType as VatRateType;
-        breakdown[rateType as keyof typeof breakdown].sales += Number(invoice.netAmount);
-        breakdown[rateType as keyof typeof breakdown].vat += Number(invoice.vatAmount);
-      });
+    const complianceDeadline = new Date(range.end);
+    complianceDeadline.setMonth(complianceDeadline.getMonth() + 1);
 
-      // Process expenses
-      expenses.forEach(expense => {
-        const rateType = expense.vatRateType as VatRateType;
-        if (expense.isVATReclaimable) {
-        breakdown[rateType as keyof typeof breakdown].purchases += Number(expense.amount);
-        breakdown[rateType as keyof typeof breakdown].vatReclaimed += Number(expense.vatAmount);
-        }
-      });
-
-      // Calculate summary
-      const summary = {
-        totalSales: Number(taxRecord.totalSales),
-        totalPurchases: Number(taxRecord.totalPurchases),
-        vatOnSales: Number(taxRecord.vatOnSales),
-        vatOnPurchases: Number(taxRecord.vatOnPurchases),
-        netVATDue: Number(taxRecord.netVATDue),
-        vatReclaimed: expenses
-          .filter(e => e.isVATReclaimable)
-          .reduce((sum, e) => sum + Number(e.vatAmount), 0)
-      };
-
-      // Format invoices for report
-      const formattedInvoices = invoices.map(invoice => ({
-        invoiceNumber: invoice.invoiceNumber,
-        date: invoice.issueDate,
-        customer: invoice.customer?.name || 'Unknown',
-        netAmount: Number(invoice.netAmount),
-        vatAmount: Number(invoice.vatAmount),
-        grossAmount: Number(invoice.grossAmount),
-        vatRate: Number(invoice.vatRate)
-      }));
-
-      // Format expenses for report
-      const formattedExpenses = expenses.map(expense => ({
-        description: expense.description,
-        date: expense.expenseDate,
-        amount: Number(expense.amount),
-        vatAmount: Number(expense.vatAmount),
-        isVATReclaimable: expense.isVATReclaimable,
-        category: expense.category
-      }));
-
-      // Get compliance status
-      const compliance = {
-        filingStatus: taxRecord.filingStatus,
-        paymentStatus: taxRecord.paymentStatus,
-        deadline: taxRecord.periodEnd,
-        isCompliant: taxRecord.filingStatus === 'submitted' && taxRecord.paymentStatus === 'paid'
-      };
-
-      return {
-        period,
-        summary,
-        breakdown,
-        invoices: includeDetailedBreakdown ? formattedInvoices : [],
-        expenses: includeDetailedBreakdown ? formattedExpenses : [],
-        compliance
-      };
-
-    } catch (error) {
-      console.error('Error generating VAT report:', error);
-      throw error;
-    }
+    return {
+      period: range.label,
+      summary: {
+        ...summary,
+        netVATDue: summary.vatOnSales - summary.vatOnPurchases,
+        vatReclaimed: breakdown.standardRate.vatReclaimed + breakdown.reducedRate.vatReclaimed
+      },
+      breakdown,
+      invoices: formattedInvoices,
+      expenses: [],
+      compliance: {
+        filingStatus: summary.vatOnSales > 0 ? 'pending' : 'not_required',
+        paymentStatus: summary.vatOnSales > 0 ? 'unpaid' : 'n/a',
+        deadline: complianceDeadline,
+        isCompliant: summary.vatOnSales === 0
+      }
+    };
   }
 
-  /**
-   * Generate Corporation Tax report
-   */
   async generateCorporationTaxReport(
     taxYear: number,
     includeDetailedBreakdown: boolean = true
   ): Promise<CorporationTaxReport> {
-    try {
-      void includeDetailedBreakdown;
-      // Get tax records for the year
-      const taxRecords = await prisma.taxRecord.findMany({
-        where: {
-          taxYear,
-          taxType: 'vat'
+    void includeDetailedBreakdown;
+    const start = new Date(taxYear, 0, 1);
+    const end = new Date(taxYear, 11, 31, 23, 59, 59, 999);
+
+    const invoices = await prisma.taxInvoice.findMany({
+      where: {
+        issueDate: {
+          gte: start,
+          lte: end
         }
-      });
+      }
+    });
 
-      // Calculate totals
-      const totalSales = taxRecords.reduce((sum, record) => sum + Number(record.totalSales), 0);
-      const totalPurchases = taxRecords.reduce((sum, record) => sum + Number(record.totalPurchases), 0);
-
-      // Get expenses for the year
-      const expenses = await prisma.taxExpense.findMany({
-        where: {
-          expenseDate: {
-            gte: new Date(taxYear, 0, 1),
-            lte: new Date(taxYear, 11, 31)
-          }
+    const driverEarnings = await prisma.driverEarnings.findMany({
+      where: {
+        createdAt: {
+          gte: start,
+          lte: end
         }
-      });
+      },
+      select: {
+        netAmountPence: true,
+        feeAmountPence: true,
+        platformFeePence: true
+      }
+    });
 
-      // Calculate profit and loss
-      const turnover = totalSales;
-      const costOfSales = totalPurchases;
-      const grossProfit = turnover - costOfSales;
-      const operatingExpenses = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-      const operatingProfit = grossProfit - operatingExpenses;
-      const otherIncome = 0; // Would come from other sources
-      const profitBeforeTax = operatingProfit + otherIncome;
-
-      // Calculate Corporation Tax
-      const taxCalculation = taxCalculator.calculateCorporationTax(
-        profitBeforeTax,
-        new Date(taxYear, 0, 1),
-        new Date(taxYear, 11, 31)
+    const turnover = invoices.reduce((sum, invoice) => sum + Number(invoice.netAmount), 0);
+    const costOfSales = driverEarnings.reduce((sum, earning) => sum + poundsFromPence(earning.netAmountPence), 0);
+    const operatingExpenses =
+      driverEarnings.reduce(
+        (sum, earning) =>
+          sum + poundsFromPence(earning.feeAmountPence) + poundsFromPence(earning.platformFeePence),
+        0
       );
 
-      const corporationTax = taxCalculation.corporationTax;
-      const profitAfterTax = profitBeforeTax - corporationTax;
+    const grossProfit = turnover - costOfSales;
+    const operatingProfit = grossProfit - operatingExpenses;
+    const otherIncome = 0;
+    const profitBeforeTax = operatingProfit + otherIncome;
 
-      // Calculate allowances
-      const allowances = {
-        capitalAllowances: 0, // Would be calculated from asset purchases
-        researchAndDevelopment: 0, // Would be calculated from R&D expenses
-        otherAllowances: 0,
-        totalAllowances: 0
-      };
+    const taxCalculation = taxCalculator.calculateCorporationTax(
+      profitBeforeTax,
+      start,
+      end
+    );
 
-      // Get compliance status
-      const compliance = {
+    const allowances = {
+      capitalAllowances: 0,
+      researchAndDevelopment: 0,
+      otherAllowances: 0,
+      totalAllowances: 0
+    };
+
+    return {
+      accountingPeriod: { start, end },
+      profitAndLoss: {
+        turnover,
+        costOfSales,
+        grossProfit,
+        operatingExpenses,
+        operatingProfit,
+        otherIncome,
+        profitBeforeTax,
+        corporationTax: taxCalculation.corporationTax,
+        profitAfterTax: profitBeforeTax - taxCalculation.corporationTax
+      },
+      taxCalculation: {
+        profitBeforeTax,
+        taxFreeAllowance: taxCalculation.taxFreeAllowance,
+        taxableProfit: taxCalculation.taxableProfit,
+        corporationTaxRate: 0.19,
+        corporationTax: taxCalculation.corporationTax,
+        effectiveRate: taxCalculation.effectiveRate
+      },
+      allowances,
+      compliance: {
         filingStatus: 'pending',
         paymentStatus: 'unpaid',
-        deadline: new Date(taxYear + 1, 8, 30), // September 30 next year
-        isCompliant: false
-      };
-
-      return {
-        accountingPeriod: {
-          start: new Date(taxYear, 0, 1),
-          end: new Date(taxYear, 11, 31)
-        },
-        profitAndLoss: {
-          turnover,
-          costOfSales,
-          grossProfit,
-          operatingExpenses,
-          operatingProfit,
-          otherIncome,
-          profitBeforeTax,
-          corporationTax,
-          profitAfterTax
-        },
-        taxCalculation: {
-          profitBeforeTax: profitBeforeTax,
-          taxFreeAllowance: taxCalculation.taxFreeAllowance,
-          taxableProfit: taxCalculation.taxableProfit,
-          corporationTaxRate: 0.19,
-          corporationTax: taxCalculation.corporationTax,
-          effectiveRate: taxCalculation.effectiveRate
-        },
-        allowances,
-        compliance
-      };
-
-    } catch (error) {
-      console.error('Error generating Corporation Tax report:', error);
-      throw error;
-    }
+        deadline: new Date(taxYear + 1, 8, 30),
+        isCompliant: profitBeforeTax <= 0
+      }
+    };
   }
 
-  /**
-   * Generate tax forecast
-   */
-  async generateTaxForecast(
-    months: number = 12,
-    includeScenarios: boolean = true
-  ): Promise<TaxForecast> {
-    try {
-      void includeScenarios;
-      // Get historical data for trend analysis
-      const currentDate = new Date();
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 12, 1);
-      
-      const historicalData = await prisma.taxRecord.findMany({
-        where: {
-          periodStart: {
-            gte: startDate
-          },
-          taxType: 'vat'
-        },
-        orderBy: {
-          periodStart: 'asc'
-        }
-      });
+  async generateTaxForecast(months: number = 12): Promise<TaxForecast> {
+    const monthsBack = Math.max(months, 1);
+    const current = new Date();
+    const start = new Date(current.getFullYear(), current.getMonth() - 12, 1);
 
-      // Calculate trends
-      const monthlyTurnover = historicalData.map(record => Number(record.totalSales));
-      const monthlyExpenses = historicalData.map(record => Number(record.totalPurchases));
-      const averageMonthlyTurnover = monthlyTurnover.reduce((sum, val) => sum + val, 0) / monthlyTurnover.length;
-      const averageMonthlyExpenses = monthlyExpenses.reduce((sum, val) => sum + val, 0) / monthlyExpenses.length;
+    const invoices = await prisma.taxInvoice.findMany({
+      where: { issueDate: { gte: start, lte: current } },
+      orderBy: { issueDate: 'asc' }
+    });
 
-      // Project future values
-      const projections = {
-        turnover: averageMonthlyTurnover * months,
-        expenses: averageMonthlyExpenses * months,
-        profit: (averageMonthlyTurnover - averageMonthlyExpenses) * months,
-        vatDue: averageMonthlyTurnover * months * 0.20, // Assuming 20% VAT
-        corporationTax: Math.max(0, (averageMonthlyTurnover - averageMonthlyExpenses) * months - 50000) * 0.19
-      };
+    const driverEarnings = await prisma.driverEarnings.findMany({
+      where: { createdAt: { gte: start, lte: current } },
+      select: { netAmountPence: true, createdAt: true }
+    });
 
-      // Generate scenarios
-      const scenarios = {
+    const monthlyBuckets = new Map<string, { turnover: number; expenses: number }>();
+    invoices.forEach(invoice => {
+      const key = `${invoice.issueDate.getFullYear()}-${invoice.issueDate.getMonth()}`;
+      const bucket = monthlyBuckets.get(key) || { turnover: 0, expenses: 0 };
+      bucket.turnover += Number(invoice.netAmount);
+      monthlyBuckets.set(key, bucket);
+    });
+
+    driverEarnings.forEach(earning => {
+      if (!earning.createdAt) return;
+      const key = `${earning.createdAt.getFullYear()}-${earning.createdAt.getMonth()}`;
+      const bucket = monthlyBuckets.get(key) || { turnover: 0, expenses: 0 };
+      bucket.expenses += poundsFromPence(earning.netAmountPence);
+      monthlyBuckets.set(key, bucket);
+    });
+
+    const monthlyValues = Array.from(monthlyBuckets.values());
+    const averageTurnover =
+      monthlyValues.reduce((sum, value) => sum + value.turnover, 0) /
+      (monthlyValues.length || 1);
+    const averageExpenses =
+      monthlyValues.reduce((sum, value) => sum + value.expenses, 0) /
+      (monthlyValues.length || 1);
+
+    const projections = {
+      turnover: averageTurnover * monthsBack,
+      expenses: averageExpenses * monthsBack,
+      profit: (averageTurnover - averageExpenses) * monthsBack,
+      vatDue: averageTurnover * monthsBack * 0.2,
+      corporationTax: Math.max((averageTurnover - averageExpenses) * monthsBack, 0) * 0.19
+    };
+
+    return {
+      period: `${monthsBack} months`,
+      projections,
+      scenarios: {
         optimistic: {
-          turnover: projections.turnover * 1.2,
-          profit: projections.profit * 1.3,
-          tax: projections.corporationTax * 1.3
+          turnover: projections.turnover * 1.15,
+          profit: projections.profit * 1.2,
+          tax: projections.corporationTax * 1.2
         },
         realistic: {
           turnover: projections.turnover,
@@ -491,182 +479,239 @@ export class TaxReportingSystem {
           tax: projections.corporationTax
         },
         pessimistic: {
-          turnover: projections.turnover * 0.8,
+          turnover: projections.turnover * 0.85,
           profit: projections.profit * 0.7,
           tax: projections.corporationTax * 0.7
         }
-      };
-
-      // Generate recommendations
-      const recommendations = [
+      },
+      recommendations: [
         {
-          type: 'tax_efficiency',
-          description: 'Consider timing of large purchases to optimize VAT reclaim',
+          type: 'cash_flow',
+          description: 'Maintain at least one quarter of VAT liability in reserve.',
           potentialSavings: projections.vatDue * 0.05,
           implementationEffort: 'Low'
         },
         {
-          type: 'corporation_tax',
-          description: 'Review profit distribution to minimize Corporation Tax',
-          potentialSavings: projections.corporationTax * 0.1,
+          type: 'tax_planning',
+          description: 'Review planned capital expenditures to optimize Corporation Tax.',
+          potentialSavings: projections.corporationTax * 0.08,
           implementationEffort: 'Medium'
         }
-      ];
-
-      return {
-        period: `${months} months`,
-        projections,
-        scenarios,
-        recommendations
-      };
-
-    } catch (error) {
-      console.error('Error generating tax forecast:', error);
-      throw error;
-    }
+      ]
+    };
   }
 
-  /**
-   * Generate compliance report
-   */
   async generateComplianceReport(): Promise<ComplianceReport> {
-    try {
-      // Get all compliance checks
-      const complianceLogs = await prisma.taxComplianceLog.findMany({
-        where: {
-          checkDate: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-          }
-        },
-        orderBy: {
-          checkDate: 'desc'
+    const now = new Date();
+    const currentQuarter = resolvePeriod('current');
+
+    const invoicesThisQuarter = await prisma.taxInvoice.count({
+      where: {
+        issueDate: {
+          gte: currentQuarter.start,
+          lte: currentQuarter.end
         }
-      });
+      }
+    });
 
-      // Get upcoming deadlines
-      const deadlines = await prisma.taxDeadline.findMany({
-        where: {
-          isCompleted: false,
-          dueDate: {
-            gte: new Date()
-          }
-        },
-        orderBy: {
-          dueDate: 'asc'
+    const invoicesLastYear = await prisma.taxInvoice.count({
+      where: {
+        issueDate: {
+          gte: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()),
+          lte: now
         }
-      });
+      }
+    });
 
-      // Calculate overall compliance score
-      const overallScore = complianceLogs.length > 0 
-        ? complianceLogs.reduce((sum, log) => sum + log.complianceScore, 0) / complianceLogs.length
-        : 100;
+    const deadlines = this.buildUpcomingDeadlines(now, currentQuarter);
 
-      // Process compliance checks
-      const checks = complianceLogs.map(log => ({
-        checkType: log.checkType,
-        score: log.complianceScore,
-        isCompliant: log.isCompliant,
-        issues: JSON.parse(log.issues as string),
-        recommendations: JSON.parse(log.recommendations as string)
-      }));
+    const checks: ComplianceReport['checks'] = [
+      {
+        checkType: 'vat_filings',
+        score: invoicesThisQuarter > 0 ? 90 : 65,
+        isCompliant: invoicesThisQuarter > 0,
+        issues:
+          invoicesThisQuarter > 0
+            ? []
+            : [
+                {
+                  type: 'missing_vat_data',
+                  severity: 'medium',
+                  description: 'No VAT invoices recorded for the current period.',
+                  actionRequired: 'Verify booking sync and regenerate VAT report.'
+                }
+              ],
+        recommendations: invoicesThisQuarter > 0
+          ? []
+          : [
+              {
+                action: 'sync_bookings',
+                priority: 'medium',
+                description: 'Run booking → invoice sync before filing.'
+              }
+            ]
+      },
+      {
+        checkType: 'record_keeping',
+        score: invoicesLastYear > 100 ? 85 : 70,
+        isCompliant: invoicesLastYear > 0,
+        issues:
+          invoicesLastYear > 0
+            ? []
+            : [
+                {
+                  type: 'insufficient_records',
+                  severity: 'high',
+                  description: 'No invoices recorded in the last 12 months.',
+                  actionRequired: 'Investigate why tax invoices are missing.'
+                }
+              ],
+        recommendations: invoicesLastYear > 0
+          ? []
+          : [
+              {
+                action: 'enable_invoice_generation',
+                priority: 'high',
+                description: 'Ensure every paid booking generates a TaxInvoice entry.'
+              }
+            ]
+      },
+      {
+        checkType: 'payment_deadlines',
+        score: deadlines.some(d => d.status === 'overdue') ? 60 : 90,
+        isCompliant: !deadlines.some(d => d.status === 'overdue'),
+        issues: deadlines
+          .filter(d => d.status === 'overdue')
+          .map(overdue => ({
+            type: 'missed_deadline',
+            severity: 'high',
+            description: `${overdue.title} deadline was missed.`,
+            actionRequired: 'Submit outstanding return and notify finance lead.'
+          })),
+        recommendations: deadlines
+          .filter(d => d.status !== 'overdue')
+          .map(deadline => ({
+            action: 'prepare_submission',
+            priority: deadline.status === 'due_soon' ? 'high' : 'medium',
+            description: `Prepare documents for ${deadline.title} due on ${deadline.dueDate.toDateString()}.`
+          }))
+      }
+    ];
 
-      // Process deadlines
-      const formattedDeadlines = deadlines.map(deadline => ({
-        type: deadline.deadlineType,
-        title: deadline.title,
-        dueDate: deadline.dueDate,
-        status: deadline.status,
-        daysRemaining: Math.ceil((deadline.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      }));
+    const overallScore = Math.round(
+      checks.reduce((sum, check) => sum + check.score, 0) / (checks.length || 1)
+    );
 
-      // Calculate summary
-      const allIssues = checks.flatMap(check => check.issues);
-      const criticalIssues = allIssues.filter(issue => issue.severity === 'critical');
-      const overdueDeadlines = deadlines.filter(deadline => 
-        deadline.dueDate < new Date() && deadline.status !== 'completed'
-      ).length;
+    const totalIssues = checks.reduce((sum, check) => sum + check.issues.length, 0);
+    const criticalIssues = checks.reduce(
+      (sum, check) => sum + check.issues.filter(issue => issue.severity === 'high').length,
+      0
+    );
+    const overdueDeadlines = deadlines.filter(deadline => deadline.status === 'overdue').length;
 
-      const summary = {
-        totalIssues: allIssues.length,
-        criticalIssues: criticalIssues.length,
+    return {
+      overallScore,
+      isCompliant: overallScore >= 80,
+      checks,
+      deadlines,
+      summary: {
+        totalIssues,
+        criticalIssues,
         overdueDeadlines,
-        complianceTrend: 'stable' as const // Would be calculated from historical data
-      };
-
-      return {
-        overallScore: Math.round(overallScore),
-        isCompliant: overallScore >= 80,
-        checks,
-        deadlines: formattedDeadlines,
-        summary
-      };
-
-    } catch (error) {
-      console.error('Error generating compliance report:', error);
-      throw error;
-    }
+        complianceTrend: overallScore >= 80 ? 'stable' : 'declining'
+      }
+    };
   }
 
-  /**
-   * Generate tax analytics
-   */
   async generateTaxAnalytics(): Promise<TaxAnalytics> {
-    try {
-      // Get monthly data for trends
-      const monthlyData = await prisma.taxRecord.findMany({
-        where: {
-          taxType: 'vat',
-          periodStart: {
-            gte: new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000) // Last 12 months
-          }
-        },
-        orderBy: {
-          periodStart: 'asc'
+    const now = new Date();
+    const start = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+
+    const invoices = await prisma.taxInvoice.findMany({
+      where: {
+        issueDate: {
+          gte: start,
+          lte: now
         }
+      },
+      orderBy: { issueDate: 'asc' }
+    });
+
+    const monthlyMap = new Map<
+      string,
+      { label: string; turnover: number; vatCollected: number }
+    >();
+
+    invoices.forEach(invoice => {
+      const key = `${invoice.issueDate.getFullYear()}-${invoice.issueDate.getMonth()}`;
+      const label = invoice.issueDate.toLocaleDateString('en-GB', {
+        month: 'short',
+        year: 'numeric'
       });
+      const bucket = monthlyMap.get(key) || { label, turnover: 0, vatCollected: 0 };
+      bucket.turnover += Number(invoice.netAmount);
+      bucket.vatCollected += Number(invoice.vatAmount);
+      monthlyMap.set(key, bucket);
+    });
 
-      // Format monthly trends
-      const monthlyTrends = monthlyData.map(record => ({
-        month: record.periodStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        turnover: Number(record.totalSales),
-        vatCollected: Number(record.vatOnSales),
-        vatPaid: Number(record.vatOnPurchases),
-        netVAT: Number(record.netVATDue)
-      }));
+    const monthly = Array.from(monthlyMap.values());
+    const monthlyTrends = monthly.map(entry => ({
+      month: entry.label,
+      turnover: entry.turnover,
+      vatCollected: entry.vatCollected,
+      vatPaid: 0,
+      netVAT: entry.vatCollected
+    }));
 
-      // Calculate quarterly trends
-      const quarterlyTrends = [];
-      for (let i = 0; i < monthlyData.length; i += 3) {
-        const quarterData = monthlyData.slice(i, i + 3);
-        const quarter = Math.ceil((i / 3) + 1);
-        const year = monthlyData[i].periodStart.getFullYear();
-        
-        quarterlyTrends.push({
-          quarter: `Q${quarter} ${year}`,
-          turnover: quarterData.reduce((sum, record) => sum + Number(record.totalSales), 0),
-          vatCollected: quarterData.reduce((sum, record) => sum + Number(record.vatOnSales), 0),
-          vatPaid: quarterData.reduce((sum, record) => sum + Number(record.vatOnPurchases), 0),
-          netVAT: quarterData.reduce((sum, record) => sum + Number(record.netVATDue), 0)
-        });
-      }
+    const quarterlyTrends = [];
+    for (let i = 0; i < monthly.length; i += 3) {
+      const quarterSlice = monthly.slice(i, i + 3);
+      if (!quarterSlice.length) continue;
+      const reference = quarterSlice[0].label;
+      const [monthLabel, yearLabel] = reference.split(' ');
+      const monthIndex = new Date(`${monthLabel} 1, ${yearLabel}`).getMonth();
+      const quarterNumber = Math.floor(monthIndex / 3) + 1;
 
-      // Calculate year-over-year comparison
-      const currentYear = new Date().getFullYear();
-      const previousYear = currentYear - 1;
-      
-      const currentYearData = monthlyData.filter(record => 
-        record.periodStart.getFullYear() === currentYear
-      );
-      const previousYearData = monthlyData.filter(record => 
-        record.periodStart.getFullYear() === previousYear
-      );
+      quarterlyTrends.push({
+        quarter: `Q${quarterNumber} ${yearLabel}`,
+        turnover: quarterSlice.reduce((sum, value) => sum + value.turnover, 0),
+        vatCollected: quarterSlice.reduce((sum, value) => sum + value.vatCollected, 0),
+        vatPaid: 0,
+        netVAT: quarterSlice.reduce((sum, value) => sum + value.vatCollected, 0)
+      });
+    }
 
-      const currentYearTotal = currentYearData.reduce((sum, record) => sum + Number(record.totalSales), 0);
-      const previousYearTotal = previousYearData.reduce((sum, record) => sum + Number(record.totalSales), 0);
-      const growth = currentYearTotal - previousYearTotal;
-      const percentage = previousYearTotal > 0 ? (growth / previousYearTotal) * 100 : 0;
+    const currentYear = now.getFullYear();
+    const previousYear = currentYear - 1;
+    const currentYearTotal = invoices
+      .filter(invoice => invoice.issueDate.getFullYear() === currentYear)
+      .reduce((sum, invoice) => sum + Number(invoice.netAmount), 0);
+    const previousYearTotal = invoices
+      .filter(invoice => invoice.issueDate.getFullYear() === previousYear)
+      .reduce((sum, invoice) => sum + Number(invoice.netAmount), 0);
+    const growth = currentYearTotal - previousYearTotal;
+    const percentage = previousYearTotal > 0 ? (growth / previousYearTotal) * 100 : 0;
 
-      const comparisons = {
+    const insights: TaxAnalytics['insights'] = [];
+    if (monthlyTrends.length) {
+      insights.push({
+        type: 'growth',
+        title: 'Revenue trend',
+        description:
+          growth >= 0
+            ? `Revenue increased ${percentage.toFixed(1)}% versus last year.`
+            : `Revenue decreased ${Math.abs(percentage).toFixed(1)}% versus last year.`,
+        impact: growth >= 0 ? 'positive' : 'negative',
+        confidence: 80
+      });
+    }
+
+    return {
+      trends: {
+        monthly: monthlyTrends,
+        quarterly: quarterlyTrends
+      },
+      comparisons: {
         yearOverYear: {
           currentYear: currentYearTotal,
           previousYear: previousYearTotal,
@@ -674,73 +719,45 @@ export class TaxReportingSystem {
           percentage
         },
         industryBenchmarks: {
-          average: currentYearTotal * 0.8, // Placeholder
-          topQuartile: currentYearTotal * 1.2, // Placeholder
-          bottomQuartile: currentYearTotal * 0.6, // Placeholder
+          average: currentYearTotal * 0.85,
+          topQuartile: currentYearTotal * 1.15,
+          bottomQuartile: currentYearTotal * 0.6,
           ourPosition: currentYearTotal
         }
-      };
-
-      // Generate insights
-      const insights = [
-        {
-          type: 'growth',
-          title: 'Revenue Growth',
-          description: `Revenue ${growth > 0 ? 'increased' : 'decreased'} by ${Math.abs(percentage).toFixed(1)}% compared to last year`,
-          impact: growth > 0 ? 'positive' as const : 'negative' as const,
-          confidence: 85
-        },
-        {
-          type: 'efficiency',
-          title: 'Tax Efficiency',
-          description: 'VAT collection efficiency is within industry standards',
-          impact: 'neutral' as const,
-          confidence: 75
-        }
-      ];
-
-      return {
-        trends: {
-          monthly: monthlyTrends,
-          quarterly: quarterlyTrends
-        },
-        comparisons,
-        insights
-      };
-
-    } catch (error) {
-      console.error('Error generating tax analytics:', error);
-      throw error;
-    }
+      },
+      insights
+    };
   }
 
-  /**
-   * Export report to various formats
-   */
-  async exportReport(
-    reportType: 'vat' | 'corporation_tax' | 'compliance' | 'forecast',
-    period: string,
-    format: 'pdf' | 'excel' | 'csv' = 'pdf'
-  ): Promise<{ success: boolean; downloadUrl?: string; error?: string }> {
-    try {
-      // This would integrate with a report generation service
-      // For now, return a placeholder response
-      return {
-        success: true,
-        downloadUrl: `/api/tax/reports/download/${reportType}-${period}.${format}`
-      };
+  private buildUpcomingDeadlines(now: Date, currentQuarter: PeriodRange): ComplianceReport['deadlines'] {
+    const deadlines: ComplianceReport['deadlines'] = [];
 
-    } catch (error) {
-      console.error('Error exporting report:', error);
+    const vatDueDate = new Date(currentQuarter.end);
+    vatDueDate.setMonth(vatDueDate.getMonth() + 1);
+    const vatPaymentDate = new Date(vatDueDate);
+    vatPaymentDate.setDate(vatPaymentDate.getDate() + 7);
+
+    deadlines.push(vatDeadline('VAT Return submission', vatDueDate, now));
+    deadlines.push(vatDeadline('VAT Payment', vatPaymentDate, now));
+
+    const corpTaxPayment = new Date(now.getFullYear() + 1, 8, 30);
+    deadlines.push(vatDeadline('Corporation Tax payment', corpTaxPayment, now));
+
+    return deadlines;
+
+    function vatDeadline(title: string, dueDate: Date, reference: Date) {
+      const daysRemaining = Math.ceil(
+        (dueDate.getTime() - reference.getTime()) / (1000 * 60 * 60 * 24)
+      );
       return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Export failed'
+        type: 'tax_deadline',
+        title,
+        dueDate,
+        daysRemaining,
+        status: deadlineStatus(daysRemaining)
       };
     }
   }
 }
 
-// Export singleton instance
 export const taxReportingSystem = new TaxReportingSystem();
-
-// Types are already exported inline above

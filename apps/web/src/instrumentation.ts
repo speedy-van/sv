@@ -20,6 +20,16 @@ export async function register() {
     console.log('🚀 Server runtime detected - initializing cron jobs...');
     
     try {
+      // Wait a bit for Prisma Client to be fully initialized
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Verify Prisma is available before initializing cron jobs
+      const { prisma } = await import('./lib/prisma');
+      if (!prisma) {
+        console.error('❌ Prisma Client not available, skipping cron jobs');
+        return;
+      }
+      
       // Import and initialize cron jobs
       const { initializeCronJobs } = await import('./lib/cron');
       initializeCronJobs();

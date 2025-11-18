@@ -19,7 +19,7 @@ import { dynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
 // import { postBookingService } from '@/lib/services/post-booking-service';
 // import { apiRateLimit } from '@/lib/rate-limit';
 import { createLuxuryBookingSchema } from '@/types/shared';
-import { PropertyType } from '@prisma/client';
+import { AdditionalPaymentStatus, PropertyType } from '@prisma/client';
 import Pusher from 'pusher';
 
 export const runtime = 'nodejs';
@@ -384,6 +384,10 @@ export async function POST(request: NextRequest) {
       serviceType = 'ECONOMY';
     }
 
+    // Determine if this should be a multi-drop booking (Economy service)
+    const isEconomyService = serviceType === 'ECONOMY';
+    const shouldBeMultiDrop = isEconomyService;
+
     // Determine customer segment
     const customerSegment = customerId ? 'BUSINESS' : 'INDIVIDUAL';
     
@@ -620,6 +624,12 @@ export async function POST(request: NextRequest) {
         crewMultiplierPercent: 0, // Will be calculated
         availabilityMultiplierPercent: 0, // Will be calculated
         totalGBP: amountsInPence.totalGBP,
+        
+        // ✅ FIX: Save service type explicitly for routing logic
+        serviceType: serviceType,
+        isEconomyService: isEconomyService,
+        shouldBeMultiDrop: shouldBeMultiDrop,
+        orderType: shouldBeMultiDrop ? 'multi-drop-pending' : 'single',
 
         // Payment Intent will be created after booking
         stripePaymentIntentId: null,
@@ -652,6 +662,10 @@ export async function POST(request: NextRequest) {
           },
           capacityCheck: pricingResult.capacityCheck, // Store capacity check for admin
         },
+
+        // Additional payment tracking
+        additionalPaymentStatus: AdditionalPaymentStatus.NONE,
+        additionalPaymentAmountGBP: 0,
 
       },
     });

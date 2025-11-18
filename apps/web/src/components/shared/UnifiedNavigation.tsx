@@ -4,11 +4,12 @@
 
 'use client';
 
-import { Box, Flex, HStack, Link, Text, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Button, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Flex, HStack, Link, Text, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Button, useBreakpointValue, Menu, MenuButton, MenuList, MenuItem, Tooltip } from '@chakra-ui/react';
 import { useColorModeValue } from '@chakra-ui/react';
 import { ReactNode, useRef, useState, useEffect } from 'react';
 import { ROUTES, type UserRole } from '@/lib/routing';
-import { FiMenu } from 'react-icons/fi';
+import { FiMenu, FiRefreshCw } from 'react-icons/fi';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface NavigationItem {
   label: string;
@@ -31,19 +32,24 @@ export function UnifiedNavigation({
 }: UnifiedNavigationProps) {
   // If role is passed, use it as userRole for backward compatibility
   const effectiveUserRole = userRole || (role as UserRole) || 'guest';
-  const bg = useColorModeValue('gray.900', 'gray.900');
-  const borderColor = useColorModeValue('gray.700', 'gray.700');
+  const bg = useColorModeValue('rgba(7, 13, 23, 0.85)', 'rgba(7, 13, 23, 0.85)');
+  const borderColor = useColorModeValue('rgba(255,255,255,0.08)', 'rgba(255,255,255,0.08)');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef<HTMLButtonElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const isMobile = useBreakpointValue({ base: true, md: false }, { 
-    ssr: false,
-    fallback: 'md'
-  }) === true;
-  const isBrowser = typeof window !== 'undefined';
+  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname() || '';
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
+    // Check if mobile after mount to avoid SSR issues
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Prevent hydration mismatch by not rendering navigation items until mounted
@@ -101,6 +107,9 @@ export function UnifiedNavigation({
           { label: 'Driver Applications', href: ROUTES.ADMIN_DRIVER_APPLICATIONS },
           { label: 'Driver Schedule', href: ROUTES.ADMIN_DRIVER_SCHEDULE },
           { label: 'Driver Earnings', href: ROUTES.ADMIN_DRIVER_EARNINGS },
+          { label: 'Staff', href: ROUTES.ADMIN_STAFF },
+          { label: 'Staff Attendance', href: ROUTES.ADMIN_STAFF_ATTENDANCE },
+          { label: 'Staff Reports', href: ROUTES.ADMIN_STAFF_REPORTS },
           { label: 'Customers', href: ROUTES.ADMIN_CUSTOMERS },
           { label: 'Dispatch', href: ROUTES.ADMIN_DISPATCH },
           { label: 'Analytics', href: ROUTES.ADMIN_ANALYTICS },
@@ -128,6 +137,10 @@ export function UnifiedNavigation({
           { label: 'Profile', href: ROUTES.CUSTOMER_PROFILE },
           { label: 'Settings', href: ROUTES.CUSTOMER_SETTINGS },
         ];
+      case 'staff':
+        return [
+          { label: 'Dashboard', href: ROUTES.STAFF_DASHBOARD },
+        ];
       default:
         return [];
     }
@@ -135,15 +148,59 @@ export function UnifiedNavigation({
 
   const navigationItems = getNavigationItems();
 
+  // Helper: styled nav link with active state
+  const NavPill = ({ href, label }: { href: string; label: string }) => {
+    const isActive =
+      href === '/admin'
+        ? pathname === href
+        : pathname === href || pathname.startsWith(href + '/');
+
+    return (
+      <Button
+        as={Link}
+        href={href}
+        size="sm"
+        variant="ghost"
+        fontWeight="semibold"
+        fontSize="sm"
+        borderRadius="full"
+        px={3}
+        py={2}
+        _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
+        bg={isActive ? 'rgba(0,194,255,0.12)' : 'transparent'}
+        color={isActive ? 'primary.400' : 'whiteAlpha.900'}
+        transition="all 0.15s ease"
+      >
+        {label}
+      </Button>
+    );
+  };
+
   return (
     <Box
       bg={bg}
       borderBottom="1px"
       borderColor={borderColor}
-      boxShadow="sm"
+      boxShadow="0 6px 20px rgba(0,0,0,0.25)"
       pl={{ base: 3, md: 4 }}
       pr={{ base: 1, md: 4 }}
       py={{ base: 4, md: 3 }}
+      position="sticky"
+      top={0}
+      zIndex={100}
+      sx={{
+        backdropFilter: 'saturate(180%) blur(8px)',
+      }}
+      _before={{
+        content: '""',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '1px',
+        background:
+          'linear-gradient(90deg, transparent 0%, rgba(0,194,255,0.35) 50%, transparent 100%)',
+      }}
     >
       <Flex 
         justify="space-between"
@@ -164,19 +221,154 @@ export function UnifiedNavigation({
         </Link>
         
         {/* Desktop Navigation */}
-        {!isMobile && isMounted && isBrowser && (
-          <HStack spacing={6}>
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                _hover={{ textDecoration: 'none', color: 'primary.500' }}
-                fontWeight="medium"
-                fontSize="sm"
-              >
-                {item.label}
-              </Link>
-            ))}
+        {!isMobile && isMounted && (
+          <HStack
+            spacing={3}
+            maxW="calc(100vw - 260px)"
+            overflowX="auto"
+            css={{
+              '&::-webkit-scrollbar': { height: '6px' },
+              '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.12)', borderRadius: '10px' },
+            }}
+            whiteSpace="nowrap"
+          >
+            {/* Admin: compact, grouped header */}
+            {effectiveUserRole === 'admin' ? (
+              <>
+                {/* Primary links */}
+                {[
+                  { label: 'Dashboard', href: ROUTES.ADMIN_DASHBOARD },
+                  { label: 'Operations', href: ROUTES.ADMIN_OPERATIONS },
+                  { label: 'Customers', href: ROUTES.ADMIN_CUSTOMERS },
+                  { label: 'Dispatch', href: ROUTES.ADMIN_DISPATCH },
+                  { label: 'Analytics', href: ROUTES.ADMIN_ANALYTICS },
+                  { label: 'Finance', href: ROUTES.ADMIN_FINANCE },
+                ].map((item) => (
+                  <NavPill key={item.href} href={item.href} label={item.label} />
+                ))}
+
+                {/* Drivers group */}
+                <Menu isLazy>
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    size="sm"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
+                    borderRadius="full"
+                    px={3}
+                  >
+                    Drivers
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVERS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Drivers
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_APPLICATIONS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Driver Applications
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_SCHEDULE} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Driver Schedule
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_EARNINGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Driver Earnings
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+
+                {/* Staff group */}
+                <Menu isLazy>
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    size="sm"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
+                    borderRadius="full"
+                    px={3}
+                  >
+                    Staff
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Staff
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF_ATTENDANCE} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Staff Attendance
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF_REPORTS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Staff Reports
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+
+                {/* More group */}
+                <Menu isLazy>
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    size="sm"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
+                    borderRadius="full"
+                    px={3}
+                  >
+                    More
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_CONTENT} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Content
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_TRACKING} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Tracking
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_CHAT} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Chat
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_LOGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Logs
+                    </MenuItem>
+                    <MenuItem as={Link} href={ROUTES.ADMIN_SETTINGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Settings
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+
+                {/* Right side quick action: Refresh */}
+                <Tooltip label="Refresh data" hasArrow>
+                  <IconButton
+                    aria-label="Refresh"
+                    icon={<FiRefreshCw />}
+                    size="sm"
+                    variant="ghost"
+                    borderRadius="full"
+                    onClick={() => router.refresh()}
+                    _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
+                  />
+                </Tooltip>
+
+                {/* Open AI Assistant */}
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  variant="solid"
+                  onClick={() => {
+                    try {
+                      window.dispatchEvent(new Event('sv-ai-open'));
+                    } catch {}
+                  }}
+                >
+                  AI Assistant
+                </Button>
+              </>
+            ) : (
+              navigationItems.map((item) => (
+                <NavPill key={item.href} href={item.href} label={item.label} />
+              ))
+            )}
           </HStack>
         )}
         
@@ -231,7 +423,7 @@ export function UnifiedNavigation({
             )}
             
             <VStack spacing={1} align="stretch" pt={2}>
-              {isMounted && isBrowser && navigationItems.map((item) => (
+              {isMounted && navigationItems.map((item) => (
                 <Button
                   key={item.href}
                   as={Link}

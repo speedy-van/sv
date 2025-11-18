@@ -5,6 +5,7 @@ import { sendAdminNotification } from '@/lib/notifications';
 import { sendDriverNotification } from '@/lib/driver-notifications';
 import { unifiedEmailService, OrderConfirmationData, PaymentConfirmationData, FloorWarningData } from '@/lib/email/UnifiedEmailService';
 import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
+import { deriveServiceMetadata, withServicePreference } from '@/lib/bookings/serviceType';
 // import { generateUniqueBookingId } from '@/lib/booking-id';
 // Invoice service removed
 // BookingService removed - using direct Prisma operations
@@ -321,15 +322,118 @@ async function handleCheckoutSessionCompleted(session: any) {
       // Continue processing but flag the issue
     }
 
-    // Auto-confirm booking after successful payment
-    await prisma.booking.update({
+    // Get full booking details to check service type
+    const fullBooking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      data: {
-        status: 'CONFIRMED',
-        paidAt: new Date(),
-        stripePaymentIntentId: session.payment_intent,
+      include: {
+        pickupAddress: true,
+        dropoffAddress: true,
+        BookingItem: true,
+        customer: true,
       },
     });
+
+    if (!fullBooking) {
+      console.error('❌ Booking not found for confirmation:', bookingId);
+      return;
+    }
+
+    // Derive service metadata from stored preferences
+    const serviceMeta = deriveServiceMetadata(fullBooking);
+    const isEconomyBooking = serviceMeta.isEconomy;
+
+    console.log('🔍 Economy service check:', {
+      bookingId,
+      derivedServiceType: serviceMeta.serviceType,
+      urgency: fullBooking.urgency,
+      orderType: fullBooking.orderType,
+      shouldBeMultiDrop: isEconomyBooking,
+    });
+
+    // Auto-confirm booking after successful payment
+    const bookingUpdateData: any = {
+      status: 'CONFIRMED',
+      paidAt: new Date(),
+      stripePaymentIntentId: session.payment_intent,
+    };
+
+    if (isEconomyBooking) {
+      bookingUpdateData.customerPreferences = withServicePreference(
+        fullBooking.customerPreferences,
+        'ECONOMY'
+      );
+      if (!fullBooking.orderType || !fullBooking.orderType.includes('multi-drop')) {
+        bookingUpdateData.orderType = 'multi-drop-pending';
+      }
+    }
+
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: bookingUpdateData,
+    });
+
+    // ✅ FIX: Auto-create Drop for Economy bookings
+    if (isEconomyBooking) {
+      try {
+        console.log('🚛 Converting Economy booking to Drop:', bookingId);
+        
+        // Import UnifiedDropService
+        const { default: UnifiedDropService } = await import('@/lib/services/unified-drop-service');
+        
+        const dropResult = await UnifiedDropService.convertBookingToDrop(bookingId);
+        
+        if (dropResult.success) {
+          console.log('✅ Economy booking converted to Drop successfully:', {
+            bookingId,
+            dropId: dropResult.drop?.id,
+            serviceTier: dropResult.drop?.serviceTier,
+          });
+          
+          // Update booking to reflect multi-drop status
+          await prisma.booking.update({
+            where: { id: bookingId },
+            data: {
+              orderType: 'multi-drop',
+              isMultiDrop: true,
+            },
+          });
+          
+          // Send notification to admin about new multi-drop booking
+          await sendAdminNotification({
+            type: 'economy_booking_created',
+            title: '🟢 Economy Booking → Multi-Drop',
+            message: `Economy booking ${fullBooking.reference} has been automatically added to Multi-Drop Routes`,
+            priority: 'medium',
+            data: { 
+              bookingId: fullBooking.id, 
+              bookingReference: fullBooking.reference,
+              dropId: dropResult.drop?.id,
+            },
+            actionUrl: `/admin/operations?tab=multi-drop`,
+          });
+        } else {
+          console.error('❌ Failed to convert Economy booking to Drop:', dropResult.error);
+          
+          // Log failure for manual intervention
+          await prisma.auditLog.create({
+            data: {
+              actorId: 'system',
+              actorRole: 'system',
+              action: 'economy_drop_conversion_failed',
+              targetType: 'booking',
+              targetId: bookingId,
+              details: {
+                error: dropResult.error,
+                bookingReference: fullBooking.reference,
+                timestamp: new Date().toISOString(),
+              },
+            },
+          });
+        }
+      } catch (dropError) {
+        console.error('❌ Error converting Economy booking to Drop:', dropError);
+      }
+    }
 
     // Send order confirmation email to customer
     await sendOrderConfirmationEmail(bookingId);

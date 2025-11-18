@@ -1577,6 +1577,12 @@ body {
   direction: ltr !important;
 }
 
+html.booking-luxury-no-smooth,
+body.booking-luxury-no-smooth {
+  scroll-behavior: auto !important;
+  overscroll-behavior: contain !important;
+}
+
 /* Force all headings and text to be horizontal - CRITICAL FOR MOBILE SAFARI */
 * {
   writing-mode: horizontal-tb !important;

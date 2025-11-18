@@ -1,5 +1,5 @@
 import { groqService, type AdminContext, type AdminIssue, type ChatMetadata } from '@/lib/ai/groqService';
-import { prisma } from '@/lib/prisma';
+import { createAuditLogEntry } from '@/lib/audit';
 
 export interface AdminChatRequest {
   message: string;
@@ -53,28 +53,26 @@ export async function logAdminChatInteraction(params: {
     const metadataForStorage = JSON.parse(JSON.stringify(params.metadata));
     const referencesForStorage = JSON.parse(JSON.stringify(params.metadata.references));
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: params.adminId,
-        actorRole: 'admin',
-        action: 'ai_chat',
-        targetType: 'ai_assistant',
-        targetId: params.metadata.requestId,
-        details: {
-          requestId: params.metadata.requestId,
-          success: params.success,
-          messagePreview: params.message.substring(0, 500),
-          responsePreview: params.response.substring(0, 500),
-          language: params.metadata.language,
-          references: referencesForStorage,
-          metadata: metadataForStorage,
-          issueType: params.issue?.type ?? null,
-          adminEmail: params.adminEmail ?? null,
-          adminName: params.adminName ?? null,
-          responseLength: params.response.length,
-          processingTimeMs: params.processingTimeMs ?? null,
-          timestamp: new Date().toISOString(),
-        },
+    await createAuditLogEntry({
+      actorId: params.adminId,
+      actorRole: 'admin',
+      action: 'AI_CHAT',
+      targetType: 'ai_assistant',
+      targetId: params.metadata.requestId,
+      details: {
+        requestId: params.metadata.requestId,
+        success: params.success,
+        messagePreview: params.message.substring(0, 500),
+        responsePreview: params.response.substring(0, 500),
+        language: params.metadata.language,
+        references: referencesForStorage,
+        metadata: metadataForStorage,
+        issueType: params.issue?.type ?? null,
+        adminEmail: params.adminEmail ?? null,
+        adminName: params.adminName ?? null,
+        responseLength: params.response.length,
+        processingTimeMs: params.processingTimeMs ?? null,
+        timestamp: new Date().toISOString(),
       },
     });
   } catch (error) {

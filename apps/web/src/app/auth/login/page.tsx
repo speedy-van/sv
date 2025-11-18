@@ -2,45 +2,58 @@
 import { signIn, useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  Text,
+  Stack,
+  FormControl,
+  FormLabel,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Button,
+  Link as ChakraLink,
+  Alert,
+  AlertIcon,
+  useToast,
+} from '@chakra-ui/react';
+import { keyframes as emotionKeyframes } from '@emotion/react';
+import NextLink from 'next/link';
+import { ROUTES } from '@/lib/routing';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status, update } = useSession();
+  const toast = useToast();
   
   // Get role from URL parameters
   const role = searchParams?.get('role');
+  const isAdminLogin = role === 'admin';
 
   // Handle redirect after session is established
   useEffect(() => {
     if (session?.user && !isLoading) {
-      console.log('👤 Session established:', {
-        role: (session.user as any).role,
-        adminRole: (session.user as any).adminRole,
-      });
-
       const userRole = (session.user as any).role;
-      
-      // Redirect based on user role using unified routing
       switch (userRole) {
         case 'admin':
-          console.log('🛠️ Redirecting to admin dashboard...');
           router.push('/admin');
           break;
         case 'driver':
-          console.log('🚗 Redirecting to driver dashboard...');
           router.push('/driver');
           break;
         case 'customer':
-          console.log('👤 Redirecting to customer dashboard...');
           router.push('/customer');
           break;
         default:
-          console.log('🚪 Redirecting to home...');
           router.push('/');
       }
     }
@@ -50,10 +63,8 @@ export default function LoginPage() {
     e.preventDefault();
     setErr(null);
     setIsLoading(true);
-    console.log('🔐 Attempting login for:', email);
 
     try {
-      // Add a timeout to prevent hanging
       const signInPromise = signIn('credentials', {
         redirect: false,
         email,
@@ -65,104 +76,197 @@ export default function LoginPage() {
       );
 
       const res = (await Promise.race([signInPromise, timeoutPromise])) as any;
-      console.log('🔐 SignIn result:', res);
 
       if (res?.ok) {
-        console.log('✅ SignIn successful, refreshing session...');
-
-        // Force session refresh to get updated user data
         try {
           await update();
-          console.log('✅ Session refreshed successfully');
-        } catch (updateError) {
-          console.log(
-            '⚠️ Session refresh failed, trying alternative method:',
-            updateError
-          );
-
-          // Session will be updated automatically by NextAuth
+        } catch {
+          // ignore
         }
-
-        // Wait a bit for session to update
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Check if session was updated
-        if (session?.user) {
-          console.log('✅ Session updated, redirecting...');
-        } else {
-          console.log('⚠️ Session not updated, attempting direct redirect...');
-          // Try direct redirect based on the user we know was authenticated
-          router.push('/admin');
-        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+        toast({
+          title: 'Signed in successfully',
+          status: 'success',
+          duration: 2000,
+          isClosable: true,
+        });
       } else {
-        console.log('❌ SignIn failed:', res?.error);
         setErr('Invalid email or password');
-        setIsLoading(false);
       }
-    } catch (error) {
-      console.log('❌ SignIn error:', error);
+    } catch {
       setErr('Login failed. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   }
 
-  // Show loading state while session is being established
-  if (status === 'loading' || isLoading) {
+  // Loading state
+  if (status === 'loading') {
     return (
-      <main style={{ maxWidth: 420, margin: '64px auto', padding: 24 }}>
-        <h1>Login</h1>
-        <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <p>Signing you in...</p>
-        </div>
-      </main>
+      <Container maxW="6xl" py={{ base: 16, md: 24 }}>
+        <Heading size="lg">Login</Heading>
+        <Text mt={4}>Signing you in...</Text>
+      </Container>
     );
   }
 
+  // Animated background
+  const moveGradient = emotionKeyframes`
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  `;
+
+  const shimmer = emotionKeyframes`
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  `;
+
   return (
-    <main style={{ maxWidth: 420, margin: '64px auto', padding: 24 }}>
-      <h1>Login{role && ` - ${role.charAt(0).toUpperCase() + role.slice(1)}`}</h1>
-      <form
-        onSubmit={onSubmit}
-        style={{ display: 'grid', gap: 12, marginTop: 16 }}
-      >
-        <input
-          placeholder="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          data-testid="email-input"
-          disabled={isLoading}
-        />
-        <input
-          placeholder="password"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          data-testid="password-input"
-          disabled={isLoading}
-        />
-        <button type="submit" data-testid="login-button" disabled={isLoading}>
-          {isLoading ? 'Signing in...' : 'Sign in'}
-        </button>
-        {err && <p style={{ color: 'crimson' }}>{err}</p>}
-      </form>
-      <div style={{ marginTop: 16 }}>
-        <a href="/auth/forgot">Forgot password?</a>
-      </div>
-      <div style={{ marginTop: 16, textAlign: 'center' }}>
-        <p style={{ marginBottom: 8, color: '#666' }}>
-          Don't have a driver account? Contact support to get started.
-        </p>
-        <a
-          href="/driver-application"
-          style={{
-            color: '#3182ce',
-            textDecoration: 'underline',
-            fontWeight: '500',
-          }}
+    <Box position="relative" minH="100vh" overflow="hidden">
+      {/* Moving gradient background */}
+      <Box
+        position="absolute"
+        inset={0}
+        zIndex={0}
+        bg="linear-gradient(120deg, rgba(5,10,18,1) 0%, rgba(7,13,23,1) 30%, rgba(10,20,35,1) 60%, rgba(7,13,23,1) 100%)"
+      />
+      <Box
+        position="absolute"
+        inset={0}
+        zIndex={0}
+        bg="linear-gradient(90deg, rgba(0,194,255,0.16), rgba(147,51,234,0.16), rgba(236,72,153,0.16), rgba(16,185,129,0.16))"
+        style={{ backgroundSize: '300% 300%' }}
+        animation={`${moveGradient} 18s ease-in-out infinite`}
+        mixBlendMode="screen"
+      />
+
+    <Container maxW="6xl" py={{ base: 12, md: 24 }} position="relative" zIndex={1}>
+      <Stack direction="row" spacing={10} align="stretch" flexWrap="wrap">
+        {/* Brand / context */}
+        <Box
+          flex="1"
+          bgGradient="linear(to-br, rgba(0,194,255,0.12), transparent)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          rounded="xl"
+          p={{ base: 8, md: 10 }}
+          minW={{ base: '380px', md: '460px' }}
+          maxW={{ base: '100%', md: '520px' }}
         >
-          Apply to become a driver
-        </a>
-      </div>
-    </main>
+          <Heading size="xl" color="primary.300">
+            {isAdminLogin ? 'Admin Sign In' : 'Sign In'}
+          </Heading>
+          <Text mt={3} color="whiteAlpha.800" fontSize="md">
+            Enter your credentials to access your dashboard.
+          </Text>
+          <Box mt={8} color="whiteAlpha.700" fontSize="sm">
+            <Text fontWeight="semibold">Need help?</Text>
+            <Text mt={1}>
+              Email: support@speedy-van.co.uk
+            </Text>
+            <Text>Phone: 01202 129746</Text>
+          </Box>
+        </Box>
+
+        {/* Form */}
+        <Box
+          as="form"
+          onSubmit={onSubmit}
+          flex="1"
+          bg="rgba(7,13,23,0.75)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          rounded="xl"
+          p={{ base: 8, md: 10 }}
+          boxShadow="0 8px 30px rgba(0,0,0,0.35)"
+          minW={{ base: '380px', md: '520px' }}
+          maxW={{ base: '100%', md: '560px' }}
+        >
+          <Heading size="lg">
+            {isAdminLogin ? 'Welcome back, Admin' : 'Welcome back'}
+          </Heading>
+          <Text mt={1} color="whiteAlpha.700" fontSize="sm">
+            Please sign in to continue
+          </Text>
+
+          {err && (
+            <Alert status="error" mt={4} rounded="md">
+              <AlertIcon />
+              {err}
+            </Alert>
+          )}
+
+          <FormControl mt={6} isRequired>
+            <FormLabel>Email</FormLabel>
+            <Input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              disabled={isLoading}
+              data-testid="email-input"
+            />
+          </FormControl>
+
+          <FormControl mt={4} isRequired>
+            <FormLabel>Password</FormLabel>
+            <InputGroup>
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Your password"
+                disabled={isLoading}
+                data-testid="password-input"
+              />
+              <InputRightElement width="4.5rem">
+                <Button
+                  h="1.75rem"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowPassword(v => !v)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </Button>
+              </InputRightElement>
+            </InputGroup>
+          </FormControl>
+
+          <Button
+            type="submit"
+            colorScheme="cyan"
+            mt={8}
+            w="full"
+            isLoading={isLoading}
+            loadingText="Signing in"
+            data-testid="login-button"
+          >
+            Sign in
+          </Button>
+
+          <Flex mt={5} justify="space-between" align="center">
+            <ChakraLink as={NextLink} href={ROUTES.FORGOT_PASSWORD}>
+              Forgot password?
+            </ChakraLink>
+          </Flex>
+        </Box>
+      </Stack>
+
+      <Box textAlign="center" mt={10}>
+        <Text
+          fontSize={{ base: 'xl', md: '3xl' }}
+          fontWeight="extrabold"
+          bgGradient="linear(to-r, cyan.300, purple.300, pink.300, teal.300)"
+          bgClip="text"
+          style={{ backgroundSize: '200% 100%' }}
+          animation={`${shimmer} 5s linear infinite`}
+          letterSpacing="wide"
+        >
+          Speedy Van Management System
+        </Text>
+      </Box>
+    </Container>
+    </Box>
   );
 }

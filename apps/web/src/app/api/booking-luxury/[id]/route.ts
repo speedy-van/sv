@@ -245,3 +245,72 @@ export async function DELETE(
     );
   }
 }
+
+// PATCH /api/booking-luxury/[id] - Update booking (for payment confirmation)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: bookingId } = await params;
+    const body = await request.json();
+
+    console.log('📝 [BOOKING UPDATE] Request received:', {
+      bookingId,
+      updates: body
+    });
+
+    // Find the booking first
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id: bookingId }
+    });
+
+    if (!existingBooking) {
+      console.error('❌ Booking not found:', bookingId);
+      return NextResponse.json(
+        { error: 'Booking not found' },
+        { status: 404 }
+      );
+    }
+
+    // Only allow specific fields to be updated
+    const allowedUpdates: any = {};
+    
+    if (body.stripePaymentIntentId) {
+      allowedUpdates.stripePaymentIntentId = body.stripePaymentIntentId;
+    }
+    
+    if (body.status === 'CONFIRMED') {
+      allowedUpdates.status = 'CONFIRMED';
+    }
+    
+    if (body.paidAt) {
+      allowedUpdates.paidAt = new Date(body.paidAt);
+    }
+
+    // Update the booking
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: allowedUpdates
+    });
+
+    console.log('✅ [BOOKING UPDATE] Booking updated successfully:', {
+      bookingId,
+      reference: updatedBooking.reference,
+      status: updatedBooking.status,
+      stripePaymentIntentId: updatedBooking.stripePaymentIntentId
+    });
+
+    return NextResponse.json({
+      success: true,
+      booking: updatedBooking
+    });
+
+  } catch (error) {
+    console.error('❌ Error updating booking:', error);
+    return NextResponse.json(
+      { error: 'Failed to update booking' },
+      { status: 500 }
+    );
+  }
+}

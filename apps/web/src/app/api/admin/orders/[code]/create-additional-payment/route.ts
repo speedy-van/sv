@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { AdditionalPaymentStatus } from '@prisma/client';
 import { logAudit } from '@/lib/audit';
 import { stripe } from '@/lib/stripe/client';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
@@ -52,11 +53,11 @@ export async function POST(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (!booking.paidAt || booking.amountPaidGBP <= 0) {
+    if (!booking.paidAt || !booking.amountPaidGBP || booking.amountPaidGBP <= 0) {
       return NextResponse.json({ error: 'No payment recorded for this order. Additional payments can only be requested after an initial payment.' }, { status: 400 });
     }
 
-    if (booking.additionalPaymentStatus === 'PENDING') {
+    if (booking.additionalPaymentStatus === AdditionalPaymentStatus.PENDING) {
       return NextResponse.json({ error: 'There is already a pending additional payment request for this order.' }, { status: 409 });
     }
 
@@ -112,7 +113,7 @@ export async function POST(
       where: { id: booking.id },
       data: {
         totalGBP: targetTotalGBP,
-        additionalPaymentStatus: 'PENDING',
+        additionalPaymentStatus: AdditionalPaymentStatus.PENDING,
         additionalPaymentAmountGBP: difference,
         additionalPaymentRequestedAt: now,
         additionalPaymentStripeIntent: checkoutSession.payment_intent?.toString() || null,

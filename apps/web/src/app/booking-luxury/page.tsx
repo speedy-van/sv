@@ -29,12 +29,13 @@ import {
   SimpleGrid,
   IconButton,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo } from 'react-icons/fa';
-import Image from 'next/image';
+import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash } from 'react-icons/fa';
+import { Image } from '@chakra-ui/react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
 import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
+import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
 
@@ -51,8 +52,8 @@ const STEPS = [
   },
   { 
     id: 2, 
-    title: 'Items & Time', 
-    description: 'Select items and schedule',
+    title: 'Items & Schedule', 
+    description: 'Choose your items and pick the perfect time',
     icon: FaClock,
     shortTitle: 'Items & Time',
     color: 'purple'
@@ -81,6 +82,24 @@ export default function BookingLuxuryPage() {
   
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
+
+  // Ensure the booking flow uses immediate scroll behavior to avoid jump-to-top glitches
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const htmlEl = document.documentElement;
+    const bodyEl = document.body;
+
+    htmlEl.classList.add('booking-luxury-no-smooth');
+    bodyEl.classList.add('booking-luxury-no-smooth');
+
+    return () => {
+      htmlEl.classList.remove('booking-luxury-no-smooth');
+      bodyEl.classList.remove('booking-luxury-no-smooth');
+    };
+  }, []);
   
 
   const {
@@ -448,16 +467,28 @@ export default function BookingLuxuryPage() {
         hasValidPickupCoordinates &&
         hasValidDropoffCoordinates) {
       
-      // Create a hash of relevant data to detect actual changes
+      // 🔧 FIX: Include date, time, and urgency in hash to trigger recalculation
       const currentData = JSON.stringify({
         items: formData.step1.items.map(i => ({ id: i.id, quantity: i.quantity })),
         pickup: { lat: formData.step1.pickupAddress?.coordinates?.lat, lng: formData.step1.pickupAddress?.coordinates?.lng },
-        dropoff: { lat: formData.step1.dropoffAddress?.coordinates?.lat, lng: formData.step1.dropoffAddress?.coordinates?.lng }
+        dropoff: { lat: formData.step1.dropoffAddress?.coordinates?.lat, lng: formData.step1.dropoffAddress?.coordinates?.lng },
+        // ✅ NOW INCLUDES DATE/TIME/URGENCY
+        scheduling: {
+          date: formData.step1.pickupDate,
+          timeSlot: formData.step1.pickupTimeSlot,
+          urgency: formData.step1.urgency
+        }
       });
       
       // Only trigger if data actually changed
       if (currentData !== lastPricingData.current) {
         lastPricingData.current = currentData;
+        
+        console.log('🔄 Pricing data changed, recalculating...', {
+          date: formData.step1.pickupDate,
+          timeSlot: formData.step1.pickupTimeSlot,
+          urgency: formData.step1.urgency
+        });
         
         // Debounce pricing calculation to prevent excessive API calls
         const timeoutId = setTimeout(() => {
@@ -556,6 +587,31 @@ export default function BookingLuxuryPage() {
           duration: 3000,
         });
       }
+    } else if (currentStep === 2) {
+      // Step 2: Check items and date/time are selected
+      if (formData.step1.items.length === 0) {
+        toast({
+          title: 'Please select at least one item',
+          status: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+      if (!formData.step1.pickupDate) {
+        toast({
+          title: 'Please select a pickup date',
+          status: 'error',
+          duration: 3000,
+        });
+        return;
+      }
+      setIsAutoTransitioning(true);
+      setTimeout(() => {
+        setCurrentStep(3);
+        clearErrors();
+        setIsAutoTransitioning(false);
+        // Prevent scroll to top - user stays at their current position
+      }, 300);
     } else {
       // Other steps - just advance
       if (currentStep < STEPS.length) {
@@ -732,14 +788,166 @@ export default function BookingLuxuryPage() {
               },
             }}
           >
-            <VStack spacing={2} w="full" data-booking-header>
-              {/* Top: Call Button - Right Aligned */}
+            <VStack spacing={4} w="full" data-booking-header>
+              {/* Top Row: Brand Logo & Call Button */}
               <Flex 
-                justify="flex-end" 
+                justify="space-between" 
                 align="center" 
-                px={{ base: 2, md: 6 }}
+                px={{ base: 3, md: 6 }}
                 w="full"
               >
+                {/* Left: Brand */}
+                <HStack 
+                  spacing={{ base: 2, md: 3 }}
+                  sx={{
+                    flexDirection: 'row !important',
+                    alignItems: 'center !important',
+                  }}
+                >
+                  <Box
+                    position="relative"
+                    w={{ base: '45px', md: '55px' }}
+                    h={{ base: '45px', md: '55px' }}
+                    borderRadius="full"
+                    bg="linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 8px 32px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(59, 130, 246, 0.1)"
+                    border="2px solid"
+                    borderColor="rgba(59, 130, 246, 0.3)"
+                    animation="vanBounce 3s ease-in-out infinite"
+                    sx={{
+                      '@keyframes vanBounce': {
+                        '0%, 100%': {
+                          transform: 'translateX(0) translateY(0)',
+                        },
+                        '25%': {
+                          transform: 'translateX(8px) translateY(-4px)',
+                        },
+                        '50%': {
+                          transform: 'translateX(0) translateY(0)',
+                        },
+                        '75%': {
+                          transform: 'translateX(-8px) translateY(-4px)',
+                        },
+                      },
+                      '@keyframes glow': {
+                        '0%, 100%': {
+                          opacity: 0.5,
+                          transform: 'scale(1)',
+                        },
+                        '50%': {
+                          opacity: 0.8,
+                          transform: 'scale(1.1)',
+                        },
+                      },
+                      '@keyframes rotate': {
+                        '0%': {
+                          transform: 'rotate(0deg)',
+                        },
+                        '100%': {
+                          transform: 'rotate(360deg)',
+                        },
+                      },
+                    }}
+                    _before={{
+                      content: '""',
+                      position: 'absolute',
+                      inset: '-2px',
+                      borderRadius: 'full',
+                      padding: '2px',
+                      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(139, 92, 246, 0.5))',
+                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                      WebkitMaskComposite: 'xor',
+                      maskComposite: 'exclude',
+                      animation: 'rotate 4s linear infinite',
+                    }}
+                    _after={{
+                      content: '""',
+                      position: 'absolute',
+                      inset: '-8px',
+                      borderRadius: 'full',
+                      background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent 70%)',
+                      animation: 'glow 2s ease-in-out infinite',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <Icon 
+                      as={FaTruck} 
+                      boxSize={{ base: 6, md: 7 }}
+                      color="blue.400"
+                      filter="drop-shadow(0 2px 8px rgba(59, 130, 246, 0.6))"
+                      transition="all 0.3s"
+                      _groupHover={{
+                        color: "cyan.300",
+                        filter: "drop-shadow(0 4px 12px rgba(34, 211, 238, 0.8))",
+                      }}
+                    />
+                  </Box>
+                  <VStack spacing={0} align="flex-start">
+                    <Text 
+                      fontSize={{ base: 'lg', md: '2xl' }}
+                      fontWeight="900"
+                      letterSpacing="tight"
+                      bgGradient="linear(to-r, blue.300, cyan.300, purple.400)"
+                      bgClip="text"
+                      lineHeight="1.2"
+                      fontFamily="'Inter', sans-serif"
+                      animation="gradientShift 4s ease infinite, textGlow 2s ease-in-out infinite"
+                      sx={{
+                        '@keyframes gradientShift': {
+                          '0%, 100%': {
+                            backgroundPosition: '0% 50%',
+                            backgroundSize: '200% 200%',
+                          },
+                          '50%': {
+                            backgroundPosition: '100% 50%',
+                            backgroundSize: '200% 200%',
+                          },
+                        },
+                        '@keyframes textGlow': {
+                          '0%, 100%': {
+                            filter: 'drop-shadow(0 0 2px rgba(59, 130, 246, 0.4))',
+                            transform: 'scale(1)',
+                          },
+                          '50%': {
+                            filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 12px rgba(139, 92, 246, 0.6))',
+                            transform: 'scale(1.02)',
+                          },
+                        },
+                      }}
+                      transition="all 0.3s"
+                      _hover={{
+                        transform: 'scale(1.05)',
+                        filter: 'drop-shadow(0 0 12px rgba(34, 211, 238, 1))',
+                      }}
+                    >
+                      Speedy Van
+                    </Text>
+                    <Text
+                      fontSize={{ base: '2xs', md: 'xs' }}
+                      color="whiteAlpha.700"
+                      fontWeight="600"
+                      letterSpacing="wide"
+                      animation="fadeInOut 3s ease-in-out infinite"
+                      sx={{
+                        '@keyframes fadeInOut': {
+                          '0%, 100%': {
+                            opacity: 0.7,
+                          },
+                          '50%': {
+                            opacity: 1,
+                          },
+                        },
+                      }}
+                    >
+                      Professional Moving
+                    </Text>
+                  </VStack>
+                </HStack>
+
+                {/* Right: Call Button */}
                 <Button
                   as="a"
                   href="tel:+441202129746"
@@ -756,81 +964,53 @@ export default function BookingLuxuryPage() {
                     }
                   }}
                   size={{ base: 'sm', md: 'md' }}
-                  h={{ base: '40px', md: '44px' }}
-                  px={{ base: 4, md: 6 }}
-                  bg="linear-gradient(135deg, #10B981, #059669)"
+                  h={{ base: '42px', md: '48px' }}
+                  px={{ base: 4, md: 7 }}
+                  bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
                   color="white"
-                  fontWeight="bold"
+                  fontWeight="700"
                   fontSize={{ base: 'sm', md: 'md' }}
-                  boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
+                  boxShadow="0 4px 20px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
                   leftIcon={<Icon as={FaPhone} boxSize={{ base: 4, md: 5 }} />}
-                  borderRadius="full"
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="rgba(255, 255, 255, 0.2)"
+                  position="relative"
+                  overflow="hidden"
                   _hover={{
-                    bg: 'linear-gradient(135deg, #059669, #047857)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
+                    bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                    transform: 'translateY(-3px)',
+                    boxShadow: '0 8px 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                     textDecoration: 'none',
                   }}
                   _active={{
-                    transform: 'scale(0.95)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.5)',
                   }}
-                  transition="all 0.2s ease"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                    transition: 'left 0.5s',
+                  }}
+                  sx={{
+                    '&:hover::before': {
+                      left: '100%',
+                    }
+                  }}
                 >
                   Call Now
                 </Button>
               </Flex>
 
-              {/* Middle: Brand & Back Button - Same Row */}
-              <Flex 
-                justify="center" 
-                align="center" 
-                px={{ base: 2, md: 6 }}
-                w="full"
-              >
-                <HStack 
-                  spacing={3}
-                  sx={{
-                    flexDirection: 'row !important',
-                    alignItems: 'center !important',
-                    writingMode: 'horizontal-tb !important',
-                  }}
-                >
-                  {/* Back Button - Left in same row */}
-                  {currentStep === 1 && (
-                    <IconButton
-                      aria-label="Back to home"
-                      icon={<FaArrowLeft />}
-                      size="sm"
-                      variant="ghost"
-                      color="gray.400"
-                      onClick={() => router.push('/')}
-                      _hover={{ color: 'white', bg: 'rgba(255, 255, 255, 0.1)' }}
-                    />
-                  )}
-                  
-                  {/* Speedy Van Brand */}
-                  <Icon as={FaTruck} boxSize={6} color="blue.400" />
-                  <Text 
-                    fontSize={{ base: 'lg', md: 'xl' }}
-                    fontWeight="bold"
-                    color="white"
-                    style={{
-                      writingMode: 'horizontal-tb',
-                      textOrientation: 'mixed',
-                      direction: 'ltr',
-                      whiteSpace: 'nowrap',
-                      display: 'inline-block',
-                      transform: 'none',
-                    }}
-                  >
-                    Speedy Van
-                  </Text>
-                </HStack>
-              </Flex>
-
-              {/* Bottom: Progress Steps - Under Speedy Van */}
+              {/* Bottom: Progress Steps - Enhanced Design */}
               <HStack 
-                spacing={2}
+                spacing={{ base: 2, md: 3 }}
                 justify="center"
                 w="full"
                 sx={{
@@ -841,35 +1021,114 @@ export default function BookingLuxuryPage() {
                 {STEPS.map((step, index) => (
                   <React.Fragment key={step.id}>
                     <Box
-                      w={{ base: '32px', md: '36px' }}
-                      h={{ base: '32px', md: '36px' }}
+                      w={{ base: '40px', md: '48px' }}
+                      h={{ base: '40px', md: '48px' }}
                       borderRadius="full"
                       bg={
                         step.id === currentStep 
-                          ? 'blue.500'
+                          ? `${step.color}.500`
                           : step.id < currentStep 
                           ? 'green.500'
-                          : 'gray.700'
+                          : 'whiteAlpha.200'
                       }
                       color="white"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      fontSize="sm"
-                      fontWeight="bold"
+                      fontSize={{ base: 'md', md: 'lg' }}
+                      fontWeight="800"
                       cursor={step.id <= currentStep ? 'pointer' : 'default'}
                       onClick={() => step.id <= currentStep && handleStepClick(step.id)}
-                      transition="all 0.2s"
-                      _hover={step.id <= currentStep ? { transform: 'scale(1.1)' } : {}}
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      border="3px solid"
+                      borderColor={
+                        step.id === currentStep 
+                          ? `${step.color}.400`
+                          : step.id < currentStep 
+                          ? 'green.400'
+                          : 'transparent'
+                      }
+                      position="relative"
+                      animation={step.id === currentStep ? 'stepPulse 2s ease-in-out infinite' : undefined}
+                      sx={{
+                        '@keyframes stepPulse': {
+                          '0%, 100%': {
+                            boxShadow: step.id === currentStep 
+                              ? `0 0 20px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
+                              : 'none',
+                            transform: 'scale(1)',
+                          },
+                          '50%': {
+                            boxShadow: step.id === currentStep 
+                              ? `0 0 35px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.9)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.9)' : 'rgba(16, 185, 129, 0.9)'}, 0 0 50px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
+                              : 'none',
+                            transform: 'scale(1.08)',
+                          },
+                        },
+                        '@keyframes lineProgress': {
+                          '0%': {
+                            width: '0%',
+                          },
+                          '100%': {
+                            width: '100%',
+                          },
+                        },
+                      }}
+                      boxShadow={
+                        step.id === currentStep 
+                          ? `0 0 20px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
+                          : step.id < currentStep 
+                          ? '0 0 15px rgba(16, 185, 129, 0.5)'
+                          : 'none'
+                      }
+                      _hover={step.id <= currentStep ? { 
+                        transform: 'scale(1.15) translateY(-2px)',
+                        boxShadow: step.id === currentStep 
+                          ? `0 0 25px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.8)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.8)' : 'rgba(16, 185, 129, 0.8)'}`
+                          : '0 0 20px rgba(16, 185, 129, 0.7)'
+                      } : {}}
+                      _after={step.id === currentStep ? {
+                        content: '""',
+                        position: 'absolute',
+                        inset: '-6px',
+                        borderRadius: 'full',
+                        background: `radial-gradient(circle, ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.3)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(16, 185, 129, 0.3)'}, transparent 70%)`,
+                        animation: 'stepPulse 2s ease-in-out infinite',
+                        pointerEvents: 'none',
+                      } : {}}
                     >
-                      {step.id < currentStep ? <Icon as={FaCheck} boxSize={3} /> : step.id}
+                      {step.id < currentStep ? <Icon as={FaCheck} boxSize={{ base: 4, md: 5 }} /> : step.id}
                     </Box>
                     {index < STEPS.length - 1 && (
                       <Box 
-                        w={{ base: '24px', md: '30px' }} 
-                        h="2px" 
-                        bg={step.id < currentStep ? 'green.500' : 'gray.700'}
-                        transition="all 0.3s"
+                        w={{ base: '30px', md: '40px' }} 
+                        h="3px" 
+                        borderRadius="full"
+                        bg={step.id < currentStep ? 'green.500' : 'whiteAlpha.200'}
+                        position="relative"
+                        overflow="hidden"
+                        transition="all 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
+                        boxShadow={step.id < currentStep ? '0 0 10px rgba(16, 185, 129, 0.5)' : 'none'}
+                        _after={step.id < currentStep ? {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+                          animation: 'lineShimmer 2s infinite',
+                        } : {}}
+                        sx={{
+                          '@keyframes lineShimmer': {
+                            '0%': {
+                              transform: 'translateX(-100%)',
+                            },
+                            '100%': {
+                              transform: 'translateX(100%)',
+                            },
+                          },
+                        }}
                       />
                     )}
                   </React.Fragment>
@@ -880,17 +1139,35 @@ export default function BookingLuxuryPage() {
 
 
 
-          {/* Step Title - Compact on Mobile */}
-          <Box mb={{ base: 3, md: 6 }} textAlign="center" px={{ base: 2, md: 0 }}>
+          {/* Step Title - Enhanced Typography & Design */}
+          <Box 
+            mb={{ base: 4, md: 8 }} 
+            textAlign="center" 
+            px={{ base: 2, md: 0 }}
+          >
             <Heading 
-              size={{ base: "lg", md: "xl" }}
+              size={{ base: "xl", md: "2xl" }}
               color="white"
-              fontWeight="600"
-              mb={1}
+              fontWeight="800"
+              mb={3}
+              letterSpacing="tight"
+              bgGradient={`linear(to-r, ${STEPS[currentStep - 1]?.color}.300, ${STEPS[currentStep - 1]?.color}.500)`}
+              bgClip="text"
+              textShadow="0 0 30px rgba(168, 85, 247, 0.3)"
+              fontFamily="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
             >
               {STEPS[currentStep - 1]?.title}
             </Heading>
-            <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+            <Text 
+              fontSize={{ base: "md", md: "lg" }} 
+              color="whiteAlpha.800"
+              fontWeight="500"
+              letterSpacing="wide"
+              textTransform="none"
+              maxW="600px"
+              mx="auto"
+              lineHeight="1.6"
+            >
               {STEPS[currentStep - 1]?.description}
             </Text>
           </Box>
@@ -920,17 +1197,195 @@ export default function BookingLuxuryPage() {
             )}
             {currentStep === 2 && (
               <Box key="step2-items" w="full" data-booking-step="2">
-                <WhereAndWhatStep
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={errors}
-                  onNext={handleNext}
-                  onBack={() => setCurrentStep(1)}
-                  calculatePricing={calculateComprehensivePricing}
-                  pricingTiers={pricingTiers}
-                  availabilityData={availabilityData}
-                  isLoadingAvailability={isLoadingAvailability}
-                />
+                <VStack spacing={6} align="stretch">
+                  {/* Date & Time Selection - Right Under Progress Bar */}
+                  <Card 
+                    bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+                    backdropFilter="blur(20px)"
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor="rgba(168, 85, 247, 0.4)"
+                    boxShadow="0 8px 32px rgba(168, 85, 247, 0.3)"
+                  >
+                    <CardBody p={{ base: 4, md: 6 }}>
+                      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+                        <VStack spacing={2} textAlign="center">
+                          <Heading size={{ base: "md", md: "lg" }} color="white">
+                            📅 When do you need the move?
+                          </Heading>
+                          <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
+                            Select your preferred date and time
+                          </Text>
+                        </VStack>
+
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
+                          <Box>
+                            <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>📅 Select Date</Text>
+                            <input
+                              type="date"
+                              value={formData.step1.pickupDate || ''}
+                              onChange={(e) => {
+                                const selectedDate = e.target.value;
+                                updateFormData('step1', { pickupDate: selectedDate });
+                                
+                                // Calculate urgency based on date
+                                const now = new Date();
+                                const selected = new Date(selectedDate);
+                                const diffHours = (selected.getTime() - now.getTime()) / (1000 * 60 * 60);
+                                
+                                let urgency: 'same-day' | 'next-day' | 'scheduled' = 'scheduled';
+                                if (diffHours < 24) {
+                                  urgency = 'same-day';
+                                } else if (diffHours < 48) {
+                                  urgency = 'next-day';
+                                }
+                                
+                                updateFormData('step1', { urgency });
+                                
+                                console.log('📅 Date changed:', {
+                                  date: selectedDate,
+                                  diffHours: diffHours.toFixed(1),
+                                  urgency
+                                });
+                              }}
+                              min={(() => {
+                                const tomorrow = new Date();
+                                tomorrow.setDate(tomorrow.getDate() + 1);
+                                return tomorrow.toISOString().split('T')[0];
+                              })()}
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                fontSize: '16px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(59, 130, 246, 0.3)',
+                                background: 'rgba(26, 26, 26, 0.8)',
+                                color: 'white',
+                                fontWeight: '500'
+                              }}
+                            />
+                            {errors['step1.pickupDate'] && (
+                              <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupDate']}</Text>
+                            )}
+                          </Box>
+
+                          <Box>
+                            <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>⏰ Select Time</Text>
+                            <select
+                              value={formData.step1.pickupTimeSlot || ''}
+                              onChange={(e) => {
+                                const timeSlot = e.target.value;
+                                updateFormData('step1', { pickupTimeSlot: timeSlot });
+                                
+                                console.log('⏰ Time changed:', timeSlot);
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                fontSize: '16px',
+                                borderRadius: '12px',
+                                border: '2px solid rgba(59, 130, 246, 0.4)',
+                                background: 'white',
+                                color: '#1a1a1a',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="">Choose a time</option>
+                              <option value="morning">8 AM - 12 PM 🌅 (Morning)</option>
+                              <option value="afternoon">12 PM - 4 PM ☀️ (Afternoon)</option>
+                              <option value="evening">4 PM - 6 PM 🌆 (Evening)</option>
+                              <option value="flexible">Flexible ⏰ (Best Price)</option>
+                            </select>
+                            {errors['step1.pickupTime'] && (
+                              <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupTime']}</Text>
+                            )}
+                          </Box>
+                        </SimpleGrid>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+
+
+
+                  <WhereAndWhatStepHierarchical
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    errors={errors}
+                    onNext={handleNext}
+                    onBack={() => setCurrentStep(1)}
+                    calculatePricing={calculateComprehensivePricing}
+                  />
+
+                  {/* SINGLE Navigation Section - Bottom of Step 2 */}
+                  <Card
+                    bg="rgba(26, 32, 44, 0.8)"
+                    backdropFilter="blur(10px)"
+                    borderRadius="xl"
+                    border="1px solid"
+                    borderColor="rgba(255, 255, 255, 0.1)"
+                    mt={8}
+                  >
+                    <CardBody p={{ base: 4, md: 6 }}>
+                      <VStack spacing={4}>
+                        {/* Status Message */}
+                        {formData.step1.items.length === 0 ? (
+                          <Text color="yellow.300" fontSize="sm" textAlign="center">
+                            ⚠️ Please select at least one item to continue
+                          </Text>
+                        ) : !formData.step1.pickupDate ? (
+                          <Text color="yellow.300" fontSize="sm" textAlign="center">
+                            ⚠️ Please select a date to continue
+                          </Text>
+                        ) : (
+                          <Text color="green.300" fontSize="sm" textAlign="center">
+                            ✅ Ready to continue - {formData.step1.items.length} items selected
+                          </Text>
+                        )}
+
+                        {/* Navigation Buttons */}
+                        <HStack justify="space-between" w="full" spacing={4}>
+                          <Button
+                            leftIcon={<FaArrowLeft />}
+                            onClick={() => setCurrentStep(1)}
+                            variant="outline"
+                            colorScheme="whiteAlpha"
+                            size="lg"
+                            color="white"
+                            borderColor="whiteAlpha.300"
+                            _hover={{ bg: 'whiteAlpha.200' }}
+                            flex={1}
+                          >
+                            Back
+                          </Button>
+
+                          <Button
+                            rightIcon={<FaArrowRight />}
+                            onClick={handleNext}
+                            bg="blue.500"
+                            color="white"
+                            size="lg"
+                            flex={2}
+                            isDisabled={formData.step1.items.length === 0 || !formData.step1.pickupDate}
+                            boxShadow={formData.step1.items.length > 0 && formData.step1.pickupDate ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none"}
+                            _hover={formData.step1.items.length > 0 && formData.step1.pickupDate ? {
+                              bg: "blue.600",
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)'
+                            } : {}}
+                            _disabled={{
+                              opacity: 0.5,
+                              cursor: 'not-allowed',
+                              bg: "gray.600"
+                            }}
+                          >
+                            Continue
+                          </Button>
+                        </HStack>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                </VStack>
               </Box>
             )}
             {currentStep === 3 && (

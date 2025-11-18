@@ -118,6 +118,7 @@ const Hero: React.FC<HeroProps> = ({
         loop
         muted
         playsInline
+        preload="auto"
         style={{
           position: 'absolute',
           top: 0,
@@ -127,11 +128,17 @@ const Hero: React.FC<HeroProps> = ({
           objectFit: 'cover',
           zIndex: 0,
           filter: 'brightness(0.6)',
+          imageRendering: 'crisp-edges',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          transform: 'translateZ(0)',
+          willChange: 'transform',
         }}
         onLoadedData={() => console.log('🎥 Video loaded successfully!')}
         onError={(e) => console.error('❌ Video error:', e)}
         onPlay={() => console.log('▶️ Video is playing')}
       >
+        <source src="/videos/background-original.mp4" type="video/mp4" />
         <source src="/videos/background.mp4" type="video/mp4" />
       </video>
 
@@ -163,35 +170,7 @@ const Hero: React.FC<HeroProps> = ({
           >
             <HStack spacing={4} justify="center" wrap="wrap" mb={4}>
               <Badge
-                colorScheme="green"
-                size="lg"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="rgba(0,209,143,0.9)"
-                color="white"
-                fontWeight="bold"
-                boxShadow="0 4px 15px rgba(0,209,143,0.3)"
-              >
-                <Icon as={FaShieldAlt} mr={2} />
-                Fully Insured
-              </Badge>
-              <Badge
-                colorScheme="yellow"
-                size="lg"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="rgba(255,193,7,0.9)"
-                color="black"
-                fontWeight="bold"
-                boxShadow="0 4px 15px rgba(255,193,7,0.3)"
-              >
-                <Icon as={FaStar} mr={2} />
-                5-Star Rated
-              </Badge>
-              <Badge
-                colorScheme="blue"
+                colorScheme="cyan"
                 size="lg"
                 px={4}
                 py={2}
@@ -200,6 +179,34 @@ const Hero: React.FC<HeroProps> = ({
                 color="white"
                 fontWeight="bold"
                 boxShadow="0 4px 15px rgba(0,194,255,0.3)"
+              >
+                <Icon as={FaShieldAlt} mr={2} />
+                Fully Insured
+              </Badge>
+              <Badge
+                colorScheme="cyan"
+                size="lg"
+                px={4}
+                py={2}
+                borderRadius="full"
+                bg="rgba(0,194,255,0.9)"
+                color="white"
+                fontWeight="bold"
+                boxShadow="0 4px 15px rgba(0,194,255,0.3)"
+              >
+                <Icon as={FaStar} mr={2} />
+                5-Star Rated
+              </Badge>
+              <Badge
+                colorScheme="cyan"
+                size="lg"
+                px={4}
+                py={2}
+                borderRadius="full"
+                bg="linear-gradient(135deg, #001F3F, #002D6B)"
+                color="white"
+                fontWeight="bold"
+                boxShadow="0 4px 15px rgba(0,180,255,0.6)"
               >
                 <Icon as={FaClock} mr={2} />
                 24/7 Support
@@ -255,18 +262,18 @@ const Hero: React.FC<HeroProps> = ({
               <MotionButton
                 as={Link}
                 href={ctaHref}
-                bg="linear-gradient(135deg, #00C2FF, #00D18F)"
+                bg="linear-gradient(135deg, #001F3F, #002D6B)"
                 color="white"
                 fontWeight="bold"
                 px={{ base: 8, md: 12 }}
                 py={{ base: 6, md: 8 }}
                 fontSize={{ base: 'lg', md: 'xl' }}
                 borderRadius="2xl"
-                boxShadow="0 8px 25px rgba(0,194,255,0.4)"
+                boxShadow="0 8px 25px rgba(0,180,255,0.6)"
                 _hover={{
-                  bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
+                  bg: 'linear-gradient(135deg, #002D6B, #001F3F)',
                   transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 35px rgba(0,194,255,0.5)',
+                  boxShadow: '0 12px 35px rgba(0,240,255,0.2)',
                 }}
                 _active={{
                   transform: 'translateY(-2px)',
@@ -307,9 +314,9 @@ const Hero: React.FC<HeroProps> = ({
                   bg="rgba(255,255,255,0.1)"
                   backdropFilter="blur(10px)"
                   _hover={{
-                    bg: 'rgba(255,255,255,0.2)',
-                    borderColor: 'neon.400',
-                    color: 'neon.400',
+                    bg: 'rgba(0,194,255,0.2)',
+                    borderColor: '#00C2FF',
+                    color: '#00C2FF',
                     transform: 'translateY(-2px)',
                   }}
                   borderRadius="xl"
@@ -329,9 +336,9 @@ const Hero: React.FC<HeroProps> = ({
                   bg="rgba(255,255,255,0.1)"
                   backdropFilter="blur(10px)"
                   _hover={{
-                    bg: 'rgba(255,255,255,0.2)',
-                    borderColor: 'green.400',
-                    color: 'green.400',
+                    bg: 'rgba(0,194,255,0.2)',
+                    borderColor: '#00C2FF',
+                    color: '#00C2FF',
                     transform: 'translateY(-2px)',
                   }}
                   borderRadius="xl"
@@ -364,7 +371,7 @@ const Hero: React.FC<HeroProps> = ({
                 <Text
                   fontSize={{ base: '2xl', md: '3xl' }}
                   fontWeight="bold"
-                  color="neon.400"
+                  color="#00C2FF"
                   textShadow="0 0 10px rgba(0,194,255,0.5)"
                 >
                   50K+
@@ -377,8 +384,8 @@ const Hero: React.FC<HeroProps> = ({
                 <Text
                   fontSize={{ base: '2xl', md: '3xl' }}
                   fontWeight="bold"
-                  color="green.400"
-                  textShadow="0 0 10px rgba(0,209,143,0.5)"
+                  color="#00C2FF"
+                  textShadow="0 0 10px rgba(0,194,255,0.5)"
                 >
                   95%
                 </Text>
@@ -390,8 +397,8 @@ const Hero: React.FC<HeroProps> = ({
                 <Text
                   fontSize={{ base: '2xl', md: '3xl' }}
                   fontWeight="bold"
-                  color="yellow.400"
-                  textShadow="0 0 10px rgba(255,193,7,0.5)"
+                  color="#00C2FF"
+                  textShadow="0 0 10px rgba(0,194,255,0.5)"
                 >
                   £50
                 </Text>

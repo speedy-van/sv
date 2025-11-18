@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { UnifiedNavigation } from '@/components/shared/UnifiedNavigation';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
@@ -23,26 +23,53 @@ export default function CustomerLayoutWrapper({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   
   // Check if current route is public
   const isPublicRoute = pathname ? PUBLIC_CUSTOMER_ROUTES.some(route => 
     pathname === route || pathname.startsWith(route + '/')
   ) : false;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Redirect to login if trying to access protected route without authentication
   useEffect(() => {
-    if (!isPublicRoute && !isAuthenticated) {
+    if (mounted && !isPublicRoute && !isAuthenticated) {
       console.log('🔒 Customer Layout - Redirecting to login (protected route, no auth)');
       router.push(ROUTES.CUSTOMER_LOGIN);
     }
-  }, [isPublicRoute, isAuthenticated, router]);
+  }, [mounted, isPublicRoute, isAuthenticated, router]);
+
+  // Avoid hydration mismatch by rendering same content on server and initial client render
+  if (!mounted) {
+    // If it's a public route, show content immediately
+    if (isPublicRoute) {
+      return (
+        <div className="notranslate" translate="no">
+          <UnifiedErrorBoundary role="customer">{children}</UnifiedErrorBoundary>
+        </div>
+      );
+    }
+    // For protected routes, show navigation assuming authenticated
+    return (
+      <div className="notranslate" translate="no">
+        <UnifiedNavigation role="customer" isAuthenticated={isAuthenticated}>
+          <UnifiedErrorBoundary role="customer">{children}</UnifiedErrorBoundary>
+        </UnifiedNavigation>
+      </div>
+    );
+  }
+
+  // After mount, handle authentication properly
 
   // If it's a public route, don't show navigation
   if (isPublicRoute) {
     return (
-      <>
+      <div className="notranslate" translate="no">
         <UnifiedErrorBoundary role="customer">{children}</UnifiedErrorBoundary>
-      </>
+      </div>
     );
   }
 
@@ -53,11 +80,11 @@ export default function CustomerLayoutWrapper({
   }
 
   return (
-    <>
+    <div className="notranslate" translate="no">
       <UnifiedNavigation role="customer" isAuthenticated={isAuthenticated}>
         <UnifiedErrorBoundary role="customer">{children}</UnifiedErrorBoundary>
       </UnifiedNavigation>
-    </>
+    </div>
   );
 }
 

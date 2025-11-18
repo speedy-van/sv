@@ -121,7 +121,7 @@ export default async function RootLayout({
   const initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
 
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning translate="no">
       <head>
         {/* Favicon and App Icons */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -147,6 +147,8 @@ export default async function RootLayout({
 
         {/* Theme Colors */}
         <meta name="theme-color" content="#2563EB" />
+        {/* Prevent browser auto-translation (force English UI) */}
+        <meta name="google" content="notranslate" />
 
         {/* CRITICAL: Ensure Safari/iOS treats CSS-in-JS styles correctly */}
         <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
@@ -155,22 +157,22 @@ export default async function RootLayout({
         {/* Mobile and PWA Meta */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-
-        {/* Google Ads Global Site Tag - Deferred for performance */}
+      </head>
+      <body className={inter.className} suppressHydrationWarning translate="no">
+        {/* Google Ads Global Site Tag - Conversion Tracking */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
-          strategy="lazyOnload"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-1771563082"
+          strategy="afterInteractive"
+          async
         />
-        <Script id="google-ads-init" strategy="lazyOnload">
+        <Script id="google-ads-init" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'AW-17715630822');
+            gtag('config', 'AW-1771563082');
           `}
         </Script>
-      </head>
-      <body className={inter.className} suppressHydrationWarning>
         <Script src="/scripts/fix-css.js" strategy="beforeInteractive" />
         <VisitorTracker />
         <StructuredData type="moving-company" />

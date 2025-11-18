@@ -278,9 +278,12 @@ async function handleBatchUpdate(body: any): Promise<NextResponse> {
   
   const result = await APIPerformanceService.batchUpdateBookings(processedUpdates);
   
-  // Clear related caches
-  APIPerformanceService.clearCache('bookings');
-  APIPerformanceService.clearCache('routes');
+  await APIPerformanceService.invalidateOrders(
+    result.map((booking) => ({
+      id: booking?.id,
+      code: (booking as any)?.code ?? (booking as any)?.reference ?? null
+    }))
+  );
   
   return NextResponse.json({
     success: true,

@@ -309,6 +309,55 @@ export class VoodooSMSService {
   }
 }
 
+/**
+ * Mock VoodooSMSService for development when API key is not configured
+ */
+class MockVoodooSMSService extends VoodooSMSService {
+  constructor() {
+    super('mock-api-key');
+  }
+
+  async sendSMS(data: SMSData): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Would send to:', data.to);
+    console.log('📝 [MOCK SMS] Message:', data.message);
+    return {
+      success: true,
+      messageId: 'mock_' + Date.now(),
+      credits: 0,
+    };
+  }
+
+  async sendBookingConfirmation(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Booking confirmation to:', data.phoneNumber);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+
+  async sendPaymentConfirmation(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Payment confirmation to:', data.phoneNumber);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+
+  async sendDriverAssignment(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Driver assignment to:', data.phoneNumber);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+
+  async sendDriverNotification(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Driver notification to:', data.phoneNumber);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+
+  async sendOTPCode(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] OTP code to:', data.phoneNumber, '- Code:', data.code);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+
+  async sendCustomMessage(data: any): Promise<SMSResponse> {
+    console.log('📱 [MOCK SMS] Custom message to:', data.phoneNumber);
+    return { success: true, messageId: 'mock_' + Date.now(), credits: 0 };
+  }
+}
+
 // Export singleton instance
 let voodooSMSService: VoodooSMSService | null = null;
 
@@ -316,7 +365,9 @@ export function getVoodooSMSService(): VoodooSMSService {
   const apiKey = process.env.VOODOO_SMS_API_KEY;
   
   if (!apiKey) {
-    throw new Error('VOODOO_SMS_API_KEY is not configured in environment variables');
+    console.warn('⚠️  VOODOO_SMS_API_KEY is not configured - SMS will be disabled');
+    // Return a mock service that doesn't send SMS in development
+    return new MockVoodooSMSService();
   }
 
   if (!voodooSMSService) {

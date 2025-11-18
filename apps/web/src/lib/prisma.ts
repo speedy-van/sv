@@ -361,6 +361,14 @@ process.on('SIGINT', shutdownPrisma);
 process.on('SIGTERM', shutdownPrisma);
 process.on('beforeExit', shutdownPrisma);
 
+// Safe getter for Prisma client - always returns initialized instance
+export function getPrismaClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    throw new Error('Prisma client not initialized');
+  }
+  return globalForPrisma.prisma;
+}
+
 // Export helper to use in API routes with retry logic
 export async function withPrisma<T>(
   callback: (prisma: PrismaClient) => Promise<T>,
@@ -371,7 +379,8 @@ export async function withPrisma<T>(
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await ensurePrismaConnection();
-      return await callback(prisma);
+      const db = getPrismaClient();
+      return await callback(db);
     } catch (error: any) {
       lastError = error;
       
