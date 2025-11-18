@@ -12,10 +12,10 @@ async function testNavigation() {
         status: 'accepted',
       },
       include: {
-        Booking: {
+        booking: {
           include: {
-            PickupAddress: true,
-            DropoffAddress: true,
+            pickupAddress: true,
+            dropoffAddress: true,
           },
         },
         Driver: {
@@ -37,29 +37,29 @@ async function testNavigation() {
     const assignment = assignments[0];
     console.log('✅ Found active assignment:');
     console.log(`   Assignment ID: ${assignment.id}`);
-    console.log(`   Booking Reference: ${assignment.Booking.reference}`);
+    console.log(`   Booking Reference: ${assignment.booking.reference}`);
     console.log(`   Status: ${assignment.status}`);
-    console.log(`   Pickup: ${assignment.Booking.pickupAddress.label}`);
-    console.log(`   Dropoff: ${assignment.Booking.dropoffAddress.label}`);
+    console.log(`   Pickup: ${assignment.booking.pickupAddress.label}`);
+    console.log(`   Dropoff: ${assignment.booking.dropoffAddress.label}`);
     console.log(`   Driver: ${assignment.Driver.userId}`);
 
     // Test 2: Check if coordinates are available
     if (
-      assignment.Booking.pickupAddress.lat &&
-      assignment.Booking.pickupAddress.lng &&
-      assignment.Booking.dropoffAddress.lat &&
-      assignment.Booking.dropoffAddress.lng
+      assignment.booking.pickupAddress.lat &&
+      assignment.booking.pickupAddress.lng &&
+      assignment.booking.dropoffAddress.lat &&
+      assignment.booking.dropoffAddress.lng
     ) {
       console.log('\n✅ Coordinates available for navigation:');
       console.log(
-        `   Pickup: ${assignment.Booking.pickupAddress.lat}, ${assignment.Booking.pickupAddress.lng}`
+        `   Pickup: ${assignment.booking.pickupAddress.lat}, ${assignment.booking.pickupAddress.lng}`
       );
       console.log(
-        `   Dropoff: ${assignment.Booking.dropoffAddress.lat}, ${assignment.Booking.dropoffAddress.lng}`
+        `   Dropoff: ${assignment.booking.dropoffAddress.lat}, ${assignment.booking.dropoffAddress.lng}`
       );
-      console.log(`   Scheduled: ${assignment.Booking.scheduledAt}`);
+      console.log(`   Scheduled: ${assignment.booking.scheduledAt}`);
       console.log(
-        `   Duration: ${assignment.Booking.estimatedDurationMinutes} minutes`
+        `   Duration: ${assignment.booking.estimatedDurationMinutes} minutes`
       );
     } else {
       console.log(
@@ -107,15 +107,15 @@ async function testNavigation() {
     });
 
     // Test 5: Generate tracking URL
-    const trackingUrl = `http://localhost:3000/track?code=${assignment.Booking.reference}`;
+    const trackingUrl = `http://localhost:3000/track?code=${assignment.booking.reference}`;
     console.log(`\n🔗 Tracking URL: ${trackingUrl}`);
 
     // Test 6: Check API endpoints
     console.log('\n🔌 API Endpoints to test:');
     console.log(`   GET /api/driver/jobs/${assignment.id}/route`);
     console.log(`   POST /api/driver/location`);
-    console.log(`   GET /api/track/${assignment.Booking.reference}`);
-    console.log(`   GET /api/track/eta?code=${assignment.Booking.reference}`);
+    console.log(`   GET /api/track/${assignment.booking.reference}`);
+    console.log(`   GET /api/track/eta?code=${assignment.booking.reference}`);
 
     console.log('\n✅ Navigation & Live Tracking test completed!');
     console.log('\n📱 To test the features:');
