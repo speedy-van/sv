@@ -2,7 +2,7 @@
  * Routing constants and utilities for Speedy Van
  */
 
-export type UserRole = 'customer' | 'driver' | 'admin';
+export type UserRole = 'customer' | 'driver' | 'admin' | 'staff';
 
 export const ROUTES = {
   // Public routes
@@ -68,6 +68,12 @@ export const ROUTES = {
   ADMIN_APPROVALS: '/admin/approvals',
   ADMIN_BONUSES: '/admin/bonuses',
   ADMIN_AUDIT_TRAIL: '/admin/audit-trail',
+  ADMIN_STAFF: '/admin/staff',
+  ADMIN_STAFF_ATTENDANCE: '/admin/staff/attendance',
+  ADMIN_STAFF_REPORTS: '/admin/staff/reports',
+  
+  // Staff routes
+  STAFF_DASHBOARD: '/staff/dashboard',
   
   
   // Nested route objects for easier access
@@ -87,6 +93,10 @@ export const ROUTES = {
     PROFILE: '/driver/profile',
     SETTINGS: '/driver/settings',
     APPLICATION: '/driver/application',
+  },
+  
+  STAFF: {
+    DASHBOARD: '/staff/dashboard',
   },
   
   ADMIN: {
@@ -114,6 +124,9 @@ export const ROUTES = {
     APPROVALS: '/admin/approvals',
     BONUSES: '/admin/bonuses',
     AUDIT_TRAIL: '/admin/audit-trail',
+    STAFF: '/admin/staff',
+    STAFF_ATTENDANCE: '/admin/staff/attendance',
+    STAFF_REPORTS: '/admin/staff/reports',
   },
   
       SHARED: {
@@ -134,6 +147,8 @@ export function getDefaultRoute(role: UserRole): string {
       return ROUTES.DRIVER_DASHBOARD;
     case 'customer':
       return ROUTES.CUSTOMER_DASHBOARD;
+    case 'staff':
+      return ROUTES.STAFF_DASHBOARD;
     default:
       return ROUTES.HOME;
   }

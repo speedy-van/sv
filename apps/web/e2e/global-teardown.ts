@@ -31,9 +31,7 @@ async function globalTeardown(config: FullConfig) {
       where: {
         Assignment: {
           Booking: {
-            customer: {
-              email: testCustomerEmail,
-            },
+            customerEmail: testCustomerEmail,
           },
         },
       },
@@ -41,9 +39,7 @@ async function globalTeardown(config: FullConfig) {
 
     await prisma.booking.deleteMany({
       where: {
-        customer: {
-          email: testCustomerEmail,
-        },
+        customerEmail: testCustomerEmail,
       },
     });
 

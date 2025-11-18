@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { deriveServiceMetadata } from '@/lib/bookings/serviceType';
 import { createUniqueReference } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
@@ -93,6 +94,10 @@ export async function GET(request: NextRequest) {
           bonusesTotal: true,
           penaltiesTotal: true,
           driverPayout: true,
+          totalDrops: true,
+          serviceTier: true,
+          createdAt: true,
+          updatedAt: true,
           driver: { select: { id: true, name: true, email: true } },
           drops: {
             select: {
@@ -128,16 +133,44 @@ export async function GET(request: NextRequest) {
       routes = [];
     }
 
-    // Also get single bookings (not yet converted to routes)
+    // ✅ FIX: Get Economy bookings/drops for Multi-Drop Routes section
+    let economyDrops: any[] = [];
+    try {
+      // Get drops from Economy bookings
+      economyDrops = await prisma.drop.findMany({
+        where: {
+          status: {
+            in: ['booked', 'pending'],
+          },
+          routeId: null, // Not yet assigned to a route
+          serviceTier: 'economy', // ServiceTier enum only accepts lowercase
+        },
+        include: {
+          User: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { timeWindowStart: 'asc' },
+        take: 100,
+      });
+      console.log(`✅ [Admin Routes API] Found ${economyDrops.length} Economy drops for multi-drop`);
+    } catch (dropsError) {
+      console.error('❌ [Admin Routes API] Error fetching Economy drops:', dropsError);
+      economyDrops = [];
+    }
+
+    // Fetch candidate bookings once and partition into economy vs single
+    let economyBookings: any[] = [];
     let singleBookings: any[] = [];
     try {
       const bookingWhere: any = {
         status: 'CONFIRMED',
-        // Only include bookings that are not part of any route
-        route: null,
+        routeId: null,
       };
 
-      // Apply same filters as routes if applicable
       if (startDate || endDate) {
         bookingWhere.scheduledAt = {};
         if (startDate) {
@@ -148,7 +181,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      singleBookings = await prisma.booking.findMany({
+      const bookingCandidatesRaw = await prisma.booking.findMany({
         where: bookingWhere,
         select: {
           id: true,
@@ -163,13 +196,13 @@ export async function GET(request: NextRequest) {
             select: {
               label: true,
               postcode: true,
-            }
+            },
           },
           dropoffAddress: {
             select: {
               label: true,
               postcode: true,
-            }
+            },
           },
           driver: {
             select: {
@@ -178,26 +211,80 @@ export async function GET(request: NextRequest) {
                 select: {
                   name: true,
                   email: true,
-                }
-              }
-            }
+                },
+              },
+            },
           },
           BookingItem: {
             select: {
               name: true,
               quantity: true,
               volumeM3: true,
-            }
-          }
+            },
+          },
+          customerPreferences: true,
+          orderType: true,
+          isMultiDrop: true,
+          urgency: true,
         },
-        orderBy: { scheduledAt: 'desc' },
-        take: 50,
+        orderBy: { scheduledAt: 'asc' },
+        take: 250,
       });
-      console.log(`✅ [Admin Routes API] Found ${singleBookings.length} single bookings`);
+
+      const bookingCandidates = bookingCandidatesRaw.map(candidate => {
+        const {
+          pickupAddress,
+          dropoffAddress,
+          ...rest
+        } = candidate;
+        return {
+          ...rest,
+          pickupAddress,
+          dropoffAddress,
+        };
+      });
+
+      const enrichedBookings = bookingCandidates.map(candidate => {
+        const meta = deriveServiceMetadata(candidate);
+        return { candidate, meta };
+      });
+
+      economyBookings = enrichedBookings
+        .filter(item => item.meta.isEconomy)
+        .map(item => ({
+          ...item.candidate,
+          serviceTypeDerived: item.meta.serviceType,
+        }))
+        .slice(0, 100);
+
+      singleBookings = enrichedBookings
+        .filter(item => !item.meta.isEconomy)
+        .sort(
+          (a, b) =>
+            new Date(b.candidate.scheduledAt).getTime() -
+            new Date(a.candidate.scheduledAt).getTime()
+        )
+        .map(item => ({
+          ...item.candidate,
+          serviceTypeDerived: item.meta.serviceType,
+        }))
+        .slice(0, 50);
+
+      console.log(
+        `✅ [Admin Routes API] Partitioned ${enrichedBookings.length} bookings into ${economyBookings.length} economy and ${singleBookings.length} single bookings`
+      );
     } catch (bookingsError) {
-      console.error('❌ [Admin Routes API] Error fetching single bookings:', bookingsError);
+      console.error('❌ [Admin Routes API] Error fetching bookings:', bookingsError);
+      economyBookings = [];
       singleBookings = [];
     }
+
+    console.log('📊 [Admin Routes API] Summary:', {
+      routes: routes.length,
+      economyDrops: economyDrops.length,
+      economyBookingsPending: economyBookings.length,
+      singleBookings: singleBookings.length,
+    });
 
     // Calculate metrics from routes data
     const totalRoutes = routes.length;
@@ -273,8 +360,8 @@ export async function GET(request: NextRequest) {
       type: 'single-booking',
       bookingId: booking.id,
       driverId: booking.driverId,
-      driverName: booking.driver?.User?.name || 'Unassigned',
-      driverEmail: booking.driver?.User?.email || null,
+      driverName: booking.Driver?.User?.name || 'Unassigned',
+      driverEmail: booking.Driver?.User?.email || null,
       vehicleId: null,
       status: booking.status,
       totalDrops: 1,
@@ -305,14 +392,14 @@ export async function GET(request: NextRequest) {
         type: 'multi-drop',
         status: route.status,
         driverId: route.driverId,
-        driverName: route.driver?.name || 'Unassigned',
-        driverEmail: route.driver?.email,
-        totalDrops: route.totalDrops || (route as any).drops?.length || 0,
+        driverName: route.User?.name || 'Unassigned',
+        driverEmail: route.User?.email,
+        totalDrops: route.totalDrops || (route as any).Drop?.length || 0,
         completedDrops: route.completedDrops,
         startTime: route.startTime,
         totalOutcome: route.totalOutcome,
         serviceTier: route.serviceTier,
-        drops: (route as any).drops || [],
+        drops: (route as any).Drop || [],
         bookings: route.Booking || [],
         progress: route.totalDrops > 0 ? (route.completedDrops / route.totalDrops * 100) : 0,
         createdAt: route.createdAt,
@@ -324,10 +411,43 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       routes: allRoutes,
+      // ✅ FIX: Include Economy drops and bookings for Multi-Drop section
+      economyDrops: economyDrops.map((drop: any) => ({
+        id: drop.id,
+        type: 'economy-drop',
+        status: drop.status,
+        serviceTier: 'ECONOMY',
+        pickupAddress: drop.pickupAddress,
+        deliveryAddress: drop.deliveryAddress,
+        timeWindowStart: drop.timeWindowStart,
+        timeWindowEnd: drop.timeWindowEnd,
+        quotedPrice: drop.quotedPrice,
+        weight: drop.weight,
+        volume: drop.volume,
+        customer: drop.customer,
+      })),
+      economyBookingsPending: economyBookings.map((booking: any) => ({
+        id: booking.id,
+        reference: booking.reference,
+        type: 'economy-booking',
+        status: booking.status,
+        serviceType: booking.serviceTypeDerived || 'ECONOMY',
+        isEconomyService: true,
+        scheduledAt: booking.scheduledAt,
+        totalGBP: booking.totalGBP,
+        customerName: booking.customerName,
+        customerEmail: booking.customerEmail,
+        pickupAddress: booking.pickupAddress,
+        dropoffAddress: booking.dropoffAddress,
+        items: booking.BookingItem,
+        needsDropConversion: true, // Flag for frontend to show conversion button
+      })),
       metrics: {
         totalRoutes: routes.length + singleBookings.length,
         totalMultiDropRoutes: routes.length,
         totalSingleBookings: singleBookings.length,
+        totalEconomyDrops: economyDrops.length,
+        totalEconomyBookingsPending: economyBookings.length,
         avgDistance,
         avgDuration,
       },
@@ -389,7 +509,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: idsToUse },
         status: 'CONFIRMED',
-        route: null, // Not already in a route
+        routeId: null, // Not already in a route
       },
       select: {
         id: true,

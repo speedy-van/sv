@@ -25,7 +25,12 @@ export default async function CustomerLayout({
 }) {
   // Get session status
   const session = await getServerSession(authOptions);
-  const isAuthenticated = !!session?.user && (session.user as any)?.role === 'customer';
+  const user = (session as any)?.user as { role?: string } | undefined;
+  const userRole = user?.role;
+  let isAuthenticated = false;
+  if (userRole === 'customer' || userRole === 'admin') {
+    isAuthenticated = true;
+  }
 
   // Pass session status to client wrapper
   // The client wrapper will check the route and handle authentication

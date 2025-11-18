@@ -177,7 +177,7 @@ export default function BookingSuccessPage() {
               const transactionId =
                 data.metadata?.bookingReference || bookingRef || sessionId;
               (window as any).gtag('event', 'conversion', {
-                'send_to': 'AW-17715630822/4VHOCMuJtL4bEOalvP9B',
+                'send_to': 'AW-1771563082/4VHOCMuJtL4bEOalvP9B',
                 'value': bookingAmount,
                 'currency': 'GBP',
                 'transaction_id': transactionId
@@ -207,6 +207,47 @@ export default function BookingSuccessPage() {
             duration: 5000,
             isClosable: true,
           });
+          }
+
+          // Update booking with payment intent (in case webhook didn't fire in test mode)
+          try {
+            const bookingId = data.client_reference_id || data.metadata?.bookingId;
+            if (bookingId && data.payment_intent) {
+              const updateResponse = await fetch(`/api/booking-luxury/${bookingId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  stripePaymentIntentId: data.payment_intent,
+                  status: 'CONFIRMED',
+                  paidAt: new Date().toISOString()
+                })
+              });
+
+              if (updateResponse.ok) {
+                console.log('✅ Booking updated with payment intent');
+              } else {
+                console.warn('⚠️ Failed to update booking');
+              }
+            }
+          } catch (updateError) {
+            console.error('❌ Error updating booking:', updateError);
+          }
+
+          // Send confirmation email as backup (in case webhook didn't fire)
+          try {
+            const emailResponse = await fetch('/api/booking-luxury/send-confirmation-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId })
+            });
+
+            if (emailResponse.ok) {
+              console.log('✅ Confirmation email sent successfully from success page');
+            } else {
+              console.warn('⚠️ Confirmation email failed from success page');
+            }
+          } catch (emailError) {
+            console.error('❌ Error sending confirmation email from success page:', emailError);
           }
 
           // Send SMS confirmation automatically when success page loads (only once per session)

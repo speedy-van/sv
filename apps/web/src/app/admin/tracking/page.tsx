@@ -46,7 +46,7 @@ import {
 import dynamic from 'next/dynamic';
 import { useAdminRealTimeTracking } from '@/hooks/useRealTimeTracking';
 
-const LiveMap = dynamic(() => import('@/components/Map/LiveMap'), {
+const LiveMap = dynamic(() => import('@/components/Map/MapboxLiveMap'), {
   ssr: false,
 });
 

@@ -102,7 +102,7 @@ async function createTestNotifications() {
           createdAt: new Date(
             Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
           ), // Random time in last 7 days
-        },
+        } as any,
       });
     }
 

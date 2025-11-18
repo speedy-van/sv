@@ -1,20 +1,7 @@
-/**
- * TAX DASHBOARD API ENDPOINT
- * 
- * Provides comprehensive tax dashboard data including:
- * - VAT summary and current period data
- * - Corporation Tax calculations
- * - Compliance status and scores
- * - Recent transactions
- * - Upcoming deadlines
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { taxCalculator } from '@/lib/tax/calculator';
-import { taxDeadlineManager } from '@/lib/tax/deadline-manager';
 import { taxReportingSystem } from '@/lib/tax/reporting-system';
 import { siteDataIntegration } from '@/lib/tax/site-integration';
 import { aiTaxAnalyzer } from '@/lib/tax/ai-tax-analyzer';
@@ -22,185 +9,87 @@ import { taxValidationService } from '@/lib/tax/validation-service';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin authentication
     const session = await getServerSession(authOptions);
     const user = (session as any)?.user;
-    const role = user?.role as string | undefined;
-    const userId = user?.id as string | undefined;
-    if (!user || !role || role !== 'admin') {
+    if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = userId;
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'current';
-
-    // Get current tax period
-    const currentDate = new Date();
-    const currentTaxPeriod = taxCalculator.getVATPeriod(currentDate, 'quarterly');
-
-    // Calculate period dates
-    const periodStart = new Date(currentDate.getFullYear(), Math.floor((currentDate.getMonth()) / 3) * 3, 1);
-    const periodEnd = new Date(periodStart);
-    periodEnd.setMonth(periodEnd.getMonth() + 3);
-    periodEnd.setDate(0); // Last day of previous month
-
-    // Get VAT summary for current period from site data
-    let vatRecord = await prisma.taxRecord.findFirst({
-      where: {
-        taxPeriod: currentTaxPeriod,
-        taxType: 'vat'
-      }
-    });
-
-    // If no record exists, calculate from bookings
-    if (!vatRecord) {
-      const bookingsData = await siteDataIntegration.getBookingsForTaxPeriod(periodStart, periodEnd);
-      const totalVATCollected = bookingsData.reduce((sum, b) => sum + b.vatAmount, 0);
-      const totalSales = bookingsData.reduce((sum, b) => sum + b.netAmount, 0);
-      
-      // Create temporary record for display
-      vatRecord = {
-        netVATDue: totalVATCollected,
-        vatOnSales: totalVATCollected,
-        vatOnPurchases: 0,
-        totalSales: totalSales,
-        totalPurchases: 0
-      } as any;
-    }
-
-    // Get company tax settings
-    const taxSettings = await prisma.companyTaxSettings.findFirst({
-      where: { isActive: true }
-    });
-
-    // Calculate VAT summary
-    const vatSummary = {
-      currentPeriod: currentTaxPeriod,
-      vatDue: vatRecord ? Number(vatRecord.netVATDue) : 0,
-      vatCollected: vatRecord ? Number(vatRecord.vatOnSales) : 0,
-      vatReclaimed: vatRecord ? Number(vatRecord.vatOnPurchases) : 0,
-      netVATDue: vatRecord ? Number(vatRecord.netVATDue) : 0,
-    };
-
-    // Calculate Corporation Tax estimate
-    const currentYear = currentDate.getFullYear();
-    const taxRecords = await prisma.taxRecord.findMany({
-      where: {
-        taxYear: currentYear,
-        taxType: 'vat'
-      }
-    });
-
-    const annualTurnover = taxRecords.reduce((sum, record) => sum + Number(record.totalSales), 0);
-    const annualExpenses = taxRecords.reduce((sum, record) => sum + Number(record.totalPurchases), 0);
-    const estimatedProfit = annualTurnover - annualExpenses;
-
-    const corporationTaxCalculation = taxCalculator.calculateCorporationTax(
-      estimatedProfit,
-      new Date(currentYear, 0, 1),
-      new Date(currentYear, 11, 31)
+    const vatReport = await taxReportingSystem.generateVATReport('current', false);
+    const corpReport = await taxReportingSystem.generateCorporationTaxReport(
+      new Date().getFullYear(),
+      false
     );
+    const complianceReport = await taxReportingSystem.generateComplianceReport();
 
-    const corporationTax = {
-      estimatedTax: corporationTaxCalculation.corporationTax,
-      profit: corporationTaxCalculation.taxableProfit,
-      effectiveRate: corporationTaxCalculation.effectiveRate,
-      taxFreeAllowance: corporationTaxCalculation.taxFreeAllowance,
-    };
-
-    // Get compliance status
-    const complianceChecks = await taxDeadlineManager.getComplianceStatus();
-    const overallCompliance = complianceChecks.find(check => 
-      check.checkType === 'overall_compliance'
-    );
-
-    const upcomingDeadlines = await taxDeadlineManager.checkUpcomingDeadlines();
-    const overdueDeadlines = await prisma.taxDeadline.count({
-      where: {
-        status: 'overdue',
-        isCompleted: false
-      }
-    });
-
-    const compliance = {
-      overallScore: overallCompliance ? overallCompliance.complianceScore : 100,
-      isCompliant: overallCompliance ? overallCompliance.isCompliant : true,
-      overdueDeadlines,
-      upcomingDeadlines: upcomingDeadlines.length,
-    };
-
-    // Get recent transactions
     const recentInvoices = await prisma.taxInvoice.findMany({
       where: {
         issueDate: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         }
       },
-      include: {
-        customer: true
-      },
-      orderBy: {
-        issueDate: 'desc'
-      },
+      orderBy: { issueDate: 'desc' },
       take: 10
     });
 
     const recentTransactions = recentInvoices.map(invoice => ({
       id: invoice.id,
-      type: 'Invoice Payment',
+      type: 'Tax Invoice',
       amount: Number(invoice.grossAmount),
       date: invoice.issueDate,
-      status: invoice.paymentStatus === 'paid' ? 'completed' : 'pending',
+      status: invoice.paymentStatus
     }));
 
-    // Get upcoming deadlines
-    const deadlines = upcomingDeadlines.slice(0, 5).map(deadline => ({
-      id: deadline.id,
-      title: deadline.title,
-      dueDate: deadline.dueDate,
-      status: deadline.status,
-      daysRemaining: Math.ceil((deadline.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    }));
-
-    // Get real-time stats from site
-    const realTimeStats = await siteDataIntegration.getRealTimeStats();
-
-    // Get AI insights if available
-    let aiInsights = null;
+    let realTimeStats: Awaited<ReturnType<typeof siteDataIntegration.getRealTimeStats>> | null = null;
     try {
-      const anomalyDetection = await aiTaxAnalyzer.detectAnomalies({
-        period: currentTaxPeriod,
-        revenue: Number(vatRecord?.totalSales || 0),
-        vatCollected: Number(vatRecord?.vatOnSales || 0),
-        vatReclaimed: Number(vatRecord?.vatOnPurchases || 0),
-        expenses: Number(vatRecord?.totalPurchases || 0),
-        transactions: recentInvoices.length
-      });
-      
-      aiInsights = {
-        anomalies: anomalyDetection.anomalies.slice(0, 3),
-        riskScore: anomalyDetection.overallRiskScore,
-        recommendations: anomalyDetection.recommendations.slice(0, 5)
-      };
-    } catch (error) {
-      console.log('AI insights unavailable:', error);
+      realTimeStats = await siteDataIntegration.getRealTimeStats();
+    } catch (statsError) {
+      console.warn('Real-time stats unavailable:', statsError);
     }
 
-    // Prepare dashboard data
+    let aiInsights: Awaited<ReturnType<typeof aiTaxAnalyzer.detectAnomalies>> | null = null;
+    try {
+      aiInsights = await aiTaxAnalyzer.detectAnomalies({
+        period: vatReport.period,
+        revenue: vatReport.summary.totalSales,
+        vatCollected: vatReport.summary.vatOnSales,
+        vatReclaimed: vatReport.summary.vatOnPurchases,
+        expenses: corpReport.profitAndLoss.operatingExpenses,
+        transactions: recentInvoices.length
+      });
+    } catch (aiError) {
+      console.warn('AI insights unavailable:', aiError);
+    }
+
     const dashboardData = {
-      vatSummary,
-      corporationTax,
-      compliance,
+      vatSummary: {
+        currentPeriod: vatReport.period,
+        vatDue: vatReport.summary.netVATDue,
+        vatCollected: vatReport.summary.vatOnSales,
+        vatReclaimed: vatReport.summary.vatOnPurchases,
+        netVATDue: vatReport.summary.netVATDue
+      },
+      corporationTax: {
+        estimatedTax: corpReport.taxCalculation.corporationTax,
+        profit: corpReport.taxCalculation.taxableProfit,
+        effectiveRate: corpReport.taxCalculation.effectiveRate,
+        taxFreeAllowance: corpReport.taxCalculation.taxFreeAllowance
+      },
+      compliance: {
+        overallScore: complianceReport.overallScore,
+        isCompliant: complianceReport.isCompliant,
+        overdueDeadlines: complianceReport.summary.overdueDeadlines,
+        upcomingDeadlines: complianceReport.deadlines.length
+      },
+      deadlines: complianceReport.deadlines,
       recentTransactions,
-      deadlines,
       realTimeStats,
       aiInsights,
       taxSettings: {
-        isVATRegistered: taxSettings?.isVATRegistered || false,
-        vatRegistrationNumber: taxSettings?.vatRegistrationNumber,
-        corporationTaxUTR: taxSettings?.corporationTaxUTR,
-        vatReturnFrequency: taxSettings?.vatReturnFrequency || 'quarterly'
+        isVATRegistered: true,
+        vatRegistrationNumber: process.env.TAX_VAT_REGISTRATION ?? null,
+        corporationTaxUTR: process.env.TAX_CORPORATION_UTR ?? null,
+        vatReturnFrequency: 'quarterly'
       }
     };
 
@@ -209,7 +98,6 @@ export async function GET(request: NextRequest) {
       data: dashboardData,
       timestamp: new Date().toISOString()
     });
-
   } catch (error) {
     console.error('Tax dashboard API error:', error);
     return NextResponse.json(
@@ -224,73 +112,34 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin authentication
     const session = await getServerSession(authOptions);
     const user = (session as any)?.user;
-    const role = user?.role as string | undefined;
-    const userId = user?.id as string | undefined;
-    if (!user || !role || role !== 'admin') {
+    if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const adminId = userId;
     const body = await request.json();
-    const { action, data } = body;
+    const { action, data } = body ?? {};
 
     switch (action) {
       case 'refresh_data':
-        // Trigger data refresh
-        await taxDeadlineManager.checkUpcomingDeadlines();
-        
+        await taxReportingSystem.generateComplianceReport();
         return NextResponse.json({
           success: true,
-          message: 'Dashboard data refreshed successfully'
-        });
-
-      case 'create_deadline':
-        // Create new tax deadline
-        const deadline = await prisma.taxDeadline.create({
-          data: {
-            deadlineType: data.deadlineType,
-            title: data.title,
-            description: data.description,
-            dueDate: new Date(data.dueDate),
-            taxYear: data.taxYear,
-            taxPeriod: data.taxPeriod,
-            createdBy: adminId!
-          }
-        });
-
-        return NextResponse.json({
-          success: true,
-          data: deadline,
-          message: 'Deadline created successfully'
-        });
-
-      case 'mark_deadline_completed':
-        // Mark deadline as completed
-        await prisma.taxDeadline.update({
-          where: { id: data.deadlineId },
-          data: {
-            status: 'completed',
-            isCompleted: true,
-            submissionDate: new Date(),
-            updatedBy: adminId
-          }
-        });
-
-        return NextResponse.json({
-          success: true,
-          message: 'Deadline marked as completed'
+          message: 'Dashboard data refreshed'
         });
 
       case 'sync_bookings':
-        // Sync bookings to tax invoices
+        if (!data?.periodStart || !data?.periodEnd) {
+          return NextResponse.json(
+            { success: false, error: 'periodStart and periodEnd are required' },
+            { status: 400 }
+          );
+        }
         const syncResult = await siteDataIntegration.batchSyncBookingsToInvoices(
           new Date(data.periodStart),
           new Date(data.periodEnd)
         );
-
         return NextResponse.json({
           success: true,
           data: syncResult,
@@ -298,38 +147,49 @@ export async function POST(request: NextRequest) {
         });
 
       case 'validate_vat':
-        // Validate VAT number
-        const vatValidation = await taxValidationService.validateVATNumberOnline(data.vatNumber);
-
+        if (!data?.vatNumber) {
+          return NextResponse.json(
+            { success: false, error: 'VAT number is required' },
+            { status: 400 }
+          );
+        }
+        const validationResult = await taxValidationService.validateVATNumberOnline(data.vatNumber);
         return NextResponse.json({
           success: true,
-          data: vatValidation,
-          message: vatValidation.isValid ? 'VAT number is valid' : 'VAT number validation failed'
+          data: validationResult,
+          message: validationResult.isValid ? 'VAT number is valid' : 'VAT number is invalid'
         });
 
       case 'get_ai_insights':
-        // Get AI tax insights
-        const insights = await aiTaxAnalyzer.answerTaxQuery(data.query, data.context);
-
+        if (!data?.query) {
+          return NextResponse.json(
+            { success: false, error: 'Query is required' },
+            { status: 400 }
+          );
+        }
+        const answer = await aiTaxAnalyzer.answerTaxQuery(data.query, data.context);
         return NextResponse.json({
           success: true,
-          data: { answer: insights },
-          message: 'AI insights generated'
+          data: { answer },
+          message: 'AI insight generated'
         });
 
       default:
         return NextResponse.json(
-          { success: false, error: 'Invalid action' },
+          {
+            success: false,
+            error: 'Unsupported action',
+            details: 'Available actions: refresh_data, sync_bookings, validate_vat, get_ai_insights'
+          },
           { status: 400 }
         );
     }
-
   } catch (error) {
-    console.error('Tax dashboard POST API error:', error);
+    console.error('Tax dashboard POST error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to process request'
+        error: error instanceof Error ? error.message : 'Failed to process dashboard action'
       },
       { status: 500 }
     );

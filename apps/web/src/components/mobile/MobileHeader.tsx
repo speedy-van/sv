@@ -37,13 +37,13 @@ export default function MobileHeader() {
         left="0"
         right="0"
         w="100%"
-        bg="rgba(15, 17, 20, 0.98)"
+        bg="rgba(255, 255, 255, 0.95)"
         backdropFilter="blur(10px)"
-        borderBottom="1px solid rgba(59, 130, 246, 0.3)"
+        borderBottom="1px solid rgba(229, 231, 235, 0.8)"
         px={3}
         py={2}
         zIndex={1000}
-        boxShadow="0 2px 8px rgba(0,0,0,0.3)"
+        boxShadow="0 2px 8px rgba(0,0,0,0.1)"
         suppressHydrationWarning
         display={{ base: 'block', md: 'none' }}
         visibility="visible"
@@ -62,131 +62,193 @@ export default function MobileHeader() {
         <Flex justify="space-between" align="center" h="56px">
           {/* Logo */}
           <Link href="/" _hover={{ textDecoration: 'none' }}>
-            <HStack spacing={2}>
+            <Box
+              position="relative"
+              w="65px"
+              h="65px"
+              borderRadius="full"
+              overflow="hidden"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: '-3px',
+                left: '-3px',
+                right: '-3px',
+                bottom: '-3px',
+                borderRadius: 'full',
+                background: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+                opacity: 0.5,
+                filter: 'blur(6px)',
+                animation: 'pulse 2s ease-in-out infinite',
+                zIndex: -1,
+              }}
+            >
               <Box
-                w={8}
-                h={8}
-                bg="linear-gradient(135deg, #00C2FF, #00D18F)"
-                borderRadius="md"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                color="white"
-                fontWeight="bold"
-                fontSize="sm"
-                boxShadow="0 0 15px rgba(0, 194, 255, 0.4)"
-              >
-                SV
-              </Box>
-            </HStack>
+                as="video"
+                src="/logo/sv logo.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                w="100%"
+                h="100%"
+                objectFit="cover"
+                border="2px solid"
+                borderColor="#00C2FF"
+                boxShadow="0 0 15px rgba(0,194,255,0.5)"
+                transition="all 0.3s ease"
+                sx={{
+                  borderRadius: 'full',
+                }}
+                onLoadedMetadata={(e: any) => {
+                  e.target.playbackRate = 0.5;
+                }}
+              />
+            </Box>
           </Link>
 
           {/* Right side - Clean buttons only */}
-          <HStack spacing={2}>
-            {/* Call Now Button */}
+          <HStack spacing={3}>
+            {/* Call Now Button - Enhanced */}
             <Button
               as="a"
               href="tel:+441202129746"
               onClick={trackCallConversion}
-              size="sm"
-              h="40px"
-              px={4}
-              bg="linear-gradient(135deg, #10B981, #059669)"
+              size="lg"
+              h="60px"
+              px={8}
+              bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
               color="white"
               fontWeight="bold"
-              fontSize="sm"
-              boxShadow="0 4px 12px rgba(16, 185, 129, 0.4)"
-              leftIcon={<FaPhone />}
+              fontSize="17px"
+              boxShadow="0 4px 20px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2)"
+              leftIcon={<FaPhone style={{ fontSize: '19px' }} />}
               borderRadius="full"
+              position="relative"
+              overflow="hidden"
+              border="2px solid rgba(255, 255, 255, 0.3)"
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                transition: 'left 0.5s',
+              }}
               _hover={{
-                bg: 'linear-gradient(135deg, #059669, #047857)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(16, 185, 129, 0.5)',
+                bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                transform: 'translateY(-2px) scale(1.02)',
+                boxShadow: '0 8px 30px rgba(16, 185, 129, 0.6), 0 0 0 2px rgba(16, 185, 129, 0.3)',
                 textDecoration: 'none',
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+                _before: {
+                  left: '100%',
+                }
               }}
               _active={{
-                transform: 'scale(0.95)',
+                transform: 'scale(0.97)',
+                boxShadow: '0 2px 10px rgba(16, 185, 129, 0.4)',
               }}
             >
-              Call
-            </Button>
-
-            {/* Sign In Button */}
-            <Button
-              size="sm"
-              h="40px"
-              px={4}
-              bg="linear-gradient(135deg, #3B82F6, #2563EB)"
-              color="white"
-              fontWeight="bold"
-              fontSize="sm"
-              boxShadow="0 4px 12px rgba(59, 130, 246, 0.4)"
-              leftIcon={<FiLogIn />}
-              onClick={() => window.location.href = '/customer/login'}
-              borderRadius="full"
-              _hover={{
-                bg: 'linear-gradient(135deg, #2563EB, #1d4ed8)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-              }}
-              _active={{
-                transform: 'scale(0.95)',
-              }}
-            >
-              Sign In
+              Call Now
             </Button>
 
             {/* Menu Icon Button */}
             <IconButton
               aria-label="Open menu"
               icon={<FiMenu />}
-              variant="ghost"
+              variant="solid"
+              bg="rgba(31, 41, 55, 0.95)"
               color="white"
-              size="sm"
-              w="40px"
-              h="40px"
-              minW="40px"
-              _hover={{ bg: 'rgba(59, 130, 246, 0.2)' }}
-              _active={{ bg: 'rgba(59, 130, 246, 0.3)' }}
+              size="md"
+              w="48px"
+              h="48px"
+              minW="48px"
+              fontSize="24px"
+              borderRadius="lg"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.15)"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              _hover={{ 
+                bg: 'rgba(17, 24, 39, 1)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+              }}
+              _active={{ 
+                bg: 'rgba(31, 41, 55, 1)',
+                transform: 'scale(0.95)'
+              }}
               onClick={onOpen}
             />
           </HStack>
         </Flex>
       </Box>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - Enhanced Design */}
       <Drawer
         isOpen={isOpen}
         placement="right"
         onClose={onClose}
         size="xs"
       >
-        <DrawerOverlay bg="blackAlpha.700" backdropFilter="blur(10px)" />
+        <DrawerOverlay 
+          bg="blackAlpha.600" 
+          backdropFilter="blur(12px)"
+          sx={{
+            animation: 'fadeIn 0.2s ease-out',
+            '@keyframes fadeIn': {
+              from: { opacity: 0 },
+              to: { opacity: 1 },
+            },
+          }}
+        />
         <DrawerContent 
-          bg="linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 17, 20, 0.98) 100%)"
+          bg="linear-gradient(180deg, rgba(15, 17, 20, 0.98) 0%, rgba(10, 12, 15, 0.98) 100%)"
           backdropFilter="blur(20px)"
-          borderLeft="1px solid"
+          borderLeft="2px solid"
           borderColor="rgba(59, 130, 246, 0.3)"
+          boxShadow="0 0 40px rgba(0, 0, 0, 0.4)"
         >
-          <DrawerCloseButton color="white" _hover={{ bg: 'whiteAlpha.200' }} />
+          <DrawerCloseButton 
+            color="white" 
+            fontSize="20px"
+            _hover={{ 
+              bg: 'rgba(59, 130, 246, 0.3)',
+              transform: 'scale(1.1)',
+            }}
+            _active={{
+              transform: 'scale(0.95)',
+            }}
+            transition="all 0.2s"
+          />
           <DrawerHeader 
-            borderBottomWidth="1px" 
+            borderBottomWidth="2px" 
             borderColor="rgba(59, 130, 246, 0.3)"
-            bg="rgba(30, 64, 175, 0.1)"
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%)"
+            py={5}
           >
-            <Text color="white" fontWeight="bold" fontSize="xl">
+            <Text 
+              color="white" 
+              fontWeight="bold" 
+              fontSize="2xl"
+              letterSpacing="tight"
+            >
               Menu
             </Text>
           </DrawerHeader>
 
-          <DrawerBody p={0} bg="rgba(15, 17, 20, 0.95)">
-            <VStack spacing={0} align="stretch">
+          <DrawerBody p={0} bg="transparent">
+            <VStack spacing={1} align="stretch" p={2}>
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -198,19 +260,33 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FiUser color="#3B82F6" />
-                  <Text color="white">Home</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FiUser color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">Home</Text>
                 </HStack>
               </Box>
               
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -222,19 +298,33 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FaTruck color="#3B82F6" />
-                  <Text color="white">Services</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FaTruck color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">Services</Text>
                 </HStack>
               </Box>
               
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -246,19 +336,33 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FaStar color="#3B82F6" />
-                  <Text color="white">Pricing</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FaStar color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">Pricing</Text>
                 </HStack>
               </Box>
               
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -270,19 +374,33 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FiMapPin color="#3B82F6" />
-                  <Text color="white">Track Move</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FiMapPin color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">Track Move</Text>
                 </HStack>
               </Box>
               
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -294,19 +412,33 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FiFileText color="#3B82F6" />
-                  <Text color="white">About Us</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FiFileText color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">About Us</Text>
                 </HStack>
               </Box>
               
               <Box
                 as="button"
                 p={4}
-                borderBottom="1px solid"
-                borderColor="rgba(59, 130, 246, 0.2)"
-                _hover={{ bg: 'rgba(30, 64, 175, 0.2)' }}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -318,15 +450,27 @@ export default function MobileHeader() {
                 w="full"
                 bg="transparent"
                 border="none"
+                transition="all 0.2s"
               >
                 <HStack spacing={3}>
-                  <FaQuestionCircle color="#3B82F6" />
-                  <Text color="white">Contact</Text>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FaQuestionCircle color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">Contact</Text>
                 </HStack>
               </Box>
 
-              <Box p={3} bg="rgba(30, 64, 175, 0.15)" borderBottom="1px solid" borderColor="rgba(59, 130, 246, 0.2)">
-                <Text fontSize="sm" color="rgba(255,255,255,0.7)" fontWeight="semibold">
+              <Box px={4} py={3} mt={2}>
+                <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="bold" letterSpacing="wider">
                   DRIVER
                 </Text>
               </Box>

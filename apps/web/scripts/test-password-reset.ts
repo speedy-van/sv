@@ -25,7 +25,7 @@ async function testPasswordReset() {
         name: 'Test User',
         password: hashedPassword,
         role: 'customer',
-      },
+      } as any,
     });
 
     console.log(`✅ Test user created: ${user.email} (ID: ${user.id})\n`);

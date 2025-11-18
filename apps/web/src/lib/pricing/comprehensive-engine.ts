@@ -1296,9 +1296,9 @@ export class ComprehensivePricingEngine {
       type: capacityCheck.isValid ? 'Luton Van' : 'Large Van',
       capacity: config.vanSpecs,
       utilization: {
-        weight: capacityCheck.weightUtilization,
-        volume: capacityCheck.volumeUtilization,
-        items: capacityCheck.itemUtilization
+        weight: Math.min(100, capacityCheck.weightUtilization),
+        volume: Math.min(100, capacityCheck.volumeUtilization),
+        items: Math.min(100, capacityCheck.itemUtilization)
       },
       capacityIssues: capacityCheck.warnings
     };

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getPrismaClient } from '@/lib/prisma';
 
 interface VisitorTrackingData {
   sessionId: string;
@@ -27,7 +27,25 @@ interface VisitorTrackingData {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: VisitorTrackingData = await request.json();
+    // Safely parse JSON body; handle empty/invalid bodies gracefully
+    const raw = await request.text();
+    if (!raw || raw.trim().length === 0) {
+      // No content to process (can happen on aborted beacons or network hiccups)
+      return new Response(null, { status: 204 });
+    }
+
+    let body: VisitorTrackingData;
+    try {
+      body = JSON.parse(raw) as VisitorTrackingData;
+    } catch {
+      // Invalid JSON - avoid noisy errors and just ignore
+      return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    // Minimal required fields to proceed
+    if (!body.sessionId || !body.page) {
+      return new Response(null, { status: 204 });
+    }
 
     // Get IP address from various possible headers
     const ipAddress =
@@ -68,7 +86,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update visitor session
-    const visitorSession = await prisma.visitorSession.upsert({
+    const db = getPrismaClient();
+    console.log('🔍 [visitors/track] Prisma client status:', { 
+      db: !!db, 
+      type: typeof db, 
+      hasVisitorSession: !!db.visitorSession,
+      methods: Object.keys(db).filter(k => !k.startsWith('_')).slice(0, 10)
+    });
+    const visitorSession = await db.visitorSession.upsert({
       where: { sessionId: body.sessionId },
       create: {
         id: `session-${body.sessionId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${performance.now()}`,
@@ -101,7 +126,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Track page view
-    await prisma.pageView.create({
+    await db.pageView.create({
       data: {
         id: `pageview-${body.sessionId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${performance.now()}`,
         sessionId: body.sessionId,
@@ -113,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     // Track action if provided
     if (body.action) {
-      await prisma.visitorAction.create({
+      await db.visitorAction.create({
         data: {
           id: `action-${body.sessionId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${performance.now()}`,
           sessionId: body.sessionId,
@@ -263,11 +288,12 @@ async function getLocationFromIP(ipAddress: string) {
 // GET endpoint to retrieve visitor analytics
 export async function GET(request: NextRequest) {
   try {
+    const db = getPrismaClient();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '100');
     const skip = parseInt(searchParams.get('skip') || '0');
 
-    const sessions = await prisma.visitorSession.findMany({
+    const sessions = await db.visitorSession.findMany({
       take: limit,
       skip: skip,
       orderBy: { entryTime: 'desc' },
@@ -277,7 +303,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const total = await prisma.visitorSession.count();
+    const total = await db.visitorSession.count();
 
     return NextResponse.json({
       success: true,

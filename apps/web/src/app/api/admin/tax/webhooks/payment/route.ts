@@ -7,7 +7,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { paymentWebhookService, PaymentGateway } from '@/lib/tax/payment-webhooks';
-import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,13 +26,13 @@ export async function POST(request: NextRequest) {
         return await handleStripeWebhook(request);
 
       case PaymentGateway.PAYPAL:
-        return await handlePayPalWebhook(request);
+        return await handlePayPalWebhook();
 
       case PaymentGateway.WORLDPAY:
-        return await handleWorldPayWebhook(request);
+        return await handleWorldPayWebhook();
 
       case PaymentGateway.SQUARE:
-        return await handleSquareWebhook(request);
+        return await handleSquareWebhook();
 
       default:
         return NextResponse.json(
@@ -76,70 +75,25 @@ async function handleStripeWebhook(request: NextRequest) {
   }
 }
 
-async function handlePayPalWebhook(request: NextRequest) {
-  try {
-    const result = await paymentWebhookService.processWebhook(request, PaymentGateway.PAYPAL);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'PayPal webhook processed successfully',
-      data: result
-    });
-
-  } catch (error) {
-    console.error('PayPal webhook error:', error);
-    return NextResponse.json(
-      {
-        error: 'PayPal webhook processing failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
+async function handlePayPalWebhook() {
+  return NextResponse.json(
+    { error: 'PayPal webhook handling is not configured.' },
+    { status: 501 }
+  );
 }
 
-async function handleWorldPayWebhook(request: NextRequest) {
-  try {
-    const result = await paymentWebhookService.processWebhook(request, PaymentGateway.WORLDPAY);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'WorldPay webhook processed successfully',
-      data: result
-    });
-
-  } catch (error) {
-    console.error('WorldPay webhook error:', error);
-    return NextResponse.json(
-      {
-        error: 'WorldPay webhook processing failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
+async function handleWorldPayWebhook() {
+  return NextResponse.json(
+    { error: 'WorldPay webhook handling is not configured.' },
+    { status: 501 }
+  );
 }
 
-async function handleSquareWebhook(request: NextRequest) {
-  try {
-    const result = await paymentWebhookService.processWebhook(request, PaymentGateway.SQUARE);
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Square webhook processed successfully',
-      data: result
-    });
-
-  } catch (error) {
-    console.error('Square webhook error:', error);
-    return NextResponse.json(
-      {
-        error: 'Square webhook processing failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
+async function handleSquareWebhook() {
+  return NextResponse.json(
+    { error: 'Square webhook handling is not configured.' },
+    { status: 501 }
+  );
 }
 
 // Health check endpoint

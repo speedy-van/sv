@@ -21,6 +21,7 @@ import { prisma } from '@/lib/prisma';
 import { pricingSnapshotService } from '@/lib/services/pricing-snapshot-service';
 import { RouteOrchestrationService } from '@/lib/services/route-orchestration-service';
 import { logAudit } from '@/lib/audit';
+import { AdditionalPaymentStatus } from '@prisma/client';
 
 // Supported webhook events
 const SUPPORTED_EVENTS = [
@@ -220,7 +221,7 @@ async function handlePaymentIntentSucceeded(
           stripePaymentIntentId: paymentIntent.id,
           amountPaidGBP: paymentIntent.amount,
           lastPaymentDate: new Date(),
-          additionalPaymentStatus: 'NONE',
+          additionalPaymentStatus: AdditionalPaymentStatus.NONE,
           additionalPaymentAmountGBP: 0,
           additionalPaymentStripeIntent: null,
           additionalPaymentRequestedAt: null,
@@ -455,7 +456,7 @@ async function handleAdditionalPaymentSucceeded(
     amountPaidGBP: {
       increment: paymentIntent.amount,
     },
-    additionalPaymentStatus: 'PAID',
+    additionalPaymentStatus: AdditionalPaymentStatus.PAID,
     additionalPaymentAmountGBP: additionalAmount > 0 ? additionalAmount : paymentIntent.amount,
     additionalPaymentPaidAt: now,
     additionalPaymentStripeIntent: paymentIntent.id,

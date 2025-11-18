@@ -273,6 +273,23 @@ async function sendViaSendGrid(to: string, subject: string, html: string, attach
 async function sendEmail(to: string, subject: string, html: string, attachments?: EmailAttachment[]): Promise<EmailResult> {
   const errors: string[] = [];
 
+  // Check if any email provider is configured
+  const hasAnyProvider = emailConfig.resend.apiKey || emailConfig.sendgrid.apiKey;
+  
+  // If no provider is configured, return mock success for development
+  if (!hasAnyProvider) {
+    console.log('⚠️  No email providers configured - using mock email service');
+    console.log('📧 [MOCK EMAIL] Would send to:', to);
+    console.log('📧 [MOCK EMAIL] Subject:', subject);
+    console.log('📧 [MOCK EMAIL] Has attachments:', attachments?.length || 0);
+    return {
+      success: true,
+      error: null,
+      messageId: 'mock_' + Date.now(),
+      provider: 'mock'
+    };
+  }
+
   // Try Resend first if configured (primary provider)
   console.log('📧 Checking Resend configuration:', {
     hasApiKey: !!emailConfig.resend.apiKey,

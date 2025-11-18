@@ -76,7 +76,7 @@ const CUSTOM_VARIANT_STYLES = {
     },
   },
   primary: {
-    bg: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+    bg: 'linear-gradient(135deg, #001F3F, #002D6B)',
     color: 'white',
     position: 'relative',
     overflow: 'hidden',
@@ -91,9 +91,9 @@ const CUSTOM_VARIANT_STYLES = {
       transition: 'left 0.5s ease',
     },
     _hover: {
-      bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
+      bg: 'linear-gradient(135deg, #002D6B, #001F3F)',
       transform: 'translateY(-2px) scale(1.02)',
-      boxShadow: '0 8px 25px rgba(0, 194, 255, 0.4), 0 4px 12px rgba(0, 209, 143, 0.2)',
+      boxShadow: '0 8px 25px rgba(0, 180, 255, 0.6), 0 4px 12px rgba(0, 240, 255, 0.2)',
       _before: {
         left: '100%',
       },

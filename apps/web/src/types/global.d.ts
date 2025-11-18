@@ -53,6 +53,12 @@ declare global {
     | Float32Array
     | Float64Array
     | DataView;
+
+  // Google Ads gtag types
+  interface Window {
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+  }
 }
 
 export {};

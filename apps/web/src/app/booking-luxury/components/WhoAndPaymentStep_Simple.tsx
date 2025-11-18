@@ -1,17 +1,17 @@
-'use client';
+﻿'use client';
 
 /**
  * Step 3: Customer Details & Payment - Simplified Version
  * Clean, modern design like Uber/Airbnb
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import NextImage from 'next/image';
 import {
   Box,
   VStack,
   HStack,
   Text,
-  Button,
   Input,
   Textarea,
   Checkbox,
@@ -27,17 +27,15 @@ import {
   SimpleGrid,
   IconButton,
   Image,
+  Collapse,
+  useDisclosure,
 } from '@chakra-ui/react';
 import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaBuilding,
   FaCreditCard,
-  FaCheckCircle,
   FaPlus,
   FaMinus,
   FaTrash,
+  FaBox,
 } from 'react-icons/fa';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
@@ -68,7 +66,22 @@ export default function WhoAndPaymentStepSimple({
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
+  const [isIPhoneLayout, setIsIPhoneLayout] = React.useState(false);
   const toast = useToast();
+
+  // Detect iPhone 14/15/16/17 screen width
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      const isTargetIPhone = width >= 375 && width <= 430;
+      setIsIPhoneLayout(isTargetIPhone);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
   
   // REMOVED: This useEffect was causing auto-scroll on desktop on every render
   // Mobile scroll position is now handled properly in individual event handlers
@@ -133,6 +146,22 @@ export default function WhoAndPaymentStepSimple({
   });
 
   const selectedItems = formData.step1.items || [];
+
+  const selectionStats = useMemo(() => {
+    if (!selectedItems.length) {
+      return { totalItems: 0, totalWeight: 0 };
+    }
+
+    let totalItems = 0;
+    let totalWeight = 0;
+
+    selectedItems.forEach((item) => {
+      totalItems += item.quantity;
+      totalWeight += item.quantity * item.weight;
+    });
+
+    return { totalItems, totalWeight };
+  }, [selectedItems]);
 
   const applyItemUpdates = useCallback(
     (items: typeof selectedItems) => {
@@ -282,118 +311,220 @@ export default function WhoAndPaymentStepSimple({
   return (
     <Box w="full">
       <VStack spacing={6} align="stretch">
+        {/* Floating Green Button for Selected Items */}
         {selectedItems.length > 0 && (
-          <Card
-            bg="rgba(26, 26, 26, 0.6)"
-            border="1px solid"
-            borderColor="rgba(59, 130, 246, 0.2)"
-            borderRadius="2xl"
-            backdropFilter="blur(10px)"
-          >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <VStack spacing={4} align="stretch">
-                <HStack justify="space-between" align="center" flexWrap="wrap" gap={2}>
-                  <Text fontSize="lg" fontWeight="600" color="white">
-                    Your Selected Items
-                  </Text>
-                  <Text fontSize="sm" color="gray.400">
-                    Adjust quantities instantly – pricing updates automatically.
-                  </Text>
-                </HStack>
-
-                <VStack spacing={3} align="stretch">
-                  {selectedItems.map((item) => (
-                    <HStack
-                      key={item.id}
-                      spacing={4}
-                      align="center"
-                      bg="rgba(15, 23, 42, 0.65)"
-                      borderRadius="xl"
-                      border="1px solid"
-                      borderColor="rgba(59, 130, 246, 0.2)"
-                      px={{ base: 3, md: 4 }}
-                      py={{ base: 3, md: 4 }}
-                      flexWrap="wrap"
-                    >
-                      <HStack spacing={3} align="center" flex={1} minW="0">
-                        {item.image && (
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            boxSize={{ base: '44px', md: '56px' }}
-                            borderRadius="md"
-                            objectFit="cover"
-                            bg="rgba(15, 23, 42, 0.8)"
-                            flexShrink={0}
-                          />
-                        )}
-                        <Box minW="0">
-                          <Text
-                            fontSize={{ base: 'sm', md: 'md' }}
-                            fontWeight="600"
-                            color="white"
-                            noOfLines={2}
-                          >
-                            {item.name}
-                          </Text>
-                          {item.description && (
-                            <Text fontSize="xs" color="gray.400" noOfLines={2}>
-                              {item.description}
-                            </Text>
-                          )}
-                        </Box>
-                      </HStack>
-
-                      <HStack spacing={2} align="center">
-                        <IconButton
-                          aria-label={`Decrease ${item.name}`}
-                          icon={<FaMinus />}
-                          size="sm"
-                          variant="ghost"
-                          color="gray.300"
-                          onClick={() => decrementItem(item.id)}
-                          isDisabled={item.quantity <= 1}
-                          _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)' }}
-                        />
-                        <Text
-                          fontSize="md"
-                          fontWeight="bold"
-                          color="white"
-                          minW="32px"
-                          textAlign="center"
-                        >
-                          {item.quantity || 1}
-                        </Text>
-                        <IconButton
-                          aria-label={`Increase ${item.name}`}
-                          icon={<FaPlus />}
-                          size="sm"
-                          variant="ghost"
-                          color="gray.300"
-                          onClick={() => incrementItem(item.id)}
-                          _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)' }}
-                        />
-                      </HStack>
-
-                      <IconButton
-                        aria-label={`Remove ${item.name}`}
-                        icon={<FaTrash />}
-                        size="sm"
-                        variant="ghost"
-                        color="red.300"
-                        onClick={() => removeItem(item.id)}
-                        _hover={{ color: 'red.100', bg: 'rgba(248, 113, 113, 0.15)' }}
-                      />
-                    </HStack>
-                  ))}
-                </VStack>
-
-                <Text fontSize="xs" color="gray.500">
-                  Need to add new items? Tap the step indicator above to revisit “Items & Time”.
+          <>
+            <Box
+              position="fixed"
+              bottom={{ base: '180px', md: '200px' }}
+              right={{ base: '20px', md: '30px' }}
+              zIndex={1500}
+            >
+              <Box
+                as="button"
+                onClick={toggleSummary}
+                bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                color="white"
+                borderRadius="full"
+                w={{ base: '64px', md: '72px' }}
+                h={{ base: '64px', md: '72px' }}
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                cursor="pointer"
+                boxShadow="0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)"
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                _hover={{
+                  transform: 'scale(1.1) translateY(-4px)',
+                  boxShadow: '0 12px 32px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                }}
+                _active={{
+                  transform: 'scale(1.05) translateY(-2px)'
+                }}
+              >
+                <Icon as={FaBox} boxSize={{ base: 5, md: 6 }} mb={1} />
+                <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold">
+                  {selectionStats.totalItems}
                 </Text>
-              </VStack>
-            </CardBody>
-          </Card>
+              </Box>
+            </Box>
+
+            {/* Expanded Details Panel */}
+            <Box
+              position="fixed"
+              bottom="0"
+              left="0"
+              right="0"
+              zIndex={1400}
+              pointerEvents={isSummaryExpanded ? 'auto' : 'none'}
+            >
+              <Collapse in={isSummaryExpanded} animateOpacity>
+                <Box 
+                  bg="#050505" 
+                  color="white" 
+                  p={{ base: 4, md: 6 }}
+                  maxH="70vh"
+                  overflowY="auto"
+                  boxShadow="0 -4px 20px rgba(0, 0, 0, 0.5)"
+                >
+                  <SimpleGrid columns={2} spacing={4} w="full">
+                    {selectedItems.map((item, index) => (
+                      <Box
+                        key={`summary-${item.id}-${index}`}
+                        p={3}
+                        borderRadius="lg"
+                        bg="rgba(255, 255, 255, 0.05)"
+                        borderWidth="1px"
+                        borderColor="rgba(255, 255, 255, 0.1)"
+                        transition="all 0.2s"
+                        _hover={{ 
+                          bg: 'rgba(255, 255, 255, 0.08)',
+                          borderColor: 'rgba(255, 255, 255, 0.2)'
+                        }}
+                      >
+                        <VStack spacing={3} align="stretch">
+                          <HStack justify="space-between" align="center">
+                            <Badge colorScheme="green" fontSize="2xs" borderRadius="full">
+                              {item.quantity}x
+                            </Badge>
+                          </HStack>
+
+                          <Box
+                            h="80px"
+                            position="relative"
+                            overflow="hidden"
+                            border="none"
+                            borderRadius="0"
+                            bg="transparent"
+                            boxShadow="none"
+                          >
+                            {item.image ? (
+                              <NextImage
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                sizes="50vw"
+                                style={{
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            ) : (
+                              <Box
+                                w="100%"
+                                h="100%"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                bg="transparent"
+                              >
+                                <Icon as={FaBox} boxSize={6} color="gray.500" />
+                              </Box>
+                            )}
+                          </Box>
+
+                          <Box>
+                            <Text fontSize="xs" fontWeight="bold" noOfLines={2} lineHeight="1.3" mb={1}>
+                              {item.name}
+                            </Text>
+                            <Text fontSize="2xs" color="whiteAlpha.600">
+                              {item.weight}kg each · {item.quantity * item.weight}kg total
+                            </Text>
+                          </Box>
+
+                          <HStack spacing={3} justify="center" w="full">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                decrementItem(item.id);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '28px',
+                                fontWeight: 'normal',
+                                cursor: 'pointer',
+                                padding: '0',
+                                margin: '0',
+                                width: 'auto',
+                                height: 'auto',
+                                minWidth: '24px',
+                                lineHeight: '1',
+                                outline: 'none',
+                                WebkitTapHighlightColor: 'transparent',
+                                opacity: item.quantity <= 1 ? 0.5 : 1
+                              }}
+                              disabled={item.quantity <= 1}
+                            >
+                              −
+                            </button>
+                            <span
+                              style={{
+                                color: 'white',
+                                fontSize: '18px',
+                                fontWeight: '600',
+                                minWidth: '24px',
+                                textAlign: 'center',
+                                lineHeight: '1'
+                              }}
+                            >
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                incrementItem(item.id);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '24px',
+                                fontWeight: 'normal',
+                                cursor: 'pointer',
+                                padding: '0',
+                                margin: '0',
+                                width: 'auto',
+                                height: 'auto',
+                                minWidth: '24px',
+                                lineHeight: '1',
+                                outline: 'none',
+                                WebkitTapHighlightColor: 'transparent',
+                                opacity: 1
+                              }}
+                            >
+                              +
+                            </button>
+                          </HStack>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeItem(item.id);
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#f87171',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              padding: '4px 0',
+                              textAlign: 'center',
+                              outline: 'none',
+                              WebkitTapHighlightColor: 'transparent',
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </VStack>
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                </Box>
+              </Collapse>
+            </Box>
+          </>
         )}
 
         {/* CARD 1: Service Selection - Simplified Tabs */}
@@ -410,6 +541,149 @@ export default function WhoAndPaymentStepSimple({
                 Choose Your Service
               </Text>
 
+              {/* iPhone 14/15/16/17 Layout: Economy full width, then Standard + Express side by side */}
+              {isIPhoneLayout && (
+              <Box>
+                <Box
+                  p={{ base: 4 }}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedService === 'economy' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
+                  bg={selectedService === 'economy' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
+                  cursor="pointer"
+                  onClick={() => handleServiceChange('economy')}
+                  transition="all 0.2s"
+                  _hover={{
+                    borderColor: 'blue.500',
+                    bg: 'rgba(59, 130, 246, 0.05)',
+                  }}
+                  position="relative"
+                  mb={3}
+                >
+                  <Badge
+                    position="absolute"
+                    top={-1}
+                    left={-1}
+                    bg="green.500"
+                    color="white"
+                    fontSize="3xs"
+                    px={1.5}
+                    py={0.5}
+                    borderRadius="full"
+                  >
+                    Save 15%
+                  </Badge>
+                  <VStack spacing={2} align="center" w="full">
+                    <Text fontSize="3xl">💰</Text>
+                    <Box textAlign="center" w="full">
+                      <Text fontSize="sm" fontWeight="bold" color="white">
+                        Economy
+                      </Text>
+                      <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
+                        Next available slot (3-7 days)
+                      </Text>
+                    </Box>
+                    <Text fontSize="xl" fontWeight="bold" color="white">
+                      £{safeEconomyPrice.toFixed(2)}
+                    </Text>
+                  </VStack>
+                </Box>
+
+                {/* Standard and Express Side by Side */}
+                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
+                  <Box
+                    p={{ base: 4 }}
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor={selectedService === 'standard' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
+                    bg={selectedService === 'standard' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
+                    cursor="pointer"
+                    onClick={() => handleServiceChange('standard')}
+                    transition="all 0.2s"
+                    _hover={{
+                      borderColor: 'blue.500',
+                      bg: 'rgba(59, 130, 246, 0.05)',
+                    }}
+                    position="relative"
+                  >
+                    <Badge
+                      position="absolute"
+                      top={-1}
+                      right={-1}
+                      bg="blue.500"
+                      color="white"
+                      fontSize="3xs"
+                      px={1.5}
+                      py={0.5}
+                      borderRadius="full"
+                    >
+                      Popular
+                    </Badge>
+                    <VStack spacing={2} align="center" w="full">
+                      <Text fontSize="3xl">🚚</Text>
+                      <Box textAlign="center" w="full">
+                        <Text fontSize="sm" fontWeight="bold" color="white">
+                          Standard
+                        </Text>
+                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
+                          Choose your date
+                        </Text>
+                      </Box>
+                      <Text fontSize="xl" fontWeight="bold" color="white">
+                        £{safeStandardPrice.toFixed(2)}
+                      </Text>
+                    </VStack>
+                  </Box>
+
+                  <Box
+                    p={{ base: 4 }}
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor={selectedService === 'express' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
+                    bg={selectedService === 'express' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
+                    cursor="pointer"
+                    onClick={() => handleServiceChange('express')}
+                    transition="all 0.2s"
+                    _hover={{
+                      borderColor: 'blue.500',
+                      bg: 'rgba(59, 130, 246, 0.05)',
+                    }}
+                    position="relative"
+                  >
+                    <Badge
+                      position="absolute"
+                      top={-1}
+                      left={-1}
+                      bg="orange.500"
+                      color="white"
+                      fontSize="3xs"
+                      px={1.5}
+                      py={0.5}
+                      borderRadius="full"
+                    >
+                      50% premium
+                    </Badge>
+                    <VStack spacing={2} align="center" w="full">
+                      <Text fontSize="3xl">⚡</Text>
+                      <Box textAlign="center" w="full">
+                        <Text fontSize="sm" fontWeight="bold" color="white">
+                          Express
+                        </Text>
+                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
+                          Same-day or next-day delivery
+                        </Text>
+                      </Box>
+                      <Text fontSize="xl" fontWeight="bold" color="white">
+                        £{safeExpressPrice.toFixed(2)}
+                      </Text>
+                    </VStack>
+                  </Box>
+                </Box>
+              </Box>
+              )}
+
+              {/* Normal Grid Layout: All devices except iPhone 14/15/16/17 */}
+              {!isIPhoneLayout && (
               <Box
                 display="grid"
                 gridTemplateColumns="repeat(3, 1fr)"
@@ -510,6 +784,7 @@ export default function WhoAndPaymentStepSimple({
                   </Box>
                 ))}
               </Box>
+              )}
             </VStack>
           </CardBody>
         </Card>

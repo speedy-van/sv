@@ -579,6 +579,13 @@ export function useBookingForm() {
       return false;
     }
 
+    // Skip pricing if no items selected (avoid 400 error from API)
+    if (!items || items.length === 0) {
+      console.log('⏳ Skipping pricing calculation - no items selected');
+      setIsCalculatingPricing(false);
+      return false;
+    }
+
     setIsCalculatingPricing(true);
     clearErrors(); // Clear any previous errors
 

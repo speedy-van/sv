@@ -14,8 +14,8 @@ async function testNavigation() {
       include: {
         Booking: {
           include: {
-            pickupAddress: true,
-            dropoffAddress: true,
+            PickupAddress: true,
+            DropoffAddress: true,
           },
         },
         Driver: {

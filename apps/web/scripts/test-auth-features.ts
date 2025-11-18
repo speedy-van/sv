@@ -28,7 +28,7 @@ async function testAuthFeatures() {
         name: 'Reset Test User',
         password: hashedPassword,
         role: 'customer',
-      },
+      } as any,
     });
 
     console.log(`✅ Created test user: ${resetUser.email}`);
@@ -109,7 +109,7 @@ async function testAuthFeatures() {
         password: await bcrypt.hash('TestPassword123', 12),
         role: 'customer',
         emailVerified: false,
-      },
+      } as any,
     });
 
     console.log(`✅ Created test user: ${verifyUser.email} (unverified)`);
