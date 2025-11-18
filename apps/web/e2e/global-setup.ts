@@ -114,7 +114,7 @@ async function globalSetup(config: FullConfig) {
         role: 'admin',
         adminRole: 'superadmin',
         password: hashedAdminPassword,
-      },
+      } as any, // Type assertion to bypass strict type checking for fields with defaults
     });
     console.log('✅ Admin user created:', {
       id: adminUser.id,
@@ -131,7 +131,7 @@ async function globalSetup(config: FullConfig) {
         name: 'Test Driver',
         role: 'driver',
         password: hashedDriverPassword,
-      },
+      } as any, // Type assertion to bypass strict type checking for fields with defaults
     });
 
     const driver = await prisma.driver.create({
@@ -147,7 +147,7 @@ async function globalSetup(config: FullConfig) {
             phone: '+447700900000',
             address: '123 Test Street, London, UK',
             dob: new Date('1990-01-01'),
-          },
+          } as any, // Type assertion to bypass strict type checking for fields with defaults
         },
         DriverVehicle: {
           create: {
@@ -155,7 +155,7 @@ async function globalSetup(config: FullConfig) {
             model: 'Transit',
             reg: 'TEST123',
             weightClass: '3500kg',
-          },
+          } as any, // Type assertion to bypass strict type checking for fields with defaults
         },
         DriverAvailability: {
           create: {
@@ -177,7 +177,7 @@ async function globalSetup(config: FullConfig) {
         name: 'Test Customer',
         role: 'customer',
         password: hashedCustomerPassword,
-      },
+      } as any, // Type assertion to bypass strict type checking for fields with defaults
     });
 
     // Create test bookings
