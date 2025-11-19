@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 import crypto from 'crypto';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 // CORS headers for mobile app compatibility
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

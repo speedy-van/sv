@@ -9,6 +9,9 @@ import {
   generateRequestId 
 } from '@/lib/api-response';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 interface CustomerStats {
   totalBookings: number;
   activeBookings: number;

@@ -5,6 +5,9 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/admin/voice/upload
  * Upload and store voice message audio file

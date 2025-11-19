@@ -7,6 +7,9 @@ import { existsSync } from 'fs';
 import { prisma } from '@/lib/prisma';
 import { createAuditLogEntry } from '@/lib/audit';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/admin/ai/generate-image
  * Enterprise-grade image generation with DALL-E 3

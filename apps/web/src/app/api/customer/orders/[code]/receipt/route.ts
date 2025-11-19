@@ -3,6 +3,9 @@ import { authOptions } from '@/lib/auth';
 import { buildReceiptPDF } from '@/lib/pdf';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _: Request,
   { params }: { params: { code: string } }

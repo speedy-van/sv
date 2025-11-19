@@ -2,6 +2,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user as any).role !== 'customer')

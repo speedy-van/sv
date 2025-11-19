@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getAttendanceSummary } from '@/lib/staffAttendance';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 // GET /api/admin/staff/attendance/reports - Get attendance reports
 export async function GET(request: NextRequest) {
   try {

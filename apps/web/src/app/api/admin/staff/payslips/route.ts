@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const requestSchema = z.object({
   // Prefer explicit date range for accuracy; UI can build these for weekly/monthly
   from: z.string().datetime().optional(),

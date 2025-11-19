@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 interface AssignmentRules {
   radius: number;
   vehicleType: string;

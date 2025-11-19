@@ -6,6 +6,9 @@ import { generateAttendanceStatus, getTodayShift } from '@/lib/staffAttendance';
 import { notifyLateCheckIn } from '@/lib/staffNotifications';
 import { z } from 'zod';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const checkInSchema = z.object({
   notes: z.string().optional(),
 });

@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering (uses getServerSession which accesses headers)
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/audit-logs
  * Fetch audit logs with filters

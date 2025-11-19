@@ -4,6 +4,9 @@ import { authOptions, assertHasRole } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const updateStaffSchema = z.object({
   name: z.string().min(1).optional(),
   phone: z.string().optional(),

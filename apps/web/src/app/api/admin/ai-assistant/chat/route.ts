@@ -5,6 +5,9 @@ import { autonomousOpsEngine } from '@/server/tools/AutonomousOpsEngine';
 import { prisma } from '@/lib/prisma';
 import { createAuditLogEntry } from '@/lib/audit';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/admin/ai-assistant/chat
  * Process natural language requests through the AI Assistant
