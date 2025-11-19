@@ -13,7 +13,8 @@ services:
     buildCommand: |
       cd ..
       bash render-build.sh
-    startCommand: cd apps/web && npm start
+    startCommand: cd apps/web && pnpm start
+    # Health check endpoint - must respond within 5 seconds
     healthCheckPath: /api/health
     numInstances: 2 # High availability
     buildFilter:
