@@ -20,31 +20,66 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = params;
   
-  // Find location data
-  const location = locations.find(loc => loc.slug === slug);
+  // Find location data - CRITICAL: validate slug exists
+  const location = locations.find((loc: Location) => loc.slug === slug);
   
   if (!location) {
+    // Return 404 metadata for invalid slugs
     return {
-      title: 'Location Not Found',
+      title: 'Location Not Found | Speedy Van',
+      description: 'The location you are looking for could not be found.',
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   const cityName = location.name;
-  const title = `Man and Van ${cityName} | 24/7 Removals & Delivery | Speedy Van`;
-  const description = `Professional man and van service in ${cityName}. 24/7 online booking, instant quotes, fully insured. From £25/hour. Same-day service available.`;
+  const countyText = location.county ? `, ${location.county}` : '';
+  
+  const title = `Man and Van ${cityName}${countyText} | 24/7 Removals & Delivery | Speedy Van`;
+  const description = `Professional man and van service in ${cityName}${countyText}. 24/7 online booking, instant quotes, fully insured. From £25/hour. Same-day service available across ${cityName}.`;
+  const url = `https://speedy-van.co.uk/man-and-van/${slug}`;
 
   return {
     title,
     description,
-    keywords: `man and van ${cityName.toLowerCase()}, removals ${cityName.toLowerCase()}, van hire ${cityName.toLowerCase()}, delivery service ${cityName.toLowerCase()}, house removals ${cityName.toLowerCase()}`,
+    keywords: `man and van ${cityName.toLowerCase()}, removals ${cityName.toLowerCase()}, van hire ${cityName.toLowerCase()}, delivery service ${cityName.toLowerCase()}, house removals ${cityName.toLowerCase()}, man with van ${cityName.toLowerCase()}`,
     openGraph: {
-      title: `Man and Van ${cityName} | 24/7 Removals & Delivery`,
+      title: `Man and Van ${cityName} | Professional Removals Service`,
       description,
       type: 'website',
-      url: `https://speedy-van.co.uk/man-and-van/${slug}`,
+      url,
+      siteName: 'Speedy Van',
+      locale: 'en_GB',
+      images: [
+        {
+          url: 'https://speedy-van.co.uk/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: `Man and Van Service in ${cityName}`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Man and Van ${cityName} | 24/7 Removals`,
+      description,
+      images: ['https://speedy-van.co.uk/og-image.jpg'],
     },
     alternates: {
-      canonical: `https://speedy-van.co.uk/man-and-van/${slug}`,
+      canonical: url,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
   };
 }
@@ -52,8 +87,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default function ManAndVanLocationPage({ params }: PageProps) {
   const { slug } = params;
   
-  // Find location data
-  const location = locations.find(loc => loc.slug === slug);
+  // Find location data - CRITICAL: return 404 for invalid slugs
+  const location = locations.find((loc: Location) => loc.slug === slug);
   
   // Return 404 if location not found
   if (!location) {
