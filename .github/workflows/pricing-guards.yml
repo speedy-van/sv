@@ -146,12 +146,6 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Generate Prisma Client (apps/web)
-      run: pnpm prisma generate --schema=apps/web/prisma/schema.prisma
-
-    - name: Generate Prisma Client (shared)
-      run: pnpm prisma generate --schema=packages/shared/prisma/schema.prisma
-
     - name: Build packages
       run: pnpm run build:packages
 

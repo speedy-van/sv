@@ -12,11 +12,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
-      - name: Generate Prisma Client (apps/web)
-        run: pnpm prisma generate --schema=apps/web/prisma/schema.prisma
-
-      - name: Generate Prisma Client (shared)
-        run: pnpm prisma generate --schema=packages/shared/prisma/schema.prisma
       - run: pnpm run build:packages
       - run: pnpm run typecheck
       - run: pnpm run build:apps
@@ -44,11 +39,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
-      - name: Generate Prisma Client (apps/web)
-        run: pnpm prisma generate --schema=apps/web/prisma/schema.prisma
-
-      - name: Generate Prisma Client (shared)
-        run: pnpm prisma generate --schema=packages/shared/prisma/schema.prisma
       - name: TypeScript type checking
         run: |
           cd apps/web
