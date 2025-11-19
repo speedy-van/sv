@@ -18,7 +18,7 @@ async function testNavigation() {
             dropoffAddress: true,
           },
         },
-        driver: {
+        Driver: {
           include: {
             DriverAvailability: true,
           },
@@ -41,7 +41,7 @@ async function testNavigation() {
     console.log(`   Status: ${assignment.status}`);
     console.log(`   Pickup: ${assignment.Booking.pickupAddress.label}`);
     console.log(`   Dropoff: ${assignment.Booking.dropoffAddress.label}`);
-    console.log(`   Driver: ${assignment.driver.userId}`);
+    console.log(`   Driver: ${assignment.Driver.userId}`);
 
     // Test 2: Check if coordinates are available
     if (
@@ -68,20 +68,20 @@ async function testNavigation() {
     }
 
     // Test 3: Check driver availability
-    if (assignment.driver.DriverAvailability) {
+    if (assignment.Driver.DriverAvailability) {
       console.log('\n✅ Driver availability found:');
-      console.log(`   Status: ${assignment.driver.DriverAvailability.status}`);
+      console.log(`   Status: ${assignment.Driver.DriverAvailability.status}`);
       console.log(
-        `   Location Consent: ${assignment.driver.DriverAvailability.locationConsent}`
+        `   Location Consent: ${assignment.Driver.DriverAvailability.locationConsent}`
       );
-      console.log(`   Last Seen: ${assignment.driver.DriverAvailability.lastSeenAt}`);
+      console.log(`   Last Seen: ${assignment.Driver.DriverAvailability.lastSeenAt}`);
 
       if (
-        assignment.driver.DriverAvailability.lastLat &&
-        assignment.driver.DriverAvailability.lastLng
+        assignment.Driver.DriverAvailability.lastLat &&
+        assignment.Driver.DriverAvailability.lastLng
       ) {
         console.log(
-          `   Last Location: ${assignment.driver.DriverAvailability.lastLat}, ${assignment.driver.DriverAvailability.lastLng}`
+          `   Last Location: ${assignment.Driver.DriverAvailability.lastLat}, ${assignment.Driver.DriverAvailability.lastLng}`
         );
       }
     } else {

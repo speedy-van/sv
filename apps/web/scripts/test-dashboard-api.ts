@@ -62,7 +62,7 @@ async function testDashboardData() {
         id: true,
         reference: true,
         status: true,
-        Driver: {
+        driver: {
           select: {
             User: {
               select: {
@@ -78,7 +78,7 @@ async function testDashboardData() {
     console.log('Live Operations:', liveOps.length, 'jobs');
     liveOps.forEach(job => {
       console.log(
-        `  - ${job.reference}: ${job.status} (${job.Driver?.User?.name || 'Unknown'})`
+        `  - ${job.reference}: ${job.status} (${job.driver?.User?.name || 'Unknown'})`
       );
     });
 
