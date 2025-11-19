@@ -92,13 +92,18 @@ export default function EnhancedAdminChatPage() {
   const typingIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    loadAllChats();
-    setupPusher();
+    let mounted = true;
     
-    // Broadcast admin online status
-    broadcastAdminStatus('online');
+    if (mounted) {
+      loadAllChats();
+      setupPusher();
+      
+      // Broadcast admin online status
+      broadcastAdminStatus('online');
+    }
 
     return () => {
+      mounted = false;
       // Broadcast offline status before cleanup
       broadcastAdminStatus('offline');
       cleanupPusher();
@@ -201,23 +206,30 @@ export default function EnhancedAdminChatPage() {
         }
       });
 
-      console.log('✅ Admin chat Pusher connected');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Admin chat Pusher connected');
+      }
     } catch (error) {
       console.error('❌ Failed to setup Pusher:', error);
     }
   };
 
   const cleanupPusher = () => {
-    if (channelRef.current) {
-      channelRef.current.unbind_all();
+    try {
+      if (channelRef.current) {
+        channelRef.current.unbind_all();
+        channelRef.current = null;
+      }
       if (pusherRef.current) {
         pusherRef.current.unsubscribe('admin-chat');
+        pusherRef.current.disconnect();
+        pusherRef.current = null;
       }
-      channelRef.current = null;
-    }
-    if (pusherRef.current) {
-      pusherRef.current.disconnect();
-      pusherRef.current = null;
+    } catch (error) {
+      // Silently handle cleanup errors in production
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Pusher cleanup warning:', error);
+      }
     }
   };
 

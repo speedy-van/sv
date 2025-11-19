@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { authOptions } from './auth';
 import { prisma } from './prisma';
 
@@ -10,6 +11,17 @@ export interface AuditLog {
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
+}
+
+export interface AuditLogEntryInput {
+  actorId: string;
+  action: string;
+  actorRole?: string;
+  targetType: string;
+  targetId?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  details?: Record<string, any>;
 }
 
 export type LogAuditOptions = {
@@ -44,6 +56,7 @@ export async function logAudit(
 
     const auditLog = await prisma.auditLog.create({
       data: {
+        id: randomUUID(),
         actorId: opts.userId,
         actorRole: opts.actorRole || 'user',
         action: opts.action,
@@ -77,6 +90,21 @@ export async function logAudit(
       createdAt: new Date(),
     };
   }
+}
+
+export async function createAuditLogEntry(input: AuditLogEntryInput) {
+  return prisma.auditLog.create({
+    data: {
+      actorId: input.actorId,
+      actorRole: input.actorRole ?? 'system',
+      action: input.action,
+      targetType: input.targetType,
+      targetId: input.targetId ?? null,
+      ip: input.ipAddress ?? null,
+      userAgent: input.userAgent ?? null,
+      details: input.details ?? {},
+    },
+  });
 }
 
 // Alias for backward compatibility

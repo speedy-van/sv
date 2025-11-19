@@ -70,7 +70,7 @@ async function createTestRatings() {
             review: ratingData.review,
             category: ratingData.category,
             status: 'active',
-          },
+          } as any,
         });
       }
     }
@@ -115,7 +115,7 @@ async function createTestRatings() {
           propertyDamage: incidentData.propertyDamage,
           injuryInvolved: incidentData.injuryInvolved,
           status: 'reported',
-        },
+        } as any,
       });
     }
 

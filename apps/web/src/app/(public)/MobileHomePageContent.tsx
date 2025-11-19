@@ -224,7 +224,7 @@ const MobileHero: React.FC = () => {
           loop
           muted
           playsInline
-          preload="none"
+          preload="auto"
           poster="/android-chrome-512x512.png"
           aria-hidden
           tabIndex={-1}
@@ -241,6 +241,11 @@ const MobileHero: React.FC = () => {
             objectFit: 'cover',
             zIndex: 0,
             filter: 'brightness(0.6)',
+            imageRendering: 'crisp-edges',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
+            willChange: 'transform',
           }}
           onLoadedData={() => {
             // Video loaded successfully - production ready
@@ -252,6 +257,7 @@ const MobileHero: React.FC = () => {
             // Video started playing - production ready
           }}
         >
+          <source src="/videos/background-original.mp4" type="video/mp4" />
           <source src="/videos/background.mp4" type="video/mp4" />
         </video>
       )}
@@ -402,7 +408,7 @@ viewport={{ once: true }}
               {/* Primary CTA */}
               <TouchButton
                 size="xl"
-                bg="linear-gradient(135deg, #00C2FF, #00D18F)"
+                bg="linear-gradient(135deg, #001F3F, #002D6B)"
                 color="white"
                 fontWeight="bold"
                 px={8}
@@ -410,11 +416,11 @@ viewport={{ once: true }}
                 fontSize="lg"
                 borderRadius="2xl"
                 rightIcon={<FaArrowRight />}
-                boxShadow="0 8px 25px rgba(0,194,255,0.4)"
+                boxShadow="0 8px 25px rgba(0,180,255,0.6)"
                 _hover={{
-                  bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
+                  bg: 'linear-gradient(135deg, #002D6B, #001F3F)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 35px rgba(0,194,255,0.5)',
+                  boxShadow: '0 12px 35px rgba(0,240,255,0.2)',
                 }}
                 fullWidth
                 onClick={() => (window.location.href = '/booking-luxury')}

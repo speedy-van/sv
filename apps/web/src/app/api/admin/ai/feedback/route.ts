@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { createAuditLogEntry } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,19 +33,23 @@ export async function POST(request: NextRequest) {
 
     // Log feedback in audit trail
     try {
-      await prisma.auditLog.create({
-        data: {
-          actorId: session.user.id,
-          actorRole: 'admin',
-          action: 'ai_feedback',
-          targetType: 'ai_assistant',
-          targetId: messageId,
-          details: {
-            feedback,
-            adminEmail,
-            timestamp: timestamp || new Date().toISOString(),
-            helpful: feedback === 'up'
-          },
+      const ipAddress =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.ip ??
+        null;
+
+      await createAuditLogEntry({
+        actorId: session.user.id,
+        actorRole: 'admin',
+        action: 'AI_FEEDBACK_RECORDED',
+        targetType: 'ai_assistant',
+        targetId: messageId,
+        ipAddress,
+        details: {
+          feedback,
+          adminEmail,
+          timestamp: timestamp || new Date().toISOString(),
+          helpful: feedback === 'up',
         },
       });
 

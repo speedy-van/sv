@@ -230,6 +230,8 @@ interface Order {
   } | null;
   customerPreferences?: any;
   serviceType?: string;
+  isEconomyService?: boolean;
+  shouldBeMultiDrop?: boolean;
   orderType?: string;
   isMultiDrop?: boolean;
   routeId?: string | null;
@@ -1094,15 +1096,19 @@ export function OrdersTable({
                     <Td>
                       <Badge 
                         colorScheme={
-                          order.serviceType === 'economy' ? 'blue' :
-                          order.serviceType === 'express' ? 'red' :
-                          'green'
+                          (order.serviceType?.toUpperCase() === 'ECONOMY' || order.isEconomyService) ? 'green' :
+                          (order.serviceType?.toUpperCase() === 'PREMIUM' || order.urgency === 'next-day') ? 'purple' :
+                          (order.serviceType?.toUpperCase() === 'ENTERPRISE' || order.urgency === 'same-day') ? 'red' :
+                          'blue'
                         }
                         size="sm"
+                        variant="solid"
+                        fontSize="xs"
                       >
-                        {order.serviceType === 'economy' ? 'Economy' :
-                         order.serviceType === 'express' ? 'Express' :
-                         'Standard'}
+                        {(order.serviceType?.toUpperCase() === 'ECONOMY' || order.isEconomyService) ? '🟢 Economy' :
+                         (order.serviceType?.toUpperCase() === 'PREMIUM' || order.urgency === 'next-day') ? '🟣 Premium' :
+                         (order.serviceType?.toUpperCase() === 'ENTERPRISE' || order.urgency === 'same-day') ? '🔴 Enterprise' :
+                         '🔵 Standard'}
                       </Badge>
                     </Td>
                     <Td>

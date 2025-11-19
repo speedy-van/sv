@@ -7,7 +7,7 @@ import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { prisma } from './prisma';
+import { getPrismaClient } from './prisma';
 import bcrypt from 'bcryptjs';
 
 // Define UserRole locally to avoid circular dependency
@@ -72,8 +72,19 @@ export const authOptions: NextAuthOptions = {
           console.log('📧 Normalized email:', normalizedEmail);
 
           console.log('🔍 Querying database for user...');
-          const user = await prisma.user.findUnique({
-            where: { email: normalizedEmail }
+          const db = getPrismaClient();
+          console.log('🔍 [auth] Prisma client status:', { db: !!db, type: typeof db });
+          const user = await db.user.findUnique({
+            where: { email: normalizedEmail },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              adminRole: true,
+              isActive: true,
+            }
           });
 
           if (!user || !user.password) {

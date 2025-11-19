@@ -40,9 +40,14 @@ export async function POST(request: NextRequest) {
     await writeFile(filePath, new Uint8Array(buffer));
 
     // Store in database
+    // Extract lastName from fullName (split by last space)
+    const nameParts = validated.fullName.trim().split(/\s+/);
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : validated.fullName;
+    
     const application = await prisma.careerApplication.create({
       data: {
         fullName: validated.fullName,
+        lastName: lastName,
         email: validated.email,
         phone: validated.phone,
         position: validated.position,

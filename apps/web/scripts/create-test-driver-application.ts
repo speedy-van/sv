@@ -41,7 +41,7 @@ async function createTestDriverApplication() {
         agreeToDataProcessing: true,
         agreeToBackgroundCheck: true,
         status: 'pending',
-      },
+      } as any,
     });
 
     console.log('Test driver application created successfully:');
@@ -58,7 +58,7 @@ async function createTestDriverApplication() {
         password: '$2a$12$test.hash.for.testing.purposes.only',
         role: 'driver',
         isActive: false,
-      },
+      } as any,
     });
 
     // Link the application to the user

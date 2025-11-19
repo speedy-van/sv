@@ -30,7 +30,7 @@ async function createTestContent() {
           blackoutDates: ['2024-12-25', '2024-12-26'],
           surgeMultiplier: 1.2,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.serviceArea.create({
         data: {
@@ -61,7 +61,7 @@ async function createTestContent() {
           blackoutDates: [],
           surgeMultiplier: 1.0,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.serviceArea.create({
         data: {
@@ -118,7 +118,7 @@ async function createTestContent() {
           blackoutDates: [],
           surgeMultiplier: 1.1,
           createdBy: 'system',
-        },
+        } as any,
       }),
     ]);
 
@@ -144,7 +144,7 @@ async function createTestContent() {
           applicableVans: ['small', 'medium', 'large'],
           firstTimeOnly: true,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.promotion.create({
         data: {
@@ -168,7 +168,7 @@ async function createTestContent() {
           applicableVans: ['small', 'medium', 'large'],
           firstTimeOnly: false,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.promotion.create({
         data: {
@@ -188,7 +188,7 @@ async function createTestContent() {
           applicableVans: ['small', 'medium', 'large'],
           firstTimeOnly: false,
           createdBy: 'system',
-        },
+        } as any,
       }),
     ]);
 
@@ -228,7 +228,7 @@ async function createTestContent() {
           status: 'active',
           version: 1,
           createdBy: 'system',
-        },
+        } as any,
       }),
       prisma.emailTemplate.create({
         data: {
@@ -256,7 +256,7 @@ async function createTestContent() {
           status: 'active',
           version: 1,
           createdBy: 'system',
-        },
+        } as any,
       }),
     ]);
 

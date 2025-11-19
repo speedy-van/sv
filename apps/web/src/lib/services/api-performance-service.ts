@@ -6,9 +6,11 @@
  */
 
 import { NextRequest } from 'next/server';
+import { revalidatePath, revalidateTag } from 'next/cache';
 // Simple in-memory cache implementation
 class SimpleCache<K, V> {
-  private cache = new Map<K, { value: V; expires: number }>();
+  private cache = new Map<K, { value: V; expires: number; tags?: Set<string> }>();
+  private tagIndex = new Map<string, Set<K>>();
   private maxSize: number;
   private ttl: number;
 
@@ -17,7 +19,7 @@ class SimpleCache<K, V> {
     this.ttl = ttl;
   }
 
-  set(key: K, value: V, options?: { ttl?: number }): void {
+  set(key: K, value: V, options?: { ttl?: number; tags?: string[] }): void {
     const expires = Date.now() + (options?.ttl || this.ttl);
     
     // Remove expired entries
@@ -27,11 +29,25 @@ class SimpleCache<K, V> {
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
       if (firstKey) {
-        this.cache.delete(firstKey);
+        this.removeKey(firstKey);
       }
     }
     
-    this.cache.set(key, { value, expires });
+    this.removeKey(key);
+    
+    const tags = options?.tags?.filter(Boolean);
+    const tagSet = tags && tags.length ? new Set(tags) : undefined;
+    
+    this.cache.set(key, { value, expires, tags: tagSet });
+    
+    if (tagSet) {
+      for (const tag of tagSet) {
+        if (!this.tagIndex.has(tag)) {
+          this.tagIndex.set(tag, new Set());
+        }
+        this.tagIndex.get(tag)!.add(key);
+      }
+    }
   }
 
   get(key: K): V | undefined {
@@ -39,27 +55,63 @@ class SimpleCache<K, V> {
     if (!entry) return undefined;
     
     if (Date.now() > entry.expires) {
-      this.cache.delete(key);
+      this.removeKey(key);
       return undefined;
     }
     
     return entry.value;
   }
 
+  delete(key: K): void {
+    this.removeKey(key);
+  }
+
   clear(): void {
     this.cache.clear();
+    this.tagIndex.clear();
+  }
+
+  invalidateByTag(tag: string): number {
+    const keys = this.tagIndex.get(tag);
+    if (!keys) {
+      return 0;
+    }
+
+    for (const key of keys) {
+      this.removeKey(key);
+    }
+
+    this.tagIndex.delete(tag);
+    return keys.size;
   }
 
   private cleanup(): void {
     const now = Date.now();
     for (const [key, entry] of this.cache.entries()) {
       if (now > entry.expires) {
-        this.cache.delete(key);
+        this.removeKey(key);
       }
     }
   }
+
+  private removeKey(key: K): void {
+    const entry = this.cache.get(key);
+    if (entry?.tags) {
+      for (const tag of entry.tags) {
+        const keys = this.tagIndex.get(tag);
+        if (keys) {
+          keys.delete(key);
+          if (keys.size === 0) {
+            this.tagIndex.delete(tag);
+          }
+        }
+      }
+    }
+    this.cache.delete(key);
+  }
 }
 import { prisma } from '@/lib/prisma';
+import { cacheInvalidateByTag } from '@/lib/cache/redis-cache';
 
 // Cache configurations
 const CACHE_CONFIGS = {
@@ -114,6 +166,15 @@ interface PerformanceMetrics {
 const performanceMetrics: PerformanceMetrics[] = [];
 
 export class APIPerformanceService {
+  private static readonly ORDER_TAG_PREFIX = 'order:';
+  private static readonly ORDER_REVALIDATION_PATHS = [
+    '/customer/orders',
+    '/admin/orders',
+    '/admin/dashboard',
+    '/dashboard',
+    '/booking-luxury',
+    '/booking-luxury/success'
+  ];
   
   /**
    * Cache wrapper with performance monitoring
@@ -125,6 +186,8 @@ export class APIPerformanceService {
     options?: {
       skipCache?: boolean;
       customTTL?: number;
+      extraTags?: string[];
+      tagResolver?: (data: T) => string[];
     }
   ): Promise<{ data: T; cached: boolean; duration: number }> {
     const startTime = Date.now();
@@ -147,11 +210,22 @@ export class APIPerformanceService {
     const data = await fetcher();
     
     // Store in cache
-    if (options?.customTTL) {
-      cache.set(cacheKey, data, { ttl: options.customTTL });
-    } else {
-      cache.set(cacheKey, data);
+    const resolvedTags = new Set<string>();
+    options?.extraTags?.filter(Boolean).forEach(tag => resolvedTags.add(tag));
+    if (options?.tagResolver) {
+      const tags = options.tagResolver(data) || [];
+      tags.filter(Boolean).forEach(tag => resolvedTags.add(tag));
     }
+
+    const cacheOptions: { ttl?: number; tags?: string[] } = {};
+    if (options?.customTTL) {
+      cacheOptions.ttl = options.customTTL;
+    }
+    if (resolvedTags.size > 0) {
+      cacheOptions.tags = Array.from(resolvedTags);
+    }
+
+    cache.set(cacheKey, data, cacheOptions);
     
     const duration = Date.now() - startTime;
     return {
@@ -159,6 +233,101 @@ export class APIPerformanceService {
       cached: false,
       duration
     };
+  }
+
+  private static getOrderTag(orderId: string): string {
+    return `${this.ORDER_TAG_PREFIX}${orderId}`;
+  }
+
+  private static invalidateCacheTagLocally(tag: string): void {
+    for (const cache of caches.values()) {
+      cache.invalidateByTag(tag);
+    }
+  }
+
+  static async invalidateOrder(
+    orderId: string,
+    options?: { code?: string | null; reference?: string | null; extraPaths?: string[] }
+  ): Promise<void> {
+    if (!orderId) {
+      return;
+    }
+
+    await this.invalidateOrders(
+      [{ id: orderId, code: options?.code, reference: options?.reference }],
+      options?.extraPaths ?? []
+    );
+  }
+
+  static async invalidateOrders(
+    orders: Array<{ id?: string | null; code?: string | null; reference?: string | null }>,
+    extraPaths: string[] = []
+  ): Promise<void> {
+    if (!orders || orders.length === 0) {
+      return;
+    }
+
+    const tagSet = new Set<string>();
+    const codeSet = new Set<string>();
+
+    for (const order of orders) {
+      if (order?.id) {
+        tagSet.add(this.getOrderTag(order.id));
+      }
+
+      const codeCandidate = order?.code ?? order?.reference;
+      if (codeCandidate) {
+        codeSet.add(String(codeCandidate));
+      }
+    }
+
+    const tags = Array.from(tagSet);
+
+    // Local cache invalidation
+    tags.forEach(tag => this.invalidateCacheTagLocally(tag));
+
+    // Redis/tagged cache invalidation
+    await Promise.all(
+      tags.map(async (tag) => {
+        try {
+          await cacheInvalidateByTag(tag);
+        } catch (error) {
+          console.error(`Redis cache invalidation failed for ${tag}:`, error);
+        }
+      })
+    );
+
+    // Revalidate Next.js cache tags
+    tags.forEach(tag => {
+      try {
+        revalidateTag(tag);
+      } catch (error) {
+        console.warn(`revalidateTag failed for ${tag}:`, error);
+      }
+    });
+
+    codeSet.forEach(code => {
+      const codeTag = `order-code:${code}`;
+      try {
+        revalidateTag(codeTag);
+      } catch (error) {
+        console.warn(`revalidateTag failed for ${codeTag}:`, error);
+      }
+    });
+
+    const paths = new Set<string>([...this.ORDER_REVALIDATION_PATHS, ...extraPaths]);
+    codeSet.forEach(code => {
+      paths.add(`/customer/orders/${code}`);
+      paths.add(`/admin/orders/${code}`);
+    });
+
+    paths.forEach(path => {
+      try {
+        revalidatePath(path);
+      } catch (error) {
+        console.warn(`revalidatePath failed for ${path}:`, error);
+      }
+    });
   }
   
   /**
@@ -273,6 +442,10 @@ export class APIPerformanceService {
       });
       
       return bookings;
+    }, {
+      tagResolver: (bookings) => (bookings || [])
+        .map((booking: any) => booking?.id ? APIPerformanceService.getOrderTag(booking.id) : null)
+        .filter((tag: string | null): tag is string => Boolean(tag))
     });
   }
   
@@ -436,6 +609,10 @@ export class APIPerformanceService {
         skip: filters?.offset || 0,
         orderBy: { scheduledAt: 'desc' }
       });
+    }, {
+      tagResolver: (bookings) => (bookings || [])
+        .map((booking: any) => booking?.id ? APIPerformanceService.getOrderTag(booking.id) : null)
+        .filter((tag: string | null): tag is string => Boolean(tag))
     });
   }
   

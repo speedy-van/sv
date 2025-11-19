@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -165,6 +164,14 @@ model Booking {
   id                                                         String                @id @default(cuid())
   customerId                                                 String?
   paidAt                                                     DateTime?
+  lastPaymentDate                                            DateTime?
+  lastRefundDate                                             DateTime?
+  amountPaidGBP                                              Int?
+  additionalPaymentStatus                                    AdditionalPaymentStatus @default(NONE)
+  additionalPaymentAmountGBP                                 Int                     @default(0)
+  additionalPaymentRequestedAt                               DateTime?
+  additionalPaymentPaidAt                                    DateTime?
+  additionalPaymentStripeIntent                              String?
   createdAt                                                  DateTime              @default(now())
   updatedAt                                                  DateTime @updatedAt
   driverId                                                   String?
@@ -220,6 +227,9 @@ model Booking {
   suggestedRouteIds                                          String[]              @default([])
   potentialSavings                                           Float?
   multiDropDiscount                                          Float?
+  serviceType                                                String?               @default("STANDARD")
+  isEconomyService                                           Boolean               @default(false)
+  shouldBeMultiDrop                                          Boolean               @default(false)
   Assignment                                                 Assignment[]
   customer                                                   User?                 @relation(fields: [customerId], references: [id])
   driver                                                     Driver?               @relation(fields: [driverId], references: [id])
@@ -248,6 +258,9 @@ model Booking {
   @@index([status])
   @@index([scheduledAt], map: "idx_booking_scheduled_at")
   @@index([status, createdAt], map: "idx_booking_status_created")
+  @@index([serviceType])
+  @@index([isEconomyService])
+  @@index([shouldBeMultiDrop])
 }
 
 model BookingAddress {
@@ -754,7 +767,6 @@ model DriverNotificationPreferences {
   pushSystemAlerts     Boolean  @default(true)
   emailJobOffers       Boolean  @default(false)
   emailJobUpdates      Boolean  @default(false)
-  emailMessages        Boolean  @default(false)
   emailScheduleChanges Boolean  @default(false)
   emailPayoutEvents    Boolean  @default(true)
   emailSystemAlerts    Boolean  @default(true)
@@ -1286,7 +1298,6 @@ model PricingSnapshot {
   pickupAddress  Json
   standardPrice  Int
 
-  @@index([corridor, calculatedAt])
   @@index([requestId])
 }
 
@@ -1338,6 +1349,34 @@ model Promotion {
   @@index([createdAt])
   @@index([status])
   @@index([validFrom, validTo])
+}
+
+model TaxInvoice {
+  id                    String           @id @default(cuid())
+  invoiceNumber         String           @unique
+  customerId            String?
+  bookingId             String?
+  orderId               String?
+  issueDate             DateTime         @default(now())
+  dueDate               DateTime
+  paymentDate           DateTime?
+  netAmount             Decimal          @db.Decimal(10, 2)
+  vatAmount             Decimal          @db.Decimal(10, 2)
+  grossAmount           Decimal          @db.Decimal(10, 2)
+  vatRate               Decimal          @db.Decimal(5, 4)
+  vatRateType           VatRateType      @default(standard)
+  vatRegistrationNumber String?
+  isVATRegistered       Boolean          @default(false)
+  isReverseCharge       Boolean          @default(false)
+  status                InvoiceStatus    @default(DRAFT)
+  paymentStatus         PaymentStatus    @default(unpaid)
+  description           String?
+  notes                 String?
+  metadata              Json             @default("{}")
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  Booking               Booking?         @relation(fields: [bookingId], references: [id])
+  User                  User?            @relation(fields: [customerId], references: [id])
 }
 
 model PropertyDetails {
@@ -1694,6 +1733,7 @@ model User {
   lastLogin                                       DateTime?
   twoFactorEnabled                                Boolean                          @default(false)
   stripeCustomerId                                String?
+  metadata                                        Json?
   // driverApprovedAt                                DateTime? // Temporarily commented out due to schema mismatch
   AccountDeletionRequest                          AccountDeletionRequest[]
   Address                                         Address[]
@@ -1708,6 +1748,7 @@ model User {
   driver                                          Driver?
   DriverApplication                               DriverApplication?
   Drop                                            Drop[]
+  staff                                           Staff?
   EmailChangeRequest                              EmailChangeRequest[]
   Message                                         Message[]
   PayoutLedger                                    PayoutLedger[]
@@ -1721,6 +1762,79 @@ model User {
 
   @@index([role])
   @@index([role], map: "idx_user_role")
+}
+
+model Staff {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  employeeId      String          @unique
+  department      String?
+  position        String?
+  employmentType  EmploymentType  @default(full_time)
+  status          StaffStatus     @default(active)
+  workSchedule    Json?           // { defaultShift: { start: "09:00", end: "17:00" }, weeklyOverrides: {}, breakMinutes: 60, minHours: 8 }
+  hireDate        DateTime?
+  terminationDate DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  User            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Attendance      StaffAttendance[]
+  Leaves          StaffLeave[]
+
+  @@index([userId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([department])
+  @@index([employmentType])
+}
+
+model StaffAttendance {
+  id              String          @id @default(cuid())
+  staffId         String
+  date            DateTime        @db.Date
+  checkIn         DateTime?
+  checkOut        DateTime?
+  status          AttendanceStatus @default(pending)
+  lateMinutes     Int             @default(0)
+  earlyLeaveMinutes Int           @default(0)
+  totalHours      Float?
+  breakMinutes    Int             @default(0)
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  Staff           Staff           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, date])
+  @@index([staffId])
+  @@index([date])
+  @@index([status])
+  @@index([staffId, date])
+}
+
+model StaffLeave {
+  id          String      @id @default(cuid())
+  staffId     String
+  type        LeaveType
+  status      LeaveStatus @default(pending)
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  days        Int
+  reason      String?
+  notes       String?
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  rejectionReason String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  Staff       Staff       @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@index([type])
 }
 
 model Vehicle {
@@ -1811,6 +1925,13 @@ model VisitorSession {
   @@index([visitorId])
 }
 
+enum VatRateType {
+  standard
+  reduced
+  zero
+  exempt
+}
+
 enum AccessType {
   GROUND_FLOOR
   WITH_LIFT
@@ -1846,6 +1967,14 @@ enum BookingStatus {
 enum BookingStep {
   STEP_1_WHERE_AND_WHAT
   STEP_2_CUSTOMER_PAYMENT
+}
+
+enum AdditionalPaymentStatus {
+  NONE
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
 }
 
 enum ChatParticipantRole {
@@ -2083,10 +2212,56 @@ enum RefundStatus {
   cancelled
 }
 
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  temporary
+  intern
+}
+
+enum StaffStatus {
+  active
+  inactive
+  suspended
+  terminated
+  on_leave
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  early_leave
+  half_day
+  pending
+  approved
+  rejected
+}
+
+enum LeaveType {
+  annual
+  sick
+  personal
+  maternity
+  paternity
+  bereavement
+  unpaid
+  other
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
 enum Role {
   admin
   driver
   customer
+  staff
 }
 
 enum RouteStatus {
@@ -2178,6 +2353,7 @@ model CareerApplication {
   lastName     String
   email        String
   phone        String
+ 
   position     String
   cvUrl        String
   coverLetter  String    @db.Text
@@ -2214,8 +2390,65 @@ model AdminStory {
   publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  views       StoryView[]
+  likes       StoryLike[]
+  shares      StoryShare[]
 
   @@map("admin_stories")
+}
+
+model StoryView {
+  id        String    @id @default(cuid())
+  storyId   String
+  userId    String
+  userType  String    @default("driver")
+  viewedAt  DateTime  @default(now())
+  AdminStory AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([storyId, viewedAt])
+  @@map("story_views")
+}
+
+model StoryLike {
+  id        String    @id @default(cuid())
+  storyId   String
+  userId    String
+  userType  String    @default("driver")
+  likedAt   DateTime  @default(now())
+  AdminStory AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@index([storyId, likedAt])
+  @@map("story_likes")
+}
+
+model StoryShare {
+  id        String    @id @default(cuid())
+  storyId   String
+  userId    String
+  userType  String    @default("driver")
+  shareType String    @default("native")
+  sharedAt  DateTime  @default(now())
+  AdminStory AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId, sharedAt])
+  @@map("story_shares")
+}
+
+model AILearningPattern {
+  id          String   @id @default(cuid())
+  pattern     String
+  action      String
+  successRate Float    @default(0)
+  occurrences Int      @default(1)
+  lastSeen    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([pattern, action])
+  @@index([successRate])
+  @@index([lastSeen])
 }
 
 enum StoryType {

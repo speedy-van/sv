@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import SpeedyAIChatbot from './SpeedyAIChatbot';
+import AdminAIOverlay from './AdminAIOverlay';
 
 interface AdminInfo {
   name: string;
@@ -101,11 +102,11 @@ export default function SpeedyAIChatbotProvider() {
   }, []);
 
   // Show chatbot even if loading fails (with default values)
+  // Use the Enterprise Grid overlay by default
   return (
-    <SpeedyAIChatbot
+    <AdminAIOverlay
       adminName={adminInfo?.name || 'Admin'}
       adminEmail={adminInfo?.email || ''}
-      initialLanguage="en"
     />
   );
 }

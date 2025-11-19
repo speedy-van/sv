@@ -338,7 +338,7 @@ export default function ProfileScreen() {
               <MenuItem
                 iconName="information-circle-outline"
                 title="About Speedy Van Driver"
-                subtitle="Version 2.0.0 (Build 2.0.0)"
+                subtitle="Version 2.0.2 (Build 2.0.2)"
               />
             </View>
           </BlurView>

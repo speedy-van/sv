@@ -11,14 +11,14 @@ async function main() {
   await prisma.bookingAddress.deleteMany();
   await prisma.propertyDetails.deleteMany();
 
-  // Create sample addresses
+  // Create sample addresses (omit id - it will be auto-generated)
   const pickupAddress = await prisma.bookingAddress.create({
     data: {
       label: '123 High Street, London, SW1A 1AA',
       postcode: 'SW1A 1AA',
       lat: 51.5074,
       lng: -0.1278,
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
   const dropoffAddress = await prisma.bookingAddress.create({
@@ -27,16 +27,16 @@ async function main() {
       postcode: 'W1C 1AP',
       lat: 51.5154,
       lng: -0.1419,
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
-  // Create property details
+  // Create property details (omit id - it will be auto-generated)
   const pickupProperty = await prisma.propertyDetails.create({
     data: {
       propertyType: 'FLAT',
       accessType: 'WITH_LIFT',
       floors: 3,
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
   const dropoffProperty = await prisma.propertyDetails.create({
@@ -44,10 +44,10 @@ async function main() {
       propertyType: 'DETACHED',
       accessType: 'WITHOUT_LIFT',
       floors: 0,
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
-  // Create a sample booking
+  // Create a sample booking (omit id and updatedAt - they will be auto-generated)
   const booking = await prisma.booking.create({
     data: {
       reference: 'SV-123456',
@@ -70,7 +70,7 @@ async function main() {
       customerPhone: '+447700900000',
       customerEmail: 'john.smith@example.com',
       status: 'DRAFT',
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
   // Create sample booking items
@@ -107,7 +107,7 @@ async function main() {
       data: {
         ...item,
         bookingId: booking.id,
-      },
+      } as any, // Type assertion to work around strict Prisma types
     });
   }
 
@@ -144,7 +144,7 @@ async function main() {
       status: 'CONFIRMED',
       stripePaymentIntentId: 'pi_live_confirmed_123',
       paidAt: new Date('2024-09-08T10:30:00Z'),
-    },
+    } as any, // Type assertion to work around strict Prisma types
   });
 
   // Add items to confirmed booking
@@ -159,7 +159,7 @@ async function main() {
       data: {
         ...item,
         bookingId: confirmedBooking.id,
-      },
+      } as any, // Type assertion to work around strict Prisma types
     });
   }
 

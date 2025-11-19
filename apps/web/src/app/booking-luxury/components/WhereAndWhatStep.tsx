@@ -31,7 +31,6 @@ import {
   Card,
   CardBody,
   Circle,
-  Collapse,
   useDisclosure,
   Progress,
   Container,
@@ -131,16 +130,16 @@ export default function WhereAndWhatStep({
   const { step1 } = formData;
   const toast = useToast();
   const {
-    isOpen: isMobileCartOpen,
-    onOpen: onMobileCartOpen,
-    onClose: onMobileCartClose,
+    isOpen: isSelectedItemsPanelOpen,
+    onOpen: onSelectedItemsPanelOpen,
+    onClose: onSelectedItemsPanelClose,
   } = useDisclosure();
 
   useEffect(() => {
-    if (step1.items.length === 0 && isMobileCartOpen) {
-      onMobileCartClose();
+    if (step1.items.length === 0 && isSelectedItemsPanelOpen) {
+      onSelectedItemsPanelClose();
     }
-  }, [step1.items.length, isMobileCartOpen, onMobileCartClose]);
+  }, [step1.items.length, isSelectedItemsPanelOpen, onSelectedItemsPanelClose]);
 
   // Get all categories and subcategories
   const categories = getAllCategories();
@@ -332,22 +331,18 @@ export default function WhereAndWhatStep({
               {/* Item Image */}
               <HStack spacing={3} mb={2}>
                 {item.image && (
-                  <Box
+                  <Image
+                    src={item.image}
+                    alt={item.name}
                     w={{ base: "60px", md: "70px" }}
                     h={{ base: "60px", md: "70px" }}
-                    borderRadius="lg"
-                    overflow="hidden"
+                    objectFit="cover"
                     flexShrink={0}
-                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={70}
-                      height={70}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </Box>
+                    border="none"
+                    borderRadius="0"
+                    boxShadow="none"
+                    display="block"
+                  />
                 )}
                 
                 {/* Item Name & Weight */}
@@ -1513,79 +1508,83 @@ export default function WhereAndWhatStep({
 
       </VStack>
       {step1.items.length > 0 && (
-        <Portal>
-          <Box
-            display={{ base: 'none', lg: 'block' }}
-            position="fixed"
-            top="120px"
-            right={{ base: '16px', xl: '40px' }}
-            w="340px"
-            maxW="420px"
-            zIndex={1400}
-            sx={{
-              contain: 'layout style paint',
-              willChange: 'contents',
-            }}
-          >
-            <Card
-              bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-              backdropFilter="blur(20px)"
-              borderRadius="xl"
-              border="2px solid"
-              borderColor="rgba(16, 185, 129, 0.4)"
-              boxShadow="0 12px 32px rgba(16, 185, 129, 0.25)"
-              maxH="calc(100vh - 160px)"
-              overflowY="auto"
-            >
-              <CardBody p={{ base: 4, md: 6 }}>
-                {renderSelectedItemsContent({ includeHeading: true })}
-              </CardBody>
-            </Card>
-          </Box>
-        </Portal>
-      )}
-
-      {step1.items.length > 0 && (
         <>
-          <Portal>
-            <Box 
-              display={{ base: 'block', lg: 'none' }}
-              position="fixed" 
-              bottom="104px" 
-              right="24px" 
-              zIndex={1500}
-              sx={{
-                contain: 'layout style paint',
-                willChange: 'contents',
-              }}
-            >
-              <Button
-                onClick={onMobileCartOpen}
-                bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                color="white"
-                borderRadius="full"
-                px={5}
-                py={6}
-                boxShadow="0 12px 28px rgba(16, 185, 129, 0.4)"
-                _hover={{ bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }}
-                _active={{ bg: 'linear-gradient(135deg, #047857 0%, #03634f 100%)' }}
+          {!isSelectedItemsPanelOpen && (
+            <Portal>
+              <Box
+                position="fixed"
+                bottom={{ base: '96px', md: '40px' }}
+                right={{ base: '20px', md: '40px' }}
+                zIndex={1500}
+                pointerEvents="none"
+                sx={{
+                  contain: 'layout style paint',
+                  willChange: 'transform',
+                }}
               >
-                View Selected ({step1.items.length})
-              </Button>
-            </Box>
-          </Portal>
+                <Button
+                  aria-label="View selected items"
+                  onClick={onSelectedItemsPanelOpen}
+                  bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                  color="white"
+                  borderRadius="full"
+                  px={{ base: 4, md: 5 }}
+                  py={{ base: 5, md: 6 }}
+                  boxShadow="0 18px 32px rgba(16, 185, 129, 0.35)"
+                  _hover={{ bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', transform: 'translateY(-3px)' }}
+                  _active={{ bg: 'linear-gradient(135deg, #047857 0%, #03634f 100%)', transform: 'translateY(-1px)' }}
+                  fontWeight="700"
+                  pointerEvents="auto"
+                  transition="all 0.25s ease"
+                  minW={{ base: 'auto', md: '280px' }}
+                >
+                  <HStack spacing={4}>
+                    <Circle size={{ base: '42px', md: '48px' }} bg="rgba(255,255,255,0.12)">
+                      <Icon as={FaBoxOpen} color="white" boxSize={{ base: 5, md: 6 }} />
+                    </Circle>
+                    <Box textAlign="left">
+                      <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="800">
+                        Selected Items
+                      </Text>
+                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.800">
+                        View list ({step1.items.length})
+                      </Text>
+                    </Box>
+                    <Circle size={{ base: '36px', md: '42px' }} bg="white" color="#059669">
+                      <Text fontWeight="900" fontSize="md">
+                        {step1.items.length}
+                      </Text>
+                    </Circle>
+                  </HStack>
+                </Button>
+              </Box>
+            </Portal>
+          )}
 
-          <Drawer placement="bottom" isOpen={isMobileCartOpen} onClose={onMobileCartClose}>
-            <DrawerOverlay bg="rgba(15, 23, 42, 0.75)" backdropFilter="blur(6px)" />
+          <Drawer
+            placement="bottom"
+            isOpen={isSelectedItemsPanelOpen}
+            onClose={onSelectedItemsPanelClose}
+          >
+            <DrawerOverlay bg="rgba(15, 23, 42, 0.75)" backdropFilter="blur(10px)" />
             <DrawerContent
               borderTopRadius="2xl"
               bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
               border="1px solid rgba(16, 185, 129, 0.4)"
-              maxH="80vh"
+              maxH="85vh"
               pb={4}
+              mx="auto"
+              w="calc(100% - 32px)"
+              maxW="720px"
+              boxShadow="0 -12px 40px rgba(16, 185, 129, 0.25)"
             >
-              <DrawerCloseButton color="white" />
-              <DrawerHeader borderBottomWidth="1px" borderColor="rgba(255, 255, 255, 0.08)" color="white">
+              <DrawerCloseButton color="white" _focus={{ boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.4)' }} />
+              <DrawerHeader
+                borderBottomWidth="1px"
+                borderColor="rgba(255, 255, 255, 0.08)"
+                color="white"
+                fontWeight="900"
+              >
                 ✅ Selected Items ({step1.items.length})
               </DrawerHeader>
               <DrawerBody px={{ base: 4, md: 6 }} pt={4} pb={0}>

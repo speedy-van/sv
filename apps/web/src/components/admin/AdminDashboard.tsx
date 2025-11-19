@@ -25,6 +25,7 @@ import {
   Progress,
   Container,
 } from '@chakra-ui/react';
+import FallingText from '@/components/shared/FallingText';
 import {
   FiTruck,
   FiDollarSign,
@@ -161,9 +162,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data }) => {
     <Box minH="100vh" bgGradient={bgGradient}>
       <Container maxW="container.xl" py={8}>
         {/* Header */}
-        <HStack justify="space-between" mb={8}>
+        <HStack justify="space-between" mb={8} align="center">
           <VStack align="start" spacing={1}>
-            <Heading size="lg" color="white">Admin Dashboard</Heading>
+            <FallingText text="Speedy Van Admin Panel" />
             <Text color="whiteAlpha.800">Overview of system performance and operations</Text>
           </VStack>
           <Button

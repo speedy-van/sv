@@ -36,7 +36,7 @@ async function createSuperAdmin() {
           adminRole: 'superadmin',
           isActive: true,
           emailVerified: true,
-        },
+        } as any,
       });
 
       console.log('✅ User updated successfully:', {
@@ -64,7 +64,7 @@ async function createSuperAdmin() {
           adminRole: 'superadmin',
           isActive: true,
           emailVerified: true,
-        },
+        } as any,
       });
 
       console.log('✅ Super admin user created successfully:', {

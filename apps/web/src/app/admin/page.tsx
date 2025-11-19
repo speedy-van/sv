@@ -75,19 +75,6 @@ async function getDashboardData() {
           },
         },
       },
-      customer: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          isActive: true,
-          lastLogin: true,
-          resetTokenExpiry: true,
-          emailVerificationExpiry: true
-        }
-      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -164,13 +151,6 @@ async function getDashboardData() {
         resetTokenExpiry: job.driver.User.resetTokenExpiry?.toISOString(),
         emailVerificationExpiry: job.driver.User.emailVerificationExpiry?.toISOString(),
       },
-    } : null,
-    customer: job.customer ? {
-      ...job.customer,
-      createdAt: job.customer.createdAt.toISOString(),
-      lastLogin: job.customer.lastLogin?.toISOString(),
-      resetTokenExpiry: job.customer.resetTokenExpiry?.toISOString(),
-      emailVerificationExpiry: job.customer.emailVerificationExpiry?.toISOString(),
     } : null,
   }));
 

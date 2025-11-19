@@ -346,6 +346,145 @@ export default function SpeedyAIBotMobile() {
           padding: 0 !important;
           background: transparent !important;
         }
+
+        /* iPhone 14/15/16/17 SPECIFIC FIX - Manual Layout Control */
+        @media only screen 
+          and (device-width: 390px) 
+          and (device-height: 844px) 
+          and (-webkit-device-pixel-ratio: 3),
+        only screen 
+          and (device-width: 393px) 
+          and (device-height: 852px) 
+          and (-webkit-device-pixel-ratio: 3),
+        only screen 
+          and (device-width: 430px) 
+          and (device-height: 932px) 
+          and (-webkit-device-pixel-ratio: 3) {
+          
+          /* Force input container layout */
+          .speedy-ai-input-container {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            padding: 16px !important;
+            gap: 12px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            background-color: #ffffff !important;
+          }
+
+          /* Force input field to take proper space */
+          .speedy-ai-input-field {
+            width: calc(100% - 58px) !important;
+            max-width: calc(100% - 58px) !important;
+            min-width: 0 !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            max-height: 44px !important;
+            flex: none !important;
+            box-sizing: border-box !important;
+            font-size: 16px !important;
+            padding: 0 18px !important;
+            background-color: #fff !important;
+            background: #fff !important;
+            border: 1.5px solid #e5e7eb !important;
+            border-radius: 22px !important;
+            color: #1f2937 !important;
+            -webkit-appearance: none !important;
+          }
+
+          .speedy-ai-input-field:focus {
+            background-color: #fff !important;
+            background: #fff !important;
+          }
+
+          /* Force send button to be properly sized */
+          .speedy-ai-send-button {
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            max-width: 44px !important;
+            max-height: 44px !important;
+            flex: none !important;
+            flex-shrink: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+        }
+
+        /* Galaxy S20 Ultra - 412x915 */
+        @media only screen 
+          and (device-width: 412px) 
+          and (device-height: 915px) {
+          
+          .speedy-ai-input-container {
+            background-color: #ffffff !important;
+          }
+          
+          .speedy-ai-input-field {
+            background-color: #fff !important;
+            background: #fff !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+          }
+          
+          .speedy-ai-input-field:focus,
+          .speedy-ai-input-field:active {
+            background-color: #fff !important;
+            background: #fff !important;
+          }
+        }
+
+        /* Additional Safari on iPhone fix */
+        @supports (-webkit-touch-callout: none) {
+          @media (max-width: 430px) and (max-height: 932px) {
+            .speedy-ai-input-container {
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: center !important;
+              background-color: #ffffff !important;
+            }
+            
+            .speedy-ai-input-field {
+              flex: 1 1 auto !important;
+              width: auto !important;
+              min-width: 0 !important;
+              height: 44px !important;
+              background-color: #fff !important;
+              background: #fff !important;
+              -webkit-appearance: none !important;
+              appearance: none !important;
+            }
+            
+            .speedy-ai-input-field:focus,
+            .speedy-ai-input-field:active {
+              background-color: #fff !important;
+              background: #fff !important;
+            }
+            
+            .speedy-ai-send-button {
+              flex: 0 0 44px !important;
+              width: 44px !important;
+              height: 44px !important;
+            }
+          }
+        }
+
+        /* Universal mobile fix - catch all */
+        @media (max-width: 768px) {
+          .speedy-ai-input-field {
+            background-color: #fff !important;
+            background: #fff !important;
+          }
+          
+          .speedy-ai-input-field:focus,
+          .speedy-ai-input-field:active,
+          .speedy-ai-input-field:hover {
+            background-color: #fff !important;
+            background: #fff !important;
+          }
+        }
       `}</style>
 
       {/* Floating Button - Mobile Only */}
@@ -856,16 +995,20 @@ export default function SpeedyAIBotMobile() {
             </div>
           )}
 
-          {/* Input Area - Simplified */}
+          {/* Input Area - iPhone 14/15/16/17 Manual Fix */}
           <div
+            className="speedy-ai-input-container"
             style={{
-              padding: '12px',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+              padding: '16px',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
               backgroundColor: '#ffffff',
               borderTop: '1px solid #e5e7eb',
               display: 'flex',
-              gap: '10px',
+              flexDirection: 'row',
+              gap: '12px',
               alignItems: 'center',
+              boxSizing: 'border-box',
+              width: '100%',
             }}
           >
             <input
@@ -876,75 +1019,91 @@ export default function SpeedyAIBotMobile() {
               onKeyDown={handleKeyPress}
               placeholder="Type your answer here..."
               disabled={isLoading}
+              className="speedy-ai-input-field"
               style={{
-                flex: 1,
-                height: '50px',
-                minHeight: '50px',
+                flex: '1 1 auto',
+                width: 'auto',
+                minWidth: '0',
+                height: '44px',
+                minHeight: '44px',
+                maxHeight: '44px',
                 padding: '0 18px',
-                borderRadius: '25px',
-                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: '22px',
+                border: '1.5px solid #e5e7eb',
                 fontSize: '16px',
-                color: '#ffffff',
+                lineHeight: '44px',
+                color: '#1f2937',
                 outline: 'none',
-                backgroundColor: 'rgba(255,255,255,0.1)',
+                backgroundColor: '#ffffff',
+                background: '#ffffff',
                 transition: 'all 0.2s ease',
-                fontWeight: 400,
+                fontWeight: '400',
+                boxSizing: 'border-box',
                 WebkitAppearance: 'none',
                 MozAppearance: 'none',
                 appearance: 'none',
-                WebkitTextFillColor: '#ffffff',
-              }}
+                WebkitTextFillColor: '#1f2937',
+              } as React.CSSProperties}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.borderColor = '#3B82F6';
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.borderColor = '#e5e7eb';
+                e.currentTarget.style.backgroundColor = '#ffffff';
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.color = '#ffffff';
               }}
             />
 
-            {/* Send Button - NEW! */}
+            {/* Send Button - Manual Size Control */}
             <button
               onClick={() => handleSendMessage()}
               disabled={!inputValue.trim() || isLoading}
+              aria-label="Send message"
+              className="speedy-ai-send-button"
               style={{
-                width: '48px',
-                height: '48px',
-                minWidth: '48px',
+                flex: '0 0 44px',
+                width: '44px',
+                height: '44px',
+                minWidth: '44px',
+                minHeight: '44px',
+                maxWidth: '44px',
+                maxHeight: '44px',
                 borderRadius: '50%',
                 border: 'none',
                 background: inputValue.trim() && !isLoading
-                  ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                  ? 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)'
                   : '#d1d5db',
                 color: '#ffffff',
-                fontSize: '20px',
+                fontSize: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: inputValue.trim() && !isLoading ? 'pointer' : 'not-allowed',
                 transition: 'all 0.2s ease',
                 boxShadow: inputValue.trim() && !isLoading
-                  ? '0 4px 12px rgba(16, 185, 129, 0.4)'
+                  ? '0 2px 8px rgba(59, 130, 246, 0.3)'
                   : 'none',
                 opacity: inputValue.trim() && !isLoading ? 1 : 0.5,
-                padding: 0,
-                margin: 0,
+                padding: '0',
+                margin: '0',
+                boxSizing: 'border-box',
               }}
               onTouchStart={(e) => {
                 if (inputValue.trim() && !isLoading) {
-                  e.currentTarget.style.transform = 'scale(0.9)';
+                  e.currentTarget.style.transform = 'scale(0.92)';
                 }
               }}
               onTouchEnd={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {isLoading ? '⏳' : '➤'}
+              {isLoading ? (
+                <span style={{ fontSize: '16px' }}>⏳</span>
+              ) : (
+                <span style={{ fontSize: '18px', marginLeft: '2px' }}>➤</span>
+              )}
             </button>
           </div>
         </div>

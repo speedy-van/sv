@@ -29,7 +29,7 @@ async function createTestJob() {
         User: {
           connect: { id: driver.userId }
         }
-      }
+      } as any,
     });
 
     const dropoffAddress = await prisma.address.create({
@@ -41,12 +41,52 @@ async function createTestJob() {
         User: {
           connect: { id: driver.userId }
         }
+      } as any,
+    });
+
+    // Create BookingAddress and PropertyDetails first
+    const pickupBookingAddress = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_pickup_${Date.now()}`,
+        label: '123 Test Street, London',
+        postcode: 'SW1A 1AA',
+        lat: 51.5074,
+        lng: -0.1278,
+      }
+    });
+
+    const dropoffBookingAddress = await prisma.bookingAddress.create({
+      data: {
+        id: `addr_dropoff_${Date.now()}`,
+        label: '456 Destination Road, London',
+        postcode: 'SW1A 2BB',
+        lat: 51.5074,
+        lng: -0.1278,
+      }
+    });
+
+    const pickupPropertyDetails = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_pickup_${Date.now()}`,
+        propertyType: 'DETACHED',
+        accessType: 'WITHOUT_LIFT',
+        floors: 0,
+      }
+    });
+
+    const dropoffPropertyDetails = await prisma.propertyDetails.create({
+      data: {
+        id: `prop_dropoff_${Date.now()}`,
+        propertyType: 'DETACHED',
+        accessType: 'WITHOUT_LIFT',
+        floors: 0,
       }
     });
 
     // Create test booking
     const booking = await prisma.booking.create({
       data: {
+        id: `booking_${Date.now()}`,
         reference: `TEST${Date.now()}`,
         customerName: 'Test Customer',
         customerEmail: 'test@example.com',
@@ -59,45 +99,32 @@ async function createTestJob() {
         baseDistanceMiles: 5.0,
         status: 'CONFIRMED',
         scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+        updatedAt: new Date(),
         pickupTimeSlot: 'morning',
         crewSize: 'TWO',
-        pickupAddress: {
-          connect: { id: pickupAddress.id }
-        },
-        dropoffAddress: {
-          connect: { id: dropoffAddress.id }
-        },
+        pickupAddressId: pickupBookingAddress.id,
+        dropoffAddressId: dropoffBookingAddress.id,
+        pickupPropertyId: pickupPropertyDetails.id,
+        dropoffPropertyId: dropoffPropertyDetails.id,
         availabilityMultiplierPercent: 100,
         crewMultiplierPercent: 100,
         estimatedDurationMinutes: 120,
         BookingItem: {
           create: [
             {
+              id: `item_${Date.now()}_1`,
               name: 'Test Box 1',
               quantity: 2,
               volumeM3: 0.5
             },
             {
+              id: `item_${Date.now()}_2`,
               name: 'Test Box 2',
               quantity: 1,
               volumeM3: 1.0
             }
           ]
         },
-        pickupProperty: {
-          create: {
-            propertyType: 'DETACHED',
-            accessType: 'GROUND_FLOOR',
-            floors: 0
-          }
-        },
-        dropoffProperty: {
-          create: {
-            propertyType: 'DETACHED',
-            accessType: 'GROUND_FLOOR',
-            floors: 0
-          }
-        }
       }
     });
 
@@ -177,7 +204,7 @@ async function createTestJob() {
         currency: 'GBP',
         calculatedAt: new Date(),
         paidOut: false
-      }
+      } as any,
     });
 
     console.log('💰 Created driver earnings:', {

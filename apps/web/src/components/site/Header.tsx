@@ -247,33 +247,67 @@ const Header: React.FC = memo(() => {
           <MotionFlex
             gap={3}
             alignItems="center"
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.05, rotate: 5 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 } as any}
             cursor="pointer"
             onClick={() => window.location.href = '/'}
             ml={{ base: 2, md: 0 }}
             flexShrink={0}
           >
-            <MotionBox
-              w={{ base: '42px', md: '48px', lg: '52px' }}
-              h={{ base: '42px', md: '48px', lg: '52px' }}
-              bg="linear-gradient(135deg, #00C2FF, #00D18F)"
-              borderRadius="lg"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              color="white"
-              fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}
-              fontWeight="bold"
-              boxShadow="0 4px 15px rgba(0,194,255,0.3)"
-              whileHover={{
-                rotate: [0, -5, 5, -5, 0],
-                boxShadow: "0 8px 25px rgba(0,194,255,0.5)"
+            <Box
+              position="relative"
+              w={{ base: '80px', md: '70px', lg: '75px' }}
+              h={{ base: '80px', md: '70px', lg: '75px' }}
+              borderRadius="full"
+              overflow="hidden"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: '-4px',
+                left: '-4px',
+                right: '-4px',
+                bottom: '-4px',
+                borderRadius: 'full',
+                background: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+                opacity: 0.6,
+                filter: 'blur(8px)',
+                animation: 'pulse 2s ease-in-out infinite',
+                zIndex: -1,
               }}
-              transition={{ duration: 0.5 } as any}
+              _hover={{
+                _before: {
+                  opacity: 1,
+                  filter: 'blur(12px)',
+                }
+              }}
             >
-              SV
-            </MotionBox>
+              <Box
+                as="video"
+                src="/logo/sv logo.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                w="100%"
+                h="100%"
+                objectFit="cover"
+                border="3px solid"
+                borderColor="#00C2FF"
+                boxShadow="0 0 20px rgba(0,194,255,0.5), inset 0 0 10px rgba(0,194,255,0.2)"
+                transition="all 0.3s ease"
+                sx={{
+                  borderRadius: 'full',
+                }}
+                onLoadedMetadata={(e: any) => {
+                  e.target.playbackRate = 0.5;
+                }}
+                _hover={{
+                  borderColor: '#00D18F',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.8), inset 0 0 15px rgba(0,194,255,0.4)',
+                  transform: 'rotate(-5deg)',
+                }}
+              />
+            </Box>
             <VStack align="start" spacing={0.5} display={{ base: 'none', md: 'flex' }}>
               <Text fontSize={{ md: 'lg', lg: 'xl' }} fontWeight="bold" color="text.primary" lineHeight="1.2">
                 Speedy Van

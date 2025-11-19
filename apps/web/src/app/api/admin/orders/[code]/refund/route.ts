@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { stripe } from '@/lib/stripe/client';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
+import { AdditionalPaymentStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -48,11 +49,12 @@ export async function POST(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (!booking.paidAt || booking.amountPaidGBP <= 0) {
+    const amountPaid = booking.amountPaidGBP ?? 0;
+    if (!booking.paidAt || amountPaid <= 0) {
       return NextResponse.json({ error: 'No payment recorded for this order. Refunds cannot be issued.' }, { status: 400 });
     }
 
-    const currentPaid = booking.amountPaidGBP;
+    const currentPaid = amountPaid;
     if (targetTotalGBP >= currentPaid) {
       return NextResponse.json({ error: 'Target total must be less than the amount already paid in order to issue a refund.' }, { status: 400 });
     }
@@ -67,7 +69,7 @@ export async function POST(
     let remaining = refundAmount;
 
     const paymentIntents: string[] = [];
-    if (booking.additionalPaymentStatus === 'PAID' && booking.additionalPaymentStripeIntent) {
+    if (booking.additionalPaymentStatus === AdditionalPaymentStatus.PAID && booking.additionalPaymentStripeIntent) {
       paymentIntents.push(booking.additionalPaymentStripeIntent);
     }
     if (booking.stripePaymentIntentId) {
@@ -109,13 +111,17 @@ export async function POST(
 
     const now = new Date();
 
+    const additionalPaymentAmount = booking.additionalPaymentAmountGBP ?? 0;
+
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
       data: {
         totalGBP: targetTotalGBP,
         amountPaidGBP: currentPaid - refundAmount,
-        additionalPaymentStatus: refundAmount >= booking.additionalPaymentAmountGBP ? 'REFUNDED' : booking.additionalPaymentStatus,
-        additionalPaymentAmountGBP: refundAmount >= booking.additionalPaymentAmountGBP ? 0 : Math.max(booking.additionalPaymentAmountGBP - refundAmount, 0),
+        additionalPaymentStatus: refundAmount >= additionalPaymentAmount
+          ? AdditionalPaymentStatus.REFUNDED
+          : booking.additionalPaymentStatus,
+        additionalPaymentAmountGBP: refundAmount >= additionalPaymentAmount ? 0 : Math.max(additionalPaymentAmount - refundAmount, 0),
         lastRefundDate: now,
       },
     });

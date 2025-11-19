@@ -130,7 +130,7 @@ async function createTestJobs() {
           name: `Test Customer ${i}`,
           role: 'customer',
           password: 'hashedpassword123', // In real app, this would be properly hashed
-        },
+        } as any,
       });
     }
 

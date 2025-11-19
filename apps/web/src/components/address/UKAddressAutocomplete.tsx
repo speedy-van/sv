@@ -101,6 +101,8 @@ interface AddressDetails {
   hasElevator?: boolean;
 }
 
+const isScrollDebugEnabled = process.env.NODE_ENV !== 'production';
+
 export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   id,
   label,
@@ -176,6 +178,13 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
   const justSelectedRef = useRef(false); // Prevent search after selection
   const toast = useToast();
   const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+
+  const scrollDebug = useCallback((phase: string, payload?: Record<string, unknown>) => {
+    if (!isScrollDebugEnabled) {
+      return;
+    }
+    console.log(`[UKAddressAutocomplete][${id}][${phase}]`, payload ?? {});
+  }, [id]);
 
 
   // Generate session token on mount
@@ -334,23 +343,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     
     // Then update input value
     setInputValue(suggestion.displayText);
-    
-    // CRITICAL FIX: Blur the input WITHOUT causing scroll (mobile only)
-    // On desktop, blur can trigger auto-scroll which is undesirable
-    if (inputRef.current) {
-      const isMobile = window.innerWidth < 768;
-      if (isMobile) {
-        inputRef.current.blur();
-      } else {
-        // On desktop: blur without scrolling by preserving scroll position
-        const scrollY = window.scrollY;
-        inputRef.current.blur();
-        // Immediately restore scroll position if it changed
-        if (window.scrollY !== scrollY) {
-          window.scrollTo(0, scrollY);
-        }
-      }
-    }
+
     setIsLoading(true);
     setApiError('');
 
@@ -429,10 +422,8 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
         isClosable: true,
       });
       
-      // Unlock after a small delay in case of error
-      setTimeout(() => {
-        isSelectingRef.current = false;
-      }, 500);
+      // Unlock selection after error
+      isSelectingRef.current = false;
     } finally {
       setIsLoading(false);
       // Unlock selection after completion
@@ -501,20 +492,9 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     setShowSuggestions(false);
     onChange(null);
     
-    // Focus input WITHOUT causing scroll (mobile only)
+    // Focus input without causing scroll
     if (inputRef.current) {
-      const isMobile = window.innerWidth < 768;
-      if (isMobile) {
-        inputRef.current.focus();
-      } else {
-        // On desktop: focus without scrolling
-        const scrollY = window.scrollY;
-        inputRef.current.focus({ preventScroll: true });
-        // Double-check scroll position didn't change
-        if (window.scrollY !== scrollY) {
-          window.scrollTo(0, scrollY);
-        }
-      }
+      inputRef.current.focus({ preventScroll: true });
     }
   }, [onChange]);
 
@@ -548,19 +528,10 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
 
     reposition();
     document.addEventListener('mousedown', handleMouseDownOutside);
-    // DISABLED: scroll listener causes auto-scroll issues on desktop
-    // Only needed on mobile where keyboard can push content
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      window.addEventListener('scroll', reposition, true);
-    }
     window.addEventListener('resize', reposition);
 
     return () => {
       document.removeEventListener('mousedown', handleMouseDownOutside);
-      if (isMobile) {
-        window.removeEventListener('scroll', reposition, true);
-      }
       window.removeEventListener('resize', reposition);
     };
   }, [showSuggestions]);
@@ -643,22 +614,15 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
               {isLoading ? (
                 <Spinner size="sm" color="blue.400" thickness="2px" />
               ) : value ? (
-                <HStack spacing={1}>
-                    <Icon 
-                      as={FaCheckCircle} 
-                      color="green.400" 
-                      boxSize={4}
-                    />
-                  <IconButton
-                    aria-label="Clear address"
-                    icon={<CloseIcon />}
-                    size="xs"
-                    variant="ghost"
-                    color="gray.400"
-                    _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.1)" }}
-                    onClick={handleClear}
-                  />
-                </HStack>
+                <IconButton
+                  aria-label="Clear address"
+                  icon={<CloseIcon />}
+                  size="xs"
+                  variant="ghost"
+                  color="gray.400"
+                  _hover={{ color: "white", bg: "rgba(255, 255, 255, 0.1)" }}
+                  onClick={handleClear}
+                />
               ) : null}
             </InputRightElement>
           </InputGroup>
@@ -705,6 +669,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
               maxH="320px"
               overflowY="auto"
               py={2}
+              pointerEvents={isSelectingRef.current ? "none" : "auto"}
               css={{
                 '&::-webkit-scrollbar': {
                   width: '6px',
@@ -737,21 +702,10 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                     borderColor: "rgba(66, 153, 225, 0.2)"
                   }}
                   transition="all 0.2s"
-                  onMouseDown={(e) => {
-                    // Use onMouseDown instead of onClick to capture the event before any other handler
-                    e.preventDefault(); // Prevent input from losing focus
-                    e.stopPropagation(); // Stop event from bubbling to handleMouseDownOutside
-                    
-                    console.log('🖱️ onMouseDown fired for suggestion:', suggestion.displayText);
-                    
-                    // Select suggestion immediately - ONE CLICK ONLY
-                    selectSuggestion(suggestion);
-                  }}
                   onClick={(e) => {
-                    // Prevent onClick from firing after onMouseDown
-                    e.preventDefault();
                     e.stopPropagation();
-                    console.log('🖱️ onClick fired (should be blocked) for suggestion:', suggestion.displayText);
+                    console.log('🖱️ onClick fired for suggestion:', suggestion.displayText);
+                    selectSuggestion(suggestion);
                   }}
                 >
                   <HStack align="start" spacing={3}>
@@ -863,7 +817,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       {/* Floor and Flat Numbers */}
               <SimpleGrid columns={2} spacing={3}>
                 <Box>
-                  <FormLabel fontSize="xs" color="white" mb={1}>
+                  <FormLabel fontSize="xs" color="#ffffff" mb={1}>
                     Floor Number
                   </FormLabel>
                   <Input
@@ -905,7 +859,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </Box>
 
                 <Box>
-                  <FormLabel fontSize="xs" color="white" mb={1}>
+                  <FormLabel fontSize="xs" color="#ffffff" mb={1}>
                     Flat Number
                   </FormLabel>
                   <Input

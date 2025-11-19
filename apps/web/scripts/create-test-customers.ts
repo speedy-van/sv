@@ -209,7 +209,7 @@ async function createTestCustomers() {
           role: 'customer',
           password: await hash('password123', 12),
           emailVerified: true,
-        },
+        } as any,
       });
 
       console.log(`Created customer: ${customer.name} (${customer.email})`);
@@ -220,7 +220,7 @@ async function createTestCustomers() {
           data: {
             userId: customer.id,
             ...addressData,
-          },
+          } as any,
         });
       }
 
@@ -230,7 +230,7 @@ async function createTestCustomers() {
           data: {
             userId: customer.id,
             ...contactData,
-          },
+          } as any,
         });
       }
 
@@ -248,7 +248,7 @@ async function createTestCustomers() {
             phone: customerData.phone,
             status: 'OPEN',
             priority: 'NORMAL',
-          },
+          } as any,
         });
       }
 

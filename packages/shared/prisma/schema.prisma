@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -8,8 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AILearningPattern {
+  id          String   @id
+  pattern     String
+  action      String
+  successRate Float    @default(0)
+  occurrences Int      @default(1)
+  lastSeen    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+
+  @@unique([pattern, action])
+  @@index([lastSeen])
+  @@index([successRate])
+}
+
 model AccountDeletionRequest {
-  id           String    @id @default(cuid())
+  id           String    @id
   userId       String
   driverId     String
   reason       String?
@@ -27,7 +41,7 @@ model AccountDeletionRequest {
 }
 
 model Address {
-  id                  String   @id @default(cuid())
+  id                  String   @id
   userId              String
   label               String
   line1               String
@@ -40,7 +54,7 @@ model Address {
   notes               String?
   isDefault           Boolean  @default(false)
   createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  updatedAt           DateTime
   hasCongestionCharge Boolean  @default(false)
   isLEZ               Boolean  @default(false)
   isULEZ              Boolean  @default(false)
@@ -54,7 +68,7 @@ model Address {
 }
 
 model AdminApproval {
-  id            String   @id @default(cuid())
+  id            String   @id
   entityType    String
   entityId      String
   type          String
@@ -73,7 +87,7 @@ model AdminApproval {
 }
 
 model AdminNotification {
-  id        String    @id @default(cuid())
+  id        String    @id
   type      String
   title     String
   message   String
@@ -83,7 +97,7 @@ model AdminNotification {
   isRead    Boolean   @default(false)
   readAt    DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime
   actorId   String?
   actorRole String?
 
@@ -95,14 +109,14 @@ model AdminNotification {
 }
 
 model Assignment {
-  id             String           @id @default(cuid())
+  id             String           @id
   bookingId      String
   driverId       String
   round          Int              @default(1)
   score          Int?
   expiresAt      DateTime?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  updatedAt      DateTime
   claimedAt      DateTime?
   status         AssignmentStatus @default(invited)
   Booking        Booking          @relation(fields: [bookingId], references: [id])
@@ -114,12 +128,12 @@ model Assignment {
   DriverTip      DriverTip[]
   JobEvent       JobEvent[]
 
-  @@index([status])
   @@index([bookingId, status])
+  @@index([status])
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
+  id         String   @id
   actorId    String
   actorRole  String
   action     String
@@ -140,7 +154,7 @@ model AuditLog {
 }
 
 model BonusRequest {
-  id                   String           @id @default(cuid())
+  id                   String           @id
   driverId             String
   assignmentId         String
   reason               String
@@ -162,90 +176,93 @@ model BonusRequest {
 }
 
 model Booking {
-  id                            String                @id @default(cuid())
-  customerId                    String?
-  paidAt                        DateTime?
-  createdAt                     DateTime              @default(now())
-  updatedAt                     DateTime              @updatedAt
-  driverId                      String?
-  customerName                  String
-  customerPhone                 String
-  reference                     String                @unique
-  accessSurchargeGBP            Int
-  availabilityMultiplierPercent Int
-  baseDistanceMiles             Float
-  crewMultiplierPercent         Int
-  customerEmail                 String
-  distanceCostGBP               Int
-  dropoffAddressId              String
-  dropoffPropertyId             String
-  estimatedDurationMinutes      Int
-  itemsSurchargeGBP             Int
-  pickupAddressId               String
-  pickupPropertyId              String
-  scheduledAt                   DateTime
-  stripePaymentIntentId         String?               @unique
-  totalGBP                      Int
-  weatherSurchargeGBP           Int
-  status                        BookingStatus         @default(DRAFT)
-  distanceMeters                Int?                  @default(0)
-  durationSeconds               Int?                  @default(0)
-  pickupLat                     Float?
-  pickupLng                     Float?
-  dropoffLat                    Float?
-  dropoffLng                    Float?
-  crewSize                      CrewSize              @default(TWO)
-  currentStep                   BookingStep           @default(STEP_1_WHERE_AND_WHAT)
-  isStepCompleted               Boolean               @default(false)
-  stepCompletedAt               DateTime?
-  pickupTimeSlot                String?
-  urgency                       String?
-  isMultiDrop                   Boolean               @default(false)
-  routeId                       String?
-  priorityLevel                 Int                   @default(1) @db.SmallInt
-  estimatedPickupTime           DateTime?
-  estimatedDeliveryTime         DateTime?
-  actualPickupTime              DateTime?
-  actualDeliveryTime            DateTime?
-  deliverySequence              Int?
-  specialHandling               String[]
-  timeWindowFlexibility         Int                   @default(30)
-  customerPreferences           Json                  @default("{}")
-  orderType                     String?               @default("single")
-  eligibleForMultiDrop          Boolean               @default(false)
-  amountPaidGBP                 Int                   @default(0)
-  additionalPaymentStatus       AdditionalPaymentStatus @default(NONE)
-  additionalPaymentAmountGBP    Int                   @default(0)
-  additionalPaymentRequestedAt  DateTime?
-  additionalPaymentPaidAt       DateTime?
-  additionalPaymentStripeIntent String?
-  lastPaymentDate               DateTime?
-  lastRefundDate                DateTime?
-  multiDropEligibilityReason    String?
-  estimatedLoadPercentage       Float?
-  routePreference               String?               @default("balanced")
-  priority                      Int                   @default(5) @db.SmallInt
-  suggestedRouteIds             String[]              @default([])
-  potentialSavings              Float?
-  multiDropDiscount             Float?
-  Assignment                    Assignment[]
-  customer                      User?                 @relation(fields: [customerId], references: [id])
-  driver                        Driver?               @relation(fields: [driverId], references: [id])
-  dropoffAddress                BookingAddress        @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
-  dropoffProperty               PropertyDetails       @relation("Booking_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
-  pickupAddress                 BookingAddress        @relation("Booking_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
-  pickupProperty                PropertyDetails       @relation("Booking_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
-  route                         Route?                @relation(fields: [routeId], references: [id])
-  BookingCancellation           BookingCancellation[]
-  BookingItem                   BookingItem[]
-  BookingProgress               BookingProgress[]
-  ChatSession                   ChatSession[]
-  CommunicationLog              CommunicationLog[]
-  Drop                          Drop[]
-  Invoice                       Invoice[]
-  Payment                       Payment[]
-  TaxInvoice                    TaxInvoice[]
-  TrackingPing                  TrackingPing[]
+  id                                                         String                  @id
+  customerId                                                 String?
+  paidAt                                                     DateTime?
+  amountPaidGBP                                              Int                     @default(0)
+  createdAt                                                  DateTime                @default(now())
+  updatedAt                                                  DateTime
+  driverId                                                   String?
+  customerName                                               String
+  customerPhone                                              String
+  reference                                                  String                  @unique
+  accessSurchargeGBP                                         Int
+  availabilityMultiplierPercent                              Int
+  baseDistanceMiles                                          Float
+  crewMultiplierPercent                                      Int
+  customerEmail                                              String
+  distanceCostGBP                                            Int
+  dropoffAddressId                                           String
+  dropoffPropertyId                                          String
+  estimatedDurationMinutes                                   Int
+  itemsSurchargeGBP                                          Int
+  pickupAddressId                                            String
+  pickupPropertyId                                           String
+  scheduledAt                                                DateTime
+  stripePaymentIntentId                                      String?                 @unique
+  totalGBP                                                   Int
+  weatherSurchargeGBP                                        Int
+  status                                                     BookingStatus           @default(DRAFT)
+  distanceMeters                                             Int?                    @default(0)
+  durationSeconds                                            Int?                    @default(0)
+  pickupLat                                                  Float?
+  pickupLng                                                  Float?
+  dropoffLat                                                 Float?
+  dropoffLng                                                 Float?
+  crewSize                                                   CrewSize                @default(TWO)
+  currentStep                                                BookingStep             @default(STEP_1_WHERE_AND_WHAT)
+  isStepCompleted                                            Boolean                 @default(false)
+  stepCompletedAt                                            DateTime?
+  pickupTimeSlot                                             String?
+  urgency                                                    String?
+  isMultiDrop                                                Boolean                 @default(false)
+  routeId                                                    String?
+  priorityLevel                                              Int                     @default(1) @db.SmallInt
+  estimatedPickupTime                                        DateTime?
+  estimatedDeliveryTime                                      DateTime?
+  actualPickupTime                                           DateTime?
+  actualDeliveryTime                                         DateTime?
+  deliverySequence                                           Int?
+  specialHandling                                            String[]
+  timeWindowFlexibility                                      Int                     @default(30)
+  customerPreferences                                        Json                    @default("{}")
+  orderType                                                  String?                 @default("single")
+  eligibleForMultiDrop                                       Boolean                 @default(false)
+  multiDropEligibilityReason                                 String?
+  estimatedLoadPercentage                                    Float?
+  routePreference                                            String?                 @default("balanced")
+  priority                                                   Int                     @default(5) @db.SmallInt
+  suggestedRouteIds                                          String[]                @default([])
+  potentialSavings                                           Float?
+  multiDropDiscount                                          Float?
+  additionalPaymentAmountGBP                                 Int                     @default(0)
+  additionalPaymentPaidAt                                    DateTime?
+  additionalPaymentRequestedAt                               DateTime?
+  additionalPaymentStripeIntent                              String?
+  lastPaymentDate                                            DateTime?
+  lastRefundDate                                             DateTime?
+  additionalPaymentStatus                                    AdditionalPaymentStatus @default(NONE)
+  serviceType                                                String?                 @default("STANDARD")
+  isEconomyService                                           Boolean?                @default(false)
+  shouldBeMultiDrop                                          Boolean?                @default(false)
+  Assignment                                                 Assignment[]
+  User                                                       User?                   @relation(fields: [customerId], references: [id])
+  Driver                                                     Driver?                 @relation(fields: [driverId], references: [id])
+  BookingAddress_Booking_dropoffAddressIdToBookingAddress    BookingAddress          @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
+  PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails PropertyDetails         @relation("Booking_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
+  BookingAddress_Booking_pickupAddressIdToBookingAddress     BookingAddress          @relation("Booking_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
+  PropertyDetails_Booking_pickupPropertyIdToPropertyDetails  PropertyDetails         @relation("Booking_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  Route                                                      Route?                  @relation(fields: [routeId], references: [id])
+  BookingCancellation                                        BookingCancellation[]
+  BookingItem                                                BookingItem[]
+  BookingProgress                                            BookingProgress[]
+  ChatSession                                                ChatSession[]
+  CommunicationLog                                           CommunicationLog[]
+  Drop                                                       Drop[]
+  Invoice                                                    Invoice[]
+  Payment                                                    Payment[]
+  TaxInvoice                                                 TaxInvoice[]
+  TrackingPing                                               TrackingPing[]
 
   @@index([currentStep, status])
   @@index([customerEmail, scheduledAt])
@@ -258,15 +275,8 @@ model Booking {
   @@index([status, createdAt], map: "idx_booking_status_created")
 }
 
-enum AdditionalPaymentStatus {
-  NONE
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
-}
 model BookingAddress {
-  id                                               String    @id @default(cuid())
+  id                                               String    @id
   label                                            String
   postcode                                         String
   lat                                              Float
@@ -276,7 +286,7 @@ model BookingAddress {
 }
 
 model BookingCancellation {
-  id              String   @id @default(cuid())
+  id              String   @id
   bookingId       String
   cancelledBy     String
   reason          String
@@ -285,7 +295,7 @@ model BookingCancellation {
   createdAt       DateTime @default(now())
   cancelledByRole String
   refundProcessed Boolean  @default(false)
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime
   Booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -294,7 +304,7 @@ model BookingCancellation {
 }
 
 model BookingItem {
-  id              String  @id @default(cuid())
+  id              String  @id
   bookingId       String
   name            String
   quantity        Int     @default(1)
@@ -308,7 +318,7 @@ model BookingItem {
 }
 
 model BookingProgress {
-  id          String      @id @default(cuid())
+  id          String      @id
   bookingId   String
   step        BookingStep
   status      String      @default("pending")
@@ -317,7 +327,7 @@ model BookingProgress {
   data        Json?
   notes       String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  updatedAt   DateTime
   Booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@unique([bookingId, step])
@@ -326,7 +336,7 @@ model BookingProgress {
 }
 
 model BusinessMetric {
-  id          String   @id @default(cuid())
+  id          String   @id
   name        String
   value       Float
   category    String
@@ -342,8 +352,30 @@ model BusinessMetric {
   @@index([userId])
 }
 
+model CareerApplication {
+  id              String            @id
+  fullName        String
+  email           String
+  phone           String
+  position        String
+  cvUrl           String
+  coverLetter     String
+  status          ApplicationStatus @default(pending)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  contractSent    Boolean           @default(false)
+  contractSentAt  DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+
+  @@index([createdAt])
+  @@index([email])
+  @@index([status])
+}
+
 model ChatParticipant {
-  id          String              @id @default(cuid())
+  id          String              @id
   sessionId   String
   userId      String?
   guestName   String?
@@ -363,13 +395,13 @@ model ChatParticipant {
 }
 
 model ChatSession {
-  id                               String            @id @default(cuid())
+  id                               String            @id
   type                             ChatSessionType
   title                            String?
   bookingId                        String?
   isActive                         Boolean           @default(true)
   createdAt                        DateTime          @default(now())
-  updatedAt                        DateTime          @updatedAt
+  updatedAt                        DateTime
   closedAt                         DateTime?
   closedBy                         String?
   createdBy                        String?
@@ -386,7 +418,7 @@ model ChatSession {
 }
 
 model CommunicationLog {
-  id           String              @id @default(cuid())
+  id           String              @id
   bookingId    String
   channel      String
   recipient    String
@@ -404,8 +436,43 @@ model CommunicationLog {
   @@index([type, status])
 }
 
+model CompanyTaxSettings {
+  id                       String              @id
+  companyName              String
+  companyNumber            String?             @unique
+  vatRegistrationNumber    String?             @unique
+  corporationTaxUTR        String?             @unique
+  isVATRegistered          Boolean             @default(false)
+  vatRegistrationDate      DateTime?
+  vatAccountingScheme      VatAccountingScheme @default(standard)
+  vatReturnFrequency       VatReturnFrequency  @default(quarterly)
+  accountingPeriodStart    DateTime?
+  accountingPeriodEnd      DateTime?
+  corporationTaxRate       Decimal             @default(0.19) @db.Decimal(5, 4)
+  vatRegistrationThreshold Decimal             @default(85000) @db.Decimal(10, 2)
+  corporationTaxThreshold  Decimal             @default(50000) @db.Decimal(10, 2)
+  hmrcClientId             String?
+  hmrcClientSecret         String?
+  hmrcAccessToken          String?
+  hmrcRefreshToken         String?
+  hmrcTokenExpiry          DateTime?
+  emailNotifications       Boolean             @default(true)
+  notificationEmail        String?
+  deadlineReminderDays     Int                 @default(14)
+  isActive                 Boolean             @default(true)
+  metadata                 Json                @default("{}")
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime
+  createdBy                String
+  updatedBy                String?
+
+  @@index([isActive])
+  @@index([isVATRegistered])
+  @@index([vatRegistrationNumber])
+}
+
 model ConsentLog {
-  id        String   @id @default(cuid())
+  id        String   @id
   userId    String?
   country   String?
   ipHash    String?
@@ -418,7 +485,7 @@ model ConsentLog {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
+  id        String   @id
   userId    String
   label     String
   name      String
@@ -427,7 +494,7 @@ model Contact {
   notes     String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -435,7 +502,7 @@ model Contact {
 }
 
 model ContentAuditLog {
-  id        String   @id @default(cuid())
+  id        String   @id
   type      String
   entityId  String?
   action    String
@@ -451,7 +518,7 @@ model ContentAuditLog {
 }
 
 model ContentVersion {
-  id          String    @id @default(cuid())
+  id          String    @id
   type        String
   entityId    String?
   version     Int
@@ -471,7 +538,7 @@ model ContentVersion {
 }
 
 model CustomerNotificationPreferences {
-  id                       String   @id @default(cuid())
+  id                       String   @id
   userId                   String   @unique
   emailBookingConfirmation Boolean  @default(true)
   emailBookingUpdates      Boolean  @default(true)
@@ -486,17 +553,17 @@ model CustomerNotificationPreferences {
   pushDriverUpdates        Boolean  @default(true)
   pushServiceAlerts        Boolean  @default(true)
   createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  updatedAt                DateTime
   User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CustomerProfile {
-  id            String       @id @default(cuid())
+  id            String       @id
   userId        String       @unique
   totalSpent    Decimal      @default(0)
   loyaltyPoints Int          @default(0)
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  updatedAt     DateTime
   lastOrderDate DateTime?
   preferredTier ServiceTier  @default(standard)
   totalOrders   Int          @default(0)
@@ -508,8 +575,24 @@ model CustomerProfile {
   @@index([totalSpent])
 }
 
+model DispatchSettings {
+  id                  String   @id
+  mode                String   @default("manual")
+  isActive            Boolean  @default(true)
+  autoAssignRadius    Int      @default(5000)
+  minDriverRating     Float    @default(4.0)
+  maxDriverJobs       Int      @default(3)
+  requireOnlineStatus Boolean  @default(true)
+  updatedBy           String
+  updatedAt           DateTime
+  createdAt           DateTime @default(now())
+
+  @@index([isActive])
+  @@index([mode])
+}
+
 model Document {
-  id         String           @id @default(cuid())
+  id         String           @id
   driverId   String
   category   DocumentCategory
   fileUrl    String
@@ -527,7 +610,7 @@ model Document {
 }
 
 model Driver {
-  id                            String                         @id @default(cuid())
+  id                            String                         @id
   userId                        String                         @unique
   status                        String                         @default("active")
   onboardingStatus              DriverStatus                   @default(applied)
@@ -536,7 +619,7 @@ model Driver {
   rightToWorkType               String?
   approvedAt                    DateTime?
   createdAt                     DateTime                       @default(now())
-  updatedAt                     DateTime                       @updatedAt
+  updatedAt                     DateTime
   rating                        Float?                         @default(0)
   strikes                       Int                            @default(0)
   bankAccountName               String?
@@ -570,7 +653,7 @@ model Driver {
 }
 
 model DriverApplication {
-  id                           String                  @id @default(cuid())
+  id                           String                  @id
   email                        String                  @unique
   firstName                    String
   lastName                     String
@@ -619,14 +702,14 @@ model DriverApplication {
 }
 
 model DriverAvailability {
-  id                    String    @id @default(cuid())
+  id                    String    @id
   driverId              String    @unique
   status                String    @default("offline")
   lastSeenAt            DateTime  @default(now())
   lastLat               Float?
   lastLng               Float?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  updatedAt             DateTime
   locationConsent       Boolean   @default(false)
   maxConcurrentDrops    Int       @default(5)
   multiDropCapable      Boolean   @default(true)
@@ -643,7 +726,7 @@ model DriverAvailability {
 }
 
 model DriverChecks {
-  id                String     @id @default(cuid())
+  id                String     @id
   driverId          String     @unique
   rtwMethod         RtwMethod?
   rtwResultRef      String?
@@ -665,12 +748,12 @@ model DriverChecks {
   policyEnd         DateTime?
   fileIds           String[]
   createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  updatedAt         DateTime
   Driver            Driver     @relation(fields: [driverId], references: [id])
 }
 
 model DriverEarnings {
-  id                       String             @id @default(cuid())
+  id                       String             @id
   driverId                 String
   assignmentId             String
   baseAmountPence          Int                @default(0)
@@ -683,7 +766,7 @@ model DriverEarnings {
   paidOut                  Boolean            @default(false)
   payoutId                 String?
   createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
+  updatedAt                DateTime
   adminAdjustedAmountPence Int?
   adminAdjustedAt          DateTime?
   adminAdjustedBy          String?
@@ -708,7 +791,7 @@ model DriverEarnings {
 }
 
 model DriverIncident {
-  id             String           @id @default(cuid())
+  id             String           @id
   driverId       String
   assignmentId   String?
   type           IncidentType
@@ -729,7 +812,7 @@ model DriverIncident {
   propertyDamage Boolean          @default(false)
   injuryInvolved Boolean          @default(false)
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  updatedAt      DateTime
   Assignment     Assignment?      @relation(fields: [assignmentId], references: [id])
   Driver         Driver           @relation(fields: [driverId], references: [id])
 
@@ -741,7 +824,7 @@ model DriverIncident {
 }
 
 model DriverNotification {
-  id        String           @id @default(cuid())
+  id        String           @id
   driverId  String
   type      NotificationType
   title     String
@@ -759,7 +842,7 @@ model DriverNotification {
 }
 
 model DriverNotificationPreferences {
-  id                   String   @id @default(cuid())
+  id                   String   @id
   driverId             String   @unique
   pushJobOffers        Boolean  @default(true)
   pushJobUpdates       Boolean  @default(true)
@@ -769,7 +852,6 @@ model DriverNotificationPreferences {
   pushSystemAlerts     Boolean  @default(true)
   emailJobOffers       Boolean  @default(false)
   emailJobUpdates      Boolean  @default(false)
-  emailMessages        Boolean  @default(false)
   emailScheduleChanges Boolean  @default(false)
   emailPayoutEvents    Boolean  @default(true)
   emailSystemAlerts    Boolean  @default(true)
@@ -780,12 +862,13 @@ model DriverNotificationPreferences {
   smsPayoutEvents      Boolean  @default(false)
   smsSystemAlerts      Boolean  @default(false)
   createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  updatedAt            DateTime
+  emailMessages        Boolean  @default(false)
   Driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
 
 model DriverPaySnapshot {
-  id                    String         @id @default(cuid())
+  id                    String         @id
   driverEarningsId      String         @unique
   driverId              String
   adminApprovalId       String?
@@ -812,7 +895,7 @@ model DriverPaySnapshot {
 }
 
 model DriverPayout {
-  id               String           @id @default(cuid())
+  id               String           @id
   driverId         String
   totalAmountPence Int
   currency         String           @default("gbp")
@@ -823,7 +906,7 @@ model DriverPayout {
   stripeTransferId String?
   bankAccountId    String?
   createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  updatedAt        DateTime
   DriverEarnings   DriverEarnings[]
   Driver           Driver           @relation(fields: [driverId], references: [id])
 
@@ -832,7 +915,7 @@ model DriverPayout {
 }
 
 model DriverPayoutSettings {
-  id                   String    @id @default(cuid())
+  id                   String    @id
   driverId             String    @unique
   accountName          String?
   accountNumber        String?
@@ -843,12 +926,12 @@ model DriverPayoutSettings {
   verified             Boolean   @default(false)
   verifiedAt           DateTime?
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  updatedAt            DateTime
   Driver               Driver    @relation(fields: [driverId], references: [id])
 }
 
 model DriverPerformance {
-  id                    String   @id @default(cuid())
+  id                    String   @id
   driverId              String   @unique
   averageRating         Float    @default(0)
   totalRatings          Int      @default(0)
@@ -865,25 +948,25 @@ model DriverPerformance {
   monthlyCompletionRate Float    @default(0)
   monthlyOnTimeRate     Float    @default(0)
   createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  updatedAt             DateTime
   Driver                Driver   @relation(fields: [driverId], references: [id])
 }
 
 model DriverProfile {
-  id        String    @id @default(cuid())
+  id        String    @id
   driverId  String    @unique
   phone     String?
   address   String?
   dob       DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime
   Driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
 }
 
 model DriverRating {
-  id              String         @id @default(cuid())
+  id              String         @id
   driverId        String
   assignmentId    String
   rating          Int
@@ -895,7 +978,7 @@ model DriverRating {
   moderatedBy     String?
   moderationNotes String?
   createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  updatedAt       DateTime
   Assignment      Assignment     @relation(fields: [assignmentId], references: [id])
   Driver          Driver         @relation(fields: [driverId], references: [id])
 
@@ -906,7 +989,7 @@ model DriverRating {
 }
 
 model DriverShift {
-  id            String       @id @default(cuid())
+  id            String       @id
   driverId      String
   startTime     DateTime
   endTime       DateTime
@@ -914,7 +997,7 @@ model DriverShift {
   recurringDays String[]
   isActive      Boolean      @default(true)
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  updatedAt     DateTime
   vehicleId     String?
   Driver        Driver       @relation(fields: [driverId], references: [id])
   VehicleSpec   VehicleSpec? @relation(fields: [vehicleId], references: [id])
@@ -924,7 +1007,7 @@ model DriverShift {
 }
 
 model DriverTip {
-  id           String     @id @default(cuid())
+  id           String     @id
   driverId     String
   assignmentId String
   amountPence  Int
@@ -936,7 +1019,7 @@ model DriverTip {
   reconciledBy String?
   notes        String?
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  updatedAt    DateTime
   Assignment   Assignment @relation(fields: [assignmentId], references: [id])
   Driver       Driver     @relation(fields: [driverId], references: [id])
 
@@ -946,7 +1029,7 @@ model DriverTip {
 }
 
 model DriverVehicle {
-  id          String    @id @default(cuid())
+  id          String    @id
   driverId    String
   make        String?
   model       String?
@@ -955,7 +1038,7 @@ model DriverVehicle {
   motExpiry   DateTime?
   photos      Json?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  updatedAt   DateTime
   Driver      Driver    @relation(fields: [driverId], references: [id])
 
   @@index([driverId])
@@ -963,7 +1046,7 @@ model DriverVehicle {
 }
 
 model Drop {
-  id                  String      @id @default(cuid())
+  id                  String      @id
   bookingId           String?
   customerId          String
   quoteId             String?
@@ -997,27 +1080,8 @@ model Drop {
   @@index([timeWindowStart])
 }
 
-model EmailTemplate {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  subject   String
-  body      String
-  variables Json?
-  category  String
-  status    String   @default("active")
-  version   Int      @default(1)
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([category])
-  @@index([createdAt])
-  @@index([name])
-  @@index([status])
-}
-
 model EmailChangeRequest {
-  id          String    @id @default(cuid())
+  id          String    @id
   userId      String
   oldEmail    String
   newEmail    String
@@ -1029,14 +1093,33 @@ model EmailChangeRequest {
   cancelledAt DateTime?
   User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([token])
-  @@index([status])
   @@index([expiresAt])
+  @@index([status])
+  @@index([token])
+  @@index([userId])
+}
+
+model EmailTemplate {
+  id        String   @id
+  name      String   @unique
+  subject   String
+  body      String
+  variables Json?
+  category  String
+  status    String   @default("active")
+  version   Int      @default(1)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([category])
+  @@index([createdAt])
+  @@index([name])
+  @@index([status])
 }
 
 model ErrorReport {
-  id              String   @id @default(cuid())
+  id              String   @id
   title           String
   summary         String
   generatedAt     DateTime @default(now())
@@ -1048,7 +1131,7 @@ model ErrorReport {
   assignee        String?
   status          String   @default("draft")
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime
 
   @@index([assignee])
   @@index([generatedAt])
@@ -1056,7 +1139,7 @@ model ErrorReport {
 }
 
 model Invoice {
-  id                    String        @id @default(cuid())
+  id                    String        @id
   invoiceNumber         String        @unique
   bookingId             String
   customerName          String
@@ -1073,7 +1156,7 @@ model Invoice {
   stripePaymentIntentId String?
   notes                 String?
   createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  updatedAt             DateTime
   Booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -1082,8 +1165,47 @@ model Invoice {
   @@index([status, dueAt])
 }
 
+model InvoiceItem {
+  id          String      @id
+  invoiceId   String
+  description String
+  quantity    Decimal     @db.Decimal(10, 3)
+  unitPrice   Decimal     @db.Decimal(10, 2)
+  netAmount   Decimal     @db.Decimal(10, 2)
+  vatAmount   Decimal     @db.Decimal(10, 2)
+  grossAmount Decimal     @db.Decimal(10, 2)
+  vatRate     Decimal     @db.Decimal(5, 4)
+  vatRateType VatRateType @default(standard)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  TaxInvoice  TaxInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model InvoicePayment {
+  id                    String        @id
+  invoiceId             String
+  paymentMethod         PaymentMethod @default(stripe)
+  paymentReference      String?
+  amount                Decimal       @db.Decimal(10, 2)
+  paymentDate           DateTime      @default(now())
+  status                PaymentStatus @default(paid)
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  notes                 String?
+  metadata              Json          @default("{}")
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime
+  TaxInvoice            TaxInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@index([stripePaymentIntentId])
+}
+
 model JobEvent {
-  id           String     @id @default(cuid())
+  id           String     @id
   assignmentId String
   step         JobStep
   payload      Json?
@@ -1099,7 +1221,7 @@ model JobEvent {
 }
 
 model Message {
-  id          String        @id @default(cuid())
+  id          String        @id
   senderId    String
   content     String
   createdAt   DateTime      @default(now())
@@ -1107,7 +1229,7 @@ model Message {
   sessionId   String
   status      MessageStatus @default(sent)
   type        MessageType   @default(text)
-  updatedAt   DateTime      @updatedAt
+  updatedAt   DateTime
   readAt      DateTime?
   deliveredAt DateTime?
   User        User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
@@ -1120,7 +1242,7 @@ model Message {
 }
 
 model PageView {
-  id             String         @id @default(cuid())
+  id             String         @id
   sessionId      String
   page           String
   referrer       String?
@@ -1133,7 +1255,7 @@ model PageView {
 }
 
 model Payment {
-  id        String        @id @default(cuid())
+  id        String        @id
   bookingId String
   provider  String
   intentId  String?
@@ -1142,7 +1264,7 @@ model Payment {
   status    PaymentStatus @default(unpaid)
   metadata  Json?
   createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  updatedAt DateTime
   Booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   Refund    Refund[]
 
@@ -1153,7 +1275,7 @@ model Payment {
 }
 
 model PayoutLedger {
-  id              String          @id @default(cuid())
+  id              String          @id
   routeId         String
   userId          String
   transactionType TransactionType
@@ -1173,7 +1295,7 @@ model PayoutLedger {
 }
 
 model PerformanceMetric {
-  id          String   @id @default(cuid())
+  id          String   @id
   name        String
   value       Float
   unit        String?
@@ -1189,7 +1311,7 @@ model PerformanceMetric {
 }
 
 model PerformanceMetrics {
-  id                String   @id @default(cuid())
+  id                String   @id
   driverId          String
   routeId           String
   performanceScore  Float?
@@ -1206,7 +1328,7 @@ model PerformanceMetrics {
 }
 
 model PricingConfig {
-  id              String    @id @default(cuid())
+  id              String    @id
   version         Int
   activeFrom      DateTime
   activeTo        DateTime?
@@ -1229,7 +1351,7 @@ model PricingConfig {
 }
 
 model PricingSettings {
-  id                                   String   @id @default(cuid())
+  id                                   String   @id
   customerPriceAdjustment              Decimal  @default(0) @db.Decimal(5, 4)
   driverRateMultiplier                 Decimal  @default(1) @db.Decimal(5, 4)
   baseFarePerJobPence                  Int      @default(2500)
@@ -1261,7 +1383,7 @@ model PricingSettings {
   advancedConfig                       Json?
   isActive                             Boolean  @default(true)
   createdAt                            DateTime @default(now())
-  updatedAt                            DateTime @updatedAt
+  updatedAt                            DateTime
   createdBy                            String
   updatedBy                            String?
   User_PricingSettings_createdByToUser User     @relation("PricingSettings_createdByToUser", fields: [createdBy], references: [id])
@@ -1272,9 +1394,8 @@ model PricingSettings {
 }
 
 model PricingSnapshot {
-  id               String    @id @default(cuid())
+  id               String    @id
   requestId        String    @unique
-  corridor         String?
   calculatedAt     DateTime  @default(now())
   capacity         Json
   dropAddresses    Json
@@ -1284,13 +1405,14 @@ model PricingSnapshot {
   expressPrice     Int
   pickupAddress    Json
   standardPrice    Int
+  corridor         String?
 
   @@index([corridor, calculatedAt])
   @@index([requestId])
 }
 
 model ProductionError {
-  id            String   @id @default(cuid())
+  id            String   @id
   timestamp     DateTime @default(now())
   level         String
   category      String
@@ -1302,7 +1424,7 @@ model ProductionError {
   impact        Json
   relatedErrors String[]
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime
 
   @@index([category])
   @@index([level])
@@ -1313,7 +1435,7 @@ model ProductionError {
 }
 
 model Promotion {
-  id              String   @id @default(cuid())
+  id              String   @id
   code            String   @unique
   name            String
   description     String?
@@ -1331,7 +1453,7 @@ model Promotion {
   firstTimeOnly   Boolean  @default(false)
   createdBy       String
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime
 
   @@index([code])
   @@index([createdAt])
@@ -1340,7 +1462,7 @@ model Promotion {
 }
 
 model PropertyDetails {
-  id                                                 String       @id @default(cuid())
+  id                                                 String       @id
   propertyType                                       PropertyType
   accessType                                         AccessType
   floors                                             Int          @default(0)
@@ -1349,7 +1471,7 @@ model PropertyDetails {
 }
 
 model PushSubscription {
-  id         String   @id @default(cuid())
+  id         String   @id
   driverId   String
   endpoint   String   @unique
   p256dh     String?
@@ -1358,21 +1480,21 @@ model PushSubscription {
   deviceInfo Json?
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime
   Driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
-  @@index([platform])
   @@index([isActive])
+  @@index([platform])
 }
 
 model Quote {
-  id              String       @id @default(cuid())
+  id              String       @id
   customerId      String
   validUntil      DateTime
   isAccepted      Boolean      @default(false)
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  updatedAt       DateTime
   acceptedTier    ServiceTier?
   deliveryAddress String
   distance        Float?
@@ -1384,7 +1506,7 @@ model Quote {
   volume          Float?
   weight          Float?
   Drop            Drop[]
-  customer        User         @relation(fields: [customerId], references: [id])
+  User            User         @relation(fields: [customerId], references: [id])
 
   @@index([customerId])
   @@index([isAccepted])
@@ -1392,7 +1514,7 @@ model Quote {
 }
 
 model QuoteSnapshot {
-  id             String    @id @default(cuid())
+  id             String    @id
   bookingId      String?
   pricingVersion Int
   zoneKey        String
@@ -1410,8 +1532,18 @@ model QuoteSnapshot {
   @@index([zoneKey, createdAt])
 }
 
+model ReferenceSequence {
+  id         String   @id
+  type       String
+  lastNumber Int      @default(0)
+  prefix     String   @default("SV")
+  updatedAt  DateTime
+
+  @@index([type])
+}
+
 model Refund {
-  id          String       @id @default(cuid())
+  id          String       @id
   paymentId   String
   amount      Int
   reason      String
@@ -1419,7 +1551,7 @@ model Refund {
   processedAt DateTime?
   metadata    Json?
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  updatedAt   DateTime
   notes       String?
   Payment     Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
@@ -1429,7 +1561,7 @@ model Refund {
 }
 
 model Route {
-  id                         String           @id @default(cuid())
+  id                         String           @id
   reference                  String?          @unique
   driverId                   String?
   vehicleId                  String?
@@ -1453,7 +1585,7 @@ model Route {
   adminNotes                 String?
   isModifiedByAdmin          Boolean          @default(false)
   createdAt                  DateTime         @default(now())
-  updatedAt                  DateTime         @updatedAt
+  updatedAt                  DateTime
   status                     RouteStatus      @default(planned)
   completedDrops             Int              @default(0)
   maxCapacityVolume          Float?
@@ -1481,9 +1613,9 @@ model Route {
   acceptanceStatus           String?          @default("pending")
   delayStatus                String?          @default("on_time")
   Booking                    Booking[]
-  drops                      Drop[]
+  Drop                       Drop[]
   PayoutLedger               PayoutLedger[]
-  driver                     User?            @relation(fields: [driverId], references: [id])
+  User                       User?            @relation(fields: [driverId], references: [id])
   Vehicle                    Vehicle?         @relation(fields: [vehicleId], references: [id])
   VehicleSpec                VehicleSpec?     @relation(fields: [vehicleSpecId], references: [id])
   RouteCandidate             RouteCandidate[]
@@ -1494,77 +1626,8 @@ model Route {
   @@index([vehicleId])
 }
 
-model RouteCandidate {
-  id                    String   @id @default(cuid())
-  routeId               String
-  createdAt             DateTime @default(now())
-  confidence            Float
-  estimatedDispatchTime String
-  projectedFillRate     Float
-  reason                String
-  Route                 Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
-
-  @@index([routeId])
-}
-
-model ServiceArea {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  postcodes       String[]
-  polygon         Json?
-  capacity        Int      @default(100)
-  status          String   @default("active")
-  blackoutDates   String[]
-  surgeMultiplier Decimal  @default(1.0000) @db.Decimal(5, 4)
-  createdBy       String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([createdAt])
-  @@index([status])
-}
-
-model DispatchSettings {
-  id                  String   @id @default(cuid())
-  mode                String   @default("manual")
-  isActive            Boolean  @default(true)
-  autoAssignRadius    Int      @default(5000)
-  minDriverRating     Float    @default(4.0)
-  maxDriverJobs       Int      @default(3)
-  requireOnlineStatus Boolean  @default(true)
-  updatedBy           String
-  updatedAt           DateTime @updatedAt
-  createdAt           DateTime @default(now())
-
-  @@index([isActive])
-  @@index([mode])
-}
-
-model SystemSettings {
-  id                     String    @id @default(cuid())
-  routingMode            String    @default("manual")
-  autoRoutingEnabled     Boolean   @default(false)
-  autoRoutingIntervalMin Int       @default(15)
-  maxDropsPerRoute       Int       @default(10)
-  maxRouteDistanceKm     Float     @default(50)
-  autoAssignDrivers      Boolean   @default(false)
-  requireAdminApproval   Boolean   @default(true)
-  minDropsForAutoRoute   Int       @default(2)
-  lastAutoRoutingRun     DateTime?
-  autoRoutingStatus      String    @default("idle")
-  lastError              String?
-  updatedBy              String
-  updatedAt              DateTime  @updatedAt
-  createdAt              DateTime  @default(now())
-
-  @@index([routingMode])
-  @@index([autoRoutingEnabled])
-  @@index([updatedAt])
-}
-
 model RouteApproval {
-  id                String    @id @default(cuid())
+  id                String    @id
   routeId           String    @unique
   status            String    @default("pending")
   submittedBy       String
@@ -1579,13 +1642,152 @@ model RouteApproval {
   totalValue        Int
   routePreview      Json?
 
+  @@index([autoGenerated])
   @@index([status])
   @@index([submittedAt])
-  @@index([autoGenerated])
+}
+
+model RouteCandidate {
+  id                    String   @id
+  routeId               String
+  createdAt             DateTime @default(now())
+  confidence            Float
+  estimatedDispatchTime String
+  projectedFillRate     Float
+  reason                String
+  Route                 Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+}
+
+model ServiceArea {
+  id              String   @id
+  name            String
+  description     String?
+  postcodes       String[]
+  polygon         Json?
+  capacity        Int      @default(100)
+  status          String   @default("active")
+  blackoutDates   String[]
+  surgeMultiplier Decimal  @default(1.0000) @db.Decimal(5, 4)
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Staff {
+  id              String            @id
+  userId          String            @unique
+  employeeId      String            @unique
+  department      String?
+  position        String?
+  employmentType  EmploymentType    @default(full_time)
+  status          StaffStatus       @default(active)
+  workSchedule    Json?
+  hireDate        DateTime?
+  terminationDate DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  StaffAttendance StaffAttendance[]
+  StaffLeave      StaffLeave[]
+
+  @@index([department])
+  @@index([employeeId])
+  @@index([employmentType])
+  @@index([status])
+  @@index([userId])
+}
+
+model StaffAttendance {
+  id                String           @id
+  staffId           String
+  date              DateTime         @db.Date
+  checkIn           DateTime?
+  checkOut          DateTime?
+  status            AttendanceStatus @default(pending)
+  lateMinutes       Int              @default(0)
+  earlyLeaveMinutes Int              @default(0)
+  totalHours        Float?
+  breakMinutes      Int              @default(0)
+  notes             String?
+  approvedBy        String?
+  approvedAt        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime
+  Staff             Staff            @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, date])
+  @@index([date])
+  @@index([staffId, date])
+  @@index([staffId])
+  @@index([status])
+}
+
+model StaffLeave {
+  id              String      @id
+  staffId         String
+  type            LeaveType
+  status          LeaveStatus @default(pending)
+  startDate       DateTime    @db.Date
+  endDate         DateTime    @db.Date
+  days            Int
+  reason          String?
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime
+  Staff           Staff       @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@index([type])
+}
+
+model SupportTicket {
+  id                    String                  @id
+  customerId            String
+  category              String
+  orderRef              String?
+  description           String
+  email                 String
+  phone                 String?
+  status                String                  @default("OPEN")
+  priority              String                  @default("NORMAL")
+  attachments           String[]
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  User                  User                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  SupportTicketResponse SupportTicketResponse[]
+
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([priority])
+  @@index([status])
+}
+
+model SupportTicketResponse {
+  id            String        @id
+  ticketId      String
+  message       String
+  isFromSupport Boolean       @default(false)
+  attachments   String[]
+  createdAt     DateTime      @default(now())
+  SupportTicket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([ticketId])
 }
 
 model SystemAuditLog {
-  id           String   @id @default(cuid())
+  id           String   @id
   eventType    String
   severity     String   @default("info")
   actor        String
@@ -1601,181 +1803,119 @@ model SystemAuditLog {
   userAgent    String?
   timestamp    DateTime @default(now())
 
+  @@index([actor])
   @@index([eventType])
   @@index([severity])
-  @@index([actor])
-  @@index([timestamp])
   @@index([targetType, targetId])
+  @@index([timestamp])
 }
 
-model SupportTicket {
-  id                    String                  @id @default(cuid())
-  customerId            String
-  category              String
-  orderRef              String?
-  description           String
-  email                 String
-  phone                 String?
-  status                String                  @default("OPEN")
-  priority              String                  @default("NORMAL")
-  attachments           String[]
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  User                  User                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  SupportTicketResponse SupportTicketResponse[]
+model SystemSettings {
+  id                     String    @id
+  routingMode            String    @default("manual")
+  autoRoutingEnabled     Boolean   @default(false)
+  autoRoutingIntervalMin Int       @default(15)
+  maxDropsPerRoute       Int       @default(10)
+  maxRouteDistanceKm     Float     @default(50)
+  autoAssignDrivers      Boolean   @default(false)
+  requireAdminApproval   Boolean   @default(true)
+  minDropsForAutoRoute   Int       @default(2)
+  lastAutoRoutingRun     DateTime?
+  autoRoutingStatus      String    @default("idle")
+  lastError              String?
+  updatedBy              String
+  updatedAt              DateTime
+  createdAt              DateTime  @default(now())
 
-  @@index([createdAt])
-  @@index([customerId])
-  @@index([priority])
+  @@index([autoRoutingEnabled])
+  @@index([routingMode])
+  @@index([updatedAt])
+}
+
+model TaxComplianceLog {
+  id              String              @id
+  checkType       ComplianceCheckType
+  checkDate       DateTime            @default(now())
+  isCompliant     Boolean
+  complianceScore Int
+  issues          Json                @default("[]")
+  recommendations Json                @default("[]")
+  description     String?
+  details         Json                @default("{}")
+  createdAt       DateTime            @default(now())
+  createdBy       String
+
+  @@index([checkDate])
+  @@index([checkType])
+  @@index([isCompliant])
+}
+
+model TaxDeadline {
+  id             String          @id
+  deadlineType   TaxDeadlineType
+  title          String
+  description    String?
+  dueDate        DateTime
+  submissionDate DateTime?
+  paymentDate    DateTime?
+  status         DeadlineStatus  @default(upcoming)
+  isCompleted    Boolean         @default(false)
+  taxYear        Int
+  taxPeriod      String?
+  reminderSent   Boolean         @default(false)
+  reminderDate   DateTime?
+  notes          String?
+  metadata       Json            @default("{}")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime
+  createdBy      String
+  updatedBy      String?
+
+  @@index([deadlineType])
+  @@index([dueDate])
   @@index([status])
+  @@index([taxYear])
 }
 
-model SupportTicketResponse {
-  id            String        @id @default(cuid())
-  ticketId      String
-  message       String
-  isFromSupport Boolean       @default(false)
-  attachments   String[]
-  createdAt     DateTime      @default(now())
-  SupportTicket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+model TaxExpense {
+  id                String            @id
+  taxRecordId       String?
+  description       String
+  category          ExpenseCategory
+  amount            Decimal           @db.Decimal(10, 2)
+  vatAmount         Decimal           @default(0) @db.Decimal(10, 2)
+  vatRate           Decimal           @default(0) @db.Decimal(5, 4)
+  vatRateType       VatRateType       @default(standard)
+  isVATReclaimable  Boolean           @default(true)
+  vatReclaimStatus  VatReclaimStatus  @default(eligible)
+  isDeductible      Boolean           @default(true)
+  deductionCategory DeductionCategory @default(general)
+  expenseDate       DateTime
+  receiptDate       DateTime?
+  supplierName      String?
+  supplierVATNumber String?
+  receiptNumber     String?
+  receiptUrl        String?
+  status            ExpenseStatus     @default(pending)
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  notes             String?
+  metadata          Json              @default("{}")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  createdBy         String
+  updatedBy         String?
+  TaxRecord         TaxRecord?        @relation(fields: [taxRecordId], references: [id])
 
-  @@index([createdAt])
-  @@index([ticketId])
-}
-
-model TelemetryEvent {
-  id          String   @id @default(cuid())
-  event       String
-  properties  Json?
-  userId      String?
-  sessionId   String
-  timestamp   DateTime @default(now())
-  environment String   @default("development")
-  userAgent   String?
-  ipAddress   String?
-
-  @@index([environment])
-  @@index([event])
-  @@index([sessionId])
-  @@index([timestamp])
-  @@index([userId])
-}
-
-model TrackingPing {
-  id        String   @id @default(cuid())
-  bookingId String
-  driverId  String
-  lat       Float
-  lng       Float
-  createdAt DateTime @default(now())
-  Booking   Booking  @relation(fields: [bookingId], references: [id])
-  Driver    Driver   @relation(fields: [driverId], references: [id])
-}
-
-model User {
-  id                                              String                           @id @default(cuid())
-  email                                           String                           @unique
-  name                                            String?
-  phone                                           String?
-  role                                            Role                             @default(customer)
-  adminRole                                       AdminRole?
-  password                                        String
-  createdAt                                       DateTime                         @default(now())
-  backupCodes                                     String[]
-  backupCodesGenerated                            Boolean                          @default(false)
-  twoFactorSecret                                 String?
-  resetToken                                      String?
-  resetTokenExpiry                                DateTime?
-  emailVerificationExpiry                         DateTime?
-  emailVerificationToken                          String?
-  emailVerified                                   Boolean                          @default(false)
-  isActive                                        Boolean                          @default(true)
-  lastLogin                                       DateTime?
-  twoFactorEnabled                                Boolean                          @default(false)
-  stripeCustomerId                                String?
-  AccountDeletionRequest                          AccountDeletionRequest[]
-  Address                                         Address[]
-  AuditLog                                        AuditLog[]
-  Booking                                         Booking[]
-  ChatParticipant                                 ChatParticipant[]
-  ChatSession_ChatSession_closedByToUser          ChatSession[]                    @relation("ChatSession_closedByToUser")
-  ChatSession_ChatSession_createdByToUser         ChatSession[]                    @relation("ChatSession_createdByToUser")
-  Contact                                         Contact[]
-  CustomerNotificationPreferences                 CustomerNotificationPreferences?
-  customerProfile                                 CustomerProfile?
-  driver                                          Driver?
-  DriverApplication                               DriverApplication?
-  Drop                                            Drop[]
-  EmailChangeRequest                              EmailChangeRequest[]
-  Message                                         Message[]
-  PayoutLedger                                    PayoutLedger[]
-  PerformanceMetrics                              PerformanceMetrics[]
-  PricingSettings_PricingSettings_createdByToUser PricingSettings[]                @relation("PricingSettings_createdByToUser")
-  PricingSettings_PricingSettings_updatedByToUser PricingSettings[]                @relation("PricingSettings_updatedByToUser")
-  Quote                                           Quote[]
-  Route                                           Route[]
-  SupportTicket                                   SupportTicket[]
-  TaxInvoice                                      TaxInvoice[]
-
-  @@index([role])
-  @@index([role], map: "idx_user_role")
-}
-
-model Vehicle {
-  id              String    @id @default(cuid())
-  licensePlate    String    @unique
-  make            String
-  model           String
-  year            Int
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  capacity        Float
-  fuelType        FuelType
-  lastMaintenance DateTime?
-  maxWeight       Float
-  nextMaintenance DateTime?
-  Route           Route[]
-
-  @@index([isActive])
-  @@index([licensePlate])
-}
-
-model VehicleSpec {
-  id           String        @id @default(cuid())
-  registration String        @unique
-  maxWeightKg  Float
-  maxVolumeM3  Float
-  crewSize     Int           @default(2)
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  make         String?
-  model        String?
-  year         Int?
-  type         VehicleType
-  fuelType     FuelType      @default(diesel)
-  DriverShift  DriverShift[]
-  Route        Route[]
-
-  @@index([type, isActive])
-}
-
-model VisitorAction {
-  id             String         @id @default(cuid())
-  sessionId      String
-  action         String
-  actionData     Json           @default("{}")
-  timestamp      DateTime       @default(now())
-  VisitorSession VisitorSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
-
-  @@index([action])
-  @@index([sessionId])
-  @@index([timestamp])
+  @@index([category])
+  @@index([expenseDate])
+  @@index([isVATReclaimable])
+  @@index([status])
+  @@index([taxRecordId])
 }
 
 model TaxInvoice {
-  id                    String           @id @default(cuid())
+  id                    String           @id
   invoiceNumber         String           @unique
   customerId            String?
   bookingId             String?
@@ -1797,64 +1937,25 @@ model TaxInvoice {
   notes                 String?
   metadata              Json             @default("{}")
   createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  updatedAt             DateTime
   createdBy             String
   updatedBy             String?
-  invoiceItems          InvoiceItem[]
-  payments              InvoicePayment[]
-  booking               Booking?         @relation(fields: [bookingId], references: [id])
-  customer              User?            @relation(fields: [customerId], references: [id])
-  taxRecords            TaxRecord[]      @relation("TaxInvoiceToTaxRecord")
+  InvoiceItem           InvoiceItem[]
+  InvoicePayment        InvoicePayment[]
+  Booking               Booking?         @relation(fields: [bookingId], references: [id])
+  User                  User?            @relation(fields: [customerId], references: [id])
+  TaxRecord             TaxRecord[]      @relation("TaxInvoiceToTaxRecord")
 
+  @@index([customerId])
   @@index([invoiceNumber])
   @@index([issueDate])
-  @@index([status])
   @@index([paymentStatus])
+  @@index([status])
   @@index([vatRegistrationNumber])
-  @@index([customerId])
-}
-
-model InvoiceItem {
-  id          String      @id @default(cuid())
-  invoiceId   String
-  description String
-  quantity    Decimal     @db.Decimal(10, 3)
-  unitPrice   Decimal     @db.Decimal(10, 2)
-  netAmount   Decimal     @db.Decimal(10, 2)
-  vatAmount   Decimal     @db.Decimal(10, 2)
-  grossAmount Decimal     @db.Decimal(10, 2)
-  vatRate     Decimal     @db.Decimal(5, 4)
-  vatRateType VatRateType @default(standard)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  invoice     TaxInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-}
-
-model InvoicePayment {
-  id                    String        @id @default(cuid())
-  invoiceId             String
-  paymentMethod         PaymentMethod @default(stripe)
-  paymentReference      String?
-  amount                Decimal       @db.Decimal(10, 2)
-  paymentDate           DateTime      @default(now())
-  status                PaymentStatus @default(paid)
-  stripePaymentIntentId String?
-  stripeChargeId        String?
-  notes                 String?
-  metadata              Json          @default("{}")
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  invoice               TaxInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@index([paymentDate])
-  @@index([stripePaymentIntentId])
 }
 
 model TaxRecord {
-  id                    String        @id @default(cuid())
+  id                    String        @id
   taxYear               Int
   taxPeriod             String
   periodStart           DateTime
@@ -1884,138 +1985,153 @@ model TaxRecord {
   notes                 String?
   metadata              Json          @default("{}")
   createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  updatedAt             DateTime
   createdBy             String
   updatedBy             String?
-  expenses              TaxExpense[]
-  invoices              TaxInvoice[]  @relation("TaxInvoiceToTaxRecord")
+  TaxExpense            TaxExpense[]
+  TaxInvoice            TaxInvoice[]  @relation("TaxInvoiceToTaxRecord")
 
   @@unique([taxYear, taxPeriod, taxType])
-  @@index([taxYear])
-  @@index([taxPeriod])
   @@index([filingStatus])
   @@index([paymentStatus])
-}
-
-model TaxExpense {
-  id                String            @id @default(cuid())
-  taxRecordId       String?
-  description       String
-  category          ExpenseCategory
-  amount            Decimal           @db.Decimal(10, 2)
-  vatAmount         Decimal           @default(0) @db.Decimal(10, 2)
-  vatRate           Decimal           @default(0) @db.Decimal(5, 4)
-  vatRateType       VatRateType       @default(standard)
-  isVATReclaimable  Boolean           @default(true)
-  vatReclaimStatus  VatReclaimStatus  @default(eligible)
-  isDeductible      Boolean           @default(true)
-  deductionCategory DeductionCategory @default(general)
-  expenseDate       DateTime
-  receiptDate       DateTime?
-  supplierName      String?
-  supplierVATNumber String?
-  receiptNumber     String?
-  receiptUrl        String?
-  status            ExpenseStatus     @default(pending)
-  verifiedBy        String?
-  verifiedAt        DateTime?
-  notes             String?
-  metadata          Json              @default("{}")
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  createdBy         String
-  updatedBy         String?
-  taxRecord         TaxRecord?        @relation(fields: [taxRecordId], references: [id])
-
-  @@index([taxRecordId])
-  @@index([expenseDate])
-  @@index([category])
-  @@index([isVATReclaimable])
-  @@index([status])
-}
-
-model CompanyTaxSettings {
-  id                       String              @id @default(cuid())
-  companyName              String
-  companyNumber            String?             @unique
-  vatRegistrationNumber    String?             @unique
-  corporationTaxUTR        String?             @unique
-  isVATRegistered          Boolean             @default(false)
-  vatRegistrationDate      DateTime?
-  vatAccountingScheme      VatAccountingScheme @default(standard)
-  vatReturnFrequency       VatReturnFrequency  @default(quarterly)
-  accountingPeriodStart    DateTime?
-  accountingPeriodEnd      DateTime?
-  corporationTaxRate       Decimal             @default(0.19) @db.Decimal(5, 4)
-  vatRegistrationThreshold Decimal             @default(85000) @db.Decimal(10, 2)
-  corporationTaxThreshold  Decimal             @default(50000) @db.Decimal(10, 2)
-  hmrcClientId             String?
-  hmrcClientSecret         String?
-  hmrcAccessToken          String?
-  hmrcRefreshToken         String?
-  hmrcTokenExpiry          DateTime?
-  emailNotifications       Boolean             @default(true)
-  notificationEmail        String?
-  deadlineReminderDays     Int                 @default(14)
-  isActive                 Boolean             @default(true)
-  metadata                 Json                @default("{}")
-  createdAt                DateTime            @default(now())
-  updatedAt                DateTime            @updatedAt
-  createdBy                String
-  updatedBy                String?
-
-  @@index([vatRegistrationNumber])
-  @@index([isVATRegistered])
-  @@index([isActive])
-}
-
-model TaxDeadline {
-  id             String          @id @default(cuid())
-  deadlineType   TaxDeadlineType
-  title          String
-  description    String?
-  dueDate        DateTime
-  submissionDate DateTime?
-  paymentDate    DateTime?
-  status         DeadlineStatus  @default(upcoming)
-  isCompleted    Boolean         @default(false)
-  taxYear        Int
-  taxPeriod      String?
-  reminderSent   Boolean         @default(false)
-  reminderDate   DateTime?
-  notes          String?
-  metadata       Json            @default("{}")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  createdBy      String
-  updatedBy      String?
-
-  @@index([dueDate])
-  @@index([deadlineType])
-  @@index([status])
+  @@index([taxPeriod])
   @@index([taxYear])
 }
 
-model TaxComplianceLog {
-  id              String              @id @default(cuid())
-  checkType       ComplianceCheckType
-  checkDate       DateTime            @default(now())
-  isCompliant     Boolean
-  complianceScore Int
-  issues          Json                @default("[]")
-  recommendations Json                @default("[]")
-  description     String?
-  details         Json                @default("{}")
-  createdAt       DateTime            @default(now())
-  createdBy       String
+model TelemetryEvent {
+  id          String   @id
+  event       String
+  properties  Json?
+  userId      String?
+  sessionId   String
+  timestamp   DateTime @default(now())
+  environment String   @default("development")
+  userAgent   String?
+  ipAddress   String?
 
-  @@index([checkType])
-  @@index([checkDate])
-  @@index([isCompliant])
+  @@index([environment])
+  @@index([event])
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model TrackingPing {
+  id        String   @id
+  bookingId String
+  driverId  String
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+  Booking   Booking  @relation(fields: [bookingId], references: [id])
+  Driver    Driver   @relation(fields: [driverId], references: [id])
+}
+
+model User {
+  id                                              String                           @id
+  email                                           String                           @unique
+  name                                            String?
+  phone                                           String?
+  role                                            Role                             @default(customer)
+  adminRole                                       AdminRole?
+  password                                        String
+  createdAt                                       DateTime                         @default(now())
+  backupCodes                                     String[]
+  backupCodesGenerated                            Boolean                          @default(false)
+  twoFactorSecret                                 String?
+  resetToken                                      String?
+  resetTokenExpiry                                DateTime?
+  emailVerificationExpiry                         DateTime?
+  emailVerificationToken                          String?
+  emailVerified                                   Boolean                          @default(false)
+  isActive                                        Boolean                          @default(true)
+  lastLogin                                       DateTime?
+  twoFactorEnabled                                Boolean                          @default(false)
+  stripeCustomerId                                String?
+  AccountDeletionRequest                          AccountDeletionRequest[]
+  Address                                         Address[]
+  AuditLog                                        AuditLog[]
+  Booking                                         Booking[]
+  ChatParticipant                                 ChatParticipant[]
+  ChatSession_ChatSession_closedByToUser          ChatSession[]                    @relation("ChatSession_closedByToUser")
+  ChatSession_ChatSession_createdByToUser         ChatSession[]                    @relation("ChatSession_createdByToUser")
+  Contact                                         Contact[]
+  CustomerNotificationPreferences                 CustomerNotificationPreferences?
+  CustomerProfile                                 CustomerProfile?
+  Driver                                          Driver?
+  DriverApplication                               DriverApplication?
+  Drop                                            Drop[]
+  EmailChangeRequest                              EmailChangeRequest[]
+  Message                                         Message[]
+  PayoutLedger                                    PayoutLedger[]
+  PerformanceMetrics                              PerformanceMetrics[]
+  PricingSettings_PricingSettings_createdByToUser PricingSettings[]                @relation("PricingSettings_createdByToUser")
+  PricingSettings_PricingSettings_updatedByToUser PricingSettings[]                @relation("PricingSettings_updatedByToUser")
+  Quote                                           Quote[]
+  Route                                           Route[]
+  Staff                                           Staff?
+  SupportTicket                                   SupportTicket[]
+  TaxInvoice                                      TaxInvoice[]
+
+  @@index([role])
+  @@index([role], map: "idx_user_role")
+}
+
+model Vehicle {
+  id              String    @id
+  licensePlate    String    @unique
+  make            String
+  model           String
+  year            Int
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  capacity        Float
+  fuelType        FuelType
+  lastMaintenance DateTime?
+  maxWeight       Float
+  nextMaintenance DateTime?
+  Route           Route[]
+
+  @@index([isActive])
+  @@index([licensePlate])
+}
+
+model VehicleSpec {
+  id           String        @id
+  registration String        @unique
+  maxWeightKg  Float
+  maxVolumeM3  Float
+  crewSize     Int           @default(2)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  make         String?
+  model        String?
+  year         Int?
+  type         VehicleType
+  fuelType     FuelType      @default(diesel)
+  DriverShift  DriverShift[]
+  Route        Route[]
+
+  @@index([type, isActive])
+}
+
+model VisitorAction {
+  id             String         @id
+  sessionId      String
+  action         String
+  actionData     Json           @default("{}")
+  timestamp      DateTime       @default(now())
+  VisitorSession VisitorSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([action])
+  @@index([sessionId])
+  @@index([timestamp])
 }
 
 model VisitorSession {
-  id               String          @id @default(cuid())
+  id               String          @id
   sessionId        String          @unique
   visitorId        String?
   ipAddress        String
@@ -2038,7 +2154,7 @@ model VisitorSession {
   exitTime         DateTime?
   lastSeenAt       DateTime        @default(now())
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  updatedAt        DateTime
   PageView         PageView[]
   VisitorAction    VisitorAction[]
 
@@ -2049,218 +2165,74 @@ model VisitorSession {
   @@index([visitorId])
 }
 
-model ReferenceSequence {
-  id         String   @id
-  type       String
-  lastNumber Int      @default(0)
-  prefix     String   @default("SV")
-  updatedAt  DateTime @updatedAt
-
-  @@index([type])
+model admin_stories {
+  id           String         @id
+  title        String
+  content      String
+  type         StoryType
+  mediaUrl     String?
+  isActive     Boolean        @default(false)
+  publishedAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  story_likes  story_likes[]
+  story_shares story_shares[]
+  story_views  story_views[]
 }
 
-model CareerApplication {
-  id              String            @id @default(cuid())
-  fullName        String
-  email           String
-  phone           String
-  position        String
-  cvUrl           String
-  coverLetter     String
-  status          ApplicationStatus @default(pending)
-  reviewedBy      String?
-  reviewedAt      DateTime?
-  rejectionReason String?
-  contractSent    Boolean           @default(false)
-  contractSentAt  DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+model story_likes {
+  id            String        @id
+  storyId       String
+  userId        String
+  userType      String
+  likedAt       DateTime      @default(now())
+  admin_stories admin_stories @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
-  @@index([status])
-  @@index([createdAt])
-  @@index([email])
+  @@unique([storyId, userId])
+  @@index([likedAt])
+  @@index([storyId])
+  @@index([userId])
 }
 
-model AdminStory {
-  id          String       @id @default(cuid())
-  title       String
-  content     String
-  type        StoryType
-  mediaUrl    String?
-  isActive    Boolean      @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  likes       StoryLike[]
-  shares      StoryShare[]
-  views       StoryView[]
+model story_shares {
+  id            String        @id
+  storyId       String
+  userId        String
+  userType      String
+  sharedAt      DateTime      @default(now())
+  admin_stories admin_stories @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
-  @@map("admin_stories")
+  @@index([sharedAt])
+  @@index([storyId])
+  @@index([userId])
 }
 
-model StoryView {
-  id       String     @id @default(cuid())
-  storyId  String
-  userId   String
-  userType String
-  viewedAt DateTime   @default(now())
-  story    AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+model story_views {
+  id            String        @id
+  storyId       String
+  userId        String
+  userType      String
+  viewedAt      DateTime      @default(now())
+  admin_stories admin_stories @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@unique([storyId, userId])
   @@index([storyId])
   @@index([userId])
   @@index([viewedAt])
-  @@map("story_views")
-}
-
-model StoryLike {
-  id       String     @id @default(cuid())
-  storyId  String
-  userId   String
-  userType String
-  likedAt  DateTime   @default(now())
-  story    AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
-
-  @@unique([storyId, userId])
-  @@index([storyId])
-  @@index([userId])
-  @@index([likedAt])
-  @@map("story_likes")
-}
-
-model StoryShare {
-  id       String     @id @default(cuid())
-  storyId  String
-  userId   String
-  userType String
-  sharedAt DateTime   @default(now())
-  story    AdminStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
-
-  @@index([storyId])
-  @@index([userId])
-  @@index([sharedAt])
-  @@map("story_shares")
-}
-
-enum VatRateType {
-  standard
-  reduced
-  zero
-  exempt
-}
-
-enum PaymentMethod {
-  stripe
-  paypal
-  bank_transfer
-  cash
-  cheque
-  other
-}
-
-enum TaxType {
-  vat
-  corporation_tax
-  income_tax
-  national_insurance
-  other
-}
-
-enum FilingStatus {
-  pending
-  in_progress
-  submitted
-  accepted
-  rejected
-  amended
-}
-
-enum ExpenseCategory {
-  fuel
-  vehicle_maintenance
-  insurance
-  office_supplies
-  software
-  marketing
-  professional_services
-  travel
-  meals
-  accommodation
-  equipment
-  training
-  other
-}
-
-enum VatReclaimStatus {
-  eligible
-  ineligible
-  pending_review
-  claimed
-  rejected
-}
-
-enum DeductionCategory {
-  general
-  capital_allowance
-  staff_costs
-  vehicle_costs
-  office_costs
-  professional_fees
-  other
-}
-
-enum ExpenseStatus {
-  pending
-  verified
-  rejected
-  claimed
-}
-
-enum VatAccountingScheme {
-  standard
-  flat_rate
-  cash_accounting
-  annual_accounting
-}
-
-enum VatReturnFrequency {
-  monthly
-  quarterly
-  annually
-}
-
-enum TaxDeadlineType {
-  vat_submission
-  vat_payment
-  corporation_tax_payment
-  corporation_tax_return
-  payroll_submission
-  payroll_payment
-  other
-}
-
-enum DeadlineStatus {
-  upcoming
-  due_soon
-  overdue
-  completed
-  cancelled
-}
-
-enum ComplianceCheckType {
-  vat_registration
-  mtd_compliance
-  record_keeping
-  payment_deadlines
-  vat_rate_application
-  corporation_tax_compliance
-  overall_compliance
 }
 
 enum AccessType {
   GROUND_FLOOR
   WITH_LIFT
   WITHOUT_LIFT
+}
+
+enum AdditionalPaymentStatus {
+  NONE
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
 }
 
 enum AdminRole {
@@ -2272,6 +2244,14 @@ enum AdminRole {
   read_only
 }
 
+enum ApplicationStatus {
+  pending
+  under_review
+  approved
+  rejected
+  contract_sent
+}
+
 enum AssignmentStatus {
   invited
   claimed
@@ -2279,6 +2259,17 @@ enum AssignmentStatus {
   declined
   completed
   cancelled
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+  early_leave
+  half_day
+  pending
+  approved
+  rejected
 }
 
 enum BookingStatus {
@@ -2325,6 +2316,16 @@ enum CommunicationType {
   WEBHOOK
 }
 
+enum ComplianceCheckType {
+  vat_registration
+  mtd_compliance
+  record_keeping
+  payment_deadlines
+  vat_rate_application
+  corporation_tax_compliance
+  overall_compliance
+}
+
 enum CrewSize {
   ONE
   TWO
@@ -2341,6 +2342,24 @@ enum CustomerTier {
 
 enum DbsType {
   basic
+}
+
+enum DeadlineStatus {
+  upcoming
+  due_soon
+  overdue
+  completed
+  cancelled
+}
+
+enum DeductionCategory {
+  general
+  capital_allowance
+  staff_costs
+  vehicle_costs
+  office_costs
+  professional_fees
+  other
 }
 
 enum DocumentCategory {
@@ -2388,6 +2407,46 @@ enum DropStatus {
   delivered
   failed
   cancelled
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  temporary
+  intern
+}
+
+enum ExpenseCategory {
+  fuel
+  vehicle_maintenance
+  insurance
+  office_supplies
+  software
+  marketing
+  professional_services
+  travel
+  meals
+  accommodation
+  equipment
+  training
+  other
+}
+
+enum ExpenseStatus {
+  pending
+  verified
+  rejected
+  claimed
+}
+
+enum FilingStatus {
+  pending
+  in_progress
+  submitted
+  accepted
+  rejected
+  amended
 }
 
 enum FuelType {
@@ -2447,6 +2506,24 @@ enum JobStep {
   item_count_verification
 }
 
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum LeaveType {
+  annual
+  sick
+  personal
+  maternity
+  paternity
+  bereavement
+  unpaid
+  other
+}
+
 enum MessageStatus {
   sent
   delivered
@@ -2477,6 +2554,15 @@ enum NotificationType {
   earnings
   performance_update
   incident_reported
+}
+
+enum PaymentMethod {
+  stripe
+  paypal
+  bank_transfer
+  cash
+  cheque
+  other
 }
 
 enum PaymentStatus {
@@ -2533,6 +2619,7 @@ enum Role {
   admin
   driver
   customer
+  staff
 }
 
 enum RouteStatus {
@@ -2573,6 +2660,38 @@ enum ShiftStatus {
   offline
 }
 
+enum StaffStatus {
+  active
+  inactive
+  suspended
+  terminated
+  on_leave
+}
+
+enum StoryType {
+  text
+  image
+  video
+}
+
+enum TaxDeadlineType {
+  vat_submission
+  vat_payment
+  corporation_tax_payment
+  corporation_tax_return
+  payroll_submission
+  payroll_payment
+  other
+}
+
+enum TaxType {
+  vat
+  corporation_tax
+  income_tax
+  national_insurance
+  other
+}
+
 enum TipMethod {
   cash
   card
@@ -2602,22 +2721,36 @@ enum TransactionType {
   company_margin
 }
 
+enum VatAccountingScheme {
+  standard
+  flat_rate
+  cash_accounting
+  annual_accounting
+}
+
+enum VatRateType {
+  standard
+  reduced
+  zero
+  exempt
+}
+
+enum VatReclaimStatus {
+  eligible
+  ineligible
+  pending_review
+  claimed
+  rejected
+}
+
+enum VatReturnFrequency {
+  monthly
+  quarterly
+  annually
+}
+
 enum VehicleType {
   small_van
   large_van
   truck
-}
-
-enum ApplicationStatus {
-  pending
-  under_review
-  approved
-  rejected
-  contract_sent
-}
-
-enum StoryType {
-  text
-  image
-  video
 }

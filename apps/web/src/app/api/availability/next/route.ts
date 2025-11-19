@@ -162,7 +162,7 @@ export async function GET(request: NextRequest) {
         economyDate: result.route_type === 'economy' ? new Date(result.next_available_date) : null,
         standardPrice: 0, // Will be filled by pricing API
         expressPrice: 0,  // Will be filled by pricing API
-        corridor: result.route_id ? `${pickup.city}_${drops[0]?.city}` : undefined
+        // corridor field removed - not in schema
       }
     });
 

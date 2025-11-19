@@ -300,7 +300,9 @@ export async function PUT(
         }
       : null;
 
-    if (priceChanged && (existingOrder.paidAt || existingOrder.amountPaidGBP > 0)) {
+    const existingPaidAmount = existingOrder.amountPaidGBP ?? 0;
+
+    if (priceChanged && (existingOrder.paidAt || existingPaidAmount > 0)) {
       return NextResponse.json(
         {
           error: 'Paid orders cannot be repriced via direct update. Use the payment adjustment actions for additional charges or refunds.',

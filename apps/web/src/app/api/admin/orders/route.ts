@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { deriveServiceMetadata } from '@/lib/bookings/serviceType';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   const area = searchParams.get('area');
   const dateRange = searchParams.get('dateRange');
   const includeTracking = searchParams.get('includeTracking') === 'true';
-  const take = parseInt(searchParams.get('take') || '50');
+  const take = Math.min(parseInt(searchParams.get('take') || '50'), 500); // Limit to max 500
   const cursor = searchParams.get('cursor');
 
   try {
@@ -116,12 +117,12 @@ export async function GET(req: Request) {
             OR: [
               {
                 pickupAddress: {
-                  label: { contains: area, mode: 'insensitive' },
+                  label: { contains: area, mode: 'insensitive' as any },
                 },
               },
               {
                 dropoffAddress: {
-                  label: { contains: area, mode: 'insensitive' },
+                  label: { contains: area, mode: 'insensitive' as any },
                 },
               },
             ],
@@ -130,15 +131,15 @@ export async function GET(req: Request) {
       ...(q
         ? {
             OR: [
-              { reference: { contains: q, mode: 'insensitive' } },
+              { reference: { contains: q, mode: 'insensitive' as any } },
               {
-                pickupAddress: { label: { contains: q, mode: 'insensitive' } },
+                pickupAddress: { label: { contains: q, mode: 'insensitive' as any } },
               },
               {
-                dropoffAddress: { label: { contains: q, mode: 'insensitive' } },
+                dropoffAddress: { label: { contains: q, mode: 'insensitive' as any } },
               },
-              { customerName: { contains: q, mode: 'insensitive' } },
-              { customerEmail: { contains: q, mode: 'insensitive' } },
+              { customerName: { contains: q, mode: 'insensitive' as any } },
+              { customerEmail: { contains: q, mode: 'insensitive' as any } },
             ],
           }
         : {}),
@@ -212,24 +213,57 @@ export async function GET(req: Request) {
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
   });
 
-  await logAudit((s.user as any).id, 'read_orders', undefined, { targetType: 'booking', before: null, after: { count: orders.length, q, status, driver, area, dateRange } });
+  const ordersWithMeta = orders.map(order => ({
+    raw: order,
+    meta: deriveServiceMetadata(order),
+  }));
+
+  const filteredOrders = ordersWithMeta.filter(({ meta }) => !meta.isEconomy);
+  const excludedEconomyCount = ordersWithMeta.length - filteredOrders.length;
+
+  // Log audit action (non-blocking)
+  try {
+    await logAudit({
+      userId: (s.user as any).id,
+      action: 'read_orders',
+      entityType: 'booking',
+      details: {
+        count: orders.length,
+        q,
+        status,
+        driver,
+        area,
+        dateRange,
+        take,
+        excludedEconomyCount,
+      },
+    });
+  } catch (auditError) {
+    // Don't fail the request if audit logging fails
+    console.error('Failed to log audit:', auditError);
+  }
 
     const nextCursor =
       orders.length === take ? orders[orders.length - 1].id : null;
     
     console.log('✅ Orders fetched successfully:', {
-      count: orders.length,
+      count: filteredOrders.length,
       status,
       includeTracking,
-      hasNextCursor: !!nextCursor
+      hasNextCursor: !!nextCursor,
+      excludedEconomyCount,
     });
 
     // Transform orders to include serviceType and orderType
-    const transformedOrders = orders.map(order => ({
-      ...order,
-      serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
-      orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
-      isMultiDrop: order.isMultiDrop || false,
+    const transformedOrders = filteredOrders.map(({ raw, meta }) => ({
+      ...raw,
+      serviceType:
+        meta.serviceType ||
+        (raw.customerPreferences as any)?.serviceType ||
+        (raw.customerPreferences as any)?.serviceLevel ||
+        'standard',
+      orderType: raw.orderType || (raw.isMultiDrop ? 'multi-drop' : 'single'),
+      isMultiDrop: raw.isMultiDrop || false,
     }));
 
     return Response.json({ items: transformedOrders, nextCursor });
@@ -238,13 +272,17 @@ export async function GET(req: Request) {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
       params: { status, includeTracking, q, driver, area, dateRange, take }
     });
     
+    // Return more detailed error in development
+    const isDev = process.env.NODE_ENV === 'development';
     return Response.json(
       { 
         error: 'Failed to fetch orders',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        ...(isDev && error instanceof Error ? { stack: error.stack } : {})
       },
       { status: 500 }
     );

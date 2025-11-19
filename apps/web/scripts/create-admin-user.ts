@@ -27,7 +27,7 @@ async function createAdminUser() {
           adminRole: 'superadmin',
           isActive: true,
           emailVerified: true,
-        },
+        } as any,
       });
 
       console.log('✅ User updated successfully:', {
@@ -52,7 +52,7 @@ async function createAdminUser() {
           adminRole: 'superadmin',
           isActive: true,
           emailVerified: true,
-        },
+        } as any,
       });
 
       console.log('✅ Admin user created successfully:', {

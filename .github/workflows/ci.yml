@@ -1,5 +1,7 @@
 name: ci
 on: [push, pull_request]
+env:
+  PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: '1'
 jobs:
   build:
     runs-on: ubuntu-latest

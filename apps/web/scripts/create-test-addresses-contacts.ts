@@ -17,7 +17,7 @@ async function createTestAddressesAndContacts() {
           name: 'Test Customer',
           password: 'hashedpassword123',
           role: 'customer',
-        },
+        } as any,
       });
     }
 
@@ -109,7 +109,7 @@ async function createTestAddressesAndContacts() {
     console.log('Creating test addresses...');
     for (const addressData of addresses) {
       const address = await prisma.address.create({
-        data: addressData,
+        data: addressData as any,
       });
       console.log(`Created address: ${address.label}`);
     }
@@ -118,7 +118,7 @@ async function createTestAddressesAndContacts() {
     console.log('Creating test contacts...');
     for (const contactData of contacts) {
       const contact = await prisma.contact.create({
-        data: contactData,
+        data: contactData as any,
       });
       console.log(`Created contact: ${contact.label}`);
     }

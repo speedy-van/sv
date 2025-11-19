@@ -22,7 +22,7 @@ async function createTestDriver() {
           name: 'Deloalo Driver',
           role: 'driver',
           password: hashedPassword,
-        },
+        } as any,
         include: { driver: true },
       });
 
@@ -41,7 +41,7 @@ async function createTestDriver() {
           basePostcode: 'SW1A 1AA',
           vehicleType: 'medium_van',
           updatedAt: new Date(),
-        },
+        } as any,
       });
 
       // Create driver availability record - Default to online
@@ -52,7 +52,7 @@ async function createTestDriver() {
           status: 'online',
           locationConsent: false,
           updatedAt: new Date(),
-        },
+        } as any,
       });
 
       console.log('✅ Test driver record created:', driver.id);
