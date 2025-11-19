@@ -1219,10 +1219,9 @@ export default function BookingLuxuryPage() {
                         </VStack>
 
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
-                          <Box position="relative" zIndex={10}>
+                          <Box position="relative" style={{ zIndex: 10 }}>
                             <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>📅 Select Date</Text>
-                            <Box
-                              as="input"
+                            <input
                               type="date"
                               value={formData.step1.pickupDate || ''}
                               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1254,28 +1253,19 @@ export default function BookingLuxuryPage() {
                                 tomorrow.setDate(tomorrow.getDate() + 1);
                                 return tomorrow.toISOString().split('T')[0];
                               })()}
-                              w="full"
-                              p={3}
-                              fontSize={{ base: "md", md: "lg" }}
-                              borderRadius="xl"
-                              border="2px solid"
-                              borderColor="rgba(59, 130, 246, 0.4)"
-                              bg="rgba(26, 26, 26, 0.8)"
-                              color="white"
-                              fontWeight="500"
-                              _hover={{
-                                borderColor: "rgba(59, 130, 246, 0.6)",
-                              }}
-                              _focus={{
-                                borderColor: "rgba(59, 130, 246, 0.8)",
-                                outline: "none",
-                              }}
-                              sx={{
+                              className="booking-date-input"
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                fontSize: '16px',
+                                borderRadius: '12px',
+                                border: '2px solid rgba(59, 130, 246, 0.4)',
+                                backgroundColor: 'rgba(26, 26, 26, 0.8)',
+                                color: 'white',
+                                fontWeight: '500',
                                 colorScheme: 'dark',
-                                '&::-webkit-calendar-picker-indicator': {
-                                  filter: 'invert(1)',
-                                  cursor: 'pointer',
-                                }
+                                cursor: 'pointer',
+                                outline: 'none',
                               }}
                             />
                             {errors['step1.pickupDate'] && (
@@ -1283,10 +1273,9 @@ export default function BookingLuxuryPage() {
                             )}
                           </Box>
 
-                          <Box position="relative" zIndex={9}>
+                          <Box position="relative" style={{ zIndex: 9 }}>
                             <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>⏰ Select Time</Text>
-                            <Box
-                              as="select"
+                            <select
                               value={formData.step1.pickupTimeSlot || ''}
                               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                 const timeSlot = e.target.value;
@@ -1294,23 +1283,24 @@ export default function BookingLuxuryPage() {
                                 
                                 console.log('⏰ Time changed:', timeSlot);
                               }}
-                              w="full"
-                              p={3}
-                              fontSize={{ base: "md", md: "lg" }}
-                              borderRadius="xl"
-                              border="2px solid"
-                              borderColor="rgba(59, 130, 246, 0.5)"
-                              bg="white"
-                              color="gray.800"
-                              fontWeight="600"
-                              cursor="pointer"
-                              _hover={{
-                                borderColor: "rgba(59, 130, 246, 0.7)",
-                              }}
-                              _focus={{
-                                borderColor: "rgba(59, 130, 246, 1)",
-                                outline: "none",
-                                boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.2)",
+                              className="booking-time-select"
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                fontSize: '16px',
+                                borderRadius: '12px',
+                                border: '2px solid rgba(59, 130, 246, 0.5)',
+                                backgroundColor: 'white',
+                                color: '#1f2937',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                outline: 'none',
+                                appearance: 'none',
+                                backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 12px center',
+                                backgroundSize: '20px',
+                                paddingRight: '40px',
                               }}
                             >
                               <option value="">Choose a time</option>
@@ -1318,7 +1308,7 @@ export default function BookingLuxuryPage() {
                               <option value="afternoon">12 PM - 4 PM ☀️ (Afternoon)</option>
                               <option value="evening">4 PM - 6 PM 🌆 (Evening)</option>
                               <option value="flexible">Flexible ⏰ (Best Price)</option>
-                            </Box>
+                            </select>
                             {errors['step1.pickupTime'] && (
                               <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupTime']}</Text>
                             )}

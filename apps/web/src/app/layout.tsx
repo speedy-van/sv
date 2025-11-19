@@ -123,6 +123,9 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning translate="no">
       <head>
+        {/* CRITICAL: Emotion insertion point for consistent CSS order across dev/prod */}
+        <meta name="emotion-insertion-point" content="" />
+        
         {/* Favicon and App Icons */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
