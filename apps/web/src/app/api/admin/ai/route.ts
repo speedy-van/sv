@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { coreOrchestrator } from '@/server/ai/CoreOrchestrator';
 import { memorySystem } from '@/server/ai/MemorySystem';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/admin/ai
  * Main AI Assistant endpoint with orchestration and memory

@@ -4,6 +4,9 @@ import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import Pusher from 'pusher';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 // Initialize Pusher for real-time updates
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID || '',

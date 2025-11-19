@@ -14,6 +14,9 @@ import {
 } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
   

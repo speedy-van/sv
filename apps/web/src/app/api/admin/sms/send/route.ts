@@ -4,6 +4,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 // Validation schema for SMS sending
 const smsSendSchema = z.object({
   to: z.string().min(10).max(20),

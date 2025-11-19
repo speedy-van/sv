@@ -29,6 +29,9 @@ import {
   generateRequestId,
 } from '@/lib/api-response';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 // Handle CORS preflight
 export async function OPTIONS(request: NextRequest) {
   const origin = request.headers.get('origin');

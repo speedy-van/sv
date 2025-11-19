@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const createStaffSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),

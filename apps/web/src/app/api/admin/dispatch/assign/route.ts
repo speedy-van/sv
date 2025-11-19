@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

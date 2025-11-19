@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const defaultSettings = {
   isVATRegistered: true,
   vatRegistrationNumber: process.env.TAX_VAT_REGISTRATION ?? null,

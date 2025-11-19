@@ -15,6 +15,9 @@ import {
   generateRequestId,
 } from '@/lib/api-response';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { path: string[] } }

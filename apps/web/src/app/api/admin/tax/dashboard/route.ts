@@ -7,6 +7,9 @@ import { siteDataIntegration } from '@/lib/tax/site-integration';
 import { aiTaxAnalyzer } from '@/lib/tax/ai-tax-analyzer';
 import { taxValidationService } from '@/lib/tax/validation-service';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

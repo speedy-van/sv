@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { generateAttendanceStatus } from '@/lib/staffAttendance';
 import { z } from 'zod';
 
+// Force dynamic rendering (uses headers/cookies/getServerSession)
+export const dynamic = 'force-dynamic';
+
 const updateAttendanceSchema = z.object({
   checkIn: z.string().datetime().optional(),
   checkOut: z.string().datetime().optional(),

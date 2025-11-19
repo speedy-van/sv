@@ -17,6 +17,9 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { verifyWebhookSignature } from '@/lib/stripe/client';
 import { createRequestId } from '@/lib/pricing/schemas';
+
+// Force dynamic rendering for webhook endpoint (uses headers)
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import { pricingSnapshotService } from '@/lib/services/pricing-snapshot-service';
 import { RouteOrchestrationService } from '@/lib/services/route-orchestration-service';
