@@ -17,11 +17,22 @@ interface ChakraProvidersProps {
 
 // Create Emotion cache that's SSR-safe and properly injects styles into <head>
 // This prevents CSS-in-JS from displaying as text on Safari/iOS
+// 
+// CRITICAL: prepend: true ensures Chakra styles load BEFORE global CSS
+// This allows global CSS to override Chakra for production consistency
+// Native HTML elements (.booking-date-input, .booking-time-select) in globals.css
+// have higher specificity than Chakra component styles
 function createEmotionCache() {
+  const insertionPoint = typeof document !== 'undefined' 
+    ? (document.querySelector('meta[name="emotion-insertion-point"]') as HTMLElement | null)
+    : null;
+
   return createCache({
     key: 'chakra',
-    prepend: true, // Prepend styles to <head> to ensure they load first
+    prepend: true, // Load Chakra styles BEFORE global CSS (allows global overrides)
     speedy: false, // Disable speedy mode for production reliability
+    // Explicitly set insertion point to ensure consistent CSS order
+    insertionPoint: insertionPoint || undefined,
   });
 }
 

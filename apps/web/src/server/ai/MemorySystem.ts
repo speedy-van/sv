@@ -335,6 +335,20 @@ export class MemorySystem {
    */
   private async persistLearningPattern(entry: LearningEntry) {
     try {
+      // Check if table exists before attempting to persist
+      const tableExists = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'AILearningPattern'
+        );
+      `.then(result => result[0]?.exists).catch(() => false);
+
+      if (!tableExists) {
+        // Silently skip - this is an optional feature
+        return;
+      }
+
       await prisma.aILearningPattern.upsert({
         where: {
           pattern_action: {
@@ -356,7 +370,8 @@ export class MemorySystem {
         },
       });
     } catch (error) {
-      console.error('Failed to persist learning pattern:', error);
+      // Silently fail - this is an optional feature
+      // console.error('Failed to persist learning pattern:', error);
     }
   }
 
@@ -452,9 +467,24 @@ export class MemorySystem {
 
   /**
    * Initialize learning patterns from database
+   * Optional feature - gracefully handles missing table
    */
   async initializeLearningPatterns() {
     try {
+      // Check if table exists by attempting a count query first
+      const tableExists = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'AILearningPattern'
+        );
+      `.then(result => result[0]?.exists).catch(() => false);
+
+      if (!tableExists) {
+        console.log('⚠️ AILearningPattern table not found - skipping learning patterns initialization (optional feature)');
+        return;
+      }
+
       const patterns = await prisma.aILearningPattern.findMany({
         where: {
           successRate: { gt: 0.3 }, // Only load patterns with decent success rate
@@ -474,9 +504,10 @@ export class MemorySystem {
         });
       });
 
-      console.log(`Loaded ${patterns.length} learning patterns`);
+      console.log(`✅ Loaded ${patterns.length} learning patterns`);
     } catch (error) {
-      console.error('Failed to initialize learning patterns:', error);
+      // Silently fail - this is an optional feature
+      console.log('⚠️ Learning patterns initialization skipped (optional feature)');
     }
   }
 

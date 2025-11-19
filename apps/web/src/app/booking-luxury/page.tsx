@@ -1219,12 +1219,12 @@ export default function BookingLuxuryPage() {
                         </VStack>
 
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
-                          <Box>
+                          <Box position="relative" style={{ zIndex: 10 }}>
                             <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>📅 Select Date</Text>
                             <input
                               type="date"
                               value={formData.step1.pickupDate || ''}
-                              onChange={(e) => {
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 const selectedDate = e.target.value;
                                 updateFormData('step1', { pickupDate: selectedDate });
                                 
@@ -1253,15 +1253,19 @@ export default function BookingLuxuryPage() {
                                 tomorrow.setDate(tomorrow.getDate() + 1);
                                 return tomorrow.toISOString().split('T')[0];
                               })()}
+                              className="booking-date-input"
                               style={{
                                 width: '100%',
                                 padding: '12px',
                                 fontSize: '16px',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(59, 130, 246, 0.3)',
-                                background: 'rgba(26, 26, 26, 0.8)',
+                                border: '2px solid rgba(59, 130, 246, 0.4)',
+                                backgroundColor: 'rgba(26, 26, 26, 0.8)',
                                 color: 'white',
-                                fontWeight: '500'
+                                fontWeight: '500',
+                                colorScheme: 'dark',
+                                cursor: 'pointer',
+                                outline: 'none',
                               }}
                             />
                             {errors['step1.pickupDate'] && (
@@ -1269,26 +1273,34 @@ export default function BookingLuxuryPage() {
                             )}
                           </Box>
 
-                          <Box>
+                          <Box position="relative" style={{ zIndex: 9 }}>
                             <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>⏰ Select Time</Text>
                             <select
                               value={formData.step1.pickupTimeSlot || ''}
-                              onChange={(e) => {
+                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                 const timeSlot = e.target.value;
                                 updateFormData('step1', { pickupTimeSlot: timeSlot });
                                 
                                 console.log('⏰ Time changed:', timeSlot);
                               }}
+                              className="booking-time-select"
                               style={{
                                 width: '100%',
                                 padding: '12px',
                                 fontSize: '16px',
                                 borderRadius: '12px',
-                                border: '2px solid rgba(59, 130, 246, 0.4)',
-                                background: 'white',
-                                color: '#1a1a1a',
+                                border: '2px solid rgba(59, 130, 246, 0.5)',
+                                backgroundColor: 'white',
+                                color: '#1f2937',
                                 fontWeight: '600',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                outline: 'none',
+                                appearance: 'none',
+                                backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 12px center',
+                                backgroundSize: '20px',
+                                paddingRight: '40px',
                               }}
                             >
                               <option value="">Choose a time</option>

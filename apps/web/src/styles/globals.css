@@ -1679,3 +1679,293 @@ button:focus {
 .chakra-modal__body::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* ==========================================
+   CRITICAL FIX: Date Picker & Time Dropdown
+   Production vs Development Consistency
+   ========================================== */
+
+/* Fix native date picker calendar positioning and styling */
+input[type="date"] {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure date picker calendar opens downward (not upward) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+  filter: invert(1) !important;
+  opacity: 0.9 !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Fix date picker popup positioning */
+input[type="date"]::-webkit-datetime-edit {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure calendar popup has correct stacking context */
+input[type="date"]:focus {
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+/* Fix select dropdown styling and positioning */
+.chakra-select,
+select {
+  position: relative !important;
+  z-index: 1 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+/* Ensure select dropdown options are properly styled */
+.chakra-select option,
+select option {
+  background-color: white !important;
+  color: #111827 !important;
+  padding: 14px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+/* Fix dropdown arrow positioning */
+.chakra-select__icon-wrapper {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+/* Ensure dropdown menu has proper stacking and positioning */
+.chakra-select:focus,
+select:focus {
+  position: relative !important;
+  z-index: 100 !important;
+  outline: none !important;
+}
+
+/* Fix for production minification changing dropdown behavior */
+.chakra-select__wrapper {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure dropdown options list appears correctly */
+.chakra-select option:hover,
+select option:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.chakra-select option:checked,
+select option:checked {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Fix for white broken list appearance in production */
+/* Override any conflicting Chakra or global styles */
+select[class*="chakra"] {
+  background: white !important;
+  border: 2px solid rgba(59, 130, 246, 0.4) !important;
+  border-radius: 12px !important;
+  color: #111827 !important;
+}
+
+select[class*="chakra"]:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Ensure proper rendering in all browsers */
+@supports (-webkit-appearance: none) {
+  select {
+    -webkit-appearance: none !important;
+  }
+}
+
+@supports (-moz-appearance: none) {
+  select {
+    -moz-appearance: none !important;
+  }
+}
+
+/* Critical: Ensure consistent rendering between dev and production */
+select,
+.chakra-select {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Fix for calendar popup direction (ensure it opens downward) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer !important;
+  filter: invert(1) !important;
+  opacity: 0.8 !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1 !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:focus {
+  outline: none !important;
+}
+
+/* CRITICAL: Prevent calendar from opening upward in production */
+input[type="date"] {
+  transform: none !important;
+  transform-origin: initial !important;
+  position: relative !important;
+}
+
+/* Fix select dropdown styling inconsistency between dev and production */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px !important;
+  padding-right: 36px !important;
+}
+
+/* Override any global styles that might affect select dropdown */
+select option {
+  background: white !important;
+  color: #111827 !important;
+  padding: 8px 12px !important;
+  font-weight: 600 !important;
+}
+
+/* Ensure proper z-index hierarchy for form controls */
+.chakra-form-control {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.chakra-form-control:focus-within {
+  z-index: 100 !important;
+}
+
+/* Fix for iOS Safari date picker */
+@supports (-webkit-touch-callout: none) {
+  input[type="date"] {
+    -webkit-appearance: none !important;
+    min-height: 48px !important;
+  }
+}
+
+/* ==========================================
+   PRODUCTION FIX: Native Form Controls
+   Eliminates Chakra CSS conflicts
+   ========================================== */
+
+/* Booking Date Input - Native HTML styling */
+.booking-date-input {
+  position: relative !important;
+  z-index: 10 !important;
+  width: 100% !important;
+  padding: 12px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
+  border: 2px solid rgba(59, 130, 246, 0.4) !important;
+  background-color: rgba(26, 26, 26, 0.8) !important;
+  color: white !important;
+  font-weight: 500 !important;
+  color-scheme: dark !important;
+  cursor: pointer !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.booking-date-input:hover {
+  border-color: rgba(59, 130, 246, 0.6) !important;
+}
+
+.booking-date-input:focus {
+  border-color: rgba(59, 130, 246, 0.8) !important;
+  z-index: 100 !important;
+}
+
+.booking-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+  cursor: pointer !important;
+  opacity: 0.9 !important;
+  width: 20px !important;
+  height: 20px !important;
+  position: absolute !important;
+  right: 12px !important;
+}
+
+/* Booking Time Select - Native HTML styling */
+.booking-time-select {
+  position: relative !important;
+  z-index: 9 !important;
+  width: 100% !important;
+  padding: 12px !important;
+  padding-right: 40px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
+  border: 2px solid rgba(59, 130, 246, 0.5) !important;
+  background-color: white !important;
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.booking-time-select:hover {
+  border-color: rgba(59, 130, 246, 0.7) !important;
+}
+
+.booking-time-select:focus {
+  border-color: rgba(59, 130, 246, 1) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+  z-index: 100 !important;
+}
+
+.booking-time-select option {
+  background-color: white !important;
+  color: #1f2937 !important;
+  padding: 14px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+.booking-time-select option:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.booking-time-select option:checked {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .booking-date-input,
+  .booking-time-select {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    min-height: 44px !important; /* iOS touch target minimum */
+  }
+}
