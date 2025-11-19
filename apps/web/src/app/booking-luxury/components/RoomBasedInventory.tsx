@@ -450,8 +450,9 @@ export default function RoomBasedInventory({
                 bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                 color="white"
                 borderRadius="full"
-                w={{ base: '64px', md: '72px' }}
-                h={{ base: '64px', md: '72px' }}
+                minW={{ base: '64px', md: '72px' }}
+                minH={{ base: '64px', md: '72px' }}
+                px={{ base: '12px', md: '16px' }}
                 display="flex"
                 flexDirection="column"
                 alignItems="center"
@@ -468,7 +469,7 @@ export default function RoomBasedInventory({
                 }}
               >
                 <Icon as={FaBox} boxSize={{ base: 5, md: 6 }} mb={1} />
-                <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold">
+                <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" whiteSpace="nowrap">
                   {selectionStats.totalItems}
                 </Text>
               </Box>
