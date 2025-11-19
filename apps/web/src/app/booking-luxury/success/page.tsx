@@ -81,16 +81,30 @@ export default function BookingSuccessPage() {
   // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
-  // Track page view for Google Ads
+  // Track page view and conversion for Google Ads
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
+      // Track page view
       (window as any).gtag('event', 'page_view', {
         page_title: 'Booking Success',
         page_location: window.location.href,
         page_path: window.location.pathname
       });
+
+      // Fire conversion event
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-1771563082/7375337919',
+        'value': 1.0,
+        'currency': 'GBP',
+        'transaction_id': sessionId || bookingRef || ''
+      });
+
+      console.log('✅ Google Ads conversion tracked:', {
+        send_to: 'AW-1771563082/7375337919',
+        transaction_id: sessionId || bookingRef || ''
+      });
     }
-  }, []);
+  }, [sessionId, bookingRef]);
 
   // Load Trustpilot script
   useEffect(() => {
