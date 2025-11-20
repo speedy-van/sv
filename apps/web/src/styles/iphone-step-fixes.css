@@ -1,0 +1,218 @@
+/* ========================================
+   iPhone 14/15/16/17 Step Indicator Fixes
+   ======================================== */
+
+/* Target ONLY iPhone Safari */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 430px) {
+    
+    /* ===== Step Indicator Container ===== */
+    /* Force proper flex layout */
+    .chakra-stack[data-orientation="horizontal"],
+    div[class*="HStack"] {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: center !important;
+      align-items: center !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0.75rem 1rem !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      gap: 0.5rem !important;
+      flex-wrap: nowrap !important;
+    }
+    
+    /* ===== Individual Step Circles ===== */
+    /* Prevent shifting and maintain size */
+    .chakra-stack[data-orientation="horizontal"] > div:not([class*="Box"]),
+    div[class*="HStack"] > div:not([class*="Box"]) {
+      flex-shrink: 0 !important;
+      flex-grow: 0 !important;
+      width: 40px !important;
+      height: 40px !important;
+      min-width: 40px !important;
+      min-height: 40px !important;
+      max-width: 40px !important;
+      max-height: 40px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      position: relative !important;
+      box-sizing: border-box !important;
+      /* Force GPU acceleration */
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      -webkit-backface-visibility: hidden !important;
+      backface-visibility: hidden !important;
+    }
+    
+    /* ===== Step Circle Content ===== */
+    .chakra-stack[data-orientation="horizontal"] > div > div,
+    div[class*="HStack"] > div > div {
+      font-size: 1rem !important;
+      font-weight: 800 !important;
+      line-height: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    /* ===== Connection Lines Between Steps ===== */
+    /* Ensure proper spacing */
+    .chakra-stack[data-orientation="horizontal"] > div + div::before,
+    div[class*="HStack"] > div + div::before {
+      content: "" !important;
+      width: 1.5rem !important;
+      height: 2px !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      position: absolute !important;
+      left: -1.75rem !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      -webkit-transform: translateY(-50%) !important;
+    }
+    
+    /* ===== Header Container ===== */
+    /* Prevent overlap with Call Now button */
+    header,
+    [role="banner"],
+    .chakra-box[as="header"] {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 999 !important;
+      background: rgba(15, 17, 20, 0.98) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      padding: env(safe-area-inset-top) 0 0 0 !important;
+      min-height: calc(60px + env(safe-area-inset-top)) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* ===== Logo and Call Now Button Row ===== */
+    header > div:first-child,
+    [role="banner"] > div:first-child {
+      width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 0.5rem 1rem !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* ===== Logo ===== */
+    header > div:first-child > div:first-child,
+    [role="banner"] > div:first-child > div:first-child {
+      flex-shrink: 0 !important;
+      max-width: 150px !important;
+    }
+    
+    /* ===== Call Now Button ===== */
+    header a[href^="tel"],
+    [role="banner"] a[href^="tel"],
+    header button:has(svg[data-icon="phone"]),
+    [role="banner"] button:has(svg[data-icon="phone"]) {
+      flex-shrink: 0 !important;
+      margin: 0 !important;
+      padding: 0.5rem 1rem !important;
+      white-space: nowrap !important;
+      font-size: 0.875rem !important;
+    }
+    
+    /* ===== Step Indicator Row ===== */
+    header > div:last-child,
+    [role="banner"] > div:last-child {
+      width: 100% !important;
+      padding: 0.5rem 1rem !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* ===== Body Padding to Prevent Content Overlap ===== */
+    body {
+      padding-top: calc(110px + env(safe-area-inset-top)) !important;
+    }
+    
+    /* ===== Disable Animations on iPhone (Performance) ===== */
+    .chakra-stack[data-orientation="horizontal"] > div,
+    div[class*="HStack"] > div {
+      animation: none !important;
+      transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    }
+    
+    /* ===== Remove Hover Effects on Touch Devices ===== */
+    @media (hover: none) and (pointer: coarse) {
+      .chakra-stack[data-orientation="horizontal"] > div:hover,
+      div[class*="HStack"] > div:hover {
+        transform: none !important;
+        -webkit-transform: none !important;
+      }
+    }
+  }
+  
+  /* ===== iPhone 14 Pro / 15 Pro / 16 Pro - Dynamic Island ===== */
+  @media (max-width: 430px) and (min-height: 844px) {
+    header,
+    [role="banner"] {
+      padding-top: max(env(safe-area-inset-top), 44px) !important;
+      min-height: calc(110px + max(env(safe-area-inset-top), 44px)) !important;
+    }
+    
+    body {
+      padding-top: calc(110px + max(env(safe-area-inset-top), 44px)) !important;
+    }
+  }
+  
+  /* ===== Landscape Mode ===== */
+  @media (max-width: 932px) and (max-height: 430px) and (orientation: landscape) {
+    header,
+    [role="banner"] {
+      min-height: 50px !important;
+      padding: env(safe-area-inset-top) 0 0 0 !important;
+    }
+    
+    header > div:first-child,
+    [role="banner"] > div:first-child {
+      padding: 0.25rem 1rem !important;
+    }
+    
+    header > div:last-child,
+    [role="banner"] > div:last-child {
+      padding: 0.25rem 1rem !important;
+    }
+    
+    .chakra-stack[data-orientation="horizontal"] > div,
+    div[class*="HStack"] > div {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      min-height: 32px !important;
+      max-width: 32px !important;
+      max-height: 32px !important;
+      font-size: 0.875rem !important;
+    }
+    
+    body {
+      padding-top: 90px !important;
+    }
+  }
+}
+
+/* ===== Fallback for All Mobile Devices ===== */
+@media (max-width: 430px) {
+  /* Ensure step indicators work on all mobile browsers */
+  .chakra-stack[data-orientation="horizontal"] {
+    flex-wrap: nowrap !important;
+    overflow-x: visible !important;
+  }
+  
+  .chakra-stack[data-orientation="horizontal"] > div {
+    flex-shrink: 0 !important;
+  }
+}

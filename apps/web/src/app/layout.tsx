@@ -10,6 +10,8 @@ import '@/styles/video-background.css';
 import '@/styles/charts.css';
 import '@/styles/responsive-fixes.css';
 import '@/styles/mobile-viewport-fixes.css';
+import '@/styles/iphone-booking-fixes.css';
+import '@/styles/iphone-step-fixes.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
