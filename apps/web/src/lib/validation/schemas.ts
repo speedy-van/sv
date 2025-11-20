@@ -215,8 +215,8 @@ export const adminUserCreate = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email is required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  adminRole: z.enum(['super_admin', 'admin', 'moderator']).default('admin'),
-  isActive: z.boolean().default(true),
+  adminRole: z.string().optional().default('admin'),
+  isActive: z.boolean().optional().default(true),
 });
 
 export const adminUserUpdate = z.object({

@@ -59,7 +59,9 @@
     "test:schema": "playwright test tests/schema-validator.spec.ts",
     "generate:favicons": "node generate-favicons.js ./public/favicon-base.png ./public",
     "rag:build": "tsx scripts/build-rag.ts",
-    "rag:flush": "tsx scripts/build-rag.ts --flush"
+    "rag:flush": "tsx scripts/build-rag.ts --flush",
+    "cloudinary:upload": "node upload-to-cloudinary.js",
+    "cloudinary:verify": "node -e \"console.log('Cloud Name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'NOT SET')\""
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.6",
@@ -104,6 +106,7 @@
     "@types/qrcode": "^1.5.5",
     "axios": "^1.7.2",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "critters": "^0.0.23",
     "date-fns": "^4.1.0",
