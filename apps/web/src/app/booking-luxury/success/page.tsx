@@ -81,7 +81,7 @@ export default function BookingSuccessPage() {
   // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
-  // Track page view for Google Ads
+  // Track page view and conversion for Google Ads
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       // Track page view
@@ -90,10 +90,21 @@ export default function BookingSuccessPage() {
         page_location: window.location.href,
         page_path: window.location.pathname
       });
-      
-      console.log('✅ Page view tracked');
+
+      // Fire conversion event
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-1771563082/7375337919',
+        'value': 1.0,
+        'currency': 'GBP',
+        'transaction_id': sessionId || bookingRef || ''
+      });
+
+      console.log('✅ Google Ads conversion tracked:', {
+        send_to: 'AW-1771563082/7375337919',
+        transaction_id: sessionId || bookingRef || ''
+      });
     }
-  }, []);
+  }, [sessionId, bookingRef]);
 
   // Load Trustpilot script
   useEffect(() => {
@@ -171,8 +182,8 @@ export default function BookingSuccessPage() {
               phone: data.customer_details?.phone || '',
             },
             totalAmount: bookingAmount,
-            scheduledAt: new Date().toISOString(), // Default to now if not available
-          });
+          scheduledAt: new Date().toISOString(), // Default to now if not available
+        });
 
           // Track Google Ads conversion with actual booking amount
           // Validate booking amount before tracking
@@ -208,9 +219,7 @@ export default function BookingSuccessPage() {
                 console.error('❌ Google Ads conversion tracking failed:', error);
               }
             }
-          }
-
-          // Show success toast (only once per session)
+          }          // Show success toast (only once per session)
           const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
           const alreadyShowedToast = toastTrackingKey ? safeLocalStorage.getItem(toastTrackingKey) : null;
           
