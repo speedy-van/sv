@@ -185,27 +185,8 @@ export default function BookingSuccessPage() {
             scheduledAt: new Date().toISOString(), // Default to now if not available
           });
 
-          // Track Google Ads conversion
-          if (typeof window !== 'undefined' && (window as any).gtag) {
-            try {
-              const transactionId =
-                data.metadata?.bookingReference || bookingRef || sessionId;
-              (window as any).gtag('event', 'conversion', {
-                'send_to': 'AW-1771563082/4VHOCMuJtL4bEOalvP9B',
-                'value': bookingAmount,
-                'currency': 'GBP',
-                'transaction_id': transactionId
-              });
-              console.log('✅ Google Ads conversion tracked:', {
-                value: bookingAmount,
-                currency: 'GBP',
-                bookingRef: data.metadata?.bookingReference,
-                transactionId,
-              });
-            } catch (gtagError) {
-              console.error('❌ Google Ads conversion tracking failed:', gtagError);
-            }
-          }
+          // Google Ads conversion tracking is handled in the initial useEffect (lines 85-107)
+          // to ensure it fires only once per page load, preventing duplicate conversion events
 
           // Show success toast (only once per session)
           const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
