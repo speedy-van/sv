@@ -175,30 +175,39 @@ export default function BookingSuccessPage() {
           });
 
           // Track Google Ads conversion with actual booking amount
-          const conversionTrackingKey = sessionId ? `conversion_tracked_${sessionId}` : null;
-          const alreadyTrackedConversion = conversionTrackingKey ? safeLocalStorage.getItem(conversionTrackingKey) : null;
-          
-          if (typeof window !== 'undefined' && (window as any).gtag && !alreadyTrackedConversion) {
-            const transactionId = data.metadata?.bookingReference || bookingRef || sessionId;
+          // Validate booking amount before tracking
+          if (!bookingAmount || bookingAmount <= 0 || isNaN(bookingAmount)) {
+            console.error('❌ Invalid booking amount for conversion tracking:', bookingAmount);
+          } else {
+            const conversionTrackingKey = sessionId ? `conversion_tracked_${sessionId}` : null;
+            const alreadyTrackedConversion = conversionTrackingKey ? safeLocalStorage.getItem(conversionTrackingKey) : null;
             
-            (window as any).gtag('event', 'conversion', {
-              'send_to': 'AW-1771563082/7375337919',
-              'value': bookingAmount,
-              'currency': 'GBP',
-              'transaction_id': transactionId
-            });
-            
-            // Mark conversion as tracked to prevent duplicates
-            if (conversionTrackingKey) {
-              safeLocalStorage.setItem(conversionTrackingKey, 'true');
+            if (typeof window !== 'undefined' && (window as any).gtag && !alreadyTrackedConversion) {
+              try {
+                const transactionId = data.metadata?.bookingReference || bookingRef || sessionId;
+                
+                (window as any).gtag('event', 'conversion', {
+                  'send_to': 'AW-1771563082/7375337919',
+                  'value': bookingAmount,
+                  'currency': 'GBP',
+                  'transaction_id': transactionId
+                });
+                
+                // Mark conversion as tracked to prevent duplicates
+                if (conversionTrackingKey) {
+                  safeLocalStorage.setItem(conversionTrackingKey, 'true');
+                }
+                
+                console.log('✅ Google Ads conversion tracked:', {
+                  send_to: 'AW-1771563082/7375337919',
+                  value: bookingAmount,
+                  currency: 'GBP',
+                  transaction_id: transactionId
+                });
+              } catch (error) {
+                console.error('❌ Google Ads conversion tracking failed:', error);
+              }
             }
-            
-            console.log('✅ Google Ads conversion tracked:', {
-              send_to: 'AW-1771563082/7375337919',
-              value: bookingAmount,
-              currency: 'GBP',
-              transaction_id: transactionId
-            });
           }
 
           // Show success toast (only once per session)
