@@ -81,7 +81,7 @@ export default function BookingSuccessPage() {
   // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
-  // Track page view and conversion for Google Ads
+  // Track page view for Google Ads
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       // Track page view
@@ -90,21 +90,10 @@ export default function BookingSuccessPage() {
         page_location: window.location.href,
         page_path: window.location.pathname
       });
-
-      // Fire conversion event
-      (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-1771563082/7375337919',
-        'value': 1.0,
-        'currency': 'GBP',
-        'transaction_id': sessionId || bookingRef || ''
-      });
-
-      console.log('✅ Google Ads conversion tracked:', {
-        send_to: 'AW-1771563082/7375337919',
-        transaction_id: sessionId || bookingRef || ''
-      });
+      
+      console.log('✅ Page view tracked');
     }
-  }, [sessionId, bookingRef]);
+  }, []);
 
   // Load Trustpilot script
   useEffect(() => {
@@ -185,8 +174,32 @@ export default function BookingSuccessPage() {
             scheduledAt: new Date().toISOString(), // Default to now if not available
           });
 
-          // Google Ads conversion tracking is handled in the initial useEffect (lines 85-107)
-          // to ensure it fires only once per page load, preventing duplicate conversion events
+          // Track Google Ads conversion with actual booking amount
+          const conversionTrackingKey = sessionId ? `conversion_tracked_${sessionId}` : null;
+          const alreadyTrackedConversion = conversionTrackingKey ? safeLocalStorage.getItem(conversionTrackingKey) : null;
+          
+          if (typeof window !== 'undefined' && (window as any).gtag && !alreadyTrackedConversion) {
+            const transactionId = data.metadata?.bookingReference || bookingRef || sessionId;
+            
+            (window as any).gtag('event', 'conversion', {
+              'send_to': 'AW-1771563082/7375337919',
+              'value': bookingAmount,
+              'currency': 'GBP',
+              'transaction_id': transactionId
+            });
+            
+            // Mark conversion as tracked to prevent duplicates
+            if (conversionTrackingKey) {
+              safeLocalStorage.setItem(conversionTrackingKey, 'true');
+            }
+            
+            console.log('✅ Google Ads conversion tracked:', {
+              send_to: 'AW-1771563082/7375337919',
+              value: bookingAmount,
+              currency: 'GBP',
+              transaction_id: transactionId
+            });
+          }
 
           // Show success toast (only once per session)
           const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
