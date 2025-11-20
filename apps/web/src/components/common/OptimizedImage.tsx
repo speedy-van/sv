@@ -1,11 +1,14 @@
 /**
- * Enterprise-Grade Image Component
+ * Enterprise-Grade Image Component with Cloudinary CDN
+ * 
+ * CRITICAL FIX: Migrated from Next.js Image Optimization to Cloudinary
+ * Next.js optimization on Render was causing 60-120s load times per image
  * 
  * Features:
+ * - Cloudinary CDN for instant image delivery
  * - Automatic WebP/AVIF conversion
  * - Lazy loading with blur placeholder
  * - Responsive images (srcset)
- * - CDN optimization
  * - Core Web Vitals optimization
  * 
  * Based on best practices from:
@@ -19,6 +22,7 @@
 import Image, { ImageProps } from 'next/image';
 import { useState } from 'react';
 import { Box, Skeleton } from '@chakra-ui/react';
+import { getCloudinaryUrl, localToCloudinary, CloudinaryTransformOptions } from '@/lib/cloudinary';
 
 interface OptimizedImageProps extends Omit<ImageProps, 'onLoad'> {
   src: string;
@@ -53,11 +57,26 @@ export default function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // CRITICAL: Convert to Cloudinary URL for instant delivery
+  // Checks if it's a local path and converts to Cloudinary
+  const optimizedSrc = src.startsWith('/') 
+    ? localToCloudinary(src, {
+        width,
+        height,
+        quality: quality === 85 ? 'auto' : quality,
+        format: 'auto',
+        crop: fill ? 'fill' : 'scale',
+      })
+    : src; // External URLs pass through unchanged
+
   // Default sizes for responsive images
   const defaultSizes = sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw';
 
-  // Fallback image
-  const fallbackSrc = '/images/placeholder.png';
+  // Fallback image via Cloudinary
+  const fallbackSrc = localToCloudinary('/images/placeholder.png', {
+    width: width || 700,
+    height: height || 475,
+  });
 
   const handleLoad = () => {
     setIsLoading(false);
@@ -89,9 +108,9 @@ export default function OptimizedImage({
         />
       )}
 
-      {/* Optimized Image */}
+      {/* Cloudinary-Optimized Image */}
       <Image
-        src={hasError ? fallbackSrc : src}
+        src={hasError ? fallbackSrc : optimizedSrc}
         alt={alt}
         width={fill ? undefined : width}
         height={fill ? undefined : height}
@@ -109,6 +128,7 @@ export default function OptimizedImage({
           transition: 'opacity 0.3s ease-in-out',
           opacity: isLoading ? 0 : 1,
         }}
+        unoptimized // CRITICAL: Images already optimized by Cloudinary
         {...props}
       />
     </Box>

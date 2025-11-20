@@ -26,17 +26,20 @@ const nextConfig = {
   // Disable production source maps for better performance
   productionBrowserSourceMaps: false,
 
-  // Performance optimizations for large dataset
+  // CRITICAL: Disable Next.js Image Optimization - use external CDN instead
+  // Next.js image optimization on Render is too slow (60-120s per image)
+  // All images now served from Cloudinary CDN with automatic optimization
   images: {
-    // Optimize image loading for 666+ item images
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    formats: ['image/webp', 'image/avif'],
-    // Increase cache for large number of images
+    unoptimized: true, // Disable Next.js optimization completely
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    minimumCacheTTL: 31536000,
-    unoptimized: false,
   },
 
   // Redirects for route changes
