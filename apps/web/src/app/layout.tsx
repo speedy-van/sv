@@ -7,6 +7,7 @@ import '@/styles/globals.css';
 import '@/styles/video-background.css';
 import '@/styles/charts.css';
 import '@/styles/responsive-fixes.css';
+import '@/styles/iphone-14-17-fixes.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
