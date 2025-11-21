@@ -261,7 +261,7 @@ Total Paid: £180.00
 
 Track your booking: https://speedy-van.co.uk/track/SV-AI-1234567890-ABC123
 
-Need help? support@speedy-van.co.uk | 01202129764
+Need help? support@speedy-van.co.uk | 01202 129746
 ```
 
 ## Testing
@@ -304,7 +304,7 @@ POST /api/ai/create-booking
 For technical issues:
 - **Developer**: Mr Ahmad Alwakai (Lead Developer)
 - **Email**: support@speedy-van.co.uk
-- **Phone**: 01202129764
+- **Phone**: 01202 129746
 
 ---
 

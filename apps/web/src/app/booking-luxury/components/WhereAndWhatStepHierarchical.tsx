@@ -43,6 +43,7 @@ import type { FormData } from '../hooks/useBookingForm';
 import PropertyTypeSelector, { PropertyType } from './PropertyTypeSelector';
 import PropertySizeSelector from './PropertySizeSelector';
 import RoomBasedInventory from './RoomBasedInventory';
+import AIItemExtractionAssistant, { type AiAddedItemPayload } from './AIItemExtractionAssistant';
 import { getPrePopulatedItems, filterByPriority } from '@/lib/pre-populated-inventory';
 import { ALL_REMOVAL_ITEMS, type RemovalItem } from '@/lib/uk-removal-items-data';
 
@@ -267,6 +268,63 @@ export default function WhereAndWhatStepHierarchical({
     }
   };
 
+  // Handle AI-added items
+  const handleAiAddItems = (aiItems: AiAddedItemPayload[]) => {
+    let updated = [...selectedItemsWithRooms];
+    
+    aiItems.forEach(({ item, quantity, room }) => {
+      const existingIndex = updated.findIndex(i => i.id === item.id);
+      
+      if (existingIndex >= 0) {
+        // Update quantity
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + quantity,
+        };
+      } else {
+        // Add new item
+        updated.push({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          weight: item.weight,
+          quantity,
+          room,
+        });
+      }
+    });
+    
+    setSelectedItemsWithRooms(updated);
+    
+    // Update formData
+    updateFormData('step1', {
+      items: updated.map(i => ({
+        id: i.id,
+        name: i.name,
+        category: i.category,
+        weight: i.weight,
+        quantity: i.quantity,
+        size: 'medium',
+        volume: 1.0,
+        unitPrice: 25,
+        totalPrice: 25 * i.quantity,
+        description: `${i.name} from ${i.room}`,
+      })),
+    });
+    
+    // Auto-calculate pricing
+    if (calculatePricing) {
+      setTimeout(() => calculatePricing(), 500);
+    }
+    
+    toast({
+      title: 'Items added by AI',
+      description: `Added ${aiItems.length} item(s) successfully`,
+      status: 'success',
+      duration: 3000,
+    });
+  };
+
   // Handle removing item
   const handleRemoveItem = (itemId: string) => {
     const updated = selectedItemsWithRooms.filter(item => item.id !== itemId);
@@ -326,6 +384,17 @@ export default function WhereAndWhatStepHierarchical({
   return (
     <Box>
       <VStack spacing={8} align="stretch">
+        {/* AI Assistant - Always visible in all levels */}
+        <AIItemExtractionAssistant
+          propertyType={propertyType}
+          selectedItems={selectedItemsWithRooms.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+          }))}
+          onAddItems={handleAiAddItems}
+        />
+
         {/* Level 1: Property Type Selection */}
         {currentLevel === 1 && (
           <Fade in={currentLevel === 1}>

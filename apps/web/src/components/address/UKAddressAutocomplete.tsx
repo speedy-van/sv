@@ -198,10 +198,16 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
   // This ensures that when navigating back from step 2 to step 1,
   // the address fields are restored with the previously entered values
   useEffect(() => {
-    if (value?.full && value.full !== inputValue) {
-      console.log(`✅ [${id}] Restoring address from formData:`, value.full);
-      setInputValue(value.full);
+    if (value?.full) {
+      setInputValue((prev) => {
+        if (value.full && value.full !== prev) {
+          console.log(`✅ [${id}] Restoring address from formData:`, value.full);
+          return value.full;
+        }
+        return prev;
+      });
     }
+
     // Also sync building details
     if (value?.buildingDetails?.floorNumber !== undefined) {
       setFloorNumber(value.buildingDetails.floorNumber || value?.formatted?.floor || '');
@@ -212,7 +218,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     if (value?.buildingDetails?.hasElevator !== undefined) {
       setHasElevator(value.buildingDetails.hasElevator);
     }
-  }, [value, inputValue, id]);
+  }, [value, id]);
 
   // Debounced search function - Now starts at 2 characters
   const searchAddresses = useCallback(async (query: string) => {

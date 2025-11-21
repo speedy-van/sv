@@ -87,7 +87,7 @@ This guide explains how Speedy Van handles price changes **after** a customer ha
 - **Additional Payment Request**: includes amount due, reason, and secure checkout button.
 - **Refund Notification**: confirms the amount refunded, new order total, and reason.
 
-All templates use the correct support contact: `support@speedy-van.co.uk` and `01202129764`.
+All templates use the correct support contact: `support@speedy-van.co.uk` and `01202 129746`.
 
 ---
 

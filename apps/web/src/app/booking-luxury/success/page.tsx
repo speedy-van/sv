@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams } from 'next/navigation';
 import {
@@ -81,29 +81,33 @@ export default function BookingSuccessPage() {
   // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
-  // Track page view and conversion for Google Ads
+  const hasTrackedInitialConversion = useRef(false);
+
+  // Track page view for Google Ads (only once per page load)
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      // Track page view
-      (window as any).gtag('event', 'page_view', {
-        page_title: 'Booking Success',
-        page_location: window.location.href,
-        page_path: window.location.pathname
-      });
-
-      // Fire conversion event
-      (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-1771563082/7375337919',
-        'value': 1.0,
-        'currency': 'GBP',
-        'transaction_id': sessionId || bookingRef || ''
-      });
-
-      console.log('✅ Google Ads conversion tracked:', {
-        send_to: 'AW-1771563082/7375337919',
-        transaction_id: sessionId || bookingRef || ''
-      });
+    if (hasTrackedInitialConversion.current) {
+      return;
     }
+
+    if (typeof window === 'undefined' || !(window as any).gtag) {
+      return;
+    }
+
+    const transactionId = sessionId || bookingRef || '';
+
+    // Track page view
+    (window as any).gtag('event', 'page_view', {
+      page_title: 'Booking Success',
+      page_location: window.location.href,
+      page_path: window.location.pathname,
+    });
+
+    hasTrackedInitialConversion.current = true;
+
+    console.log('✅ Google Ads page view tracked:', {
+      page: 'Booking Success',
+      transaction_id: transactionId,
+    });
   }, [sessionId, bookingRef]);
 
   // Load Trustpilot script
@@ -226,13 +230,14 @@ export default function BookingSuccessPage() {
           if (!toastShown && !alreadyShowedToast) {
             setToastShown(true);
             safeLocalStorage.setItem(toastTrackingKey || '', 'true');
-          toast({
+            toast({
               title: 'Booking Confirmed!',
-              description: "Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.",
-            status: 'success',
-            duration: 5000,
-            isClosable: true,
-          });
+              description:
+                "Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.",
+              status: 'success',
+              duration: 5000,
+              isClosable: true,
+            });
           }
 
           // Update booking with payment intent (in case webhook didn't fire in test mode)

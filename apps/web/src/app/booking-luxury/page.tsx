@@ -1376,8 +1376,6 @@ export default function BookingLuxuryPage() {
                     formData={formData}
                     updateFormData={updateFormData}
                     errors={errors}
-                    onNext={handleNext}
-                    onBack={() => setCurrentStep(1)}
                     calculatePricing={calculateComprehensivePricing}
                   />
 

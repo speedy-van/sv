@@ -213,7 +213,7 @@ function BookingSuccessContent() {
               </HStack>
               <HStack>
                 <Icon as={FaPhone} color="blue.500" />
-                <Text fontSize="sm">01202129764</Text>
+                <Text fontSize="sm">01202 129746</Text>
               </HStack>
             </VStack>
           </CardBody>
