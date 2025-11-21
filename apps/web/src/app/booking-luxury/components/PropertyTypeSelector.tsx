@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   SimpleGrid,
@@ -10,7 +10,6 @@ import {
   Heading,
   Text,
   Icon,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import type { IconType } from 'react-icons';
 import { FaHome, FaBuilding, FaWarehouse, FaCouch, FaCheck } from 'react-icons/fa';
@@ -59,15 +58,23 @@ export const PROPERTY_TYPES: PropertyTypeOption[] = [
 interface PropertyTypeSelectorProps {
   selectedType?: PropertyType;
   onSelectType: (type: PropertyType) => void;
+  aiAssistantSlot?: React.ReactNode;
 }
 
 export default function PropertyTypeSelector({
   selectedType,
   onSelectType,
+  aiAssistantSlot,
 }: PropertyTypeSelectorProps) {
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
-  const hoverBg = useColorModeValue('gray.50', 'gray.800');
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (aiAssistantSlot) {
+        console.log('🎯 PropertyTypeSelector: aiAssistantSlot ready');
+      } else {
+        console.log('❌ PropertyTypeSelector: aiAssistantSlot missing');
+      }
+    }
+  }, [aiAssistantSlot]);
 
   return (
     <Box>
@@ -94,6 +101,12 @@ export default function PropertyTypeSelector({
           Select the property type to get a tailored list of items
         </Text>
       </VStack>
+
+      {aiAssistantSlot && (
+        <Box mb={8}>
+          {aiAssistantSlot}
+        </Box>
+      )}
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
         {PROPERTY_TYPES.map((type) => (

@@ -6,6 +6,7 @@
 }
 
 /* Fix for SimpleGrid columns not working properly */
+.chakra-simple-grid,
 [data-chakra-component="SimpleGrid"] {
   display: grid !important;
 }
@@ -131,6 +132,7 @@
 }
 
 /* Override any VStack that might be forcing vertical layout */
+.footer-container .chakra-stack,
 .footer-container [data-chakra-component="VStack"] {
   display: flex !important;
   flex-direction: column !important;
@@ -143,6 +145,8 @@
 }
 
 /* Fix for Chakra UI emotion styles that might override grid */
+.chakra-ui-light .chakra-simple-grid,
+.chakra-ui-dark .chakra-simple-grid,
 .chakra-ui-light [data-chakra-component="SimpleGrid"],
 .chakra-ui-dark [data-chakra-component="SimpleGrid"] {
   display: grid !important;

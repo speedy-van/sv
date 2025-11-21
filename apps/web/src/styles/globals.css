@@ -129,6 +129,7 @@ html, body {
 /* Safari 17+ Flex/Grid Fix: Prevent flex items from collapsing in Grid containers */
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari only - target Safari-specific bugs */
+  .chakra-simple-grid > *,
   [data-chakra-simple-grid] > *,
   .css-grid > *,
   .css-simple-grid > * {
@@ -139,6 +140,8 @@ html, body {
   }
   
   /* Force block-level display on main content containers to prevent Safari scroll snapping */
+  .chakra-box[style*="display: block"],
+  .chakra-box,
   [data-chakra-component="Box"][style*="display: block"],
   [data-chakra-component="Box"] {
     display: block !important;
@@ -1496,6 +1499,7 @@ html {
 }
 
 /* Override Chakra Containers and Boxes */
+.chakra-box,
 [data-chakra-component="Box"],
 .chakra-container,
 .chakra-stack,

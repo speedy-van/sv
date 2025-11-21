@@ -93,7 +93,7 @@ services:
       - key: NEXT_PUBLIC_COMPANY_NAME
         value: Speedy Van
       - key: NEXT_PUBLIC_COMPANY_PHONE
-        value: 01202129764
+        value: "01202 129746"
       - key: NEXT_PUBLIC_COMPANY_EMAIL
         value: support@speedy-van.co.uk
       

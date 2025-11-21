@@ -1,6 +1,25 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+import { TextDecoder, TextEncoder } from 'util';
+import { ReadableStream, WritableStream, TransformStream } from 'stream/web';
+
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = TextDecoder;
+}
+if (typeof global.ReadableStream === 'undefined') {
+  global.ReadableStream = ReadableStream;
+}
+if (typeof global.WritableStream === 'undefined') {
+  global.WritableStream = WritableStream;
+}
+if (typeof global.TransformStream === 'undefined') {
+  global.TransformStream = TransformStream;
+}
+
 // Configure React Testing Library for React 18
 import { configure } from '@testing-library/react';
 
@@ -58,6 +77,15 @@ jest.mock('next/navigation', () => ({
 
 // Mock fetch
 global.fetch = jest.fn();
+
+if (typeof global.Request === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Request, Response, Headers, FormData } = require('undici');
+  global.Request = Request;
+  global.Response = Response;
+  global.Headers = Headers;
+  global.FormData = FormData;
+}
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
