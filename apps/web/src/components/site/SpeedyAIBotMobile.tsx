@@ -570,7 +570,8 @@ export default function SpeedyAIBotMobile() {
           {/* Header */}
           <div
             style={{
-              background: 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
+              background: '#3B82F6',
+              backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
               padding: '16px',
               paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
               display: 'flex',

@@ -61,6 +61,7 @@ import {
   FaBuilding,
   FaArrowLeft,
   FaTrash,
+  FaTimes,
 } from 'react-icons/fa';
 import { MdKitchen } from 'react-icons/md';
 import type { IconType } from 'react-icons';
@@ -183,6 +184,7 @@ export default function RoomBasedInventory({
 }: RoomBasedInventoryProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoom, setSelectedRoom] = useState<string>('bedroom');
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const { isOpen: isCustomItemOpen, onToggle: toggleCustomItem } = useDisclosure();
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
 
@@ -200,6 +202,179 @@ export default function RoomBasedInventory({
     );
   }, [propertyType]);
 
+  // Item type hierarchy - defines the order of item types within each room
+  const ITEM_TYPE_HIERARCHY: Record<string, number> = {
+    // Bedroom items (1-20)
+    'bed': 1,
+    'mattress': 2,
+    'bedframe': 3,
+    'bed frame': 3,
+    'headboard': 4,
+    'nightstand': 5,
+    'bedside table': 5,
+    'bedside': 5,
+    'dresser': 6,
+    'chest of drawers': 7,
+    'chest': 7,
+    'wardrobe': 8,
+    'closet': 8,
+    'armoire': 8,
+    'dressing table': 9,
+    'mirror': 10,
+    'lamp': 11,
+    'curtain': 12,
+    'blind': 12,
+    
+    // Living Room items (21-50)
+    'sofa': 21,
+    'couch': 21,
+    'sectional': 22,
+    'loveseat': 23,
+    'chair': 24,
+    'armchair': 25,
+    'recliner': 26,
+    'coffee table': 27,
+    'side table': 28,
+    'end table': 28,
+    'console table': 29,
+    'tv stand': 30,
+    'tv': 30,
+    'television': 30,
+    'entertainment center': 31,
+    'entertainment': 31,
+    'media unit': 31,
+    'bookcase': 32,
+    'bookshelf': 32,
+    'shelving unit': 33,
+    'shelving': 33,
+    'cabinet': 34,
+    'display cabinet': 35,
+    'ottoman': 36,
+    'footstool': 37,
+    'rug': 38,
+    'carpet': 38,
+    'floor lamp': 39,
+    'table lamp': 40,
+    'wall art': 41,
+    'picture': 41,
+    
+    // Dining Room items (51-70)
+    'dining table': 51,
+    'dining chair': 52,
+    'bench': 54,
+    'sideboard': 55,
+    'buffet': 55,
+    'china cabinet': 56,
+    'hutch': 57,
+    'serving cart': 58,
+    'bar cart': 59,
+    
+    // Kitchen items (71-100)
+    'refrigerator': 71,
+    'fridge': 71,
+    'freezer': 72,
+    'oven': 73,
+    'stove': 74,
+    'range': 74,
+    'cooker': 74,
+    'microwave': 75,
+    'dishwasher': 76,
+    'washing machine': 77,
+    'washer': 77,
+    'dryer': 78,
+    'tumble dryer': 78,
+    'kitchen table': 79,
+    'kitchen island': 80,
+    'kitchen cart': 81,
+    'pantry': 82,
+    'kitchen cabinet': 83,
+    'stand mixer': 84,
+    'mixer': 84,
+    'food processor': 85,
+    'blender': 86,
+    'toaster': 87,
+    'kettle': 88,
+    'coffee maker': 89,
+    
+    // Bathroom items (101-120)
+    'bathtub': 101,
+    'bath': 101,
+    'shower': 102,
+    'shower enclosure': 102,
+    'toilet': 103,
+    'sink': 104,
+    'basin': 104,
+    'vanity': 105,
+    'bathroom cabinet': 106,
+    'medicine cabinet': 107,
+    'towel rack': 108,
+    'towel rail': 108,
+    
+    // Office items (121-140)
+    'desk': 121,
+    'office desk': 121,
+    'workstation': 121,
+    'office chair': 122,
+    'filing cabinet': 124,
+    'file cabinet': 124,
+    'drawer unit': 125,
+    'computer': 128,
+    'monitor': 129,
+    'printer': 130,
+    'scanner': 131,
+    'shredder': 132,
+    
+    // Garden/Outdoor items (141-160)
+    'patio set': 141,
+    'patio': 141,
+    'garden furniture': 142,
+    'garden': 142,
+    'outdoor table': 143,
+    'outdoor chair': 144,
+    'bbq': 145,
+    'grill': 145,
+    'barbecue': 145,
+    'outdoor furniture': 146,
+    'sun lounger': 147,
+    'parasol': 148,
+    'umbrella': 148,
+    'bike': 149,
+    'bicycle': 149,
+    'lawnmower': 150,
+    'lawn mower': 150,
+    'shed': 151,
+    'plant pot': 152,
+    'planter': 152,
+    
+    // Boxes & Packaging (161-180)
+    'box': 161,
+    'small box': 161,
+    'medium box': 162,
+    'large box': 163,
+    'wardrobe box': 164,
+    'container': 165,
+    'storage box': 166,
+    'crate': 167,
+    'packing': 168,
+  };
+
+  // Get item type order based on name
+  const getItemType = (itemName: string): number => {
+    const nameLower = itemName.toLowerCase();
+    
+    // Sort type keys by length (longest first) for better matching
+    const sortedTypeKeys = Object.keys(ITEM_TYPE_HIERARCHY).sort((a, b) => b.length - a.length);
+    
+    for (const typeKey of sortedTypeKeys) {
+      if (nameLower.includes(typeKey)) {
+        return ITEM_TYPE_HIERARCHY[typeKey];
+      }
+    }
+    
+    // Default order for unknown types
+    return 9999;
+  };
+
   // Map items to rooms based on their category
   const getItemsForRoom = useCallback((roomId: string): RemovalItem[] => {
     const categoryMap: Record<string, string[]> = {
@@ -214,21 +389,71 @@ export default function RoomBasedInventory({
     };
 
     const categories = categoryMap[roomId] || [];
-    return availableItems.filter(item => 
+    const filteredItems = availableItems.filter(item => 
       categories.some(cat => item.category.toLowerCase().includes(cat.toLowerCase()))
     );
+
+    // Sort items by type first, then by size within each type
+    const sortedItems = filteredItems.sort((a, b) => {
+      // First: Sort by item type
+      const typeA = getItemType(a.name);
+      const typeB = getItemType(b.name);
+      
+      if (typeA !== typeB) {
+        return typeA - typeB;
+      }
+      
+      // Second: Sort by size within the same type
+      const sizeA = getSizeOrder(a.name);
+      const sizeB = getSizeOrder(b.name);
+      
+      if (sizeA !== 999 && sizeB !== 999) {
+        return sizeA - sizeB;
+      }
+      
+      // If only one has a size order, prioritize it
+      if (sizeA !== 999) return -1;
+      if (sizeB !== 999) return 1;
+      
+      // Third: Sort alphabetically as final fallback
+      return a.name.localeCompare(b.name);
+    });
+
+    console.log(`🔄 Sorted ${roomId} items:`, sortedItems.map((item, idx) => ({
+      position: idx + 1,
+      name: item.name,
+      type: getItemType(item.name),
+      size: getSizeOrder(item.name)
+    })));
+
+    return sortedItems;
   }, [availableItems]);
 
   // Size hierarchy - determines ordering from smallest to largest
   const SIZE_HIERARCHY: Record<string, number> = {
-    // Beds & Mattresses
+    // Beds & Mattresses (smallest to largest)
+    'cot': 0,
+    'toddler bed': 0.5,
+    'single bed': 1,
     'single': 1,
-    'small single': 2,
+    'small single': 1.5,
+    'twin bed': 2,
+    'twin': 2,
+    'double bed': 3,
     'double': 3,
-    'king': 4,
+    'queen bed': 3.5,
+    'queen': 3.5,
+    'king bed': 4,
+    'king size bed': 4,
     'king size': 4,
-    'super king': 5,
+    'king': 4,
+    'super king bed': 5,
+    'super king size bed': 5,
     'super king size': 5,
+    'super king': 5,
+    'california king': 5.5,
+    'bunk bed': 6,
+    'bunk': 6,
     
     // Sofas & Seating
     '1 seat': 1,
@@ -275,10 +500,13 @@ export default function RoomBasedInventory({
   const getSizeOrder = (itemName: string): number => {
     const nameLower = itemName.toLowerCase();
     
+    // Sort size keys by length (longest first) to match "super king size" before "king"
+    const sortedSizeKeys = Object.keys(SIZE_HIERARCHY).sort((a, b) => b.length - a.length);
+    
     // Check for exact matches or partial matches in SIZE_HIERARCHY
-    for (const [sizeKey, order] of Object.entries(SIZE_HIERARCHY)) {
+    for (const sizeKey of sortedSizeKeys) {
       if (nameLower.includes(sizeKey)) {
-        return order;
+        return SIZE_HIERARCHY[sizeKey];
       }
     }
     
@@ -337,6 +565,7 @@ export default function RoomBasedInventory({
       const itemName = item.name.toLowerCase();
       const itemCategory = item.category.toLowerCase();
       const itemId = item.id.toLowerCase();
+      const itemType = getItemType(item.name);
       
       // Check if this is a common item - boost score significantly
       const isCommonItem = COMMON_ITEMS.some(common => 
@@ -365,16 +594,20 @@ export default function RoomBasedInventory({
         if (nameWords.some(w => w.startsWith(term))) score += 40;
       });
       
-      return { item, score, sizeOrder: getSizeOrder(item.name) };
+      return { item, score, itemType: getItemType(item.name), sizeOrder: getSizeOrder(item.name) };
     });
     
-    // Filter items with score > 0, then sort by score DESC and size order ASC
+    // Filter items with score > 0, then sort by score DESC, type, and size order ASC
     return scoredItems
       .filter(({ score }) => score > 0)
       .sort((a, b) => {
         // First sort by relevance score (higher is better)
         if (b.score !== a.score) {
           return b.score - a.score;
+        }
+        // Then sort by item type
+        if (a.itemType !== b.itemType) {
+          return a.itemType - b.itemType;
         }
         // Then sort by size order (smaller first)
         return a.sizeOrder - b.sizeOrder;
@@ -393,6 +626,73 @@ export default function RoomBasedInventory({
     return selectedItems.filter(item => item.room === roomId).length;
   };
 
+  // Get readable type name for grouping
+  const getTypeName = (item: RemovalItem): string => {
+    const nameLower = item.name.toLowerCase();
+    
+    // Bedroom types
+    if (nameLower.includes('bed') && !nameLower.includes('bedside')) return 'Beds & Mattresses';
+    if (nameLower.includes('mattress')) return 'Beds & Mattresses';
+    if (nameLower.includes('wardrobe') || nameLower.includes('closet') || nameLower.includes('armoire')) return 'Wardrobes & Storage';
+    if (nameLower.includes('dresser') || nameLower.includes('chest')) return 'Dressers & Drawers';
+    if (nameLower.includes('nightstand') || nameLower.includes('bedside')) return 'Bedside Tables';
+    
+    // Living Room types
+    if (nameLower.includes('sofa') || nameLower.includes('couch') || nameLower.includes('sectional') || nameLower.includes('loveseat')) return 'Sofas & Couches';
+    if (nameLower.includes('chair') && !nameLower.includes('dining')) return 'Chairs & Seating';
+    if (nameLower.includes('table') && !nameLower.includes('dining')) return 'Tables';
+    if (nameLower.includes('tv') || nameLower.includes('television') || nameLower.includes('entertainment')) return 'TV & Entertainment';
+    if (nameLower.includes('bookcase') || nameLower.includes('bookshelf') || nameLower.includes('shelving')) return 'Shelving & Storage';
+    
+    // Dining Room types
+    if (nameLower.includes('dining table')) return 'Dining Tables';
+    if (nameLower.includes('dining chair') || (nameLower.includes('chair') && item.category.toLowerCase().includes('dining'))) return 'Dining Chairs';
+    if (nameLower.includes('sideboard') || nameLower.includes('buffet') || nameLower.includes('china cabinet')) return 'Storage & Display';
+    
+    // Kitchen types
+    if (nameLower.includes('fridge') || nameLower.includes('refrigerator') || nameLower.includes('freezer')) return 'Refrigeration';
+    if (nameLower.includes('oven') || nameLower.includes('stove') || nameLower.includes('range') || nameLower.includes('cooker')) return 'Cooking Appliances';
+    if (nameLower.includes('washing') || nameLower.includes('washer') || nameLower.includes('dryer') || nameLower.includes('dishwasher')) return 'Laundry & Cleaning';
+    if (nameLower.includes('mixer') || nameLower.includes('blender') || nameLower.includes('toaster') || nameLower.includes('kettle')) return 'Small Appliances';
+    
+    // Bathroom types
+    if (nameLower.includes('bath') || nameLower.includes('shower')) return 'Bath & Shower';
+    if (nameLower.includes('toilet') || nameLower.includes('sink') || nameLower.includes('basin')) return 'Sanitary Fixtures';
+    if (nameLower.includes('vanity') || nameLower.includes('cabinet')) return 'Storage & Vanity';
+    
+    // Office types
+    if (nameLower.includes('desk')) return 'Desks & Workstations';
+    if (nameLower.includes('chair') && item.category.toLowerCase().includes('office')) return 'Office Chairs';
+    if (nameLower.includes('filing') || nameLower.includes('cabinet')) return 'Filing & Storage';
+    if (nameLower.includes('computer') || nameLower.includes('monitor') || nameLower.includes('printer')) return 'Electronics';
+    
+    // Garden types
+    if (nameLower.includes('patio') || nameLower.includes('garden') || nameLower.includes('outdoor')) return 'Outdoor Furniture';
+    if (nameLower.includes('bbq') || nameLower.includes('grill')) return 'BBQ & Grills';
+    if (nameLower.includes('bike') || nameLower.includes('bicycle') || nameLower.includes('lawnmower')) return 'Garden Equipment';
+    
+    // Boxes
+    if (nameLower.includes('box') || nameLower.includes('container') || nameLower.includes('crate')) return 'Boxes & Containers';
+    
+    // Default
+    return 'Other Items';
+  };
+
+  // Group items by type
+  const groupItemsByType = (items: RemovalItem[]): Map<string, RemovalItem[]> => {
+    const grouped = new Map<string, RemovalItem[]>();
+    
+    items.forEach(item => {
+      const typeName = getTypeName(item);
+      if (!grouped.has(typeName)) {
+        grouped.set(typeName, []);
+      }
+      grouped.get(typeName)!.push(item);
+    });
+    
+    return grouped;
+  };
+
   const currentRoomItems = useMemo(() => {
     // If there's a search query, search across ALL items, not just current room
     if (searchQuery.trim()) {
@@ -403,6 +703,41 @@ export default function RoomBasedInventory({
     const roomItems = getItemsForRoom(selectedRoom);
     return roomItems;
   }, [selectedRoom, searchQuery, getItemsForRoom, filterItemsBySearch, availableItems]);
+
+  const groupedCurrentRoomItems = useMemo(() => {
+    return groupItemsByType(currentRoomItems);
+  }, [currentRoomItems]);
+
+  // Toggle category open/close
+  const toggleCategory = (categoryKey: string) => {
+    setOpenCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryKey)) {
+        newSet.delete(categoryKey);
+      } else {
+        newSet.add(categoryKey);
+      }
+      return newSet;
+    });
+  };
+
+  // Check if category is open
+  const isCategoryOpen = (categoryKey: string): boolean => {
+    return openCategories.has(categoryKey);
+  };
+
+  // Expand all categories
+  const expandAllCategories = () => {
+    const allCategories = Array.from(groupedCurrentRoomItems.keys()).map(
+      typeName => `${selectedRoom}-${typeName}`
+    );
+    setOpenCategories(new Set(allCategories));
+  };
+
+  // Collapse all categories
+  const collapseAllCategories = () => {
+    setOpenCategories(new Set());
+  };
 
   const selectionStats = useMemo(() => {
     if (!selectedItems.length) {
@@ -444,35 +779,56 @@ export default function RoomBasedInventory({
               right={{ base: '20px', md: '30px' }}
               zIndex={1500}
             >
-              <Box
+              <VStack
                 as="button"
                 onClick={toggleSummary}
-                bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                bg="black"
                 color="white"
-                borderRadius="full"
-                minW={{ base: '64px', md: '72px' }}
-                minH={{ base: '64px', md: '72px' }}
-                px={{ base: '12px', md: '16px' }}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
+                borderRadius="2xl"
+                w={{ base: '85px', md: '95px' }}
+                h={{ base: '85px', md: '95px' }}
+                spacing={1}
+                justify="center"
                 cursor="pointer"
-                boxShadow="0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)"
+                boxShadow="0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px white"
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                border="3px solid white"
                 _hover={{
-                  transform: 'scale(1.1) translateY(-4px)',
-                  boxShadow: '0 12px 32px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                  transform: 'scale(1.1)',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.7), 0 0 0 3px white'
                 }}
                 _active={{
-                  transform: 'scale(1.05) translateY(-2px)'
+                  transform: 'scale(1.05)'
                 }}
               >
-                <Icon as={FaBox} boxSize={{ base: 5, md: 6 }} mb={1} />
-                <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" whiteSpace="nowrap">
-                  {selectionStats.totalItems}
+                {/* Toggle Icon */}
+                <Icon 
+                  as={isSummaryExpanded ? FaTimes : FaChevronUp} 
+                  boxSize={{ base: 6, md: 7 }} 
+                  color="white"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+                />
+                
+                {/* Items Count */}
+                <HStack spacing={1}>
+                  <Icon as={FaBox} boxSize={{ base: 3, md: 4 }} />
+                  <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="black" lineHeight="1">
+                    {selectionStats.totalItems}
+                  </Text>
+                </HStack>
+                
+                {/* Label */}
+                <Text 
+                  fontSize={{ base: 'xs', md: 'sm' }} 
+                  fontWeight="black" 
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                  color="white"
+                  textShadow="0 2px 4px rgba(0,0,0,0.4)"
+                >
+                  {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
                 </Text>
-              </Box>
+              </VStack>
             </Box>
 
             {/* Expanded Details Panel */}
@@ -500,7 +856,7 @@ export default function RoomBasedInventory({
                     const RoomIcon = ROOM_CATEGORY_LOOKUP[item.room]?.icon ?? FaBox;
                     return (
                       <Box
-                        key={`summary-${item.id}-${index}`}
+                        key={`summary-${item.id}-${item.room}-${index}`}
                         bg="rgba(15, 23, 42, 0.8)"
                         borderRadius="xl"
                         overflow="hidden"
@@ -518,9 +874,10 @@ export default function RoomBasedInventory({
                           <Box
                             w="100%"
                             position="relative"
-                            paddingBottom="75%"
-                            bg="rgba(0, 0, 0, 0.3)"
+                            h="220px"
+                            bg="white"
                             overflow="hidden"
+                            borderRadius="md"
                           >
                             {fullItem?.image ? (
                               <NextImage
@@ -529,7 +886,7 @@ export default function RoomBasedInventory({
                                 fill
                                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                                 style={{
-                                  objectFit: 'cover',
+                                  objectFit: 'contain',
                                   objectPosition: 'center',
                                 }}
                               />
@@ -848,8 +1205,8 @@ export default function RoomBasedInventory({
           <TabPanels>
             {relevantRooms.map((room) => (
               <TabPanel key={room.id} px={0}>
-                <VStack spacing={4} align="stretch">
-                  {/* Items Grid */}
+                <VStack spacing={6} align="stretch">
+                  {/* Items by Category */}
                   {currentRoomItems.length === 0 ? (
                     <Card variant="outline">
                       <CardBody>
@@ -858,15 +1215,17 @@ export default function RoomBasedInventory({
                         </Text>
                       </CardBody>
                     </Card>
-                  ) : (
-                    <SimpleGrid 
-                      columns={{ base: 2, sm: 2, md: 2, lg: 3, xl: 4 }} 
-                      spacing={{ base: 3, md: 4 }}
-                      w="full"
-                    >
-                      {currentRoomItems.map((item, index) => {
-                        const quantity = getItemQuantity(item.id);
-                        const isSelected = quantity > 0;
+                  ) : searchQuery.trim() ? (
+                    // If searching, show flat list without grouping
+                    <Box>
+                      <SimpleGrid 
+                        columns={{ base: 2, sm: 2, md: 2, lg: 3, xl: 4 }} 
+                        spacing={{ base: 3, md: 4 }}
+                        w="full"
+                      >
+                        {currentRoomItems.map((item, index) => {
+                          const quantity = getItemQuantity(item.id);
+                          const isSelected = quantity > 0;
 
                         return (
                           <Card
@@ -890,16 +1249,16 @@ export default function RoomBasedInventory({
                               <VStack spacing={3} align="stretch">
                                 {/* Item Image */}
                                 <Box
-                                  h="80px"
-                                  minH="80px"
-                                  bg="gray.100"
+                                  h="160px"
+                                  minH="160px"
+                                  bg="white"
                                   borderRadius="md"
                                   overflow="hidden"
                                   position="relative"
                                   flexShrink={0}
                                   sx={{
-                                    minHeight: '80px !important',
-                                    height: '80px !important',
+                                    minHeight: '160px !important',
+                                    height: '160px !important',
                                   }}
                                 >
                                   {item.image ? (
@@ -909,7 +1268,7 @@ export default function RoomBasedInventory({
                                       fill
                                       sizes="(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                       style={{
-                                        objectFit: 'cover',
+                                        objectFit: 'contain',
                                       }}
                                     />
                                   ) : (
@@ -977,6 +1336,217 @@ export default function RoomBasedInventory({
                         );
                       })}
                     </SimpleGrid>
+                    </Box>
+                  ) : (
+                    // If not searching, show grouped by type
+                    <>
+                      {/* Expand/Collapse All Buttons */}
+                      <HStack spacing={2} justify="flex-end" mb={4}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          colorScheme={room.color}
+                          onClick={expandAllCategories}
+                          leftIcon={<FaChevronDown />}
+                        >
+                          Expand All
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          colorScheme={room.color}
+                          onClick={collapseAllCategories}
+                          leftIcon={<FaChevronUp />}
+                        >
+                          Collapse All
+                        </Button>
+                      </HStack>
+
+                      {Array.from(groupedCurrentRoomItems.entries()).map(([typeName, items], groupIndex) => {
+                        const categoryKey = `${room.id}-${typeName}`;
+                        const isOpen = isCategoryOpen(categoryKey);
+                        
+                        return (
+                        <Box key={`${room.id}-${typeName}-${groupIndex}`}>
+                          {/* Type Header - Clickable */}
+                          <HStack 
+                            spacing={3} 
+                            mb={isOpen ? 0 : 3}
+                            pb={2}
+                            borderBottom="2px solid"
+                            borderColor={isOpen ? `${room.color}.400` : `${room.color}.200`}
+                            cursor="pointer"
+                            onClick={() => toggleCategory(categoryKey)}
+                            transition="all 0.3s"
+                            bg={isOpen ? `${room.color}.50` : 'transparent'}
+                            _dark={{
+                              bg: isOpen ? `${room.color}.900` : 'transparent'
+                            }}
+                            _hover={{
+                              bg: `${room.color}.50`,
+                              _dark: { bg: `${room.color}.900` },
+                              borderColor: `${room.color}.400`
+                            }}
+                            p={3}
+                            borderRadius="md"
+                            boxShadow={isOpen ? 'sm' : 'none'}
+                          >
+                            <Icon 
+                              as={isOpen ? FaChevronUp : FaChevronDown}
+                              boxSize={4}
+                              color={`${room.color}.500`}
+                              transition="transform 0.2s"
+                            />
+                            <Icon 
+                              as={room.icon} 
+                              boxSize={5} 
+                              color={`${room.color}.500`}
+                            />
+                            <Text 
+                              fontSize="lg" 
+                              fontWeight="bold" 
+                              color={`${room.color}.600`}
+                              _dark={{ color: `${room.color}.300` }}
+                              flex={1}
+                            >
+                              {typeName}
+                            </Text>
+                            <Badge 
+                              colorScheme={room.color} 
+                              borderRadius="full"
+                              px={2}
+                              fontSize="xs"
+                            >
+                              {items.length}
+                            </Badge>
+                          </HStack>
+
+                          {/* Items Grid for this type - Collapsible */}
+                          <Collapse in={isOpen} animateOpacity>
+                            <SimpleGrid 
+                              columns={{ base: 2, sm: 2, md: 2, lg: 3, xl: 4 }} 
+                              spacing={{ base: 3, md: 4 }}
+                              w="full"
+                              mt={3}
+                            >
+                              {items.map((item, index) => {
+                              const quantity = getItemQuantity(item.id);
+                              const isSelected = quantity > 0;
+
+                              return (
+                                <Card
+                                  key={`${item.id}-${index}`}
+                                  variant="outline"
+                                  borderWidth="2px"
+                                  borderColor={isSelected ? 'green.500' : borderColor}
+                                  bg={isSelected ? 'green.50' : bgColor}
+                                  transition="all 0.15s ease-in-out"
+                                  minH="90px"
+                                  h="auto"
+                                  display="flex"
+                                  boxShadow={isSelected ? '0 0 0 1px var(--chakra-colors-green-500)' : 'none'}
+                                  sx={{
+                                    WebkitMinContent: 'min-content',
+                                    minHeight: '90px !important',
+                                    height: 'auto !important',
+                                  }}
+                                >
+                                  <CardBody p={3}>
+                                    <VStack spacing={3} align="stretch">
+                                      {/* Item Image */}
+                                      <Box
+                                        h="160px"
+                                        minH="160px"
+                                        bg="white"
+                                        borderRadius="md"
+                                        overflow="hidden"
+                                        position="relative"
+                                        flexShrink={0}
+                                        sx={{
+                                          minHeight: '160px !important',
+                                          height: '160px !important',
+                                        }}
+                                      >
+                                        {item.image ? (
+                                          <NextImage
+                                            src={item.image}
+                                            alt={item.name}
+                                            fill
+                                            sizes="(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                            style={{
+                                              objectFit: 'contain',
+                                            }}
+                                          />
+                                        ) : (
+                                          <Box
+                                            w="100%"
+                                            h="100%"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                            bg="gray.100"
+                                          >
+                                            <Icon as={room.icon} boxSize={8} color="gray.400" />
+                                          </Box>
+                                        )}
+                                      </Box>
+
+                                      {/* Item Name */}
+                                      <Text fontSize="sm" fontWeight="semibold" noOfLines={2} minH="40px">
+                                        {item.name}
+                                      </Text>
+
+                                      {/* Weight Badge */}
+                                      <Badge colorScheme="gray" fontSize="xs">
+                                        {item.weight}kg
+                                      </Badge>
+
+                                      {/* Quantity Controls */}
+                                      <VStack align="stretch" spacing={2}>
+                                        <Tooltip
+                                          label={
+                                            isSelected
+                                              ? 'Tap to add one more'
+                                              : 'Add this item to your move'
+                                          }
+                                          hasArrow
+                                        >
+                                          <Button
+                                            leftIcon={<FaPlus />}
+                                            size="sm"
+                                            colorScheme={isSelected ? 'green' : room.color}
+                                            variant={isSelected ? 'solid' : 'outline'}
+                                            onClick={() =>
+                                              isSelected
+                                                ? onUpdateQuantity(item.id, quantity + 1)
+                                                : onAddItem(item, room.id, 1)
+                                            }
+                                          >
+                                            {isSelected ? `Added (${quantity})` : 'Add'}
+                                          </Button>
+                                        </Tooltip>
+                                        {isSelected && (
+                                          <Button
+                                            size="xs"
+                                            variant="ghost"
+                                            colorScheme="red"
+                                            onClick={() => onRemoveItem(item.id)}
+                                          >
+                                            Remove
+                                          </Button>
+                                        )}
+                                      </VStack>
+                                    </VStack>
+                                  </CardBody>
+                                </Card>
+                              );
+                              })}
+                            </SimpleGrid>
+                          </Collapse>
+                        </Box>
+                        );
+                      })}
+                    </>
                   )}
 
                   {/* Add Custom Item Section */}

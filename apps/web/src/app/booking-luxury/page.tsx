@@ -102,6 +102,21 @@ export default function BookingLuxuryPage() {
   }, []);
   
 
+  /**
+   * CRITICAL: Booking form state management
+   * 
+   * formData is stored in React state ONLY (not localStorage)
+   * This ensures:
+   * 1. Address data persists when navigating between steps
+   * 2. Data is cleared when the booking page is closed/refreshed
+   * 3. No customer data leaks between different bookings on the same computer
+   * 
+   * Customer service can safely use this on shared computers because:
+   * - Data exists only during the active browser tab session
+   * - Closing the tab or refreshing clears all data
+   * - No addresses are stored permanently
+   * - Each booking is isolated
+   */
   const {
     formData,
     updateFormData,
@@ -947,65 +962,55 @@ export default function BookingLuxuryPage() {
                   </VStack>
                 </HStack>
 
-                {/* Right: Call Button */}
-                <Button
+                {/* Right: Premium Call Icon Button */}
+                <IconButton
                   as="a"
                   href="tel:+441202129746"
+                  aria-label="Call Speedy Van"
+                  icon={<Icon as={FaPhone} boxSize={{ base: 5, md: 6 }} />}
                   onClick={() => {
                     if (typeof window !== 'undefined' && (window as any).gtag) {
                       (window as any).gtag('event', 'conversion', {
                         'send_to': 'AW-17715630822/phone_call_conversion',
                         'event_category': 'engagement',
-                        'event_label': 'booking_luxury_call_button',
-                        'event_callback': () => {
-                          console.log('✅ Call conversion tracked from booking-luxury');
-                        }
+                        'event_label': 'booking_luxury_call_icon',
                       });
                     }
                   }}
-                  size={{ base: 'sm', md: 'md' }}
-                  h={{ base: '42px', md: '48px' }}
-                  px={{ base: 4, md: 7 }}
-                  bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
+                  size={{ base: 'lg', md: 'xl' }}
+                  bgGradient="linear(to-br, #10b981, #059669)"
                   color="white"
-                  fontWeight="700"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  boxShadow="0 4px 20px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-                  leftIcon={<Icon as={FaPhone} boxSize={{ base: 4, md: 5 }} />}
-                  borderRadius="xl"
-                  border="1px solid"
-                  borderColor="rgba(255, 255, 255, 0.2)"
+                  borderRadius="full"
+                  border="3px solid"
+                  borderColor="white"
+                  boxShadow="0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)"
                   position="relative"
-                  overflow="hidden"
-                  _hover={{
-                    bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                    transform: 'translateY(-3px)',
-                    boxShadow: '0 8px 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-                    textDecoration: 'none',
-                  }}
-                  _active={{
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.5)',
-                  }}
-                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  overflow="visible"
+                  transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                   _before={{
                     content: '""',
                     position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                    transition: 'left 0.5s',
+                    inset: '-4px',
+                    borderRadius: 'full',
+                    padding: '4px',
+                    background: 'linear-gradient(135deg, #10b981, #059669, #047857)',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude',
+                    opacity: 0.5,
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                   }}
-                  sx={{
-                    '&:hover::before': {
-                      left: '100%',
-                    }
+                  _hover={{
+                    transform: 'scale(1.15) rotate(-5deg)',
+                    bgGradient: "linear(to-br, #059669, #047857)",
+                    boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)',
+                    borderWidth: '4px'
                   }}
-                >
-                  Call Now
-                </Button>
+                  _active={{
+                    transform: 'scale(1.05) rotate(0deg)',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(0,0,0,0.2)'
+                  }}
+                />
               </Flex>
 
               {/* Bottom: Progress Steps - Enhanced Design */}
@@ -1202,25 +1207,57 @@ export default function BookingLuxuryPage() {
                   <Card 
                     bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
                     backdropFilter="blur(20px)"
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor="rgba(168, 85, 247, 0.4)"
-                    boxShadow="0 8px 32px rgba(168, 85, 247, 0.3)"
+                    borderRadius="2xl"
+                    border="3px solid"
+                    borderColor="rgba(168, 85, 247, 0.5)"
+                    boxShadow="0 10px 40px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
+                    position="relative"
+                    overflow="visible"
+                    _before={{
+                      content: '""',
+                      position: 'absolute',
+                      inset: '-4px',
+                      borderRadius: '2xl',
+                      padding: '4px',
+                      background: 'linear-gradient(135deg, #a855f7, #9333ea, #7e22ce)',
+                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                      WebkitMaskComposite: 'xor',
+                      maskComposite: 'exclude',
+                      opacity: 0.4,
+                    }}
                   >
-                    <CardBody p={{ base: 4, md: 6 }}>
-                      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-                        <VStack spacing={2} textAlign="center">
-                          <Heading size={{ base: "md", md: "lg" }} color="white">
+                    <CardBody p={{ base: 5, md: 7 }}>
+                      <VStack spacing={{ base: 5, md: 7 }} align="stretch">
+                        <VStack spacing={3} textAlign="center">
+                          <Heading 
+                            size={{ base: "lg", md: "xl" }} 
+                            bgGradient="linear(to-r, #a855f7, #ec4899)"
+                            bgClip="text"
+                            fontWeight="black"
+                            letterSpacing="tight"
+                          >
                             📅 When do you need the move?
                           </Heading>
-                          <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
+                          <Text 
+                            color="gray.400" 
+                            fontSize={{ base: "md", md: "lg" }}
+                            fontWeight="medium"
+                          >
                             Select your preferred date and time
                           </Text>
                         </VStack>
 
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
                           <Box position="relative" style={{ zIndex: 10 }}>
-                            <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>📅 Select Date</Text>
+                            <Text 
+                              color="white" 
+                              fontSize={{ base: "sm", md: "md" }} 
+                              mb={2}
+                              fontWeight="bold"
+                              letterSpacing="wide"
+                            >
+                              📅 Select Date
+                            </Text>
                             <input
                               type="date"
                               value={formData.step1.pickupDate || ''}
@@ -1256,16 +1293,20 @@ export default function BookingLuxuryPage() {
                               className="booking-date-input"
                               style={{
                                 width: '100%',
-                                padding: '12px',
+                                padding: '14px 16px',
                                 fontSize: '16px',
-                                borderRadius: '12px',
-                                border: '2px solid rgba(59, 130, 246, 0.4)',
-                                backgroundColor: 'rgba(26, 26, 26, 0.8)',
+                                borderRadius: '16px',
+                                border: '3px solid transparent',
+                                backgroundImage: 'linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)), linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                backgroundOrigin: 'border-box',
+                                backgroundClip: 'padding-box, border-box',
                                 color: 'white',
-                                fontWeight: '500',
+                                fontWeight: '600',
                                 colorScheme: 'dark',
                                 cursor: 'pointer',
                                 outline: 'none',
+                                transition: 'all 0.3s',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                               }}
                             />
                             {errors['step1.pickupDate'] && (
@@ -1274,7 +1315,15 @@ export default function BookingLuxuryPage() {
                           </Box>
 
                           <Box position="relative" style={{ zIndex: 9 }}>
-                            <Text color="white" fontSize={{ base: "sm", md: "md" }} mb={2}>⏰ Select Time</Text>
+                            <Text 
+                              color="white" 
+                              fontSize={{ base: "sm", md: "md" }} 
+                              mb={2}
+                              fontWeight="bold"
+                              letterSpacing="wide"
+                            >
+                              ⏰ Select Time
+                            </Text>
                             <select
                               value={formData.step1.pickupTimeSlot || ''}
                               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1286,21 +1335,24 @@ export default function BookingLuxuryPage() {
                               className="booking-time-select"
                               style={{
                                 width: '100%',
-                                padding: '12px',
+                                padding: '14px 16px',
                                 fontSize: '16px',
-                                borderRadius: '12px',
-                                border: '2px solid rgba(59, 130, 246, 0.5)',
-                                backgroundColor: 'white',
+                                borderRadius: '16px',
+                                border: '3px solid transparent',
+                                backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                backgroundOrigin: 'border-box',
+                                backgroundClip: 'padding-box, border-box',
                                 color: '#1f2937',
-                                fontWeight: '600',
+                                fontWeight: '700',
                                 cursor: 'pointer',
                                 outline: 'none',
                                 appearance: 'none',
-                                backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
                                 backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 12px center',
-                                backgroundSize: '20px',
-                                paddingRight: '40px',
+                                backgroundPosition: 'right 16px center',
+                                backgroundSize: '24px',
+                                paddingRight: '48px',
+                                transition: 'all 0.3s',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                               }}
                             >
                               <option value="">Choose a time</option>

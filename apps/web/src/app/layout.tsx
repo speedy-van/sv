@@ -4,12 +4,9 @@ import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import '@/styles/critical.css';
 import '@/styles/globals.css';
-import '@/styles/mobile-enhancements.css';
-import '@/styles/mobile-fixes.css';
 import '@/styles/video-background.css';
 import '@/styles/charts.css';
 import '@/styles/responsive-fixes.css';
-import '@/styles/mobile-viewport-fixes.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
@@ -23,6 +20,7 @@ import SchemaProvider from '@/components/Schema/SchemaProvider';
 import { VisitorTracker } from '@/components/VisitorTracker';
 import { StructuredData } from '@/components/StructuredData';
 import { FloatingCallButton } from '@/components/mobile/FloatingCallButton';
+import { IOSViewportFix } from '@/components/mobile/IOSViewportFix';
 import {
   APP_BASE_URL,
   BRAND_NAME,
@@ -206,6 +204,7 @@ export default async function RootLayout({
                   `,
                 }}
               />
+              <IOSViewportFix />
               {children}
               <FloatingCallButton />
             </ConsentProvider>
