@@ -437,7 +437,25 @@ export function useBookingForm() {
     setErrors({});
   }, []);
 
+  /**
+   * CRITICAL: Reset form data to initial state
+   * 
+   * This should ONLY be called when:
+   * 1. Booking is successfully completed (after payment success)
+   * 2. Customer service explicitly cancels/abandons the booking
+   * 3. Customer explicitly starts a new booking
+   * 
+   * DO NOT call this when:
+   * - Navigating between steps (Step 1 ↔ Step 2)
+   * - Editing items or addresses
+   * - Calculating pricing
+   * 
+   * Customer service uses the same computer for multiple customers,
+   * so we reset after each completed booking to prevent data leakage.
+   * However, we preserve data during the active booking session.
+   */
   const resetForm = useCallback(() => {
+    console.log('🔄 Resetting form data - Starting new booking session');
     setFormData(initialFormData);
     setErrors({});
   }, []);

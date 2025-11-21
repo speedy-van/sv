@@ -189,22 +189,30 @@ export default function PropertySizeSelector({
         </Text>
       </VStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+      <SimpleGrid 
+        columns={{ base: 1, md: 2, lg: 3 }} 
+        spacing={{ base: 4, md: 5, lg: 6 }}
+        w="100%"
+      >
         {sizes.map((size) => (
           <Card
             key={size.id}
             variant="outline"
             cursor="pointer"
-            borderWidth="3px"
+            borderWidth={{ base: "2px", md: "3px" }}
             borderColor={selectedSize === size.id ? 'blue.400' : 'whiteAlpha.200'}
             bg={selectedSize === size.id ? 'blue.900' : 'whiteAlpha.50'}
-            borderRadius="2xl"
+            borderRadius={{ base: "xl", md: "2xl" }}
             overflow="hidden"
             position="relative"
             boxShadow={selectedSize === size.id ? '0 0 30px rgba(59, 130, 246, 0.4)' : 'none'}
+            minH={{ base: "140px", md: "160px", lg: "180px" }}
+            h="auto"
+            display="flex"
+            flexDirection="column"
             _hover={{
               bg: selectedSize === size.id ? 'blue.800' : 'whiteAlpha.100',
-              transform: 'translateY(-4px) scale(1.02)',
+              transform: { base: 'translateY(-2px)', md: 'translateY(-4px) scale(1.02)' },
               boxShadow: selectedSize === size.id 
                 ? '0 0 40px rgba(59, 130, 246, 0.6)'
                 : '0 8px 20px rgba(0,0,0,0.4)',
@@ -213,18 +221,24 @@ export default function PropertySizeSelector({
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             onClick={() => onSelectSize(size.id)}
           >
-            <CardBody py={6}>
-              <VStack spacing={4} align="stretch">
-                <HStack justify="space-between" align="start">
+            <CardBody py={{ base: 4, md: 6 }} px={{ base: 4, md: 6 }}>
+              <VStack spacing={{ base: 3, md: 4 }} align="stretch">
+                <HStack 
+                  justify="space-between" 
+                  align="center"
+                  flexWrap="nowrap"
+                  w="100%"
+                >
                   <Box
-                    p={3}
+                    p={{ base: 2, md: 3 }}
                     borderRadius="xl"
                     bg={selectedSize === size.id ? 'blue.800' : 'whiteAlpha.100'}
                     transition="all 0.3s"
+                    flexShrink={0}
                   >
                     <Icon
                       as={size.icon}
-                      boxSize={{ base: 10, md: 12 }}
+                      boxSize={{ base: 8, md: 10, lg: 12 }}
                       color={selectedSize === size.id ? 'blue.300' : 'blue.400'}
                       filter={selectedSize === size.id ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.6))' : 'none'}
                       transition="all 0.3s"
@@ -233,34 +247,39 @@ export default function PropertySizeSelector({
                   {size.recommendedItems && (
                     <Badge 
                       colorScheme={selectedSize === size.id ? 'purple' : 'blue'}
-                      fontSize={{ base: 'sm', md: 'md' }}
-                      px={4}
-                      py={2}
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      px={{ base: 2, md: 3, lg: 4 }}
+                      py={{ base: 1, md: 1.5, lg: 2 }}
                       borderRadius="full"
                       fontWeight="800"
                       letterSpacing="wide"
                       boxShadow={selectedSize === size.id ? '0 0 15px rgba(168, 85, 247, 0.4)' : 'none'}
+                      flexShrink={0}
+                      whiteSpace="nowrap"
                     >
-                      ~{size.recommendedItems} items
+                      ~{size.recommendedItems}
                     </Badge>
                   )}
                 </HStack>
                 
                 <Heading 
-                  size={{ base: "md", md: "lg" }}
+                  size={{ base: "sm", md: "md", lg: "lg" }}
                   color="white"
                   fontWeight="800"
                   letterSpacing="tight"
+                  noOfLines={1}
                 >
                   {size.name}
                 </Heading>
                 
                 {size.description && (
                   <Text 
-                    fontSize={{ base: "sm", md: "md" }}
+                    fontSize={{ base: "xs", md: "sm" }}
                     color="whiteAlpha.800"
                     fontWeight="500"
                     lineHeight="1.5"
+                    noOfLines={2}
+                    minH={{ base: "32px", md: "40px" }}
                   >
                     {size.description}
                   </Text>
@@ -270,14 +289,14 @@ export default function PropertySizeSelector({
             {selectedSize === size.id && (
               <Box
                 position="absolute"
-                top={3}
-                right={3}
+                top={{ base: 2, md: 3 }}
+                right={{ base: 2, md: 3 }}
                 bg="blue.500"
                 borderRadius="full"
-                p={2}
+                p={{ base: 1.5, md: 2 }}
                 boxShadow="0 0 15px rgba(255,255,255,0.5)"
               >
-                <Icon as={FaCheck} boxSize={4} color="white" />
+                <Icon as={FaCheck} boxSize={{ base: 3, md: 4 }} color="white" />
               </Box>
             )}
           </Card>

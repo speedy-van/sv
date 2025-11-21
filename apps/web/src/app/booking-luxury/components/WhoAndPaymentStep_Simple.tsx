@@ -2,6 +2,7 @@
 
 /**
  * Step 3: Customer Details & Payment - Simplified Version
+ * Updated: 2025-11-20 - Enhanced toggle button UX
  * Clean, modern design like Uber/Airbnb
  */
 
@@ -36,6 +37,8 @@ import {
   FaMinus,
   FaTrash,
   FaBox,
+  FaChevronUp,
+  FaTimes,
 } from 'react-icons/fa';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
@@ -320,34 +323,60 @@ export default function WhoAndPaymentStepSimple({
               right={{ base: '20px', md: '30px' }}
               zIndex={1500}
             >
-              <Box
+              <VStack
                 as="button"
                 onClick={toggleSummary}
-                bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                bg="black"
                 color="white"
-                borderRadius="full"
-                w={{ base: '64px', md: '72px' }}
-                h={{ base: '64px', md: '72px' }}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
+                borderRadius="2xl"
+                w={{ base: '85px', md: '95px' }}
+                h={{ base: '85px', md: '95px' }}
+                spacing={1}
+                justify="center"
                 cursor="pointer"
-                boxShadow="0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)"
+                boxShadow={isSummaryExpanded 
+                  ? "0 8px 24px rgba(239, 68, 68, 0.5), 0 0 0 2px white" 
+                  : "0 8px 24px rgba(16, 185, 129, 0.5), 0 0 0 2px white"}
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                border="3px solid white"
                 _hover={{
-                  transform: 'scale(1.1) translateY(-4px)',
-                  boxShadow: '0 12px 32px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                  transform: 'scale(1.1)',
+                  boxShadow: isSummaryExpanded 
+                    ? '0 12px 32px rgba(239, 68, 68, 0.7), 0 0 0 3px white' 
+                    : '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 0 3px white'
                 }}
                 _active={{
-                  transform: 'scale(1.05) translateY(-2px)'
+                  transform: 'scale(1.05)'
                 }}
               >
-                <Icon as={FaBox} boxSize={{ base: 5, md: 6 }} mb={1} />
-                <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold">
-                  {selectionStats.totalItems}
+                {/* Toggle Icon - Very Clear */}
+                <Icon 
+                  as={isSummaryExpanded ? FaTimes : FaChevronUp} 
+                  boxSize={{ base: 6, md: 7 }} 
+                  color="white"
+                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+                />
+                
+                {/* Items Count with Box Icon */}
+                <HStack spacing={1}>
+                  <Icon as={FaBox} boxSize={{ base: 3, md: 4 }} />
+                  <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="black" lineHeight="1">
+                    {selectionStats.totalItems}
+                  </Text>
+                </HStack>
+                
+                {/* Clear Label Text */}
+                <Text 
+                  fontSize={{ base: 'xs', md: 'sm' }} 
+                  fontWeight="black" 
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                  color="white"
+                  textShadow="0 2px 4px rgba(0,0,0,0.4)"
+                >
+                  {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
                 </Text>
-              </Box>
+              </VStack>
             </Box>
 
             {/* Expanded Details Panel */}

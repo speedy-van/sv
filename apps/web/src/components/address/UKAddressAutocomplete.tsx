@@ -194,6 +194,26 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     setSessionToken(token);
   }, []);
 
+  // CRITICAL FIX: Sync inputValue with value prop changes
+  // This ensures that when navigating back from step 2 to step 1,
+  // the address fields are restored with the previously entered values
+  useEffect(() => {
+    if (value?.full && value.full !== inputValue) {
+      console.log(`✅ [${id}] Restoring address from formData:`, value.full);
+      setInputValue(value.full);
+    }
+    // Also sync building details
+    if (value?.buildingDetails?.floorNumber !== undefined) {
+      setFloorNumber(value.buildingDetails.floorNumber || value?.formatted?.floor || '');
+    }
+    if (value?.buildingDetails?.apartmentNumber !== undefined) {
+      setApartmentNumber(value.buildingDetails.apartmentNumber || value?.formatted?.flatNumber || '');
+    }
+    if (value?.buildingDetails?.hasElevator !== undefined) {
+      setHasElevator(value.buildingDetails.hasElevator);
+    }
+  }, [value, inputValue, id]);
+
   // Debounced search function - Now starts at 2 characters
   const searchAddresses = useCallback(async (query: string) => {
     if (!query || query.trim().length < 2) {

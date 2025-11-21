@@ -2,6 +2,7 @@
 
 /**
  * Hierarchical Items Selection - Enterprise Grade
+ * Updated: 2025-11-20 - Enhanced toggle button UX
  * 
  * 3-Level Hierarchy:
  * 1. Property Type (House/Office/Storage/Single Items)
@@ -35,7 +36,8 @@ import {
   useDisclosure,
   Collapse,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaBox, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaBox, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash } from 'react-icons/fa';
+import NextImage from 'next/image';
 
 import type { FormData } from '../hooks/useBookingForm';
 import PropertyTypeSelector, { PropertyType } from './PropertyTypeSelector';
@@ -207,6 +209,14 @@ export default function WhereAndWhatStepHierarchical({
 
   // Handle adding item
   const handleAddItem = (item: RemovalItem, room: string, quantity: number) => {
+    console.log('🔍 DEBUG handleAddItem - Item received:', {
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      weight: item.weight,
+      room
+    });
+
     // Check if item already exists
     const existingItemIndex = selectedItemsWithRooms.findIndex(i => i.id === item.id);
     
@@ -230,6 +240,7 @@ export default function WhereAndWhatStepHierarchical({
         room,
       };
       updated = [...selectedItemsWithRooms, newItem];
+      console.log('🔍 DEBUG handleAddItem - New item created:', newItem);
     }
 
     setSelectedItemsWithRooms(updated);
@@ -387,8 +398,8 @@ export default function WhereAndWhatStepHierarchical({
         )}
       </VStack>
 
-      {/* Floating Green Button for Selected Items - Show in ALL levels when items exist */}
-      {selectedItemsWithRooms.length > 0 && currentLevel !== 3 && (
+      {/* Floating Black Button for Selected Items - Show in ALL levels when items exist */}
+      {selectedItemsWithRooms.length > 0 && (
         <>
           <Box
             position="fixed"
@@ -396,34 +407,99 @@ export default function WhereAndWhatStepHierarchical({
             right={{ base: '20px', md: '30px' }}
             zIndex={1500}
           >
-            <Box
+            <VStack
               as="button"
               onClick={toggleSummary}
-              bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+              bgGradient={isSummaryExpanded 
+                ? "linear(to-br, #dc2626, #991b1b)" 
+                : "linear(to-br, #10b981, #059669)"}
               color="white"
-              borderRadius="full"
-              w={{ base: '64px', md: '72px' }}
-              h={{ base: '64px', md: '72px' }}
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
+              borderRadius="2xl"
+              w={{ base: '90px', md: '100px' }}
+              h={{ base: '90px', md: '100px' }}
+              spacing={1}
+              justify="center"
               cursor="pointer"
-              boxShadow="0 8px 24px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)"
-              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              boxShadow={isSummaryExpanded 
+                ? "0 10px 30px rgba(239, 68, 68, 0.6), 0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)" 
+                : "0 10px 30px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)"}
+              transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+              border="3px solid"
+              borderColor={isSummaryExpanded ? "#ef4444" : "#10b981"}
+              position="relative"
+              overflow="visible"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                inset: '-4px',
+                borderRadius: '2xl',
+                padding: '4px',
+                background: isSummaryExpanded 
+                  ? 'linear-gradient(135deg, #ef4444, #dc2626, #991b1b)' 
+                  : 'linear-gradient(135deg, #10b981, #059669, #047857)',
+                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+                opacity: 0.6,
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              }}
               _hover={{
-                transform: 'scale(1.1) translateY(-4px)',
-                boxShadow: '0 12px 32px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2)'
+                transform: 'scale(1.12) rotate(2deg)',
+                boxShadow: isSummaryExpanded 
+                  ? '0 15px 40px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6), inset 0 1px 0 rgba(255,255,255,0.3)' 
+                  : '0 15px 40px rgba(16, 185, 129, 0.8), 0 0 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255,255,255,0.3)',
+                borderWidth: '4px'
               }}
               _active={{
-                transform: 'scale(1.05) translateY(-2px)'
+                transform: 'scale(1.05) rotate(0deg)',
+                boxShadow: isSummaryExpanded
+                  ? '0 5px 15px rgba(239, 68, 68, 0.5), inset 0 2px 4px rgba(0,0,0,0.2)'
+                  : '0 5px 15px rgba(16, 185, 129, 0.5), inset 0 2px 4px rgba(0,0,0,0.2)'
               }}
             >
-              <Icon as={FaBox} boxSize={{ base: 5, md: 6 }} mb={1} />
-              <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold">
-                {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
+              {/* Toggle Icon - Premium Design */}
+              <Icon 
+                as={isSummaryExpanded ? FaTimes : FaChevronUp} 
+                boxSize={{ base: 7, md: 8 }} 
+                color="white"
+                filter="drop-shadow(0 3px 6px rgba(0,0,0,0.4))"
+                transition="all 0.3s"
+                _groupHover={{ transform: 'scale(1.1)' }}
+              />
+              
+              {/* Items Count with Premium Badge */}
+              <HStack 
+                spacing={1} 
+                bg="rgba(255,255,255,0.2)" 
+                px={2} 
+                py={0.5} 
+                borderRadius="full"
+                backdropFilter="blur(10px)"
+              >
+                <Icon as={FaBox} boxSize={{ base: 4, md: 5 }} />
+                <Text 
+                  fontSize={{ base: '2xl', md: '3xl' }} 
+                  fontWeight="black" 
+                  lineHeight="1"
+                  textShadow="0 2px 4px rgba(0,0,0,0.3)"
+                >
+                  {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
+                </Text>
+              </HStack>
+              
+              {/* Premium Label with Enhanced Typography */}
+              <Text 
+                fontSize={{ base: '2xs', md: 'xs' }} 
+                fontWeight="black" 
+                letterSpacing="widest"
+                textTransform="uppercase"
+                color="white"
+                textShadow="0 2px 6px rgba(0,0,0,0.5)"
+                mt={-0.5}
+              >
+                {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
               </Text>
-            </Box>
+            </VStack>
           </Box>
 
           {/* Expanded Details Panel */}
@@ -467,45 +543,221 @@ export default function WhereAndWhatStepHierarchical({
                     </Button>
                   </HStack>
 
-                  <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={3}>
-                    {selectedItemsWithRooms.map((item) => (
-                      <Card
-                        key={item.id}
-                        bg="#0f0f12"
-                        border="1px solid"
-                        borderColor="rgba(168, 85, 247, 0.4)"
-                        size="sm"
-                      >
-                        <Box display={{ base: "block", md: "none" }}>
-                          <CardBody>
-                            <VStack align="stretch" spacing={2}>
-                              <HStack justify="space-between">
-                                <Text color="white" fontWeight="bold" fontSize="sm">
-                                  {item.name}
+                  <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                    {selectedItemsWithRooms.map((item, index) => {
+                      const fullItem = ALL_REMOVAL_ITEMS.find(i => i.id === item.id);
+                      
+                      console.log('🔍 DEBUG Card Display:', {
+                        index,
+                        itemId: item.id,
+                        itemName: item.name,
+                        fullItemFound: !!fullItem,
+                        fullItemName: fullItem?.name,
+                        fullItemImage: fullItem?.image,
+                        matches: item.id === fullItem?.id && item.name === fullItem?.name
+                      });
+
+                      return (
+                        <Card
+                          key={`${item.id}-${item.room}-${index}`}
+                          bg="rgba(15, 15, 18, 0.95)"
+                          border="2px solid"
+                          borderColor="rgba(168, 85, 247, 0.5)"
+                          borderRadius="xl"
+                          overflow="hidden"
+                          boxShadow="0 4px 12px rgba(168, 85, 247, 0.3)"
+                          transition="all 0.3s"
+                          _hover={{
+                            borderColor: "rgba(168, 85, 247, 0.8)",
+                            boxShadow: "0 6px 16px rgba(168, 85, 247, 0.5)",
+                            transform: "translateY(-2px)"
+                          }}
+                        >
+                          <CardBody p={3}>
+                            <VStack spacing={3} align="stretch">
+                              {/* Item Image */}
+                              <Box
+                                position="relative"
+                                w="100%"
+                                h="140px"
+                                bg="white"
+                                borderRadius="lg"
+                                overflow="hidden"
+                              >
+                                {fullItem?.image ? (
+                                  <NextImage
+                                    src={fullItem.image}
+                                    alt={fullItem.name}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    style={{
+                                      objectFit: 'contain',
+                                      objectPosition: 'center',
+                                    }}
+                                  />
+                                ) : (
+                                  <Box
+                                    w="100%"
+                                    h="100%"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                  >
+                                    <Icon as={FaBox} boxSize={8} color="gray.400" />
+                                  </Box>
+                                )}
+                              </Box>
+
+                              {/* Item Details */}
+                              <VStack align="stretch" spacing={2}>
+                                <Text color="white" fontWeight="bold" fontSize="sm" noOfLines={2}>
+                                  {fullItem?.name || item.name}
                                 </Text>
-                                <Badge colorScheme="green">{item.quantity}x</Badge>
+                                <HStack justify="space-between">
+                                  <Badge colorScheme="purple" fontSize="xs">
+                                    {item.room}
+                                  </Badge>
+                                  <Text color="whiteAlpha.600" fontSize="xs" fontWeight="medium">
+                                    {fullItem?.weight || item.weight}kg
+                                  </Text>
+                                </HStack>
+                              </VStack>
+
+                              {/* Quantity Controls */}
+                              <HStack spacing={2} justify="space-between">
+                                <HStack spacing={1} flex={1}>
+                                  <Button
+                                    size="sm"
+                                    colorScheme="red"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      if (item.quantity > 1) {
+                                        const updated = selectedItemsWithRooms.map((i, idx) =>
+                                          idx === index ? { ...i, quantity: i.quantity - 1 } : i
+                                        );
+                                        setSelectedItemsWithRooms(updated);
+                                        updateFormData('step1', {
+                                          items: updated.map(({ id, quantity, room }) => {
+                                            const fullItem = ALL_REMOVAL_ITEMS.find(item => item.id === id);
+                                            const name = fullItem?.name || '';
+                                            const weight = fullItem?.weight || 0;
+                                            const estimatedVolume = weight * 0.05; // تقدير الحجم بناء على الوزن
+                                            const basePrice = 25;
+                                            return {
+                                              id,
+                                              quantity,
+                                              name,
+                                              description: `${name} from ${room}`,
+                                              category: fullItem?.category || '',
+                                              size: 'medium' as const,
+                                              weight,
+                                              volume: estimatedVolume,
+                                              unitPrice: basePrice,
+                                              totalPrice: basePrice * quantity,
+                                              image: fullItem?.image,
+                                              room
+                                            };
+                                          })
+                                        });
+                                      }
+                                    }}
+                                    isDisabled={item.quantity <= 1}
+                                  >
+                                    <Icon as={FaMinus} />
+                                  </Button>
+                                  
+                                  <Text 
+                                    color="white" 
+                                    fontWeight="black" 
+                                    fontSize="xl"
+                                    minW="40px"
+                                    textAlign="center"
+                                  >
+                                    {item.quantity}
+                                  </Text>
+                                  
+                                  <Button
+                                    size="sm"
+                                    colorScheme="green"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      const updated = selectedItemsWithRooms.map((i, idx) =>
+                                        idx === index ? { ...i, quantity: i.quantity + 1 } : i
+                                      );
+                                      setSelectedItemsWithRooms(updated);
+                                      updateFormData('step1', {
+                                        items: updated.map(({ id, quantity, room }) => {
+                                          const fullItem = ALL_REMOVAL_ITEMS.find(item => item.id === id);
+                                          const name = fullItem?.name || '';
+                                          const weight = fullItem?.weight || 0;
+                                          const estimatedVolume = weight * 0.05; // تقدير الحجم بناء على الوزن
+                                          const basePrice = 25;
+                                          return {
+                                            id,
+                                            quantity,
+                                            name,
+                                            description: `${name} from ${room}`,
+                                            category: fullItem?.category || '',
+                                            size: 'medium' as const,
+                                            weight,
+                                            volume: estimatedVolume,
+                                            unitPrice: basePrice,
+                                            totalPrice: basePrice * quantity,
+                                            image: fullItem?.image,
+                                            room
+                                          };
+                                        })
+                                      });
+                                    }}
+                                  >
+                                    <Icon as={FaPlus} />
+                                  </Button>
+                                </HStack>
+
+                                <Button
+                                  size="sm"
+                                  colorScheme="red"
+                                  onClick={() => {
+                                    const updated = selectedItemsWithRooms.filter((_, idx) => idx !== index);
+                                    setSelectedItemsWithRooms(updated);
+                                    updateFormData('step1', {
+                                      items: updated.map(({ id, quantity, room }) => {
+                                        const fullItem = ALL_REMOVAL_ITEMS.find(item => item.id === id);
+                                        const name = fullItem?.name || '';
+                                        const weight = fullItem?.weight || 0;
+                                        const estimatedVolume = weight * 0.05; // تقدير الحجم بناء على الوزن
+                                        const basePrice = 25;
+                                        return {
+                                          id,
+                                          quantity,
+                                          name,
+                                          description: `${name} from ${room}`,
+                                          category: fullItem?.category || '',
+                                          size: 'medium' as const,
+                                          weight,
+                                          volume: estimatedVolume,
+                                          unitPrice: basePrice,
+                                          totalPrice: basePrice * quantity,
+                                          image: fullItem?.image,
+                                          room
+                                        };
+                                      })
+                                    });
+                                    toast({
+                                      title: 'Item removed',
+                                      status: 'success',
+                                      duration: 2000,
+                                    });
+                                  }}
+                                >
+                                  <Icon as={FaTrash} />
+                                </Button>
                               </HStack>
-                              <Text color="whiteAlpha.600" fontSize="xs">
-                                {item.room}
-                              </Text>
                             </VStack>
                           </CardBody>
-                        </Box>
-                        <Box display={{ base: "none", md: "block" }} p={3}>
-                          <VStack align="stretch" spacing={2}>
-                            <HStack justify="space-between">
-                              <Text color="white" fontWeight="bold" fontSize="sm">
-                                {item.name}
-                              </Text>
-                              <Badge colorScheme="green">{item.quantity}x</Badge>
-                            </HStack>
-                            <Text color="whiteAlpha.600" fontSize="xs">
-                              {item.room}
-                            </Text>
-                          </VStack>
-                        </Box>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </SimpleGrid>
                 </VStack>
               </Box>

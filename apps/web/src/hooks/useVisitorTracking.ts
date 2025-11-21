@@ -66,6 +66,9 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
   }, [enabled, trackPageViews]);
 
   const initializeTracking = () => {
+    // Skip if running on server
+    if (typeof window === 'undefined') return;
+    
     // Get or create session ID (expires after 30 minutes of inactivity)
     let sessionId = sessionStorage.getItem('visitor_session_id');
     const sessionTimestamp = sessionStorage.getItem('visitor_session_timestamp');
@@ -106,6 +109,8 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
 
   const trackPageView = async (page: string) => {
     try {
+      // Skip if running on server
+      if (typeof window === 'undefined') return;
       if (!sessionIdRef.current) return;
 
       const deviceInfo = getDeviceInfo();
@@ -114,7 +119,7 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
         sessionId: sessionIdRef.current,
         visitorId: visitorIdRef.current,
         page,
-        referrer: document.referrer || undefined,
+        referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
         ...deviceInfo,
       };
 
@@ -132,6 +137,8 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
 
   const trackAction = async (action: string, actionData?: any) => {
     try {
+      // Skip if running on server
+      if (typeof window === 'undefined') return;
       if (!trackActions || !sessionIdRef.current) return;
 
       const deviceInfo = getDeviceInfo();
