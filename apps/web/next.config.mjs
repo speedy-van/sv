@@ -5,8 +5,8 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client'],
     // Allow fallback for problematic packages
     esmExternals: 'loose',
-    // Optimize bundle size for large data (666+ items)
-    optimizePackageImports: ['@chakra-ui/react', '@chakra-ui/icons', 'framer-motion'],
+    // NOTE: optimizePackageImports caused Chakra UI styles to be tree-shaken differently in production
+    // leaving it disabled to keep Emotion style injection order stable across dev/prod
     // CRITICAL: DISABLE CSS optimizer - it causes CSS not to load on Render production
     optimizeCss: false,
     // Enable faster refresh for large files

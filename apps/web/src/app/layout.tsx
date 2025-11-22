@@ -7,9 +7,10 @@ import '@/styles/globals.css';
 import '@/styles/video-background.css';
 import '@/styles/charts.css';
 import '@/styles/responsive-fixes.css';
+import '@/styles/mobile-enhancements.css';
+import '@/styles/mobile-fixes.css';
 import '@/styles/mobile-viewport-fixes.css';
-import '@/styles/iphone-booking-fixes.css';
-import '@/styles/iphone-step-fixes.css';
+import '@/styles/ios-overrides.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import CookieBanner from '@/components/Consent/CookieBanner';
@@ -23,6 +24,7 @@ import SchemaProvider from '@/components/Schema/SchemaProvider';
 import { VisitorTracker } from '@/components/VisitorTracker';
 import { StructuredData } from '@/components/StructuredData';
 import { FloatingCallButton } from '@/components/mobile/FloatingCallButton';
+import { IOSDeviceClassManager } from '@/components/mobile/IOSDeviceClassManager';
 import { IOSViewportFix } from '@/components/mobile/IOSViewportFix';
 import {
   APP_BASE_URL,
@@ -163,6 +165,7 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className} suppressHydrationWarning translate="no">
+        <IOSDeviceClassManager />
         {/* Google Ads Global Site Tag - Conversion Tracking */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-1771563082"
