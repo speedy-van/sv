@@ -26,16 +26,11 @@ import {
   FormErrorMessage,
   Icon,
   SimpleGrid,
-  IconButton,
-  Image,
   Collapse,
   useDisclosure,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
-  FaPlus,
-  FaMinus,
-  FaTrash,
   FaBox,
   FaChevronUp,
   FaTimes,
@@ -43,6 +38,7 @@ import {
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
+import { SelectableCard } from '@/components/shared/SelectableCard';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -577,104 +573,107 @@ export default function WhoAndPaymentStepSimple({
                     : undefined
                 }
               >
-                {services.map((service) => (
-                  <Box
-                    key={service.id}
-                    className={`price-card price-card-${service.id}`}
-                    flex={isIOSDevice ? '0 0 auto' : undefined}
-                    minW={isIOSDevice ? '75vw' : undefined}
-                    maxW={isIOSDevice ? '320px' : undefined}
-                    scrollSnapAlign={isIOSDevice ? 'start' : undefined}
-                    p={{ base: 3, sm: 4, md: 5 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === service.id ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === service.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange(service.id)}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                    minH={{ base: "160px", sm: "180px", md: "auto" }}
-                  >
-                    {service.popular && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        right={{ base: -1, md: -2 }}
-                        bg="blue.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        Popular
-                      </Badge>
-                    )}
-                    {service.discount && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        left={{ base: -1, md: -2 }}
-                        bg="green.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        {service.discount}
-                      </Badge>
-                    )}
-                    {service.premium && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        left={{ base: -1, md: -2 }}
-                        bg="orange.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        {service.premium}
-                      </Badge>
-                    )}
-                    <VStack spacing={{ base: 2, md: 3 }} align="center" w="full">
-                      <Text fontSize={{ base: "3xl", md: "2xl" }}>{service.icon}</Text>
-                      <Box textAlign="center" w="full">
-                        <Text 
-                          fontSize={{ base: "sm", md: "md" }} 
-                          fontWeight="bold" 
-                          color="white"
-                          noOfLines={1}
-                        >
-                          {service.name}
-                        </Text>
-                        <Text 
-                          fontSize={{ base: "2xs", sm: "xs" }} 
-                          color="gray.400"
-                          noOfLines={2}
-                          lineHeight="1.3"
-                        >
-                          {service.description}
-                        </Text>
-                      </Box>
-                      <Text 
-                        fontSize={{ base: "xl", md: "2xl" }} 
-                        fontWeight="bold" 
-                        color="white"
-                      >
-                        £{service.price.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-                ))}
+                {services.map((service) => {
+                  const isSelected = selectedService === service.id;
+
+                  return (
+                    <SelectableCard
+                      key={service.id}
+                      className={`price-card price-card-${service.id}`}
+                      isSelected={isSelected}
+                      onClick={() => handleServiceChange(service.id)}
+                      flex={isIOSDevice ? '0 0 auto' : undefined}
+                      minW={isIOSDevice ? '75vw' : undefined}
+                      maxW={isIOSDevice ? '320px' : undefined}
+                      scrollSnapAlign={isIOSDevice ? 'start' : undefined}
+                      p={{ base: 4, md: 5 }}
+                      minH={{ base: '180px', md: 'auto' }}
+                    >
+                      <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
+                        <HStack justify="space-between" align="center">
+                          <Box
+                            p={{ base: 2, md: 3 }}
+                            borderRadius="xl"
+                            bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
+                            transition="all 0.3s"
+                            boxShadow={isSelected ? '0 0 15px rgba(59, 130, 246, 0.45)' : 'none'}
+                          >
+                            <Text fontSize={{ base: '2xl', md: '3xl' }} role="img" aria-hidden="true">
+                              {service.icon}
+                            </Text>
+                          </Box>
+                          <Text
+                            fontSize={{ base: 'xl', md: '2xl' }}
+                            fontWeight="extrabold"
+                            color="white"
+                          >
+                            £{service.price.toFixed(2)}
+                          </Text>
+                        </HStack>
+
+                        <Box>
+                          <Text
+                            fontSize={{ base: 'md', md: 'lg' }}
+                            fontWeight="bold"
+                            color="white"
+                            noOfLines={1}
+                          >
+                            {service.name}
+                          </Text>
+                          <Text
+                            fontSize={{ base: 'xs', md: 'sm' }}
+                            color="whiteAlpha.700"
+                            noOfLines={2}
+                            lineHeight="1.4"
+                          >
+                            {service.description}
+                          </Text>
+                        </Box>
+
+                        {(service.popular || service.discount || service.premium) && (
+                          <HStack spacing={2} flexWrap="wrap">
+                            {service.popular && (
+                              <Badge
+                                colorScheme="purple"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                Popular
+                              </Badge>
+                            )}
+                            {service.discount && (
+                              <Badge
+                                colorScheme="green"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                {service.discount}
+                              </Badge>
+                            )}
+                            {service.premium && (
+                              <Badge
+                                colorScheme="orange"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                {service.premium}
+                              </Badge>
+                            )}
+                          </HStack>
+                        )}
+                      </VStack>
+                    </SelectableCard>
+                  );
+                })}
               </Box>
             </VStack>
           </CardBody>

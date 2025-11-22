@@ -4,19 +4,17 @@ import React from 'react';
 import {
   Box,
   SimpleGrid,
-  Card,
-  CardBody,
   VStack,
   HStack,
   Heading,
   Text,
   Badge,
   Icon,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import type { IconType } from 'react-icons';
-import { FaHome, FaBed, FaUsers, FaBuilding, FaWarehouse, FaCheck } from 'react-icons/fa';
+import { FaHome, FaBed, FaUsers, FaBuilding, FaWarehouse } from 'react-icons/fa';
 import { PropertyType } from './PropertyTypeSelector';
+import { SelectableCard } from '@/components/shared/SelectableCard';
 
 export interface PropertySizeOption {
   id: string;
@@ -147,10 +145,6 @@ export default function PropertySizeSelector({
   selectedSize,
   onSelectSize,
 }: PropertySizeSelectorProps) {
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
-  const hoverBg = useColorModeValue('gray.50', 'gray.800');
-
   // Get sizes based on property type
   const sizes = 
     propertyType === 'house' ? HOUSE_SIZES :
@@ -194,35 +188,20 @@ export default function PropertySizeSelector({
         spacing={{ base: 4, md: 5, lg: 6 }}
         w="100%"
       >
-        {sizes.map((size) => (
-          <Card
-            key={size.id}
-            variant="outline"
-            cursor="pointer"
-            borderWidth={{ base: "2px", md: "3px" }}
-            borderColor={selectedSize === size.id ? 'blue.400' : 'whiteAlpha.200'}
-            bg={selectedSize === size.id ? 'blue.900' : 'whiteAlpha.50'}
-            borderRadius={{ base: "xl", md: "2xl" }}
-            overflow="hidden"
-            position="relative"
-            boxShadow={selectedSize === size.id ? '0 0 30px rgba(59, 130, 246, 0.4)' : 'none'}
-            minH={{ base: "140px", md: "160px", lg: "180px" }}
-            h="auto"
-            display="flex"
-            flexDirection="column"
-            _hover={{
-              bg: selectedSize === size.id ? 'blue.800' : 'whiteAlpha.100',
-              transform: { base: 'translateY(-2px)', md: 'translateY(-4px) scale(1.02)' },
-              boxShadow: selectedSize === size.id 
-                ? '0 0 40px rgba(59, 130, 246, 0.6)'
-                : '0 8px 20px rgba(0,0,0,0.4)',
-              borderColor: 'blue.300',
-            }}
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            onClick={() => onSelectSize(size.id)}
-          >
-            <CardBody py={{ base: 4, md: 6 }} px={{ base: 4, md: 6 }}>
-              <VStack spacing={{ base: 3, md: 4 }} align="stretch">
+        {sizes.map((size) => {
+          const isSelected = selectedSize === size.id;
+          return (
+            <SelectableCard
+              key={size.id}
+              isSelected={isSelected}
+              onClick={() => onSelectSize(size.id)}
+              minH={{ base: "140px", md: "160px", lg: "180px" }}
+              p={{ base: 4, md: 6 }}
+              display="flex"
+              flexDirection="column"
+              justifyContent="stretch"
+            >
+              <VStack spacing={{ base: 3, md: 4 }} align="stretch" flex="1">
                 <HStack 
                   justify="space-between" 
                   align="center"
@@ -232,28 +211,28 @@ export default function PropertySizeSelector({
                   <Box
                     p={{ base: 2, md: 3 }}
                     borderRadius="xl"
-                    bg={selectedSize === size.id ? 'blue.800' : 'whiteAlpha.100'}
+                    bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
                     transition="all 0.3s"
                     flexShrink={0}
                   >
                     <Icon
                       as={size.icon}
                       boxSize={{ base: 8, md: 10, lg: 12 }}
-                      color={selectedSize === size.id ? 'blue.300' : 'blue.400'}
-                      filter={selectedSize === size.id ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.6))' : 'none'}
+                      color={isSelected ? 'blue.300' : 'blue.400'}
+                      filter={isSelected ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.6))' : 'none'}
                       transition="all 0.3s"
                     />
                   </Box>
                   {size.recommendedItems && (
                     <Badge 
-                      colorScheme={selectedSize === size.id ? 'purple' : 'blue'}
+                      colorScheme={isSelected ? 'purple' : 'blue'}
                       fontSize={{ base: 'xs', md: 'sm' }}
                       px={{ base: 2, md: 3, lg: 4 }}
                       py={{ base: 1, md: 1.5, lg: 2 }}
                       borderRadius="full"
                       fontWeight="800"
                       letterSpacing="wide"
-                      boxShadow={selectedSize === size.id ? '0 0 15px rgba(168, 85, 247, 0.4)' : 'none'}
+                      boxShadow={isSelected ? '0 0 15px rgba(168, 85, 247, 0.4)' : 'none'}
                       flexShrink={0}
                       whiteSpace="nowrap"
                     >
@@ -285,22 +264,9 @@ export default function PropertySizeSelector({
                   </Text>
                 )}
               </VStack>
-            </CardBody>
-            {selectedSize === size.id && (
-              <Box
-                position="absolute"
-                top={{ base: 2, md: 3 }}
-                right={{ base: 2, md: 3 }}
-                bg="blue.500"
-                borderRadius="full"
-                p={{ base: 1.5, md: 2 }}
-                boxShadow="0 0 15px rgba(255,255,255,0.5)"
-              >
-                <Icon as={FaCheck} boxSize={{ base: 3, md: 4 }} color="white" />
-              </Box>
-            )}
-          </Card>
-        ))}
+            </SelectableCard>
+          );
+        })}
       </SimpleGrid>
     </Box>
   );
