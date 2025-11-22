@@ -42,6 +42,7 @@ import {
 } from 'react-icons/fa';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
+import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -70,21 +71,8 @@ export default function WhoAndPaymentStepSimple({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
-  const [isIPhoneLayout, setIsIPhoneLayout] = React.useState(false);
   const toast = useToast();
-
-  // Detect iPhone 14/15/16/17 screen width
-  React.useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth;
-      const isTargetIPhone = width >= 375 && width <= 430;
-      setIsIPhoneLayout(isTargetIPhone);
-    };
-    
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  const isIOSDevice = useIsIOSDevice();
   
   // REMOVED: This useEffect was causing auto-scroll on desktop on every render
   // Mobile scroll position is now handled properly in individual event handlers
@@ -570,158 +558,33 @@ export default function WhoAndPaymentStepSimple({
                 Choose Your Service
               </Text>
 
-              {/* iPhone 14/15/16/17 Layout: Economy full width, then Standard + Express side by side */}
-              {isIPhoneLayout && (
-              <Box>
-                <Box
-                  p={{ base: 4 }}
-                  borderRadius="xl"
-                  border="2px solid"
-                  borderColor={selectedService === 'economy' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                  bg={selectedService === 'economy' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                  cursor="pointer"
-                  onClick={() => handleServiceChange('economy')}
-                  transition="all 0.2s"
-                  _hover={{
-                    borderColor: 'blue.500',
-                    bg: 'rgba(59, 130, 246, 0.05)',
-                  }}
-                  position="relative"
-                  mb={3}
-                >
-                  <Badge
-                    position="absolute"
-                    top={-1}
-                    left={-1}
-                    bg="green.500"
-                    color="white"
-                    fontSize="3xs"
-                    px={1.5}
-                    py={0.5}
-                    borderRadius="full"
-                  >
-                    Save 15%
-                  </Badge>
-                  <VStack spacing={2} align="center" w="full">
-                    <Text fontSize="3xl">💰</Text>
-                    <Box textAlign="center" w="full">
-                      <Text fontSize="sm" fontWeight="bold" color="white">
-                        Economy
-                      </Text>
-                      <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                        Next available slot (3-7 days)
-                      </Text>
-                    </Box>
-                    <Text fontSize="xl" fontWeight="bold" color="white">
-                      £{safeEconomyPrice.toFixed(2)}
-                    </Text>
-                  </VStack>
-                </Box>
-
-                {/* Standard and Express Side by Side */}
-                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
-                  <Box
-                    p={{ base: 4 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === 'standard' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === 'standard' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange('standard')}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                  >
-                    <Badge
-                      position="absolute"
-                      top={-1}
-                      right={-1}
-                      bg="blue.500"
-                      color="white"
-                      fontSize="3xs"
-                      px={1.5}
-                      py={0.5}
-                      borderRadius="full"
-                    >
-                      Popular
-                    </Badge>
-                    <VStack spacing={2} align="center" w="full">
-                      <Text fontSize="3xl">🚚</Text>
-                      <Box textAlign="center" w="full">
-                        <Text fontSize="sm" fontWeight="bold" color="white">
-                          Standard
-                        </Text>
-                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                          Choose your date
-                        </Text>
-                      </Box>
-                      <Text fontSize="xl" fontWeight="bold" color="white">
-                        £{safeStandardPrice.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-
-                  <Box
-                    p={{ base: 4 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === 'express' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === 'express' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange('express')}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                  >
-                    <Badge
-                      position="absolute"
-                      top={-1}
-                      left={-1}
-                      bg="orange.500"
-                      color="white"
-                      fontSize="3xs"
-                      px={1.5}
-                      py={0.5}
-                      borderRadius="full"
-                    >
-                      50% premium
-                    </Badge>
-                    <VStack spacing={2} align="center" w="full">
-                      <Text fontSize="3xl">⚡</Text>
-                      <Box textAlign="center" w="full">
-                        <Text fontSize="sm" fontWeight="bold" color="white">
-                          Express
-                        </Text>
-                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                          Same-day or next-day delivery
-                        </Text>
-                      </Box>
-                      <Text fontSize="xl" fontWeight="bold" color="white">
-                        £{safeExpressPrice.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-                </Box>
-              </Box>
-              )}
-
-              {/* Normal Grid Layout: All devices except iPhone 14/15/16/17 */}
-              {!isIPhoneLayout && (
               <Box
-                display="grid"
-                gridTemplateColumns="repeat(3, 1fr)"
-                gap={{ base: 2, sm: 3, md: 4 }}
+                className="service-options-grid"
+                display={isIOSDevice ? 'flex' : 'grid'}
+                flexWrap={isIOSDevice ? 'nowrap' : undefined}
+                gridTemplateColumns={
+                  isIOSDevice ? undefined : { base: '1fr', md: 'repeat(3, 1fr)' }
+                }
+                overflowX={isIOSDevice ? 'auto' : 'visible'}
+                scrollSnapType={isIOSDevice ? 'x mandatory' : undefined}
+                gap={{ base: 3, md: 4 }}
                 w="full"
+                sx={
+                  isIOSDevice
+                    ? {
+                        WebkitOverflowScrolling: 'touch',
+                      }
+                    : undefined
+                }
               >
                 {services.map((service) => (
                   <Box
                     key={service.id}
+                    className={`price-card price-card-${service.id}`}
+                    flex={isIOSDevice ? '0 0 auto' : undefined}
+                    minW={isIOSDevice ? '75vw' : undefined}
+                    maxW={isIOSDevice ? '320px' : undefined}
+                    scrollSnapAlign={isIOSDevice ? 'start' : undefined}
                     p={{ base: 3, sm: 4, md: 5 }}
                     borderRadius="xl"
                     border="2px solid"
@@ -813,7 +676,6 @@ export default function WhoAndPaymentStepSimple({
                   </Box>
                 ))}
               </Box>
-              )}
             </VStack>
           </CardBody>
         </Card>
