@@ -40,6 +40,7 @@ export const FloatingCallButton: React.FC = () => {
 
   return (
     <Box
+      className="floating-call-button"
       position="fixed"
       bottom={{ base: '90px', md: '100px' }} // Moved higher to avoid chatbot icon
       right={{ base: '20px', md: '30px' }}

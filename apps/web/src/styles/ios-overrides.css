@@ -1,0 +1,30 @@
+/**
+ * Scoped iOS-specific fixes. These rules only take effect when the
+ * `ios-device` class is present on <html>/<body>, keeping the impact localized.
+ */
+
+.ios-device .floating-call-button {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
+  right: 20px;
+}
+
+.ios-device .floating-call-button button {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-radius: 999px;
+  box-shadow: 0 10px 28px rgba(16, 185, 129, 0.55);
+}
+
+@supports (height: 100svh) {
+  .ios-device main {
+    min-height: 100svh;
+  }
+}
+
+.ios-device .ios-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.ios-device .ios-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
