@@ -5,26 +5,22 @@
  * Luxury Booking Design
  */
 
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   VStack,
+  SimpleGrid,
   HStack,
-  Heading,
   Text,
   Button,
   FormControl,
   FormErrorMessage,
-  FormLabel,
   Card,
   CardBody,
   Icon,
-  Divider,
-  Spinner,
 } from '@chakra-ui/react';
 import {
   FaArrowRight,
-  FaArrowLeft,
 } from 'react-icons/fa';
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import type { FormData } from '../hooks/useBookingForm';
@@ -35,7 +31,6 @@ interface AddressesStepProps {
   updateFormData: (step: keyof FormData, data: Partial<FormData[keyof FormData]>) => void;
   errors: Record<string, string>;
   onNext?: () => void;
-  onBack?: () => void;
 }
 
 export default function AddressesStep({
@@ -43,19 +38,9 @@ export default function AddressesStep({
   updateFormData,
   errors,
   onNext,
-  onBack,
 }: AddressesStepProps) {
-  // Track which address card to show
-  const [showingDropoff, setShowingDropoff] = React.useState(false);
-  
-  // Card border radius - use responsive values instead of useBreakpointValue
-  const cardBorderRadius = { base: '2xl', md: '3xl' };
-
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
-  
-  // Ref for smooth scroll to dropoff
-  const dropoffRef = useRef<HTMLDivElement>(null);
 
   const currentPickupProperty = useMemo(() => formData.step1.pickupProperty ?? {}, [formData.step1.pickupProperty]);
   const currentDropoffProperty = useMemo(() => formData.step1.dropoffProperty ?? {}, [formData.step1.dropoffProperty]);
@@ -112,9 +97,7 @@ export default function AddressesStep({
   return (
     <Box w="full" pb={8}>
       <VStack spacing={10} w="full" align="stretch">
-        {/* Enterprise Header Card */}
-        {/* Pickup Card - Enhanced Design */}
-        {!showingDropoff && (
+        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 8, xl: 10 }} w="full">
           <Card
             bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
             border="2px solid"
@@ -242,43 +225,10 @@ export default function AddressesStep({
                     )}
                   </FormControl>
                 </Box>
-
-                {/* Next to Dropoff Button */}
-                {formData.step1.pickupAddress && (
-                  <Button
-                    onClick={() => {
-                      setShowingDropoff(true);
-                    }}
-                    bgGradient="linear(to-r, blue.500, purple.500)"
-                    color="white"
-                    size="lg"
-                    w="full"
-                    py={6}
-                    fontSize="md"
-                    fontWeight="600"
-                    borderRadius="xl"
-                    rightIcon={<Icon as={FaArrowRight} />}
-                    boxShadow="0 15px 35px rgba(59, 130, 246, 0.4)"
-                    transition="all 0.3s"
-                    _hover={{
-                      bgGradient: "linear(to-r, blue.600, purple.600)",
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 20px 45px rgba(59, 130, 246, 0.5)",
-                    }}
-                    _active={{
-                      transform: "translateY(0)",
-                    }}
-                  >
-                    Next: Drop-off Location
-                  </Button>
-                )}
               </VStack>
             </CardBody>
           </Card>
-        )}
 
-        {/* Dropoff Card - Show only when showingDropoff is true */}
-        {showingDropoff && (
           <Card
             bg="rgba(15, 23, 42, 0.95)"
             border="2px solid"
@@ -307,25 +257,6 @@ export default function AddressesStep({
           >
             <CardBody p={{ base: 6, md: 8 }}>
               <VStack spacing={5} align="stretch">
-                {/* Back to Pickup Button */}
-                <Button
-                  onClick={() => setShowingDropoff(false)}
-                  variant="ghost"
-                  color="whiteAlpha.700"
-                  size="sm"
-                  alignSelf="flex-start"
-                  leftIcon={<Icon as={FaArrowLeft} />}
-                  borderRadius="lg"
-                  _hover={{
-                    color: "white",
-                    bg: "rgba(236, 72, 153, 0.15)",
-                    transform: "translateX(-3px)",
-                  }}
-                  transition="all 0.2s"
-                >
-                  Back to Pickup
-                </Button>
-
                 {/* Enhanced Header */}
                 <HStack spacing={4} mb={2}>
                   <Box
@@ -433,7 +364,7 @@ export default function AddressesStep({
               </VStack>
             </CardBody>
           </Card>
-        )}
+        </SimpleGrid>
       </VStack>
 
       {/* Continue Button - Always visible when addresses are complete */}

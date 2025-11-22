@@ -28,3 +28,8 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Step 3 price cards - keep them horizontal and scrollable on iOS */
+.ios-device .service-options-grid::-webkit-scrollbar {
+  display: none;
+}
+

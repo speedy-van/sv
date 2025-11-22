@@ -26,22 +26,19 @@ import {
   FormErrorMessage,
   Icon,
   SimpleGrid,
-  IconButton,
-  Image,
   Collapse,
   useDisclosure,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
-  FaPlus,
-  FaMinus,
-  FaTrash,
   FaBox,
   FaChevronUp,
   FaTimes,
 } from 'react-icons/fa';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
+import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
+import { SelectableCard } from '@/components/shared/SelectableCard';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -70,21 +67,8 @@ export default function WhoAndPaymentStepSimple({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
-  const [isIPhoneLayout, setIsIPhoneLayout] = React.useState(false);
   const toast = useToast();
-
-  // Detect iPhone 14/15/16/17 screen width
-  React.useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth;
-      const isTargetIPhone = width >= 375 && width <= 430;
-      setIsIPhoneLayout(isTargetIPhone);
-    };
-    
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+  const isIOSDevice = useIsIOSDevice();
   
   // REMOVED: This useEffect was causing auto-scroll on desktop on every render
   // Mobile scroll position is now handled properly in individual event handlers
@@ -570,250 +554,127 @@ export default function WhoAndPaymentStepSimple({
                 Choose Your Service
               </Text>
 
-              {/* iPhone 14/15/16/17 Layout: Economy full width, then Standard + Express side by side */}
-              {isIPhoneLayout && (
-              <Box>
-                <Box
-                  p={{ base: 4 }}
-                  borderRadius="xl"
-                  border="2px solid"
-                  borderColor={selectedService === 'economy' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                  bg={selectedService === 'economy' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                  cursor="pointer"
-                  onClick={() => handleServiceChange('economy')}
-                  transition="all 0.2s"
-                  _hover={{
-                    borderColor: 'blue.500',
-                    bg: 'rgba(59, 130, 246, 0.05)',
-                  }}
-                  position="relative"
-                  mb={3}
-                >
-                  <Badge
-                    position="absolute"
-                    top={-1}
-                    left={-1}
-                    bg="green.500"
-                    color="white"
-                    fontSize="3xs"
-                    px={1.5}
-                    py={0.5}
-                    borderRadius="full"
-                  >
-                    Save 15%
-                  </Badge>
-                  <VStack spacing={2} align="center" w="full">
-                    <Text fontSize="3xl">💰</Text>
-                    <Box textAlign="center" w="full">
-                      <Text fontSize="sm" fontWeight="bold" color="white">
-                        Economy
-                      </Text>
-                      <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                        Next available slot (3-7 days)
-                      </Text>
-                    </Box>
-                    <Text fontSize="xl" fontWeight="bold" color="white">
-                      £{safeEconomyPrice.toFixed(2)}
-                    </Text>
-                  </VStack>
-                </Box>
-
-                {/* Standard and Express Side by Side */}
-                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={3}>
-                  <Box
-                    p={{ base: 4 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === 'standard' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === 'standard' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange('standard')}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                  >
-                    <Badge
-                      position="absolute"
-                      top={-1}
-                      right={-1}
-                      bg="blue.500"
-                      color="white"
-                      fontSize="3xs"
-                      px={1.5}
-                      py={0.5}
-                      borderRadius="full"
-                    >
-                      Popular
-                    </Badge>
-                    <VStack spacing={2} align="center" w="full">
-                      <Text fontSize="3xl">🚚</Text>
-                      <Box textAlign="center" w="full">
-                        <Text fontSize="sm" fontWeight="bold" color="white">
-                          Standard
-                        </Text>
-                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                          Choose your date
-                        </Text>
-                      </Box>
-                      <Text fontSize="xl" fontWeight="bold" color="white">
-                        £{safeStandardPrice.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-
-                  <Box
-                    p={{ base: 4 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === 'express' ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === 'express' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange('express')}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                  >
-                    <Badge
-                      position="absolute"
-                      top={-1}
-                      left={-1}
-                      bg="orange.500"
-                      color="white"
-                      fontSize="3xs"
-                      px={1.5}
-                      py={0.5}
-                      borderRadius="full"
-                    >
-                      50% premium
-                    </Badge>
-                    <VStack spacing={2} align="center" w="full">
-                      <Text fontSize="3xl">⚡</Text>
-                      <Box textAlign="center" w="full">
-                        <Text fontSize="sm" fontWeight="bold" color="white">
-                          Express
-                        </Text>
-                        <Text fontSize="2xs" color="gray.400" noOfLines={2} lineHeight="1.3">
-                          Same-day or next-day delivery
-                        </Text>
-                      </Box>
-                      <Text fontSize="xl" fontWeight="bold" color="white">
-                        £{safeExpressPrice.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-                </Box>
-              </Box>
-              )}
-
-              {/* Normal Grid Layout: All devices except iPhone 14/15/16/17 */}
-              {!isIPhoneLayout && (
               <Box
-                display="grid"
-                gridTemplateColumns="repeat(3, 1fr)"
-                gap={{ base: 2, sm: 3, md: 4 }}
+                className="service-options-grid"
+                display={isIOSDevice ? 'flex' : 'grid'}
+                flexWrap={isIOSDevice ? 'nowrap' : undefined}
+                gridTemplateColumns={
+                  isIOSDevice ? undefined : { base: '1fr', md: 'repeat(3, 1fr)' }
+                }
+                overflowX={isIOSDevice ? 'auto' : 'visible'}
+                scrollSnapType={isIOSDevice ? 'x mandatory' : undefined}
+                gap={{ base: 3, md: 4 }}
                 w="full"
+                sx={
+                  isIOSDevice
+                    ? {
+                        WebkitOverflowScrolling: 'touch',
+                      }
+                    : undefined
+                }
               >
-                {services.map((service) => (
-                  <Box
-                    key={service.id}
-                    p={{ base: 3, sm: 4, md: 5 }}
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor={selectedService === service.id ? 'blue.500' : 'rgba(59, 130, 246, 0.2)'}
-                    bg={selectedService === service.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent'}
-                    cursor="pointer"
-                    onClick={() => handleServiceChange(service.id)}
-                    transition="all 0.2s"
-                    _hover={{
-                      borderColor: 'blue.500',
-                      bg: 'rgba(59, 130, 246, 0.05)',
-                    }}
-                    position="relative"
-                    minH={{ base: "160px", sm: "180px", md: "auto" }}
-                  >
-                    {service.popular && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        right={{ base: -1, md: -2 }}
-                        bg="blue.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        Popular
-                      </Badge>
-                    )}
-                    {service.discount && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        left={{ base: -1, md: -2 }}
-                        bg="green.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        {service.discount}
-                      </Badge>
-                    )}
-                    {service.premium && (
-                      <Badge
-                        position="absolute"
-                        top={{ base: -1, md: -2 }}
-                        left={{ base: -1, md: -2 }}
-                        bg="orange.500"
-                        color="white"
-                        fontSize="3xs"
-                        px={{ base: 1.5, md: 2 }}
-                        py={{ base: 0.5, md: 1 }}
-                        borderRadius="full"
-                      >
-                        {service.premium}
-                      </Badge>
-                    )}
-                    <VStack spacing={{ base: 2, md: 3 }} align="center" w="full">
-                      <Text fontSize={{ base: "3xl", md: "2xl" }}>{service.icon}</Text>
-                      <Box textAlign="center" w="full">
-                        <Text 
-                          fontSize={{ base: "sm", md: "md" }} 
-                          fontWeight="bold" 
-                          color="white"
-                          noOfLines={1}
-                        >
-                          {service.name}
-                        </Text>
-                        <Text 
-                          fontSize={{ base: "2xs", sm: "xs" }} 
-                          color="gray.400"
-                          noOfLines={2}
-                          lineHeight="1.3"
-                        >
-                          {service.description}
-                        </Text>
-                      </Box>
-                      <Text 
-                        fontSize={{ base: "xl", md: "2xl" }} 
-                        fontWeight="bold" 
-                        color="white"
-                      >
-                        £{service.price.toFixed(2)}
-                      </Text>
-                    </VStack>
-                  </Box>
-                ))}
+                {services.map((service) => {
+                  const isSelected = selectedService === service.id;
+
+                  return (
+                    <SelectableCard
+                      key={service.id}
+                      className={`price-card price-card-${service.id}`}
+                      isSelected={isSelected}
+                      onClick={() => handleServiceChange(service.id)}
+                      flex={isIOSDevice ? '0 0 auto' : undefined}
+                      minW={isIOSDevice ? '75vw' : undefined}
+                      maxW={isIOSDevice ? '320px' : undefined}
+                      scrollSnapAlign={isIOSDevice ? 'start' : undefined}
+                      p={{ base: 4, md: 5 }}
+                      minH={{ base: '180px', md: 'auto' }}
+                    >
+                      <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
+                        <HStack justify="space-between" align="center">
+                          <Box
+                            p={{ base: 2, md: 3 }}
+                            borderRadius="xl"
+                            bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
+                            transition="all 0.3s"
+                            boxShadow={isSelected ? '0 0 15px rgba(59, 130, 246, 0.45)' : 'none'}
+                          >
+                            <Text fontSize={{ base: '2xl', md: '3xl' }} role="img" aria-hidden="true">
+                              {service.icon}
+                            </Text>
+                          </Box>
+                          <Text
+                            fontSize={{ base: 'xl', md: '2xl' }}
+                            fontWeight="extrabold"
+                            color="white"
+                          >
+                            £{service.price.toFixed(2)}
+                          </Text>
+                        </HStack>
+
+                        <Box>
+                          <Text
+                            fontSize={{ base: 'md', md: 'lg' }}
+                            fontWeight="bold"
+                            color="white"
+                            noOfLines={1}
+                          >
+                            {service.name}
+                          </Text>
+                          <Text
+                            fontSize={{ base: 'xs', md: 'sm' }}
+                            color="whiteAlpha.700"
+                            noOfLines={2}
+                            lineHeight="1.4"
+                          >
+                            {service.description}
+                          </Text>
+                        </Box>
+
+                        {(service.popular || service.discount || service.premium) && (
+                          <HStack spacing={2} flexWrap="wrap">
+                            {service.popular && (
+                              <Badge
+                                colorScheme="purple"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                Popular
+                              </Badge>
+                            )}
+                            {service.discount && (
+                              <Badge
+                                colorScheme="green"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                {service.discount}
+                              </Badge>
+                            )}
+                            {service.premium && (
+                              <Badge
+                                colorScheme="orange"
+                                variant={isSelected ? 'solid' : 'subtle'}
+                                fontSize="2xs"
+                                fontWeight="700"
+                                borderRadius="full"
+                                textTransform="uppercase"
+                              >
+                                {service.premium}
+                              </Badge>
+                            )}
+                          </HStack>
+                        )}
+                      </VStack>
+                    </SelectableCard>
+                  );
+                })}
               </Box>
-              )}
             </VStack>
           </CardBody>
         </Card>
