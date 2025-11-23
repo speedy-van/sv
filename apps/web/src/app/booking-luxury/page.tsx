@@ -968,15 +968,7 @@ export default function BookingLuxuryPage() {
                   href="tel:+441202129746"
                   aria-label="Call Speedy Van"
                   icon={<Icon as={FaPhone} boxSize={{ base: 5, md: 6 }} />}
-                  onClick={() => {
-                    if (typeof window !== 'undefined' && (window as any).gtag) {
-                      (window as any).gtag('event', 'conversion', {
-                        'send_to': 'AW-17715630822/phone_call_conversion',
-                        'event_category': 'engagement',
-                        'event_label': 'booking_luxury_call_icon',
-                      });
-                    }
-                  }}
+
                   size={{ base: 'lg', md: 'xl' }}
                   bgGradient="linear(to-br, #10b981, #059669)"
                   color="white"

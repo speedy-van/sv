@@ -10,33 +10,11 @@
 // Google Ads Conversion ID
 const GOOGLE_ADS_ID = 'AW-17715630822';
 
-// Call and Booking Conversion Labels
-// NOTE: Update these labels in Google Ads console if you create specific conversion actions
-const CALL_CONVERSION_LABEL = 'phone_call_conversion'; // Generic phone call conversion
-const BOOKING_CONVERSION_LABEL = 'Submit_lead_form_Website'; // Main booking conversion
+// Verified Conversion Labels from Google Ads (Updated: Nov 23, 2025)
+const STANDARD_BOOKING_CONVERSION_LABEL = '7393649164'; // Standard booking conversion
+const LUXURY_BOOKING_CONVERSION_LABEL = '7375337919'; // Luxury booking conversion
 
-/**
- * Track phone call button click conversion
- * Fires when user clicks any "Call Now" or "Call Us" button
- */
-export const trackCallConversion = (): void => {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
-    console.warn('gtag not available - conversion tracking skipped');
-    return;
-  }
-
-  try {
-    window.gtag('event', 'conversion', {
-      'send_to': `${GOOGLE_ADS_ID}/${CALL_CONVERSION_LABEL}`,
-      'event_category': 'engagement',
-      'event_label': 'phone_call_button_click',
-    });
-    
-    console.log('✅ Call conversion tracked');
-  } catch (error) {
-    console.error('Failed to track call conversion:', error);
-  }
-};
+// Phone call conversion tracking removed - not configured in Google Ads
 
 /**
  * Track completed booking conversion
@@ -56,7 +34,7 @@ export const trackBookingConversion = (
 
   try {
     window.gtag('event', 'conversion', {
-      'send_to': `${GOOGLE_ADS_ID}/${BOOKING_CONVERSION_LABEL}`,
+      'send_to': `${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}`,
       'value': bookingValue,
       'currency': 'GBP',
       'transaction_id': bookingReference,
@@ -88,7 +66,7 @@ export const trackBookingConversionEnhanced = (
   try {
     // Standard conversion event
     window.gtag('event', 'conversion', {
-      'send_to': `${GOOGLE_ADS_ID}/${BOOKING_CONVERSION_LABEL}`,
+      'send_to': `${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}`,
       'value': bookingValue,
       'currency': 'GBP',
       'transaction_id': bookingReference,
