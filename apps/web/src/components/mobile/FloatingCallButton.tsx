@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Box } from '@chakra-ui/react';
 import { FaPhone } from 'react-icons/fa';
-import { trackCallConversion } from '@/lib/utils/google-ads-tracking';
 
 /**
  * Floating Sticky Call Button
@@ -50,7 +49,7 @@ export const FloatingCallButton: React.FC = () => {
       <Button
         as="a"
         href="tel:+441202129746"
-        onClick={trackCallConversion}
+        
         size="lg"
         h="60px"
         w="60px"
