@@ -168,7 +168,7 @@ export default async function RootLayout({
         <IOSDeviceClassManager />
         {/* Google Ads Global Site Tag - Conversion Tracking */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-1771563082"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
           strategy="afterInteractive"
           async
         />
@@ -177,7 +177,7 @@ export default async function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'AW-1771563082');
+            gtag('config', 'AW-17715630822');
           `}
         </Script>
         <Script src="/scripts/fix-css.js" strategy="beforeInteractive" />
