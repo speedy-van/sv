@@ -1,6 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // Get pathname early for redirect check
+  const pathname = request.nextUrl.pathname;
+
+  // Redirect /booking to /booking-luxury (temporary fix for missing standard booking page)
+  // MUST be checked BEFORE NextResponse.next() to prevent 404
+  if (pathname === '/booking') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/booking-luxury';
+    return NextResponse.redirect(url, 307); // 307 Temporary Redirect
+  }
+
   const response = NextResponse.next();
 
   // Security Headers (matching next.config.mjs for consistency)
@@ -12,7 +23,6 @@ export function middleware(request: NextRequest) {
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
   // CRITICAL: Proper MIME types for CSS files (Safari iOS fix)
-  const pathname = request.nextUrl.pathname;
   if (pathname.startsWith('/_next/static/') && pathname.endsWith('.css')) {
     // Force correct MIME type for CSS files
     response.headers.set('Content-Type', 'text/css; charset=utf-8');
@@ -23,13 +33,6 @@ export function middleware(request: NextRequest) {
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     response.headers.set('X-Content-Hash', process.env.NEXT_BUILD_ID || Date.now().toString());
     response.headers.set('ETag', `"${Date.now()}"`);
-  }
-
-  // Redirect /booking to /booking-luxury (temporary fix for missing standard booking page)
-  if (pathname === '/booking') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/booking-luxury';
-    return NextResponse.redirect(url, 307); // 307 Temporary Redirect
   }
 
   // Set pathname header for use in layouts
