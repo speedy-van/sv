@@ -50,6 +50,11 @@ const nextConfig = {
         destination: '/customer/register',
         permanent: true,
       },
+      {
+        source: '/booking',
+        destination: '/booking-luxury',
+        permanent: false, // Temporary redirect (307) until standard booking page is created
+      },
     ];
   },
 
