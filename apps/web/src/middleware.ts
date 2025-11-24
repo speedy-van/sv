@@ -25,6 +25,13 @@ export function middleware(request: NextRequest) {
     response.headers.set('ETag', `"${Date.now()}"`);
   }
 
+  // Redirect /booking to /booking-luxury (temporary fix for missing standard booking page)
+  if (pathname === '/booking') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/booking-luxury';
+    return NextResponse.redirect(url, 307); // 307 Temporary Redirect
+  }
+
   // Set pathname header for use in layouts
   response.headers.set('x-pathname', pathname);
 
