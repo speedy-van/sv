@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPrismaClient } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 
@@ -31,18 +31,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
     console.log('📧 Looking up user:', normalizedEmail);
     
-    let db;
-    try {
-      db = getPrismaClient();
-    } catch (dbError: any) {
-      console.error('❌ Database connection failed:', dbError.message);
-      return NextResponse.json(
-        { error: 'Database connection error' },
-        { status: 503 }
-      );
-    }
-    
-    const user = await db.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
       select: {
         id: true,
