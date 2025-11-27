@@ -7,7 +7,7 @@ import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { getPrismaClient } from './prisma';
+import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 import { getCustomSession } from './custom-auth';
 
@@ -73,9 +73,8 @@ export const authOptions: NextAuthOptions = {
           console.log('📧 Normalized email:', normalizedEmail);
 
           console.log('🔍 Querying database for user...');
-          const db = getPrismaClient();
-          console.log('🔍 [auth] Prisma client status:', { db: !!db, type: typeof db });
-          const user = await db.user.findUnique({
+          console.log('🔍 [auth] Prisma client status:', { prisma: !!prisma, type: typeof prisma });
+          const user = await prisma.user.findUnique({
             where: { email: normalizedEmail },
             select: {
               id: true,

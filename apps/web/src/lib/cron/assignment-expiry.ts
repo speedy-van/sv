@@ -6,7 +6,7 @@
  */
 
 import cron, { ScheduledTask } from 'node-cron';
-import { getPrismaClient } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 
 let cronJob: ScheduledTask | null = null;
@@ -54,10 +54,9 @@ async function checkAndExpireAssignments() {
   console.log(`⏰ [${now.toISOString()}] Running assignment expiry check...`);
 
   try {
-    const db = getPrismaClient();
-    console.log('🔍 [assignment-expiry] Prisma client status:', { db: !!db, type: typeof db });
+    console.log('🔍 [assignment-expiry] Prisma client status:', { prisma: !!prisma, type: typeof prisma });
     // Find all claimed AND invited assignments that have expired
-    const expiredAssignments = await db.assignment.findMany({
+    const expiredAssignments = await prisma.assignment.findMany({
       where: {
         status: { in: ['claimed', 'invited'] },
         expiresAt: {
@@ -92,7 +91,7 @@ async function checkAndExpireAssignments() {
           
           let newAcceptanceRate = 100;
           
-          await db.$transaction(async (tx) => {
+          await prisma.$transaction(async (tx) => {
             // Update assignment status to declined
             await tx.assignment.update({
               where: { id: assignment.id },
@@ -164,7 +163,7 @@ async function checkAndExpireAssignments() {
 
           // Auto-reassign to next available driver
           try {
-            const availableDrivers = await db.driver.findMany({
+            const availableDrivers = await prisma.driver.findMany({
               where: {
                 id: { not: assignment.driverId },
                 status: 'active',
@@ -190,12 +189,12 @@ async function checkAndExpireAssignments() {
               const nextDriver = availableDrivers[0];
               
               // ✅ Find existing assignment or create new one (bookingId is not unique)
-              const existingAssignment = await db.assignment.findFirst({
+              const existingAssignment = await prisma.assignment.findFirst({
                 where: { bookingId: assignment.bookingId }
               });
 
               if (existingAssignment) {
-                await db.assignment.update({
+                await prisma.assignment.update({
                   where: { id: existingAssignment.id },
                   data: {
                     driverId: nextDriver.id,
@@ -206,7 +205,7 @@ async function checkAndExpireAssignments() {
                   }
                 });
               } else {
-                await db.assignment.create({
+                await prisma.assignment.create({
                   data: {
                     id: `assign_${assignment.bookingId}_${nextDriver.id}_${Date.now()}`,
                     bookingId: assignment.bookingId,
