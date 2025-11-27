@@ -29,7 +29,18 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const db = getPrismaClient();
+    console.log('📧 Looking up user:', normalizedEmail);
+    
+    let db;
+    try {
+      db = getPrismaClient();
+    } catch (dbError: any) {
+      console.error('❌ Database connection failed:', dbError.message);
+      return NextResponse.json(
+        { error: 'Database connection error' },
+        { status: 503 }
+      );
+    }
     
     const user = await db.user.findUnique({
       where: { email: normalizedEmail },
@@ -144,10 +155,17 @@ export async function POST(request: NextRequest) {
     console.log('   ✅ USE: http://localhost:3000');
 
     return response;
-  } catch (error) {
-    console.error('❌ Login error:', error);
+  } catch (error: any) {
+    console.error('❌ Login error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     return NextResponse.json(
-      { error: 'Authentication failed' },
+      { 
+        error: 'Authentication failed',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
