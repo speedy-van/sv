@@ -41,6 +41,10 @@ export const PUT = withApiHandler(
     if (email && email !== existingUser.email) {
       const emailExists = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          email: true,
+        },
       });
 
       if (emailExists) {
@@ -60,6 +64,10 @@ export const PUT = withApiHandler(
       
       const currentUser = await prisma.user.findUnique({
         where: { id: currentUserId },
+        select: {
+          id: true,
+          adminRole: true,
+        },
       });
 
       if (currentUser?.adminRole !== 'superadmin') {
@@ -115,6 +123,10 @@ export const DELETE = withApiHandler(
       where: {
         id: userId,
         role: 'admin',
+      },
+      select: {
+        id: true,
+        adminRole: true,
       },
     });
 
