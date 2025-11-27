@@ -99,6 +99,10 @@ export const POST = withApiHandler(async (request: NextRequest) => {
         mode: 'insensitive',
       }
     },
+    select: {
+      id: true,
+      email: true,
+    },
   });
 
   if (existingUser) {
