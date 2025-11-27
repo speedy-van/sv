@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +10,22 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  let userId = customSession?.user?.id;
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    userId = session?.user?.id;
+    if (!session?.user || !isAdmin) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -29,10 +44,10 @@ export async function GET(
       nextRun: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       status: 'active' as const,
       createdAt: new Date().toISOString(),
-      createdBy: session.user.id,
+      createdBy: userId,
     };
 
-    await logAudit((session.user as any).id, 'read_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id } });
+    await logAudit(userId || 'unknown', 'read_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id } });
 
     return Response.json({ report: mockReport });
   } catch (error) {
@@ -46,8 +61,22 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  let userId = customSession?.user?.id;
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    userId = session?.user?.id;
+    if (!session?.user || !isAdmin) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -81,10 +110,10 @@ export async function PATCH(
           ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
           : undefined,
       createdAt: new Date().toISOString(),
-      createdBy: session.user.id,
+      createdBy: userId,
     };
 
-    await logAudit(session.user.id, 'update_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: { reportId: (await params).id, changes: body } });
+    await logAudit(userId || 'unknown', 'update_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: { reportId: (await params).id, changes: body } });
 
     return Response.json({ report: updatedReport });
   } catch (error) {
@@ -98,14 +127,28 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  let userId = customSession?.user?.id;
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    userId = session?.user?.id;
+    if (!session?.user || !isAdmin) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   try {
     // Mock deletion (in real implementation, delete from database)
-    await logAudit(session.user.id, 'delete_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: null });
+    await logAudit(userId || 'unknown', 'delete_report', (await params).id, { targetType: 'analytics_report', before: { reportId: (await params).id }, after: null });
 
     return Response.json({ success: true });
   } catch (error) {

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions, assertHasRole } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -35,11 +34,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    try {
-      assertHasRole(session, ['admin']);
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const staff = await prisma.staff.findUnique({
@@ -87,11 +84,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    try {
-      assertHasRole(session, ['admin']);
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const body = await request.json();
@@ -185,11 +180,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    try {
-      assertHasRole(session, ['admin']);
-    } catch (error) {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     // Check if staff exists

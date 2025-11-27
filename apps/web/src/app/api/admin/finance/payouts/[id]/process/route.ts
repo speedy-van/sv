@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 import Stripe from 'stripe';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
@@ -16,10 +15,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { id: payoutId } = await params;
 
@@ -120,8 +120,8 @@ export async function POST(
       // Create audit log
       await prisma.auditLog.create({
         data: {
-          actorId: session.user.id,
-          actorRole: 'admin',
+          actorId: adminUser.id,
+          actorRole: adminUser.role || 'admin',
           action: 'payout_failed',
           targetType: 'driver_payout',
           targetId: payoutId,
@@ -160,8 +160,8 @@ export async function POST(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        actorId: session.user.id,
-        actorRole: 'admin',
+        actorId: adminUser.id,
+        actorRole: adminUser.role || 'admin',
         action: 'payout_processed',
         targetType: 'driver_payout',
         targetId: payoutId,

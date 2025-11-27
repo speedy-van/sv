@@ -334,7 +334,7 @@ export function useBookingForm() {
       }
       
       // Normalize address fields to never be null
-      let nextStepData: any = { ...prev[stepKey], ...data };
+      const nextStepData: any = { ...prev[stepKey], ...data };
       if (stepKey === 'step1') {
         if ((data as any).pickupAddress === null) {
           nextStepData.pickupAddress = {

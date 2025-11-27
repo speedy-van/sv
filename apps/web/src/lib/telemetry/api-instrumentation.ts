@@ -36,7 +36,7 @@ export function instrumentApiRoute<T extends any[]>(
         method: options.method,
         route: options.route,
         userAgent: request.headers.get('user-agent'),
-        ip: request.headers.get('x-forwarded-for') || request.ip,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
         userId,
         userRole,
       }

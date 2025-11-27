@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -9,11 +8,9 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/staff/attendance - List all attendance records
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const user = (session as any)?.user as { role?: string } | undefined;
-
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const { searchParams } = new URL(request.url);

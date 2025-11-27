@@ -1,14 +1,13 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse, NextRequest } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const s = await getServerSession(authOptions);
-  if (!s?.user || (s.user as any).role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
 
   try {
@@ -91,10 +90,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const s = await getServerSession(authOptions);
-  if (!s?.user || (s.user as any).role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const authResult = await requireAdmin(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
+  const adminUser = authResult;
 
   try {
     const body = await request.json();
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
         metadata: {
           notes,
-          processedBy: (s.user as any).id,
+          processedBy: adminUser.id,
         },
       },
     });

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
   
   try {
-    let session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions);
     let userId: string | null = null;
     let userRole: string | null = null;
 

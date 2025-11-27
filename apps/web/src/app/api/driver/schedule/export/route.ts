@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate ICS content
-    let icsContent = [
+    const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Speedy Van//Driver Schedule//EN',

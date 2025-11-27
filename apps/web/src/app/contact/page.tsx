@@ -43,6 +43,13 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 
+const SUPPORT_PHONE_DISPLAY = '01202 129746';
+const SUPPORT_PHONE_TEL = '01202129746';
+const SUPPORT_PHONE_URI = `tel:${SUPPORT_PHONE_TEL}`;
+const SUPPORT_EMAIL = 'support@speedy-van.co.uk';
+const SUPPORT_EMAIL_URI = `mailto:${SUPPORT_EMAIL}`;
+const CONTACT_FORM_CONVERSION_CONFIGURED = false; // TODO: configure a dedicated Google Ads conversion before re-enabling manual tracking
+
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
     if (typeof prop === 'string') {
@@ -58,18 +65,18 @@ const contactMethods = [
     description: 'Speak directly with our team',
     icon: FiPhone,
     color: 'blue',
-    contact: '+44 1202129746',
+    contact: SUPPORT_PHONE_DISPLAY,
     availability: '9AM-6PM, 7 Days/Week',
-    action: () => window.open('tel:+441202129746')
+    action: () => window.open(SUPPORT_PHONE_URI)
   },
   {
     title: 'Email Support',
     description: 'Send us a detailed message',
     icon: FiMail,
     color: 'green',
-    contact: 'support@speedy-van.co.uk',
+    contact: SUPPORT_EMAIL,
     availability: 'Response within 2 hours',
-    action: () => window.open('mailto:support@speedy-van.co.uk')
+    action: () => window.open(SUPPORT_EMAIL_URI)
   },
   {
     title: 'Live Chat',
@@ -150,8 +157,8 @@ export default function ContactPage() {
       // Simulate form submission
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Track Google Ads conversion for lead form submission
-      if (typeof window !== 'undefined' && (window as any).gtag) {
+      // Track Google Ads conversion for lead form submission (disabled until dedicated action exists)
+      if (CONTACT_FORM_CONVERSION_CONFIGURED && typeof window !== 'undefined' && (window as any).gtag) {
         try {
           (window as any).gtag('event', 'conversion', {
             'send_to': 'AW-17715630822/7393649164',
@@ -162,6 +169,10 @@ export default function ContactPage() {
         } catch (gtagError) {
           console.error('❌ Google Ads conversion tracking failed:', gtagError);
         }
+      } else if (process.env.NODE_ENV !== 'production') {
+        console.info(
+          '[tracking-disabled:contact-form] Google Ads conversion tracking is disabled until a dedicated conversion action is defined.'
+        );
       }
       
       toast({
@@ -476,11 +487,11 @@ export default function ContactPage() {
                       <HeaderButton
                         variant="glass"
                         size="lg"
-                        onClick={() => window.open('tel:+441202129746')}
+                        onClick={() => window.open(SUPPORT_PHONE_URI)}
                         leftIcon={<FiPhone />}
                         w="full"
                       >
-                        Call Now: +44 1202129746
+                        Call Now: {SUPPORT_PHONE_DISPLAY}
                       </HeaderButton>
                       <HeaderButton
                         variant="outline"
@@ -638,7 +649,7 @@ export default function ContactPage() {
                 <HeaderButton
                   variant="outline"
                   size="lg"
-                  onClick={() => window.open('tel:+441202129746')}
+                  onClick={() => window.open(SUPPORT_PHONE_URI)}
                   borderColor="white"
                   color="white"
                   _hover={{

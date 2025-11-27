@@ -86,12 +86,10 @@ export const event = ({
 
 // Track conversions
 export const trackConversion = (conversionId: string, value?: number) => {
-  if (typeof window.gtag !== 'undefined') {
-    window.gtag('event', 'conversion', {
-      send_to: conversionId,
-      value: value,
-      currency: 'GBP',
-    });
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `[tracking-disabled:manual-conversion] Manual Google Ads conversions are disabled. Expected send_to ${conversionId} with value ${value}.`
+    );
   }
 };
 

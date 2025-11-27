@@ -234,9 +234,9 @@ export class RoyalMailPAFService {
     const address = item.Description || '';
     const parts = address.split(',');
     
-    let line1 = parts[0]?.trim() || '';
-    let line2 = parts[1]?.trim() || '';
-    let city = parts[parts.length - 3]?.trim() || '';
+    const line1 = parts[0]?.trim() || '';
+    const line2 = parts[1]?.trim() || '';
+    const city = parts[parts.length - 3]?.trim() || '';
     const extractedPostcode = postcode || this.extractPostcodeFromAddress(address);
     
     // Determine building type

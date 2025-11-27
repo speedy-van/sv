@@ -5,9 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { routeManager } from '@/lib/orchestration/RouteManager';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +16,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const config = await routeManager.getConfig();
@@ -44,15 +43,14 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const body = await request.json();
-    const adminId = (session.user as any).id;
-
-    const result = await routeManager.updateConfig(body, adminId);
+    const result = await routeManager.updateConfig(body, adminUser.id);
 
     return NextResponse.json({
       success: result.success,
@@ -75,10 +73,11 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { mode } = await request.json();
     
@@ -89,12 +88,15 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const adminId = (session.user as any).id;
     const ipAddress = request.headers.get('x-forwarded-for') || 
                       request.headers.get('x-real-ip') || 
                       'unknown';
 
-    const result = await routeManager.setRoutingMode(mode, adminId, ipAddress);
+    const result = await routeManager.setRoutingMode(
+      mode,
+      adminUser.id,
+      ipAddress,
+    );
 
     return NextResponse.json({
       success: result.success,

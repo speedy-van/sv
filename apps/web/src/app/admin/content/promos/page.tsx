@@ -7,25 +7,12 @@ import {
   VStack,
   Text,
   Badge,
-  Card,
-  CardBody,
   Button,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Input,
   Select,
   Switch,
   FormControl,
   FormLabel,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -33,35 +20,55 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  ModalCloseButton,
   Textarea,
-  Grid,
-  GridItem,
-  Alert,
-  AlertIcon,
   useToast,
-  Tag,
-  TagLabel,
-  TagCloseButton,
+  IconButton,
+  SimpleGrid,
+  Card,
+  CardBody,
+  CardHeader,
+  CardFooter,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  Stack,
   InputGroup,
-  InputRightElement,
-  Progress,
+  InputLeftElement,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useColorModeValue,
+  Flex,
+  Wrap,
+  WrapItem,
+  Center,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FiPlus,
   FiEdit,
-  FiEye,
   FiTrash2,
-  FiSave,
-  FiX,
-  FiGift,
+  FiSearch,
+  FiFilter,
+  FiMoreVertical,
+  FiCopy,
+  FiEye,
+  FiPercent,
+  FiDollarSign,
+  FiUsers,
+  FiCalendar,
+  FiTrendingUp,
 } from 'react-icons/fi';
 
 interface Promotion {
   id: string;
-  reference: string;
+  code: string;
   name: string;
   description?: string;
-  type: string;
+  type: 'percentage' | 'fixed';
   value: number;
   minSpend: number;
   maxDiscount: number;
@@ -69,11 +76,9 @@ interface Promotion {
   usedCount: number;
   validFrom: string;
   validTo: string;
-  status: string;
-  applicableAreas: string[];
-  applicableVans: string[];
+  status: 'active' | 'inactive' | 'expired';
   firstTimeOnly: boolean;
-  createdBy: string;
+  applicableAreas: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -82,31 +87,31 @@ export default function PromotionsPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  // Form state
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+
   const [formData, setFormData] = useState({
-    reference: '',
+    code: '',
     name: '',
     description: '',
-    type: 'percentage',
+    type: 'percentage' as 'percentage' | 'fixed',
     value: 10,
     minSpend: 0,
     maxDiscount: 0,
-    usageLimit: 1000,
+    usageLimit: 100,
     validFrom: new Date().toISOString().split('T')[0],
-    validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0],
-    status: 'active',
-    applicableAreas: [] as string[],
-    applicableVans: [] as string[],
+    validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'active' as 'active' | 'inactive' | 'expired',
     firstTimeOnly: false,
+    applicableAreas: [] as string[],
   });
-
-  const [newArea, setNewArea] = useState('');
-  const [newVan, setNewVan] = useState('');
 
   useEffect(() => {
     fetchPromotions();
@@ -122,10 +127,10 @@ export default function PromotionsPage() {
     } catch (error) {
       console.error('Error fetching promotions:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load promotions',
+        title: 'Error loading promotions',
         status: 'error',
-        duration: 5000,
+        duration: 3000,
+        isClosable: true,
       });
     } finally {
       setLoading(false);
@@ -135,22 +140,19 @@ export default function PromotionsPage() {
   const handleCreateNew = () => {
     setSelectedPromo(null);
     setFormData({
-      reference: '',
+      code: '',
       name: '',
       description: '',
       type: 'percentage',
       value: 10,
       minSpend: 0,
       maxDiscount: 0,
-      usageLimit: 1000,
+      usageLimit: 100,
       validFrom: new Date().toISOString().split('T')[0],
-      validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
+      validTo: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'active',
-      applicableAreas: [],
-      applicableVans: [],
       firstTimeOnly: false,
+      applicableAreas: [],
     });
     onOpen();
   };
@@ -158,7 +160,7 @@ export default function PromotionsPage() {
   const handleEdit = (promo: Promotion) => {
     setSelectedPromo(promo);
     setFormData({
-      reference: promo.reference,
+      code: promo.code,
       name: promo.name,
       description: promo.description || '',
       type: promo.type,
@@ -169,20 +171,27 @@ export default function PromotionsPage() {
       validFrom: new Date(promo.validFrom).toISOString().split('T')[0],
       validTo: new Date(promo.validTo).toISOString().split('T')[0],
       status: promo.status,
-      applicableAreas: promo.applicableAreas,
-      applicableVans: promo.applicableVans,
       firstTimeOnly: promo.firstTimeOnly,
+      applicableAreas: promo.applicableAreas,
     });
     onOpen();
   };
 
   const handleSave = async () => {
+    if (!formData.code || !formData.name || !formData.validFrom || !formData.validTo) {
+      toast({
+        title: 'Please fill all required fields',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     try {
       const response = await fetch('/api/admin/content/promos', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -191,7 +200,8 @@ export default function PromotionsPage() {
           title: 'Success',
           description: 'Promotion saved successfully',
           status: 'success',
-          duration: 5000,
+          duration: 3000,
+          isClosable: true,
         });
         onClose();
         fetchPromotions();
@@ -201,7 +211,8 @@ export default function PromotionsPage() {
           title: 'Error',
           description: error.error || 'Failed to save promotion',
           status: 'error',
-          duration: 5000,
+          duration: 4000,
+          isClosable: true,
         });
       }
     } catch (error) {
@@ -210,491 +221,434 @@ export default function PromotionsPage() {
         title: 'Error',
         description: 'Failed to save promotion',
         status: 'error',
-        duration: 5000,
+        duration: 3000,
+        isClosable: true,
       });
     }
   };
 
-  const addArea = () => {
-    if (newArea && !formData.applicableAreas.includes(newArea)) {
-      setFormData({
-        ...formData,
-        applicableAreas: [...formData.applicableAreas, newArea],
-      });
-      setNewArea('');
-    }
-  };
-
-  const removeArea = (area: string) => {
-    setFormData({
-      ...formData,
-      applicableAreas: formData.applicableAreas.filter(a => a !== area),
-    });
-  };
-
-  const addVan = () => {
-    if (newVan && !formData.applicableVans.includes(newVan)) {
-      setFormData({
-        ...formData,
-        applicableVans: [...formData.applicableVans, newVan],
-      });
-      setNewVan('');
-    }
-  };
-
-  const removeVan = (van: string) => {
-    setFormData({
-      ...formData,
-      applicableVans: formData.applicableVans.filter(v => v !== van),
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({
+      title: 'Code copied!',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'green';
-      case 'inactive':
-        return 'gray';
-      case 'scheduled':
-        return 'blue';
-      case 'expired':
-        return 'red';
-      default:
-        return 'gray';
+      case 'active': return 'green';
+      case 'inactive': return 'yellow';
+      case 'expired': return 'red';
+      default: return 'gray';
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   const getUsagePercentage = (promo: Promotion) => {
-    return (promo.usedCount / promo.usageLimit) * 100;
+    return Math.round((promo.usedCount / promo.usageLimit) * 100);
   };
 
-  const isExpired = (promo: Promotion) => {
-    return new Date() > new Date(promo.validTo);
-  };
+  const filteredPromotions = promotions.filter((promo) => {
+    const matchesSearch = promo.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          promo.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || promo.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
-  const isScheduled = (promo: Promotion) => {
-    return new Date() < new Date(promo.validFrom);
+  // Stats
+  const stats = {
+    total: promotions.length,
+    active: promotions.filter(p => p.status === 'active').length,
+    totalUsage: promotions.reduce((sum, p) => sum + p.usedCount, 0),
   };
 
   if (loading) {
     return (
-      <Box>
-        <Text>Loading promotions...</Text>
+      <Box minH="100vh" bg={bgColor} p={8}>
+        <Center h="50vh">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="blue.500" thickness="4px" />
+            <Text color="gray.500">Loading promotions...</Text>
+          </VStack>
+        </Center>
       </Box>
     );
   }
 
   return (
-    <Box>
-      <HStack justify="space-between" mb={6}>
-        <VStack align="start" spacing={1}>
-          <Heading size="lg">Promotions</Heading>
-          <Text color="gray.600">Manage promotional codes and discounts</Text>
-        </VStack>
-        <Button
-          leftIcon={<FiPlus />}
-          colorScheme="blue"
-          onClick={handleCreateNew}
-        >
-          New Promotion
-        </Button>
-      </HStack>
+    <Box minH="100vh" bg={bgColor} p={8}>
+      <VStack spacing={8} align="stretch">
+        {/* Header */}
+        <Flex justify="space-between" align="center">
+          <Box>
+            <Heading size="xl" mb={2}>Promotional Codes</Heading>
+            <Text fontSize="lg" color="gray.600">Create and manage discount codes for your customers</Text>
+          </Box>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="blue"
+            size="lg"
+            shadow="sm"
+            onClick={handleCreateNew}
+          >
+            Create Promotion
+          </Button>
+        </Flex>
 
-      <Alert status="info" mb={6}>
-        <AlertIcon />
-        Promotions can be percentage or fixed discounts with usage limits and
-        validity periods.
-      </Alert>
+        {/* Stats Cards */}
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+          <Card bg={cardBg} shadow="sm">
+            <CardBody>
+              <Stat>
+                <StatLabel color="gray.600">Total Promotions</StatLabel>
+                <StatNumber fontSize="3xl">{stats.total}</StatNumber>
+                <StatHelpText>
+                  <HStack>
+                    <FiTrendingUp />
+                    <Text>{stats.active} active</Text>
+                  </HStack>
+                </StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
 
-      <Card>
-        <CardBody>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Code</Th>
-                <Th>Name</Th>
-                <Th>Type</Th>
-                <Th>Value</Th>
-                <Th>Usage</Th>
-                <Th>Valid Period</Th>
-                <Th>Status</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {promotions.map(promo => (
-                <Tr key={promo.id}>
-                  <Td>
-                    <Text fontWeight="bold" fontFamily="mono">
-                      {promo.reference}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <VStack align="start" spacing={0}>
-                      <Text fontWeight="bold">{promo.name}</Text>
-                      {promo.description && (
-                        <Text fontSize="sm" color="gray.500">
-                          {promo.description}
+          <Card bg={cardBg} shadow="sm">
+            <CardBody>
+              <Stat>
+                <StatLabel color="gray.600">Active Codes</StatLabel>
+                <StatNumber fontSize="3xl" color="green.500">{stats.active}</StatNumber>
+                <StatHelpText>Currently available</StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+
+          <Card bg={cardBg} shadow="sm">
+            <CardBody>
+              <Stat>
+                <StatLabel color="gray.600">Total Usage</StatLabel>
+                <StatNumber fontSize="3xl">{stats.totalUsage}</StatNumber>
+                <StatHelpText>
+                  <HStack>
+                    <FiUsers />
+                    <Text>Redemptions</Text>
+                  </HStack>
+                </StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+
+        {/* Search and Filters */}
+        <Card bg={cardBg} shadow="sm">
+          <CardBody>
+            <HStack spacing={4}>
+              <InputGroup maxW="400px">
+                <InputLeftElement pointerEvents="none">
+                  <FiSearch color="gray" />
+                </InputLeftElement>
+                <Input
+                  placeholder="Search promotions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </InputGroup>
+              
+              <Select
+                maxW="200px"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="expired">Expired</option>
+              </Select>
+            </HStack>
+          </CardBody>
+        </Card>
+
+        {/* Promotions Grid */}
+        {filteredPromotions.length === 0 ? (
+          <Card bg={cardBg} shadow="sm">
+            <CardBody>
+              <Center py={12}>
+                <VStack spacing={4}>
+                  <Box fontSize="4xl">🎁</Box>
+                  <Text fontSize="lg" color="gray.500">No promotions found</Text>
+                  <Button
+                    leftIcon={<FiPlus />}
+                    colorScheme="blue"
+                    onClick={handleCreateNew}
+                  >
+                    Create Your First Promotion
+                  </Button>
+                </VStack>
+              </Center>
+            </CardBody>
+          </Card>
+        ) : (
+          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
+            {filteredPromotions.map((promo) => (
+              <Card
+                key={promo.id}
+                bg={cardBg}
+                shadow="sm"
+                borderWidth="1px"
+                borderColor={borderColor}
+                _hover={{ shadow: 'md', borderColor: 'blue.300' }}
+                transition="all 0.2s"
+              >
+                <CardHeader pb={3}>
+                  <Flex justify="space-between" align="start">
+                    <Box flex={1}>
+                      <HStack mb={2}>
+                        <Badge colorScheme={getStatusColor(promo.status)} fontSize="sm" px={2} py={1}>
+                          {promo.status}
+                        </Badge>
+                        {promo.firstTimeOnly && (
+                          <Badge colorScheme="purple" fontSize="sm">First Time Only</Badge>
+                        )}
+                      </HStack>
+                      <Heading size="md" mb={1}>{promo.name}</Heading>
+                      <HStack spacing={2}>
+                        <Text fontSize="2xl" fontWeight="bold" color="blue.500" fontFamily="mono">
+                          {promo.code}
                         </Text>
-                      )}
-                    </VStack>
-                  </Td>
-                  <Td>
-                    <Badge variant="outline" colorScheme="blue">
-                      {promo.type}
-                    </Badge>
-                  </Td>
-                  <Td>
-                    <Text>
-                      {promo.type === 'percentage'
-                        ? `${promo.value}%`
-                        : `£${promo.value.toFixed(2)}`}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <VStack align="start" spacing={1}>
-                      <Text fontSize="sm">
-                        {promo.usedCount}/{promo.usageLimit}
-                      </Text>
-                      <Progress
-                        value={getUsagePercentage(promo)}
+                        <IconButton
+                          aria-label="Copy code"
+                          icon={<FiCopy />}
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleCopyCode(promo.code)}
+                        />
+                      </HStack>
+                    </Box>
+                    <Menu>
+                      <MenuButton
+                        as={IconButton}
+                        icon={<FiMoreVertical />}
+                        variant="ghost"
                         size="sm"
-                        colorScheme={
-                          getUsagePercentage(promo) > 80 ? 'red' : 'green'
-                        }
-                        w="100px"
                       />
-                    </VStack>
-                  </Td>
-                  <Td>
-                    <Text fontSize="sm">
-                      {new Date(promo.validFrom).toLocaleDateString()} -{' '}
-                      {new Date(promo.validTo).toLocaleDateString()}
-                    </Text>
-                  </Td>
-                  <Td>
-                    <Badge colorScheme={getStatusColor(promo.status)}>
-                      {isExpired(promo)
-                        ? 'Expired'
-                        : isScheduled(promo)
-                          ? 'Scheduled'
-                          : promo.status}
-                    </Badge>
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <Button
-                        size="xs"
-                        leftIcon={<FiEdit />}
-                        variant="outline"
-                        onClick={() => handleEdit(promo)}
-                      >
-                        Edit
-                      </Button>
-                      <Button size="xs" leftIcon={<FiEye />} variant="outline">
-                        Preview
-                      </Button>
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </CardBody>
-      </Card>
+                      <MenuList>
+                        <MenuItem icon={<FiEdit />} onClick={() => handleEdit(promo)}>
+                          Edit
+                        </MenuItem>
+                        <MenuItem icon={<FiEye />}>View Details</MenuItem>
+                        <MenuItem icon={<FiTrash2 />} color="red.500">
+                          Delete
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
+                  </Flex>
+                </CardHeader>
 
-      {/* Promotion Modal */}
+                <CardBody pt={0}>
+                  {promo.description && (
+                    <Text fontSize="sm" color="gray.600" mb={4}>
+                      {promo.description}
+                    </Text>
+                  )}
+
+                  <SimpleGrid columns={2} spacing={4} mb={4}>
+                    <Box>
+                      <Text fontSize="xs" color="gray.500" mb={1}>Discount</Text>
+                      <HStack>
+                        {promo.type === 'percentage' ? <FiPercent /> : <FiDollarSign />}
+                        <Text fontWeight="bold" fontSize="lg">
+                          {promo.type === 'percentage' ? `${promo.value}%` : `£${promo.value}`}
+                        </Text>
+                      </HStack>
+                    </Box>
+                    <Box>
+                      <Text fontSize="xs" color="gray.500" mb={1}>Min Spend</Text>
+                      <Text fontWeight="semibold">
+                        {promo.minSpend > 0 ? `£${promo.minSpend}` : 'No minimum'}
+                      </Text>
+                    </Box>
+                  </SimpleGrid>
+
+                  <Box mb={4}>
+                    <Flex justify="space-between" mb={1}>
+                      <Text fontSize="xs" color="gray.500">Usage</Text>
+                      <Text fontSize="xs" fontWeight="semibold">
+                        {promo.usedCount} / {promo.usageLimit}
+                      </Text>
+                    </Flex>
+                    <Box w="full" h="2" bg="gray.200" borderRadius="full" overflow="hidden">
+                      <Box
+                        h="full"
+                        bg={getUsagePercentage(promo) >= 90 ? 'red.400' : 'blue.400'}
+                        w={`${getUsagePercentage(promo)}%`}
+                        transition="width 0.3s"
+                      />
+                    </Box>
+                  </Box>
+
+                  <HStack fontSize="sm" color="gray.600">
+                    <FiCalendar />
+                    <Text>
+                      {formatDate(promo.validFrom)} - {formatDate(promo.validTo)}
+                    </Text>
+                  </HStack>
+                </CardBody>
+              </Card>
+            ))}
+          </SimpleGrid>
+        )}
+      </VStack>
+
+      {/* Create/Edit Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="blur(4px)" />
         <ModalContent>
           <ModalHeader>
-            {selectedPromo ? 'Edit Promotion' : 'New Promotion'}
+            {selectedPromo ? 'Edit Promotion' : 'Create New Promotion'}
           </ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
-            <VStack spacing={4}>
-              <Grid templateColumns="repeat(2, 1fr)" gap={4} w="full">
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>Promotion Code</FormLabel>
-                    <Input
-                      value={formData.reference}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          reference: e.target.value.toUpperCase(),
-                        })
-                      }
-                      placeholder="e.g., FIRST10"
-                      fontFamily="mono"
-                    />
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>Name</FormLabel>
-                    <Input
-                      value={formData.name}
-                      onChange={e =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="e.g., First Order Discount"
-                    />
-                  </FormControl>
-                </GridItem>
-              </Grid>
+            <Stack spacing={4}>
+              <SimpleGrid columns={2} spacing={4}>
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Promotion Code</FormLabel>
+                  <Input
+                    placeholder="SUMMER2025"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    fontFamily="mono"
+                    fontWeight="bold"
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Display Name</FormLabel>
+                  <Input
+                    placeholder="Summer Sale"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </FormControl>
+              </SimpleGrid>
 
               <FormControl>
-                <FormLabel>Description</FormLabel>
+                <FormLabel fontSize="sm" fontWeight="semibold">Description</FormLabel>
                 <Textarea
+                  placeholder="Optional description"
                   value={formData.description}
-                  onChange={e =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Optional description of this promotion"
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
                 />
               </FormControl>
 
-              <Grid templateColumns="repeat(3, 1fr)" gap={4} w="full">
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>Type</FormLabel>
-                    <Select
-                      value={formData.type}
-                      onChange={e =>
-                        setFormData({ ...formData, type: e.target.value })
-                      }
-                    >
-                      <option value="percentage">Percentage</option>
-                      <option value="fixed">Fixed Amount</option>
-                      <option value="free_shipping">Free Shipping</option>
-                    </Select>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>
-                      {formData.type === 'percentage'
-                        ? 'Percentage (%)'
-                        : 'Amount (£)'}
-                    </FormLabel>
-                    <NumberInput
-                      value={formData.value}
-                      onChange={value =>
-                        setFormData({ ...formData, value: parseFloat(value) })
-                      }
-                      min={0}
-                      max={formData.type === 'percentage' ? 100 : 1000}
-                      precision={formData.type === 'percentage' ? 0 : 2}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Status</FormLabel>
-                    <Select
-                      value={formData.status}
-                      onChange={e =>
-                        setFormData({ ...formData, status: e.target.value })
-                      }
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="scheduled">Scheduled</option>
-                    </Select>
-                  </FormControl>
-                </GridItem>
-              </Grid>
+              <SimpleGrid columns={2} spacing={4}>
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Discount Type</FormLabel>
+                  <Select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'percentage' | 'fixed' })}
+                  >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (£)</option>
+                  </Select>
+                </FormControl>
 
-              <Grid templateColumns="repeat(2, 1fr)" gap={4} w="full">
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Minimum Spend (£)</FormLabel>
-                    <NumberInput
-                      value={formData.minSpend}
-                      onChange={value =>
-                        setFormData({
-                          ...formData,
-                          minSpend: parseFloat(value),
-                        })
-                      }
-                      min={0}
-                      precision={2}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Maximum Discount (£)</FormLabel>
-                    <NumberInput
-                      value={formData.maxDiscount}
-                      onChange={value =>
-                        setFormData({
-                          ...formData,
-                          maxDiscount: parseFloat(value),
-                        })
-                      }
-                      min={0}
-                      precision={2}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-              </Grid>
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Value</FormLabel>
+                  <Input
+                    type="number"
+                    value={formData.value}
+                    onChange={(e) => setFormData({ ...formData, value: Number(e.target.value) })}
+                  />
+                </FormControl>
 
-              <Grid templateColumns="repeat(2, 1fr)" gap={4} w="full">
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Usage Limit</FormLabel>
-                    <NumberInput
-                      value={formData.usageLimit}
-                      onChange={value =>
-                        setFormData({
-                          ...formData,
-                          usageLimit: parseInt(value),
-                        })
-                      }
-                      min={1}
-                      max={100000}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>First Time Only</FormLabel>
-                    <Switch
-                      isChecked={formData.firstTimeOnly}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          firstTimeOnly: e.target.checked,
-                        })
-                      }
-                    />
-                  </FormControl>
-                </GridItem>
-              </Grid>
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Min Spend (£)</FormLabel>
+                  <Input
+                    type="number"
+                    value={formData.minSpend}
+                    onChange={(e) => setFormData({ ...formData, minSpend: Number(e.target.value) })}
+                  />
+                </FormControl>
 
-              <Grid templateColumns="repeat(2, 1fr)" gap={4} w="full">
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>Valid From</FormLabel>
-                    <Input
-                      type="date"
-                      value={formData.validFrom}
-                      onChange={e =>
-                        setFormData({ ...formData, validFrom: e.target.value })
-                      }
-                    />
-                  </FormControl>
-                </GridItem>
-                <GridItem>
-                  <FormControl isRequired>
-                    <FormLabel>Valid To</FormLabel>
-                    <Input
-                      type="date"
-                      value={formData.validTo}
-                      onChange={e =>
-                        setFormData({ ...formData, validTo: e.target.value })
-                      }
-                    />
-                  </FormControl>
-                </GridItem>
-              </Grid>
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Max Discount (£)</FormLabel>
+                  <Input
+                    type="number"
+                    value={formData.maxDiscount}
+                    onChange={(e) => setFormData({ ...formData, maxDiscount: Number(e.target.value) })}
+                  />
+                </FormControl>
+              </SimpleGrid>
+
+              <SimpleGrid columns={2} spacing={4}>
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Valid From</FormLabel>
+                  <Input
+                    type="date"
+                    value={formData.validFrom}
+                    onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Valid To</FormLabel>
+                  <Input
+                    type="date"
+                    value={formData.validTo}
+                    onChange={(e) => setFormData({ ...formData, validTo: e.target.value })}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Usage Limit</FormLabel>
+                  <Input
+                    type="number"
+                    value={formData.usageLimit}
+                    onChange={(e) => setFormData({ ...formData, usageLimit: Number(e.target.value) })}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="semibold">Status</FormLabel>
+                  <Select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' | 'expired' })}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </Select>
+                </FormControl>
+              </SimpleGrid>
 
               <FormControl>
-                <FormLabel>Applicable Areas</FormLabel>
-                <InputGroup>
-                  <Input
-                    value={newArea}
-                    onChange={e => setNewArea(e.target.value)}
-                    placeholder="Enter area ID"
-                    onKeyPress={e => e.key === 'Enter' && addArea()}
+                <HStack>
+                  <Switch
+                    isChecked={formData.firstTimeOnly}
+                    onChange={(e) => setFormData({ ...formData, firstTimeOnly: e.target.checked })}
+                    colorScheme="blue"
                   />
-                  <InputRightElement>
-                    <Button size="sm" onClick={addArea}>
-                      Add
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-                <HStack spacing={2} mt={2} flexWrap="wrap">
-                  {formData.applicableAreas.map(area => (
-                    <Tag
-                      key={area}
-                      size="md"
-                      colorScheme="blue"
-                      borderRadius="full"
-                    >
-                      <TagLabel>{area}</TagLabel>
-                      <TagCloseButton onClick={() => removeArea(area)} />
-                    </Tag>
-                  ))}
+                  <FormLabel mb={0} fontSize="sm">First-time customers only</FormLabel>
                 </HStack>
               </FormControl>
-
-              <FormControl>
-                <FormLabel>Applicable Van Types</FormLabel>
-                <InputGroup>
-                  <Input
-                    value={newVan}
-                    onChange={e => setNewVan(e.target.value)}
-                    placeholder="Enter van type"
-                    onKeyPress={e => e.key === 'Enter' && addVan()}
-                  />
-                  <InputRightElement>
-                    <Button size="sm" onClick={addVan}>
-                      Add
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-                <HStack spacing={2} mt={2} flexWrap="wrap">
-                  {formData.applicableVans.map(van => (
-                    <Tag
-                      key={van}
-                      size="md"
-                      colorScheme="green"
-                      borderRadius="full"
-                    >
-                      <TagLabel>{van}</TagLabel>
-                      <TagCloseButton onClick={() => removeVan(van)} />
-                    </Tag>
-                  ))}
-                </HStack>
-              </FormControl>
-            </VStack>
+            </Stack>
           </ModalBody>
+
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button
-              leftIcon={<FiSave />}
-              colorScheme="blue"
-              onClick={handleSave}
-            >
-              Save Promotion
+            <Button colorScheme="blue" onClick={handleSave} size="lg">
+              {selectedPromo ? 'Update' : 'Create'} Promotion
             </Button>
           </ModalFooter>
         </ModalContent>

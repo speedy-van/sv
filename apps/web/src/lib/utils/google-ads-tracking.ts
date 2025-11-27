@@ -7,14 +7,20 @@
  * 3. Copy the conversion labels and update the constants below
  */
 
-// Google Ads Conversion ID
+// Google Ads Conversion ID (kept for documentation/reference)
 const GOOGLE_ADS_ID = 'AW-17715630822';
 
 // Verified Conversion Labels from Google Ads (Updated: Nov 23, 2025)
 const STANDARD_BOOKING_CONVERSION_LABEL = '7393649164'; // Standard booking conversion
 const LUXURY_BOOKING_CONVERSION_LABEL = '7375337919'; // Luxury booking conversion
 
-// Phone call conversion tracking removed - not configured in Google Ads
+const logManualTrackingDisabled = (context: string) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `[tracking-disabled:${context}] Manual Google Ads conversion tracking has been disabled in favour of page-load conversions on /booking/success and /booking-luxury/success.`
+    );
+  }
+};
 
 /**
  * Track completed booking conversion
@@ -27,26 +33,9 @@ export const trackBookingConversion = (
   bookingValue: number,
   bookingReference: string
 ): void => {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
-    console.warn('gtag not available - conversion tracking skipped');
-    return;
-  }
-
-  try {
-    window.gtag('event', 'conversion', {
-      'send_to': `${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}`,
-      'value': bookingValue,
-      'currency': 'GBP',
-      'transaction_id': bookingReference,
-    });
-    
-    console.log('✅ Booking conversion tracked:', {
-      value: bookingValue,
-      reference: bookingReference,
-    });
-  } catch (error) {
-    console.error('Failed to track booking conversion:', error);
-  }
+  logManualTrackingDisabled(
+    `standard:${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}:${bookingReference}:${bookingValue}`
+  );
 };
 
 /**
@@ -58,38 +47,7 @@ export const trackBookingConversionEnhanced = (
   bookingReference: string,
   serviceTier: string
 ): void => {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
-    console.warn('gtag not available - conversion tracking skipped');
-    return;
-  }
-
-  try {
-    // Standard conversion event
-    window.gtag('event', 'conversion', {
-      'send_to': `${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}`,
-      'value': bookingValue,
-      'currency': 'GBP',
-      'transaction_id': bookingReference,
-    });
-
-    // Enhanced ecommerce event for GA4
-    window.gtag('event', 'purchase', {
-      'transaction_id': bookingReference,
-      'value': bookingValue,
-      'currency': 'GBP',
-      'items': [
-        {
-          'item_id': 'moving_service',
-          'item_name': 'Man and Van Service',
-          'item_category': serviceTier,
-          'price': bookingValue,
-          'quantity': 1,
-        }
-      ]
-    });
-    
-    console.log('✅ Enhanced booking conversion tracked');
-  } catch (error) {
-    console.error('Failed to track enhanced booking conversion:', error);
-  }
+  logManualTrackingDisabled(
+    `enhanced:${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}:${bookingReference}:${bookingValue}:${serviceTier}`
+  );
 };

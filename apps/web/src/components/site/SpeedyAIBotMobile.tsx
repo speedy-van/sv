@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeSessionStorageSetItem,
+} from '@/lib/safe-storage';
 
 interface Message {
   id: string;
@@ -15,12 +20,23 @@ interface ExtractedData {
   numberOfRooms?: number;
   specialItems?: string[];
   movingDate?: string;
+  vehicleType?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
 }
 
 interface QuoteData {
   total: number;
+  subtotal: number;
+  vat: number;
+  basePrice: number;
+  helpersCost: number;
+  specialItemsCost: number;
   vehicleType: string;
   estimatedDuration: string;
+  helpers: number;
+  distance: number;
 }
 
 export default function SpeedyAIBotMobile() {
@@ -40,6 +56,7 @@ export default function SpeedyAIBotMobile() {
   const [extractedData, setExtractedData] = useState<ExtractedData>({});
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [canCalculate, setCanCalculate] = useState(false);
+  const [customerDetails, setCustomerDetails] = useState<{name?: string; email?: string; phone?: string}>({});
   const [isListening, setIsListening] = useState(false);
   const [supportsSpeech, setSupportsSpeech] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(false);
@@ -67,10 +84,8 @@ export default function SpeedyAIBotMobile() {
   // Init Web Speech API
   useEffect(() => {
     // Load TTS preference
-    try {
-      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('sv_ai_tts_enabled') : null;
-      if (saved != null) setTtsEnabled(saved === 'true');
-    } catch {}
+    const saved = safeLocalStorageGetItem('sv_ai_tts_enabled');
+    if (saved != null) setTtsEnabled(saved === 'true');
 
     const SpeechRecognition: any =
       (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
@@ -151,21 +166,52 @@ export default function SpeedyAIBotMobile() {
 
         if (data.extractedData) {
           setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
+
+          // Update customer details separately for payment handoff
+          if (data.extractedData.customerName || data.extractedData.customerEmail || data.extractedData.customerPhone) {
+            setCustomerDetails((prev) => ({
+              ...prev,
+              name: data.extractedData.customerName || prev.name,
+              email: data.extractedData.customerEmail || prev.email,
+              phone: data.extractedData.customerPhone || prev.phone,
+            }));
+          }
         }
         setCanCalculate(Boolean(data.shouldCalculateQuote && data.extractedData));
       } else {
-        throw new Error(data.error || 'Failed to get response');
+        // Use API error message if available
+        const apiError = data.error || 'Failed to get response';
+        const apiMessage = data.message || apiError;
+        throw new Error(JSON.stringify({ error: apiError, message: apiMessage }));
       }
     } catch (error: any) {
       console.error('Chat error:', error);
-      
+
+      // H4: Specific error messages based on error type
+      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.';
+
+      // Try to parse API error response
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.message) {
+          errorContent = errorData.message;
+        }
+      } catch {
+        // Not a JSON error, check message patterns
+        if (error.message?.includes('fetch') || error.message?.includes('network')) {
+          errorContent = 'Connection issue detected. Please check your internet connection and try again.';
+        } else if (error.message?.includes('timeout')) {
+          errorContent = 'Our servers are busy right now. Please try again in a moment.';
+        }
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.',
+        content: errorContent,
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -224,11 +270,7 @@ export default function SpeedyAIBotMobile() {
   const toggleTts = () => {
     const next = !ttsEnabled;
     setTtsEnabled(next);
-    try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('sv_ai_tts_enabled', String(next));
-      }
-    } catch {}
+    safeLocalStorageSetItem('sv_ai_tts_enabled', String(next));
   };
 
   const calculateQuote = async (data: ExtractedData) => {
@@ -251,10 +293,20 @@ export default function SpeedyAIBotMobile() {
       if (result.success) {
         setQuoteData(result.quote);
         
+        // H1: Detailed pricing breakdown
+        const breakdown = [
+          `**Base:** £${result.quote.basePrice.toFixed(2)}`,
+          result.quote.distance ? `**Distance:** ${result.quote.distance.toFixed(1)}mi` : null,
+          result.quote.helpersCost > 0 ? `**Helpers:** £${result.quote.helpersCost.toFixed(2)}` : null,
+          result.quote.specialItemsCost > 0 ? `**Items:** £${result.quote.specialItemsCost.toFixed(2)}` : null,
+          `**Subtotal:** £${result.quote.subtotal.toFixed(2)}`,
+          `**VAT:** £${result.quote.vat.toFixed(2)}`,
+        ].filter(Boolean).join('\n');
+
         const quoteMessage: Message = {
           id: (Date.now() + 2).toString(),
           role: 'assistant',
-          content: `Great! Based on your requirements:\n\n💰 Total: £${result.quote.total.toFixed(2)}\n🚚 Vehicle: ${result.quote.vehicleType}\n⏱️ Duration: ${result.quote.estimatedDuration}\n\nWould you like to proceed with booking?`,
+          content: `Great! Based on your requirements:\n\n💰 **Total: £${result.quote.total.toFixed(2)}**\n\n${breakdown}\n\n🚚 ${result.quote.vehicleType}\n⏱️ ${result.quote.estimatedDuration}\n\nReady to book?`,
           timestamp: new Date(),
         };
         
@@ -262,6 +314,109 @@ export default function SpeedyAIBotMobile() {
       }
     } catch (error) {
       console.error('Quote calculation error:', error);
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    try {
+      setIsLoading(true);
+
+      // Parse customer name
+      const nameParts = (customerDetails.name || '').trim().split(' ');
+      const firstName = nameParts[0] || 'Customer';
+      const lastName = nameParts.slice(1).join(' ') || 'Speedy';
+
+      // Prepare items array
+      const items = (extractedData.specialItems || []).map(item => {
+        const [quantityPart, ...nameParts] = item.split(' ');
+        const quantity = parseInt(quantityPart) || 1;
+        const name = nameParts.join(' ') || item;
+
+        return {
+          id: `item_${Date.now()}_${Math.random()}`,
+          name: name,
+          category: 'furniture',
+          quantity: quantity,
+          weight: 20,
+          volume: 0.5,
+        };
+      });
+
+      // Create booking
+      const response = await fetch('/api/ai/create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerDetails: {
+            firstName,
+            lastName,
+            email: customerDetails.email || '',
+            phone: customerDetails.phone || '',
+          },
+          pickupAddress: {
+            full: extractedData.pickupAddress || '',
+            postcode: extractedData.pickupAddress?.split(',').pop()?.trim() || '',
+          },
+          dropoffAddress: {
+            full: extractedData.dropoffAddress || '',
+            postcode: extractedData.dropoffAddress?.split(',').pop()?.trim() || '',
+          },
+          items: items.length > 0 ? items : [{
+            id: `room_${Date.now()}`,
+            name: `${extractedData.numberOfRooms || 2} Bedroom Move`,
+            category: 'room-package',
+            quantity: 1,
+            weight: (extractedData.numberOfRooms || 2) * 50,
+            volume: (extractedData.numberOfRooms || 2) * 2,
+          }],
+          serviceType: 'standard',
+          pickupDate: extractedData.movingDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          pricing: {
+            subtotal: quoteData?.total || 150,
+            vat: (quoteData?.total || 150) * 0.2,
+            total: quoteData?.total || 150,
+            distance: quoteData?.distance || 10,
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.payment?.url) {
+        // Show success message
+        const successMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `🎉 Booking created successfully! Your booking number is **${result.booking.bookingNumber}**.\n\nRedirecting you to secure payment in 3 seconds...`,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, successMessage]);
+
+        // Store payment URL for safety
+        safeSessionStorageSetItem('pending_payment_url', result.payment.url);
+        safeSessionStorageSetItem('pending_booking_number', result.booking.bookingNumber);
+
+        // Auto-redirect to payment after 3 seconds
+        setTimeout(() => {
+          if (typeof window !== 'undefined' && result.payment?.url) {
+            window.location.href = result.payment.url;
+          }
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to create booking');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Sorry, there was an error creating your booking: ${error.message || 'Please try again or call us at +44 1202129746.'}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -948,21 +1103,23 @@ export default function SpeedyAIBotMobile() {
                 </div>
               </div>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={handleProceedToPayment}
+                disabled={isLoading}
                 style={{
                   width: '100%',
                   padding: '12px',
                   borderRadius: '12px',
                   border: 'none',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
+                  background: isLoading ? '#9CA3AF' : 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
                   color: '#ffffff',
                   fontSize: '16px',
                   fontWeight: '600',
-                  cursor: 'pointer',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
                   boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                  opacity: isLoading ? 0.7 : 1,
                 }}
               >
-                Book Now
+                {isLoading ? 'Creating booking...' : 'Book Now'}
               </button>
             </div>
           )}

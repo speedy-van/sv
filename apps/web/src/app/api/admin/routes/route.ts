@@ -4,12 +4,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { deriveServiceMetadata } from '@/lib/bookings/serviceType';
 import { createUniqueReference } from '@/lib/ref';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,13 +20,15 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 [Admin Routes API] GET request started');
     
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
       console.log('❌ [Admin Routes API] Unauthorized access attempt');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return authResult;
     }
+    const adminUser = authResult;
+    const userId = adminUser.id;
 
-    console.log('✅ [Admin Routes API] User authenticated:', session.user.email);
+    console.log('✅ [Admin Routes API] User authenticated');
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -344,7 +345,7 @@ export async function GET(request: NextRequest) {
     // Log audit (non-blocking)
     try {
       await logAudit({
-        userId: (session.user as any).id,
+        userId,
         action: 'view_routes',
         details: { filters: { status, driverId, startDate, endDate } },
       });
@@ -478,10 +479,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const body = await request.json();
     const { 
@@ -591,16 +593,11 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    await logAudit(
-      (session.user as any).id,
-      'create_route',
-      undefined,
-      { 
-        targetType: 'route', 
-        targetId: route.id,
-        after: { routeId: route.id, bookingCount: bookings.length, isAutomatic }
-      }
-    );
+    await logAudit(adminUser.id, 'create_route', undefined, {
+      targetType: 'route',
+      targetId: route.id,
+      after: { routeId: route.id, bookingCount: bookings.length, isAutomatic },
+    });
 
     return NextResponse.json({
       success: true,

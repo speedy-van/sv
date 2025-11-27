@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
+  safeLocalStorageGetItem,
+  safeLocalStorageRemoveItem,
+} from '@/lib/safe-storage';
+import {
   Box,
   Container,
   VStack,
@@ -528,17 +532,15 @@ export default function BookingLuxuryPage() {
     const sessionId = searchParams?.get('session_id');
 
     // Check if we're coming from a successful payment and should show success page
-    const savedPaymentSuccess = localStorage.getItem('speedy_van_payment_success');
-    const savedSessionId = localStorage.getItem('speedy_van_session_id');
+    const savedPaymentSuccess = safeLocalStorageGetItem('speedy_van_payment_success');
+    const savedSessionId = safeLocalStorageGetItem('speedy_van_session_id');
 
     // Redirect to success page if payment was successful
     if (paymentStatus === 'success' || (savedPaymentSuccess === 'true' && savedSessionId)) {
-      
-      // Clear localStorage
-      localStorage.removeItem('speedy_van_payment_success');
-      localStorage.removeItem('speedy_van_session_id');
 
-      // Redirect to dedicated success page
+      // Clear localStorage
+      safeLocalStorageRemoveItem('speedy_van_payment_success');
+      safeLocalStorageRemoveItem('speedy_van_session_id');      // Redirect to dedicated success page
       const successUrl = `/booking-luxury/success?session_id=${sessionId || savedSessionId}`;
       window.location.href = successUrl;
       return;

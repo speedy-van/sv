@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
@@ -21,8 +22,22 @@ const smsSendSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check admin authentication
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'admin') {
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = (session as any)?.user?.role === 'admin';
+      
+      if (!session || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

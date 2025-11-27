@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -11,16 +12,22 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const customSession = await getCustomSession();
+    let userRole = (customSession?.user as any)?.role;
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      userRole = (session?.user as any)?.role;
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
-    if ((session.user as any).role !== 'admin' && (session.user as any).role !== 'superadmin') {
+    if (userRole !== 'admin' && userRole !== 'superadmin') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }

@@ -20,7 +20,7 @@ export function withPerformanceMonitoring<T extends any[]>(
         method,
         route,
         userAgent: request.headers.get('user-agent'),
-        ip: request.headers.get('x-forwarded-for') || request.ip,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
       }
     );
     

@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '@/lib/safe-storage';
 import {
   Box,
   VStack,
@@ -124,9 +125,9 @@ export default function SmartSearchEngine({
   // Load recent searches from localStorage on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
-      if (stored) {
-        setRecentSearches(JSON.parse(stored));
+      const stored = safeLocalStorageGetJSON<string[]>(RECENT_SEARCHES_KEY, []);
+      if (stored.length > 0) {
+        setRecentSearches(stored);
       }
     } catch (error) {
       console.error('Error loading recent searches:', error);
@@ -247,11 +248,7 @@ export default function SmartSearchEngine({
     setRecentSearches(newRecentSearches);
     
     // Save to localStorage
-    try {
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(newRecentSearches));
-    } catch (error) {
-      console.error('Error saving recent searches:', error);
-    }
+    safeLocalStorageSetJSON(RECENT_SEARCHES_KEY, newRecentSearches);
     
     setSearchTerm(trimmedTerm);
     onSearch(trimmedTerm);

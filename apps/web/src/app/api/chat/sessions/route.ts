@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 

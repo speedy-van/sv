@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import type { AdminContext, AdminIssue } from '@/lib/ai/groqService';
 import { runAdminChat, runAdminChatStream, logAdminChatInteraction } from '@/lib/services/admin-ai-assistant';
@@ -32,14 +33,40 @@ const adminChatRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   console.log('🤖 [AI CHAT] POST /api/admin/ai/chat called');
   try {
-    const session = await getServerSession(authOptions);
-    console.log('🤖 [AI CHAT] Session:', { hasSession: !!session, role: (session?.user as any)?.role });
-
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      console.log('❌ [AI CHAT] Unauthorized access attempt');
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let userId: string;
+    let userRole: string;
+    let isAdmin = false;
+    
+    if (customSession?.user) {
+      userId = customSession.user.id;
+      userRole = customSession.user.role;
+      isAdmin = userRole === 'admin';
+      console.log('🤖 [AI CHAT] Custom Session:', { userId, role: userRole });
+    } else {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      console.log('🤖 [AI CHAT] NextAuth Session:', { hasSession: !!session, role: (session?.user as any)?.role });
+      
+      if (!session?.user) {
+        console.log('❌ [AI CHAT] Unauthorized access attempt');
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+      
+      userId = (session.user as any).id;
+      userRole = (session.user as any).role;
+      isAdmin = userRole === 'admin';
+    }
+    
+    if (!isAdmin) {
+      console.log('❌ [AI CHAT] Unauthorized - Not admin');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
@@ -73,7 +100,7 @@ export async function POST(request: NextRequest) {
     } = parsed.data;
 
     const adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
@@ -92,7 +119,7 @@ export async function POST(request: NextRequest) {
       adminId: adminUser.id,
       adminName: adminUser.name || 'Admin',
       adminEmail: adminUser.email || '',
-      adminRole: (session.user as any).adminRole || 'admin',
+      adminRole: userRole,
       language,
     };
 

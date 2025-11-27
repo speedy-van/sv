@@ -3,6 +3,7 @@ import { z } from 'zod';
 import Groq from 'groq-sdk';
 import { POPULAR_ITEMS } from '../../../../lib/items/popular-items';
 import GOOGLE_BUSINESS_PROFILE from '../../../../data/google-business-profile';
+import { validateUKPostcode, getPostcodeErrorMessage } from '../../../../lib/postcode-validation';
 
 // Customer Chatbot API Key - Namespaced for isolation
 function getGroqClient() {
@@ -34,12 +35,31 @@ const chatSchema = z.object({
   }).optional(),
 });
 
-const SYSTEM_PROMPT = `You are Speedy AI, an intelligent moving assistant for Speedy Van - a professional moving and logistics company in the UK.
+const SYSTEM_PROMPT = `You are Speedy AI, an intelligent moving assistant for Speedy Van - a professional FURNITURE REMOVAL and LOGISTICS company in the UK.
+
+**WHAT WE DO:**
+- Furniture moving (sofas, beds, wardrobes, tables, chairs, desks)
+- House removals (full house or individual furniture items)
+- Office relocations (desks, filing cabinets, office furniture)
+- Student moves (bedroom furniture, boxes)
+- Appliance delivery (fridges, washing machines, ovens, etc.)
+- Same-day furniture delivery
+
+**WHAT WE DO NOT DO (politely redirect these queries):**
+- ❌ Rubbish removal / waste disposal / junk removal (say: "We specialize in furniture moving, not waste removal. For rubbish disposal, please contact your local council or a licensed waste management service.")
+- ❌ Garden waste / construction debris (say: "We only move furniture and household items, not waste or building materials.")
+- ❌ Vehicle transport (cars, motorbikes) (say: "We move furniture and household goods only, not vehicles.")
+- ❌ Long-term storage only (say: "We provide moving services. For storage solutions, we can recommend partner facilities.")
+
+**SERVICE AREA:**
+- ✅ UK mainland ONLY: England, Scotland, Wales, Northern Ireland
+- ❌ We DO NOT service UK islands: Isle of Man, Jersey, Guernsey, or any other islands
+- If customer mentions island locations, politely explain we serve mainland only
 
 Your role:
 1. Help customers complete FULL BOOKINGS from quote to payment
 2. Guide customers through the entire booking process:
-   - Gather: pickup address, drop-off address, number of rooms OR specific items, special items, moving date
+   - Gather: pickup address (with postcode), drop-off address (with postcode), number of rooms OR specific items, special items, moving date
    - Calculate quote and present pricing with THREE service tiers (Economy, Standard, Priority)
    - Collect: customer name, email, phone number
    - Confirm booking details
@@ -453,8 +473,8 @@ export async function POST(request: NextRequest) {
 
     const contentType = request.headers.get('content-type') || '';
     let validated: z.infer<typeof chatSchema>;
-    let uploadedSummaries: Array<{ name: string; kind: 'image'|'text'|'pdf-unsupported'; note: string }> = [];
-    let extractedFromFiles: Array<{ name: string; quantity?: number }> = [];
+    const uploadedSummaries: Array<{ name: string; kind: 'image'|'text'|'pdf-unsupported'; note: string }> = [];
+    const extractedFromFiles: Array<{ name: string; quantity?: number }> = [];
 
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
@@ -503,6 +523,50 @@ export async function POST(request: NextRequest) {
     }
     logMetric('started_chat', { configured: true });
 
+    // ========================================
+    // PRE-AI GUARDS: Business Scope Enforcement
+    // ========================================
+    const messageText = validated.message.toLowerCase();
+    
+    // Guard 1: Rubbish/Waste Removal (NOT our service)
+    const rubbishKeywords = ['rubbish', 'waste', 'junk', 'garbage', 'trash', 'skip', 'bin', 'disposal', 'debris', 'scrap'];
+    if (rubbishKeywords.some(keyword => messageText.includes(keyword))) {
+      logMetric('rejected_query', { reason: 'rubbish_removal' });
+      return NextResponse.json({
+        success: true,
+        message: "We specialize in moving furniture and household items, not rubbish or waste removal. For rubbish disposal, please contact your local council or a licensed waste management service.\n\nIf you need help moving furniture or household items, I'd be happy to help you get a quote!",
+        extractedData: validated.extractedData || {},
+        shouldCalculateQuote: false,
+        isReadyForPayment: false,
+      });
+    }
+    
+    // Guard 2: Garden/Construction Waste
+    const constructionKeywords = ['garden waste', 'construction', 'building material', 'concrete', 'bricks', 'soil', 'rubble'];
+    if (constructionKeywords.some(keyword => messageText.includes(keyword))) {
+      logMetric('rejected_query', { reason: 'construction_waste' });
+      return NextResponse.json({
+        success: true,
+        message: "We only move furniture and household items, not garden waste or construction materials. For disposal of building materials, please contact a specialized waste removal service.\n\nCan I help you move any furniture instead?",
+        extractedData: validated.extractedData || {},
+        shouldCalculateQuote: false,
+        isReadyForPayment: false,
+      });
+    }
+    
+    // Guard 3: Vehicle Transport
+    const vehicleKeywords = ['car transport', 'vehicle transport', 'motorbike', 'motorcycle', 'automobile'];
+    if (vehicleKeywords.some(keyword => messageText.includes(keyword))) {
+      logMetric('rejected_query', { reason: 'vehicle_transport' });
+      return NextResponse.json({
+        success: true,
+        message: "We move furniture and household goods only, not vehicles. For car or motorbike transport, please contact a specialized vehicle logistics company.\n\nHow can I help with your furniture moving needs?",
+        extractedData: validated.extractedData || {},
+        shouldCalculateQuote: false,
+        isReadyForPayment: false,
+      });
+    }
+
     // Extract data from current message and merge with existing
     const extractedData = extractDataFromMessage(validated.message, validated.extractedData || {});
     if (extractedFromFiles.length) {
@@ -511,6 +575,70 @@ export async function POST(request: NextRequest) {
         ...extractedFromFiles.map(i => i.quantity ? `${i.quantity} x ${i.name}` : i.name)
       ];
     }
+    
+    // ========================================
+    // POSTCODE VALIDATION
+    // ========================================
+    // Extract postcodes from addresses for validation
+    const extractPostcode = (address?: string): string | null => {
+      if (!address) return null;
+      const match = address.match(/\b([A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2})\b/i);
+      return match ? match[0] : null;
+    };
+    
+    const pickupPostcode = extractPostcode(extractedData.pickupAddress);
+    const dropoffPostcode = extractPostcode(extractedData.dropoffAddress);
+    
+    // Validate pickup postcode if present
+    if (pickupPostcode) {
+      const validation = await validateUKPostcode(pickupPostcode);
+      if (!validation.valid) {
+        logMetric('invalid_postcode', { type: 'pickup', postcode: pickupPostcode });
+        return NextResponse.json({
+          success: true,
+          message: getPostcodeErrorMessage(validation, 'pickup'),
+          extractedData,
+          shouldCalculateQuote: false,
+          isReadyForPayment: false,
+        });
+      }
+      if (validation.excluded) {
+        logMetric('excluded_area', { type: 'pickup', area: validation.area });
+        return NextResponse.json({
+          success: true,
+          message: getPostcodeErrorMessage(validation, 'pickup') + "\n\nWe serve all major cities across England, Scotland, Wales, and Northern Ireland. Can I help you with a move on the mainland?",
+          extractedData,
+          shouldCalculateQuote: false,
+          isReadyForPayment: false,
+        });
+      }
+    }
+    
+    // Validate dropoff postcode if present
+    if (dropoffPostcode) {
+      const validation = await validateUKPostcode(dropoffPostcode);
+      if (!validation.valid) {
+        logMetric('invalid_postcode', { type: 'dropoff', postcode: dropoffPostcode });
+        return NextResponse.json({
+          success: true,
+          message: getPostcodeErrorMessage(validation, 'dropoff'),
+          extractedData,
+          shouldCalculateQuote: false,
+          isReadyForPayment: false,
+        });
+      }
+      if (validation.excluded) {
+        logMetric('excluded_area', { type: 'dropoff', area: validation.area });
+        return NextResponse.json({
+          success: true,
+          message: getPostcodeErrorMessage(validation, 'dropoff') + "\n\nWe serve all major cities across England, Scotland, Wales, and Northern Ireland. Can I help you with a move on the mainland?",
+          extractedData,
+          shouldCalculateQuote: false,
+          isReadyForPayment: false,
+        });
+      }
+    }
+    
     const missingFields = computeMissingFields(extractedData);
     if (missingFields.length > 0) {
       logMetric('missing_data', { fields: missingFields });
@@ -617,19 +745,74 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('❌ AI Chat error:', error);
-    
+
+    // H4: Specific error messages based on error type
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Invalid input', details: error.errors },
+        { 
+          success: false, 
+          error: 'VALIDATION_ERROR',
+          message: 'Please check your input and try again.',
+          details: error.errors 
+        },
         { status: 400 }
       );
     }
 
+    // Rate limit errors
+    if (error.status === 429 || error.code === 'RATE_LIMIT_EXCEEDED') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'RATE_LIMIT',
+          message: 'Too many requests. Please wait a moment and try again.',
+        },
+        { status: 429 }
+      );
+    }
+
+    // Timeout errors
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'TIMEOUT',
+          message: 'Our servers are busy right now. Please try again in a moment.',
+        },
+        { status: 504 }
+      );
+    }
+
+    // Network/connection errors
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.message?.includes('fetch failed')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'CONNECTION_ERROR',
+          message: 'Connection issue detected. Please check your internet connection and try again.',
+        },
+        { status: 503 }
+      );
+    }
+
+    // AI service specific errors
+    if (error.message?.includes('AI') || error.message?.includes('Groq') || error.message?.includes('model')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'AI_SERVICE_ERROR',
+          message: 'Our AI service is temporarily unavailable. Please try again or call us at +44 1202129746.',
+        },
+        { status: 503 }
+      );
+    }
+
+    // Generic fallback with phone number
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process chat',
-        message: 'I apologize, I\'m experiencing technical difficulties. Please try again or contact our support team.',
+      {
+        success: false,
+        error: 'INTERNAL_ERROR',
+        message: 'I apologize, I\'m experiencing technical difficulties. Please try again or contact us at +44 1202129746.',
       },
       { status: 500 }
     );

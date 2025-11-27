@@ -211,22 +211,18 @@ export const customerCreate = z.object({
 });
 
 // Admin user schemas
-export const adminUserCreate = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Valid email is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  adminRole: z.string().optional().default('admin'),
-  isActive: z.boolean().optional().default(true),
-});
-
-export const adminUserUpdate = z.object({
-  name: z.string().min(1).optional(),
-  email: z.string().email().optional(),
-  adminRole: z.enum(['super_admin', 'admin', 'moderator']).optional(),
-  isActive: z.boolean().optional(),
-});
-
-// Driver application schemas
+  export const adminUserCreate = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Valid email is required'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    adminRole: z.enum(['superadmin', 'super_admin', 'admin', 'moderator', 'ops', 'support', 'reviewer', 'finance', 'read_only']).optional().default('admin'),
+    isActive: z.boolean().optional().default(true),
+  });  export const adminUserUpdate = z.object({
+    name: z.string().min(1).optional(),
+    email: z.string().email().optional(),
+    adminRole: z.enum(['superadmin', 'super_admin', 'admin', 'moderator', 'ops', 'support', 'reviewer', 'finance', 'read_only']).optional(),
+    isActive: z.boolean().optional(),
+  });// Driver application schemas
 export const driverApplicationCreate = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email is required'),

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 
@@ -21,18 +20,13 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // Admin-only authentication
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
-    const adminId = (session.user as any).id;
-    const adminName = (session.user as any).name || 'Admin';
+    const adminId = authResult.id;
+    const adminName = authResult.name || 'Admin';
 
     const body = await request.json();
     const {

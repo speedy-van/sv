@@ -2,15 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== 'admin') {
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = session?.user?.role === 'admin';
+      
+      if (!session || !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

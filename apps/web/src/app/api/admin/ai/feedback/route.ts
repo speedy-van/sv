@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { createAuditLogEntry } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -11,10 +12,25 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let userId = customSession?.user?.id;
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      userId = session?.user?.id;
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
@@ -35,11 +51,11 @@ export async function POST(request: NextRequest) {
     try {
       const ipAddress =
         request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-        request.ip ??
+        request.headers.get('x-real-ip') ??
         null;
 
       await createAuditLogEntry({
-        actorId: session.user.id,
+        actorId: userId || 'unknown',
         actorRole: 'admin',
         action: 'AI_FEEDBACK_RECORDED',
         targetType: 'ai_assistant',

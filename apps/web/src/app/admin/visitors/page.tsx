@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { safeLocalStorageGetJSON } from '@/lib/safe-storage';
 import {
   Box,
   Container,
@@ -225,9 +226,7 @@ export default function VisitorsAnalyticsPage() {
 
   const loadVisitorData = () => {
     try {
-      const data = JSON.parse(
-        localStorage.getItem('admin-visitor-analytics') || '[]'
-      );
+      const data = safeLocalStorageGetJSON<any[]>('admin-visitor-analytics', []);
       setVisitors(data);
     } catch (error) {
       console.error('Error loading visitor data:', error);

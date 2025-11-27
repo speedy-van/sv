@@ -2,7 +2,7 @@
 
 export type Role = 'admin' | 'driver' | 'customer';
 
-type HasRole = { user?: { id?: string; email?: string; name?: string; role?: string } };
+type HasRole = { user?: { id?: string; email?: string | null; name?: string | null; role?: string } };
 
 export function assertSession(session: unknown): asserts session is HasRole {
   if (!session) throw new Error('UNAUTHORIZED');

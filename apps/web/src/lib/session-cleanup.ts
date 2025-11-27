@@ -1,4 +1,9 @@
 // Session cleanup utility
+import {
+  safeLocalStorageRemoveItem,
+  safeSessionStorageClear,
+} from './safe-storage';
+
 export function clearCorruptedSessions() {
   // Clear NextAuth cookies
   document.cookie = 'next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -7,13 +12,11 @@ export function clearCorruptedSessions() {
   document.cookie = '__Secure-next-auth.csrf-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   
   // Clear localStorage
-  localStorage.removeItem('next-auth.session-token');
-  localStorage.removeItem('next-auth.csrf-token');
-  
+  safeLocalStorageRemoveItem('next-auth.session-token');
+  safeLocalStorageRemoveItem('next-auth.csrf-token');
+
   // Clear sessionStorage
-  sessionStorage.clear();
-  
-  console.log('🧹 Session cleanup completed');
+  safeSessionStorageClear();  console.log('🧹 Session cleanup completed');
 }
 
 export function handleJWTError(error: unknown) {

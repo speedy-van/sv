@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 import { randomBytes } from 'crypto';
@@ -14,9 +15,26 @@ export async function PATCH(
   try {
     console.log('🔧 [APPROVE DEBUG] Starting approval process for ID:', (await params).id);
     
-    // Check admin authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let adminUserId = customSession?.user?.id;
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      adminUserId = (session?.user as any)?.id;
+      if (!session?.user || !isAdmin) {
+        console.log('❌ [APPROVE DEBUG] Unauthorized access attempt');
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       console.log('❌ [APPROVE DEBUG] Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
@@ -25,7 +43,6 @@ export async function PATCH(
     }
 
     const { id: applicationId } = await params;
-    const adminUserId = (session.user as any).id;
     console.log('🔧 [APPROVE DEBUG] Admin user ID:', adminUserId);
 
     // Get the application with additional validation

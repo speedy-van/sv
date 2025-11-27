@@ -461,7 +461,7 @@ async function searchAddressesByPostcodeMapbox(postcode: string, limit: number):
       `avenue ${postcode}`, // Avenue + postcode
     ];
     
-    let allAddresses: any[] = [];
+    const allAddresses: any[] = [];
     
     for (const pattern of searchPatterns) {
       const searchUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(pattern)}.json?` +

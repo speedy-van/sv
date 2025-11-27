@@ -41,6 +41,7 @@ export default function DriverAudioTestPage() {
 
   const bg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const pageBg = useColorModeValue('gray.50', 'gray.900');
 
   // Get driver ID from session
   useEffect(() => {
@@ -142,7 +143,7 @@ export default function DriverAudioTestPage() {
   }
 
   return (
-    <Box p={6} minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')}>
+    <Box p={6} minH="100vh" bg={pageBg}>
       <VStack spacing={6} maxW="800px" mx="auto">
         
         {/* Header */}

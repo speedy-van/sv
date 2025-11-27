@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 
@@ -11,14 +10,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
 
@@ -106,7 +102,7 @@ export async function POST(
         email: booking.customerEmail,
         pickupFloorIssue: hasPickupFloorIssue,
         dropoffFloorIssue: hasDropoffFloorIssue,
-        sentBy: session.user.email,
+        sentBy: user.email,
       });
 
       return NextResponse.json({

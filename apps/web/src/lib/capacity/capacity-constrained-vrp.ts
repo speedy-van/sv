@@ -852,8 +852,8 @@ export async function suggestVanSplit(
     })
   );
   
-  let van1: typeof bookingsWithMetrics = [];
-  let van2: typeof bookingsWithMetrics = [];
+  const van1: typeof bookingsWithMetrics = [];
+  const van2: typeof bookingsWithMetrics = [];
   let van1Volume = 0;
   let van1Weight = 0;
   

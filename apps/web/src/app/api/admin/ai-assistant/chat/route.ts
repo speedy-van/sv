@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     const ipAddress =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      request.ip ??
+      request.headers.get('x-real-ip') ??
       null;
 
     await createAuditLogEntry({
@@ -157,6 +157,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Check admin role - dual-auth pattern
+    const isAdmin = session.user.role === 'admin';
+    const isSuperAdmin = (session.user as any).adminRole === 'superadmin';
+    
+    if (!isAdmin && !isSuperAdmin) {
+      return NextResponse.json(
+        { error: 'Forbidden - Admin access required' },
+        { status: 403 }
       );
     }
 

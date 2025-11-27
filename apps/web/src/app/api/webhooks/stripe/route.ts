@@ -653,7 +653,7 @@ async function sendCustomerConfirmations(booking: any, session: any) {
     };
 
     let emailResult: { success: boolean; error?: string; messageId?: string } = { success: false, error: 'Email not attempted' };
-    let smsResult: { success: boolean; error?: string; messageId?: string } = { success: false, error: 'SMS not attempted' };
+    const smsResult: { success: boolean; error?: string; messageId?: string } = { success: false, error: 'SMS not attempted' };
 
     // Send email confirmation if email is available
     if (customerEmail) {
@@ -854,7 +854,7 @@ async function sendCustomerNotifications(booking: any) {
       driverPhone: booking.Assignment?.Driver?.phone,
     };
 
-    let emailSuccess = false;
+    const emailSuccess = false;
     let smsSuccess = false;
 
     // Email already sent in the first section above - removing duplicate code

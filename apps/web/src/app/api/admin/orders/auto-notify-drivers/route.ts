@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -8,14 +7,11 @@ export const dynamic = 'force-dynamic';
 // POST /api/admin/orders/auto-notify-drivers - Auto notify available drivers about unassigned orders
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     console.log('🚀 Auto-notifying drivers about unassigned orders...');
 

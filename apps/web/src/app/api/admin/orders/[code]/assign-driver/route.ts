@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { upsertAssignment, getActiveAssignment } from '@/lib/utils/assignment-helpers';
@@ -14,14 +13,11 @@ export async function POST(
 ) {
   const startTime = Date.now();
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
     const { driverId, reason } = await request.json();
@@ -177,7 +173,7 @@ export async function POST(
                 action: 'job_removed',
               },
               notes: `Job removed from driver ${existingAssignment.Driver.User?.name || 'Unknown'} by admin`,
-              createdBy: (session.user as any).id,
+              createdBy: user.id,
             }
           });
 
@@ -221,7 +217,7 @@ export async function POST(
                 action: 'job_assigned',
               },
               notes: `Job assigned to driver ${driver.User?.name || 'Unknown'} by admin`,
-              createdBy: (session.user as any).id,
+              createdBy: user.id,
             }
           });
 
@@ -265,7 +261,7 @@ export async function POST(
                 action: 'job_assigned',
               },
               notes: `Job assigned to driver ${driver.User?.name || 'Unknown'} by admin`,
-              createdBy: (session.user as any).id,
+              createdBy: user.id,
             }
           });
 
@@ -520,7 +516,7 @@ export async function POST(
       // Create audit log
       await prisma.auditLog.create({
         data: {
-          actorId: (session.user as any).id,
+        actorId: user.id,
           actorRole: 'admin',
           action: 'driver_assigned',
           targetType: 'booking',

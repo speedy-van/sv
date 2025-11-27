@@ -5,6 +5,7 @@ import { parseJson, parseParams } from '@/lib/validation/helpers';
 import { adminUserUpdate, idParam } from '@/lib/validation/schemas';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 
 // PUT /api/admin/users/[id] - Update admin user
 export const PUT = withApiHandler(
@@ -49,9 +50,16 @@ export const PUT = withApiHandler(
 
     // Prevent superadmin from being deactivated by non-superadmin
     if (existingUser.adminRole === 'superadmin' && isActive === false) {
-      const session = await getServerSession(authOptions);
+      const customSession = await getCustomSession();
+      let currentUserId = customSession?.user?.id;
+      
+      if (!customSession?.user) {
+        const session = await getServerSession(authOptions);
+        currentUserId = (session?.user as any)?.id;
+      }
+      
       const currentUser = await prisma.user.findUnique({
-        where: { id: (session?.user as any)?.id },
+        where: { id: currentUserId },
       });
 
       if (currentUser?.adminRole !== 'superadmin') {
@@ -115,8 +123,15 @@ export const DELETE = withApiHandler(
     }
 
     // Prevent self-deletion
-    const session = await getServerSession(authOptions);
-    if (userId === (session?.user as any)?.id) {
+    const customSession = await getCustomSession();
+    let currentUserId = customSession?.user?.id;
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      currentUserId = (session?.user as any)?.id;
+    }
+    
+    if (userId === currentUserId) {
       return httpJson(400, { error: 'Cannot delete your own account' });
     }
 

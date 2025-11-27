@@ -21,6 +21,12 @@ import {
 import { FiX, FiSend, FiCheckCircle } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import SpeedyAIIcon from './SpeedyAIIcon';
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeSessionStorageGetItem,
+  safeSessionStorageSetItem,
+} from '@/lib/safe-storage';
 
 const MotionBox = motion.create(Box);
 const MotionFlex = motion.create(Flex);
@@ -48,6 +54,9 @@ interface QuoteData {
   total: number;
   subtotal: number;
   vat: number;
+  basePrice: number;
+  helpersCost: number;
+  specialItemsCost: number;
   vehicleType: string;
   estimatedDuration: string;
   helpers: number;
@@ -104,12 +113,10 @@ export default function SpeedyAIBot() {
   // Detect Web Speech API support and init recognizer
   useEffect(() => {
     // Load TTS preference
-    try {
-      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('sv_ai_tts_enabled') : null;
-      if (saved != null) {
-        setTtsEnabled(saved === 'true');
-      }
-    } catch {}
+    const saved = safeLocalStorageGetItem('sv_ai_tts_enabled');
+    if (saved != null) {
+      setTtsEnabled(saved === 'true');
+    }
 
     const SpeechRecognition: any =
       (typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
@@ -230,23 +237,57 @@ export default function SpeedyAIBot() {
           setIsReadyForPayment(true);
         }
       } else {
-        throw new Error(data.error || 'Failed to get response');
+        // Use API error message if available
+        const apiError = data.error || 'Failed to get response';
+        const apiMessage = data.message || apiError;
+        throw new Error(JSON.stringify({ error: apiError, message: apiMessage }));
       }
     } catch (error: any) {
       console.error('Chat error:', error);
-      
+
+      // H4: Specific error messages based on error type
+      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.';
+      let toastTitle = 'Error';
+      let toastDescription = 'Something went wrong';
+
+      // Try to parse API error response
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.message) {
+          errorContent = errorData.message;
+          toastDescription = errorData.message;
+          
+          // Map error types to friendly titles
+          if (errorData.error === 'RATE_LIMIT') toastTitle = 'Too Many Requests';
+          else if (errorData.error === 'TIMEOUT') toastTitle = 'Timeout';
+          else if (errorData.error === 'CONNECTION_ERROR') toastTitle = 'Connection Error';
+          else if (errorData.error === 'NO_AVAILABILITY') toastTitle = 'Unavailable';
+        }
+      } catch {
+        // Not a JSON error, check message patterns
+        if (error.message?.includes('fetch') || error.message?.includes('network')) {
+          errorContent = 'Connection issue detected. Please check your internet connection and try again.';
+          toastTitle = 'Connection Error';
+          toastDescription = 'Please check your internet connection';
+        } else if (error.message?.includes('timeout')) {
+          errorContent = 'Our servers are busy right now. Please try again in a moment.';
+          toastTitle = 'Timeout';
+          toastDescription = 'Servers are busy, please retry';
+        }
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.',
+        content: errorContent,
         timestamp: new Date(),
       };
-      
+
       setMessages((prev) => [...prev, errorMessage]);
-      
+
       toast({
-        title: 'Connection Error',
-        description: 'Failed to connect to AI assistant',
+        title: toastTitle,
+        description: toastDescription,
         status: 'error',
         duration: 3000,
       });
@@ -305,11 +346,7 @@ export default function SpeedyAIBot() {
   const toggleTts = () => {
     const next = !ttsEnabled;
     setTtsEnabled(next);
-    try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('sv_ai_tts_enabled', String(next));
-      }
-    } catch {}
+    safeLocalStorageSetItem('sv_ai_tts_enabled', String(next));
   };
 
   const calculateQuote = async (data: ExtractedData) => {
@@ -333,10 +370,20 @@ export default function SpeedyAIBot() {
       if (result.success) {
         setQuoteData(result.quote);
         
+        // H1: Detailed pricing breakdown
+        const breakdown = [
+          `**Base Price:** £${result.quote.basePrice.toFixed(2)}`,
+          result.quote.distance ? `**Distance:** ${result.quote.distance.toFixed(1)} miles` : null,
+          result.quote.helpersCost > 0 ? `**Helpers:** £${result.quote.helpersCost.toFixed(2)} (${result.quote.helpers} helpers)` : null,
+          result.quote.specialItemsCost > 0 ? `**Special Items:** £${result.quote.specialItemsCost.toFixed(2)}` : null,
+          `**Subtotal:** £${result.quote.subtotal.toFixed(2)}`,
+          `**VAT (20%):** £${result.quote.vat.toFixed(2)}`,
+        ].filter(Boolean).join('\n');
+
         const quoteMessage: Message = {
           id: (Date.now() + 2).toString(),
           role: 'assistant',
-          content: `Great! Based on your requirements, here's your instant quote:\n\n💰 **Total: £${result.quote.total.toFixed(2)}**\n🚚 Vehicle: ${result.quote.vehicleType}\n⏱️ Estimated Duration: ${result.quote.estimatedDuration}\n👷 Helpers: ${result.quote.helpers} ${result.quote.helpers > 0 ? 'included' : ''}\n\nThis includes VAT and all fees. Would you like to proceed with booking?`,
+          content: `Great! Based on your requirements, here's your instant quote:\n\n💰 **Total: £${result.quote.total.toFixed(2)}**\n\n**Breakdown:**\n${breakdown}\n\n🚚 Vehicle: ${result.quote.vehicleType}\n⏱️ Duration: ${result.quote.estimatedDuration}\n\nWould you like to proceed with booking?`,
           timestamp: new Date(),
         };
         
@@ -413,20 +460,23 @@ export default function SpeedyAIBot() {
       const result = await response.json();
       
       if (result.success && result.payment?.url) {
-        // Show success message with payment link (NO AUTO-REDIRECT)
+        // Show success message
         const successMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `🎉 Booking created successfully! Your booking number is **${result.booking.bookingNumber}**.\n\nYour payment link is ready. Click the button below when you're ready to complete payment.`,
+          content: `🎉 Booking created successfully! Your booking number is **${result.booking.bookingNumber}**.\n\nRedirecting you to secure payment in 3 seconds...`,
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, successMessage]);
-        
-        // Store payment URL for manual access
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('pending_payment_url', result.payment.url);
-          sessionStorage.setItem('pending_booking_number', result.booking.bookingNumber);
-        }
+
+        // Store payment URL for safety
+        safeSessionStorageSetItem('pending_payment_url', result.payment.url);
+        safeSessionStorageSetItem('pending_booking_number', result.booking.bookingNumber);        // Auto-redirect to payment after 3 seconds
+        setTimeout(() => {
+          if (typeof window !== 'undefined' && result.payment?.url) {
+            window.location.href = result.payment.url;
+          }
+        }, 3000);
       } else {
         throw new Error(result.error || 'Failed to create booking');
       }
@@ -908,13 +958,13 @@ export default function SpeedyAIBot() {
                       >
                         Create Booking
                       </Button>
-                      {typeof window !== 'undefined' && sessionStorage.getItem('pending_payment_url') && (
+                      {safeSessionStorageGetItem('pending_payment_url') && (
                         <Button
                           size="sm"
                           colorScheme="blue"
                           w="full"
                           as="a"
-                          href={sessionStorage.getItem('pending_payment_url') || '#'}
+                          href={safeSessionStorageGetItem('pending_payment_url') || '#'}
                           target="_blank"
                           leftIcon={<Icon as={FiCheckCircle} />}
                         >

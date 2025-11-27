@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     // Get the most recent active pricing settings
@@ -51,11 +49,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const body = await request.json();
     const { customerPriceAdjustment, driverRateMultiplier, isActive } = body;
@@ -102,8 +100,8 @@ export async function POST(request: NextRequest) {
         customerPriceAdjustment,
         driverRateMultiplier,
         isActive,
-        createdBy: session.user.id,
-        updatedBy: session.user.id,
+        createdBy: adminUser.id,
+        updatedBy: adminUser.id,
       },
     });
 

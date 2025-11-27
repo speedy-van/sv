@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -12,10 +11,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { enabled } = await request.json();
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return await withPrisma(async (prisma) => {
+    return await withPrisma(async prisma => {
       // Deactivate old settings
       await prisma.dispatchSettings.updateMany({
         where: { isActive: true },
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         data: {
           mode: enabled ? 'auto' : 'manual',
           isActive: true,
-          updatedBy: (session.user as any).id
+          updatedBy: adminUser.id
         }
       });
 
@@ -63,12 +63,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
-    return await withPrisma(async (prisma) => {
+    return await withPrisma(async prisma => {
       const settings = await prisma.dispatchSettings.findFirst({
         where: { isActive: true },
         orderBy: { createdAt: 'desc' }

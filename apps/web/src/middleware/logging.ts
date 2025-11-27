@@ -423,7 +423,7 @@ export class LoggingMiddleware {
     return forwardedFor?.split(',')[0]?.trim() ||
            realIp ||
            connectingIp ||
-           request.ip ||
+           request.headers.get('x-real-ip') ||
            'unknown';
   }
 

@@ -1,15 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
@@ -23,6 +38,7 @@ export async function GET(request: NextRequest) {
     console.log('🚗 Admin fetching available drivers:', { location, limit });
 
     // First, let's check how many drivers we have in total
+    const allDriversCount = await prisma.driver.count();
     const totalDriversCount = await prisma.driver.count({
       where: {
         status: 'active',
@@ -38,10 +54,27 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Check all drivers' statuses
+    const allDrivers = await prisma.driver.findMany({
+      select: {
+        id: true,
+        status: true,
+        onboardingStatus: true,
+        User: { select: { name: true, email: true } }
+      },
+      take: 10
+    });
+
     console.log('📊 Driver statistics:', {
+      allDriversInDB: allDriversCount,
       totalActive: totalDriversCount,
       withAvailabilityRecord: driversWithAvailability,
-      missingAvailability: totalDriversCount - driversWithAvailability
+      missingAvailability: totalDriversCount - driversWithAvailability,
+      sampleDrivers: allDrivers.map(d => ({
+        name: d.User.name,
+        status: d.status,
+        onboardingStatus: d.onboardingStatus
+      }))
     });
 
     // Get active drivers who are available for new assignments
@@ -163,12 +196,14 @@ export async function GET(request: NextRequest) {
       busyCount: sortedDrivers.filter(d => !d.isAvailable).length,
       onlineCount: sortedDrivers.filter(d => d.DriverAvailability.status === 'online').length,
       unknownStatusCount: sortedDrivers.filter(d => d.DriverAvailability.status === 'unknown').length,
-      sampleDrivers: sortedDrivers.slice(0, 3).map(d => ({
+      allDriversDetails: sortedDrivers.map(d => ({
+        id: d.id,
         name: d.name,
         isAvailable: d.isAvailable,
         status: d.DriverAvailability.status,
         activeJobs: d.totalActiveJobs,
-        reason: d.availabilityReason
+        reason: d.availabilityReason,
+        hasAvailabilityRecord: d.DriverAvailability.hasRecord
       }))
     });
 

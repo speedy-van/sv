@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
@@ -8,8 +9,22 @@ export const dynamic = 'force-dynamic';
 
 // GET - List all reports
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  let userId = customSession?.user?.id;
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    userId = session?.user?.id;
+    if (!session?.user || !isAdmin) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -29,7 +44,7 @@ export async function GET() {
         nextRun: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         status: 'active' as const,
         createdAt: new Date().toISOString(),
-        createdBy: session.user.id,
+        createdBy: customSession?.user?.id,
       },
       {
         id: '2',
@@ -44,7 +59,7 @@ export async function GET() {
         nextRun: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'active' as const,
         createdAt: new Date().toISOString(),
-        createdBy: session.user.id,
+        createdBy: customSession?.user?.id,
       },
       {
         id: '3',
@@ -59,11 +74,11 @@ export async function GET() {
         nextRun: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'paused' as const,
         createdAt: new Date().toISOString(),
-        createdBy: session.user.id,
+        createdBy: customSession?.user?.id,
       },
     ];
 
-    await logAudit(session.user.id, 'read_reports', undefined, { targetType: 'analytics_report', before: null, after: { count: mockReports.length } });
+    await logAudit((customSession?.user?.id ?? 'unknown'), 'read_reports', undefined, { targetType: 'analytics_report', before: null, after: { count: mockReports.length } });
 
     return Response.json({ reports: mockReports });
   } catch (error) {
@@ -74,8 +89,11 @@ export async function GET() {
 
 // POST - Create new report
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  const customSession = await getCustomSession();
+  const fallbackSession = await getServerSession(authOptions);
+  const sessionUser = customSession?.user ?? fallbackSession?.user;
+
+  if (!sessionUser || sessionUser.role !== 'admin') {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -96,6 +114,8 @@ export async function POST(request: NextRequest) {
       return new Response('Missing required fields', { status: 400 });
     }
 
+    const createdBy = sessionUser.id ?? 'unknown';
+
     // Create mock report (in real implementation, save to database)
     const newReport = {
       id: Date.now().toString(),
@@ -113,10 +133,14 @@ export async function POST(request: NextRequest) {
           : undefined,
       status: 'active' as const,
       createdAt: new Date().toISOString(),
-      createdBy: session.user.id,
+      createdBy,
     };
 
-    await logAudit(session.user.id, 'create_report', newReport.id, { targetType: 'analytics_report', before: null, after: { reportId: newReport.id, name: newReport.name } });
+    await logAudit(createdBy, 'create_report', newReport.id, {
+      targetType: 'analytics_report',
+      before: null,
+      after: { reportId: newReport.id, name: newReport.name },
+    });
 
     return Response.json({ report: newReport });
   } catch (error) {

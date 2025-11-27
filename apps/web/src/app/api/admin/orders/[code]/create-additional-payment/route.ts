@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { AdditionalPaymentStatus } from '@prisma/client';
 import { logAudit } from '@/lib/audit';
@@ -22,10 +21,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     if (!stripe) {
       return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 });
@@ -93,7 +93,7 @@ export async function POST(
         paymentPurpose: 'additional_charge',
         additionalAmount: difference.toString(),
         targetTotalGBP: targetTotalGBP.toString(),
-        requestedBy: (session.user as any).email || 'admin',
+        requestedBy: user.email || 'admin',
       },
       payment_intent_data: {
         metadata: {
@@ -102,7 +102,7 @@ export async function POST(
           paymentPurpose: 'additional_charge',
           additionalAmount: difference.toString(),
           targetTotalGBP: targetTotalGBP.toString(),
-          requestedBy: (session.user as any).email || 'admin',
+          requestedBy: user.email || 'admin',
         },
       },
     });
@@ -121,7 +121,7 @@ export async function POST(
       },
     });
 
-    await logAudit((session.user as any).id, 'request_additional_payment', booking.id, {
+    await logAudit(user.id, 'request_additional_payment', booking.id, {
       targetTotalGBP,
       difference,
       checkoutSessionId: checkoutSession.id,

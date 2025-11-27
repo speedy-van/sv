@@ -551,6 +551,44 @@ const EnhancedAdminRoutesDashboard = ({
     onRemoveOpen();
   };
 
+  // Load drops when opening Remove Drop modal
+  const handleOpenRemoveDropModal = async (route: Route) => {
+    console.log('🔍 Loading drops for route:', route.id);
+    
+    try {
+      // Fetch drops for this route
+      const response = await fetch(`/api/admin/routes/${route.id}/drops`);
+      const data = await response.json();
+      
+      console.log('📦 Drops response:', data);
+      
+      if (data.success && data.drops) {
+        // Update the route with the fetched drops
+        const routeWithDrops = {
+          ...route,
+          drops: data.drops
+        };
+        setSelectedRoute(routeWithDrops);
+        onRemoveDropOpen();
+      } else {
+        toast({
+          title: 'Failed to Load Drops',
+          description: data.error || 'Could not load route drops',
+          status: 'error',
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading drops:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load drops for this route',
+        status: 'error',
+        duration: 3000,
+      });
+    }
+  };
+
   const handleRemoveRoute = async () => {
     if (!selectedRouteForRemoval) return;
 
@@ -1250,10 +1288,7 @@ const EnhancedAdminRoutesDashboard = ({
                             </MenuItem>
                             <MenuItem
                               icon={<FiPackage />}
-                              onClick={() => {
-                                setSelectedRoute(route);
-                                onRemoveDropOpen();
-                              }}
+                              onClick={() => handleOpenRemoveDropModal(route)}
                               bg="gray.800"
                               _hover={{ bg: 'gray.700' }}
                               color="orange.400"
@@ -2054,11 +2089,7 @@ const EnhancedAdminRoutesDashboard = ({
                               </MenuItem>
                               <MenuItem
                                 icon={<FiTrash />}
-                                onClick={() => {
-                                  setSelectedRouteForRemoval(route);
-                                  setRemovalType('all');
-                                  onRemoveDropOpen();
-                                }}
+                                onClick={() => handleOpenRemoveDropModal(route)}
                                 bg="gray.700"
                                 _hover={{ bg: 'red.600' }}
                                 color="red.300"

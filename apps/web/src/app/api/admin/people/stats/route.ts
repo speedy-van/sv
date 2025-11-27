@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
@@ -9,15 +10,20 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please login' },
-        { status: 401 }
-      );
+    const customSession = await getCustomSession();
+    let userRole = customSession?.user?.role;
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      userRole = (session?.user as any)?.role;
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Please login' },
+          { status: 401 }
+        );
+      }
     }
-
-    const userRole = (session.user as any)?.role;
     if (userRole !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },

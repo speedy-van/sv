@@ -411,7 +411,7 @@ function getGroqClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.ip || '127.0.0.1';
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '127.0.0.1';
     if (!rateLimit(ip)) {
       return NextResponse.json(
         { success: false, error: 'Too many AI requests. Please wait a moment and try again.' },

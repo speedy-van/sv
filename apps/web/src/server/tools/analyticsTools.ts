@@ -335,7 +335,7 @@ export class GetCustomerBehaviorAnalyticsTool extends BaseTool {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    let whereClause: any = { role: 'customer' };
+    const whereClause: any = { role: 'customer' };
 
     if (input.segment === 'new') {
       whereClause.createdAt = { gte: thirtyDaysAgo };

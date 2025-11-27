@@ -2,12 +2,26 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse, NextRequest } from 'next/server';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const s = await getServerSession(authOptions);
-  if (!s?.user || (s.user as any).role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const s = await getServerSession(authOptions);
+    isAdmin = (s?.user as any)?.role === 'admin';
+    
+    if (!s?.user || !isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

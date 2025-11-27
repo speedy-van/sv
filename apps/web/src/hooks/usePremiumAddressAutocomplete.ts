@@ -1,11 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { 
-  premiumAddressService, 
-  useLuxuryBookingAutocomplete, 
+import {
+  premiumAddressService,
+  useLuxuryBookingAutocomplete,
   useStandardBookingAutocomplete,
   postcodeUtils,
   AddressSuggestion,
-  LocationCoordinates 
+  LocationCoordinates,
 } from '@/lib/premium-location-services';
 
 interface UsePremiumAddressAutocompleteOptions {
@@ -22,14 +22,14 @@ interface UsePremiumAddressAutocompleteReturn {
   isLoading: boolean;
   error: string | null;
   selectedSuggestion: AddressSuggestion | null;
-  
+
   // Actions
   searchAddresses: (query: string) => Promise<void>;
   searchByPostcode: (postcode: string) => Promise<void>;
   selectSuggestion: (suggestion: AddressSuggestion) => void;
   clearSuggestions: () => void;
   clearError: () => void;
-  
+
   // Utils
   getPlaceDetails: (placeId: string) => Promise<any>;
   getCacheStats: () => { size: number; keys: string[] };
@@ -45,80 +45,85 @@ export const usePremiumAddressAutocomplete = (
     isLuxuryBooking = false,
     debounceMs = 300,
     maxSuggestions = 5,
-    enableCache = true
+    enableCache = true,
   } = options;
 
   // State
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSuggestion, setSelectedSuggestion] = useState<AddressSuggestion | null>(null);
+  const [selectedSuggestion, setSelectedSuggestion] =
+    useState<AddressSuggestion | null>(null);
 
   // Refs
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string>('');
 
-  // Get the appropriate service based on booking type
-  const autocompleteService = isLuxuryBooking 
-    ? useLuxuryBookingAutocomplete() 
-    : useStandardBookingAutocomplete();
+  // Call both hooks unconditionally (Hooks rules)
+  const luxuryService = useLuxuryBookingAutocomplete();
+  const standardService = useStandardBookingAutocomplete();
 
-  // Debounced search function
-  const searchAddresses = useCallback(async (query: string) => {
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Update last query
-    lastQueryRef.current = query;
-
-    // Clear suggestions for short queries
-    if (query.length < 3) {
-      setSuggestions([]);
-      setError(null);
-      return;
-    }
-
-    // Set loading state
-    setIsLoading(true);
-    setError(null);
-
-    // Set debounced timer
-    debounceTimerRef.current = setTimeout(async () => {
-      try {
-        // Check if query is still the latest
-        if (lastQueryRef.current !== query) {
-          return;
-        }
-
-        const results = await autocompleteService.searchAddresses(query, {
-          proximity,
-          limit: maxSuggestions
-        });
-
-        // Check if query is still the latest
-        if (lastQueryRef.current !== query) {
-          return;
-        }
-
-        setSuggestions(results);
-        setError(null);
-      } catch (err) {
-        // Check if query is still the latest
-        if (lastQueryRef.current !== query) {
-          return;
-        }
-
-        const errorMessage = err instanceof Error ? err.message : 'Search failed';
-        setError(errorMessage);
-        setSuggestions([]);
-        console.error('Address search error:', err);
-      } finally {
-        setIsLoading(false);
+  // Select the appropriate service based on booking type
+  const autocompleteService = isLuxuryBooking ? luxuryService : standardService;
+  const searchAddresses = useCallback(
+    async (query: string) => {
+      // Clear previous timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-    }, debounceMs);
-  }, [autocompleteService, proximity, maxSuggestions, debounceMs]);
+
+      // Update last query
+      lastQueryRef.current = query;
+
+      // Clear suggestions for short queries
+      if (query.length < 3) {
+        setSuggestions([]);
+        setError(null);
+        return;
+      }
+
+      // Set loading state
+      setIsLoading(true);
+      setError(null);
+
+      // Set debounced timer
+      debounceTimerRef.current = setTimeout(async () => {
+        try {
+          // Check if query is still the latest
+          if (lastQueryRef.current !== query) {
+            return;
+          }
+
+          const results = await autocompleteService.searchAddresses(query, {
+            proximity,
+            limit: maxSuggestions,
+          });
+
+          // Check if query is still the latest
+          if (lastQueryRef.current !== query) {
+            return;
+          }
+
+          setSuggestions(results);
+          setError(null);
+        } catch (err) {
+          // Check if query is still the latest
+          if (lastQueryRef.current !== query) {
+            return;
+          }
+
+          const errorMessage =
+            err instanceof Error ? err.message : 'Search failed';
+          setError(errorMessage);
+          setSuggestions([]);
+          console.error('Address search error:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      }, debounceMs);
+    },
+    [autocompleteService, proximity, maxSuggestions, debounceMs]
+  );
 
   // Select suggestion
   const selectSuggestion = useCallback((suggestion: AddressSuggestion) => {
@@ -132,7 +137,7 @@ export const usePremiumAddressAutocomplete = (
     setSuggestions([]);
     setError(null);
     setSelectedSuggestion(null);
-    
+
     // Clear debounce timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -145,36 +150,45 @@ export const usePremiumAddressAutocomplete = (
   }, []);
 
   // Get place details (for luxury booking)
-  const getPlaceDetails = useCallback(async (placeId: string, provider: 'google' | 'mapbox' = 'google') => {
-    if (!isLuxuryBooking) {
-      throw new Error('Place details only available for luxury booking');
-    }
-
-    try {
-      // Check if autocompleteService has getPlaceDetails method
-      if ('getPlaceDetails' in autocompleteService) {
-        const details = await (autocompleteService as any).getPlaceDetails(placeId);
-        return details;
-      } else {
-        throw new Error('Place details not available for this service');
+  const getPlaceDetails = useCallback(
+    async (placeId: string, provider: 'google' | 'mapbox' = 'google') => {
+      if (!isLuxuryBooking) {
+        throw new Error('Place details only available for luxury booking');
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get place details';
-      setError(errorMessage);
-      throw err;
-    }
-  }, [autocompleteService, isLuxuryBooking]);
+
+      try {
+        // Check if autocompleteService has getPlaceDetails method
+        if ('getPlaceDetails' in autocompleteService) {
+          const details = await (autocompleteService as any).getPlaceDetails(
+            placeId
+          );
+          return details;
+        } else {
+          throw new Error('Place details not available for this service');
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to get place details';
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    [autocompleteService, isLuxuryBooking]
+  );
 
   // Search by postcode specifically
-  const searchByPostcode = useCallback(async (postcode: string) => {
-    const formattedPostcode = postcodeUtils.formatUKPostcode(postcode);
-    if (!postcodeUtils.isValidUKPostcode(formattedPostcode)) {
-      setError('Invalid UK postcode format');
-      return;
-    }
-    
-    await searchAddresses(formattedPostcode);
-  }, [searchAddresses]);
+  const searchByPostcode = useCallback(
+    async (postcode: string) => {
+      const formattedPostcode = postcodeUtils.formatUKPostcode(postcode);
+      if (!postcodeUtils.isValidUKPostcode(formattedPostcode)) {
+        setError('Invalid UK postcode format');
+        return;
+      }
+
+      await searchAddresses(formattedPostcode);
+    },
+    [searchAddresses]
+  );
 
   // Get cache stats
   const getCacheStats = useCallback(() => {
@@ -206,19 +220,19 @@ export const usePremiumAddressAutocomplete = (
     isLoading,
     error,
     selectedSuggestion,
-    
+
     // Actions
     searchAddresses,
     searchByPostcode,
     selectSuggestion,
     clearSuggestions,
     clearError,
-    
+
     // Utils
     getPlaceDetails,
     getCacheStats,
     isValidPostcode,
-    formatPostcode
+    formatPostcode,
   };
 };
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { unifiedEmailService, type OrderCancellationData } from '@/lib/email/UnifiedEmailService';
@@ -12,14 +11,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
     const { reason } = await request.json();
@@ -66,7 +62,7 @@ export async function POST(
     });
 
     // Log audit trail
-    await logAudit((session.user as any).id, 'cancel_order', booking.id, { targetType: 'booking', before: { status: booking.status }, after: { status: 'CANCELLED', reason } });
+    await logAudit(user.id, 'cancel_order', booking.id, { targetType: 'booking', before: { status: booking.status }, after: { status: 'CANCELLED', reason } });
 
     // Send cancellation email to customer
     try {
@@ -116,7 +112,7 @@ export async function POST(
         reference: booking.reference,
         previousStatus: booking.status,
         reason,
-        adminUser: session.user.email,
+        adminUser: user.email,
         notificationSent: true
       });
     } catch (pusherError) {

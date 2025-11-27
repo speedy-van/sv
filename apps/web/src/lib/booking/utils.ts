@@ -107,7 +107,7 @@ export const deepEqual = (obj1: any, obj2: any): boolean => {
     
     if (keys1.length !== keys2.length) return false;
     
-    for (let key of keys1) {
+    for (const key of keys1) {
       if (!keys2.includes(key)) return false;
       if (!deepEqual(obj1[key], obj2[key])) return false;
     }
@@ -148,7 +148,7 @@ export const buildEnhancedBookingData = (step1: any) => {
 // Calculate property surcharges
 export const calculatePropertySurcharges = (pickupProperty: any, dropoffProperty: any) => {
   let propertySurcharge = 0;
-  let propertyDetails: string[] = [];
+  const propertyDetails: string[] = [];
   
   // Pickup property surcharge (only if floors > 0)
   const pickupFloors = pickupProperty?.floors || 0;

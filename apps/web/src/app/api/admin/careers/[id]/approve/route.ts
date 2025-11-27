@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
 import { generateEmploymentContract } from '@/lib/contractGenerator';
+import { requireAdmin } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { id } = params;
 
@@ -42,7 +41,7 @@ export async function POST(
       where: { id },
       data: {
         status: 'approved',
-        reviewedBy: session.user.name || session.user.email,
+        reviewedBy: adminUser.name || adminUser.email,
         reviewedAt: new Date(),
       },
     });

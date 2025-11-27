@@ -1,7 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -10,19 +9,16 @@ export async function GET(request: NextRequest) {
   console.log('📞 GET /api/admin/me called - Route handler executed');
   
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
       console.log('❌ Unauthorized - Admin access required');
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+      return authResult;
     }
+    const sessionUser = authResult;
     
     console.log('✅ Admin session found:', { 
-      userId: session.user.id, 
-      email: session.user.email
+      userId: sessionUser.id, 
+      email: sessionUser.email
     });
     
     // Log database connection info for debugging
@@ -35,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Try to find user by session ID first
     let adminUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: sessionUser.id },
       select: {
         id: true,
         name: true,
@@ -45,10 +41,10 @@ export async function GET(request: NextRequest) {
     });
 
     // If not found by ID, try to find by email (fallback)
-    if (!adminUser && session.user.email) {
+    if (!adminUser && sessionUser.email) {
       console.log('⚠️ User not found by ID, trying to find by email...');
       adminUser = await prisma.user.findUnique({
-        where: { email: session.user.email.toLowerCase().trim() },
+        where: { email: sessionUser.email?.toLowerCase().trim() },
         select: {
           id: true,
           name: true,
@@ -59,9 +55,9 @@ export async function GET(request: NextRequest) {
       
       if (adminUser) {
         console.log('✅ User found by email, but ID mismatch:', {
-          sessionId: session.user.id,
+          sessionId: sessionUser.id,
           dbId: adminUser.id,
-          email: session.user.email
+          email: sessionUser.email
         });
       }
     }

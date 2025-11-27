@@ -2,22 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import { Box, Container, VStack, Text, HStack, Link } from '@chakra-ui/react';
+import {
+  getTrustpilotConfig,
+  loadTrustpilotWidget
+} from '@/lib/trustpilot-config';
 
 interface TrustpilotWidgetProps {
   businessUnitId?: string;
   templateId?: string;
+  token?: string;
+  locale?: string;
   theme?: 'light' | 'dark';
   showTitle?: boolean;
 }
 
 export default function TrustpilotWidget({
-  businessUnitId,
-  templateId = '5419b6adfa0340045cd0c9fe',
+  businessUnitId: propBusinessUnitId,
+  templateId: propTemplateId,
+  token: propToken,
+  locale: propLocale,
   theme = 'dark',
   showTitle = true,
 }: TrustpilotWidgetProps) {
-  // Get businessUnitId from environment variable if not provided
-  const finalBusinessUnitId = businessUnitId || process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID || '68b0fc8a6ad677c356e83f14';
+  // Use centralized configuration
+  const config = getTrustpilotConfig();
+  const finalBusinessUnitId = propBusinessUnitId || config.businessUnitId;
+  const finalTemplateId = propTemplateId || config.templateId;
+  const finalToken = propToken || config.token;
+  const finalLocale = propLocale || config.locale;
+
   const [isClient, setIsClient] = useState(false);
   const [widgetError, setWidgetError] = useState(false);
 
@@ -26,240 +39,173 @@ export default function TrustpilotWidget({
     setIsClient(true);
   }, []);
 
-  // Suppress Trustpilot 403 errors in console (common on localhost)
-  // Trustpilot widgets often return 403 on localhost due to domain restrictions
+  // Log diagnostics in development mode (concise, one-time)
   useEffect(() => {
     if (!isClient || typeof window === 'undefined') return;
 
-    // Suppress console errors for Trustpilot 403
-    const originalError = console.error;
-    const originalWarn = console.warn;
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `🔍 Trustpilot widget config: origin=${window.location.origin}, businessUnitId=${finalBusinessUnitId}, templateId=${finalTemplateId}, token=${finalToken}, locale=${finalLocale}`
+      );
+    }
+  }, [isClient, finalBusinessUnitId, finalTemplateId, finalToken, finalLocale]);
 
-    const suppressTrustpilotErrors = (...args: any[]) => {
-      const message = args.join(' ').toLowerCase();
-      if (message.includes('trustpilot') || message.includes('trustbox')) {
-        if (message.includes('403') || 
-            message.includes('failed to load resource') ||
-            message.includes('forbidden')) {
-          setWidgetError(true);
-          return; // Suppress the error
-        }
-      }
-      // Allow other errors through
-      originalError.apply(console, args);
-    };
+  // Handle Trustpilot widget errors gracefully
+  useEffect(() => {
+    if (!isClient || typeof window === 'undefined') return;
 
-    const suppressTrustpilotWarnings = (...args: any[]) => {
-      const message = args.join(' ').toLowerCase();
-      if (message.includes('trustpilot') || message.includes('trustbox')) {
-        if (message.includes('403') || 
-            message.includes('failed to load resource') ||
-            message.includes('forbidden')) {
-          setWidgetError(true);
-          return; // Suppress the warning
-        }
-      }
-      // Allow other warnings through
-      originalWarn.apply(console, args);
-    };
-
-    // Override console methods
-    console.error = suppressTrustpilotErrors;
-    console.warn = suppressTrustpilotWarnings;
-
-    // Listen for network errors from iframes and resources
+    // Listen for resource loading errors
     const handleError = (event: ErrorEvent | Event) => {
       const target = event.target as HTMLElement;
-      let shouldSuppress = false;
 
-      // Check error message
-      if (event instanceof ErrorEvent) {
-        const message = (event.message || '').toLowerCase();
-        if ((message.includes('trustpilot') || message.includes('trustbox')) &&
-            (message.includes('403') || message.includes('failed to load resource'))) {
-          shouldSuppress = true;
+      // Check if error is from a Trustpilot resource
+      if (target && (target.tagName === 'IFRAME' || target.tagName === 'SCRIPT')) {
+        const src = (target as HTMLIFrameElement).src || (target as HTMLScriptElement).src;
+        if (src && src.includes('trustpilot')) {
+          // Silently handle Trustpilot errors (403, etc.) without cluttering console
+          event.preventDefault();
+          event.stopPropagation();
+          setWidgetError(true);
+
+          // Log once in development for debugging
+          if (process.env.NODE_ENV === 'development' && !widgetError) {
+            console.warn('[Trustpilot] Widget failed to load. This is usually due to domain restrictions. Check Trustpilot dashboard for domain whitelisting.');
+          }
+
+          return false;
         }
-      }
-
-      // Check resource source
-      if (target && (target.tagName === 'IFRAME' || target.tagName === 'SCRIPT' || target.tagName === 'IMG')) {
-        const src = (target as HTMLIFrameElement).src || 
-                   (target as HTMLScriptElement).src || 
-                   (target as HTMLImageElement).src;
-        if (src && (src.includes('trustpilot') || src.includes('trustbox'))) {
-          shouldSuppress = true;
-        }
-      }
-
-      if (shouldSuppress) {
-        event.preventDefault();
-        event.stopPropagation();
-        setWidgetError(true);
-        return false;
       }
     };
 
-    // Listen for both error types
     window.addEventListener('error', handleError, true);
 
     return () => {
-      // Restore original console methods
-      console.error = originalError;
-      console.warn = originalWarn;
       window.removeEventListener('error', handleError, true);
     };
-  }, [isClient]);
+  }, [isClient, widgetError]);
 
-  // Load Trustpilot script
+  // Load Trustpilot script and widget
   useEffect(() => {
-    if (!isClient || !finalBusinessUnitId) {
-      return;
-    }
-
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="trustpilot.com/bootstrap"]')) {
-      // Script already loaded, trigger widget initialization
-      if (typeof window !== 'undefined' && (window as any).Trustpilot) {
-        (window as any).Trustpilot.loadFromElement(
-          document.querySelector('.trustpilot-widget'),
-          true
-        );
+    if (!isClient || !finalBusinessUnitId || !config.isConfigured) {
+      if (process.env.NODE_ENV === 'development' && !config.isConfigured) {
+        console.warn('[Trustpilot] Configuration is incomplete. Check environment variables.');
       }
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      console.log('✅ Trustpilot widget script loaded successfully');
-      // Initialize widget after script loads
-      if (typeof window !== 'undefined' && (window as any).Trustpilot) {
-        setTimeout(() => {
-          const widgetElement = document.querySelector('.trustpilot-widget');
-          if (widgetElement) {
-            (window as any).Trustpilot.loadFromElement(widgetElement, true);
-          }
-        }, 100);
-      }
-    };
-    script.onerror = () => {
-      // Silently handle Trustpilot script errors (common on localhost)
-      setWidgetError(true);
-    };
+    // Use centralized script loading helper
+    const cleanup = loadTrustpilotWidget(finalBusinessUnitId, (error: Error) => {
+      if (error) {
+        setWidgetError(true);
 
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup - remove script on unmount
-      const existingScript = document.querySelector('script[src*="trustpilot.com/bootstrap"]');
-      if (existingScript && existingScript.parentNode) {
-        existingScript.parentNode.removeChild(existingScript);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Trustpilot] Widget initialization failed:', error.message);
+        }
       }
-    };
-  }, [isClient, finalBusinessUnitId]);
+    });
+
+    return cleanup;
+  }, [isClient, finalBusinessUnitId, config.isConfigured]);
 
   // Don't render on server
   if (!isClient) {
     return null;
   }
 
+  // If config is invalid, handle gracefully
+  if (!config.isConfigured) {
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <Box p={4} bg="yellow.100" borderRadius="md" border="1px solid" borderColor="yellow.400">
+          <Text fontSize="sm" color="gray.800">
+            ⚠️ Trustpilot widget is not configured. Please check environment variables.
+          </Text>
+        </Box>
+      );
+    }
+    // In production, fail silently
+    return null;
+  }
+
   return (
     <Box
-      py={{ base: 8, md: 12 }}
-      bg="bg.surface"
-      borderTopWidth="1px"
-      borderTopColor="border.primary"
-      display="block"
-      visibility="visible"
-      opacity={1}
-      w="100%"
-      sx={{
-        '@media (max-width: 767px)': {
-          display: 'block !important',
-          visibility: 'visible !important',
-          opacity: '1 !important',
-        }
-      }}
+      as="footer"
+      bg={{ base: 'transparent', md: 'rgba(26, 26, 26, 0.8)' }}
+      borderTop={{ base: 'none', md: '1px solid rgba(255, 255, 255, 0.1)' }}
+      py={{ base: 6, md: 8 }}
+      mt={{ base: 8, md: 12 }}
     >
       <Container maxW="container.xl">
-        <VStack spacing={6}>
-          {/* Trustpilot Widget */}
+        <VStack spacing={{ base: 6, md: 8 }}>
           <Box
             textAlign="center"
             w="full"
-            maxW={{ base: '100%', md: '300px' }}
+            maxW={{ base: '100%', md: '400px' }}
             mx="auto"
             px={{ base: 4, md: 0 }}
           >
-            {showTitle && (
-              <Text
-                fontSize={{ base: 'md', md: 'sm' }}
-                color={{ base: 'white', md: 'text.secondary' }}
-                mb={4}
-                fontWeight="semibold"
-                display="block"
-                visibility="visible"
-                opacity={1}
-                sx={{
-                  '@media (max-width: 767px)': {
-                    display: 'block !important',
-                    visibility: 'visible !important',
-                    opacity: '1 !important',
-                    color: '#FFFFFF !important',
-                    fontSize: '16px !important',
-                  }
-                }}
-              >
-                Trusted by customers worldwide
-              </Text>
-            )}
-
-            {/* Trustpilot Micro Review Count Widget */}
+            {/* Enhanced Trustpilot TrustBox Widget */}
             <Box
               position="relative"
               textAlign="center"
-              minH={{ base: '180px', md: '240px' }}
+              minH={{ base: '80px', md: '80px' }}
               w="100%"
               display="block"
               visibility="visible"
               opacity={1}
+              bg="linear-gradient(135deg, rgba(0, 194, 255, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)"
+              borderRadius="xl"
+              p={6}
+              border="1px solid"
+              borderColor="rgba(0, 194, 255, 0.2)"
+              boxShadow="0 4px 20px rgba(0, 194, 255, 0.1)"
+              transition="all 0.3s ease"
+              _hover={{
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 30px rgba(0, 194, 255, 0.2)',
+                borderColor: 'rgba(0, 194, 255, 0.4)',
+              }}
             >
-              {/* Trustpilot Widget (may fail on localhost) */}
+              {/* Trustpilot Widget - Official TrustBox snippet structure */}
               <Box
                 className="trustpilot-widget"
-                data-locale="en-GB"
-                data-template-id={templateId}
+                data-locale={finalLocale}
+                data-template-id={finalTemplateId}
                 data-businessunit-id={finalBusinessUnitId}
-                data-style-height="240px"
+                data-style-height="52px"
                 data-style-width="100%"
-                data-theme={theme}
+                data-token={finalToken}
                 textAlign="center"
-                minH={{ base: '180px', md: '240px' }}
+                minH="52px"
                 w="100%"
                 display="block"
                 visibility="visible"
                 opacity={1}
+                mb={4}
                 sx={{
                   '@media (max-width: 767px)': {
                     display: 'block !important',
                     visibility: 'visible !important',
                     opacity: '1 !important',
-                    minHeight: '180px !important',
+                    minHeight: '52px !important',
                     '& iframe': {
-                      height: '180px !important',
+                      height: '52px !important',
                     }
                   },
                   '@media (min-width: 768px)': {
-                    minHeight: '240px !important',
+                    minHeight: '52px !important',
                     '& iframe': {
-                      height: '240px !important',
+                      height: '52px !important',
                     }
                   },
                   '& a': {
                     textDecoration: 'none',
                     color: '#00C2FF',
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      color: '#3B82F6',
+                    }
                   },
                   '& .trustpilot-widget': {
                     display: 'inline-block',
@@ -269,57 +215,72 @@ export default function TrustpilotWidget({
                     visibility: 'visible !important',
                     opacity: '1 !important',
                     width: '100% !important',
+                    borderRadius: '8px',
                   }
                 }}
-              />
+              >
+                {/* Fallback link (visible when widget fails to load) */}
+                <a
+                  href="https://www.trustpilot.com/review/speedy-van.co.uk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Trustpilot
+                </a>
+              </Box>
 
-              {/* Clickable Overlay Link - Always visible and clickable */}
+              {/* Enhanced Clickable Link */}
               <Box
                 as="a"
-                href="https://uk.trustpilot.com/review/speedy-van.co.uk"
+                href="https://www.trustpilot.com/review/speedy-van.co.uk"
                 target="_blank"
                 rel="noopener noreferrer"
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-                zIndex={10}
-                cursor="pointer"
                 onClick={(e: React.MouseEvent<HTMLElement>) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  window.open('https://uk.trustpilot.com/review/speedy-van.co.uk', '_blank', 'noopener,noreferrer');
+                  window.open('https://www.trustpilot.com/review/speedy-van.co.uk', '_blank', 'noopener,noreferrer');
                 }}
-                display="inline-block"
-                padding="12px 24px"
-                borderRadius="8px"
-                border="1px solid rgba(59, 130, 246, 0.3)"
-                bg="rgba(26, 26, 26, 0.8)"
-                color="#00C2FF"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                gap={2}
+                padding="14px 32px"
+                borderRadius="full"
+                bg="linear-gradient(135deg, #00C2FF 0%, #3B82F6 100%)"
+                color="white"
                 textDecoration="none"
-                fontWeight="semibold"
-                fontSize="sm"
+                fontWeight="bold"
+                fontSize={{ base: 'sm', md: 'md' }}
                 transition="all 0.3s ease"
+                cursor="pointer"
+                boxShadow="0 4px 15px rgba(0, 194, 255, 0.3)"
+                position="relative"
+                overflow="hidden"
                 _hover={{
-                  bg: 'rgba(59, 130, 246, 0.2)',
-                  borderColor: 'rgba(59, 130, 246, 0.5)',
-                  transform: 'translate(-50%, -50%) scale(1.05)',
-                  boxShadow: '0 4px 12px rgba(0, 194, 255, 0.3)',
+                  transform: 'translateY(-2px) scale(1.02)',
+                  boxShadow: '0 8px 25px rgba(0, 194, 255, 0.5)',
                 }}
-                onMouseEnter={(e: React.MouseEvent<HTMLElement>) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
-                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-                  e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 194, 255, 0.3)';
+                _active={{
+                  transform: 'translateY(0) scale(0.98)',
                 }}
-                onMouseLeave={(e: React.MouseEvent<HTMLElement>) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.8)';
-                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                  e.currentTarget.style.transform = 'translate(-50%, -50%)';
-                  e.currentTarget.style.boxShadow = 'none';
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: '-100%',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                  transition: 'left 0.5s ease',
+                }}
+                sx={{
+                  '&:hover::before': {
+                    left: '100%',
+                  }
                 }}
               >
-                View on Trustpilot
+                <Text as="span" fontSize="lg">⭐</Text>
+                <Text as="span">View Our Reviews</Text>
               </Box>
             </Box>
           </Box>

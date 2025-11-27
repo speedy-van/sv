@@ -541,7 +541,7 @@ export class ComprehensivePricingEngine {
     }
 
     return items.map(item => {
-      let adjustedItem = { ...item };
+      const adjustedItem = { ...item };
 
       // Apply summer peak adjustments
       if (seasonalConfig.summerPeak.active) {
@@ -579,7 +579,7 @@ export class ComprehensivePricingEngine {
   ): WorkerAllocation {
     const twoWorkersRequired: string[] = [];
     const oneWorkerStandard: string[] = [];
-    let conditionalExtras = { ...config.workerAllocation.conditionalExtras };
+    const conditionalExtras = { ...config.workerAllocation.conditionalExtras };
 
     // Analyze each item for worker requirements
     items.forEach(item => {

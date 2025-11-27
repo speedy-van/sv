@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -12,14 +11,11 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    const user = (session as any)?.user as { role?: string; id?: string } | undefined;
-
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    const adminId = user.id as string;
+    const adminUser = authResult;
 
     // Check if attendance exists
     const attendance = await prisma.staffAttendance.findUnique({
@@ -35,7 +31,7 @@ export async function POST(
       where: { id: params.id },
       data: {
         status: 'approved',
-        approvedBy: adminId,
+        approvedBy: adminUser.id,
         approvedAt: new Date(),
       },
       include: {

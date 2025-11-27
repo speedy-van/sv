@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,17 +40,26 @@ interface DeclinedJob {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let userId = customSession?.user?.id;
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      userId = session?.user?.id;
+      
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
-
-    const userRole = (session.user as any)?.role;
-    if (userRole !== 'admin') {
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }

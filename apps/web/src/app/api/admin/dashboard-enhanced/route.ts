@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { penceToPounds } from '@/lib/utils/currency';
 
@@ -9,17 +10,23 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please login' },
-        { status: 401 }
-      );
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
     }
-
-    const userRole = (session.user as any)?.role;
-    if (userRole !== 'admin') {
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }

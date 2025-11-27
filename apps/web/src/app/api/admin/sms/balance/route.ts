@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { getVoodooSMSService } from '@/lib/sms/VoodooSMSService';
 
 export const dynamic = 'force-dynamic';
@@ -11,8 +12,22 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     // Check admin authentication
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'admin') {
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = (session as any)?.user?.role === 'admin';
+      
+      if (!session || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

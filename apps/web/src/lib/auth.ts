@@ -9,6 +9,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getPrismaClient } from './prisma';
 import bcrypt from 'bcryptjs';
+import { getCustomSession } from './custom-auth';
 
 // Define UserRole locally to avoid circular dependency
 export type UserRole = 'customer' | 'driver' | 'admin' | 'superadmin';
@@ -220,6 +221,21 @@ export async function auth() {
 }
 
 export async function requireRole(request: any, roles: string | string[]): Promise<NextResponse | { id: string; email: string; name: string; role: string }> {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  
+  if (customSession?.user) {
+    const userRole = customSession.user.role as string;
+    const requiredRoles = Array.isArray(roles) ? roles : [roles];
+    
+    if (!requiredRoles.includes(userRole)) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+    
+    return customSession.user as { id: string; email: string; name: string; role: string };
+  }
+  
+  // Fallback to NextAuth
   const session = await getServerSession(authOptions);
   
   const user = (session as any)?.user;

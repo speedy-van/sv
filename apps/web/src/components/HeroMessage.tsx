@@ -33,30 +33,46 @@ const HeroMessage: React.FC<HeroMessageProps> = ({
     { icon: FiCheckCircle, text: "Reliable" },
   ];
 
+  //  FIXED: Call all hooks at component level
+  const successBg = useColorModeValue('green.50', 'green.900');
+  const successBorder = useColorModeValue('green.200', 'green.700');
+  const successText = useColorModeValue('green.800', 'green.200');
+  
+  const warningBg = useColorModeValue('yellow.50', 'yellow.900');
+  const warningBorder = useColorModeValue('yellow.200', 'yellow.700');
+  const warningText = useColorModeValue('yellow.800', 'yellow.200');
+  
+  const infoBg = useColorModeValue('blue.50', 'blue.900');
+  const infoBorder = useColorModeValue('blue.200', 'blue.700');
+  const infoText = useColorModeValue('blue.800', 'blue.200');
+  
+  const defaultBg = useColorModeValue('gray.50', 'gray.800');
+  const defaultBorder = useColorModeValue('gray.200', 'gray.600');
+
   const getVariantStyles = () => {
     switch (variant) {
       case 'success':
         return {
-          bg: useColorModeValue('green.50', 'green.900'),
-          borderColor: useColorModeValue('green.200', 'green.700'),
-          textColor: useColorModeValue('green.800', 'green.200'),
+          bg: successBg,
+          borderColor: successBorder,
+          textColor: successText,
         };
       case 'warning':
         return {
-          bg: useColorModeValue('yellow.50', 'yellow.900'),
-          borderColor: useColorModeValue('yellow.200', 'yellow.700'),
-          textColor: useColorModeValue('yellow.800', 'yellow.200'),
+          bg: warningBg,
+          borderColor: warningBorder,
+          textColor: warningText,
         };
       case 'info':
         return {
-          bg: useColorModeValue('blue.50', 'blue.900'),
-          borderColor: useColorModeValue('blue.200', 'blue.700'),
-          textColor: useColorModeValue('blue.800', 'blue.200'),
+          bg: infoBg,
+          borderColor: infoBorder,
+          textColor: infoText,
         };
       default:
         return {
-          bg: useColorModeValue('gray.50', 'gray.800'),
-          borderColor: useColorModeValue('gray.200', 'gray.600'),
+          bg: defaultBg,
+          borderColor: defaultBorder,
           textColor: textColor,
         };
     }

@@ -14,15 +14,15 @@ import {
   useColorModeValue,
   useToken,
   Flex,
-  Badge
+  Badge,
 } from '@chakra-ui/react';
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons';
-import { 
-  premiumAddressService, 
-  useLuxuryBookingAutocomplete, 
+import {
+  premiumAddressService,
+  useLuxuryBookingAutocomplete,
   useStandardBookingAutocomplete,
   AddressSuggestion,
-  LocationCoordinates 
+  LocationCoordinates,
 } from '@/lib/premium-location-services';
 
 interface PremiumAddressAutocompleteProps {
@@ -37,31 +37,33 @@ interface PremiumAddressAutocompleteProps {
   showProviderBadge?: boolean;
 }
 
-export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProps> = ({
-  placeholder = "Enter address...",
-  value = "",
+export const PremiumAddressAutocomplete: React.FC<
+  PremiumAddressAutocompleteProps
+> = ({
+  placeholder = 'Enter address...',
+  value = '',
   onChange,
   onSelect,
   proximity,
   isLuxuryBooking = false,
   isDisabled = false,
   maxSuggestions = 5,
-  showProviderBadge = true
+  showProviderBadge = true,
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  // Get the appropriate service based on booking type
-  const autocompleteService = isLuxuryBooking 
-    ? useLuxuryBookingAutocomplete() 
-    : useStandardBookingAutocomplete();
+  // Call both hooks unconditionally (Hooks rules)
+  const luxuryService = useLuxuryBookingAutocomplete();
+  const standardService = useStandardBookingAutocomplete();
 
+  // Select the appropriate service based on booking type
+  const autocompleteService = isLuxuryBooking ? luxuryService : standardService;
   // Color mode values
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -70,86 +72,96 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400');
 
   // Handle input change with debounced search
-  const handleInputChange = useCallback(async (newValue: string) => {
-    setInputValue(newValue);
-    onChange?.(newValue);
-    
-    // For postcodes, allow shorter input (minimum 2 characters)
-    const minLength = /^[A-Z]{1,2}[0-9]/i.test(newValue.trim()) ? 2 : 3;
-    
-    if (newValue.length < minLength) {
-      setSuggestions([]);
-      setIsOpen(false);
-      return;
-    }
+  const handleInputChange = useCallback(
+    async (newValue: string) => {
+      setInputValue(newValue);
+      onChange?.(newValue);
 
-    setIsLoading(true);
-    setIsOpen(true);
-    
-    try {
-      const results = await autocompleteService.searchAddresses(newValue, {
-        proximity,
-        limit: maxSuggestions
-      });
-      
-      setSuggestions(results);
-      setSelectedIndex(-1);
-    } catch (error) {
-      console.error('Address search error:', error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [autocompleteService, proximity, maxSuggestions, onChange]);
+      // For postcodes, allow shorter input (minimum 2 characters)
+      const minLength = /^[A-Z]{1,2}[0-9]/i.test(newValue.trim()) ? 2 : 3;
+
+      if (newValue.length < minLength) {
+        setSuggestions([]);
+        setIsOpen(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setIsOpen(true);
+
+      try {
+        const results = await autocompleteService.searchAddresses(newValue, {
+          proximity,
+          limit: maxSuggestions,
+        });
+
+        setSuggestions(results);
+        setSelectedIndex(-1);
+      } catch (error) {
+        console.error('Address search error:', error);
+        setSuggestions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [autocompleteService, proximity, maxSuggestions, onChange]
+  );
 
   // Handle suggestion selection with enhanced address handling
-  const handleSuggestionSelect = useCallback((suggestion: AddressSuggestion) => {
-    // Use the most complete address available
-    const displayValue = suggestion.address?.full_address || suggestion.place_name;
-    setInputValue(displayValue);
-    onChange?.(displayValue);
-    onSelect?.(suggestion);
-    setSuggestions([]);
-    setIsOpen(false);
-    setSelectedIndex(-1);
-  }, [onChange, onSelect]);
+  const handleSuggestionSelect = useCallback(
+    (suggestion: AddressSuggestion) => {
+      // Use the most complete address available
+      const displayValue =
+        suggestion.address?.full_address || suggestion.place_name;
+      setInputValue(displayValue);
+      onChange?.(displayValue);
+      onSelect?.(suggestion);
+      setSuggestions([]);
+      setIsOpen(false);
+      setSelectedIndex(-1);
+    },
+    [onChange, onSelect]
+  );
 
   // Handle keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!isOpen || suggestions.length === 0) return;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!isOpen || suggestions.length === 0) return;
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-          handleSuggestionSelect(suggestions[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        setIsOpen(false);
-        setSelectedIndex(-1);
-        inputRef.current?.blur();
-        break;
-    }
-  }, [isOpen, suggestions, selectedIndex, handleSuggestionSelect]);
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev =>
+            prev < suggestions.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev =>
+            prev > 0 ? prev - 1 : suggestions.length - 1
+          );
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+            handleSuggestionSelect(suggestions[selectedIndex]);
+          }
+          break;
+        case 'Escape':
+          setIsOpen(false);
+          setSelectedIndex(-1);
+          inputRef.current?.blur();
+          break;
+      }
+    },
+    [isOpen, suggestions, selectedIndex, handleSuggestionSelect]
+  );
 
   // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
@@ -193,7 +205,7 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
         <Input
           ref={inputRef}
           value={inputValue}
-          onChange={(e) => handleInputChange(e.target.value)}
+          onChange={e => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(suggestions.length > 0)}
           placeholder={placeholder}
@@ -202,10 +214,10 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
           borderColor={borderColor}
           _focus={{
             borderColor: 'blue.500',
-            boxShadow: '0 0 0 1px #3182ce'
+            boxShadow: '0 0 0 1px #3182ce',
           }}
           _hover={{
-            borderColor: 'blue.400'
+            borderColor: 'blue.400',
           }}
         />
       </InputGroup>
@@ -235,7 +247,9 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
                 p={3}
                 cursor="pointer"
                 bg={index === selectedIndex ? hoverBg : 'transparent'}
-                borderBottom={index < suggestions.length - 1 ? '1px solid' : 'none'}
+                borderBottom={
+                  index < suggestions.length - 1 ? '1px solid' : 'none'
+                }
                 borderBottomColor={borderColor}
                 _hover={{ bg: hoverBg }}
                 onClick={() => handleSuggestionSelect(suggestion)}
@@ -245,7 +259,7 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
                   <HStack spacing={3} flex={1}>
                     {/* Icon */}
                     <Text fontSize="lg">{suggestion.icon || '📍'}</Text>
-                    
+
                     {/* Enhanced Address Info */}
                     <VStack align="start" spacing={1} flex={1}>
                       {/* Main Address Line */}
@@ -257,7 +271,7 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
                       >
                         {suggestion.text || suggestion.address?.line1}
                       </Text>
-                      
+
                       {/* Secondary Address Line (if available) */}
                       {suggestion.address?.line2 && (
                         <Text
@@ -269,19 +283,19 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
                           {suggestion.address.line2}
                         </Text>
                       )}
-                      
+
                       {/* Location Details */}
                       <Text
                         fontSize="xs"
                         color={secondaryTextColor}
                         noOfLines={1}
                       >
-                        {suggestion.address?.city && suggestion.address?.postcode 
+                        {suggestion.address?.city &&
+                        suggestion.address?.postcode
                           ? `${suggestion.address.city}, ${suggestion.address.postcode}`
-                          : suggestion.place_name
-                        }
+                          : suggestion.place_name}
                       </Text>
-                      
+
                       {/* Enhanced Badges */}
                       <HStack spacing={2} flexWrap="wrap">
                         {suggestion.address?.postcode && (
@@ -295,15 +309,24 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
                           </Badge>
                         )}
                         {suggestion.type === 'postcode' && (
-                          <Badge size="sm" colorScheme="orange" variant="outline">
+                          <Badge
+                            size="sm"
+                            colorScheme="orange"
+                            variant="outline"
+                          >
                             Postcode Area
                           </Badge>
                         )}
-                        {suggestion.confidence && suggestion.confidence > 0.8 && (
-                          <Badge size="sm" colorScheme="purple" variant="subtle">
-                            High Accuracy
-                          </Badge>
-                        )}
+                        {suggestion.confidence &&
+                          suggestion.confidence > 0.8 && (
+                            <Badge
+                              size="sm"
+                              colorScheme="purple"
+                              variant="subtle"
+                            >
+                              High Accuracy
+                            </Badge>
+                          )}
                       </HStack>
                     </VStack>
                   </HStack>
@@ -326,26 +349,29 @@ export const PremiumAddressAutocomplete: React.FC<PremiumAddressAutocompleteProp
       )}
 
       {/* No results message */}
-      {isOpen && !isLoading && suggestions.length === 0 && inputValue.length >= 3 && (
-        <Box
-          position="absolute"
-          top="100%"
-          left="0"
-          right="0"
-          zIndex={1000}
-          bg={bgColor}
-          border="1px solid"
-          borderColor={borderColor}
-          borderRadius="md"
-          boxShadow="lg"
-          mt={1}
-          p={3}
-        >
-          <Text color={secondaryTextColor} fontSize="sm" textAlign="center">
-            No addresses found. Try a different search term.
-          </Text>
-        </Box>
-      )}
+      {isOpen &&
+        !isLoading &&
+        suggestions.length === 0 &&
+        inputValue.length >= 3 && (
+          <Box
+            position="absolute"
+            top="100%"
+            left="0"
+            right="0"
+            zIndex={1000}
+            bg={bgColor}
+            border="1px solid"
+            borderColor={borderColor}
+            borderRadius="md"
+            boxShadow="lg"
+            mt={1}
+            p={3}
+          >
+            <Text color={secondaryTextColor} fontSize="sm" textAlign="center">
+              No addresses found. Try a different search term.
+            </Text>
+          </Box>
+        )}
     </Box>
   );
 };

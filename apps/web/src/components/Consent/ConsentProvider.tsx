@@ -5,6 +5,10 @@
  */
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+} from '@/lib/safe-storage';
 
 interface ConsentPreferences {
   necessary: boolean;
@@ -47,17 +51,17 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Load saved preferences from localStorage only on client
     if (typeof window !== 'undefined') {
-      const savedPreferences = localStorage.getItem('consent-preferences');
-      const savedHasConsent = localStorage.getItem('consent-given');
+      const savedPreferences = safeLocalStorageGetItem('consent-preferences');
+      const savedHasConsent = safeLocalStorageGetItem('consent-given');
 
       if (savedPreferences) {
         try {
           setPreferences(JSON.parse(savedPreferences));
         } catch (error) {
-          console.error('Failed to parse saved consent preferences:', error);
+          console.warn('Failed to parse saved consent preferences:', error);
         }
       }
 
@@ -67,17 +71,15 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
         setHasConsent(true);
       }
     }
-  }, [initialConsent]);
-
-  const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
+  }, [initialConsent]);  const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
     const updatedPreferences = { ...preferences, ...newPrefs };
     setPreferences(updatedPreferences);
-    localStorage.setItem('consent-preferences', JSON.stringify(updatedPreferences));
+    safeLocalStorageSetItem('consent-preferences', JSON.stringify(updatedPreferences));
   };
 
   const handleSetHasConsent = (consent: boolean) => {
     setHasConsent(consent);
-    localStorage.setItem('consent-given', consent.toString());
+    safeLocalStorageSetItem('consent-given', consent.toString());
   };
 
   return (

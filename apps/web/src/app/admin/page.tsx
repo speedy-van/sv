@@ -1,8 +1,7 @@
-import { authOptions } from '@/lib/auth';
-import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import { getCustomSession } from '@/lib/custom-auth';
 
 // CRITICAL: Force dynamic rendering because we use getServerSession()
 export const dynamic = 'force-dynamic';
@@ -180,7 +179,7 @@ async function getDashboardData() {
 }
 
 export default async function AdminHome() {
-  const session = await getServerSession(authOptions);
+  const session = await getCustomSession();
 
   // Add debugging
   console.log('🔐 Admin page - Session check:', {

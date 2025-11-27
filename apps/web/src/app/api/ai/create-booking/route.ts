@@ -73,31 +73,112 @@ const createBookingSchema = z.object({
   promotionCode: z.string().optional(),
 });
 
+// TODO[SpeedyAI-Phase2-H2]: Add availability check before creating booking
+// Query Booking table for pickupDate conflicts, check driver capacity
+// Return specific error if date unavailable with alternative suggestions
+// TODO[SpeedyAI-Phase2-H2]: Add availability check before creating booking
+// Query Booking table for pickupDate conflicts, check driver capacity
+// Return specific error if date unavailable with alternative suggestions
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validated = createBookingSchema.parse(body);
-    
+
+    // H2: Availability check - simple capacity guard per day per vehicle type
+    const pickupDate = new Date(validated.pickupDate);
+    const startOfDay = new Date(pickupDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(pickupDate.setHours(23, 59, 59, 999));
+
+    // Determine vehicle type for capacity check (default to medium if not specified)
+    const vehicleType = validated.serviceType || 'medium';
+    const capacityPerVehicleType: Record<string, number> = {
+      small: 8,
+      medium: 6,
+      large: 5,
+      luton: 4,
+    };
+
+    const maxCapacity = capacityPerVehicleType[vehicleType] || 6;
+
+    // Count existing bookings on the same day
+    const existingBookings = await prisma.booking.count({
+      where: {
+        scheduledAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          notIn: ['CANCELLED'],
+        },
+      },
+    });
+
+    // Check if capacity exceeded
+    if (existingBookings >= maxCapacity) {
+      // Generate alternative dates (next 3 available days)
+      const alternatives: string[] = [];
+      for (let i = 1; i <= 3; i++) {
+        const altDate = new Date(pickupDate);
+        altDate.setDate(altDate.getDate() + i);
+        alternatives.push(altDate.toISOString().split('T')[0]);
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'NO_AVAILABILITY',
+          message: `We're fully booked on ${pickupDate.toDateString()}. We can accommodate you on alternative dates.`,
+          alternativeDates: alternatives,
+          suggestedMessage: `Our schedule is full for that date. How about ${alternatives[0]} or ${alternatives[1]} instead?`,
+        },
+        { status: 409 }
+      );
+    }
+
     // Generate booking reference
     const reference = `SV-AI-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     
+    // H3: Validate coordinates exist - no silent London fallback
+    if (!validated.pickupAddress.coordinates?.lat || !validated.pickupAddress.coordinates?.lng) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INVALID_COORDINATES',
+          message: 'Unable to resolve pickup address coordinates. Please verify the postcode.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Create pickup address
     const pickupAddress = await prisma.bookingAddress.create({
       data: {
         label: validated.pickupAddress.full,
         postcode: validated.pickupAddress.postcode,
-        lat: validated.pickupAddress.coordinates?.lat || 51.5074,
-        lng: validated.pickupAddress.coordinates?.lng || -0.1278,
+        lat: validated.pickupAddress.coordinates.lat,
+        lng: validated.pickupAddress.coordinates.lng,
       },
     });
     
+    // H3: Validate coordinates exist - no silent London fallback
+    if (!validated.dropoffAddress.coordinates?.lat || !validated.dropoffAddress.coordinates?.lng) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INVALID_COORDINATES',
+          message: 'Unable to resolve dropoff address coordinates. Please verify the postcode.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Create dropoff address
     const dropoffAddress = await prisma.bookingAddress.create({
       data: {
         label: validated.dropoffAddress.full,
         postcode: validated.dropoffAddress.postcode,
-        lat: validated.dropoffAddress.coordinates?.lat || 51.5074,
-        lng: validated.dropoffAddress.coordinates?.lng || -0.1278,
+        lat: validated.dropoffAddress.coordinates.lat,
+        lng: validated.dropoffAddress.coordinates.lng,
       },
     });
     

@@ -8,6 +8,7 @@
 'use client';
 
 import { useState } from 'react';
+import { safeSessionStorageSetItem } from '@/lib/safe-storage';
 import {
   Box,
   Button,
@@ -75,11 +76,9 @@ export default function QuickBookingWidget({ variant = 'floating' }: { variant?:
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Store quote in session
-        sessionStorage.setItem('quickQuote', JSON.stringify(data));
-        
-        // Redirect to booking page with pre-filled data
+        safeSessionStorageSetItem('quickQuote', JSON.stringify(data));        // Redirect to booking page with pre-filled data
         router.push(`/booking?quote=${data.quoteId}`);
       } else {
         throw new Error('Failed to get quote');

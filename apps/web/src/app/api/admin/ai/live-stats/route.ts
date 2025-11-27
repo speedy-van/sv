@@ -25,8 +25,16 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check admin role - dual-auth pattern
+    const isAdmin = session.user.role === 'admin';
+    const isSuperAdmin = (session.user as any).adminRole === 'superadmin';
+    
+    if (!isAdmin && !isSuperAdmin) {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 
     const today = new Date();

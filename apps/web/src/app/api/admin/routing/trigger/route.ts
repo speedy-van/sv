@@ -5,9 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { routeManager } from '@/lib/orchestration/RouteManager';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -18,13 +17,13 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    const adminId = (session.user as any).id;
-    const adminName = session.user.name || 'Admin';
+    const adminUser = authResult;
+    const adminId = adminUser.id;
+    const adminName = adminUser.name || 'Admin';
 
     console.log(`🚀 Auto-routing manually triggered by ${adminName}`);
 

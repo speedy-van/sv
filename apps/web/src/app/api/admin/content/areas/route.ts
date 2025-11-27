@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
@@ -9,9 +8,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const { searchParams } = new URL(request.url);
@@ -41,9 +40,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const body = await request.json();
@@ -76,12 +75,12 @@ export async function POST(request: NextRequest) {
         status: status || 'active',
         blackoutDates: blackoutDates || [],
         surgeMultiplier: surgeMultiplier || 1.0,
-        createdBy: session.user.id,
+        createdBy: authResult.id,
       },
     });
 
     // Log the action
-    await logAudit(session.user.id, 'service_area_create', serviceArea.id, { targetType: 'service_area', before: null, after: { name, postcodes, capacity, status } });
+    await logAudit(authResult.id, 'service_area_create', serviceArea.id, { targetType: 'service_area', before: null, after: { name, postcodes, capacity, status } });
 
     return NextResponse.json(serviceArea);
   } catch (error) {

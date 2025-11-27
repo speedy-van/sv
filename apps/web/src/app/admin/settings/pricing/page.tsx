@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '@/lib/safe-storage';
 import {
   Box,
   VStack,
@@ -319,10 +320,9 @@ export default function PricingSettingsPage() {
 
   // Load change history (simulate from localStorage)
   useEffect(() => {
-    const savedHistory = localStorage.getItem('pricingHistory');
-    if (savedHistory) {
+    const parsed = safeLocalStorageGetJSON<any[]>('pricingHistory', []);
+    if (parsed.length > 0) {
       try {
-        const parsed = JSON.parse(savedHistory);
         setChangeHistory(parsed.map((entry: any) => ({
           ...entry,
           timestamp: new Date(entry.timestamp),
@@ -507,7 +507,7 @@ export default function PricingSettingsPage() {
         
         const updatedHistory = [newEntry, ...changeHistory].slice(0, 20); // Keep last 20
         setChangeHistory(updatedHistory);
-        localStorage.setItem('pricingHistory', JSON.stringify(updatedHistory));
+        safeLocalStorageSetJSON('pricingHistory', updatedHistory);
         
         setCustomNote('');
         

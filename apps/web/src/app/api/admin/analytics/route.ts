@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { subDays, startOfDay, format } from 'date-fns';
@@ -9,8 +10,22 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const s = await getServerSession(authOptions);
-    if (!s?.user || (s.user as any).role !== 'admin') {
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let userId = customSession?.user?.id;
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const s = await getServerSession(authOptions);
+      isAdmin = (s?.user as any)?.role === 'admin';
+      userId = s?.user?.id;
+      if (!s?.user || !isAdmin) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+    }
+    
+    if (!isAdmin) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -336,7 +351,7 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    await logAudit(s.user.id, 'read_analytics', undefined, { targetType: 'analytics', before: null, after: { range, days } });
+    await logAudit(userId || 'unknown', 'read_analytics', undefined, { targetType: 'analytics', before: null, after: { range, days } });
 
     return Response.json(payload);
   } catch (error) {

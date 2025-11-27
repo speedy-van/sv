@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
 
 export const dynamic = 'force-dynamic';
@@ -17,16 +18,23 @@ export async function GET(request: NextRequest) {
       userId = bearerAuth.user.id;
       userRole = bearerAuth.user.role;
     } else {
-      // Fallback to NextAuth session (for web app)
-      const session = await getServerSession(authOptions);
-      if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+      // Try custom session (for web app with cookie auth)
+      const customSession = await getCustomSession();
+      if (customSession?.user) {
+        userId = customSession.user.id;
+        userRole = customSession.user.role;
+      } else {
+        // Fallback to NextAuth session
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+        userId = session.user.id;
+        userRole = (session.user as any).role;
       }
-      userId = session.user.id;
-      userRole = (session.user as any).role;
     }
 
     // Build query based on role

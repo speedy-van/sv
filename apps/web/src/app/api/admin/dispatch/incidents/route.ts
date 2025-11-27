@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { category, description, severity, driverId, jobId } =
       await request.json();
@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
     // Log the incident creation for audit
     await prisma.auditLog.create({
       data: {
-        actorId: (session.user as any).id,
-        actorRole: (session.user as any).role || 'admin',
+        actorId: adminUser.id,
+        actorRole: adminUser.role || 'admin',
         action: 'incident_created',
         targetType: 'driverIncident',
         targetId: incident.id,
@@ -105,9 +105,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const { searchParams } = new URL(request.url);

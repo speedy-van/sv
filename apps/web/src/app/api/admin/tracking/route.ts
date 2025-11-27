@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 
@@ -8,8 +9,19 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -105,7 +117,7 @@ export async function GET(request: NextRequest) {
           case 'CONFIRMED':
             routeProgress = 15;
             break;
-          case 'CONFIRMED':
+          case 'COMPLETED':
             routeProgress = 50;
             break;
           default:

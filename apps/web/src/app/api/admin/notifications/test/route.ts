@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../../lib/auth';
+import { getCustomSession } from '../../../../../lib/custom-auth';
 import { unifiedEmailService } from '../../../../../lib/email/UnifiedEmailService';
 import { getVoodooSMSService } from '../../../../../lib/sms/VoodooSMSService';
 import { COMPANY_CONTACT } from '../../../../../lib/constants/company';
@@ -16,10 +17,23 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check admin authentication
-    const session = await getServerSession(authOptions);
+    // Check admin authentication with dual-auth pattern
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
     
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = session?.user?.role === 'admin';
+      
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

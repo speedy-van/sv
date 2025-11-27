@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import Pusher from 'pusher';
@@ -37,15 +38,21 @@ export async function GET(request: NextRequest) {
     if (bearerAuth.success) {
       userId = bearerAuth.user.id;
     } else {
-      // Fallback to NextAuth session (for web app)
-      const session = await getServerSession(authOptions);
-      if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+      // Try custom session (for web app with cookie auth)
+      const customSession = await getCustomSession();
+      if (customSession?.user) {
+        userId = customSession.user.id;
+      } else {
+        // Fallback to NextAuth session (for web app)
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+        userId = (session.user as any).id;
       }
-      userId = (session.user as any).id;
     }
 
     const { searchParams } = new URL(request.url);
@@ -168,16 +175,23 @@ export async function POST(request: NextRequest) {
       userId = bearerAuth.user.id;
       userName = bearerAuth.user.name || 'Driver';
     } else {
-      // Fallback to NextAuth session (for web app)
-      const session = await getServerSession(authOptions);
-      if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+      // Try custom session (for web app with cookie auth)
+      const customSession = await getCustomSession();
+      if (customSession?.user) {
+        userId = customSession.user.id;
+        userName = customSession.user.name || 'User';
+      } else {
+        // Fallback to NextAuth session (for web app)
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+        userId = (session.user as any).id;
+        userName = session.user.name || 'User';
       }
-      userId = (session.user as any).id;
-      userName = session.user.name || 'User';
     }
 
     const body = await request.json();

@@ -1,12 +1,12 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { deriveServiceMetadata } from '@/lib/bookings/serviceType';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   // Parse parameters outside try block for error logging
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q');
@@ -19,10 +19,14 @@ export async function GET(req: Request) {
   const cursor = searchParams.get('cursor');
 
   try {
-    const s = await getServerSession(authOptions);
-    if (!s?.user || (s.user as any).role !== 'admin') {
-      return new Response('Unauthorized', { status: 401 });
+    const authResult = await requireAdmin(req);
+    if (authResult instanceof Response) {
+      return authResult;
     }
+    const sessionUser = authResult;
+    const userId = sessionUser.id;
+    
+    console.log('🔐 /api/admin/orders - Authenticated user:', sessionUser.email || 'Unknown admin');
 
   // Build date filter
   let dateFilter = {};
@@ -224,7 +228,7 @@ export async function GET(req: Request) {
   // Log audit action (non-blocking)
   try {
     await logAudit({
-      userId: (s.user as any).id,
+      userId,
       action: 'read_orders',
       entityType: 'booking',
       details: {

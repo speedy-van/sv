@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { unifiedEmailService, type OrderConfirmationData } from '@/lib/email/UnifiedEmailService';
@@ -12,14 +11,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
 
@@ -148,13 +144,13 @@ export async function POST(
     }
 
     // Log audit trail
-    await logAudit((session.user as any).id, 'send_confirmation_email', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue, sentBy: (session.user as any).email } });
+    await logAudit(user.id, 'send_confirmation_email', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue, sentBy: user.email } });
 
     console.log('✅ Manual confirmation email sent successfully:', {
       orderRef: booking.reference,
       email: booking.customerEmail,
       hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue,
-      sentBy: session.user.email,
+      sentBy: user.email,
     });
 
     return NextResponse.json({

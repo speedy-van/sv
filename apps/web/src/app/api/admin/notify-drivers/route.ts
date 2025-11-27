@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import Pusher from 'pusher';
 
@@ -17,12 +18,26 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Allow unauthenticated calls for webhook notifications
-    // Webhooks don't have user sessions but need to notify drivers
-    const session = await getServerSession(authOptions);
-    const isWebhookCall = !session?.user; // If no session, assume it's a webhook call
-
-    if (!isWebhookCall && (!session?.user || (session.user as any).role !== 'admin')) {
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let isWebhookCall = !customSession?.user;
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      isWebhookCall = !session?.user; // If no session, assume it's a webhook call
+      
+      if (!isWebhookCall && (!session?.user || !isAdmin)) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isWebhookCall && !isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

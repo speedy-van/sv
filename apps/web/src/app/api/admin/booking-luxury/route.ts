@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,10 +8,11 @@ export const dynamic = 'force-dynamic';
 // GET /api/admin/booking-luxury - List all bookings for admin
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -100,10 +100,11 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/booking-luxury - Create booking on behalf of customer (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     // For admin-created bookings, redirect to the main booking-luxury endpoint
     // but with admin context
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
     const adminBookingData = {
       ...bookingData,
       adminCreated: true,
-      adminId: session.user.id,
+      adminId: user.id,
     };
 
     // Forward to the main booking-luxury endpoint
@@ -136,12 +137,12 @@ export async function POST(request: NextRequest) {
     // Log admin action
     await prisma.auditLog.create({
       data: {
-        actorId: session.user.id,
+        actorId: user.id,
         actorRole: 'admin',
         action: 'admin_booking_created',
         targetType: 'booking',
         targetId: result.booking.id,
-        userId: session.user.id,
+        userId: user.id,
         details: {
           bookingReference: result.booking.reference,
           customerName: bookingData.customer.name,

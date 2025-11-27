@@ -1,11 +1,10 @@
 import React from 'react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { redirect } from 'next/navigation';
-import nextDynamic from 'next/dynamic';
-const UnifiedNavigationClient = nextDynamic(() => import('@/components/shared/UnifiedNavigation').then(m => m.UnifiedNavigation), { ssr: false });
+import { AdminNavigationWrapper } from './AdminNavigationWrapper';
 import UnifiedErrorBoundary from '@/components/shared/UnifiedErrorBoundary';
-import { ROUTES } from '@/lib/routing';
 import SpeedyAIChatbotProvider from '@/components/admin/SpeedyAIChatbotProvider';
 
 // CRITICAL: Force dynamic rendering because we use getServerSession() which requires cookies()
@@ -18,38 +17,38 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getCustomSession();
 
-  // Add debugging
-  console.log('🔐 Admin Layout - Session check:', {
+  console.log("🔐 Admin Layout - Session check:", {
     hasSession: !!session,
-    userId: session?.user?.id,
-    userRole: (session?.user as any)?.role,
-    adminRole: (session?.user as any)?.adminRole,
+    userRole: session?.user && (session.user as any).role,
+    adminRole: session?.user && (session.user as any).adminRole,
     email: session?.user?.email,
     timestamp: new Date().toISOString(),
   });
 
-  if (!session?.user) {
-    console.log('❌ Admin Layout - No session, redirecting to login');
-    redirect(ROUTES.LOGIN);
+  if (!session) {
+    console.log("❌ Admin Layout - No session user, redirecting to login");
+    redirect('/auth/login');
   }
 
-  if ((session.user as any).role !== 'admin') {
-    console.log('❌ Admin Layout - User is not admin, redirecting to login');
-    redirect(ROUTES.LOGIN);
+  const role = session.user.role;
+
+  if (role !== 'admin' && role !== 'superadmin') {
+    console.log('❌ Admin Layout - Non-admin role, redirecting to home:', role);
+    redirect('/');
   }
 
-  console.log('✅ Admin Layout - Access granted for admin user');
+  console.log('✅ Admin Layout - Access granted for admin user', { role });
 
   return (
     <>
       {/* Load Pusher for real-time notifications */}
       <script src="https://js.pusher.com/8.2.0/pusher.min.js" async></script>
       
-      <UnifiedNavigationClient role="admin" isAuthenticated={true}>
+      <AdminNavigationWrapper role="admin" isAuthenticated={true}>
         <UnifiedErrorBoundary role="admin">{children}</UnifiedErrorBoundary>
-      </UnifiedNavigationClient>
+      </AdminNavigationWrapper>
       
       {/* Speedy AI Chatbot */}
       <SpeedyAIChatbotProvider />

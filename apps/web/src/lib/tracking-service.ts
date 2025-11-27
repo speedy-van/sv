@@ -200,7 +200,7 @@ export interface RealTimeTrackingOptions {
 
 // Real tracking service implementation
 let pusherClient: any = null;
-let channels: Map<string, any> = new Map();
+const channels: Map<string, any> = new Map();
 
 // Initialize Pusher client
 function getPusherClient() {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { withPrisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { logAudit } from '@/lib/audit';
@@ -18,7 +19,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try NextAuth session first
+    const nextAuthSession = await getServerSession(authOptions);
+    const customSession = await getCustomSession();
+    
+    const session = nextAuthSession || customSession;
+    
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -34,7 +40,7 @@ export async function POST(
       );
     }
 
-    console.log('🔄 Admin reassigning route to different driver:', { routeId, driverId, reason });
+    console.log('🔄 [Reassign Route] Reassigning route to new driver:', { routeId, driverId, reason });
 
     return await withPrisma(async (prisma) => {
       // Check if this is a single booking (starts with "booking-")
@@ -60,10 +66,23 @@ export async function POST(
           );
         }
 
-        // Update booking driver assignment
+        // Verify driver exists and get userId
+        const driverExists = await prisma.driver.findUnique({
+          where: { id: driverId },
+          select: { userId: true }
+        });
+
+        if (!driverExists) {
+          return NextResponse.json(
+            { error: 'Driver not found' },
+            { status: 404 }
+          );
+        }
+
+        // Update booking driver assignment using userId
         await prisma.booking.update({
           where: { id: bookingId },
-          data: { driverId: driverId }
+          data: { driverId: driverExists.userId }
         });
 
         // Log audit trail
@@ -147,11 +166,11 @@ export async function POST(
 
       // Use transaction to ensure data consistency
       const result = await prisma.$transaction(async (tx) => {
-        // Update route with new driver
+        // Update route with new driver (use userId from Driver table)
         const updatedRoute = await tx.route.update({
           where: { id: routeId },
           data: {
-            driverId,
+            driverId: newDriver.userId, // Use userId, not Driver.id
             isModifiedByAdmin: true,
             adminNotes: `Driver reassigned from ${oldDriverName} to ${newDriver.User?.name || 'Unknown'} by admin. Reason: ${reason || 'Not specified'}`,
           },
@@ -181,7 +200,7 @@ export async function POST(
           await tx.booking.updateMany({
             where: { id: { in: bookingIds } },
             data: {
-              driverId: driverId,
+              driverId: newDriver.userId, // Use userId, not Driver.id
               status: 'CONFIRMED',
               updatedAt: new Date(),
             },

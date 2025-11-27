@@ -82,8 +82,8 @@ function getClientIP(req: NextRequest): string {
     return cfConnectingIP;
   }
 
-  // Fallback to connection remote address
-  return req.ip || 'unknown';
+  // Fallback to x-real-ip header or unknown
+  return req.headers.get('x-real-ip') || 'unknown';
 }
 
 // Pre-configured rate limiters for different use cases

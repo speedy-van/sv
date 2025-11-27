@@ -421,7 +421,7 @@ export class PremiumAddressAutocompleteService {
 
       // Build complete address
       let line1 = '';
-      let line2 = '';
+      const line2 = '';
 
       if (number && street) {
         line1 = `${number} ${street}`.trim();

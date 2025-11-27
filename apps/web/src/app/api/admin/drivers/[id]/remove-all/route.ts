@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { withPrisma } from '@/lib/prisma';
 import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +16,22 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

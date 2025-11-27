@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export interface AuthGuardOptions {
   requiredRoles?: string[];
@@ -93,9 +94,39 @@ export async function getCurrentUserRole(): Promise<string | null> {
 
 // Direct requireRole function for API routes
 export async function requireRoleDirect(request: NextRequest, roles: string | string[]): Promise<{ id: string; email: string; name: string; role: string }> {
+  // Try custom session first (cookie-based auth)
+  const customSession = await getCustomSession();
+  
+  if (customSession?.user) {
+    console.log('🔐 requireRoleDirect - Using custom session:', {
+      email: customSession.user.email,
+      role: customSession.user.role,
+    });
+    
+    const userRole = customSession.user.role;
+    const requiredRoles = Array.isArray(roles) ? roles : [roles];
+    
+    if (!userRole || !requiredRoles.includes(userRole)) {
+      console.log('❌ requireRoleDirect - Insufficient permissions:', {
+        userRole,
+        requiredRoles,
+      });
+      throw new Error('Insufficient permissions');
+    }
+    
+    return {
+      id: customSession.user.id,
+      email: customSession.user.email,
+      name: customSession.user.name,
+      role: customSession.user.role,
+    };
+  }
+  
+  // Fallback to NextAuth session
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
+    console.log('❌ requireRoleDirect - No session found (neither custom nor NextAuth)');
     throw new Error('Authentication required');
   }
 
@@ -103,6 +134,10 @@ export async function requireRoleDirect(request: NextRequest, roles: string | st
   const requiredRoles = Array.isArray(roles) ? roles : [roles];
   
   if (!userRole || !requiredRoles.includes(userRole)) {
+    console.log('❌ requireRoleDirect - Insufficient permissions (NextAuth):', {
+      userRole,
+      requiredRoles,
+    });
     throw new Error('Insufficient permissions');
   }
   

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { calculateDistance } from '../../../../lib/distance';
 
 const quoteSchema = z.object({
   pickupAddress: z.string().min(3).optional().default('Not specified'),
@@ -14,7 +15,7 @@ const quoteSchema = z.object({
 });
 
 // Simplified pricing calculator for AI bot
-function calculateQuote(data: z.infer<typeof quoteSchema>) {
+function calculateQuote(data: z.infer<typeof quoteSchema>, calculatedDistance?: { distanceMiles: number; warning?: string }) {
   // Determine vehicle type based on rooms if not specified
   let vehicleType = data.vehicleType;
   if (!vehicleType) {
@@ -33,11 +34,10 @@ function calculateQuote(data: z.infer<typeof quoteSchema>) {
   };
 
   const baseRate = vehicleRates[vehicleType];
-  
-  // Estimate distance (default 15 miles if not provided)
-  const estimatedDistance = data.distance || 15;
-  
-  // Calculate estimated time (room loading + travel)
+
+  // Use calculated distance if available, otherwise use provided distance or fallback
+  const estimatedDistance = calculatedDistance?.distanceMiles ?? data.distance ?? 20;
+  const distanceWarning = calculatedDistance?.warning;  // Calculate estimated time (room loading + travel)
   const loadingTime = data.numberOfRooms * 0.75; // 45 min per room
   const travelTime = estimatedDistance / 25; // Average 25 mph in city
   const totalHours = Math.max(2, loadingTime + travelTime); // Minimum 2 hours
@@ -92,6 +92,7 @@ function calculateQuote(data: z.infer<typeof quoteSchema>) {
     helpers,
     distance: estimatedDistance,
     needsHelpers,
+    distanceWarning,
   };
 }
 
@@ -100,8 +101,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = quoteSchema.parse(body);
 
-    // Calculate quote
-    const quote = calculateQuote(validated);
+    // Calculate real distance if postcodes are available
+    let distanceResult;
+    if (validated.pickupPostcode && validated.dropoffPostcode) {
+      try {
+        distanceResult = await calculateDistance(validated.pickupPostcode, validated.dropoffPostcode);
+        console.log(`[Quote] Distance calculated: ${distanceResult.distanceMiles} miles via ${distanceResult.method}`);
+      } catch (error: any) {
+        console.error('[Quote] Distance calculation failed:', error.message);
+        // Will fall back to default in calculateQuote
+      }
+    } else {
+      console.warn('[Quote] Missing postcodes, using default distance');
+    }
+
+    // Calculate quote with real distance
+    const quote = calculateQuote(validated, distanceResult);
     
     // Vehicle type mapping for display
     const vehicleMapping: Record<string, string> = {

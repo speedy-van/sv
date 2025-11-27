@@ -12,6 +12,7 @@ import {
   Box,
   VStack,
   HStack,
+  Flex,
   Text,
   Input,
   Textarea,
@@ -307,60 +308,76 @@ export default function WhoAndPaymentStepSimple({
               right={{ base: '20px', md: '30px' }}
               zIndex={1500}
             >
-              <VStack
+              <Flex
                 as="button"
                 onClick={toggleSummary}
-                bg="black"
-                color="white"
-                borderRadius="2xl"
-                w={{ base: '85px', md: '95px' }}
-                h={{ base: '85px', md: '95px' }}
-                spacing={1}
+                direction="column"
+                align="center"
                 justify="center"
+                bgGradient={isSummaryExpanded 
+                  ? "linear(135deg, #8b5cf6, #6366f1)" 
+                  : "linear(135deg, #ec4899, #f43f5e)"}
+                color="white"
+                borderRadius="full"
+                w={{ base: '110px', md: '130px' }}
+                h={{ base: '110px', md: '130px' }}
                 cursor="pointer"
                 boxShadow={isSummaryExpanded 
-                  ? "0 8px 24px rgba(239, 68, 68, 0.5), 0 0 0 2px white" 
-                  : "0 8px 24px rgba(16, 185, 129, 0.5), 0 0 0 2px white"}
-                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                border="3px solid white"
+                  ? "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3)" 
+                  : "0 15px 40px rgba(236, 72, 153, 0.5), 0 0 25px rgba(236, 72, 153, 0.3)"}
+                transition="all 0.3s ease"
+                border="4px solid white"
+                position="relative"
                 _hover={{
-                  transform: 'scale(1.1)',
+                  transform: 'scale(1.08)',
                   boxShadow: isSummaryExpanded 
-                    ? '0 12px 32px rgba(239, 68, 68, 0.7), 0 0 0 3px white' 
-                    : '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 0 3px white'
+                    ? '0 20px 50px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.5)' 
+                    : '0 20px 50px rgba(236, 72, 153, 0.7), 0 0 35px rgba(236, 72, 153, 0.5)',
                 }}
                 _active={{
-                  transform: 'scale(1.05)'
+                  transform: 'scale(0.98)',
                 }}
               >
-                {/* Toggle Icon - Very Clear */}
+                {/* Icon */}
                 <Icon 
-                  as={isSummaryExpanded ? FaTimes : FaChevronUp} 
-                  boxSize={{ base: 6, md: 7 }} 
+                  as={isSummaryExpanded ? FaTimes : FaBox} 
+                  boxSize={{ base: 8, md: 10 }} 
                   color="white"
-                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+                  mb={1}
                 />
                 
-                {/* Items Count with Box Icon */}
-                <HStack spacing={1}>
-                  <Icon as={FaBox} boxSize={{ base: 3, md: 4 }} />
-                  <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="black" lineHeight="1">
+                {/* Count Badge */}
+                <Flex
+                  align="center"
+                  justify="center"
+                  bg="white"
+                  borderRadius="full"
+                  w={{ base: '42px', md: '50px' }}
+                  h={{ base: '42px', md: '50px' }}
+                  mb={1}
+                  boxShadow="0 2px 8px rgba(0,0,0,0.15)"
+                >
+                  <Text 
+                    fontSize={{ base: 'xl', md: '2xl' }} 
+                    fontWeight="900" 
+                    lineHeight="1"
+                    color="black"
+                  >
                     {selectionStats.totalItems}
                   </Text>
-                </HStack>
+                </Flex>
                 
-                {/* Clear Label Text */}
+                {/* Label */}
                 <Text 
-                  fontSize={{ base: 'xs', md: 'sm' }} 
-                  fontWeight="black" 
-                  letterSpacing="wider"
+                  fontSize={{ base: '2xs', md: 'xs' }} 
+                  fontWeight="bold" 
                   textTransform="uppercase"
                   color="white"
-                  textShadow="0 2px 4px rgba(0,0,0,0.4)"
+                  letterSpacing="wide"
                 >
-                  {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
+                  {isSummaryExpanded ? 'CLOSE' : 'VIEW'}
                 </Text>
-              </VStack>
+              </Flex>
             </Box>
 
             {/* Expanded Details Panel */}
@@ -556,22 +573,16 @@ export default function WhoAndPaymentStepSimple({
 
               <Box
                 className="service-options-grid"
-                display={isIOSDevice ? 'flex' : 'grid'}
-                flexWrap={isIOSDevice ? 'nowrap' : undefined}
-                gridTemplateColumns={
-                  isIOSDevice ? undefined : { base: '1fr', md: 'repeat(3, 1fr)' }
-                }
-                overflowX={isIOSDevice ? 'auto' : 'visible'}
-                scrollSnapType={isIOSDevice ? 'x mandatory' : undefined}
-                gap={{ base: 3, md: 4 }}
-                w="full"
-                sx={
-                  isIOSDevice
-                    ? {
-                        WebkitOverflowScrolling: 'touch',
-                      }
-                    : undefined
-                }
+                w="100%"
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { base: '1fr', md: 'repeat(3, 1fr)' },
+                  gap: { base: '12px', md: '16px' },
+                  '@media screen and (max-width: 768px)': {
+                    gridTemplateColumns: '1fr !important',
+                    display: 'grid !important',
+                  },
+                }}
               >
                 {services.map((service) => {
                   const isSelected = selectedService === service.id;
@@ -582,12 +593,8 @@ export default function WhoAndPaymentStepSimple({
                       className={`price-card price-card-${service.id}`}
                       isSelected={isSelected}
                       onClick={() => handleServiceChange(service.id)}
-                      flex={isIOSDevice ? '0 0 auto' : undefined}
-                      minW={isIOSDevice ? '75vw' : undefined}
-                      maxW={isIOSDevice ? '320px' : undefined}
-                      scrollSnapAlign={isIOSDevice ? 'start' : undefined}
+                      w="full"
                       p={{ base: 4, md: 5 }}
-                      minH={{ base: '180px', md: 'auto' }}
                     >
                       <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
                         <HStack justify="space-between" align="center">

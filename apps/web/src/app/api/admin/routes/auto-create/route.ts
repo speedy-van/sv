@@ -4,11 +4,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { createUniqueReference } from '@/lib/ref';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +17,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
+    const userId = adminUser.id;
 
     const body = await request.json();
     const { 
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
 
       // Log optimization history
       // Optional: routeOptimizationHistory table may not exist in schema
-      /* await prisma.routeOptimizationHistory.create({
+          /* await prisma.routeOptimizationHistory.create({
         data: {
           routeId: route.id,
           optimizationType: 'initial',
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest) {
             estimatedDuration: dropGroup.length * 30, // 30 min per drop estimate
             totalValue: totalOutcome,
           },
-          createdBy: (session.user as any).id,
+          createdBy: userId,
         }
       }); */
 
@@ -183,19 +184,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await logAudit(
-      (session.user as any).id,
-      'auto_create_routes',
-      undefined,
-      { 
-        targetType: 'route', 
-        after: { 
-          routesCreated: createdRoutes.length,
-          totalDrops: pendingDrops.length,
-          autoAssignDrivers,
-        }
-      }
-    );
+    await logAudit(userId, 'auto_create_routes', undefined, {
+      targetType: 'route',
+      after: {
+        routesCreated: createdRoutes.length,
+        totalDrops: pendingDrops.length,
+        autoAssignDrivers,
+      },
+    });
 
     return NextResponse.json({
       success: true,

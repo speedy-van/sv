@@ -22,8 +22,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check admin role
-    if (session.user.role !== 'admin' && session.user.role !== 'superadmin') {
+    // Check admin role - dual-auth pattern
+    const isAdmin = session.user.role === 'admin';
+    const isSuperAdmin = (session.user as any).adminRole === 'superadmin';
+    
+    if (!isAdmin && !isSuperAdmin) {
       return NextResponse.json(
         { error: 'صلاحيات غير كافية' },
         { status: 403 }
@@ -147,7 +150,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (session.user.role !== 'admin' && session.user.role !== 'superadmin') {
+    // Check admin role - dual-auth pattern
+    const isAdmin = session.user.role === 'admin';
+    const isSuperAdmin = (session.user as any).adminRole === 'superadmin';
+    
+    if (!isAdmin && !isSuperAdmin) {
       return NextResponse.json(
         { error: 'صلاحيات غير كافية' },
         { status: 403 }

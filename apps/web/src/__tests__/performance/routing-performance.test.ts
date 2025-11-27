@@ -70,7 +70,7 @@ const generateRealisticBooking = (scheduledAt: Date) => {
 
 describe('Routing System - Performance Tests', () => {
   let adminUserId: string;
-  let testData: {
+  const testData: {
     bookingIds: string[];
     addressIds: string[];
     propertyIds: string[];

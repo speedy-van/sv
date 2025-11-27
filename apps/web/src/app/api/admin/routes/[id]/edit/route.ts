@@ -128,24 +128,56 @@ export async function PUT(
       },
     });
 
-    // Update bookings
-    // First, remove old bookings from route
-    await prisma.booking.updateMany({
-      where: { routeId },
-      data: { routeId: null, deliverySequence: null },
+    // Update bookings in transaction
+    await prisma.$transaction(async (tx) => {
+      // First, remove old bookings from route
+      await tx.booking.updateMany({
+        where: { routeId },
+        data: { routeId: null, deliverySequence: null },
+      });
+
+      // Then, add updated bookings in parallel
+      const updatePromises = updatedBookingIds.map((bookingId, i) =>
+        tx.booking.update({
+          where: { id: bookingId },
+          data: {
+            routeId,
+            deliverySequence: i + 1,
+            orderType: updatedBookingIds.length > 1 ? 'multi-drop' : 'single',
+          },
+        })
+      );
+      await Promise.all(updatePromises);
+
+      // Update drops
+      await tx.drop.deleteMany({
+        where: { routeId },
+      });
+
+      const dropsData = bookings.map((booking) => {
+        const scheduledAt = booking.scheduledAt ?? new Date();
+        return {
+          id: `drop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          routeId,
+          bookingId: booking.id,
+          customerId: booking.customerId || '',
+          pickupAddress: booking.pickupAddress
+            ? `${booking.pickupAddress.label}${booking.pickupAddress.postcode ? `, ${booking.pickupAddress.postcode}` : ''}`
+            : 'Unknown pickup',
+          deliveryAddress: booking.dropoffAddress
+            ? `${booking.dropoffAddress.label}${booking.dropoffAddress.postcode ? `, ${booking.dropoffAddress.postcode}` : ''}`
+            : 'Unknown dropoff',
+          timeWindowStart: scheduledAt,
+          timeWindowEnd: new Date(scheduledAt.getTime() + 4 * 60 * 60 * 1000),
+          quotedPrice: Number(booking.totalGBP || 0),
+          status: 'booked' as const,
+        };
+      });
+
+      await tx.drop.createMany({ data: dropsData });
     });
 
-    // Then, add updated bookings
-    for (let i = 0; i < updatedBookingIds.length; i++) {
-      await prisma.booking.update({
-        where: { id: updatedBookingIds[i] },
-        data: {
-          routeId,
-          deliverySequence: i + 1,
-          orderType: updatedBookingIds.length > 1 ? 'multi-drop' : 'single',
-        },
-      });
-    }
+    console.log(`✅ [Edit Route] Updated route ${existingRoute.reference} with ${action} action`);
 
     // Get updated route
     const updatedRoute = await prisma.route.findUnique({

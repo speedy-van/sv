@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
@@ -39,14 +38,11 @@ export async function GET(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
 
@@ -131,7 +127,7 @@ export async function GET(
     }
 
     // Log audit trail
-    await logAudit((session.user as any).id, 'read_order_details', order.id, { targetType: 'booking', before: null, after: { reference: order.reference } });
+    await logAudit(user.id, 'read_order_details', order.id, { targetType: 'booking', before: null, after: { reference: order.reference } });
 
     // Transform the response to match the frontend interface
     const transformedOrder = {
@@ -237,14 +233,11 @@ export async function PUT(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
     const updateData = await request.json();
@@ -426,7 +419,7 @@ export async function PUT(
 
           // Log successful Stripe sync
           await logAudit(
-            (session.user as any).id,
+            user.id,
             'stripe_payment_updated',
             updatedOrder.id,
             {
@@ -439,7 +432,7 @@ export async function PUT(
           // Payment intent cannot be modified (already paid or processing)
           // Log a warning for manual review
           await logAudit(
-            (session.user as any).id, 
+            user.id, 
             'price_change_after_payment', 
             updatedOrder.id, 
             { 
@@ -454,7 +447,7 @@ export async function PUT(
       } catch (stripeError) {
         // Log Stripe sync failure
         await logAudit(
-          (session.user as any).id, 
+          user.id, 
           'stripe_sync_failed', 
           updatedOrder.id, 
           { 
@@ -473,7 +466,7 @@ export async function PUT(
 
     // Log audit trail for order update
     await logAudit(
-      (session.user as any).id, 
+      user.id, 
       'update_order', 
       updatedOrder.id, 
       { 

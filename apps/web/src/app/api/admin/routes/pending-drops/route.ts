@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try NextAuth session first
+    const nextAuthSession = await getServerSession(authOptions);
+    const customSession = await getCustomSession();
+    
+    const session = nextAuthSession || customSession;
     
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json(

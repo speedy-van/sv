@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -82,14 +83,14 @@ function checkContentSafety(prompt: string, safetyMode: string): { safe: boolean
 
 function checkRateLimit(userId: string): { allowed: boolean; resetIn?: number } {
   const now = Date.now();
-  const userLimit = rateLimitMap.get(userId);
+  const userLimit = rateLimitMap.get(userId || 'unknown');
   
   // 10 images per hour per user
   const RATE_LIMIT = 10;
   const WINDOW_MS = 60 * 60 * 1000; // 1 hour
   
   if (!userLimit || now > userLimit.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + WINDOW_MS });
+    rateLimitMap.set(userId || 'unknown', { count: 1, resetAt: now + WINDOW_MS });
     return { allowed: true };
   }
   
@@ -208,7 +209,7 @@ async function downloadAndStoreImage(imageUrl: string, userId: string): Promise<
 }
 
 const getClientIp = (req: NextRequest) =>
-  req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? req.ip ?? null;
+  req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? req.headers.get('x-real-ip') ?? null;
 
 async function recordImageAuditLog(input: {
   actorId: string;
@@ -240,32 +241,50 @@ export async function POST(req: NextRequest) {
   let clientIp: string | null = null;
   
   try {
-    // Authentication
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    let isSuperAdmin = customSession?.user?.adminRole === 'superadmin';
+    let userId = customSession?.user?.id;
+    let actorRole = isSuperAdmin ? 'superadmin' : customSession?.user?.role ?? 'admin';
     
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+      
+      const userRecord = await prisma.user.findUnique({
+        where: { id: session.user.id! },
+        select: { role: true, adminRole: true },
+      });
+
+      isAdmin = userRecord?.role === 'admin';
+      isSuperAdmin = userRecord?.adminRole === 'superadmin';
+      userId = session.user.id!;
+      actorRole = isSuperAdmin ? 'superadmin' : userRecord?.role ?? 'admin';
+
+      if (!userRecord || (!isAdmin && !isSuperAdmin)) {
+        return NextResponse.json(
+          { error: 'Forbidden: Admin access required' },
+          { status: 403 }
+        );
+      }
     }
     
-    const userRecord = await prisma.user.findUnique({
-      where: { id: session.user.id! },
-      select: { role: true, adminRole: true },
-    });
-
-    const isAdmin = userRecord?.role === 'admin';
-    const isSuperAdmin = userRecord?.adminRole === 'superadmin';
-    const actorRole = isSuperAdmin ? 'superadmin' : userRecord?.role ?? 'admin';
-    clientIp = getClientIp(req);
-
-    if (!userRecord || (!isAdmin && !isSuperAdmin)) {
+    if (!isAdmin && !isSuperAdmin) {
       return NextResponse.json(
         { error: 'Forbidden: Admin access required' },
         { status: 403 }
       );
     }
+    
+    clientIp = getClientIp(req);
     
     // Parse request
     const body: ImageGenerationRequest = await req.json();
@@ -290,7 +309,7 @@ export async function POST(req: NextRequest) {
     const safetyCheck = checkContentSafety(prompt, safetyMode);
     if (!safetyCheck.safe) {
       await recordImageAuditLog({
-        actorId: session.user.id!,
+        actorId: userId || 'unknown',
         actorRole,
         action: 'AI_IMAGE_GENERATION_BLOCKED',
         ipAddress: clientIp,
@@ -309,7 +328,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Rate limiting
-    const rateLimit = checkRateLimit(session.user.id!);
+    const rateLimit = checkRateLimit(userId || 'unknown');
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { 
@@ -332,13 +351,13 @@ export async function POST(req: NextRequest) {
     });
     
     // Download and store image
-    const publicUrl = await downloadAndStoreImage(generated.url, session.user.id!);
+    const publicUrl = await downloadAndStoreImage(generated.url, userId || 'unknown');
     
     const processingTimeMs = Date.now() - startTime;
     
     // Create audit log
     const auditLogId = await recordImageAuditLog({
-      actorId: session.user.id!,
+      actorId: userId || 'unknown',
       actorRole,
       action: 'AI_IMAGE_GENERATED',
       targetId: publicUrl,
@@ -353,7 +372,7 @@ export async function POST(req: NextRequest) {
         publicUrl,
         processingTimeMs,
         safetyMode,
-        rateLimitRemaining: 10 - (rateLimitMap.get(session.user.id!)?.count || 0),
+        rateLimitRemaining: 10 - (rateLimitMap.get(userId || 'unknown')?.count || 0),
       },
     });
     
@@ -414,13 +433,22 @@ export async function POST(req: NextRequest) {
 // GET endpoint for checking status and limits
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let userId = customSession?.user?.id;
     
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      
+      if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      userId = session.user.id!;
     }
     
-    const userLimit = rateLimitMap.get(session.user.id!);
+    const userLimit = rateLimitMap.get(userId || 'unknown');
     const now = Date.now();
     
     return NextResponse.json({

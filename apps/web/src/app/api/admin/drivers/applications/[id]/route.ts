@@ -42,7 +42,7 @@ export async function GET(
 
     // Calculate comprehensive score
     let score = 0;
-    let maxScore = 100;
+    const maxScore = 100;
 
     // Personal information completeness (40 points)
     if (application.firstName && application.lastName) score += 15;

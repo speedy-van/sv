@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(request: NextRequest) {
   try {
-    // Check admin authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { searchParams } = new URL(request.url);
     const earningId = searchParams.get('id');
@@ -61,20 +57,20 @@ export async function PATCH(request: NextRequest) {
     // FIXED: Create audit log entry
     await prisma.auditLog.create({
       data: {
-        actorId: (session.user as any).id,
-        actorRole: 'admin',
+        actorId: adminUser.id,
+        actorRole: adminUser.role || 'admin',
         action: 'earnings_adjusted',
         targetType: 'DriverEarnings',
         targetId: earningId,
-        before: { 
+        before: {
           netAmountPence: oldValuePence,
-          netAmountGBP: (oldValuePence / 100).toFixed(2)
+          netAmountGBP: (oldValuePence / 100).toFixed(2),
         },
-        after: { 
+        after: {
           netAmountPence: newValuePence,
-          netAmountGBP: (newValuePence / 100).toFixed(2)
+          netAmountGBP: (newValuePence / 100).toFixed(2),
         },
-        details: { 
+        details: {
           reason: body.adminNotes || 'No reason provided',
           difference: newValuePence - oldValuePence,
           driverId: currentEarning.driverId,
@@ -105,13 +101,9 @@ export async function PATCH(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check admin authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const { searchParams } = new URL(request.url);
@@ -121,7 +113,7 @@ export async function GET(request: NextRequest) {
     // Calculate date range based on period
     const now = new Date();
     let startDate: Date;
-    let endDate: Date = now;
+    const endDate: Date = now;
 
     switch (period) {
       case 'today':

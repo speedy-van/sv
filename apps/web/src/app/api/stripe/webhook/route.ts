@@ -64,7 +64,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get request headers
-    const headersList = headers();
+    const headersList = await headers();
     const signature = headersList.get('stripe-signature');
     
     if (!signature) {

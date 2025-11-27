@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -8,8 +9,22 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== 'admin') {
+  // Try custom session first
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  let userId = customSession?.user?.id;
+  
+  if (!customSession?.user) {
+    // Fallback to NextAuth
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    userId = session?.user?.id;
+    if (!session?.user || !isAdmin) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -22,10 +37,10 @@ export async function POST(
       rowsProcessed: Math.floor(Math.random() * 10000) + 1000,
       dataGenerated: true,
       executedAt: new Date().toISOString(),
-      executedBy: session.user.id,
+      executedBy: userId,
     };
 
-    await logAudit(session.user.id, 'run_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id, executionResult } });
+    await logAudit(userId || 'unknown', 'run_report', (await params).id, { targetType: 'analytics_report', before: null, after: { reportId: (await params).id, executionResult } });
 
     return Response.json({
       success: true,

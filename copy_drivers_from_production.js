@@ -27,8 +27,27 @@ async function copyDrivers() {
       where: {
         role: 'driver',
       },
-      include: {
-        driver: true,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        password: true,
+        role: true,
+        isActive: true,
+        emailVerified: true,
+        createdAt: true,
+        driver: {
+          select: {
+            status: true,
+            onboardingStatus: true,
+            basePostcode: true,
+            vehicleType: true,
+            rating: true,
+            strikes: true,
+            createdAt: true,
+          }
+        }
       },
     });
 

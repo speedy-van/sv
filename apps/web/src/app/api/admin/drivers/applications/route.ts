@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const transformedApplications = applications.map(app => {
       // Calculate comprehensive score based on application completeness
       let score = 0;
-      let maxScore = 100;
+      const maxScore = 100;
 
       // Personal information completeness (25 points)
       if (app.firstName && app.lastName) score += 10;

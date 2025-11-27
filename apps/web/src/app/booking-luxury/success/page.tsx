@@ -1,8 +1,14 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams } from 'next/navigation';
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeLocalStorageRemoveItem,
+} from '@/lib/safe-storage';
+import { getTrustpilotConfig, loadTrustpilotWidget } from '@/lib/trustpilot-config';
 import {
   Box,
   Container,
@@ -51,34 +57,7 @@ export default function BookingSuccessPage() {
   const toast = useToast();
 
   const sessionId = searchParams?.get('session_id');
-  const bookingRef = searchParams?.get('booking_ref');
-  
-  // Safe localStorage helper (handles tracking prevention)
-  const safeLocalStorage = {
-    getItem: (key: string): string | null => {
-      try {
-        return localStorage.getItem(key);
-      } catch {
-        return null;
-      }
-    },
-    setItem: (key: string, value: string): void => {
-      try {
-        localStorage.setItem(key, value);
-      } catch {
-        // Silently fail if localStorage is blocked
-      }
-    },
-    removeItem: (key: string): void => {
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        // Silently fail
-      }
-    }
-  };
-  
-  // Generate unique key for SMS tracking (per session)
+  const bookingRef = searchParams?.get('booking_ref');  // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
   const hasTrackedInitialConversion = useRef(false);
@@ -104,54 +83,32 @@ export default function BookingSuccessPage() {
 
     hasTrackedInitialConversion.current = true;
 
-    console.log('✅ Google Ads page view tracked:', {
+    console.log('âœ… Google Ads page view tracked:', {
       page: 'Booking Success',
       transaction_id: transactionId,
     });
   }, [sessionId, bookingRef]);
 
-  // Load Trustpilot script
+  // Load Trustpilot script using centralized configuration
   useEffect(() => {
-    // Clean and validate Business Unit ID (remove newlines and whitespace)
-    const rawBusinessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID;
-    const businessUnitId = rawBusinessUnitId?.trim().replace(/[\r\n]/g, '');
-
+    const config = getTrustpilotConfig();
+    
     // Only load if Business Unit ID is configured and valid
-    if (!businessUnitId || businessUnitId.length < 10) {
+    if (!config.businessUnitId || config.businessUnitId.length < 10) {
       // Silently skip if not configured (optional feature)
       return;
     }
 
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="trustpilot.com/bootstrap"]')) {
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js';
-    script.async = true;
-    script.onload = () => {
-      console.log('✅ Trustpilot widget script loaded successfully');
-    };
-    script.onerror = () => {
-      console.warn('⚠️ Failed to load Trustpilot widget script');
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup - remove script on unmount
-      const existingScript = document.querySelector('script[src*="trustpilot.com/bootstrap"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
-      }
-    };
+    // Use centralized script loading helper
+    const cleanup = loadTrustpilotWidget(config.businessUnitId);
+    
+    return cleanup;
   }, []);
 
   useEffect(() => {
     // Add a safety timeout to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
-      console.warn('⚠️ Safety timeout reached - stopping loading');
+      console.warn('âš ï¸ Safety timeout reached - stopping loading');
       setIsLoading(false);
       setError('Request timed out. Please refresh the page.');
     }, 30000); // 30 seconds max
@@ -186,50 +143,16 @@ export default function BookingSuccessPage() {
               phone: data.customer_details?.phone || '',
             },
             totalAmount: bookingAmount,
-          scheduledAt: new Date().toISOString(), // Default to now if not available
-        });
+            scheduledAt: new Date().toISOString(), // Default to now if not available
+          });
 
-          // Track Google Ads conversion with actual booking amount
-          // Validate booking amount before tracking
-          if (!bookingAmount || bookingAmount <= 0 || isNaN(bookingAmount)) {
-            console.error('❌ Invalid booking amount for conversion tracking:', bookingAmount);
-          } else {
-            const conversionTrackingKey = sessionId ? `conversion_tracked_${sessionId}` : null;
-            const alreadyTrackedConversion = conversionTrackingKey ? safeLocalStorage.getItem(conversionTrackingKey) : null;
-            
-            if (typeof window !== 'undefined' && (window as any).gtag && !alreadyTrackedConversion) {
-              try {
-                const transactionId = data.metadata?.bookingReference || bookingRef || sessionId;
-                
-                (window as any).gtag('event', 'conversion', {
-                  'send_to': 'AW-17715630822/7375337919',
-                  'value': bookingAmount,
-                  'currency': 'GBP',
-                  'transaction_id': transactionId
-                });
-                
-                // Mark conversion as tracked to prevent duplicates
-                if (conversionTrackingKey) {
-                  safeLocalStorage.setItem(conversionTrackingKey, 'true');
-                }
-                
-                console.log('✅ Google Ads conversion tracked:', {
-                  send_to: 'AW-17715630822/7375337919',
-                  value: bookingAmount,
-                  currency: 'GBP',
-                  transaction_id: transactionId
-                });
-              } catch (error) {
-                console.error('❌ Google Ads conversion tracking failed:', error);
-              }
-            }
-          }          // Show success toast (only once per session)
+          // Show success toast (only once per session)
           const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
-          const alreadyShowedToast = toastTrackingKey ? safeLocalStorage.getItem(toastTrackingKey) : null;
+          const alreadyShowedToast = toastTrackingKey ? safeLocalStorageGetItem(toastTrackingKey) : null;
           
           if (!toastShown && !alreadyShowedToast) {
             setToastShown(true);
-            safeLocalStorage.setItem(toastTrackingKey || '', 'true');
+            safeLocalStorageSetItem(toastTrackingKey || '', 'true');
             toast({
               title: 'Booking Confirmed!',
               description:
@@ -255,13 +178,13 @@ export default function BookingSuccessPage() {
               });
 
               if (updateResponse.ok) {
-                console.log('✅ Booking updated with payment intent');
+                console.log('âœ… Booking updated with payment intent');
               } else {
-                console.warn('⚠️ Failed to update booking');
+                console.warn('âš ï¸ Failed to update booking');
               }
             }
           } catch (updateError) {
-            console.error('❌ Error updating booking:', updateError);
+            console.error('âŒ Error updating booking:', updateError);
           }
 
           // Send confirmation email as backup (in case webhook didn't fire)
@@ -273,24 +196,24 @@ export default function BookingSuccessPage() {
             });
 
             if (emailResponse.ok) {
-              console.log('✅ Confirmation email sent successfully from success page');
+              console.log('âœ… Confirmation email sent successfully from success page');
             } else {
-              console.warn('⚠️ Confirmation email failed from success page');
+              console.warn('âš ï¸ Confirmation email failed from success page');
             }
           } catch (emailError) {
-            console.error('❌ Error sending confirmation email from success page:', emailError);
+            console.error('âŒ Error sending confirmation email from success page:', emailError);
           }
 
           // Send SMS confirmation automatically when success page loads (only once per session)
           if (data.customer_details?.phone && smsTrackingKey) {
             // Check if SMS was already sent (using safe localStorage + state)
-            const alreadySentInStorage = safeLocalStorage.getItem(smsTrackingKey);
+            const alreadySentInStorage = safeLocalStorageGetItem(smsTrackingKey);
             
             if (!smsSent && !alreadySentInStorage) {
               try {
                 // Mark as sent BEFORE making the request to prevent race conditions
                 setSmsSent(true);
-                safeLocalStorage.setItem(smsTrackingKey, 'true');
+                safeLocalStorageSetItem(smsTrackingKey, 'true');
               
               // Send SMS via API endpoint
               const smsResponse = await fetch('/api/notifications/sms/send', {
@@ -308,28 +231,28 @@ export default function BookingSuccessPage() {
               if (smsResponse.ok) {
                   // SMS sent successfully
                   if (process.env.NODE_ENV === 'development') {
-                console.log('✅ SMS confirmation sent successfully');
+                console.log('âœ… SMS confirmation sent successfully');
                   }
               } else {
-                console.warn('⚠️ SMS confirmation failed from success page');
+                console.warn('âš ï¸ SMS confirmation failed from success page');
                   // Remove flag to allow retry on failure
                   setSmsSent(false);
-                  safeLocalStorage.removeItem(smsTrackingKey);
+                  safeLocalStorageRemoveItem(smsTrackingKey);
               }
             } catch (smsError) {
-              console.error('❌ Error sending SMS from success page:', smsError);
+              console.error('âŒ Error sending SMS from success page:', smsError);
                 // Remove flag to allow retry on error
                 setSmsSent(false);
-                safeLocalStorage.removeItem(smsTrackingKey);
+                safeLocalStorageRemoveItem(smsTrackingKey);
               }
             } else {
               if (process.env.NODE_ENV === 'development') {
-                console.log('ℹ️ SMS already sent for this session - preventing duplicate');
+                console.log('â„¹ï¸ SMS already sent for this session - preventing duplicate');
               }
             }
           } else if (!data.customer_details?.phone) {
             if (process.env.NODE_ENV === 'development') {
-            console.log('ℹ️ No phone number available for SMS');
+            console.log('â„¹ï¸ No phone number available for SMS');
             }
           }
           
@@ -474,7 +397,7 @@ export default function BookingSuccessPage() {
                 <HStack justify="space-between">
                   <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>Total Amount:</Text>
                   <Text fontWeight="semibold" fontSize={{ base: "md", md: "lg" }} color="green.600">
-                    £{bookingDetails.totalAmount.toFixed(2)}
+                    Â£{bookingDetails.totalAmount.toFixed(2)}
                   </Text>
                 </HStack>
                 
@@ -591,55 +514,106 @@ export default function BookingSuccessPage() {
           </Button>
         </HStack>
 
-        {/* Trustpilot Review Widget */}
-        {process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID?.trim() && (
-          <Box
-            mt={8}
-            p={6}
-            bg="gray.50"
-            borderRadius="lg"
-            border="1px solid"
-            borderColor="gray.200"
-            textAlign="center"
-          >
-            <VStack spacing={4}>
-              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
-                How was your booking experience?
-              </Text>
-              <Text fontSize="sm" color="gray.600" mb={2}>
-                Help us improve by leaving a review
-              </Text>
+        {/* Enhanced Trustpilot Review Section */}
+        {(() => {
+          const config = getTrustpilotConfig();
+          return config.isConfigured ? (
+            <Box
+              mt={8}
+              p={8}
+              bg="linear-gradient(135deg, rgba(0, 194, 255, 0.03) 0%, rgba(59, 130, 246, 0.05) 100%)"
+              borderRadius="2xl"
+              border="2px solid"
+              borderColor="rgba(0, 194, 255, 0.2)"
+              textAlign="center"
+              boxShadow="0 4px 20px rgba(0, 194, 255, 0.1)"
+              transition="all 0.3s ease"
+              _hover={{
+                boxShadow: '0 8px 30px rgba(0, 194, 255, 0.2)',
+                borderColor: 'rgba(0, 194, 255, 0.4)',
+                transform: 'translateY(-2px)',
+              }}
+            >
+              <VStack spacing={6}>
+                <Box>
+                  <Text fontSize="2xl" fontWeight="bold" color="gray.800" mb={2}>
+                    ⭐ Share Your Experience
+                  </Text>
+                  <Text fontSize="md" color="gray.600">
+                    Your feedback helps us serve you better
+                  </Text>
+                </Box>
 
-              {/* Trustpilot Micro Review Count Widget */}
-              <Box
-                className="trustpilot-widget"
-                data-locale="en-GB"
-                data-template-id="56278e9abfbbba0bdcd568bc"
-                data-businessunit-id={process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID?.trim().replace(/[\r\n]/g, '')}
-                data-style-height="52px"
-                data-style-width="100%"
-                data-theme="light"
-                sx={{
-                  '& a': {
-                    textDecoration: 'none',
-                    color: 'inherit',
-                  },
-                  '& .trustpilot-widget': {
-                    display: 'inline-block',
-                  }
-                }}
-              >
-                <a
-                  href="https://uk.trustpilot.com/review/speedy-van.co.uk"
+                {/* Trustpilot Widget - Official TrustBox snippet with all required attributes */}
+                <Box
+                  className="trustpilot-widget"
+                  data-locale={config.locale}
+                  data-template-id={config.templateId}
+                  data-businessunit-id={config.businessUnitId}
+                  data-style-height="52px"
+                  data-style-width="100%"
+                  data-token={config.token}
+                  maxW="500px"
+                  mx="auto"
+                  sx={{
+                    '& a': {
+                      textDecoration: 'none',
+                      color: '#00C2FF',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        color: '#3B82F6',
+                      }
+                    },
+                    '& .trustpilot-widget': {
+                      display: 'inline-block',
+                    },
+                    '& iframe': {
+                      borderRadius: '12px',
+                    }
+                  }}
+                >
+                  <a
+                    href="https://www.trustpilot.com/review/speedy-van.co.uk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Trustpilot
+                  </a>
+                </Box>
+
+                <Box
+                  as="a"
+                  href="https://www.trustpilot.com/review/speedy-van.co.uk"
                   target="_blank"
                   rel="noopener noreferrer"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap={2}
+                  px={8}
+                  py={4}
+                  bg="linear-gradient(135deg, #00C2FF 0%, #3B82F6 100%)"
+                  color="white"
+                  fontWeight="bold"
+                  fontSize="md"
+                  borderRadius="full"
+                  textDecoration="none"
+                  transition="all 0.3s ease"
+                  boxShadow="0 4px 15px rgba(0, 194, 255, 0.3)"
+                  _hover={{
+                    transform: 'translateY(-2px) scale(1.02)',
+                    boxShadow: '0 8px 25px rgba(0, 194, 255, 0.5)',
+                  }}
+                  _active={{
+                    transform: 'translateY(0) scale(0.98)',
+                  }}
                 >
-                  Trustpilot
-                </a>
-              </Box>
-            </VStack>
-          </Box>
-        )}
+                  Write a Review
+                </Box>
+              </VStack>
+            </Box>
+          ) : null;
+        })()}
       </VStack>
     </Container>
   );

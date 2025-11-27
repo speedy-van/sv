@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,17 +41,12 @@ type AssignmentWithRelations = Prisma.AssignmentGetPayload<{
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // Admin-only authentication
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    const adminId = (session.user as any).id;
+    const adminUser = authResult;
+    const adminId = adminUser.id;
 
     // Query assignments that are completed but waiting for approval
     // We look for assignments where:

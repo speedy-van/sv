@@ -15,6 +15,7 @@ import {
   Box,
   VStack,
   HStack,
+  Flex,
   Button,
   Text,
   Card,
@@ -270,7 +271,7 @@ export default function WhereAndWhatStepHierarchical({
 
   // Handle AI-added items
   const handleAiAddItems = (aiItems: AiAddedItemPayload[]) => {
-    let updated = [...selectedItemsWithRooms];
+    const updated = [...selectedItemsWithRooms];
     
     aiItems.forEach(({ item, quantity, room }) => {
       const existingIndex = updated.findIndex(i => i.id === item.id);
@@ -476,99 +477,76 @@ export default function WhereAndWhatStepHierarchical({
             right={{ base: '20px', md: '30px' }}
             zIndex={1500}
           >
-            <VStack
+            <Flex
               as="button"
               onClick={toggleSummary}
-              bgGradient={isSummaryExpanded 
-                ? "linear(to-br, #dc2626, #991b1b)" 
-                : "linear(to-br, #10b981, #059669)"}
-              color="white"
-              borderRadius="2xl"
-              w={{ base: '90px', md: '100px' }}
-              h={{ base: '90px', md: '100px' }}
-              spacing={1}
+              direction="column"
+              align="center"
               justify="center"
+              bgGradient={isSummaryExpanded 
+                ? "linear(135deg, #8b5cf6, #6366f1)" 
+                : "linear(135deg, #ec4899, #f43f5e)"}
+              color="white"
+              borderRadius="full"
+              w={{ base: '110px', md: '130px' }}
+              h={{ base: '110px', md: '130px' }}
               cursor="pointer"
               boxShadow={isSummaryExpanded 
-                ? "0 10px 30px rgba(239, 68, 68, 0.6), 0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)" 
-                : "0 10px 30px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)"}
-              transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-              border="3px solid"
-              borderColor={isSummaryExpanded ? "#ef4444" : "#10b981"}
+                ? "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3)" 
+                : "0 15px 40px rgba(236, 72, 153, 0.5), 0 0 25px rgba(236, 72, 153, 0.3)"}
+              transition="all 0.3s ease"
+              border="4px solid white"
               position="relative"
-              overflow="visible"
-              _before={{
-                content: '""',
-                position: 'absolute',
-                inset: '-4px',
-                borderRadius: '2xl',
-                padding: '4px',
-                background: isSummaryExpanded 
-                  ? 'linear-gradient(135deg, #ef4444, #dc2626, #991b1b)' 
-                  : 'linear-gradient(135deg, #10b981, #059669, #047857)',
-                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                WebkitMaskComposite: 'xor',
-                maskComposite: 'exclude',
-                opacity: 0.6,
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}
               _hover={{
-                transform: 'scale(1.12) rotate(2deg)',
+                transform: 'scale(1.08)',
                 boxShadow: isSummaryExpanded 
-                  ? '0 15px 40px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6), inset 0 1px 0 rgba(255,255,255,0.3)' 
-                  : '0 15px 40px rgba(16, 185, 129, 0.8), 0 0 30px rgba(16, 185, 129, 0.6), inset 0 1px 0 rgba(255,255,255,0.3)',
-                borderWidth: '4px'
+                  ? '0 20px 50px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.5)' 
+                  : '0 20px 50px rgba(236, 72, 153, 0.7), 0 0 35px rgba(236, 72, 153, 0.5)',
               }}
               _active={{
-                transform: 'scale(1.05) rotate(0deg)',
-                boxShadow: isSummaryExpanded
-                  ? '0 5px 15px rgba(239, 68, 68, 0.5), inset 0 2px 4px rgba(0,0,0,0.2)'
-                  : '0 5px 15px rgba(16, 185, 129, 0.5), inset 0 2px 4px rgba(0,0,0,0.2)'
+                transform: 'scale(0.98)',
               }}
             >
-              {/* Toggle Icon - Premium Design */}
+              {/* Icon */}
               <Icon 
-                as={isSummaryExpanded ? FaTimes : FaChevronUp} 
-                boxSize={{ base: 7, md: 8 }} 
+                as={isSummaryExpanded ? FaTimes : FaBox} 
+                boxSize={{ base: 8, md: 10 }} 
                 color="white"
-                filter="drop-shadow(0 3px 6px rgba(0,0,0,0.4))"
-                transition="all 0.3s"
-                _groupHover={{ transform: 'scale(1.1)' }}
+                mb={1}
               />
               
-              {/* Items Count with Premium Badge */}
-              <HStack 
-                spacing={1} 
-                bg="rgba(255,255,255,0.2)" 
-                px={2} 
-                py={0.5} 
+              {/* Count Badge */}
+              <Flex
+                align="center"
+                justify="center"
+                bg="white"
                 borderRadius="full"
-                backdropFilter="blur(10px)"
+                w={{ base: '42px', md: '50px' }}
+                h={{ base: '42px', md: '50px' }}
+                mb={1}
+                boxShadow="0 2px 8px rgba(0,0,0,0.15)"
               >
-                <Icon as={FaBox} boxSize={{ base: 4, md: 5 }} />
                 <Text 
-                  fontSize={{ base: '2xl', md: '3xl' }} 
-                  fontWeight="black" 
+                  fontSize={{ base: 'xl', md: '2xl' }} 
+                  fontWeight="900" 
                   lineHeight="1"
-                  textShadow="0 2px 4px rgba(0,0,0,0.3)"
+                  color="black"
                 >
                   {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
                 </Text>
-              </HStack>
+              </Flex>
               
-              {/* Premium Label with Enhanced Typography */}
+              {/* Label */}
               <Text 
                 fontSize={{ base: '2xs', md: 'xs' }} 
-                fontWeight="black" 
-                letterSpacing="widest"
+                fontWeight="bold" 
                 textTransform="uppercase"
                 color="white"
-                textShadow="0 2px 6px rgba(0,0,0,0.5)"
-                mt={-0.5}
+                letterSpacing="wide"
               >
-                {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
+                {isSummaryExpanded ? 'CLOSE' : 'VIEW'}
               </Text>
-            </VStack>
+            </Flex>
           </Box>
 
           {/* Expanded Details Panel */}

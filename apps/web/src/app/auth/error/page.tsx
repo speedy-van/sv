@@ -53,6 +53,7 @@ export default function AuthErrorPage() {
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const pageBg = useColorModeValue('gray.50', 'gray.900');
 
   useEffect(() => {
     const error = searchParams?.get('error');
@@ -286,7 +287,7 @@ export default function AuthErrorPage() {
   }
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={8}>
+    <Box minH="100vh" bg={pageBg} py={8}>
       <Container maxW="container.md">
         <VStack spacing={8} align="stretch">
           {/* Header */}

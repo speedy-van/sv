@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import DispatchClient from './DispatchClient';
 
@@ -225,11 +226,20 @@ async function getDispatchData() {
 }
 
 export default async function DispatchPage() {
+  // Check custom session first (cookie auth)
+  const customSession = await getCustomSession();
+  
+  if (customSession?.user?.role === 'admin') {
+    const data = await getDispatchData();
+    return <DispatchClient data={data} />;
+  }
+
+  // Fallback to NextAuth
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== 'admin')
+  if (!session?.user || (session.user as any).role !== 'admin') {
     redirect('/auth/login');
+  }
 
   const data = await getDispatchData();
-
   return <DispatchClient data={data} />;
 }

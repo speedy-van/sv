@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
@@ -8,7 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try NextAuth session first
+    const nextAuthSession = await getServerSession(authOptions);
+    const customSession = await getCustomSession();
+    
+    const session = nextAuthSession || customSession;
 
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -17,7 +22,7 @@ export async function GET(
     const { id } = await params;
 
     // Try to find as route first
-    let route = await prisma.route.findUnique({
+    const route = await prisma.route.findUnique({
       where: { id },
       include: {
         driver: {

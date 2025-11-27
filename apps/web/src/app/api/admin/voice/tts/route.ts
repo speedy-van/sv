@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -11,16 +12,22 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const customSession = await getCustomSession();
+    let userRole = (customSession?.user as any)?.role;
+    
+    if (!customSession?.user) {
+      const session = await getServerSession(authOptions);
+      userRole = (session?.user as any)?.role;
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
-    if ((session.user as any).role !== 'admin' && (session.user as any).role !== 'superadmin') {
+    if (userRole !== 'admin' && userRole !== 'superadmin') {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -70,11 +77,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback: Use ElevenLabs or Deepgram (if available)
+    // Fallback 1: Try Deepgram TTS (has free tier)
+    const deepgramKey = process.env.DEEPGRAM_API_KEY;
+    if (deepgramKey) {
+      try {
+        const deepgramVoice = voice === 'nova' || voice === 'shimmer' ? 'aura-asteria-en' : 'aura-orion-en';
+        
+        const response = await fetch(`https://api.deepgram.com/v1/speak?model=${deepgramVoice}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Token ${deepgramKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer();
+          return new NextResponse(audioBuffer, {
+            headers: {
+              'Content-Type': 'audio/mpeg',
+              'Content-Length': audioBuffer.byteLength.toString(),
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Deepgram TTS failed:', error);
+      }
+    }
+
+    // Fallback 2: Use ElevenLabs (if available)
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
     if (elevenLabsKey) {
       try {
-        // Map voices: nova -> female, onyx -> male
         const elevenVoiceId = voice === 'nova' || voice === 'shimmer' 
           ? '21m00Tcm4TlvDq8ikWAM' // Female voice
           : 'VR6AewLTigWG4xSOukaG'; // Male voice

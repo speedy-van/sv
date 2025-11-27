@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getCustomSession } from '@/lib/custom-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +12,25 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    // Try custom session first (cookie-based auth)
+    const customSession = await getCustomSession();
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    let isAdmin = false;
+    
+    if (customSession?.user) {
+      console.log('🔐 /api/admin/ai/notifications - Using custom session:', customSession.user.email);
+      isAdmin = customSession.user.role === 'admin' || customSession.user.role === 'superadmin';
+    } else {
+      // Fallback to NextAuth session
+      const session = await getServerSession(authOptions);
+      if (session?.user) {
+        console.log('🔐 /api/admin/ai/notifications - Using NextAuth session');
+        isAdmin = (session.user as any).role === 'admin';
+      }
+    }
+    
+    if (!isAdmin) {
+      console.log('❌ /api/admin/ai/notifications - Unauthorized');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

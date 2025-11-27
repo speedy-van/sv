@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { safeSessionStorageGetItem, safeSessionStorageSetItem } from '@/lib/safe-storage';
 import {
   Box,
   Button,
@@ -30,12 +31,8 @@ export default function SettingsCodeGate({ children }: SettingsCodeGateProps) {
   const toast = useToast();
 
   useEffect(() => {
-    try {
-      const ok = sessionStorage.getItem(STORAGE_KEY);
-      if (ok === 'true') setUnlocked(true);
-    } catch {
-      // ignore storage errors
-    }
+    const ok = safeSessionStorageGetItem(STORAGE_KEY);
+    if (ok === 'true') setUnlocked(true);
   }, []);
 
   const expected =
@@ -47,11 +44,7 @@ export default function SettingsCodeGate({ children }: SettingsCodeGateProps) {
     if (code.trim() === expected) {
       setUnlocked(true);
       setError(null);
-      try {
-        sessionStorage.setItem(STORAGE_KEY, 'true');
-      } catch {
-        // ignore
-      }
+      safeSessionStorageSetItem(STORAGE_KEY, 'true');
       toast({ title: 'Unlocked', status: 'success', duration: 1500 });
     } else {
       setError('Invalid code. Please try again.');

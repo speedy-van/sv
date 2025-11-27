@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { upsertAssignment } from '@/lib/utils/assignment-helpers';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { jobId, driverId }: { jobId: string; driverId: string } =
       await request.json();
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
           action: 'job_assigned',
         },
         notes: `Job assigned to driver ${driver.User?.name || 'Unknown'} via dispatch panel`,
-        createdBy: (session.user as any).id,
+        createdBy: adminUser.id,
       }
     });
 
@@ -274,8 +274,8 @@ export async function POST(request: NextRequest) {
     // Log the assignment for audit
     await prisma.auditLog.create({
       data: {
-        actorId: (session.user as any).id,
-        actorRole: (session.user as any).role || 'admin',
+        actorId: adminUser.id,
+        actorRole: adminUser.role || 'admin',
         action: 'job_assigned',
         targetType: 'booking',
         targetId: jobId,

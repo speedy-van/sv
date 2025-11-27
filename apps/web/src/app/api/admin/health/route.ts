@@ -3,13 +3,25 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { systemMonitor } from '@/lib/system-monitor';
+import { getCustomSession } from '@/lib/custom-auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== 'admin') {
+  const customSession = await getCustomSession();
+  let isAdmin = customSession?.user?.role === 'admin';
+  
+  if (!customSession?.user) {
+    const session = await getServerSession(authOptions);
+    isAdmin = (session?.user as any)?.role === 'admin';
+    
+    if (!session?.user || !isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+  
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

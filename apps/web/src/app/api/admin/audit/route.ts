@@ -7,8 +7,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const s = await getServerSession(authOptions);
-  if (!s?.user || (s.user as any).role !== 'admin')
+  if (!s?.user) {
     return new Response('Unauthorized', { status: 401 });
+  }
+  
+  // Check admin role - dual-auth pattern
+  const isAdmin = s.user.role === 'admin';
+  const isSuperAdmin = (s.user as any).adminRole === 'superadmin';
+  
+  if (!isAdmin && !isSuperAdmin) {
+    return new Response('Forbidden', { status: 403 });
+  }
   const { searchParams } = new URL(req.url);
   const take = Math.min(
     Math.max(Number(searchParams.get('take') || 50), 1),

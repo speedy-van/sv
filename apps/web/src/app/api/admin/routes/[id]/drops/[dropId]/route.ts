@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
+import { requireAdmin } from '@/lib/auth';
 
 /**
  * DELETE /api/admin/routes/[id]/drops/[dropId]
@@ -13,16 +12,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; dropId: string }> }
 ): Promise<NextResponse> {
   try {
-    // Check authentication and admin role
-    const session = await getServerSession(authOptions);
-    const user = (session as any)?.user;
-    const role = user?.role as string | undefined;
-    const userId = user?.id as string | undefined;
-    if (!user || !role || role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const { id: routeId, dropId } = await params;

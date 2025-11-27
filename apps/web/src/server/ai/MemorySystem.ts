@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 type Redis = any;
 
 // Initialize Redis if available (optional - falls back to in-memory)
-let redis: Redis | null = null;
+const redis: Redis | null = null;
 // Redis disabled for now - using in-memory storage only
 if (false && process.env.UPSTASH_REDIS_REST_URL) {
   console.log('Redis support available but disabled');

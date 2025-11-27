@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { authenticateBearerToken } from '@/lib/bearer-auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
@@ -22,16 +23,23 @@ export async function POST(
       userRole = bearerAuth.user.role;
       console.log('🔑 Bearer token authenticated:', userId, userRole);
     } else {
-      // Fallback to NextAuth session (for web app)
-      const session = await getServerSession(authOptions);
-      if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+      // Try custom session (for web app with cookie auth)
+      const customSession = await getCustomSession();
+      if (customSession?.user) {
+        userId = customSession.user.id;
+        userRole = customSession.user.role;
+      } else {
+        // Fallback to NextAuth session (for web app)
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+        userId = session.user.id;
+        userRole = (session.user as any).role;
       }
-      userId = session.user.id;
-      userRole = (session.user as any).role;
     }
 
     const { chatId } = params;

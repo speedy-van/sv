@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -14,21 +13,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(req);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    if ((session.user as any).role !== 'admin' && (session.user as any).role !== 'superadmin') {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
-    }
+    const user = authResult;
 
     const formData = await req.formData();
     const audioFile = formData.get('audio') as File;
@@ -48,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const filename = `voice_${session.user.id}_${timestamp}.webm`;
+    const filename = `voice_${user.id}_${timestamp}.webm`;
     const filepath = join(uploadsDir, filename);
 
     // Save file

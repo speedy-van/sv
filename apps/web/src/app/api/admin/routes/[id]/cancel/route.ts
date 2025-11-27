@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 
@@ -9,8 +10,21 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let isAdmin = customSession?.user?.role === 'admin';
+    
+    if (!customSession?.user) {
+      // Fallback to NextAuth
+      const session = await getServerSession(authOptions);
+      isAdmin = (session?.user as any)?.role === 'admin';
+      
+      if (!session?.user || !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -37,78 +51,155 @@ export async function POST(
       );
     }
 
-    // Update route status to closed
-    const updatedRoute = await prisma.route.update({
-      where: { id: routeId },
-      data: {
-        status: 'closed',
-        endTime: new Date(),
-        adminNotes: `Route cancelled by admin on ${new Date().toISOString()}`,
-        isModifiedByAdmin: true,
-      },
-      include: {
-        driver: true,
-        drops: true,
-        Booking: true,
-      },
+    const body = await request.json();
+    const { reason } = body || {};
+
+    // Update route status to closed with transaction
+    const updatedRoute = await prisma.$transaction(async (tx) => {
+      // First, fetch the current route to get existing adminNotes
+      const currentRoute = await tx.route.findUnique({
+        where: { id: routeId },
+        select: { 
+          adminNotes: true, 
+          reference: true,
+          driverId: true,
+        },
+      });
+
+      if (!currentRoute) {
+        throw new Error('Route not found');
+      }
+
+      // Update the route
+      const route = await tx.route.update({
+        where: { id: routeId },
+        data: {
+          status: 'closed',
+          endTime: new Date(),
+          adminNotes: currentRoute.adminNotes 
+            ? `${currentRoute.adminNotes}\n\n[${new Date().toISOString()}] Route cancelled by admin. Reason: ${reason || 'Not specified'}`
+            : `Route cancelled by admin. Reason: ${reason || 'Not specified'}`,
+          isModifiedByAdmin: true,
+        },
+        include: {
+          driver: {
+            select: { id: true, name: true, email: true }
+          },
+          drops: {
+            select: { id: true }
+          },
+          Booking: {
+            include: {
+              customer: {
+                select: { id: true, name: true, email: true }
+              },
+            },
+          },
+        },
+      });
+
+      // Update all bookings to remove route assignment
+      await tx.booking.updateMany({
+        where: { routeId: routeId },
+        data: {
+          routeId: null,
+          status: 'CONFIRMED', // Reset to confirmed so they can be reassigned
+          deliverySequence: null,
+          orderType: 'single',
+        },
+      });
+
+      // Delete all drops
+      await tx.drop.deleteMany({
+        where: { routeId: routeId },
+      });
+
+      return route;
     });
 
-    // Update all bookings to remove route assignment
-    await prisma.booking.updateMany({
-      where: {
-        routeId: routeId,
-      },
-      data: {
-        routeId: null,
-        status: 'CONFIRMED', // Reset to confirmed so they can be reassigned
-      },
-    });
-
-    // Update all drops to remove route assignment and reset to pending
-    // This allows drops to be re-assigned to new routes (blue circle indicator)
-    await prisma.drop.updateMany({
-      where: {
-        routeId: routeId,
-      },
-      data: {
-        routeId: null, // Remove route assignment
-        status: 'pending', // Reset to pending so they show with blue circle
-      },
-    });
+    console.log(`✅ [Cancel Route] Route ${updatedRoute.reference} cancelled - ${updatedRoute.Booking?.length || 0} bookings reset`);
 
     // Send real-time notification to driver
-    if (route.driverId) {
+    if (updatedRoute.driverId) {
       try {
         const pusher = getPusherServer();
         
-        await pusher.trigger(`driver-${route.driverId}`, 'route-cancelled', {
+        await pusher.trigger(`driver-${updatedRoute.driverId}`, 'route-cancelled', {
           routeId: routeId,
-          routeNumber: routeId, // Route ID is the route number
-          message: `Route ${routeId} has been cancelled by admin`,
-          reason: 'Admin cancelled the route',
-          bookingsCount: route.Booking?.length || 0,
-          dropsCount: route.drops?.length || 0,
+          routeReference: updatedRoute.reference,
+          message: `Route ${updatedRoute.reference} has been cancelled by admin`,
+          reason: reason || 'Admin cancelled the route',
+          bookingsCount: updatedRoute.Booking?.length || 0,
+          dropsCount: updatedRoute.drops?.length || 0,
           cancelledAt: new Date().toISOString(),
-          // Signal to iOS app to remove route immediately
           action: 'remove_route',
           shouldRemoveFromApp: true,
         });
 
-        console.log(`✅ Route cancellation notification sent to driver ${route.driverId}`);
+        console.log(`✅ [Cancel Route] Notification sent to driver ${updatedRoute.driverId}`);
       } catch (notificationError) {
-        console.error('❌ Error sending route cancellation notification:', notificationError);
-        // Don't fail the request if notification fails
+        console.error('❌ [Cancel Route] Error sending driver notification:', notificationError);
+      }
+    }
+
+    // Notify admin about cancellation
+    try {
+      const pusher = getPusherServer();
+      
+      await pusher.trigger('admin-notifications', 'route-cancelled', {
+        routeId: routeId,
+        routeReference: updatedRoute.reference,
+        driverName: updatedRoute.driver?.name || 'Unassigned',
+        bookingsCount: updatedRoute.Booking?.length || 0,
+        dropsCount: updatedRoute.drops?.length || 0,
+        reason: reason || 'Not specified',
+        cancelledAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('❌ [Cancel Route] Error notifying admin:', error);
+    }
+
+    // Send cancellation emails to customers if needed
+    if (updatedRoute.Booking && updatedRoute.Booking.length > 0) {
+      try {
+        const { unifiedEmailService } = await import('@/lib/email/UnifiedEmailService');
+        
+        for (const booking of updatedRoute.Booking) {
+          if (booking.customer?.email) {
+            await unifiedEmailService.sendOrderCancellation({
+              customerEmail: booking.customer.email,
+              orderNumber: booking.reference,
+              customerName: booking.customer.name || booking.customerName,
+              reason: reason || 'Route cancelled by admin',
+              refundAmount: booking.paidAt ? Number(booking.totalGBP) / 100 : undefined,
+              currency: 'GBP',
+            });
+          }
+        }
+        console.log(`✅ [Cancel Route] Sent ${updatedRoute.Booking.length} cancellation emails`);
+      } catch (emailError) {
+        console.error('❌ [Cancel Route] Error sending emails:', emailError);
       }
     }
 
     return NextResponse.json({
+      success: true,
       route: updatedRoute,
-      message: 'Route cancelled successfully. Bookings have been reset to pending.',
+      message: `Route ${updatedRoute.reference} cancelled successfully. ${updatedRoute.Booking?.length || 0} bookings reset to pending.`,
+      data: {
+        routeReference: updatedRoute.reference,
+        bookingsReset: updatedRoute.Booking?.length || 0,
+        dropsDeleted: updatedRoute.drops?.length || 0,
+      },
     });
   } catch (error) {
-    console.error('Cancel route error:', error);
+    console.error('❌ [Cancel Route] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to cancel route' },
+      { 
+        success: false,
+        error: 'Failed to cancel route',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

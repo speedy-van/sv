@@ -7,8 +7,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 export const revalidate = 86400; // 24h ISR
 
-// For catch-all routes, we can allow dynamic params
-export const dynamicParams = true;
+// Disable dynamic params to prevent Next.js from trying to prerender non-existent pages
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   // Generate params for all places to ensure they're pre-built

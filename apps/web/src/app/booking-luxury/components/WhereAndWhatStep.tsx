@@ -1528,8 +1528,8 @@ export default function WhereAndWhatStep({
                   bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                   color="white"
                   borderRadius="full"
-                  px={{ base: 4, md: 5 }}
-                  py={{ base: 5, md: 6 }}
+                  h={{ base: '60px', md: '72px' }}
+                  px={{ base: 4, md: 6 }}
                   boxShadow="0 18px 32px rgba(16, 185, 129, 0.35)"
                   _hover={{ bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', transform: 'translateY(-3px)' }}
                   _active={{ bg: 'linear-gradient(135deg, #047857 0%, #03634f 100%)', transform: 'translateY(-1px)' }}
@@ -1538,23 +1538,39 @@ export default function WhereAndWhatStep({
                   transition="all 0.25s ease"
                   minW={{ base: 'auto', md: '280px' }}
                 >
-                  <HStack spacing={4}>
-                    <Circle size={{ base: '42px', md: '48px' }} bg="rgba(255,255,255,0.12)">
-                      <Icon as={FaBoxOpen} color="white" boxSize={{ base: 5, md: 6 }} />
-                    </Circle>
-                    <Box textAlign="left">
-                      <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="800">
-                        Selected Items
-                      </Text>
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.800">
-                        View list ({step1.items.length})
-                      </Text>
-                    </Box>
-                    <Circle size={{ base: '36px', md: '42px' }} bg="white" color="#059669">
-                      <Text fontWeight="900" fontSize="md">
+                  <HStack spacing={{ base: 3, md: 4 }} align="center" justify="space-between" w="full">
+                    <HStack spacing={{ base: 3, md: 4 }} align="center" flex="1">
+                      <Circle size={{ base: '40px', md: '48px' }} bg="rgba(255,255,255,0.12)">
+                        <Icon as={FaBoxOpen} color="white" boxSize={{ base: 5, md: 6 }} />
+                      </Circle>
+                      <Box textAlign="left">
+                        <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="800" lineHeight="1.2">
+                          Selected Items
+                        </Text>
+                        <Text fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.800" lineHeight="1.2">
+                          View list ({step1.items.length})
+                        </Text>
+                      </Box>
+                    </HStack>
+                    <Flex
+                      w={{ base: '32px', md: '40px' }}
+                      h={{ base: '32px', md: '40px' }}
+                      borderRadius="full"
+                      bg="white"
+                      color="#059669"
+                      flexShrink={0}
+                      align="center"
+                      justify="center"
+                    >
+                      <Text 
+                        fontWeight="900" 
+                        fontSize={{ base: 'sm', md: 'lg' }}
+                        lineHeight="1"
+                        display="block"
+                      >
                         {step1.items.length}
                       </Text>
-                    </Circle>
+                    </Flex>
                   </HStack>
                 </Button>
               </Box>

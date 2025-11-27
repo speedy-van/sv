@@ -478,8 +478,8 @@ export class UnifiedPricingEngine {
     let totalWeight = 0;
     let totalVolume = 0;
     let totalItems = 0;
-    let oversizedItems: string[] = [];
-    let overweightItems: string[] = [];
+    const oversizedItems: string[] = [];
+    const overweightItems: string[] = [];
 
     // Calculate totals
     enrichedItems.forEach(item => {
@@ -685,7 +685,7 @@ export class UnifiedPricingEngine {
     const volumeUtilization = (totalVolume / vanSpecs.maxVolumeM3) * 100;
     const itemUtilization = (totalItems / vanSpecs.maxItems) * 100;
 
-    let recommendation = {
+    const recommendation = {
       type: 'luton_van',
       name: 'Standard Luton Van',
       capacity: vanSpecs.maxVolumeM3,

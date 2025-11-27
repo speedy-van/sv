@@ -1,7 +1,5 @@
 import React from 'react';
-import nextDynamic from 'next/dynamic';
-
-const SettingsCodeGate = nextDynamic(() => import('@/components/admin/SettingsCodeGate'), { ssr: false });
+import { SettingsCodeGateWrapper } from './SettingsCodeGateWrapper';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,7 +9,7 @@ export default function AdminSettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <SettingsCodeGate>{children}</SettingsCodeGate>;
+  return <SettingsCodeGateWrapper>{children}</SettingsCodeGateWrapper>;
 }
 
 

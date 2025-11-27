@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
 
@@ -16,14 +15,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code: reference } = await params;
 
@@ -118,12 +114,12 @@ export async function POST(
       // Create audit log
       await tx.auditLog.create({
         data: {
-          actorId: (session.user as any).id,
-          actorRole: 'admin',
+          actorId: user.id,
+          actorRole: user.role || 'admin',
           action: 'booking_manually_confirmed',
           targetType: 'booking',
           targetId: booking.id,
-          userId: (session.user as any).id,
+          userId: user.id,
           details: {
             reference: booking.reference,
             previousStatus: booking.status,
@@ -132,7 +128,7 @@ export async function POST(
             stripePaymentIntentId: booking.stripePaymentIntentId,
             stripePaymentStatus: stripePaymentStatus,
             confirmedAt: new Date().toISOString(),
-            adminUser: (session.user as any).email
+            adminUser: user.email,
           },
         },
       });

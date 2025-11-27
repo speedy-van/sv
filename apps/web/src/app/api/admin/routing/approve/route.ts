@@ -5,10 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { routeManager } from '@/lib/orchestration/RouteManager';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +17,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const pendingApprovals = await routeManager.getPendingApprovals();
@@ -46,10 +45,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { routeId, driverId } = await request.json();
 
@@ -59,9 +59,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const adminId = (session.user as any).id;
-    const result = await routeManager.approveRoute(routeId, adminId, driverId);
+    const result = await routeManager.approveRoute(routeId, adminUser.id, driverId);
 
     return NextResponse.json({
       success: result.success,
@@ -83,10 +81,11 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { routeId, reason } = await request.json();
 
@@ -96,9 +95,7 @@ export async function DELETE(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const adminId = (session.user as any).id;
-    const result = await routeManager.rejectRoute(routeId, adminId, reason);
+    const result = await routeManager.rejectRoute(routeId, adminUser.id, reason);
 
     return NextResponse.json({
       success: result.success,

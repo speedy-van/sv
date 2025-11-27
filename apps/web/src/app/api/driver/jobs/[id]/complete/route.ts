@@ -177,7 +177,7 @@ export async function POST(
     const aggregatedPerLegMiles = perLegMilesArray && perLegMilesArray.length > 0
       ? perLegMilesArray.reduce((sum, leg) => sum + leg, 0)
       : undefined;
-    let computedDistanceMiles = aggregatedPerLegMiles && aggregatedPerLegMiles > 0
+    const computedDistanceMiles = aggregatedPerLegMiles && aggregatedPerLegMiles > 0
       ? aggregatedPerLegMiles
       : (typeof fallbackDistanceMiles === 'number' ? fallbackDistanceMiles : 0);
 

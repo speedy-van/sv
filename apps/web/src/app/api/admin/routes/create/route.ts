@@ -175,12 +175,15 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(`✅ [Create Route] Driver ${driverId} validated successfully`);
-      validatedDriverId = driverId;
+      console.log(`🔑 [Create Route] Driver.userId:`, driverExists.userId);
+      // Use userId for Route.driverId foreign key (references User.id)
+      validatedDriverId = driverExists.userId;
+      console.log(`🔑 [Create Route] Assigned validatedDriverId:`, validatedDriverId);
     }
 
     // Create route
     console.log(`📦 [Create Route] Creating route in database...`);
-    console.log(`📦 [Create Route] Driver assignment:`, validatedDriverId ? `Driver ${validatedDriverId}` : 'Unassigned (pending)');
+    console.log(`📦 [Create Route] Driver assignment:`, validatedDriverId ? `User ID ${validatedDriverId}` : 'Unassigned (pending)');
 
     // Generate unified SV reference number
     const routeReference = await createUniqueReference('route');
@@ -198,17 +201,15 @@ export async function POST(request: NextRequest) {
           optimizedDistanceKm: totalDistance * 1.609, // Convert miles to km
           estimatedDuration: Math.round(totalDuration),
           totalOutcome: totalValue,
-          adminNotes: `Auto-generated route from Smart Route Generator${Boolean(isAutomatic) ? ' [automatic]' : ''} with ${sanitizedBookings.length} bookings`,
+          adminNotes: `Auto-generated route from Smart Route Generator${isAutomatic ? ' [automatic]' : ''} with ${sanitizedBookings.length} bookings`,
         },
       });
 
       console.log(`✅ [Create Route] Route created: ${newRoute.id}`);
 
-      for (let i = 0; i < sanitizedBookings.length; i++) {
-        const booking = sanitizedBookings[i];
-        const scheduledAt = booking.scheduledAt ?? new Date();
-
-        await tx.booking.update({
+      // Update all bookings at once
+      const bookingUpdatePromises = sanitizedBookings.map((booking, i) =>
+        tx.booking.update({
           where: { id: booking.id },
           data: {
             routeId: newRoute.id,
@@ -216,33 +217,83 @@ export async function POST(request: NextRequest) {
             orderType: sanitizedBookings.length > 1 ? 'multi-drop' : 'single',
             status: 'CONFIRMED',
           },
-        });
+        })
+      );
+      await Promise.all(bookingUpdatePromises);
+      console.log(`✅ [Create Route] Updated ${sanitizedBookings.length} bookings`);
 
-        await tx.drop.create({
-          data: {
-            routeId: newRoute.id,
-            bookingId: booking.id,
-            customerId: booking.customer!.id,
-            pickupAddress: booking.pickupAddress
-              ? `${booking.pickupAddress.label}${booking.pickupAddress.postcode ? `, ${booking.pickupAddress.postcode}` : ''}`
-              : 'Unknown pickup',
-            deliveryAddress: booking.dropoffAddress
-              ? `${booking.dropoffAddress.label}${booking.dropoffAddress.postcode ? `, ${booking.dropoffAddress.postcode}` : ''}`
-              : 'Unknown dropoff',
-            timeWindowStart: scheduledAt,
-            timeWindowEnd: new Date(scheduledAt.getTime() + 4 * 60 * 60 * 1000),
-            quotedPrice: Number(booking.totalGBP || 0),
-            status: 'booked',
-          },
-        });
+      // Create all drops at once
+      const baseTimestamp = Date.now();
+      const dropsData = sanitizedBookings.map((booking, index) => {
+        const scheduledAt = booking.scheduledAt ?? new Date();
+        return {
+          id: `drop_${newRoute.id}_${index}_${baseTimestamp}_${Math.random().toString(36).substr(2, 9)}`,
+          routeId: newRoute.id,
+          bookingId: booking.id,
+          customerId: booking.customer!.id,
+          pickupAddress: booking.pickupAddress
+            ? `${booking.pickupAddress.label}${booking.pickupAddress.postcode ? `, ${booking.pickupAddress.postcode}` : ''}`
+            : 'Unknown pickup',
+          deliveryAddress: booking.dropoffAddress
+            ? `${booking.dropoffAddress.label}${booking.dropoffAddress.postcode ? `, ${booking.dropoffAddress.postcode}` : ''}`
+            : 'Unknown dropoff',
+          timeWindowStart: scheduledAt,
+          timeWindowEnd: new Date(scheduledAt.getTime() + 4 * 60 * 60 * 1000),
+          quotedPrice: Number(booking.totalGBP || 0),
+          status: 'booked' as const,
+        };
+      });
 
-        console.log(`  ✅ ${booking.reference || booking.id}: assigned to route`);
-      }
+      console.log(`📝 [Create Route] Preparing to create ${dropsData.length} drops for route ${newRoute.id}`);
+      
+      await tx.drop.createMany({ data: dropsData });
+      
+      console.log(`✅ [Create Route] Created ${dropsData.length} drop records`);
 
       return newRoute;
     });
     
     console.log(`✅ [Create Route] All ${sanitizedBookings.length} bookings updated and Drop records created`);
+
+    // Smart notification system for admin
+    const shouldNotifyAdmin = 
+      totalDistance > 50 || // Long distance (>50 miles)
+      totalDuration > 300 || // Long duration (>5 hours)
+      sanitizedBookings.length > 10; // Many drops
+
+    if (shouldNotifyAdmin) {
+      try {
+        const { getPusherServer } = await import('@/lib/pusher');
+        const pusher = getPusherServer();
+
+        await pusher.trigger('admin-notifications', 'route-alert', {
+          type: 'route_created_alert',
+          routeId: route.id,
+          routeReference: route.reference,
+          severity: totalDistance > 100 || totalDuration > 480 ? 'high' : 'medium',
+          metrics: {
+            totalDistance: `${totalDistance} miles`,
+            totalDuration: `${Math.round(totalDuration / 60)} hours`,
+            dropsCount: sanitizedBookings.length,
+            estimatedValue: `£${(totalValue / 100).toFixed(2)}`,
+          },
+          alerts: [
+            ...(totalDistance > 50 ? [`Long distance route: ${totalDistance} miles`] : []),
+            ...(totalDuration > 300 ? [`Long duration: ${Math.round(totalDuration / 60)} hours`] : []),
+            ...(sanitizedBookings.length > 10 ? [`High drop count: ${sanitizedBookings.length} stops`] : []),
+          ],
+          timestamp: new Date().toISOString(),
+        });
+
+        console.log(`⚠️ [Create Route] Admin notified about route metrics:`, {
+          distance: `${totalDistance} miles`,
+          duration: `${Math.round(totalDuration / 60)} hours`,
+          drops: sanitizedBookings.length,
+        });
+      } catch (error) {
+        console.error('❌ [Create Route] Error notifying admin:', error);
+      }
+    }
 
     // If driver assigned, notify them
     if (validatedDriverId) {
@@ -252,19 +303,35 @@ export async function POST(request: NextRequest) {
 
         await pusher.trigger(`driver-${validatedDriverId}`, 'route-assigned', {
           routeId: route.id,
+          routeReference: route.reference,
           stops: bookings.length,
+          totalDistance: `${totalDistance} miles`,
+          estimatedDuration: `${Math.round(totalDuration / 60)} hours`,
           totalValue: totalValue,
           timestamp: new Date().toISOString(),
         });
+
+        console.log(`✅ [Create Route] Driver ${validatedDriverId} notified`);
       } catch (error) {
-        console.error('Error notifying driver:', error);
+        console.error('❌ [Create Route] Error notifying driver:', error);
       }
     }
 
-    // Get full route details
+    // Get full route details with drops
     const fullRoute = await prisma.route.findUnique({
       where: { id: route.id },
       include: {
+        drops: {
+          include: {
+            Booking: {
+              select: {
+                id: true,
+                reference: true,
+                customerName: true,
+              },
+            },
+          },
+        },
         Booking: {
           include: {
             pickupAddress: true,
@@ -274,6 +341,13 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    });
+
+    console.log(`📊 [Create Route] Final route status:`, {
+      routeId: route.id,
+      reference: fullRoute?.reference,
+      totalBookings: fullRoute?.Booking?.length || 0,
+      totalDrops: fullRoute?.drops?.length || 0,
     });
 
     return NextResponse.json({

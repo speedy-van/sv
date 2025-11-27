@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/email';
 import { z } from 'zod';
+import { requireAdmin } from '@/lib/auth';
 
 const rejectSchema = z.object({
   reason: z.string().optional(),
@@ -14,11 +13,11 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const { id } = params;
     const body = await request.json();
@@ -41,7 +40,7 @@ export async function POST(
       where: { id },
       data: {
         status: 'rejected',
-        reviewedBy: session.user.name || session.user.email,
+        reviewedBy: adminUser.name || adminUser.email,
         reviewedAt: new Date(),
         rejectionReason: reason,
       },

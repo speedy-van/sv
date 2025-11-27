@@ -621,6 +621,7 @@ export default function AdminAIOverlay({
 
   // Text-to-Speech for AI messages
   const playTTS = async (messageId: string, text: string) => {
+    console.log('🔊 playTTS called:', { messageId, textLength: text.length, voice: ttsVoice });
     try {
       // Stop any currently playing audio
       if (playingAudio) {
@@ -647,22 +648,16 @@ export default function AdminAIOverlay({
         body: JSON.stringify({ text, voice: ttsVoice }),
       });
 
+      console.log('TTS Response:', { status: res.status, ok: res.ok, contentType: res.headers.get('content-type') });
+
       // Check if response is audio or JSON (fallback instruction)
       const contentType = res.headers.get('content-type');
       
       // If service unavailable (503) or JSON response, use browser TTS
-      if (!res.ok || contentType?.includes('application/json')) {
-        try {
-          const data = await res.json();
-          if (data.fallback === 'browser-tts' || res.status === 503) {
-            useBrowserTTS(messageId, text);
-            return;
-          }
-        } catch {
-          // If parsing fails, fallback to browser TTS anyway
-          useBrowserTTS(messageId, text);
-          return;
-        }
+      if (res.status === 503 || !res.ok || contentType?.includes('application/json')) {
+        console.log('TTS API not available, using browser TTS fallback');
+        browserTTSFallback(messageId, text);
+        return;
       }
 
       const audioBlob = await res.blob();
@@ -688,16 +683,17 @@ export default function AdminAIOverlay({
       await audio.play();
 
     } catch (error: any) {
-      console.error('TTS error (using browser fallback):', error);
-      setPlayingAudio(null);
+      console.error('TTS error - attempting browser fallback:', error);
       
-      // Always try browser TTS as fallback
-      if ('speechSynthesis' in window) {
-        useBrowserTTS(messageId, text);
-      } else {
+      // Always try browser TTS as fallback on any error
+      try {
+        browserTTSFallback(messageId, text);
+      } catch (fallbackError) {
+        console.error('Browser TTS fallback failed:', fallbackError);
+        setPlayingAudio(null);
         toast({
           title: lang === 'ar' ? 'خطأ' : 'Error',
-          description: lang === 'ar' ? 'المتصفح لا يدعم قراءة النصوص' : 'Browser does not support speech',
+          description: lang === 'ar' ? 'فشل تشغيل الصوت' : 'Failed to play audio',
           status: 'error',
           duration: 3000,
         });
@@ -706,7 +702,7 @@ export default function AdminAIOverlay({
   };
 
   // Browser TTS fallback (free, works offline)
-  const useBrowserTTS = (messageId: string, text: string) => {
+  const browserTTSFallback = (messageId: string, text: string) => {
     if (!('speechSynthesis' in window)) {
       setPlayingAudio(null);
       toast({

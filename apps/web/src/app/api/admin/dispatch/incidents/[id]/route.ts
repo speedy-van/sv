@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
 
 // Force dynamic rendering (uses headers/cookies/getServerSession)
 export const dynamic = 'force-dynamic';
@@ -11,9 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     const incident = await prisma.driverIncident.findUnique({
@@ -71,10 +70,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
+    const userId = adminUser.id;
+    const userRole = adminUser.role || 'admin';
 
     const { action, data } = await request.json();
 
@@ -98,7 +100,7 @@ export async function PUT(
           data: {
             status: 'resolved',
             reviewedAt: new Date(),
-            reviewedBy: (session.user as any).id,
+            reviewedBy: userId,
             reviewNotes: data.notes || null,
           },
           include: {
@@ -127,8 +129,8 @@ export async function PUT(
         // Log resolution
         await prisma.auditLog.create({
           data: {
-            actorId: (session.user as any).id,
-            actorRole: (session.user as any).role || 'admin',
+            actorId: userId,
+            actorRole: userRole,
             action: 'incident_resolved',
             targetType: 'driverIncident',
             targetId: (await params).id,
@@ -176,8 +178,8 @@ export async function PUT(
         // Log escalation
         await prisma.auditLog.create({
           data: {
-            actorId: (session.user as any).id,
-            actorRole: (session.user as any).role || 'admin',
+            actorId: userId,
+            actorRole: userRole,
             action: 'incident_escalated',
             targetType: 'driverIncident',
             targetId: (await params).id,
@@ -225,8 +227,8 @@ export async function PUT(
         // Log update
         await prisma.auditLog.create({
           data: {
-            actorId: (session.user as any).id,
-            actorRole: (session.user as any).role || 'admin',
+            actorId: userId,
+            actorRole: userRole,
             action: 'incident_updated',
             targetType: 'driverIncident',
             targetId: (await params).id,
@@ -241,7 +243,7 @@ export async function PUT(
       case 'add_note':
         const newNote = {
           text: data.note,
-          author: (session.user as any).name,
+          author: adminUser.name,
           timestamp: new Date().toISOString(),
         };
 
@@ -277,8 +279,8 @@ export async function PUT(
         // Log note addition
         await prisma.auditLog.create({
           data: {
-            actorId: (session.user as any).id,
-            actorRole: (session.user as any).role || 'admin',
+            actorId: userId,
+            actorRole: userRole,
             action: 'incident_note_added',
             targetType: 'driverIncident',
             targetId: (await params).id,
@@ -320,10 +322,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const adminUser = authResult;
 
     const incident = await prisma.driverIncident.findUnique({
       where: { id: (await params).id },
@@ -347,8 +350,8 @@ export async function DELETE(
     // Log deletion
     await prisma.auditLog.create({
       data: {
-        actorId: (session.user as any).id,
-        actorRole: (session.user as any).role || 'admin',
+        actorId: adminUser.id,
+        actorRole: adminUser.role || 'admin',
         action: 'incident_archived',
         targetType: 'driverIncident',
         targetId: (await params).id,

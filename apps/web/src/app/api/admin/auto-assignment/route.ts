@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 // BookingService removed
 import { getPusherServer } from '@/lib/pusher';
@@ -18,22 +17,11 @@ interface AutoAssignmentCriteria {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check admin authorization
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please login' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    const userRole = (session.user as any)?.role;
-    if (userRole !== 'admin') {
-      return NextResponse.json(
-        { error: 'Forbidden - Admin access required' },
-        { status: 403 }
-      );
-    }
+    const user = authResult;
 
     const { bookingId, criteria, forceAuto } = await request.json();
 
@@ -109,7 +97,11 @@ export async function POST(request: NextRequest) {
     const bestDriver = suitableDrivers[0];
 
     // Perform assignment
-    const assignmentResult = await assignBookingToDriver(bookingId, bestDriver.id, session.user.id);
+    const assignmentResult = await assignBookingToDriver(
+      bookingId,
+      bestDriver.id,
+      user.id,
+    );
 
     // Send notifications
     try {

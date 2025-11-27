@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getCustomSession } from '@/lib/custom-auth';
 import { withPrisma } from '@/lib/prisma';
 import Pusher from 'pusher';
 
@@ -21,12 +22,32 @@ const pusher = new Pusher({
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let userId: string;
+    let isAdmin = false;
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (customSession?.user) {
+      userId = customSession.user.id;
+      isAdmin = customSession.user.role === 'admin';
+    } else {
+      const session = await getServerSession(authOptions);
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+      
+      userId = (session.user as any).id;
+      isAdmin = (session.user as any).role === 'admin';
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
@@ -43,7 +64,7 @@ export async function GET(request: NextRequest) {
           data: {
             mode: 'manual',
             isActive: true,
-            updatedBy: (session.user as any).id,
+            updatedBy: userId,
             autoAssignRadius: 5000,
             minDriverRating: 4.0,
             maxDriverJobs: 3,
@@ -81,12 +102,32 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try custom session first
+    const customSession = await getCustomSession();
+    let userId: string;
+    let isAdmin = false;
     
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (customSession?.user) {
+      userId = customSession.user.id;
+      isAdmin = customSession.user.role === 'admin';
+    } else {
+      const session = await getServerSession(authOptions);
+      
+      if (!session?.user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Admin access required' },
+          { status: 401 }
+        );
+      }
+      
+      userId = (session.user as any).id;
+      isAdmin = (session.user as any).role === 'admin';
+    }
+    
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
@@ -99,7 +140,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🔄 Changing dispatch mode:', { mode, adminId: (session.user as any).id });
+    console.log('🔄 Changing dispatch mode:', { mode, adminId: userId });
 
     return await withPrisma(async (prisma) => {
       // Deactivate all existing settings
@@ -113,7 +154,7 @@ export async function POST(request: NextRequest) {
         data: {
           mode: mode,
           isActive: true,
-          updatedBy: (session.user as any).id,
+          updatedBy: userId,
           autoAssignRadius: settings?.autoAssignRadius || 5000,
           minDriverRating: settings?.minDriverRating || 4.0,
           maxDriverJobs: settings?.maxDriverJobs || 3,
@@ -125,7 +166,7 @@ export async function POST(request: NextRequest) {
       try {
         await pusher.trigger('admin-channel', 'dispatch-mode-changed', {
           mode: mode,
-          changedBy: (session.user as any).name || 'Admin',
+          changedBy: 'Admin',
           changedAt: new Date().toISOString(),
           settings: newSettings
         });

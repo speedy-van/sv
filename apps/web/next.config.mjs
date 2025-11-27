@@ -2,20 +2,23 @@
 const nextConfig = {
   // Performance optimizations for large dataset (666+ items)
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-    // Allow fallback for problematic packages
-    esmExternals: 'loose',
     // NOTE: optimizePackageImports caused Chakra UI styles to be tree-shaken differently in production
     // leaving it disabled to keep Emotion style injection order stable across dev/prod
     // CRITICAL: DISABLE CSS optimizer - it causes CSS not to load on Render production
     optimizeCss: false,
-    // Enable faster refresh for large files
-    swcMinify: true,
-    // Enable instrumentation for server initialization
-    instrumentationHook: true,
-    // CRITICAL: Disable optimistic client cache to prevent stale CSS
-    optimisticClientCache: false,
+    // Disable static error pages generation to prevent prerender issues
+    staticGenerationMaxConcurrency: 8,
+    staticGenerationMinPagesPerWorker: 25,
   },
+  
+  // Skip error page generation during build
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
+
+  // Skip prerendering for error pages and test pages that don't exist
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: false,
 
   // Enable compression
   compress: true,
@@ -54,6 +57,17 @@ const nextConfig = {
         source: '/booking',
         destination: '/booking-luxury',
         permanent: false, // Temporary redirect (307) until standard booking page is created
+      },
+      // Prevent Next.js from trying to prerender error pages
+      {
+        source: '/500',
+        destination: '/',
+        permanent: false,
+      },
+      {
+        source: '/404',
+        destination: '/',
+        permanent: false,
       },
     ];
   },
@@ -169,8 +183,8 @@ const nextConfig = {
     pagesBufferLength: 5, // Keep 5 pages buffered (default)
   },
   
-  // Enable production optimizations
-  optimizeFonts: true,
+  // Font optimization is now default in Next.js 15
+  // optimizeFonts: true,
   
   // CRITICAL: DO NOT use standalone mode - it breaks CSS loading
   // output: 'standalone',

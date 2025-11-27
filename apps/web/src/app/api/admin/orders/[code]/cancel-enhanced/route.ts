@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getActiveAssignment } from '@/lib/utils/assignment-helpers';
 import { getPusherServer } from '@/lib/pusher';
@@ -12,14 +11,11 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user || (session.user as any).role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
-        { status: 401 }
-      );
+    const authResult = await requireAdmin(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     const { code } = await params;
     const { reason, refundAmount, notifyCustomer } = await request.json();
@@ -91,7 +87,7 @@ export async function POST(
               status: 'cancelled'
             },
             notes: `Job cancelled by admin. Reason: ${reason || 'No reason provided'}`,
-            createdBy: (session.user as any).id,
+            createdBy: user.id,
           }
         });
 
@@ -200,7 +196,7 @@ export async function POST(
     // Create audit log
     await prisma.auditLog.create({
       data: {
-        actorId: (session.user as any).id,
+        actorId: user.id,
         actorRole: 'admin',
         action: 'booking_cancelled',
         targetType: 'booking',

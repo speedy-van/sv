@@ -1,18 +1,18 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
 import { logAudit } from '@/lib/audit';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request) {
-  const s = await getServerSession(authOptions);
-  if (!s?.user || (s.user as any).role !== 'admin') {
-    return new Response('Unauthorized', { status: 401 });
+export async function POST(req: NextRequest) {
+  const authResult = await requireAdmin(req);
+  if (authResult instanceof NextResponse) {
+    return authResult;
   }
+  const user = authResult;
 
   try {
     const { orderIds, action, data } = await req.json();
@@ -185,7 +185,7 @@ export async function POST(req: Request) {
             console.log(`✅ Order ${booking.reference} assigned to driver ${targetDriverId}`);
 
             // Log audit
-            await logAudit((s.user as any).id, 'bulk_assign_driver', orderId, { targetType: 'booking', before: { driverId: booking.driverId, status: booking.status }, after: { driverId: targetDriverId, status: 'CONFIRMED' } });
+            await logAudit(user.id, 'bulk_assign_driver', orderId, { targetType: 'booking', before: { driverId: booking.driverId, status: booking.status }, after: { driverId: targetDriverId, status: 'CONFIRMED' } });
           } catch (error) {
             errorCount++;
             errors.push(`Error processing order ${orderId}: ${error}`);
@@ -224,7 +224,7 @@ export async function POST(req: Request) {
             });
 
             // Log audit
-            await logAudit((s.user as any).id, 'bulk_cancel_order', orderId, { targetType: 'booking', before: { status: booking.status }, after: { status: 'CANCELLED' } });
+            await logAudit(user.id, 'bulk_cancel_order', orderId, { targetType: 'booking', before: { status: booking.status }, after: { status: 'CANCELLED' } });
           } catch (error) {
             errorCount++;
             errors.push(`Error cancelling order ${orderId}: ${error}`);
