@@ -40,7 +40,10 @@ const EnhancedPricingRequestSchema = z.object({
   items: z.array(z.object({
     id: z.string().min(1),
     name: z.string().min(1),
-    quantity: z.number().min(1).default(1),
+    quantity: z.preprocess(
+      (val) => (typeof val === 'number' && val >= 1) ? val : 1,
+      z.number().min(1)
+    ),
     weight_override: z.number().positive().optional(),
     volume_override: z.number().positive().optional()
   })).default([]).optional(),
@@ -50,9 +53,9 @@ const EnhancedPricingRequestSchema = z.object({
     line2: z.string().optional(),
     city: z.string().min(1),
     postcode: z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i),
-    // ENTERPRISE REQUIREMENT: Full structured address
-    street: z.string().min(1, 'Street is required for availability calculation'),
-    number: z.string().min(1, 'Number is required for availability calculation'),
+    // ENTERPRISE REQUIREMENT: Full structured address (optional for backwards compatibility)
+    street: z.string().min(1).optional(),
+    number: z.string().min(1).optional(),
     coordinates: z.object({
       lat: z.number().min(-90).max(90),
       lng: z.number().min(-180).max(180)
@@ -68,9 +71,9 @@ const EnhancedPricingRequestSchema = z.object({
     line2: z.string().optional(),
     city: z.string().min(1),
     postcode: z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i),
-    // ENTERPRISE REQUIREMENT: Full structured address
-    street: z.string().min(1, 'Street is required for availability calculation'),
-    number: z.string().min(1, 'Number is required for availability calculation'),
+    // ENTERPRISE REQUIREMENT: Full structured address (optional for backwards compatibility)
+    street: z.string().min(1).optional(),
+    number: z.string().min(1).optional(),
     coordinates: z.object({
       lat: z.number().min(-90).max(90),
       lng: z.number().min(-180).max(180)
