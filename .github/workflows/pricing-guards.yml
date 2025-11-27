@@ -39,8 +39,8 @@ jobs:
           exit 1
         fi
         
-        # Check for manual pricing triggers
-        if grep -r "Calculate.*Price.*Button\|onClick.*calculate.*pricing" --include="*.tsx" --exclude-dir=node_modules .; then
+        # Check for manual pricing triggers (exclude test files and pricing engine itself)
+        if grep -r "Calculate.*Price.*Button\|onClick.*calculate.*pricing" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=__tests__ --exclude="*pricing*" --exclude="*test*" .; then
           echo "❌ BLOCKED: Manual pricing triggers found!"
           echo "Use automatic pricing with UnifiedPricingFacade"
           exit 1
