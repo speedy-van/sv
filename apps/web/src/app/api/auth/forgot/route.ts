@@ -23,8 +23,16 @@ export async function POST(request: NextRequest) {
         },
         isActive: true,
       },
-      include: {
-        driver: true,
+      select: {
+        id: true,
+        email: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        driver: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 

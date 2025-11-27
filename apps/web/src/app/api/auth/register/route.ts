@@ -43,6 +43,10 @@ export async function POST(request: NextRequest) {
           mode: 'insensitive',
         }
       },
+      select: {
+        id: true,
+        email: true,
+      },
     });
 
     if (existingUser) {
