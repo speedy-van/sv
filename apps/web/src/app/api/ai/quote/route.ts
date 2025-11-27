@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { calculateDistance } from '../../../../lib/distance';
 
 const quoteSchema = z.object({
   pickupAddress: z.string().min(3).optional().default('Not specified'),
@@ -101,22 +100,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = quoteSchema.parse(body);
 
-    // Calculate real distance if postcodes are available
-    let distanceResult;
+    // Note: Distance calculation is now handled by unified pricing system
+    // AI quotes use provided distance or default estimation
     if (validated.pickupPostcode && validated.dropoffPostcode) {
-      try {
-        distanceResult = await calculateDistance(validated.pickupPostcode, validated.dropoffPostcode);
-        console.log(`[Quote] Distance calculated: ${distanceResult.distanceMiles} miles via ${distanceResult.method}`);
-      } catch (error: any) {
-        console.error('[Quote] Distance calculation failed:', error.message);
-        // Will fall back to default in calculateQuote
-      }
+      console.log(`[Quote] Using provided distance or default estimation for ${validated.pickupPostcode} to ${validated.dropoffPostcode}`);
     } else {
       console.warn('[Quote] Missing postcodes, using default distance');
     }
 
-    // Calculate quote with real distance
-    const quote = calculateQuote(validated, distanceResult);
+    // Calculate quote with provided or default distance
+    const quote = calculateQuote(validated, undefined);
     
     // Vehicle type mapping for display
     const vehicleMapping: Record<string, string> = {

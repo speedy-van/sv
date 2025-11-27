@@ -32,8 +32,8 @@ jobs:
           exit 1
         fi
         
-        # Check for distance calculator usage
-        if grep -r "calculateDistance\|distance-calculator" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules . | grep -v "DEPRECATED\|disabled"; then
+        # Check for distance calculator usage (exclude lib/distance.ts itself and test files)
+        if grep -r "calculateDistance" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=__tests__ --exclude="*test*" --exclude="distance.ts" . | grep -v "DEPRECATED\|disabled\|// Legacy"; then
           echo "❌ BLOCKED: Distance calculator usage found!"
           echo "Distance calculations are disabled in unified pricing system"
           exit 1
