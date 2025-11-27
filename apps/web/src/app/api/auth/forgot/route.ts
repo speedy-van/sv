@@ -26,11 +26,15 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        name: true,
+        role: true,
+        isActive: true,
         resetToken: true,
         resetTokenExpiry: true,
         driver: {
           select: {
             id: true,
+            onboardingStatus: true,
           },
         },
       },

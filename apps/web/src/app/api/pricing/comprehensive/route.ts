@@ -25,6 +25,13 @@ import { planCapacityConstrainedRoute, type BookingRequest } from '@/lib/capacit
 import { calculateCapacityMetrics } from '@/lib/dataset/uk-removal-dataset-loader';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import {
+  BasePricingRequestSchema,
+  normalizePricingRequest,
+  formatPricingError,
+  PricingErrorCode,
+  type PricingError,
+} from '@/lib/pricing/shared-schema';
 
 // Initialize Stripe (optional - gracefully handle missing key)
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -33,84 +40,13 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
   : null;
 
-// Enhanced request validation schema (100% operational compliance)
-const EnhancedPricingRequestSchema = z.object({
-  correlationId: z.string().min(1).optional(),
-  operationalConfig: z.any().optional(), // Allow override of operational config
-  items: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    quantity: z.preprocess(
-      (val) => (typeof val === 'number' && val >= 1) ? val : 1,
-      z.number().min(1)
-    ),
-    weight_override: z.number().positive().optional(),
-    volume_override: z.number().positive().optional()
-  })).default([]).optional(),
-  pickup: z.object({
-    full: z.string().min(1),
-    line1: z.string().min(1),
-    line2: z.string().optional(),
-    city: z.string().min(1),
-    postcode: z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i),
-    // ENTERPRISE REQUIREMENT: Full structured address (optional for backwards compatibility)
-    street: z.string().min(1).optional(),
-    number: z.string().min(1).optional(),
-    coordinates: z.object({
-      lat: z.number().min(-90).max(90),
-      lng: z.number().min(-180).max(180)
-    }),
-    propertyType: z.enum(['house', 'apartment', 'office', 'warehouse', 'other']).default('house'),
-    accessNotes: z.string().optional(),
-    parkingSituation: z.enum(['easy', 'moderate', 'difficult']).default('easy'),
-    congestionZone: z.boolean().default(false)
-  }),
-  dropoffs: z.array(z.object({
-    full: z.string().min(1),
-    line1: z.string().min(1),
-    line2: z.string().optional(),
-    city: z.string().min(1),
-    postcode: z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i),
-    // ENTERPRISE REQUIREMENT: Full structured address (optional for backwards compatibility)
-    street: z.string().min(1).optional(),
-    number: z.string().min(1).optional(),
-    coordinates: z.object({
-      lat: z.number().min(-90).max(90),
-      lng: z.number().min(-180).max(180)
-    }),
-    propertyType: z.enum(['house', 'apartment', 'office', 'warehouse', 'other']).default('house'),
-    accessNotes: z.string().optional(),
-    parkingSituation: z.enum(['easy', 'moderate', 'difficult']).default('easy'),
-    congestionZone: z.boolean().default(false)
-  })).max(5),
-  serviceLevel: z.enum(['economy', 'standard', 'premium']).default('standard'),
-  scheduledDate: z.string().datetime(),
-  customerSegment: z.enum(['bronze', 'silver', 'gold', 'platinum']).default('bronze'),
-  timeFactors: z.object({
-    isRushHour: z.boolean().optional(),
-    isPeakSeason: z.boolean().optional(),
-    isStudentSeason: z.boolean().optional(),
-    isWeekend: z.boolean().optional(),
-    isSchoolHoliday: z.boolean().optional(),
-    isBankHoliday: z.boolean().optional(),
-    trafficConditions: z.enum(['light', 'moderate', 'heavy']).optional(),
-    currentHour: z.number().min(0).max(23).optional(),
-    currentMonth: z.number().min(1).max(12).optional()
-  }).optional(),
-  serviceOptions: z.object({
-    whiteGloveService: z.boolean().optional(),
-    packingService: z.object({
-      volumeM3: z.number().min(0).optional(),
-      boxes: z.number().min(0).optional()
-    }).optional(),
-    cleaningService: z.boolean().optional(),
-    storageService: z.object({
-      durationMonths: z.number().min(1).max(12).optional(),
-      volumeM3: z.number().min(0).optional()
-    }).optional(),
-    insurance: z.enum(['basic', 'standard', 'premium']).optional()
-  }).optional()
-});
+/**
+ * Enhanced request validation schema
+ * 
+ * Extends BasePricingRequestSchema with comprehensive-specific fields.
+ * Uses unified schema for consistency across pricing endpoints.
+ */
+const EnhancedPricingRequestSchema = BasePricingRequestSchema;
 
 /**
  * Transform request items to pricing input format
@@ -257,17 +193,42 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedRequest = EnhancedPricingRequestSchema.parse(body);
 
+    // SERVER-SIDE NORMALIZATION: Filter out invalid items
+    // This ensures we handle real-world payloads (especially from iOS) gracefully
+    const normalized = normalizePricingRequest(validatedRequest);
+    
+    if (!normalized.success) {
+      console.log(`❌ [${requestId}] Normalization failed:`, normalized.error);
+      return NextResponse.json<PricingError>(
+        {
+          error: normalized.error,
+          code: normalized.code as PricingErrorCode,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+    
+    const normalizedRequest = normalized.data;
+    
+    // Log normalization results
+    if (normalizedRequest.originalItemCount !== normalizedRequest.validItemCount) {
+      console.log(
+        `⚠️  [${requestId}] Filtered out ${normalizedRequest.originalItemCount - normalizedRequest.validItemCount} invalid items (quantity < 1)`
+      );
+    }
+
     // Generate correlation ID if not provided
-    const correlationId = validatedRequest.correlationId || randomUUID();
+    const correlationId = normalizedRequest.correlationId || randomUUID();
 
     // Set operational config if provided
-    if (validatedRequest.operationalConfig) {
-      comprehensivePricingEngine.setOperationalConfig(validatedRequest.operationalConfig);
+    if (normalizedRequest.operationalConfig) {
+      comprehensivePricingEngine.setOperationalConfig(normalizedRequest.operationalConfig);
     }
 
     // Transform request to pricing input format (enriches items with dataset)
     const pricingInput = await transformRequestToPricingInput(
-      validatedRequest,
+      normalizedRequest,
       requestId,
       correlationId
     );
@@ -325,21 +286,29 @@ export async function POST(request: NextRequest) {
     // Log error with structured data
     logPricingError(requestId, error);
 
+    // Handle Zod validation errors with structured response
     if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation failed',
-        details: error.errors,
-        requestId
-      }, { status: 400 });
+      const formattedError = formatPricingError(error);
+      console.log(`🚨 [${requestId}] Pricing Error:`, formattedError);
+      
+      return NextResponse.json<PricingError>(
+        formattedError,
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      requestId
-    }, { status: 500 });
+    // Handle other errors
+    return NextResponse.json<PricingError>(
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+        code: PricingErrorCode.CALCULATION_ERROR,
+        timestamp: new Date().toISOString(),
+        details: {
+          requestId,
+        },
+      },
+      { status: 500 }
+    );
   }
 }
 
