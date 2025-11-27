@@ -9,7 +9,7 @@
                     "clean:cache":  "powershell -Command \"Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force .next/server; Set-Content -Path .next/server/pages-manifest.json -Value \u0027{}\u0027; Set-Content -Path .next/server/app-paths-manifest.json -Value \u0027{}\u0027\"",
                     "build":  "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
                     "postbuild":  "next-sitemap",
-                    "start":  "next start -H 0.0.0.0 -p ${PORT:-3000}",
+                    "start":  "cross-env NODE_OPTIONS=--max-old-space-size=1024 next start -H 0.0.0.0 -p ${PORT:-3000}",
                     "postinstall":  "prisma generate --schema=./prisma/schema.prisma",
                     "lint":  "next lint",
                     "lint:web":  "eslint src",
