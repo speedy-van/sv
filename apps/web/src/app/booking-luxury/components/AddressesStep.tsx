@@ -106,7 +106,7 @@ export default function AddressesStep({
             backdropFilter="blur(24px)"
             boxShadow="0 25px 60px rgba(0,0,0,0.6), 0 0 80px rgba(34, 197, 94, 0.15)"
             position="relative"
-            overflow="hidden"
+            overflow="visible"
             transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
             _hover={{
               borderColor: "rgba(34, 197, 94, 0.6)",
@@ -238,7 +238,7 @@ export default function AddressesStep({
             boxShadow="0 25px 60px rgba(236, 72, 153, 0.25)"
             transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
             position="relative"
-            overflow="hidden"
+            overflow="visible"
             _before={{
               content: '""',
               position: 'absolute',

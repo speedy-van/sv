@@ -175,6 +175,9 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
   const isSelectingRef = useRef(false); // Prevent double selection
   const justSelectedRef = useRef(false); // Prevent search after selection
   const toast = useToast();
+  
+  // Dropdown positioning state for fixed positioning
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
 
 
   // Generate session token on mount
@@ -514,11 +517,22 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     }
   }, [onChange]);
 
-  // Click outside to close dropdown - Simple and iOS-compatible
+  // Update dropdown position - handles scroll and resize
   useEffect(() => {
-    if (!showSuggestions) {
+    if (!showSuggestions || !inputRef.current) {
       return;
     }
+
+    const updatePosition = () => {
+      const rect = inputRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      setDropdownPos({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width
+      });
+    };
 
     const handleMouseDownOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -531,9 +545,17 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       setShowSuggestions(false);
     };
 
+    // Initial position
+    updatePosition();
+
+    // Update on scroll (with passive for performance)
+    window.addEventListener('scroll', updatePosition, { passive: true, capture: true });
+    window.addEventListener('resize', updatePosition);
     document.addEventListener('mousedown', handleMouseDownOutside);
 
     return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
       document.removeEventListener('mousedown', handleMouseDownOutside);
     };
   }, [showSuggestions]);
@@ -653,21 +675,20 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
           </Fade>
         )}
 
-        {/* Premium Suggestions Dropdown - REAL iOS FIX: Use absolute positioning */}
+        {/* Premium Suggestions Dropdown - iOS FIX: fixed position with scroll updates */}
         {showSuggestions && suggestions.length > 0 && (
           <Box
             ref={dropdownRef}
-            position="absolute"
-            top="100%"
-            left="0"
-            right="0"
-            mt={2}
+            position="fixed"
+            top={`${dropdownPos.top}px`}
+            left={`${dropdownPos.left}px`}
+            width={`${dropdownPos.width}px`}
             zIndex={1400}
-            bg="rgba(26, 32, 44, 0.98)"
-            backdropFilter="blur(10px)"
-            border="1px solid rgba(255, 255, 255, 0.1)"
-            borderRadius="xl"
-            boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
+              bg="rgba(26, 32, 44, 0.98)"
+              backdropFilter="blur(10px)"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              borderRadius="xl"
+              boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
             maxH="320px"
             overflowY="auto"
             py={2}
@@ -785,21 +806,20 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
             </Box>
         )}
         
-        {/* No results message - REAL iOS FIX: Use absolute positioning */}
+        {/* No results message - iOS FIX: fixed position with scroll updates */}
         {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length >= 2 && (
           <Fade in={true}>
             <Box
-              position="absolute"
-              top="100%"
-              left="0"
-              right="0"
-              mt={2}
+              position="fixed"
+              top={`${dropdownPos.top}px`}
+              left={`${dropdownPos.left}px`}
+              width={`${dropdownPos.width}px`}
               zIndex={1400}
-              bg="rgba(26, 32, 44, 0.98)"
-              backdropFilter="blur(10px)"
-              border="1px solid rgba(255, 255, 255, 0.1)"
-              borderRadius="xl"
-              boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3)"
+                bg="rgba(26, 32, 44, 0.98)"
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
+                borderRadius="xl"
+                boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3)"
               p={4}
               css={{
                 WebkitTransform: 'translate3d(0, 0, 0)',
