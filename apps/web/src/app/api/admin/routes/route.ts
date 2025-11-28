@@ -229,6 +229,8 @@ export async function GET(request: NextRequest) {
           orderType: true,
           isMultiDrop: true,
           urgency: true,
+          serviceType: true,
+          isEconomyService: true,
         },
         orderBy: { scheduledAt: 'asc' },
         take: 250,
@@ -249,6 +251,14 @@ export async function GET(request: NextRequest) {
 
       const enrichedBookings = bookingCandidates.map(candidate => {
         const meta = deriveServiceMetadata(candidate);
+        console.log(`📋 [Booking ${candidate.reference}] Classification:`, {
+          urgency: candidate.urgency,
+          serviceType: (candidate as any).serviceType,
+          orderType: candidate.orderType,
+          isMultiDrop: candidate.isMultiDrop,
+          derivedServiceType: meta.serviceType,
+          isEconomy: meta.isEconomy,
+        });
         return { candidate, meta };
       });
 
@@ -388,7 +398,41 @@ export async function GET(request: NextRequest) {
       reference: booking.reference,
     }));
 
-    // Combine routes and single bookings
+    // Convert economy bookings (CONFIRMED status only) to route-like format
+    const confirmedEconomyBookingsAsRoutes = economyBookings
+      .filter(booking => booking.status === 'CONFIRMED')
+      .map(booking => ({
+        id: `economy-booking-${booking.id}`,
+        type: 'economy-booking',
+        bookingId: booking.id,
+        driverId: booking.driverId,
+        driverName: booking.driver?.User?.name || 'Unassigned',
+        driverEmail: booking.driver?.User?.email || null,
+        vehicleId: null,
+        status: booking.status,
+        totalDrops: 1,
+        completedDrops: 0,
+        startTime: booking.scheduledAt,
+        totalOutcome: booking.totalGBP,
+        serviceTier: 'economy',
+        drops: [{
+          id: `drop-${booking.id}`,
+          status: booking.status,
+          pickupAddress: booking.pickupAddress?.label,
+          deliveryAddress: booking.dropoffAddress?.label,
+          customerName: booking.customerName,
+          customerEmail: booking.customerEmail,
+          items: booking.BookingItem || [],
+        }],
+        bookings: [booking],
+        progress: 0,
+        createdAt: booking.scheduledAt,
+        updatedAt: booking.scheduledAt,
+        reference: booking.reference,
+        isEconomyService: true,
+      }));
+
+    // Combine routes, single bookings, and confirmed economy bookings
     const allRoutes = [
       ...routes.map((route: any) => ({
         id: route.id,
@@ -408,7 +452,8 @@ export async function GET(request: NextRequest) {
         createdAt: route.createdAt,
         updatedAt: route.updatedAt,
       })),
-      ...singleBookingsAsRoutes
+      ...singleBookingsAsRoutes,
+      ...confirmedEconomyBookingsAsRoutes
     ].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     return NextResponse.json({
@@ -429,22 +474,24 @@ export async function GET(request: NextRequest) {
         volume: drop.volume,
         customer: drop.customer,
       })),
-      economyBookingsPending: economyBookings.map((booking: any) => ({
-        id: booking.id,
-        reference: booking.reference,
-        type: 'economy-booking',
-        status: booking.status,
-        serviceType: booking.serviceTypeDerived || 'ECONOMY',
-        isEconomyService: true,
-        scheduledAt: booking.scheduledAt,
-        totalGBP: booking.totalGBP,
-        customerName: booking.customerName,
-        customerEmail: booking.customerEmail,
-        pickupAddress: booking.pickupAddress,
-        dropoffAddress: booking.dropoffAddress,
-        items: booking.BookingItem,
-        needsDropConversion: true, // Flag for frontend to show conversion button
-      })),
+      economyBookingsPending: economyBookings
+        .filter((booking: any) => booking.status !== 'CONFIRMED') // Only pending/draft, not confirmed
+        .map((booking: any) => ({
+          id: booking.id,
+          reference: booking.reference,
+          type: 'economy-booking',
+          status: booking.status,
+          serviceType: booking.serviceTypeDerived || 'ECONOMY',
+          isEconomyService: true,
+          scheduledAt: booking.scheduledAt,
+          totalGBP: booking.totalGBP,
+          customerName: booking.customerName,
+          customerEmail: booking.customerEmail,
+          pickupAddress: booking.pickupAddress,
+          dropoffAddress: booking.dropoffAddress,
+          items: booking.BookingItem,
+          needsDropConversion: true, // Flag for frontend to show conversion button
+        })),
       metrics: {
         totalRoutes: routes.length + singleBookings.length,
         totalMultiDropRoutes: routes.length,
