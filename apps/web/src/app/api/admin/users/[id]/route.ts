@@ -167,6 +167,32 @@ export const DELETE = withApiHandler(
     // Delete related records first to avoid foreign key constraint errors
     // This is necessary because some relations don't have onDelete: Cascade
     await prisma.$transaction(async (tx) => {
+      // Delete driver-related records if user is/was a driver
+      const driver = await tx.driver.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (driver) {
+        // Delete driver-related records
+        await tx.driverAvailability.deleteMany({
+          where: { driverId: driver.id },
+        });
+        
+        await tx.assignment.deleteMany({
+          where: { driverId: driver.id },
+        });
+        
+        await tx.driverEarnings.deleteMany({
+          where: { driverId: driver.id },
+        });
+        
+        // Delete the driver profile
+        await tx.driver.delete({
+          where: { id: driver.id },
+        });
+      }
+
       // Delete drops associated with this user (as customer)
       await tx.drop.deleteMany({
         where: { customerId: userId },
