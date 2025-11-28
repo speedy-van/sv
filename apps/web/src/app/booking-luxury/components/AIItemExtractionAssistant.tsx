@@ -52,7 +52,7 @@ interface AIItemExtractionAssistantProps {
 }
 
 const INITIAL_MESSAGE =
-  'I can organise everything for you in seconds. Just tell me what you need to move.';
+  '✨ I can organise everything for you in seconds. Just tell me what you need to move - I can add ANY items, whether from our catalog or custom items you describe!';
 const FALLBACK_ASSISTANT_RESPONSE =
   "I've added the items you requested. Tell me if you want to add more, or you can move to the next step.";
 
@@ -363,7 +363,7 @@ export default function AIItemExtractionAssistant({
               <Textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="e.g., I have 6 three-seater sofas, 2 king beds, and 10 medium boxes..."
+                placeholder="e.g., 3 seater sofa, king bed, 10 boxes, antique piano, custom furniture..."
                 bg="rgba(0, 0, 0, 0.3)"
                 backdropFilter="blur(10px)"
                 color="white"

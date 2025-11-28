@@ -64,15 +64,17 @@ You are Speedy Van's AI inventory extraction engine. Read messy customer languag
 
 Your job:
 1. Parse the conversation and the latest customer message.
-2. Extract every item they want to move.
+2. Extract EVERY item they want to move - whether it's a standard catalog item OR a unique custom item.
 3. Map each item to Speedy Van categories described below.
-4. Never invent details. If size or quantity is unclear, set it to null and include a follow-up question in "missingDetails".
-5. If the wording clearly implies a single item (e.g. "a piano", "one sofa"), set quantity to 1. Otherwise leave null until the customer confirms.
-6. Recognise variations: "double bed", "3 seater sofa", "big fridge", "office chairs".
-7. **CRITICAL for sofas/couches**: Extract seat numbers precisely (e.g., "3 seater" → size: "3-seater" or "3 seat", "2 seater" → size: "2-seater").
-8. **CRITICAL for beds**: Extract bed sizes precisely (e.g., "king bed" → size: "king", "double bed" → size: "double").
-9. Understand all Step 2 categories and align each item accordingly.
-10. Output clean JSON only, matching the schema exactly.
+4. **CRITICAL**: Accept ALL items, even if they're unusual or custom (antiques, handmade furniture, unique equipment, etc.)
+5. Never invent details. If size or quantity is unclear, set it to null and include a follow-up question in "missingDetails".
+6. If the wording clearly implies a single item (e.g. "a piano", "one sofa"), set quantity to 1. Otherwise leave null until the customer confirms.
+7. Recognise variations: "double bed", "3 seater sofa", "big fridge", "office chairs".
+8. **CRITICAL for sofas/couches**: Extract seat numbers precisely (e.g., "3 seater" → size: "3-seater" or "3 seat", "2 seater" → size: "2-seater").
+9. **CRITICAL for beds**: Extract bed sizes precisely (e.g., "king bed" → size: "king", "double bed" → size: "double").
+10. For custom/unusual items: Extract as much detail as possible (item type, estimated size, special handling needs).
+11. Understand all Step 2 categories and align each item accordingly.
+12. Output clean JSON only, matching the schema exactly.
 
 ${STEP2_CATEGORY_GUIDE}
 
@@ -280,7 +282,7 @@ function scoreRemovalItem(
   return score;
 }
 
-function matchRemovalItem(aiItem: AiExtractionItem) {
+function matchRemovalItem(aiItem: AiExtractionItem): RemovalItem | null {
   const tokens = tokenize(aiItem.canonicalName || aiItem.rawText || '');
   if (tokens.length === 0) {
     return null;
@@ -300,11 +302,95 @@ function matchRemovalItem(aiItem: AiExtractionItem) {
     }
   }
 
+  // ✅ NEW: If no good match found, create a custom item intelligently
   if (!best || best.score < 12) {
-    return null;
+    return createCustomItem(aiItem);
   }
 
   return best.item;
+}
+
+/**
+ * ✨ NEW FEATURE: Create custom items when no catalog match found
+ * AI can now add ANY item customer requests, not just catalog items
+ */
+function createCustomItem(aiItem: AiExtractionItem): RemovalItem {
+  // Extract item name
+  const itemName = aiItem.canonicalName || aiItem.rawText || 'Custom Item';
+  
+  // Infer category from room or item type
+  let category = 'Miscellaneous';
+  if (aiItem.roomCategory) {
+    const roomMap: Record<string, string> = {
+      bedroom: 'Bedroom Furniture',
+      living: 'Living Room Furniture',
+      dining: 'Dining Room Furniture',
+      kitchen: 'Kitchen Appliances',
+      bathroom: 'Bathroom Fixtures',
+      office: 'Office Furniture',
+      garden: 'Garden & Outdoor',
+      boxes: 'Boxes & Packing',
+      storage: 'Storage Units',
+    };
+    category = roomMap[aiItem.roomCategory] || category;
+  }
+  
+  // Estimate weight based on item type and size
+  let estimatedWeight = 25; // Default medium weight
+  const itemType = aiItem.itemType?.toLowerCase() || '';
+  const size = aiItem.size?.toLowerCase() || 'medium';
+  
+  // Weight estimation logic
+  if (itemType.includes('box') || itemType.includes('bag')) {
+    // Boxes: 5-15 kg
+    estimatedWeight = size === 'small' ? 5 : size === 'large' ? 15 : 10;
+  } else if (itemType.includes('sofa') || itemType.includes('couch')) {
+    // Sofas: 40-100 kg
+    estimatedWeight = size.includes('2') ? 40 : size.includes('3') ? 60 : size.includes('corner') ? 100 : 50;
+  } else if (itemType.includes('bed') || itemType.includes('mattress')) {
+    // Beds: 30-70 kg
+    estimatedWeight = size === 'single' ? 30 : size === 'double' ? 50 : size === 'king' ? 70 : 40;
+  } else if (itemType.includes('fridge') || itemType.includes('freezer')) {
+    // Fridges: 60-120 kg
+    estimatedWeight = size === 'under-counter' ? 60 : size === 'american' ? 120 : 80;
+  } else if (itemType.includes('desk') || itemType.includes('table')) {
+    // Desks/Tables: 25-60 kg
+    estimatedWeight = size === 'small' ? 25 : size === 'large' ? 60 : 40;
+  } else if (itemType.includes('wardrobe') || itemType.includes('cabinet')) {
+    // Wardrobes: 50-100 kg
+    estimatedWeight = size === 'small' ? 50 : size === 'large' ? 100 : 70;
+  }
+  
+  // Generate unique ID
+  const customId = `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Build description with AI context
+  let description = `Custom item: ${itemName}`;
+  if (aiItem.size) description += `, Size: ${aiItem.size}`;
+  if (aiItem.notes) description += `. ${aiItem.notes}`;
+  
+  console.log('✨ Created custom item:', {
+    id: customId,
+    name: itemName,
+    category,
+    weight: estimatedWeight,
+    aiContext: {
+      rawText: aiItem.rawText,
+      itemType: aiItem.itemType,
+      size: aiItem.size,
+      roomCategory: aiItem.roomCategory,
+    }
+  });
+  
+  // Return a valid RemovalItem matching the interface
+  return {
+    id: customId,
+    name: itemName,
+    category,
+    weight: estimatedWeight,
+    image: '', // No image for custom items
+    folder: 'custom-items',
+  };
 }
 
 function needsSizeQuestion(aiItem: AiExtractionItem) {
@@ -471,10 +557,10 @@ export async function POST(request: NextRequest) {
     if (isGreeting && greetingPatterns.test(message)) {
       // Respond to greetings naturally
       const greetingResponse = message.toLowerCase().match(/\b(hi|hello|hey)\b/)
-        ? "Hello! I'm here to help you list your items. Just describe what you're moving - for example: '3 seater sofa, king bed, 10 boxes'. I'll add them to your list automatically!"
+        ? "Hello! 👋 I'm your AI moving assistant. Just describe ANY items you're moving and I'll add them instantly - whether they're standard items (sofa, bed, boxes) or unique items (antique piano, custom furniture, etc.). I can handle it all!"
         : message.toLowerCase().match(/\b(thanks|thank you)\b/)
-        ? "You're welcome! Let me know if you need to add more items, or you can proceed to the next step."
-        : parsed.summary?.trim() || "I'm ready to help! Just tell me what items you're moving.";
+        ? "You're welcome! 😊 Need to add more items? Just describe them and I'll take care of it."
+        : parsed.summary?.trim() || "I'm ready to help! Tell me about your items - I can add anything you describe.";
       
       return NextResponse.json({
         success: true,
@@ -489,10 +575,14 @@ export async function POST(request: NextRequest) {
 
     (parsed.items || []).forEach((aiItem) => {
       const matched = matchRemovalItem(aiItem);
+      
+      // ✅ matchRemovalItem now ALWAYS returns an item (catalog or custom)
+      // No need to check for null anymore
       if (!matched) {
-      pending.push({
-        id: safeRandomId(),
-          question: `I could not find a matching catalog item for "${aiItem.canonicalName || aiItem.rawText}". Can you describe it differently or pick it manually?`,
+        // This should rarely happen now, but keep as fallback
+        pending.push({
+          id: safeRandomId(),
+          question: `I need more details about "${aiItem.canonicalName || aiItem.rawText}". Can you describe it more specifically?`,
           field: 'match',
           itemName: aiItem.canonicalName || aiItem.rawText || 'item',
         });
@@ -532,7 +622,7 @@ export async function POST(request: NextRequest) {
         data: {
           addedItems: [],
           pendingQuestions: [],
-          assistantSummary: "I didn't quite catch what items you want to move. Could you describe them more specifically? For example: 'I have a 3 seater sofa, a king bed, and 10 medium boxes'.",
+          assistantSummary: "I didn't quite catch what items you want to move. Could you describe them more specifically? For example:\n• '3 seater sofa, king bed, 10 boxes'\n• 'antique grandfather clock'\n• 'custom built-in wardrobe'\nI can add ANY items you describe!",
           followUpQuestions: [],
         },
       });
@@ -541,14 +631,26 @@ export async function POST(request: NextRequest) {
     const assistantSummaryParts = [];
     
     if (additions.length > 0) {
-      assistantSummaryParts.push(parsed.summary?.trim() || 'Items analysed successfully.');
-      assistantSummaryParts.push("I've added the items you requested. Tell me if you want to add more, or you can move to the next step.");
+      // Count catalog vs custom items
+      const customItems = additions.filter(item => item.item.id.startsWith('custom-'));
+      const catalogItems = additions.filter(item => !item.item.id.startsWith('custom-'));
+      
+      // Build smart summary
+      if (customItems.length > 0 && catalogItems.length > 0) {
+        assistantSummaryParts.push(`Perfect! I've added ${additions.length} items (${catalogItems.length} from our catalog + ${customItems.length} custom items).`);
+      } else if (customItems.length > 0) {
+        assistantSummaryParts.push(`✨ Great! I've created ${customItems.length} custom ${customItems.length === 1 ? 'item' : 'items'} for you based on your description.`);
+      } else {
+        assistantSummaryParts.push(parsed.summary?.trim() || 'Items added successfully!');
+      }
+      
+      assistantSummaryParts.push("Tell me if you want to add more items, or you can move to the next step.");
     }
 
     if (pending.length > 0) {
-      assistantSummaryParts.push('I still need a bit more detail:');
+      assistantSummaryParts.push('I need a bit more information:');
       pending.slice(0, 3).forEach((question) => {
-        assistantSummaryParts.push(`- ${question.question}`);
+        assistantSummaryParts.push(`• ${question.question}`);
       });
     }
 
