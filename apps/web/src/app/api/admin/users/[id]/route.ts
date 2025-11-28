@@ -164,9 +164,12 @@ export const DELETE = withApiHandler(
       }
     }
 
-    // Delete admin user
+    // Delete admin user (select only id to avoid P2022 metadata error)
     await prisma.user.delete({
       where: { id: userId },
+      select: {
+        id: true,
+      },
     });
 
     return NextResponse.json({ message: 'Admin user deleted successfully' });
