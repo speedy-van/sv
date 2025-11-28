@@ -164,12 +164,36 @@ export const DELETE = withApiHandler(
       }
     }
 
-    // Delete admin user (select only id to avoid P2022 metadata error)
-    await prisma.user.delete({
-      where: { id: userId },
-      select: {
-        id: true,
-      },
+    // Delete related records first to avoid foreign key constraint errors
+    // This is necessary because some relations don't have onDelete: Cascade
+    await prisma.$transaction(async (tx) => {
+      // Delete drops associated with this user (as customer)
+      await tx.drop.deleteMany({
+        where: { customerId: userId },
+      });
+
+      // Delete bookings
+      await tx.booking.deleteMany({
+        where: { customerId: userId },
+      });
+
+      // Delete quotes
+      await tx.quote.deleteMany({
+        where: { customerId: userId },
+      });
+
+      // Delete addresses
+      await tx.address.deleteMany({
+        where: { userId },
+      });
+
+      // Finally delete the user (select only id to avoid P2022 metadata error)
+      await tx.user.delete({
+        where: { id: userId },
+        select: {
+          id: true,
+        },
+      });
     });
 
     return NextResponse.json({ message: 'Admin user deleted successfully' });
