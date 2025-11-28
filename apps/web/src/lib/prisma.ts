@@ -363,10 +363,10 @@ process.on('beforeExit', shutdownPrisma);
 
 // Safe getter for Prisma client - always returns initialized instance
 export function getPrismaClient(): PrismaClient {
-  if (!globalForPrisma.prisma) {
-    throw new Error('Prisma client not initialized');
-  }
-  return globalForPrisma.prisma;
+  // In production, always use the direct prisma instance
+  // In development, use the global instance if available
+  const client = process.env.NODE_ENV === 'production' ? prisma : (globalForPrisma.prisma || prisma);
+  return client;
 }
 
 // Export helper to use in API routes with retry logic

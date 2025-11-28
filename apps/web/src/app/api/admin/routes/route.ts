@@ -168,7 +168,9 @@ export async function GET(request: NextRequest) {
     let singleBookings: any[] = [];
     try {
       const bookingWhere: any = {
-        status: 'CONFIRMED',
+        status: {
+          in: ['CONFIRMED', 'PENDING_PAYMENT', 'DRAFT'], // Include all active statuses
+        },
         routeId: null,
       };
 
@@ -361,8 +363,8 @@ export async function GET(request: NextRequest) {
       type: 'single-booking',
       bookingId: booking.id,
       driverId: booking.driverId,
-      driverName: booking.Driver?.User?.name || 'Unassigned',
-      driverEmail: booking.Driver?.User?.email || null,
+      driverName: booking.driver?.User?.name || 'Unassigned',
+      driverEmail: booking.driver?.User?.email || null,
       vehicleId: null,
       status: booking.status,
       totalDrops: 1,
@@ -393,14 +395,14 @@ export async function GET(request: NextRequest) {
         type: 'multi-drop',
         status: route.status,
         driverId: route.driverId,
-        driverName: route.User?.name || 'Unassigned',
-        driverEmail: route.User?.email,
-        totalDrops: route.totalDrops || (route as any).Drop?.length || 0,
+        driverName: route.driver?.name || 'Unassigned',
+        driverEmail: route.driver?.email,
+        totalDrops: route.totalDrops || (route as any).drops?.length || 0,
         completedDrops: route.completedDrops,
         startTime: route.startTime,
         totalOutcome: route.totalOutcome,
         serviceTier: route.serviceTier,
-        drops: (route as any).Drop || [],
+        drops: (route as any).drops || [],
         bookings: route.Booking || [],
         progress: route.totalDrops > 0 ? (route.completedDrops / route.totalDrops * 100) : 0,
         createdAt: route.createdAt,
