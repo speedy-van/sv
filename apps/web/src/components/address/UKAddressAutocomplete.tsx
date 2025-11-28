@@ -101,8 +101,6 @@ interface AddressDetails {
   hasElevator?: boolean;
 }
 
-const isScrollDebugEnabled = process.env.NODE_ENV !== 'production';
-
 export const UKAddressAutocomplete: React.FC<UKAddressAutocompleteProps> = ({
   id,
   label,
@@ -177,19 +175,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
   const isSelectingRef = useRef(false); // Prevent double selection
   const justSelectedRef = useRef(false); // Prevent search after selection
   const toast = useToast();
-  const [dropdownStyle, setDropdownStyle] = useState<{ top: number; left: number; width: number; openUpward: boolean }>({ 
-    top: 0, 
-    left: 0, 
-    width: 0,
-    openUpward: false 
-  });
-
-  const scrollDebug = useCallback((phase: string, payload?: Record<string, unknown>) => {
-    if (!isScrollDebugEnabled) {
-      return;
-    }
-    console.log(`[UKAddressAutocomplete][${id}][${phase}]`, payload ?? {});
-  }, [id]);
 
 
   // Generate session token on mount
@@ -529,7 +514,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     }
   }, [onChange]);
 
-  // CRITICAL FIX: Proper dropdown positioning with iOS Safari support
+  // Click outside to close dropdown - Simple and iOS-compatible
   useEffect(() => {
     if (!showSuggestions) {
       return;
@@ -546,79 +531,12 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       setShowSuggestions(false);
     };
 
-    // CRITICAL: Reposition dropdown relative to input
-    const reposition = () => {
-      const rect = inputRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      // Calculate available space below input
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      
-      // Dropdown typical height (max 320px as defined in component)
-      const dropdownMaxHeight = 320;
-      
-      // Decide if dropdown should open upward or downward
-      const openUpward = spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
-      
-      scrollDebug('reposition', {
-        inputTop: rect.top,
-        inputBottom: rect.bottom,
-        viewportHeight,
-        spaceBelow,
-        spaceAbove,
-        openUpward,
-        width: rect.width,
-      });
-
-      // Position dropdown
-      setDropdownStyle({
-        top: openUpward 
-          ? Math.round(rect.top - Math.min(dropdownMaxHeight, spaceAbove) - 8) // Above input
-          : Math.round(rect.bottom + 8), // Below input
-        left: Math.round(rect.left),
-        width: Math.round(rect.width),
-        openUpward, // Track direction for visual styling
-      });
-    };
-
-    // Debounced reposition for scroll events (performance optimization)
-    let repositionTimer: NodeJS.Timeout | null = null;
-    const debouncedReposition = () => {
-      if (repositionTimer) clearTimeout(repositionTimer);
-      repositionTimer = setTimeout(reposition, 10); // 10ms debounce
-    };
-
-    // Initial positioning
-    reposition();
-
-    // Event listeners for all scenarios
     document.addEventListener('mousedown', handleMouseDownOutside);
-    window.addEventListener('resize', reposition);
-    window.addEventListener('scroll', debouncedReposition, { passive: true, capture: true });
-    window.addEventListener('orientationchange', reposition);
 
-    // iOS-specific: Visual viewport changes (keyboard open/close)
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', reposition);
-      window.visualViewport.addEventListener('scroll', debouncedReposition);
-    }
-
-    // Cleanup
     return () => {
-      if (repositionTimer) clearTimeout(repositionTimer);
       document.removeEventListener('mousedown', handleMouseDownOutside);
-      window.removeEventListener('resize', reposition);
-      window.removeEventListener('scroll', debouncedReposition, true);
-      window.removeEventListener('orientationchange', reposition);
-      
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', reposition);
-        window.visualViewport.removeEventListener('scroll', debouncedReposition);
-      }
     };
-  }, [showSuggestions, scrollDebug]);
+  }, [showSuggestions]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -735,54 +653,49 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
           </Fade>
         )}
 
-        {/* Premium Suggestions Dropdown - iOS Safari Compatible */}
+        {/* Premium Suggestions Dropdown - REAL iOS FIX: Use absolute positioning */}
         {showSuggestions && suggestions.length > 0 && (
-          <Portal>
-            <Box
-              ref={dropdownRef}
-              position="fixed"
-              top={`${dropdownStyle.top}px`}
-              left={`${dropdownStyle.left}px`}
-              width={`${dropdownStyle.width}px`}
-              zIndex={1400}
-              bg="rgba(26, 32, 44, 0.98)"
-              backdropFilter="blur(10px)"
-              border="1px solid rgba(255, 255, 255, 0.1)"
-              borderRadius="xl"
-              boxShadow={
-                dropdownStyle.openUpward
-                  ? "0 -20px 25px -5px rgba(0, 0, 0, 0.3), 0 -10px 10px -5px rgba(0, 0, 0, 0.2)" // Shadow upward
-                  : "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)" // Shadow downward
-              }
-              maxH="320px"
-              overflowY="auto"
-              py={2}
-              pointerEvents={isSelectingRef.current ? "none" : "auto"}
-              opacity={1}
-              transform="translateY(0)"
-              transition="opacity 0.2s, transform 0.2s"
-              css={{
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  borderRadius: '3px',
-                },
-                // iOS Safari optimization
-                WebkitOverflowScrolling: 'touch',
-                WebkitTransform: 'translate3d(0, 0, 0)', // Force GPU acceleration
-                WebkitBackfaceVisibility: 'hidden', // Prevent flickering
-                willChange: 'transform, opacity',
-                transform: 'translateZ(0)', // Create new stacking context
-                // Prevent iOS zoom on focus
-                touchAction: 'manipulation',
-              }}
-            >
+          <Box
+            ref={dropdownRef}
+            position="absolute"
+            top="100%"
+            left="0"
+            right="0"
+            mt={2}
+            zIndex={1400}
+            bg="rgba(26, 32, 44, 0.98)"
+            backdropFilter="blur(10px)"
+            border="1px solid rgba(255, 255, 255, 0.1)"
+            borderRadius="xl"
+            boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)"
+            maxH="320px"
+            overflowY="auto"
+            py={2}
+            pointerEvents={isSelectingRef.current ? "none" : "auto"}
+            opacity={1}
+            transform="translateY(0)"
+            transition="opacity 0.2s, transform 0.2s"
+            css={{
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '3px',
+              },
+              // iOS optimization
+              WebkitOverflowScrolling: 'touch',
+              WebkitTransform: 'translate3d(0, 0, 0)',
+              WebkitBackfaceVisibility: 'hidden',
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+              touchAction: 'manipulation',
+            }}
+          >
               {suggestions.map((suggestion, index) => (
                 <Box
                   key={suggestion.id}
@@ -870,28 +783,23 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </HStack>
               </Box>
             </Box>
-          </Portal>
         )}
         
-        {/* No results message - iOS Safari Compatible */}
+        {/* No results message - REAL iOS FIX: Use absolute positioning */}
         {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length >= 2 && (
           <Fade in={true}>
-            <Portal>
             <Box
-              position="fixed"
-              top={`${dropdownStyle.top}px`}
-              left={`${dropdownStyle.left}px`}
-              width={`${dropdownStyle.width}px`}
+              position="absolute"
+              top="100%"
+              left="0"
+              right="0"
+              mt={2}
               zIndex={1400}
               bg="rgba(26, 32, 44, 0.98)"
               backdropFilter="blur(10px)"
               border="1px solid rgba(255, 255, 255, 0.1)"
               borderRadius="xl"
-              boxShadow={
-                dropdownStyle.openUpward
-                  ? "0 -20px 25px -5px rgba(0, 0, 0, 0.3)"
-                  : "0 20px 25px -5px rgba(0, 0, 0, 0.3)"
-              }
+              boxShadow="0 20px 25px -5px rgba(0, 0, 0, 0.3)"
               p={4}
               css={{
                 WebkitTransform: 'translate3d(0, 0, 0)',
@@ -907,7 +815,6 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </Text>
               </VStack>
             </Box>
-            </Portal>
           </Fade>
         )}
 
