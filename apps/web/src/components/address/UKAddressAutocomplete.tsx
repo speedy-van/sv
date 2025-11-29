@@ -675,15 +675,16 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
           </Fade>
         )}
 
-        {/* Premium Suggestions Dropdown - iOS FIX: fixed position with scroll updates */}
+        {/* Premium Suggestions Dropdown - FIXED: Use Portal to render at body level */}
         {showSuggestions && suggestions.length > 0 && (
-          <Box
-            ref={dropdownRef}
-            position="fixed"
-            top={`${dropdownPos.top}px`}
-            left={`${dropdownPos.left}px`}
-            width={`${dropdownPos.width}px`}
-            zIndex={1400}
+          <Portal>
+            <Box
+              ref={dropdownRef}
+              position="fixed"
+              top={`${dropdownPos.top}px`}
+              left={`${dropdownPos.left}px`}
+              width={`${dropdownPos.width}px`}
+              zIndex={1400}
               bg="rgba(26, 32, 44, 0.98)"
               backdropFilter="blur(10px)"
               border="1px solid rgba(255, 255, 255, 0.1)"
@@ -804,17 +805,19 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 </HStack>
               </Box>
             </Box>
+          </Portal>
         )}
         
-        {/* No results message - iOS FIX: fixed position with scroll updates */}
+        {/* No results message - FIXED: Use Portal */}
         {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length >= 2 && (
-          <Fade in={true}>
-            <Box
-              position="fixed"
-              top={`${dropdownPos.top}px`}
-              left={`${dropdownPos.left}px`}
-              width={`${dropdownPos.width}px`}
-              zIndex={1400}
+          <Portal>
+            <Fade in={true}>
+              <Box
+                position="fixed"
+                top={`${dropdownPos.top}px`}
+                left={`${dropdownPos.left}px`}
+                width={`${dropdownPos.width}px`}
+                zIndex={1400}
                 bg="rgba(26, 32, 44, 0.98)"
                 backdropFilter="blur(10px)"
                 border="1px solid rgba(255, 255, 255, 0.1)"
@@ -834,8 +837,9 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                   No verified addresses found. Please check the address or try a nearby postcode.
                 </Text>
               </VStack>
-            </Box>
-          </Fade>
+              </Box>
+            </Fade>
+          </Portal>
         )}
 
         {/* Additional Address Details - Only show when address is selected */}
