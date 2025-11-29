@@ -755,6 +755,11 @@ export default function BookingLuxuryPage() {
 
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
+  // INSTRUMENTATION: Add data attribute to inspect color mode in DOM
+  const debugColorMode = typeof window !== 'undefined' 
+    ? document.documentElement.getAttribute('data-chakra-ui-color-mode') || 'not-set'
+    : 'ssr';
+
   return (
     <Box 
       display="block" 
@@ -762,6 +767,7 @@ export default function BookingLuxuryPage() {
       bg={bgColor} 
       py={{ base: 0, md: 8 }} 
       pb={{ base: "80px", md: 8 }}
+      data-debug-color-mode={debugColorMode}
       suppressHydrationWarning
       sx={{
         // Fix for iPhone 14 Pro Max Dynamic Island

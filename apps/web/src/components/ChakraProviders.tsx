@@ -62,10 +62,28 @@ export default function ChakraProviders({ children }: ChakraProvidersProps) {
     return sharedEmotionCache;
   }, []);
 
+  // INSTRUMENTATION: Log color mode at render time to prove SSR vs client divergence
+  const isServer = typeof window === 'undefined';
+  const colorMode = isServer ? 'light (SSR - from theme initialColorMode)' : 'unknown (client first render)';
+  
+  if (isServer) {
+    console.log('[SSR] ChakraProviders rendering with color mode:', colorMode);
+  } else {
+    console.log('[CLIENT FIRST RENDER] ChakraProviders rendering. Will check actual color mode after mount.');
+  }
+
   // Set CSS variables on client-side only (after hydration)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const root = document.documentElement;
+      
+      // INSTRUMENTATION: Log actual color mode at mount (after hydration)
+      const actualColorMode = root.getAttribute('data-chakra-ui-color-mode') || 
+                             root.style.getPropertyValue('--chakra-ui-color-mode') ||
+                             'unknown';
+      console.log('[CLIENT AFTER HYDRATION] Actual color mode detected:', actualColorMode);
+      console.log('[CLIENT AFTER HYDRATION] About to force dark mode via useEffect...');
+      
       root.setAttribute('data-theme', 'dark');
       root.classList.add('chakra-ui-dark');
       root.style.setProperty('--chakra-ui-color-mode', 'dark');
