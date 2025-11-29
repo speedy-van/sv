@@ -180,8 +180,8 @@ class ApiService {
         console.log('📤 POST Request:', { 
           url, 
           baseURL: API_BASE_URL, 
-          fullUrl: `${API_BASE_URL}${url}`,
-          data 
+          fullUrl: `${API_BASE_URL}${url}`
+          // ⚠️ data removed to prevent logging sensitive credentials (passwords, tokens, etc.)
         });
       }
       

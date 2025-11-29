@@ -68,9 +68,14 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const startTracking = async (jobId?: string): Promise<boolean> => {
-    if (!permissions.granted) {
+    let currentPermissions = permissions;
+    
+    if (!currentPermissions.granted) {
       const granted = await requestPermissions();
       if (!granted) return false;
+      // Refresh permissions state after requesting
+      currentPermissions = await locationService.requestPermissions();
+      setPermissions(currentPermissions);
     }
 
     setActiveJobId(jobId);
@@ -88,8 +93,8 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (started) {
       setIsTracking(true);
       
-      // Start background tracking if permission granted
-      if (permissions.background) {
+      // Start background tracking if permission granted (use fresh permissions)
+      if (currentPermissions.background) {
         await locationService.startBackgroundTracking();
       }
     }

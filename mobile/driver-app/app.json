@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.speedyvan.driverapp",
-      "buildNumber": "2.0.2",
+      "buildNumber": "2.0.3",
       "usesAppleSignIn": false,
       "usesIcloudStorage": false,
       "infoPlist": {

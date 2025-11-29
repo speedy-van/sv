@@ -144,6 +144,7 @@ export default function JobDetailsScreen() {
   const saveProgressState = async () => {
     try {
       const progressData = {
+        jobId: id, // ✅ Save job ID to validate later
         currentStep,
         completedSteps,
         timestamp: new Date().toISOString(),
@@ -162,6 +163,17 @@ export default function JobDetailsScreen() {
       const savedProgress = await AsyncStorage.getItem(`job_progress_${id}`);
       if (savedProgress) {
         const progressData = JSON.parse(savedProgress);
+        
+        // ✅ CRITICAL FIX: Check if this progress belongs to this job
+        // If the saved job ID doesn't match current job, clear it
+        if (progressData.jobId && progressData.jobId !== id) {
+          console.warn('⚠️ Found progress for different job, clearing stale data');
+          await AsyncStorage.removeItem(`job_progress_${id}`);
+          // Check server for actual state
+          await checkServerState();
+          return;
+        }
+        
         setCurrentStep(progressData.currentStep || 'navigate_to_pickup');
         setCompletedSteps(progressData.completedSteps || []);
         console.log('📂 Progress restored locally:', progressData);
@@ -262,16 +274,43 @@ export default function JobDetailsScreen() {
         console.log('✅ Progress synced to server');
       } else {
         console.warn('⚠️ Failed to sync progress to server:', response.error);
+        
+        // ✅ CRITICAL FIX: If 403 "Not assigned", clear local progress
+        if ((response as any).status === 403 || response.error?.includes('Not assigned')) {
+          console.warn('🗑️ Clearing stale progress - driver not assigned to this job');
+          await AsyncStorage.removeItem(`job_progress_${id}`);
+          // Reset to initial state
+          setCurrentStep('navigate_to_pickup');
+          setCompletedSteps([]);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.warn('⚠️ Error syncing progress to server:', error);
+      
+      // ✅ CRITICAL FIX: If 403 error, clear local progress
+      if (error.response?.status === 403 || error.message?.includes('403')) {
+        console.warn('🗑️ Clearing stale progress due to 403 error');
+        await AsyncStorage.removeItem(`job_progress_${id}`);
+        setCurrentStep('navigate_to_pickup');
+        setCompletedSteps([]);
+      }
     }
   };
 
   const loadJobDetails = async () => {
     try {
       setLoading(true);
+      console.log('🔄 [JobDetail] Loading job details for ID:', id);
+      console.log('📤 [JobDetail] GET Request: /api/driver/jobs/' + id);
+      
       const response = await apiService.get(`/api/driver/jobs/${id}`);
+      
+      console.log('📥 [JobDetail] Response received:', {
+        success: response.success,
+        hasData: !!response.data,
+        error: response.error,
+        statusCode: (response as any).status,
+      });
 
       if (response.success && response.data) {
         // Transform API response to match component structure
@@ -309,12 +348,19 @@ export default function JobDetailsScreen() {
             : (apiData.crewRecommendation?.vehicleType || 'Van'),
           notes: apiData.specialRequirements || '',
         };
+        console.log('✅ [JobDetail] Job data transformed successfully');
         setJob(transformedJob);
       } else {
+        console.error('❌ [JobDetail] API returned error:', response.error);
         Alert.alert('Error', response.error || 'Failed to load job details');
         router.back();
       }
     } catch (error: any) {
+      console.error('❌ [JobDetail] Exception caught:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
       Alert.alert('Error', error.message || 'Failed to load job details');
       router.back();
     } finally {

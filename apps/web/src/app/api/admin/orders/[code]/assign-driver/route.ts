@@ -191,11 +191,12 @@ export async function POST(
 
           console.log('✅ Updated existing assignment from driver:', existingAssignment.Driver.User?.name || 'Unknown', 'to:', driver.User?.name || 'Unknown');
 
-          // Do NOT update booking.driverId yet - driver must accept first
+          // ⚠️ Do NOT update booking.driverId yet - driver must accept first
+          // Only update when Assignment.status = 'accepted' to prevent job leaking
           const updatedBooking = await tx.booking.update({
             where: { id: booking.id },
             data: {
-              driverId: driverId, // ✅ Set driver immediately for dashboard query
+              driverId: null, // ❌ Keep null until driver accepts
               status: 'CONFIRMED',
               updatedAt: new Date(),
             }
@@ -235,11 +236,12 @@ export async function POST(
             round: 1,
           });
 
-          // Do NOT update booking.driverId yet - driver must accept first
+          // ⚠️ Do NOT update booking.driverId yet - driver must accept first
+          // Only update when Assignment.status = 'accepted' to prevent job leaking
           const updatedBooking = await tx.booking.update({
             where: { id: booking.id },
             data: {
-              driverId: driverId, // ✅ Set driver immediately for dashboard query
+              driverId: null, // ❌ Keep null until driver accepts
               status: 'CONFIRMED',
               updatedAt: new Date(),
             }

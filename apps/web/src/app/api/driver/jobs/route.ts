@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
       });
 
       // ✅ OPTIMIZED: Only fetch essential data for available jobs
-      // CRITICAL: Only show jobs with NO assignments at all (not assigned to ANY driver)
+      // CRITICAL: Only show jobs with NO active assignments (not assigned to ANY driver)
       const availableJobs = await prisma.booking.findMany({
         where: {
           status: 'CONFIRMED',
@@ -151,9 +151,11 @@ export async function GET(request: NextRequest) {
           scheduledAt: {
             gte: new Date() // Future bookings only
           },
-          // EXTRA SECURITY: Ensure no assignments exist for this booking
+          // EXTRA SECURITY: Ensure no ACTIVE assignments exist for this booking
           Assignment: {
-            none: {} // No assignments at all
+            none: {
+              status: { in: ['invited', 'claimed', 'accepted'] }
+            }
           }
         },
         select: {

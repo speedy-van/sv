@@ -17,10 +17,18 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  let email = '';
+  
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    email = body.email;
+    const password = body.password;
+
+    console.log(`[Driver Login] Attempt for email: ${email}`);
 
     if (!email || !password) {
+      console.warn(`[Driver Login] Missing credentials for ${email}`);
       return NextResponse.json(
         { error: 'Email and password are required' },
         { status: 400, headers: corsHeaders }
@@ -29,6 +37,8 @@ export async function POST(request: NextRequest) {
 
     // Find user - try multiple methods to find by email
     const emailTrimmed = email.trim();
+    
+    console.log(`[Driver Login] Searching for user: ${emailTrimmed}`);
     
     // Try exact match first
     let user = await prisma.user.findUnique({
@@ -52,8 +62,11 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    console.log(`[Driver Login] User found: ${!!user}, Role: ${user?.role}, Has driver: ${!!user?.driver}`);
+    
     // Must be a driver
     if (!user || user.role !== 'driver') {
+      console.warn(`[Driver Login] Invalid user or not a driver: ${emailTrimmed}`);
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401, headers: corsHeaders }
@@ -63,6 +76,7 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.warn(`[Driver Login] Invalid password for: ${emailTrimmed}`);
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401, headers: corsHeaders }
@@ -71,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Check if driver is approved
     if (user.driver?.onboardingStatus !== 'approved') {
+      console.warn(`[Driver Login] Driver not approved: ${emailTrimmed}, Status: ${user.driver?.onboardingStatus}`);
       return NextResponse.json(
         {
           error: 'Account not yet approved',
@@ -85,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     // Generate a simple token (for mobile app compatibility)
     const token = Buffer.from(`${user.id}:${user.email}:${Date.now()}`).toString('base64');
+
+    const duration = Date.now() - startTime;
+    console.log(`[Driver Login] SUCCESS for ${emailTrimmed} in ${duration}ms`);
 
     return NextResponse.json({
       success: true,
@@ -107,10 +125,20 @@ export async function POST(request: NextRequest) {
       },
     }, { headers: corsHeaders });
   } catch (error) {
-    console.error('Driver login error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    const duration = Date.now() - startTime;
+    console.error(`[Driver Login] ERROR for ${email} after ${duration}ms:`, error);
+    console.error('[Driver Login] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown',
+    });
+    
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      },
       { status: 500, headers: corsHeaders }
     );
   }

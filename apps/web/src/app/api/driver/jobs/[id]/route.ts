@@ -93,10 +93,22 @@ export async function GET(
 
     // Check if the driver is assigned to this job (Assignment is an array)
     const isAssigned = booking.Assignment?.[0]?.Driver?.User?.id === userId;
+    
+    // Check if this is an available job (no ACTIVE assignment, confirmed status, future scheduled time)
+    const hasActiveAssignment = booking.Assignment.some(
+      (a: any) => ['invited', 'claimed', 'accepted'].includes(a.status)
+    );
+    const isAvailableJob = 
+      booking.status === 'CONFIRMED' &&
+      booking.driverId === null &&
+      !hasActiveAssignment &&
+      booking.scheduledAt >= new Date();
 
-    if (!isAssigned) {
+    // ✅ FIXED: Allow access to BOTH assigned jobs AND available jobs
+    // This ensures consistency between jobs list and job details
+    if (!isAssigned && !isAvailableJob) {
       return NextResponse.json(
-        { error: 'Access denied - You are not assigned to this job' },
+        { error: 'Access denied - This job is not available to you' },
         { status: 403 }
       );
     }
@@ -238,6 +250,9 @@ export async function GET(
         : 'Van with 2 crew',
       specialRequirements: '',
       status: booking.status,
+      // ✅ Add flags to help frontend determine what actions are allowed
+      isAssignedToMe: isAssigned,
+      isAvailableToClaim: isAvailableJob,
       assignment: booking.Assignment && booking.Assignment[0]
         ? {
             id: booking.Assignment[0].id,
@@ -320,11 +335,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
-    // Check if the driver is assigned to this job (Assignment is an array)
+    // ✅ For UPDATE actions, driver MUST be assigned (no changes to available jobs)
+    // This is different from GET which allows viewing available jobs
     const isAssigned = booking.Assignment?.[0]?.Driver?.User?.id === userId;
     if (!isAssigned) {
       return NextResponse.json(
-        { error: 'Access denied - You are not assigned to this job' },
+        { error: 'Access denied - You must be assigned to this job to update it' },
         { status: 403 }
       );
     }

@@ -363,7 +363,15 @@ export default function JobsScreen() {
               >
                 <JobCard
                   job={job}
-                  onPress={() => router.push(`/job/${job.id}`)}
+                  onPress={() => {
+                    console.log('🎯 [Jobs] Job card tapped:', {
+                      id: job.id,
+                      reference: job.reference,
+                      status: job.status,
+                    });
+                    console.log('🔀 [Jobs] Navigating to /job/' + job.id);
+                    router.push(`/job/${job.id}`);
+                  }}
                 />
               </Animated.View>
             ))}
