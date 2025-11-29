@@ -64,29 +64,40 @@ export default function ChatScreen() {
     if (!user?.driver?.id) return;
 
     try {
-      // Listen for admin messages
-      pusherService.bind('admin_message', (data: any) => {
-        console.log('📨 Received admin message:', data);
-        
-        const newMessage: Message = {
-          id: data.messageId || data.id,
-          content: data.message || data.content,
-          sender: 'admin',
-          senderName: data.senderName || 'Support',
-          timestamp: data.timestamp,
-          createdAt: data.timestamp,
-        };
-        
-        setMessages(prev => {
-          // Prevent duplicates
-          if (prev.some(m => m.id === newMessage.id)) {
-            return prev;
-          }
-          return [...prev, newMessage];
+      const channelName = `support-${user.driver.id}`;
+      const channel = pusherService.subscribeToChannel(channelName);
+
+      if (channel) {
+        // Listen for admin messages
+        channel.bind('admin_message', (data: any) => {
+          console.log('📨 Received admin message:', data);
+          
+          const newMessage: Message = {
+            id: data.messageId || data.id,
+            content: data.message || data.content,
+            sender: 'admin',
+            senderName: data.senderName || 'Support',
+            timestamp: data.timestamp,
+            createdAt: data.timestamp,
+          };
+          
+          setMessages(prev => {
+            // Prevent duplicates
+            if (prev.some(m => m.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+          
+          setTimeout(() => scrollToBottom(), 100);
         });
-        
-        setTimeout(() => scrollToBottom(), 100);
-      });
+
+        // Cleanup function
+        return () => {
+          channel.unbind('admin_message');
+          pusherService.unsubscribeFromChannel(channelName);
+        };
+      }
     } catch (error) {
       console.log('⚠️ Pusher setup skipped - not critical for chat functionality');
     }

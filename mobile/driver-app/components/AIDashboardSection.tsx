@@ -25,7 +25,7 @@ export const AIDashboardSection: React.FC<AIDashboardSectionProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const { location: currentLocation } = useLocation();
+  const { currentLocation } = useLocation();
   const { user } = useAuth();
   const aiService = useAIService();
 

@@ -94,14 +94,16 @@ export default function JobsScreen() {
     });
 
     // Refresh when THIS driver is removed from a job (personal)
-    pusherService.onPersonalJobRemoved(() => {
+    const personalJobRemovedHandler = () => {
       console.log('❌ Jobs screen: Personal job removed, refreshing...');
       loadJobs();
-    });
+    };
+    
+    pusherService.onPersonalJobRemoved(personalJobRemovedHandler);
 
     return () => {
-      // Cleanup: unbind all events
-      pusherService.unbindAll();
+      // Cleanup: remove only this listener, don't unbind all events globally
+      pusherService.removePersonalJobRemovedListener(personalJobRemovedHandler);
     };
   }, [user?.driver?.id]);
 

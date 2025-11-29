@@ -230,6 +230,31 @@ class PusherService {
       }
     }
   }
+
+  // Remove specific event listeners
+  removeJobRemovedListener(callback: (data: PusherEvent) => void): void {
+    if (this.broadcastChannel) {
+      this.broadcastChannel.unbind('job-removed', callback);
+    }
+  }
+
+  removeRouteRemovedListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('route-removed', callback);
+    }
+  }
+
+  removeRouteCancelledListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('route-cancelled', callback);
+    }
+  }
+
+  removePersonalJobRemovedListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('job-removed', callback);
+    }
+  }
 }
 
 export const pusherService = new PusherService();

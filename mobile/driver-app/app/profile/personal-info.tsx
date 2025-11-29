@@ -12,6 +12,7 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  Modal,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -73,56 +74,49 @@ export default function PersonalInfoScreen() {
     }
   };
 
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
+  const [newEmailInput, setNewEmailInput] = useState('');
+
   const handleChangeEmail = () => {
-    Alert.prompt(
-      'Change Email Address',
-      'Enter your new email address. A verification link will be sent to confirm the change.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Send Verification',
-          onPress: async (newEmail) => {
-            if (!newEmail || !newEmail.trim()) {
-              Alert.alert('Error', 'Please enter a valid email address');
-              return;
-            }
+    setNewEmailInput(formData.email);
+    setEmailModalVisible(true);
+  };
 
-            try {
-              const response = await apiService.post('/api/driver/email/change-request', {
-                newEmail: newEmail.trim(),
-              });
+  const submitEmailChange = async () => {
+    if (!newEmailInput || !newEmailInput.trim()) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
 
-              if (response.success) {
-                Alert.alert(
-                  '✅ Verification Email Sent',
-                  `A verification link has been sent to ${newEmail}. Please check your inbox and click the link to confirm the change.\n\nThe link expires in 24 hours.`,
-                  [{ text: 'OK' }]
-                );
-              } else {
-                // Show specific error message from backend
-                const errorData = response.data as any;
-                const errorTitle = errorData?.alreadyInUse ? '❌ Email Already in Use' : '❌ Error';
-                const errorMessage = response.error || 'Failed to send verification email';
-                
-                Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
-                
-                console.error('Email change request failed:', {
-                  error: response.error,
-                  alreadyInUse: errorData?.alreadyInUse,
-                  userType: errorData?.userType,
-                });
-              }
-            } catch (error: any) {
-              console.error('Email change request error:', error);
-              Alert.alert('❌ Network Error', 'Failed to connect to server. Please check your internet connection and try again.');
-            }
-          },
-        },
-      ],
-      'plain-text',
-      formData.email,
-      'email-address'
-    );
+    try {
+      setEmailModalVisible(false);
+      const response = await apiService.post('/api/driver/email/change-request', {
+        newEmail: newEmailInput.trim(),
+      });
+
+      if (response.success) {
+        Alert.alert(
+          '✅ Verification Email Sent',
+          `A verification link has been sent to ${newEmailInput}. Please check your inbox and click the link to confirm the change.\n\nThe link expires in 24 hours.`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        const errorData = response.data as any;
+        const errorTitle = errorData?.alreadyInUse ? '❌ Email Already in Use' : '❌ Error';
+        const errorMessage = response.error || 'Failed to send verification email';
+        
+        Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+        
+        console.error('Email change request failed:', {
+          error: response.error,
+          alreadyInUse: errorData?.alreadyInUse,
+          userType: errorData?.userType,
+        });
+      }
+    } catch (error: any) {
+      console.error('Email change request error:', error);
+      Alert.alert('❌ Network Error', 'Failed to connect to server. Please check your internet connection and try again.');
+    }
   };
 
   const handleSave = async () => {
@@ -293,6 +287,54 @@ export default function PersonalInfoScreen() {
       </ScrollView>
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Email Change Modal */}
+      <Modal
+        visible={emailModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEmailModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setEmailModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Change Email Address</Text>
+                <Text style={styles.modalSubtitle}>
+                  Enter your new email address. A verification link will be sent to confirm the change.
+                </Text>
+                
+                <TextInput
+                  style={styles.modalInput}
+                  value={newEmailInput}
+                  onChangeText={setNewEmailInput}
+                  placeholder="new.email@example.com"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholderTextColor={colors.text.disabled}
+                />
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonCancel]}
+                    onPress={() => setEmailModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonConfirm]}
+                    onPress={submitEmailChange}
+                  >
+                    <Text style={styles.modalButtonText}>Send Verification</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -410,6 +452,68 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.3,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    width: '100%',
+    maxWidth: 400,
+    ...shadows.lg,
+  },
+  modalTitle: {
+    ...typography.h3,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  modalSubtitle: {
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.lg,
+  },
+  modalInput: {
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    ...typography.body,
+    color: colors.text.primary,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  modalButton: {
+    flex: 1,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalButtonConfirm: {
+    backgroundColor: colors.primary,
+  },
+  modalButtonText: {
+    ...typography.bodyBold,
+    color: '#FFFFFF',
+  },
+  modalButtonTextCancel: {
+    ...typography.bodyBold,
+    color: colors.text.primary,
   },
 });
 

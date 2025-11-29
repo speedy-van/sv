@@ -31,7 +31,7 @@ export default function ResetPasswordScreen() {
         [
           {
             text: 'OK',
-            onPress: () => router.replace('/login'),
+            onPress: () => router.replace('/auth/login'),
           },
         ]
       );
@@ -71,7 +71,7 @@ export default function ResetPasswordScreen() {
           [
             {
               text: 'OK',
-              onPress: () => router.replace('/login'),
+              onPress: () => router.replace('/auth/login'),
             },
           ]
         );
@@ -98,7 +98,7 @@ export default function ResetPasswordScreen() {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.replace('/login')}
+            onPress={() => router.replace('/auth/login')}
           >
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
@@ -222,7 +222,7 @@ export default function ResetPasswordScreen() {
           {/* Back to Login */}
           <TouchableOpacity
             style={styles.backToLoginButton}
-            onPress={() => router.replace('/login')}
+            onPress={() => router.replace('/auth/login')}
             disabled={loading}
           >
             <Text style={styles.backToLoginText}>

@@ -146,7 +146,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             await authService.logout();
-            router.replace('/login');
+            router.replace('/auth/login');
           },
         },
       ]

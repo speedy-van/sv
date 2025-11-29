@@ -701,12 +701,10 @@ export default function DashboardScreen() {
 
       return () => {
         // Properly unbind specific listeners to prevent stacking
-        const channel = pusherService.getChannel(`driver-${user.driver.id}`);
-        if (channel) {
-          channel.unbind('job-removed', jobRemovedHandler);
-          channel.unbind('route-removed', routeRemovedHandler);
-          channel.unbind('route-cancelled', routeCancelledHandler);
-        }
+        // Note: pusherService handles cleanup internally through its event management
+        pusherService.removeJobRemovedListener(jobRemovedHandler);
+        pusherService.removeRouteRemovedListener(routeRemovedHandler);
+        pusherService.removeRouteCancelledListener(routeCancelledHandler);
       };
     }
   }, [user?.driver?.id, isOnline]); // Only re-run when driver ID or online status changes
@@ -786,12 +784,11 @@ export default function DashboardScreen() {
           loadDashboard(true); // Force refresh
           
           // Start location tracking AFTER backend is ready (1 second delay)
-          if (permissions.granted) {
-            setTimeout(async () => {
-              await startTracking();
-              console.log('✅ Location tracking started after backend ready');
-            }, 1000);
-          }
+          // Let startTracking request permissions if needed
+          setTimeout(async () => {
+            await startTracking();
+            console.log('✅ Location tracking started after backend ready');
+          }, 1000);
         }, 500);
       } else {
         console.log('⚪ Driver went OFFLINE - clearing job list');
