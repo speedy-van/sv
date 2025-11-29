@@ -3,17 +3,13 @@
 /**
  * Step 1: Pickup and Drop-off Addresses
  * Luxury Booking Design
- * 
- * CRITICAL FIX: Removed responsive breakpoint props to prevent hydration mismatch.
- * Server-side rendering cannot know the viewport width, so responsive props like
- * {{ base: 1, xl: 2 }} cause different className hashes between SSR and client.
- * This was breaking autocomplete positioning in production.
  */
 
 import React, { useMemo } from 'react';
 import {
   Box,
   VStack,
+  SimpleGrid,
   HStack,
   Text,
   Button,
@@ -101,16 +97,7 @@ export default function AddressesStep({
   return (
     <Box w="full" pb={8}>
       <VStack spacing={10} w="full" align="stretch">
-        {/* HYDRATION FIX: Changed from SimpleGrid with responsive columns to VStack.
-            SimpleGrid columns={{ base: 1, xl: 2 }} caused different classNames on server vs client.
-            Using VStack with CSS Grid ensures consistent SSR/CSR rendering. */}
-        <Box 
-          w="full"
-          display="grid"
-          gridTemplateColumns={{ base: "1fr", xl: "repeat(2, 1fr)" }}
-          gap={{ base: 8, xl: 10 }}
-          suppressHydrationWarning
-        >
+        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 8, xl: 10 }} w="full">
           <Card
             bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
             border="2px solid"
@@ -377,7 +364,7 @@ export default function AddressesStep({
               </VStack>
             </CardBody>
           </Card>
-        </Box>
+        </SimpleGrid>
       </VStack>
 
       {/* Continue Button - Always visible when addresses are complete */}
