@@ -1733,7 +1733,6 @@ model User {
   lastLogin                                       DateTime?
   twoFactorEnabled                                Boolean                          @default(false)
   stripeCustomerId                                String?
-  metadata                                        Json?
   // driverApprovedAt                                DateTime? // Temporarily commented out due to schema mismatch
   AccountDeletionRequest                          AccountDeletionRequest[]
   Address                                         Address[]
