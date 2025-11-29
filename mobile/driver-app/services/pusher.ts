@@ -23,9 +23,18 @@ class PusherService {
       console.log('🔌 Pusher Key:', PUSHER_KEY?.substring(0, 10) + '...');
       console.log('🔌 Pusher Cluster:', PUSHER_CLUSTER);
       
+      // TODO: Enable private channels for security
+      // Requires backend authEndpoint implementation at /api/pusher/auth
+      // Private channels prevent unauthorized access to driver notifications
       this.pusher = new Pusher(PUSHER_KEY, {
         cluster: PUSHER_CLUSTER,
         forceTLS: true,
+        // authEndpoint: '/api/pusher/auth', // Uncomment when backend is ready
+        // auth: {
+        //   headers: {
+        //     Authorization: `Bearer ${token}` // Add from secure storage
+        //   }
+        // }
       });
 
       // Add connection state logging
@@ -42,8 +51,11 @@ class PusherService {
       });
 
       this.driverId = driverId;
+      // TODO: Change to private channel for security
+      // const channelName = `private-driver-${driverId}`;
       const channelName = `driver-${driverId}`;
       console.log('📡 Subscribing to channel:', channelName);
+      console.log('⚠️ WARNING: Using public channel - should migrate to private-driver-* for security');
       
       this.channel = this.pusher.subscribe(channelName);
       
@@ -253,6 +265,24 @@ class PusherService {
   removePersonalJobRemovedListener(callback: (data: PusherEvent) => void): void {
     if (this.channel) {
       this.channel.unbind('job-removed', callback);
+    }
+  }
+
+  removeRouteMatchedListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('route-matched', callback);
+    }
+  }
+
+  removeJobAssignedListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('job-assigned', callback);
+    }
+  }
+
+  removeDropRemovedListener(callback: (data: PusherEvent) => void): void {
+    if (this.channel) {
+      this.channel.unbind('drop-removed', callback);
     }
   }
 }

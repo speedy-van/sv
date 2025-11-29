@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   buttonSecondary: {
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.medium,
   },
   buttonTextPrimary: {
     ...typography.bodyBold,

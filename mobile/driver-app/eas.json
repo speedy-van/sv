@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 16.0.0"
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -19,18 +20,32 @@
     "preview": {
       "distribution": "internal",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium",
+        "buildConfiguration": "Release",
+        "autoIncrement": true
       },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "distribution": "internal",
       "ios": {
-        "resourceClass": "m1-medium"
+        "resourceClass": "m-medium",
+        "buildConfiguration": "Release",
+        "simulator": false,
+        "autoIncrement": true
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "cache": {
+        "key": "production-v2"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://speedy-van.co.uk"
       }
     }
   },

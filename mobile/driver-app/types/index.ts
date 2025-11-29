@@ -75,10 +75,16 @@ export interface ApiResponse<T = any> {
 }
 
 export interface Location {
-  latitude: number;
-  longitude: number;
+  coords: {
+    latitude: number;
+    longitude: number;
+    altitude: number | null;
+    accuracy: number | null;
+    altitudeAccuracy: number | null;
+    heading: number | null;
+    speed: number | null;
+  };
   timestamp: number;
-  accuracy?: number;
 }
 
 export interface PusherEvent {
@@ -99,6 +105,19 @@ export interface PusherEvent {
   distance?: string;
   vehicleType?: string;
   additionalStops?: number;
+  // Additional fields for job assignment
+  bookingId?: string;
+  orderId?: string;
+  id?: string;
+  matchType?: string;
+  orderNumber?: string;
+  reference?: string;
+  pickupAddress?: string;
+  dropoffAddress?: string;
+  dropsCount?: number;
+  assignedAt?: string;
+  scheduledAt?: string;
+  customerName?: string;
 }
 
 export interface JobAssignment {

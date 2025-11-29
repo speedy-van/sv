@@ -2,11 +2,11 @@
   "expo": {
     "name": "Speedy Van Driver",
     "slug": "speedy-van-driver",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "scheme": "speedyvandriver",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -17,9 +17,9 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.speedyvan.driverapp",
-      "buildNumber": "2.0.3",
+      "buildNumber": "4",
       "usesAppleSignIn": false,
       "usesIcloudStorage": false,
       "infoPlist": {

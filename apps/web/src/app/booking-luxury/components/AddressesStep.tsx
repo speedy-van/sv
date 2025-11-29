@@ -238,17 +238,7 @@ export default function AddressesStep({
             boxShadow="0 25px 60px rgba(236, 72, 153, 0.25)"
             transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
             position="relative"
-            overflow="visible"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '3px',
-              bgGradient: 'linear(to-r, pink.400, purple.400, blue.400)',
-              opacity: 0.8,
-            }}
+            overflow="hidden"
             _hover={{
               borderColor: "rgba(236, 72, 153, 0.6)",
               boxShadow: "0 30px 70px rgba(236, 72, 153, 0.35)",

@@ -202,13 +202,13 @@ export default function VehicleInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
   },
   header: {
     flexDirection: 'row',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.primary,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.medium,
   },
   chipGroup: {
     flexDirection: 'row',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.medium,
   },
   chipActive: {
     backgroundColor: colors.primary,

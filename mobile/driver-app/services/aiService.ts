@@ -73,9 +73,13 @@ export interface AISuggestion {
   expiresAt?: string; // when suggestion expires
 }
 
+// Import apiService for authenticated requests
+import { apiService } from './api';
+
 // Real-time AI monitoring and analysis
 class AIRealTimeMonitor {
   private static instance: AIRealTimeMonitor;
+  private baseUrl = 'https://speedy-van.co.uk'; // Base URL for API calls (fallback)
   private locationSubscription?: any;
   private lastLocation?: DriverLocation;
   private activeJobs: ActiveJob[] = [];
@@ -117,6 +121,19 @@ class AIRealTimeMonitor {
 
   updateLocation(location: DriverLocation) {
     this.lastLocation = location;
+  }
+
+  // Alias methods for TypeScript compatibility
+  startRealTimeMonitoring(jobs: ActiveJob[], callback?: (suggestion: AISuggestion) => void): void {
+    this.startMonitoring(jobs, callback);
+  }
+
+  stopRealTimeMonitoring(): void {
+    this.stopMonitoring();
+  }
+
+  updateActiveJobs(jobs: ActiveJob[]): void {
+    this.updateJobs(jobs);
   }
 
   private async performRealTimeAnalysis(onSuggestion?: (suggestion: AISuggestion) => void) {
@@ -167,19 +184,15 @@ class AIRealTimeMonitor {
     if (!this.lastLocation) return;
 
     try {
-      // Get weather data
-      const weatherResponse = await fetch(`https://speedy-van.co.uk/api/weather`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: this.lastLocation,
-          includeForecast: true,
-          includeAlerts: true
-        })
+      // Get weather data using apiService (respects environment URL + auth)
+      const weatherResponse = await apiService.post('/api/weather', {
+        location: this.lastLocation,
+        includeForecast: true,
+        includeAlerts: true
       });
 
-      if (weatherResponse.ok) {
-        this.weatherData = await weatherResponse.json();
+      if (weatherResponse.success && weatherResponse.data) {
+        this.weatherData = weatherResponse.data;
       }
 
       // Get traffic data for active routes
@@ -190,18 +203,14 @@ class AIRealTimeMonitor {
           waypoints: this.activeJobs.slice(1).map(job => job.dropoff)
         };
 
-        const trafficResponse = await fetch(`https://speedy-van.co.uk/api/traffic`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            route,
-            includeIncidents: true,
-            dataSource: 'live'
-          })
+        const trafficResponse = await apiService.post('/api/traffic', {
+          route,
+          includeIncidents: true,
+          dataSource: 'live'
         });
 
-        if (trafficResponse.ok) {
-          this.trafficData = await trafficResponse.json();
+        if (trafficResponse.success && trafficResponse.data) {
+          this.trafficData = trafficResponse.data;
         }
       }
 
@@ -218,21 +227,16 @@ class AIRealTimeMonitor {
     // Use API endpoint for distance calculation (unified pricing system requirement)
     let distanceToPickup = 0;
     try {
-      const distanceResponse = await fetch(`${this.baseUrl}/api/address/distance`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pickupLat: this.lastLocation.lat,
-          pickupLng: this.lastLocation.lng,
-          dropoffLat: currentJob.pickup.lat,
-          dropoffLng: currentJob.pickup.lng
-        })
+      const distanceResponse = await apiService.post('/api/address/distance', {
+        pickupLat: this.lastLocation.lat,
+        pickupLng: this.lastLocation.lng,
+        dropoffLat: currentJob.pickup.lat,
+        dropoffLng: currentJob.pickup.lng
       });
       
-      if (distanceResponse.ok) {
-        const distanceData = await distanceResponse.json();
+      if (distanceResponse.success && distanceResponse.data?.distance) {
         // API returns distance in meters, convert to miles
-        distanceToPickup = distanceData.distance ? (distanceData.distance / 1609.34) : 0; // meters to miles
+        distanceToPickup = distanceResponse.data.distance / 1609.34; // meters to miles
       }
     } catch (error) {
       console.warn('Failed to calculate distance via API, using fallback:', error);
@@ -640,9 +644,9 @@ class AIService {
         fuelSuggestions,
         restSuggestions
       ] = await Promise.allSettled([
-        this.getRouteOptimization(currentLocation, activeJobs, constraints, undefined, undefined, preferences),
-        activeJobs.length > 1 ? this.getJobReordering(activeJobs, constraints, undefined, preferences) : Promise.resolve([]),
-        this.getFuelEfficiencyRecommendations(currentLocation, activeJobs, constraints, undefined, preferences),
+        this.getRouteOptimization(currentLocation, activeJobs, constraints),
+        activeJobs.length > 1 ? this.getJobReordering(activeJobs, constraints) : Promise.resolve([]),
+        this.getFuelEfficiencyRecommendations(currentLocation, activeJobs, constraints),
         this.getRestRecommendations(currentLocation, constraints)
       ]);
 
@@ -963,6 +967,9 @@ class AIService {
 // Export singleton instance
 export const aiService = new AIService();
 
+// Export AIRealTimeMonitor singleton
+const realTimeMonitor = AIRealTimeMonitor.getInstance();
+
 // React hook for using AI service
 export const useAIService = () => {
   return {
@@ -976,5 +983,10 @@ export const useAIService = () => {
     clearCache: aiService.clearCache.bind(aiService),
     getRateLimitStatus: aiService.getRateLimitStatus.bind(aiService),
     checkAvailability: aiService.checkAvailability.bind(aiService),
+    // Real-time monitoring methods
+    startRealTimeMonitoring: realTimeMonitor.startRealTimeMonitoring.bind(realTimeMonitor),
+    stopRealTimeMonitoring: realTimeMonitor.stopRealTimeMonitoring.bind(realTimeMonitor),
+    updateLocation: realTimeMonitor.updateLocation.bind(realTimeMonitor),
+    updateActiveJobs: realTimeMonitor.updateActiveJobs.bind(realTimeMonitor),
   };
 };

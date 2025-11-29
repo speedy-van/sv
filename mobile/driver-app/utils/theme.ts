@@ -21,10 +21,20 @@ export const colors = {
   pink: '#FF2D55',
 
   // Light Theme Backgrounds (iOS 17 Style)
-  background: '#F2F2F7',          // iOS system background (light mode)
+  background: {
+    primary: '#F2F2F7',          // iOS system background (light mode)
+    secondary: '#FFFFFF',         // Cards and elevated surfaces
+    tertiary: '#F9F9F9',         // Alternative surface (disabled inputs)
+    elevated: '#FFFFFF',         // Elevated surfaces
+  },
   surface: '#FFFFFF',             // Cards and elevated surfaces
   surfaceAlt: '#F9F9F9',         // Alternative surface (disabled inputs)
-  border: '#E5E5EA',             // iOS system separator color
+  border: {
+    light: '#E5E5EA',            // iOS system separator color
+    medium: '#D1D1D6',           // Medium emphasis border
+    strong: '#C7C7CC',           // Strong emphasis border
+  },
+  borderLegacy: '#E5E5EA',      // Legacy single border color for backward compat
 
   // Glass surfaces with blur
   glass: {

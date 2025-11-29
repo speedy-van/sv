@@ -40,7 +40,10 @@ export default function ChatScreen() {
   useEffect(() => {
     if (user?.driver?.id) {
       loadMessages();
-      setupPusher();
+      const cleanup = setupPusher();
+      
+      // Return cleanup function from useEffect
+      return cleanup;
     }
   }, [user?.driver?.id]);
 

@@ -133,28 +133,39 @@ export default function ScheduleScreen() {
   useEffect(() => {
     if (!user?.driver?.id) return;
 
-    pusherService.onRouteMatched(() => {
+    // Define handlers to track for cleanup
+    const handleRouteMatched = () => {
       console.log('📅 New route assigned - refreshing schedule');
       loadSchedule();
-    });
+    };
 
-    pusherService.onJobAssigned(() => {
+    const handleJobAssigned = () => {
       console.log('📅 New job assigned - refreshing schedule');
       loadSchedule();
-    });
+    };
 
-    pusherService.onRouteRemoved(() => {
+    const handleRouteRemoved = () => {
       console.log('📅 Route removed - refreshing schedule');
       loadSchedule();
-    });
+    };
 
-    pusherService.onPersonalJobRemoved(() => {
+    const handlePersonalJobRemoved = () => {
       console.log('📅 Job removed - refreshing schedule');
       loadSchedule();
-    });
+    };
+
+    pusherService.onRouteMatched(handleRouteMatched);
+    pusherService.onJobAssigned(handleJobAssigned);
+    pusherService.onRouteRemoved(handleRouteRemoved);
+    pusherService.onPersonalJobRemoved(handlePersonalJobRemoved);
 
     return () => {
-      pusherService.unbindAll();
+      // Remove only schedule-specific listeners, not all global Pusher listeners
+      pusherService.removeRouteMatchedListener(handleRouteMatched);
+      pusherService.removeJobAssignedListener(handleJobAssigned);
+      pusherService.removeRouteRemovedListener(handleRouteRemoved);
+      pusherService.removePersonalJobRemovedListener(handlePersonalJobRemoved);
+      console.log('📅 Schedule: Cleaned up Pusher listeners');
     };
   }, [user?.driver?.id]);
 

@@ -95,10 +95,16 @@ class LocationService {
       });
 
       return {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        coords: {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          altitude: location.coords.altitude,
+          accuracy: location.coords.accuracy,
+          altitudeAccuracy: location.coords.altitudeAccuracy,
+          heading: location.coords.heading,
+          speed: location.coords.speed,
+        },
         timestamp: location.timestamp,
-        accuracy: location.coords.accuracy || undefined,
       };
     } catch (error: any) {
       // ℹ️ This is normal on iOS Simulator when returning from background
@@ -126,10 +132,16 @@ class LocationService {
         },
         (location) => {
           callback({
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
+            coords: {
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              altitude: location.coords.altitude,
+              accuracy: location.coords.accuracy,
+              altitudeAccuracy: location.coords.altitudeAccuracy,
+              heading: location.coords.heading,
+              speed: location.coords.speed,
+            },
             timestamp: location.timestamp,
-            accuracy: location.coords.accuracy || undefined,
           });
         }
       );
@@ -191,10 +203,10 @@ class LocationService {
         : '/api/driver/location';
 
       const response = await apiService.post(endpoint, {
-        latitude: location.latitude,
-        longitude: location.longitude,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
         timestamp: location.timestamp,
-        accuracy: location.accuracy,
+        accuracy: location.coords.accuracy,
       });
 
       if (!response.success) {

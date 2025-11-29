@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius, shadows, glassEffect } from '../utils/theme';
 import { AISuggestionCard } from './AISuggestionCard';
 import { useAIService, AISuggestion, DriverLocation, ActiveJob } from '../services/aiService';
+import { apiService } from '../services/api';
 import { soundService } from '../services/soundService';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -86,49 +87,39 @@ export const AIDashboardSection: React.FC<AIDashboardSectionProps> = ({
         console.log('🤖 AI: Analyzing routes for', activeJobs.length, 'active jobs');
 
         try {
-          // Trigger weather/traffic analysis
-          const weatherResponse = await fetch(`https://speedy-van.co.uk/api/weather`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: {
-                lat: currentLocation?.coords.latitude || 51.5074,
-                lng: currentLocation?.coords.longitude || -0.1278
-              },
-              includeForecast: true,
-              includeAlerts: true
-            })
+          // Trigger weather/traffic analysis using apiService
+          const weatherResponse = await apiService.post('/api/weather', {
+            location: {
+              lat: currentLocation?.coords.latitude || 51.5074,
+              lng: currentLocation?.coords.longitude || -0.1278
+            },
+            includeForecast: true,
+            includeAlerts: true
           });
 
-          if (weatherResponse.ok) {
-            const weatherData = await weatherResponse.json();
-            console.log('✅ AI: Weather analysis updated', weatherData);
+          if (weatherResponse.success) {
+            console.log('✅ AI: Weather analysis updated', weatherResponse.data);
           }
 
           // Get traffic data for routes
-          const trafficResponse = await fetch(`https://speedy-van.co.uk/api/traffic`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              route: {
-                origin: {
-                  lat: currentLocation?.coords.latitude || 51.5074,
-                  lng: currentLocation?.coords.longitude || -0.1278
-                },
-                destination: {
-                  lat: activeJobs[0]?.dropoff.lat || 51.5225,
-                  lng: activeJobs[0]?.dropoff.lng || -0.0473
-                },
-                waypoints: activeJobs.slice(1).map(job => job.dropoff)
+          const trafficResponse = await apiService.post('/api/traffic', {
+            route: {
+              origin: {
+                lat: currentLocation?.coords.latitude || 51.5074,
+                lng: currentLocation?.coords.longitude || -0.1278
               },
-              includeIncidents: true,
-              dataSource: 'live'
-            })
+              destination: {
+                lat: activeJobs[0]?.dropoff.lat || 51.5225,
+                lng: activeJobs[0]?.dropoff.lng || -0.0473
+              },
+              waypoints: activeJobs.slice(1).map(job => job.dropoff)
+            },
+            includeIncidents: true,
+            dataSource: 'live'
           });
 
-          if (trafficResponse.ok) {
-            const trafficData = await trafficResponse.json();
-            console.log('✅ AI: Traffic analysis updated', trafficData);
+          if (trafficResponse.success) {
+            console.log('✅ AI: Traffic analysis updated', trafficResponse.data);
           }
 
           console.log('🎯 AI: Real-time monitoring active for job optimization');

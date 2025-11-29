@@ -64,7 +64,7 @@ export default function PermissionsDemoScreen() {
       if (status === 'granted') {
         Alert.alert(
           'Location Permission ✓',
-          `Permission Status: Granted\n\nLocation tracking enables:\n• Real-time delivery tracking\n• Nearby job matching\n• Customer delivery updates\n• Route optimization\n\n${currentLocation ? `Current: ${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}` : 'Location updating...'}\n\n⚠️ Note: Full GPS tracking works in TestFlight build, not Expo Go`
+          `Permission Status: Granted\n\nLocation tracking enables:\n• Real-time delivery tracking\n• Nearby job matching\n• Customer delivery updates\n• Route optimization\n\n${currentLocation ? `Current: ${currentLocation.coords.latitude.toFixed(4)}, ${currentLocation.coords.longitude.toFixed(4)}` : 'Location updating...'}\n\n⚠️ Note: Full GPS tracking works in TestFlight build, not Expo Go`
         );
       } else {
         Alert.alert(
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
   },
   loadingText: {
     ...typography.body,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
   },
   statusBadgeActive: {
     backgroundColor: colors.success + '20',

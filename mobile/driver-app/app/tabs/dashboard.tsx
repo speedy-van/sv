@@ -11,7 +11,7 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { Video } from 'expo-av';
+import { Video, ResizeMode } from 'expo-av';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -251,40 +251,61 @@ const AdminStory: React.FC = () => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const { user } = useAuth();
 
+  // Use ref to track current story without causing re-subscriptions
+  const currentStoryRef = React.useRef(currentStory);
+  React.useEffect(() => {
+    currentStoryRef.current = currentStory;
+  }, [currentStory]);
+
   useEffect(() => {
     loadCurrentStory();
 
     // Listen for real-time story updates
     const storyChannel = pusherService.subscribeToChannel('admin-stories');
 
-    storyChannel.bind('story-created', (data: any) => {
+    if (!storyChannel) {
+      console.warn('Failed to subscribe to admin-stories');
+      return;
+    }
+
+    const handleStoryCreated = (data: any) => {
       console.log('📡 Story created:', data);
       if (data.story.isActive) {
         setCurrentStory(data.story);
       }
-    });
+    };
 
-    storyChannel.bind('story-updated', (data: any) => {
+    const handleStoryUpdated = (data: any) => {
       console.log('📡 Story updated:', data);
       if (data.story.isActive) {
         setCurrentStory(data.story);
-      } else if (currentStory?.id === data.story.id) {
+      } else if (currentStoryRef.current?.id === data.story.id) {
         // If the current story was deactivated, clear it
+        console.log('📡 Deactivating current story');
         setCurrentStory(null);
       }
-    });
+    };
 
-    storyChannel.bind('story-deleted', (data: any) => {
+    const handleStoryDeleted = (data: any) => {
       console.log('📡 Story deleted:', data);
-      if (currentStory?.id === data.storyId) {
+      if (currentStoryRef.current?.id === data.storyId) {
+        console.log('📡 Clearing deleted story');
         setCurrentStory(null);
       }
-    });
+    };
+
+    storyChannel.bind('story-created', handleStoryCreated);
+    storyChannel.bind('story-updated', handleStoryUpdated);
+    storyChannel.bind('story-deleted', handleStoryDeleted);
 
     return () => {
+      storyChannel.unbind('story-created', handleStoryCreated);
+      storyChannel.unbind('story-updated', handleStoryUpdated);
+      storyChannel.unbind('story-deleted', handleStoryDeleted);
       pusherService.unsubscribeFromChannel('admin-stories');
+      console.log('📖 Cleaned up admin-stories listeners');
     };
-  }, []); // Remove currentStory dependency to prevent re-subscription loop
+  }, []); // No dependency on currentStory - using ref instead
 
   const loadCurrentStory = async () => {
     try {
@@ -537,7 +558,7 @@ const AdminStory: React.FC = () => {
                     <Video
                       source={{ uri: currentStory.mediaUrl }}
                       style={styles.storyVideo}
-                      resizeMode="cover"
+                      resizeMode={ResizeMode.COVER}
                       shouldPlay={true}
                       isLooping={false}
                       useNativeControls={true}
@@ -1258,6 +1279,11 @@ const styles = StyleSheet.create({
     borderColor: colors.success,
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
     ...shadows.glow.green,
+  },
+  statusCardOffline: {
+    borderColor: colors.danger,
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    ...shadows.glow.red,
   },
   statusGradient: {
     position: 'absolute',

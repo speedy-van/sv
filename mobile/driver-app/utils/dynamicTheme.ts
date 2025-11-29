@@ -91,6 +91,7 @@ const getHighContrastColors = (baseColors: typeof colors, highContrast: boolean)
       ...baseColors.border,
       light: 'rgba(255, 255, 255, 0.3)',
       medium: 'rgba(255, 255, 255, 0.5)',
+      strong: 'rgba(255, 255, 255, 0.7)',
     },
     glass: {
       light: 'rgba(255, 255, 255, 0.15)',
@@ -165,6 +166,7 @@ export const useAdaptiveTheme = (
 
     return {
       ...baseColors,
+      background: adaptiveBackground,
       adaptive: {
         background: adaptiveBackground.primary,
         surface: adaptiveBackground.secondary,

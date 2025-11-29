@@ -1,3 +1,15 @@
 {
-  "expo": {}
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "2a17f5cd-f779-4a8d-a351-1059bb043d4c"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.ahmadawadalwakai.speedyvanmonorepo",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
 }

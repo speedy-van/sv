@@ -76,34 +76,40 @@ export default function JobsScreen() {
 
     console.log('🔌 Jobs screen: Setting up Pusher listeners');
 
-    // Refresh when jobs are assigned
-    pusherService.onRouteMatched(() => {
+    // Define all handlers for tracking
+    const handleRouteMatched = () => {
       console.log('🎯 Jobs screen: Route matched, refreshing...');
       loadJobs();
-    });
+    };
 
-    pusherService.onJobAssigned(() => {
+    const handleJobAssigned = () => {
       console.log('📦 Jobs screen: Job assigned, refreshing...');
       loadJobs();
-    });
+    };
 
-    // Refresh when jobs are removed (broadcast)
-    pusherService.onJobRemoved(() => {
+    const handleJobRemoved = () => {
       console.log('🚫 Jobs screen: Job removed (broadcast), refreshing...');
       loadJobs();
-    });
+    };
 
-    // Refresh when THIS driver is removed from a job (personal)
     const personalJobRemovedHandler = () => {
       console.log('❌ Jobs screen: Personal job removed, refreshing...');
       loadJobs();
     };
-    
+
+    // Setup all listeners
+    pusherService.onRouteMatched(handleRouteMatched);
+    pusherService.onJobAssigned(handleJobAssigned);
+    pusherService.onJobRemoved(handleJobRemoved);
     pusherService.onPersonalJobRemoved(personalJobRemovedHandler);
 
     return () => {
-      // Cleanup: remove only this listener, don't unbind all events globally
+      // Cleanup: remove ALL listeners added by Jobs tab
+      pusherService.removeRouteMatchedListener(handleRouteMatched);
+      pusherService.removeJobAssignedListener(handleJobAssigned);
+      pusherService.removeJobRemovedListener(handleJobRemoved);
       pusherService.removePersonalJobRemovedListener(personalJobRemovedHandler);
+      console.log('📦 Jobs: Cleaned up Pusher listeners');
     };
   }, [user?.driver?.id]);
 

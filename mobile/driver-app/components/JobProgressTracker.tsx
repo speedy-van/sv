@@ -163,11 +163,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: colors.border.light,
   },
   stepCompleted: {
     backgroundColor: colors.success,
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   connector: {
     width: 2,
     height: 40,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
     marginTop: 4,
   },
   connectorCompleted: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   actionButtonDisabled: {
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
   },
   actionButtonText: {
     ...typography.bodyBold,
