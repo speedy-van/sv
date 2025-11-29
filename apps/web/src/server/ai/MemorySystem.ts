@@ -376,52 +376,23 @@ export class MemorySystem {
   }
 
   /**
-   * Load user preferences
+   * Load user preferences from database
    */
   private async loadUserPreferences(userId: string): Promise<Record<string, any>> {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { metadata: true },
-      });
-
-      return (user?.metadata as any)?.aiPreferences || {};
-    } catch (error) {
-      console.error('Failed to load user preferences:', error);
-      return {};
-    }
+    // TODO: User metadata field not yet implemented
+    return {};
   }
 
   /**
    * Save user preference
    */
   async saveUserPreference(userId: string, key: string, value: any) {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { metadata: true },
-      });
-
-      const metadata = (user?.metadata as any) || {};
-      if (!metadata.aiPreferences) {
-        metadata.aiPreferences = {};
+    // TODO: User metadata field not yet implemented
+    // For now, just update in-memory session context
+    for (const context of this.inMemoryStorage.values()) {
+      if (context.userId === userId) {
+        context.preferences[key] = value;
       }
-
-      metadata.aiPreferences[key] = value;
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: { metadata },
-      });
-
-      // Update session context
-      for (const context of this.inMemoryStorage.values()) {
-        if (context.userId === userId) {
-          context.preferences[key] = value;
-        }
-      }
-    } catch (error) {
-      console.error('Failed to save user preference:', error);
     }
   }
 
