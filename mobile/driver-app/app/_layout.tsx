@@ -7,10 +7,13 @@ import { JobAssignmentProvider } from '../contexts/JobAssignmentContext';
 import { GlobalJobAssignmentModal } from '../components/GlobalJobAssignmentModal';
 import { EmoteOverlay } from '../components/EmoteOverlay';
 import * as Notifications from 'expo-notifications';
+import * as TaskManager from 'expo-task-manager';
+import * as Location from 'expo-location';
 import { useEffect } from 'react';
 import { telemetryService } from '../src/lib/telemetry';
 import { soundService } from '../services/soundService';
 import { emoteManager } from '../services/emoteService';
+import { apiService } from '../services/api';
 
 // Configure notifications
 Notifications.setNotificationHandler({
@@ -21,6 +24,34 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
   }),
+});
+
+// Define background location task BEFORE app renders
+const BACKGROUND_LOCATION_TASK = 'background-location-task';
+
+TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
+  if (error) {
+    console.error('Background location task error:', error);
+    return;
+  }
+  if (data) {
+    const { locations } = data as { locations: Location.LocationObject[] };
+    const location = locations[0];
+    
+    if (location) {
+      try {
+        // Send location update to backend
+        await apiService.post('/api/driver/location', {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          timestamp: location.timestamp,
+          accuracy: location.coords.accuracy,
+        });
+      } catch (error) {
+        console.error('Failed to send background location:', error);
+      }
+    }
+  }
 });
 
 export default function RootLayout() {

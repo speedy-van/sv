@@ -284,7 +284,7 @@ const AdminStory: React.FC = () => {
     return () => {
       pusherService.unsubscribeFromChannel('admin-stories');
     };
-  }, [currentStory]);
+  }, []); // Remove currentStory dependency to prevent re-subscription loop
 
   const loadCurrentStory = async () => {
     try {
@@ -678,28 +678,38 @@ export default function DashboardScreen() {
       console.log('🔌 [Dashboard] Setting up data refresh listeners');
       pusherService.initialize(user.driver.id);
 
-      // Listen for data refresh events only
-      pusherService.onJobRemoved(async (data) => {
+      // Store listener references for cleanup
+      const jobRemovedHandler = async (data: any) => {
         console.log('📢 [Dashboard] JOB REMOVED (broadcast) - refreshing data');
         loadDashboard(true);
-      });
+      };
 
-      pusherService.onRouteRemoved(async (data) => {
+      const routeRemovedHandler = async (data: any) => {
         console.log('🗑️ [Dashboard] ROUTE REMOVED - refreshing data');
         loadDashboard(true);
-      });
+      };
 
-      pusherService.onRouteCancelled(async (data) => {
+      const routeCancelledHandler = async (data: any) => {
         console.log('🚫 [Dashboard] ROUTE CANCELLED - refreshing data');
         loadDashboard(true);
-      });
+      };
+
+      // Listen for data refresh events only
+      pusherService.onJobRemoved(jobRemovedHandler);
+      pusherService.onRouteRemoved(routeRemovedHandler);
+      pusherService.onRouteCancelled(routeCancelledHandler);
 
       return () => {
-        // Don't disconnect - global context needs Pusher connection
-        // Just clean up local listeners
+        // Properly unbind specific listeners to prevent stacking
+        const channel = pusherService.getChannel(`driver-${user.driver.id}`);
+        if (channel) {
+          channel.unbind('job-removed', jobRemovedHandler);
+          channel.unbind('route-removed', routeRemovedHandler);
+          channel.unbind('route-cancelled', routeCancelledHandler);
+        }
       };
     }
-  }, [user, isOnline]);
+  }, [user?.driver?.id, isOnline]); // Only re-run when driver ID or online status changes
 
   const loadDashboard = async (forceRefresh = false) => {
     try {

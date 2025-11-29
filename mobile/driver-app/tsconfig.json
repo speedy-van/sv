@@ -2,8 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": false,
-    "skipLibCheck": true,
-    "types": ["react/experimental"]
+    "skipLibCheck": true
   }
 }
 

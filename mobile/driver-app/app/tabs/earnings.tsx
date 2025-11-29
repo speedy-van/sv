@@ -88,12 +88,13 @@ export default function EarningsScreen() {
   const loadEarnings = async () => {
     try {
       // Fetch today's earnings
-      const todayResponse = await apiService.get('/api/driver/earnings?period=today');
-      const weekResponse = await apiService.get('/api/driver/earnings?period=week');
-      const monthResponse = await apiService.get('/api/driver/earnings?period=month');
-      const allResponse = await apiService.get('/api/driver/earnings?period=all');
-      
-      if (allResponse.success && allResponse.data?.summary) {
+    // Fetch all periods in parallel instead of sequentially
+    const [todayResponse, weekResponse, monthResponse, allResponse] = await Promise.all([
+      apiService.get('/api/driver/earnings?period=today'),
+      apiService.get('/api/driver/earnings?period=week'),
+      apiService.get('/api/driver/earnings?period=month'),
+      apiService.get('/api/driver/earnings?period=all')
+    ]);      if (allResponse.success && allResponse.data?.summary) {
         const summary = allResponse.data.summary;
         const todaySummary = todayResponse.data?.summary;
         const weekSummary = weekResponse.data?.summary;
