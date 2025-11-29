@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter } from 'next/font/google';
+import { ColorModeScript } from '@chakra-ui/react';
 import '@/styles/critical.css';
 import '@/styles/globals.css';
 import '@/styles/video-background.css';
@@ -165,6 +166,8 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className} suppressHydrationWarning translate="no">
+        {/* ColorModeScript must match initialColorMode in mobile-theme.ts (currently 'dark') */}
+        <ColorModeScript initialColorMode="dark" />
         <IOSDeviceClassManager />
         {/* Google Ads Global Site Tag - Conversion Tracking */}
         <Script

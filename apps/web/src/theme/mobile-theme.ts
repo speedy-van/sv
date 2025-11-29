@@ -586,11 +586,14 @@ const components = {
 };
 
 // Theme configuration
-const config: ThemeConfig = {
-  initialColorMode: 'light',
+// Exported separately so it can be imported in server components (layout.tsx) for ColorModeScript
+export const themeConfig: ThemeConfig = {
+  initialColorMode: 'dark',
   useSystemColorMode: false,
   disableTransitionOnChange: false,
 };
+
+const config = themeConfig;
 
 // Global styles with mobile optimizations
 const styles = {

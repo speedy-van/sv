@@ -5,7 +5,7 @@
  * FIXED: Emotion cache configuration for SSR to prevent CSS-in-JS from displaying as text on Safari/iOS
  */
 
-import React, { ReactNode, useMemo, useEffect } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
@@ -62,40 +62,9 @@ export default function ChakraProviders({ children }: ChakraProvidersProps) {
     return sharedEmotionCache;
   }, []);
 
-  // INSTRUMENTATION: Log color mode at render time to prove SSR vs client divergence
-  const isServer = typeof window === 'undefined';
-  const colorMode = isServer ? 'light (SSR - from theme initialColorMode)' : 'unknown (client first render)';
-  
-  if (isServer) {
-    console.log('[SSR] ChakraProviders rendering with color mode:', colorMode);
-  } else {
-    console.log('[CLIENT FIRST RENDER] ChakraProviders rendering. Will check actual color mode after mount.');
-  }
-
-  // Set CSS variables on client-side only (after hydration)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const root = document.documentElement;
-      
-      // INSTRUMENTATION: Log actual color mode at mount (after hydration)
-      const actualColorMode = root.getAttribute('data-chakra-ui-color-mode') || 
-                             root.style.getPropertyValue('--chakra-ui-color-mode') ||
-                             'unknown';
-      console.log('[CLIENT AFTER HYDRATION] Actual color mode detected:', actualColorMode);
-      console.log('[CLIENT AFTER HYDRATION] About to force dark mode via useEffect...');
-      
-      root.setAttribute('data-theme', 'dark');
-      root.classList.add('chakra-ui-dark');
-      root.style.setProperty('--chakra-ui-color-mode', 'dark');
-      root.style.setProperty('--chakra-colors-neon-400', '#00C2FF');
-      root.style.setProperty('--chakra-colors-neon-500', '#00B8F0');
-      root.style.setProperty('--chakra-colors-bg-surface', 'rgba(13, 13, 13, 1)');
-      root.style.setProperty('--chakra-colors-bg-card', 'rgba(26, 26, 26, 0.95)');
-      root.style.setProperty('--chakra-colors-text-primary', 'rgba(255, 255, 255, 0.92)');
-      root.style.setProperty('--chakra-colors-text-secondary', 'rgba(255, 255, 255, 0.64)');
-      root.style.setProperty('--chakra-colors-border-primary', 'rgba(59, 130, 246, 0.3)');
-    }
-  }, []);
+  // REMOVED: Manual color mode override in useEffect
+  // ColorModeScript in layout.tsx now handles initial color mode synchronization between SSR and client
+  // This prevents hydration mismatches caused by different color modes during first render
 
   return (
     <CacheProvider value={emotionCache}>
