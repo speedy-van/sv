@@ -3,13 +3,17 @@
 /**
  * Step 1: Pickup and Drop-off Addresses
  * Luxury Booking Design
+ * 
+ * CRITICAL FIX: Removed responsive breakpoint props to prevent hydration mismatch.
+ * Server-side rendering cannot know the viewport width, so responsive props like
+ * {{ base: 1, xl: 2 }} cause different className hashes between SSR and client.
+ * This was breaking autocomplete positioning in production.
  */
 
 import React, { useMemo } from 'react';
 import {
   Box,
   VStack,
-  SimpleGrid,
   HStack,
   Text,
   Button,
@@ -97,7 +101,16 @@ export default function AddressesStep({
   return (
     <Box w="full" pb={8}>
       <VStack spacing={10} w="full" align="stretch">
-        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 8, xl: 10 }} w="full">
+        {/* HYDRATION FIX: Changed from SimpleGrid with responsive columns to VStack.
+            SimpleGrid columns={{ base: 1, xl: 2 }} caused different classNames on server vs client.
+            Using VStack with CSS Grid ensures consistent SSR/CSR rendering. */}
+        <Box 
+          w="full"
+          display="grid"
+          gridTemplateColumns={{ base: "1fr", xl: "repeat(2, 1fr)" }}
+          gap={{ base: 8, xl: 10 }}
+          suppressHydrationWarning
+        >
           <Card
             bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
             border="2px solid"
@@ -124,13 +137,13 @@ export default function AddressesStep({
               opacity: 0.8,
             }}
           >
-            <CardBody p={{ base: 8, md: 10 }}>
+            <CardBody p={10}>
               <VStack spacing={6} align="stretch">
                 {/* Header with Enhanced Icon */}
                 <HStack spacing={4} mb={2}>
                   <Box
-                    w={{ base: "56px", md: "64px" }}
-                    h={{ base: "56px", md: "64px" }}
+                    w="64px"
+                    h="64px"
                     borderRadius="2xl"
                     bg="linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))"
                     border="2px solid"
@@ -153,8 +166,8 @@ export default function AddressesStep({
                     }}
                   >
                     <Box 
-                      w={{ base: "24px", md: "28px" }} 
-                      h={{ base: "24px", md: "28px" }} 
+                      w="28px" 
+                      h="28px" 
                       borderRadius="full" 
                       bg="linear-gradient(135deg, #22c55e, #10b981)"
                       boxShadow="0 4px 16px rgba(34, 197, 94, 0.6)"
@@ -164,7 +177,7 @@ export default function AddressesStep({
                     <Text 
                       color="white" 
                       fontWeight="800" 
-                      fontSize={{ base: "xl", md: "2xl" }}
+                      fontSize="2xl"
                       letterSpacing="tight"
                       bgGradient="linear(to-r, green.300, emerald.400)"
                       bgClip="text"
@@ -173,7 +186,7 @@ export default function AddressesStep({
                     </Text>
                     <Text 
                       color="whiteAlpha.700" 
-                      fontSize={{ base: "sm", md: "md" }}
+                      fontSize="md"
                       fontWeight="500"
                     >
                       Where should we collect from?
@@ -255,7 +268,7 @@ export default function AddressesStep({
               transform: "translateY(-2px)",
             }}
           >
-            <CardBody p={{ base: 6, md: 8 }}>
+            <CardBody p={8}>
               <VStack spacing={5} align="stretch">
                 {/* Enhanced Header */}
                 <HStack spacing={4} mb={2}>
@@ -364,7 +377,7 @@ export default function AddressesStep({
               </VStack>
             </CardBody>
           </Card>
-        </SimpleGrid>
+        </Box>
       </VStack>
 
       {/* Continue Button - Always visible when addresses are complete */}
