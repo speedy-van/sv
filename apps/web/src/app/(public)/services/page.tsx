@@ -139,8 +139,8 @@ export default function ServicesPage() {
 
   return (
     <Box bg={bgColor} minH="100vh" pt={20}>
-      <Container maxW="container.xl" py={16}>
-        <VStack spacing={16}>
+      <Container maxW="container.xl" py={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
+        <VStack spacing={{ base: 10, md: 16 }}>
           {/* Header Section */}
           <MotionBox
             initial={{ opacity: 0, y: 30 }}
@@ -151,14 +151,14 @@ export default function ServicesPage() {
             maxW="4xl"
           >
             <Heading
-              size="2xl"
-              mb={6}
+              size={{ base: "xl", md: "2xl" }}
+              mb={{ base: 4, md: 6 }}
               bgGradient="linear(to-r, neon.400, green.400)"
               bgClip="text"
             >
               Professional Moving Services
             </Heading>
-            <Text fontSize="xl" color="text.secondary" lineHeight="tall">
+            <Text fontSize={{ base: "md", md: "xl" }} color="text.secondary" lineHeight="tall">
               From residential moves to commercial relocations, we provide comprehensive 
               moving solutions tailored to your specific needs. All services include 
               full insurance coverage and professional handling.
@@ -166,7 +166,7 @@ export default function ServicesPage() {
           </MotionBox>
 
           {/* Trust Indicators */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} w="full">
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
             {trustFeatures.map((feature, index) => (
               <MotionBox
                 key={index}
@@ -176,25 +176,27 @@ export default function ServicesPage() {
                 transition={`0.5s ease-out ${index * 0.1}s`}
               >
                 <HStack
-                  p={6}
+                  p={{ base: 4, md: 6 }}
                   bg={cardBg}
                   borderRadius="xl"
                   boxShadow="lg"
-                  spacing={4}
+                  spacing={{ base: 3, md: 4 }}
+                  align="start"
                 >
                   <Box
-                    p={3}
+                    p={{ base: 2, md: 3 }}
                     bg="neon.400"
                     borderRadius="lg"
                     color="white"
+                    flexShrink={0}
                   >
-                    <Icon as={feature.icon} boxSize={6} />
+                    <Icon as={feature.icon} boxSize={{ base: 5, md: 6 }} />
                   </Box>
                   <VStack align="start" spacing={1}>
-                    <Text fontWeight="bold" color="text.primary">
+                    <Text fontWeight="bold" color="text.primary" fontSize={{ base: "sm", md: "md" }}>
                       {feature.title}
                     </Text>
-                    <Text fontSize="sm" color="text.secondary">
+                    <Text fontSize={{ base: "xs", md: "sm" }} color="text.secondary">
                       {feature.description}
                     </Text>
                   </VStack>
@@ -204,7 +206,7 @@ export default function ServicesPage() {
           </SimpleGrid>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} w="full">
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -224,23 +226,23 @@ export default function ServicesPage() {
                 onClick={() => window.location.href = service.href}
               >
                 <Card bg="transparent" border="none" boxShadow="none">
-                  <CardBody p={8} bg="transparent">
-                  <VStack align="start" spacing={6}>
+                  <CardBody p={{ base: 5, md: 8 }} bg="transparent">
+                  <VStack align="start" spacing={{ base: 4, md: 6 }}>
                     {/* Service Header */}
-                    <HStack justify="space-between" w="full">
-                      <HStack spacing={4}>
+                    <HStack justify="space-between" w="full" flexWrap={{ base: "wrap", md: "nowrap" }} spacing={{ base: 2, md: 4 }}>
+                      <HStack spacing={{ base: 3, md: 4 }} flexWrap="wrap">
                         <Box
-                          p={3}
+                          p={{ base: 2, md: 3 }}
                           bg={`rgba(59, 130, 246, 0.2)`}
                           color={`${service.color}.400`}
                           borderRadius="xl"
                           border="1px solid"
                           borderColor={`rgba(59, 130, 246, 0.3)`}
                         >
-                          <Icon as={service.icon} boxSize={8} />
+                          <Icon as={service.icon} boxSize={{ base: 6, md: 8 }} />
                         </Box>
                         <VStack align="start" spacing={1}>
-                          <Heading size="lg" color="text.primary">
+                          <Heading size={{ base: "md", md: "lg" }} color="text.primary">
                             {service.title}
                           </Heading>
                           <Badge
@@ -249,6 +251,7 @@ export default function ServicesPage() {
                             borderRadius="full"
                             px={3}
                             py={1}
+                            fontSize={{ base: "xs", md: "sm" }}
                           >
                             {service.price}
                           </Badge>
@@ -257,20 +260,21 @@ export default function ServicesPage() {
                     </HStack>
 
                     {/* Description */}
-                    <Text color="text.secondary" lineHeight="tall">
+                    <Text color="text.secondary" lineHeight="tall" fontSize={{ base: "sm", md: "md" }}>
                       {service.description}
                     </Text>
 
                     {/* Features */}
-                    <VStack align="start" spacing={3} w="full">
+                    <VStack align="start" spacing={{ base: 2, md: 3 }} w="full">
                       {service.features.map((feature, idx) => (
-                        <HStack key={idx} spacing={3}>
+                        <HStack key={idx} spacing={{ base: 2, md: 3 }}>
                           <Icon
                             as={FiCheckCircle}
                             color="green.500"
-                            boxSize={4}
+                            boxSize={{ base: 3.5, md: 4 }}
+                            flexShrink={0}
                           />
-                          <Text fontSize="sm" color="text.secondary">
+                          <Text fontSize={{ base: "xs", md: "sm" }} color="text.secondary">
                             {feature}
                           </Text>
                         </HStack>
@@ -282,6 +286,7 @@ export default function ServicesPage() {
                       variant="outline"
                       colorScheme={service.color}
                       rightIcon={<FiArrowRight />}
+                      size={{ base: "md", md: "lg" }}
                       w="full"
                       mt={4}
                       onClick={(e) => {

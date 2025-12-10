@@ -39,6 +39,7 @@ import {
   FiArrowRight,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -147,8 +148,9 @@ export default function HouseMovingPage() {
   const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
-    <Box bg={bgColor} minH="100vh" pt={20}>
-      <Container maxW="container.xl" py={16}>
+    <Box bg={bgColor} minH="100vh">
+      <Header />
+      <Container maxW="container.xl" py={{ base: 6, md: 16 }} px={{ base: 4, md: 6 }} pt={{ base: 24, md: 32 }}>
         <VStack spacing={16}>
           {/* Hero Section */}
           <MotionBox
@@ -170,14 +172,14 @@ export default function HouseMovingPage() {
               </Box>
             </HStack>
             <Heading
-              size="2xl"
-              mb={6}
+              size={{ base: 'xl', md: '2xl' }}
+              mb={{ base: 4, md: 6 }}
               bgGradient="linear(to-r, neon.400, green.400)"
               bgClip="text"
             >
               House Moving Services
             </Heading>
-            <Text fontSize="xl" color="gray.400" lineHeight="tall" maxW="3xl" mx="auto">
+            <Text fontSize={{ base: 'md', md: 'xl' }} color="gray.400" lineHeight="tall" maxW="3xl" mx="auto">
               Professional residential moving services for homes and apartments. 
               From studio flats to large family homes, we handle your move with 
               care and expertise.
@@ -185,7 +187,7 @@ export default function HouseMovingPage() {
           </MotionBox>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} w="full">
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -206,8 +208,8 @@ export default function HouseMovingPage() {
                 sx={{ transition: 'all 0.3s ease' }}
               >
                 <Card bg="transparent">
-                  <CardBody p={6} textAlign="center">
-                  <VStack spacing={4}>
+                  <CardBody p={{ base: 4, md: 6 }} textAlign="center">
+                  <VStack spacing={{ base: 3, md: 4 }}>
                     <Box
                       p={3}
                       bg="rgba(0, 255, 157, 0.1)"
@@ -256,7 +258,7 @@ export default function HouseMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }}>
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}

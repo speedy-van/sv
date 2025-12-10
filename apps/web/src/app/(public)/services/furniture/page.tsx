@@ -41,6 +41,7 @@ import {
   FiAward,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -170,9 +171,10 @@ export default function FurnitureRemovalPage() {
   const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
-    <Box bg={bgColor} minH="100vh" pt={20}>
-      <Container maxW="container.xl" py={16}>
-        <VStack spacing={16}>
+    <Box bg={bgColor} minH="100vh">
+      <Header />
+      <Container maxW="container.xl" py={{ base: 6, md: 16 }} px={{ base: 4, md: 6 }} pt={{ base: 24, md: 32 }}>
+        <VStack spacing={{ base: 8, md: 16 }}>
           {/* Hero Section */}
           <MotionBox
             initial={{ opacity: 0, y: 30 }}
@@ -193,14 +195,14 @@ export default function FurnitureRemovalPage() {
               </Box>
             </HStack>
             <Heading
-              size="2xl"
-              mb={6}
+              size={{ base: 'xl', md: '2xl' }}
+              mb={{ base: 4, md: 6 }}
               bgGradient="linear(to-r, neon.400, green.400)"
               bgClip="text"
             >
               Furniture Removal Services
             </Heading>
-            <Text fontSize="xl" color="text.secondary" lineHeight="tall">
+            <Text fontSize={{ base: 'md', md: 'xl' }} color="text.secondary" lineHeight="tall">
               Professional furniture delivery and assembly service. From single items 
               to complete room setups, we handle your furniture with expert care.
             </Text>
@@ -216,7 +218,7 @@ export default function FurnitureRemovalPage() {
           </Alert>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} w="full">
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -237,7 +239,7 @@ export default function FurnitureRemovalPage() {
                 sx={{ transition: 'all 0.3s ease' }}
               >
                 <Card bg="transparent">
-                  <CardBody p={6} textAlign="center">
+                  <CardBody p={{ base: 4, md: 6 }} textAlign="center">
                     <VStack spacing={4}>
                       <Box
                         p={3}
@@ -308,7 +310,7 @@ export default function FurnitureRemovalPage() {
                   sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card bg="transparent">
-                    <CardBody p={6} textAlign="center">
+                    <CardBody p={{ base: 4, md: 6 }} textAlign="center">
                     <VStack spacing={4}>
                       <Box
                         p={3}
@@ -356,7 +358,7 @@ export default function FurnitureRemovalPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }}>
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}
@@ -386,7 +388,7 @@ export default function FurnitureRemovalPage() {
                     </Badge>
                   )}
                   <Card>
-                    <CardBody p={8} textAlign="center">
+                    <CardBody p={{ base: 5, md: 8 }} textAlign="center">
                     <VStack spacing={6}>
                       <VStack spacing={2}>
                         <Heading size="lg" color="text.primary">
@@ -461,7 +463,7 @@ export default function FurnitureRemovalPage() {
                   sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card bg="transparent">
-                    <CardBody p={8}>
+                    <CardBody p={{ base: 5, md: 8 }}>
                     <VStack spacing={4} align="start">
                       <HStack>
                         {[...Array(testimonial.rating)].map((_, i) => (
