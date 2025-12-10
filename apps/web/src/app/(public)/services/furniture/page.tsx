@@ -226,22 +226,27 @@ viewport={{ once: true }}
                 transition={`0.5s ease-out ${index * 0.1}s`}
                 bg={cardBg}
                 borderRadius="xl"
-                boxShadow="lg"
+                boxShadow="0 4px 20px rgba(0, 0, 0, 0.5)"
+                border="1px solid"
+                borderColor="rgba(0, 255, 157, 0.1)"
                 _hover={{
-                  transform: 'translateY(-4px)',
-                  boxShadow: 'xl',
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 8px 40px rgba(0, 255, 157, 0.2)',
+                  borderColor: 'neon.400',
                 }}
+                transition="all 0.3s ease"
               >
-                <Card>
+                <Card bg="transparent">
                   <CardBody p={6} textAlign="center">
-                  <VStack spacing={4}>
-                    <Box
-                      p={3}
-                      bg="green.100"
-                      color="green.600"
-                      borderRadius="lg"
-                    >
-                      <Icon as={service.icon} boxSize={6} />
+                    <VStack spacing={4}>
+                      <Box
+                        p={3}
+                        bg="rgba(0, 255, 157, 0.1)"
+                        borderRadius="lg"
+                        border="1px solid"
+                        borderColor="neon.400"
+                      >
+                        <Icon as={service.icon} boxSize={6} color="neon.400" />
                     </Box>
                     <Heading size="md" color="text.primary">
                       {service.title}
@@ -292,20 +297,27 @@ viewport={{ once: true }}
                   transition={`0.5s ease-out ${index * 0.1}s`}
                   bg={cardBg}
                   borderRadius="xl"
-                  boxShadow="lg"
-                  border="2px solid"
-                  borderColor={`${type.color}.200`}
+                  boxShadow="0 4px 20px rgba(0, 0, 0, 0.5)"
+                  border="1px solid"
+                  borderColor="rgba(0, 255, 157, 0.1)"
+                  _hover={{
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 8px 40px rgba(0, 255, 157, 0.2)',
+                    borderColor: 'neon.400',
+                  }}
+                  transition="all 0.3s ease"
                 >
-                  <Card>
+                  <Card bg="transparent">
                     <CardBody p={6} textAlign="center">
                     <VStack spacing={4}>
                       <Box
                         p={3}
-                        bg={`${type.color}.100`}
-                        color={`${type.color}.600`}
+                        bg="rgba(0, 255, 157, 0.1)"
                         borderRadius="lg"
+                        border="1px solid"
+                        borderColor="neon.400"
                       >
-                        <Icon as={type.icon} boxSize={6} />
+                        <Icon as={type.icon} boxSize={6} color="neon.400" />
                       </Box>
                       <Heading size="md" color="text.primary">
                         {type.category}
@@ -440,9 +452,15 @@ viewport={{ once: true }}
                   transition={`0.5s ease-out ${index * 0.1}s`}
                   bg={cardBg}
                   borderRadius="xl"
-                  boxShadow="lg"
+                  boxShadow="0 4px 20px rgba(0, 0, 0, 0.5)"
+                  border="1px solid"
+                  borderColor="rgba(0, 255, 157, 0.1)"
+                  _hover={{
+                    borderColor: 'neon.400',
+                  }}
+                  transition="all 0.3s ease"
                 >
-                  <Card>
+                  <Card bg="transparent">
                     <CardBody p={8}>
                     <VStack spacing={4} align="start">
                       <HStack>
@@ -477,9 +495,11 @@ viewport={{ once: true }}
             transition="0.6s ease-out 0.4s"
             textAlign="center"
             p={12}
-            bg="linear-gradient(135deg, green.400, green.600)"
+            bg="linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 200, 100, 0.2))"
             borderRadius="2xl"
-            color="white"
+            border="2px solid"
+            borderColor="neon.400"
+            boxShadow="0 0 40px rgba(0, 255, 157, 0.3)"
             w="full"
           >
             <VStack spacing={6}>
