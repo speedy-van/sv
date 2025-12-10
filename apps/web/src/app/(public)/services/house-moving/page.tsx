@@ -206,6 +206,8 @@ export default function HouseMovingPage() {
                   borderColor: 'neon.400',
                 }}
                 sx={{ transition: 'all 0.3s ease' }}
+                cursor="pointer"
+                onClick={() => window.location.href = '/booking-luxury'}
               >
                 <Card bg="transparent">
                   <CardBody p={{ base: 4, md: 6 }} textAlign="center">
@@ -272,6 +274,13 @@ export default function HouseMovingPage() {
                   border={index === 1 ? "2px solid" : "1px solid"}
                   borderColor={index === 1 ? "blue.400" : "gray.200"}
                   position="relative"
+                  cursor="pointer"
+                  onClick={() => window.location.href = '/booking-luxury'}
+                  _hover={{
+                    transform: 'translateY(-4px)',
+                    boxShadow: '2xl',
+                  }}
+                  sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card>
                     <CardBody p={8} textAlign="center">
@@ -311,14 +320,17 @@ export default function HouseMovingPage() {
                         ))}
                       </List>
 
-                      <Button
-                        colorScheme="blue"
-                        variant={index === 1 ? "solid" : "outline"}
-                        w="full"
-                        onClick={() => window.location.href = '/booking-luxury'}
+                      <Text 
+                        fontSize="sm" 
+                        color="blue.400" 
+                        fontWeight="medium"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        gap={2}
                       >
-                        Book Now
-                      </Button>
+                        Click to Book <Icon as={FiArrowRight} />
+                      </Text>
                     </VStack>
                   </CardBody>
                   </Card>

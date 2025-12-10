@@ -43,6 +43,7 @@ import {
   FiCalendar,
   FiMonitor,
   FiArchive,
+  FiArrowRight,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
@@ -253,6 +254,8 @@ export default function OfficeRelocationPage() {
             {services.map((service, index) => (
               <MotionCard
                 key={index}
+                cursor="pointer"
+                onClick={() => window.location.href = '/booking-luxury'}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -324,6 +327,8 @@ export default function OfficeRelocationPage() {
               {movingScenarios.map((scenario, index) => (
                 <MotionCard
                   key={index}
+                  cursor="pointer"
+                  onClick={() => window.location.href = '/booking-luxury'}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -400,6 +405,8 @@ export default function OfficeRelocationPage() {
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}
+                  cursor="pointer"
+                  onClick={() => window.location.href = '/booking-luxury'}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -410,6 +417,7 @@ export default function OfficeRelocationPage() {
                   border={index === 1 ? "2px solid" : "1px solid"}
                   borderColor={index === 1 ? "blue.400" : "gray.200"}
                   position="relative"
+                  _hover={{ transform: 'translateY(-4px)', boxShadow: '2xl' }}
                 >
                   {index === 1 && (
                     <Badge
@@ -456,14 +464,9 @@ export default function OfficeRelocationPage() {
                           ))}
                         </List>
 
-                        <Button
-                          colorScheme="blue"
-                          variant={index === 1 ? "solid" : "outline"}
-                          w="full"
-                          onClick={() => window.location.href = '/booking-luxury'}
-                        >
-                          Book Now
-                        </Button>
+                        <Text fontSize="sm" color="blue.400" fontWeight="medium" textAlign="center">
+                          Click to Book <Icon as={FiArrowRight} ml={1} />
+                        </Text>
                       </VStack>
                     </CardBody>
                   </Card>
