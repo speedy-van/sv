@@ -209,15 +209,6 @@ export default function FurnitureRemovalPage() {
             </Text>
           </MotionBox>
 
-          {/* Alert for Special Offer */}
-          <Alert status="info" borderRadius="xl" maxW="2xl">
-            <AlertIcon />
-            <Box>
-              <Text fontWeight="bold">Free Assembly Included!</Text>
-              <Text fontSize="sm">All furniture deliveries include free professional assembly service.</Text>
-            </Box>
-          </Alert>
-
           {/* Services Grid */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
             {services.map((service, index) => (
@@ -381,20 +372,6 @@ export default function FurnitureRemovalPage() {
                   position="relative"
                   _hover={{ transform: 'translateY(-4px)', boxShadow: '2xl' }}
                 >
-                  {index === 1 && (
-                    <Badge
-                      position="absolute"
-                      top="-12px"
-                      left="50%"
-                      transform="translateX(-50%)"
-                      colorScheme="green"
-                      borderRadius="full"
-                      px={4}
-                      py={1}
-                    >
-                      Most Popular
-                    </Badge>
-                  )}
                   <Card>
                     <CardBody p={{ base: 5, md: 8 }} textAlign="center">
                     <VStack spacing={6}>
