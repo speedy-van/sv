@@ -234,7 +234,7 @@ viewport={{ once: true }}
                   boxShadow: '0 8px 40px rgba(0, 255, 157, 0.2)',
                   borderColor: 'neon.400',
                 }}
-                transition="all 0.3s ease"
+                sx={{ transition: 'all 0.3s ease' }}
               >
                 <Card bg="transparent">
                   <CardBody p={6} textAlign="center">
@@ -305,7 +305,7 @@ viewport={{ once: true }}
                     boxShadow: '0 8px 40px rgba(0, 255, 157, 0.2)',
                     borderColor: 'neon.400',
                   }}
-                  transition="all 0.3s ease"
+                  sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card bg="transparent">
                     <CardBody p={6} textAlign="center">
@@ -458,7 +458,7 @@ viewport={{ once: true }}
                   _hover={{
                     borderColor: 'neon.400',
                   }}
-                  transition="all 0.3s ease"
+                  sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card bg="transparent">
                     <CardBody p={8}>

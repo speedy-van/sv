@@ -203,7 +203,7 @@ viewport={{ once: true }}
                   boxShadow: '0 8px 40px rgba(0, 255, 157, 0.2)',
                   borderColor: 'neon.400',
                 }}
-                transition="all 0.3s ease"
+                sx={{ transition: 'all 0.3s ease' }}
               >
                 <Card bg="transparent">
                   <CardBody p={6} textAlign="center">
@@ -271,20 +271,6 @@ viewport={{ once: true }}
                   borderColor={index === 1 ? "blue.400" : "gray.200"}
                   position="relative"
                 >
-                  {index === 1 && (
-                    <Badge
-                      position="absolute"
-                      top="-12px"
-                      left="50%"
-                      transform="translateX(-50%)"
-                      colorScheme="blue"
-                      borderRadius="full"
-                      px={4}
-                      py={1}
-                    >
-                      Most Popular
-                    </Badge>
-                  )}
                   <Card>
                     <CardBody p={8} textAlign="center">
                     <VStack spacing={6}>
@@ -370,7 +356,7 @@ viewport={{ once: true }}
                   _hover={{
                     borderColor: 'neon.400',
                   }}
-                  transition="all 0.3s ease"
+                  sx={{ transition: 'all 0.3s ease' }}
                 >
                   <Card bg="transparent">
                     <CardBody p={8}>
