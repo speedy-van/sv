@@ -145,7 +145,7 @@ export default function ServicesPage() {
           <MotionBox
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition="0.6s ease-out"
             textAlign="center"
             maxW="4xl"
@@ -172,7 +172,7 @@ viewport={{ once: true }}
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
                 transition={`0.5s ease-out ${index * 0.1}s`}
               >
                 <HStack
@@ -210,7 +210,7 @@ viewport={{ once: true }}
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
                 transition={`0.6s ease-out ${index * 0.1}s`}
                 bg={cardBg}
                 borderRadius="2xl"
@@ -302,7 +302,7 @@ viewport={{ once: true }}
           <MotionBox
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition="0.6s ease-out 0.4s"
             textAlign="center"
             p={12}

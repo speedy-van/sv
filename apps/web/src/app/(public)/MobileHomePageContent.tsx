@@ -353,7 +353,7 @@ const MobileHero: React.FC = () => {
           <MotionBox
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.3 } } as any)}
           >
             <Heading
@@ -376,7 +376,7 @@ viewport={{ once: true }}
           <MotionBox
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.5 } } as any)}
             mt={{ base: 8, md: 0 }}
           >
@@ -398,7 +398,7 @@ viewport={{ once: true }}
           <MotionBox
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.7 } } as any)}
             w="full"
             maxW="500px"

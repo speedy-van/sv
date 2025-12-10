@@ -93,7 +93,7 @@ const OfflinePage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <VStack spacing={4}>
@@ -134,7 +134,7 @@ viewport={{ once: true }}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
           >
             <Badge
@@ -160,7 +160,7 @@ viewport={{ once: true }}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
               transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
             >
               <VStack spacing={6} w="full">
@@ -210,7 +210,7 @@ viewport={{ once: true }}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
           >
             <VStack spacing={4} w="full">
@@ -242,7 +242,7 @@ viewport={{ once: true }}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 0.8 }}
           >
             <VStack spacing={4} w="full" p={6} bg="gray.50" borderRadius="xl">
@@ -279,7 +279,7 @@ viewport={{ once: true }}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 1.0 }}
           >
             <Text fontSize="xs" color="text.tertiary" textAlign="center">

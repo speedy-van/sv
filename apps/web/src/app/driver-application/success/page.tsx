@@ -76,7 +76,7 @@ export default function DriverApplicationSuccessPage() {
         <MotionBox
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-viewport={{ once: true }}
+            viewport={{ once: true }}
           transition="0.5s ease-out"
         >
           <VStack spacing={{ base: 8, md: 12 }} align="stretch">
