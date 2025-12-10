@@ -196,9 +196,9 @@ const testimonials = [
   }
 ];
 
-export default function OfficePage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+export default function OfficeRelocationPage() {
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
     <Box bg={bgColor} minH="100vh" pt={20}>
@@ -216,20 +216,20 @@ export default function OfficePage() {
             <HStack justify="center" mb={6}>
               <Box
                 p={4}
-                bg="blue.100"
-                color="blue.600"
+                bg="neon.400"
                 borderRadius="xl"
+                boxShadow="0 0 20px rgba(0, 255, 157, 0.3)"
               >
-                <Icon as={FiBriefcase} boxSize={12} />
+                <Icon as={FiBriefcase} boxSize={12} color="gray.900" />
               </Box>
             </HStack>
             <Heading
               size="2xl"
               mb={6}
-              bgGradient="linear(to-r, blue.400, blue.600)"
+              bgGradient="linear(to-r, neon.400, green.400)"
               bgClip="text"
             >
-              Office Moving Services
+              Office Relocation Services
             </Heading>
             <Text fontSize="xl" color="text.secondary" lineHeight="tall">
               Professional office relocation services designed for businesses.

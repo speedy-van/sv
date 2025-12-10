@@ -194,9 +194,9 @@ const testimonials = [
   }
 ];
 
-export default function StudentPage() {
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
+export default function StudentMovingPage() {
+  const bgColor = '#0D0D0D';
+  const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
     <Box bg={bgColor} minH="100vh" pt={20}>
@@ -214,17 +214,17 @@ viewport={{ once: true }}
             <HStack justify="center" mb={6}>
               <Box
                 p={4}
-                bg="orange.100"
-                color="orange.600"
+                bg="neon.400"
                 borderRadius="xl"
+                boxShadow="0 0 20px rgba(0, 255, 157, 0.3)"
               >
-                <Icon as={FiBookOpen} boxSize={12} />
+                <Icon as={FiBookOpen} boxSize={12} color="gray.900" />
               </Box>
             </HStack>
             <Heading
               size="2xl"
               mb={6}
-              bgGradient="linear(to-r, orange.400, orange.600)"
+              bgGradient="linear(to-r, neon.400, green.400)"
               bgClip="text"
             >
               Student Moving Services
