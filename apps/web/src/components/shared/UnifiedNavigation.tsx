@@ -319,6 +319,9 @@ export function UnifiedNavigation({
                     More
                   </MenuButton>
                   <MenuList>
+                    <MenuItem as={Link} href="/admin/contact-inquiries" _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                      Contact Inquiries
+                    </MenuItem>
                     <MenuItem as={Link} href={ROUTES.ADMIN_CONTENT} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
                       Content
                     </MenuItem>
