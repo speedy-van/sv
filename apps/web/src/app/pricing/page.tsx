@@ -48,6 +48,7 @@ import {
   FiAlertTriangle,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -247,7 +248,9 @@ export default function PricingPage() {
   const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
-    <Box bg={bgColor} minH="100vh" pt={20}>
+    <>
+      <Header />
+      <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
           {/* Hero Section */}
@@ -699,5 +702,6 @@ export default function PricingPage() {
         </VStack>
       </Container>
     </Box>
+    </>
   );
 }

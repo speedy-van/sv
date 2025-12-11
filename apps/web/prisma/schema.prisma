@@ -1116,6 +1116,22 @@ model Message {
   @@index([status])
 }
 
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  service   String?
+  message   String
+  status    String   @default("pending")
+  source    String   @default("contact_form")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([status])
+  @@index([createdAt])
+}
+
 model PageView {
   id             String         @id @default(cuid())
   sessionId      String

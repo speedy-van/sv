@@ -26,7 +26,7 @@ import {
   AlertIcon,
   Divider,
 } from '@chakra-ui/react';
-import { motion } from 'framer-motion';
+import { motion, isValidMotionProp } from 'framer-motion';
 import {
   FiMessageCircle,
   FiCheckCircle,
@@ -42,6 +42,7 @@ import {
   FiTruck,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
 
 const SUPPORT_PHONE_DISPLAY = '01202 129746';
 const SUPPORT_PHONE_TEL = '01202129746';
@@ -53,7 +54,7 @@ const CONTACT_FORM_CONVERSION_CONFIGURED = false; // TODO: configure a dedicated
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
     if (typeof prop === 'string') {
-      return !prop.startsWith('while') && !prop.startsWith('animate') && !prop.startsWith('initial') && !prop.startsWith('transition') && !prop.startsWith('viewport') && !prop.startsWith('textAlign') && !prop.startsWith('maxW') && !prop.startsWith('mb') && !prop.startsWith('borderRadius');
+      return isValidMotionProp(prop) || shouldForwardProp(prop);
     }
     return true;
   },
@@ -154,8 +155,19 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
       
       // Track Google Ads conversion for lead form submission (disabled until dedicated action exists)
       if (CONTACT_FORM_CONVERSION_CONFIGURED && typeof window !== 'undefined' && (window as any).gtag) {
@@ -191,9 +203,10 @@ export default function ContactPage() {
         message: ''
       });
     } catch (error) {
+      console.error('Contact form error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send message. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to send message. Please try again.',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -204,7 +217,9 @@ export default function ContactPage() {
   };
 
   return (
-    <Box bg={bgColor} minH="100vh" pt={20}>
+    <>
+      <Header />
+      <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
           {/* Hero Section */}
@@ -666,5 +681,6 @@ export default function ContactPage() {
         </VStack>
       </Container>
     </Box>
+    </>
   );
 }
