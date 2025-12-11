@@ -44,6 +44,7 @@ import {
   FiMonitor,
   FiArchive,
   FiArrowRight,
+  FiMapPin,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
@@ -216,28 +217,112 @@ export default function OfficeRelocationPage() {
             textAlign="center"
             maxW="4xl"
           >
-            <HStack justify="center" mb={6}>
+            <HStack justify="center" mb={4}>
               <Box
                 p={4}
-                bg="neon.400"
-                borderRadius="xl"
-                boxShadow="0 0 20px rgba(0, 255, 157, 0.3)"
+                bg="rgba(0,255,157,0.15)"
+                borderRadius="full"
+                border="2px solid"
+                borderColor="neon.400"
+                position="relative"
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  inset: '-10px',
+                  borderRadius: 'full',
+                  bg: 'radial-gradient(circle, rgba(0,255,157,0.3), transparent 70%)',
+                  filter: 'blur(20px)',
+                  zIndex: -1,
+                }}
               >
-                <Icon as={FiBriefcase} boxSize={12} color="gray.900" />
+                <Icon as={FiBriefcase} boxSize={14} color="neon.400" />
               </Box>
             </HStack>
+            <Badge
+              colorScheme="green"
+              variant="solid"
+              fontSize="sm"
+              px={4}
+              py={2}
+              borderRadius="full"
+              mb={4}
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              🏢 Professional & Efficient
+            </Badge>
             <Heading
-              size={{ base: 'xl', md: '2xl' }}
+              size={{ base: '2xl', md: '3xl' }}
               mb={{ base: 4, md: 6 }}
-              bgGradient="linear(to-r, neon.400, green.400)"
+              bgGradient="linear(to-r, white, neon.400, green.300)"
               bgClip="text"
+              fontWeight="extrabold"
             >
               Office Relocation Services
             </Heading>
-            <Text fontSize={{ base: 'md', md: 'xl' }} color="text.secondary" lineHeight="tall">
-              Professional office relocation services designed for businesses.
-              From small offices to large corporate moves, we ensure minimal downtime and maximum efficiency.
+            <Text 
+              fontSize={{ base: 'md', md: 'xl' }} 
+              color="gray.300" 
+              lineHeight="tall"
+              maxW="3xl"
+              mx="auto"
+            >
+              Professional office relocation services designed for{' '}
+              <Box as="span" color="neon.400" fontWeight="semibold">businesses</Box>. From small offices to large corporate moves, we ensure{' '}
+              <Box as="span" color="green.400" fontWeight="semibold">minimal downtime</Box> and{' '}
+              <Box as="span" color="blue.400" fontWeight="semibold">maximum efficiency</Box>.
             </Text>
+            <HStack
+              mt={8}
+              spacing={4}
+              justify="center"
+              flexWrap="wrap"
+            >
+              <Badge
+                colorScheme="green"
+                variant="subtle"
+                fontSize="sm"
+                px={4}
+                py={2}
+                borderRadius="full"
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                <FiShield size={16} />
+                Fully Insured
+              </Badge>
+              <Divider orientation="vertical" h="20px" borderColor="gray.600" />
+              <Badge
+                colorScheme="blue"
+                variant="subtle"
+                fontSize="sm"
+                px={4}
+                py={2}
+                borderRadius="full"
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                <FiUsers size={16} />
+                Expert Team
+              </Badge>
+              <Divider orientation="vertical" h="20px" borderColor="gray.600" />
+              <Badge
+                colorScheme="purple"
+                variant="subtle"
+                fontSize="sm"
+                px={4}
+                py={2}
+                borderRadius="full"
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                <FiClock size={16} />
+                Minimal Downtime
+              </Badge>
+            </HStack>
           </MotionBox>
 
           {/* Business Discount Alert */}
@@ -306,7 +391,25 @@ export default function OfficeRelocationPage() {
           </SimpleGrid>
 
           {/* Moving Scenarios */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={{ base: 6, md: 10 }}
+            bg="rgba(13,13,13,0.6)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.05)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '50%',
+              height: '100%',
+              bgGradient: 'radial(circle at 20% 50%, rgba(0,255,157,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -314,16 +417,53 @@ export default function OfficeRelocationPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={12}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(0,255,157,0.15)"
+                  borderRadius="full"
+                  border="1px solid rgba(0,255,157,0.3)"
+                >
+                  <FiBriefcase size={28} color="rgba(0,255,157,1)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="green"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Flexible Solutions
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, neon.400, green.300)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 Office Move Types
               </Heading>
-              <Text color="text.secondary" fontSize="lg">
-                We handle all sizes of office relocations with specialized expertise.
+              <Text 
+                color="gray.300" 
+                fontSize="lg"
+                maxW="2xl"
+                mx="auto"
+              >
+                We handle <Box as="span" color="neon.400" fontWeight="semibold">all sizes of office relocations</Box> with{' '}
+                <Box as="span" color="green.400" fontWeight="semibold">specialized expertise</Box>.
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} position="relative" zIndex={1}>
               {movingScenarios.map((scenario, index) => (
                 <MotionCard
                   key={index}
@@ -384,7 +524,25 @@ export default function OfficeRelocationPage() {
           </Box>
 
           {/* Pricing Section */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={{ base: 6, md: 10 }}
+            bg="rgba(13,13,13,0.6)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.05)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '50%',
+              height: '100%',
+              bgGradient: 'radial(circle at 80% 50%, rgba(0,255,157,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -392,16 +550,53 @@ export default function OfficeRelocationPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={12}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(0,255,157,0.15)"
+                  borderRadius="full"
+                  border="1px solid rgba(0,255,157,0.3)"
+                >
+                  <FiDollarSign size={28} color="rgba(0,255,157,1)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="green"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Clear & Simple Pricing
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, neon.400, green.300)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 Office Moving Pricing
               </Heading>
-              <Text color="text.secondary" fontSize="lg">
-                Transparent pricing for business relocations. No hidden fees, no surprises.
+              <Text 
+                color="gray.300" 
+                fontSize="lg"
+                maxW="2xl"
+                mx="auto"
+              >
+                <Box as="span" color="neon.400" fontWeight="semibold">Transparent pricing</Box> for business relocations.{' '}
+                <Box as="span" color="green.400" fontWeight="semibold">No hidden fees</Box>, no surprises.
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} position="relative" zIndex={1}>
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}
@@ -476,7 +671,25 @@ export default function OfficeRelocationPage() {
           </Box>
 
           {/* Company Partners */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={{ base: 6, md: 10 }}
+            bg="rgba(13,13,13,0.6)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.05)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '50%',
+              height: '100%',
+              bgGradient: 'radial(circle at 20% 50%, rgba(59,130,246,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -484,12 +697,48 @@ export default function OfficeRelocationPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={8}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(59,130,246,0.15)"
+                  borderRadius="full"
+                  border="1px solid rgba(59,130,246,0.3)"
+                >
+                  <FiBriefcase size={28} color="rgba(59,130,246,1)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="blue"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Industry Leaders
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, blue.300, cyan.400)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 Trusted by Businesses
               </Heading>
-              <Text color="text.secondary" fontSize="lg">
-                We work with companies across various industries.
+              <Text 
+                color="gray.300" 
+                fontSize="lg"
+                maxW="2xl"
+                mx="auto"
+              >
+                We work with <Box as="span" color="blue.400" fontWeight="semibold">companies across various industries</Box>.
               </Text>
             </MotionBox>
 
@@ -498,16 +747,31 @@ export default function OfficeRelocationPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition="0.6s ease-out"
-              bg={cardBg}
+              bg="rgba(26,26,26,0.9)"
               borderRadius="xl"
               boxShadow="lg"
+              border="1px solid rgba(59,130,246,0.2)"
               p={8}
+              position="relative"
+              zIndex={1}
+              _hover={{
+                borderColor: 'blue.400',
+                shadow: '0 12px 40px rgba(59,130,246,0.2)',
+              }}
+              sx={{ transition: 'all 0.3s' }}
             >
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6}>
                 {companies.map((company, index) => (
-                  <VStack key={index} spacing={2}>
-                    <Icon as={FiBriefcase} color="blue.500" boxSize={5} />
-                    <Text fontSize="sm" color="text.secondary" textAlign="center">
+                  <VStack key={index} spacing={3}>
+                    <Box
+                      p={3}
+                      bg="rgba(59,130,246,0.1)"
+                      borderRadius="lg"
+                      border="1px solid rgba(59,130,246,0.2)"
+                    >
+                      <Icon as={FiBriefcase} color="blue.400" boxSize={6} />
+                    </Box>
+                    <Text fontSize="sm" color="gray.300" textAlign="center" fontWeight="medium">
                       {company}
                     </Text>
                   </VStack>
@@ -517,7 +781,25 @@ export default function OfficeRelocationPage() {
           </Box>
 
           {/* Testimonials */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={{ base: 6, md: 10 }}
+            bg="rgba(13,13,13,0.6)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.05)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '50%',
+              height: '100%',
+              bgGradient: 'radial(circle at 80% 50%, rgba(251,191,36,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -525,13 +807,52 @@ export default function OfficeRelocationPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={12}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(251,191,36,0.15)"
+                  borderRadius="full"
+                  border="1px solid rgba(251,191,36,0.3)"
+                >
+                  <FiUsers size={28} color="rgb(250,204,21)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="yellow"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
                 Business Reviews
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, yellow.300, orange.400)"
+                bgClip="text"
+                fontWeight="bold"
+              >
+                What Our Clients Say
               </Heading>
+              <Text 
+                color="gray.300" 
+                fontSize="lg"
+                maxW="2xl"
+                mx="auto"
+              >
+                Real feedback from <Box as="span" color="yellow.400" fontWeight="semibold">satisfied business clients</Box>
+              </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 8 }}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <MotionCard
                   key={index}
@@ -539,29 +860,72 @@ export default function OfficeRelocationPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={`0.5s ease-out ${index * 0.1}s`}
-                  bg={cardBg}
+                  bg="rgba(26,26,26,0.9)"
                   borderRadius="xl"
                   boxShadow="lg"
+                  border="1px solid"
+                  borderColor="rgba(251,191,36,0.2)"
+                  _hover={{
+                    borderColor: 'yellow.400',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(251,191,36,0.2)',
+                  }}
+                  sx={{ transition: 'all 0.3s' }}
                 >
-                  <Card>
-                    <CardBody p={{ base: 5, md: 8 }}>
-                      <VStack spacing={4} align="start">
-                        <HStack>
+                  <Card bg="transparent" border="none" boxShadow="none">
+                    <CardBody p={8}>
+                      <VStack spacing={5} align="start">
+                        <HStack spacing={1}>
                           {[...Array(testimonial.rating)].map((_, i) => (
-                            <Icon key={i} as={FiStar} color="yellow.400" />
+                            <Icon key={i} as={FiStar} color="yellow.400" fill="yellow.400" boxSize={5} />
                           ))}
                         </HStack>
-                        <Text color="text.secondary" fontStyle="italic">
-                          "{testimonial.text}"
-                        </Text>
-                        <VStack align="start" spacing={1}>
-                          <Text fontWeight="bold" color="text.primary">
-                            {testimonial.name}
+                        <Box
+                          p={4}
+                          bg="rgba(251,191,36,0.05)"
+                          borderRadius="lg"
+                          borderLeft="4px solid"
+                          borderColor="yellow.400"
+                        >
+                          <Text 
+                            color="gray.200" 
+                            fontSize="md" 
+                            fontStyle="italic"
+                            lineHeight="tall"
+                          >
+                            "{testimonial.text}"
                           </Text>
-                          <Text fontSize="sm" color="text.secondary">
-                            {testimonial.position} - {testimonial.company}
-                          </Text>
-                        </VStack>
+                        </Box>
+                        <HStack spacing={3}>
+                          <Box
+                            w={10}
+                            h={10}
+                            bg="yellow.500"
+                            borderRadius="full"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="gray.900"
+                            fontWeight="bold"
+                            fontSize="lg"
+                          >
+                            {testimonial.name.charAt(0)}
+                          </Box>
+                          <VStack align="start" spacing={0}>
+                            <Text fontWeight="bold" color="white" fontSize="md">
+                              {testimonial.name}
+                            </Text>
+                            <HStack spacing={2}>
+                              <FiBriefcase size={14} color="rgba(251,191,36,1)" />
+                              <Text fontSize="sm" color="gray.400">
+                                {testimonial.position}
+                              </Text>
+                            </HStack>
+                            <Text fontSize="xs" color="gray.500">
+                              {testimonial.company}
+                            </Text>
+                          </VStack>
+                        </HStack>
                       </VStack>
                     </CardBody>
                   </Card>
@@ -577,46 +941,128 @@ export default function OfficeRelocationPage() {
             viewport={{ once: true }}
             transition="0.6s ease-out 0.4s"
             textAlign="center"
-            p={12}
-            bg="linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 200, 100, 0.2))"
-            borderRadius="2xl"
+            p={{ base: 8, md: 16 }}
+            bgGradient="linear(to-br, rgba(0,255,157,0.15), rgba(34,197,94,0.15))"
+            borderRadius="3xl"
             border="2px solid"
             borderColor="neon.400"
-            boxShadow="0 0 40px rgba(0, 255, 157, 0.3)"
             w="full"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-50%',
+              width: '200%',
+              height: '200%',
+              bgGradient: 'conic(from 0deg, transparent, rgba(0,255,157,0.3), transparent 30%)',
+              animation: 'rotate 8s linear infinite',
+              pointerEvents: 'none',
+            }}
+            sx={{
+              '@keyframes rotate': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg)' },
+              },
+            }}
           >
-            <VStack spacing={6}>
-              <Heading size="xl">Ready to Relocate Your Office?</Heading>
-              <Text fontSize="lg" maxW="2xl">
-                Book your office move today with our experienced team.
-                We handle everything from planning to execution with minimal business disruption.
-              </Text>
-              <HStack spacing={4}>
-                <HeaderButton
-                  variant="glass"
+            <VStack spacing={8} position="relative" zIndex={1}>
+              <Box
+                p={4}
+                bg="rgba(0,255,157,0.2)"
+                borderRadius="full"
+                border="2px solid"
+                borderColor="neon.400"
+                display="inline-flex"
+              >
+                <FiBriefcase size={40} color="rgba(0,255,157,1)" />
+              </Box>
+              <VStack spacing={4}>
+                <Badge
+                  colorScheme="green"
+                  variant="solid"
+                  fontSize="sm"
+                  px={4}
+                  py={2}
+                  borderRadius="full"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                >
+                  🚀 Start Your Office Move
+                </Badge>
+                <Heading 
+                  size="3xl" 
+                  bgGradient="linear(to-r, white, neon.400, green.300)"
+                  bgClip="text"
+                  fontWeight="extrabold"
+                >
+                  Ready to Relocate Your Office?
+                </Heading>
+                <Text 
+                  fontSize="xl" 
+                  maxW="3xl" 
+                  color="gray.200"
+                  lineHeight="tall"
+                >
+                  Book your <Box as="span" color="neon.400" fontWeight="semibold">office move today</Box> with our experienced team. We handle{' '}
+                  <Box as="span" color="green.400" fontWeight="semibold">everything from planning to execution</Box> with{' '}
+                  <Box as="span" color="blue.400" fontWeight="semibold">minimal business disruption</Box>.
+                </Text>
+              </VStack>
+              <HStack spacing={4} flexWrap="wrap" justify="center">
+                <Button
                   size="lg"
                   onClick={() => window.location.href = '/booking-luxury'}
+                  bg="neon.400"
+                  color="gray.900"
+                  fontWeight="bold"
+                  px={8}
+                  py={6}
+                  fontSize="lg"
+                  _hover={{
+                    bg: 'neon.500',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(0,255,157,0.4)',
+                  }}
+                  sx={{ transition: 'all 0.3s' }}
                 >
                   Get Office Quote
-                </HeaderButton>
-                <HeaderButton
-                  variant="outline"
+                </Button>
+                <Button
                   size="lg"
                   onClick={() => window.open('tel:+441202129746')}
-                  borderColor="white"
+                  variant="outline"
+                  borderColor="neon.400"
+                  borderWidth="2px"
                   color="white"
+                  px={8}
+                  py={6}
+                  fontSize="lg"
                   _hover={{
-                    bg: 'rgba(255,255,255,0.1)',
-                    borderColor: 'white',
+                    bg: 'rgba(0,255,157,0.1)',
+                    borderColor: 'neon.500',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(0,255,157,0.2)',
                   }}
                   leftIcon={<FiPhone />}
+                  sx={{ transition: 'all 0.3s' }}
                 >
                   Call Now
-                </HeaderButton>
+                </Button>
               </HStack>
-              <Text fontSize="sm" opacity={0.9}>
-                🏢 Professional office moving services with project management
-              </Text>
+              <HStack 
+                spacing={3}
+                p={4}
+                bg="rgba(0,255,157,0.1)"
+                borderRadius="xl"
+                border="1px solid rgba(0,255,157,0.3)"
+              >
+                <FiCheckCircle size={24} color="rgba(0,255,157,1)" />
+                <Text fontSize="md" color="white" fontWeight="semibold">
+                  🏢 Project Management • 📦 Equipment Care • ⚡ Quick Setup
+                </Text>
+              </HStack>
             </VStack>
           </MotionBox>
         </VStack>

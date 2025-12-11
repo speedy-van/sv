@@ -10,7 +10,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function PrivacyPage() {
   return (
-    <Container maxW="4xl" py={{ base: 8, md: 14 }}>
+    <Container maxW="4xl" py={{ base: 20, md: 32 }} mt={{ base: 16, md: 20 }}>
       <VStack align="start" spacing={6}>
         <Heading as="h1" size="lg" color="white">
           Privacy Policy

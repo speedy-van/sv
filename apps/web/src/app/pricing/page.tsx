@@ -46,6 +46,7 @@ import {
   FiBookOpen,
   FiSettings,
   FiAlertTriangle,
+  FiMapPin,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
@@ -261,31 +262,89 @@ export default function PricingPage() {
             transition="0.6s ease-out"
             textAlign="center"
             maxW="4xl"
+            position="relative"
           >
             <HStack justify="center" mb={6}>
               <Box
-                p={4}
-                bg="rgba(59, 130, 246, 0.2)"
+                p={5}
+                bg="rgba(0,255,157,0.15)"
                 color="neon.400"
-                borderRadius="xl"
-                border="1px solid"
-                borderColor="rgba(59, 130, 246, 0.3)"
+                borderRadius="2xl"
+                border="2px solid"
+                borderColor="rgba(0,255,157,0.4)"
+                position="relative"
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  top: '-2px',
+                  left: '-2px',
+                  right: '-2px',
+                  bottom: '-2px',
+                  borderRadius: '2xl',
+                  background: 'linear-gradient(135deg, rgba(0,255,157,0.5), rgba(59,130,246,0.5))',
+                  filter: 'blur(10px)',
+                  opacity: 0.5,
+                  zIndex: -1,
+                }}
               >
-                <Icon as={FiDollarSign} boxSize={12} />
+                <Icon as={FiDollarSign} boxSize={14} />
               </Box>
             </HStack>
+            <Badge
+              colorScheme="green"
+              variant="subtle"
+              fontSize="sm"
+              px={4}
+              py={1}
+              borderRadius="full"
+              mb={4}
+              textTransform="none"
+            >
+              ✓ No Hidden Charges
+            </Badge>
             <Heading
-              size="2xl"
+              size="3xl"
               mb={6}
-              bgGradient="linear(to-r, neon.400, green.400)"
+              bgGradient="linear(to-r, neon.400, green.300, blue.400)"
               bgClip="text"
+              fontWeight="extrabold"
             >
               Transparent Pricing
             </Heading>
-            <Text fontSize="xl" color="text.secondary" lineHeight="tall">
-              No hidden fees, no surprises. Get a clear, upfront quote for your move 
-              with our transparent pricing structure. All prices include insurance and professional service.
+            <Text fontSize="xl" color="gray.300" lineHeight="tall" mb={6}>
+              <Box as="span" color="red.400" fontWeight="bold">No hidden fees</Box>, <Box as="span" color="red.400" fontWeight="bold">no surprises</Box>. Get a clear, upfront quote for your move 
+              with our transparent pricing structure.
             </Text>
+            <HStack 
+              justify="center" 
+              spacing={6} 
+              flexWrap="wrap"
+              p={5}
+              bg="rgba(0,255,157,0.05)"
+              borderRadius="xl"
+              border="1px solid rgba(0,255,157,0.2)"
+            >
+              <VStack spacing={1}>
+                <HStack spacing={2}>
+                  <FiShield color="rgba(0,255,157,1)" size={20} />
+                  <Text color="white" fontSize="sm" fontWeight="semibold">Insurance Included</Text>
+                </HStack>
+              </VStack>
+              <Divider orientation="vertical" h={8} borderColor="rgba(255,255,255,0.2)" display={{ base: 'none', md: 'block' }} />
+              <VStack spacing={1}>
+                <HStack spacing={2}>
+                  <FiCheckCircle color="rgba(0,255,157,1)" size={20} />
+                  <Text color="white" fontSize="sm" fontWeight="semibold">Professional Service</Text>
+                </HStack>
+              </VStack>
+              <Divider orientation="vertical" h={8} borderColor="rgba(255,255,255,0.2)" display={{ base: 'none', md: 'block' }} />
+              <VStack spacing={1}>
+                <HStack spacing={2}>
+                  <FiStar color="rgba(0,255,157,1)" size={20} />
+                  <Text color="white" fontSize="sm" fontWeight="semibold">Fixed Rates</Text>
+                </HStack>
+              </VStack>
+            </HStack>
           </MotionBox>
 
           {/* Pricing Alert */}
@@ -539,7 +598,25 @@ export default function PricingPage() {
           </Tabs>
 
           {/* Pricing Factors */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={8}
+            bg="rgba(13,13,13,0.8)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.1)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgGradient: 'radial(circle at 50% 0%, rgba(0,255,157,0.08), transparent 70%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -547,16 +624,54 @@ export default function PricingPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={12}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(0,255,157,0.1)"
+                  borderRadius="full"
+                  border="1px solid rgba(0,255,157,0.3)"
+                >
+                  <FiAlertTriangle size={28} color="rgba(0,255,157,1)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="green"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Pricing Breakdown
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, neon.400, green.300)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 What Affects Your Price?
               </Heading>
-              <Text color="text.secondary" fontSize="lg">
-                Our pricing is based on several factors to ensure fair and transparent costs.
+              <Text 
+                color="gray.300" 
+                fontSize="lg" 
+                maxW="2xl" 
+                mx="auto"
+                lineHeight="tall"
+              >
+                Our pricing is based on <Box as="span" color="neon.400" fontWeight="semibold">several factors</Box> to ensure{' '}
+                <Box as="span" color="green.400" fontWeight="semibold">fair and transparent costs</Box>.
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} position="relative" zIndex={1}>
               {pricingFactors.map((factor, index) => (
                 <MotionCard
                   key={index}
@@ -564,32 +679,62 @@ export default function PricingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
                   transition={`0.5s ease-out ${index * 0.1}s`}
-                  bg={cardBg}
+                  bg="rgba(26,26,26,0.9)"
                   borderRadius="xl"
                   boxShadow="lg"
+                  border="1px solid"
+                  borderColor="rgba(0,255,157,0.2)"
+                  _hover={{
+                    borderColor: 'neon.400',
+                    transform: 'translateY(-8px)',
+                    shadow: '0 12px 40px rgba(0,255,157,0.2)',
+                  }}
+                  sx={{ transition: 'all 0.3s' }}
                 >
-                  <Card>
-                    <CardBody p={6} textAlign="center">
+                  <Card bg="transparent" border="none" boxShadow="none">
+                    <CardBody p={6} textAlign="center" bg="transparent">
                     <VStack spacing={4}>
                       <Box
-                        p={3}
-                        bg="rgba(251, 191, 36, 0.2)"
-                        color="orange.400"
-                        borderRadius="lg"
+                        p={4}
+                        bgGradient="linear(to-br, rgba(0,255,157,0.2), rgba(59,130,246,0.2))"
+                        color="neon.400"
+                        borderRadius="xl"
                         border="1px solid"
-                        borderColor="rgba(251, 191, 36, 0.3)"
+                        borderColor="rgba(0,255,157,0.3)"
+                        position="relative"
+                        _before={{
+                          content: '""',
+                          position: 'absolute',
+                          top: '-2px',
+                          left: '-2px',
+                          right: '-2px',
+                          bottom: '-2px',
+                          borderRadius: 'xl',
+                          background: 'linear-gradient(135deg, rgba(0,255,157,0.3), rgba(59,130,246,0.3))',
+                          filter: 'blur(8px)',
+                          opacity: 0.6,
+                          zIndex: -1,
+                        }}
                       >
-                        <Icon as={factor.icon} boxSize={6} />
+                        <Icon as={factor.icon} boxSize={8} />
                       </Box>
-                      <Heading size="md" color="text.primary">
+                      <Heading size="md" color="white" fontWeight="bold">
                         {factor.factor}
                       </Heading>
-                      <Text fontSize="sm" color="text.secondary" textAlign="center">
+                      <Text fontSize="sm" color="gray.300" textAlign="center" lineHeight="tall">
                         {factor.description}
                       </Text>
-                      <Text fontSize="lg" fontWeight="bold" color="orange.500">
+                      <Badge
+                        colorScheme="green"
+                        variant="solid"
+                        fontSize="md"
+                        px={4}
+                        py={2}
+                        borderRadius="full"
+                        fontWeight="bold"
+                      >
                         {factor.impact}
-                      </Text>
+                      </Badge>
                     </VStack>
                   </CardBody>
                   </Card>
@@ -599,7 +744,25 @@ export default function PricingPage() {
           </Box>
 
           {/* Testimonials */}
-          <Box w="full">
+          <Box 
+            w="full"
+            p={{ base: 6, md: 10 }}
+            bg="rgba(13,13,13,0.6)"
+            borderRadius="2xl"
+            border="1px solid rgba(255,255,255,0.05)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '50%',
+              height: '100%',
+              bgGradient: 'radial(circle at 80% 50%, rgba(59,130,246,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
+          >
             <MotionBox
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -607,13 +770,52 @@ export default function PricingPage() {
               transition="0.6s ease-out"
               textAlign="center"
               mb={12}
+              position="relative"
+              zIndex={1}
             >
-              <Heading size="xl" mb={4} color="text.primary">
+              <HStack justify="center" mb={4}>
+                <Box
+                  p={3}
+                  bg="rgba(59,130,246,0.15)"
+                  borderRadius="full"
+                  border="1px solid rgba(59,130,246,0.3)"
+                >
+                  <FiStar size={28} color="rgb(250,204,21)" />
+                </Box>
+              </HStack>
+              <Badge
+                colorScheme="yellow"
+                variant="subtle"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                mb={4}
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Customer Reviews
+              </Badge>
+              <Heading 
+                size="2xl" 
+                mb={4}
+                bgGradient="linear(to-r, white, blue.300, purple.400)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 What Our Customers Say About Our Pricing
               </Heading>
+              <Text 
+                color="gray.300" 
+                fontSize="lg"
+                maxW="2xl"
+                mx="auto"
+              >
+                Real feedback from real customers who love our <Box as="span" color="blue.400" fontWeight="semibold">transparent pricing</Box>
+              </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <MotionCard
                   key={index}
@@ -621,29 +823,81 @@ export default function PricingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
                   transition={`0.5s ease-out ${index * 0.1}s`}
-                  bg={cardBg}
+                  bg="rgba(26,26,26,0.9)"
                   borderRadius="xl"
                   boxShadow="lg"
+                  border="1px solid"
+                  borderColor="rgba(59,130,246,0.2)"
+                  _hover={{
+                    borderColor: 'blue.400',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(59,130,246,0.2)',
+                  }}
+                  sx={{ transition: 'all 0.3s' }}
                 >
                   <Card bg="transparent" border="none" boxShadow="none">
                     <CardBody p={8} bg="transparent">
-                    <VStack spacing={4} align="start">
-                      <HStack>
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Icon key={i} as={FiStar} color="yellow.400" />
-                        ))}
+                    <VStack spacing={5} align="start">
+                      <HStack spacing={3} justify="space-between" w="full">
+                        <HStack spacing={1}>
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Icon key={i} as={FiStar} color="yellow.400" fill="yellow.400" boxSize={5} />
+                          ))}
+                        </HStack>
+                        <Badge
+                          colorScheme="blue"
+                          variant="subtle"
+                          fontSize="xs"
+                          px={3}
+                          py={1}
+                          borderRadius="full"
+                        >
+                          {testimonial.service}
+                        </Badge>
                       </HStack>
-                      <Text color="text.secondary" fontStyle="italic">
-                        "{testimonial.text}"
-                      </Text>
-                      <VStack align="start" spacing={1}>
-                        <Text fontWeight="bold" color="text.primary">
-                          {testimonial.name}
+                      <Box
+                        p={4}
+                        bg="rgba(59,130,246,0.05)"
+                        borderRadius="lg"
+                        borderLeft="4px solid"
+                        borderColor="blue.400"
+                      >
+                        <Text 
+                          color="gray.200" 
+                          fontSize="md" 
+                          fontStyle="italic"
+                          lineHeight="tall"
+                        >
+                          "{testimonial.text}"
                         </Text>
-                        <Text fontSize="sm" color="text.secondary">
-                          {testimonial.location} • {testimonial.service}
-                        </Text>
-                      </VStack>
+                      </Box>
+                      <HStack spacing={3}>
+                        <Box
+                          w={10}
+                          h={10}
+                          bg="blue.500"
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          color="white"
+                          fontWeight="bold"
+                          fontSize="lg"
+                        >
+                          {testimonial.name.charAt(0)}
+                        </Box>
+                        <VStack align="start" spacing={0}>
+                          <Text fontWeight="bold" color="white" fontSize="md">
+                            {testimonial.name}
+                          </Text>
+                          <HStack spacing={2}>
+                            <FiMapPin size={14} color="rgba(0,255,157,1)" />
+                            <Text fontSize="sm" color="gray.400">
+                              {testimonial.location}
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </HStack>
                     </VStack>
                   </CardBody>
                   </Card>
@@ -659,23 +913,90 @@ export default function PricingPage() {
             viewport={{ once: true }}
             transition="0.6s ease-out 0.4s"
             textAlign="center"
-            p={12}
-            bg="linear-gradient(135deg, neon.400, green.400)"
-            borderRadius="2xl"
-            color="white"
+            p={{ base: 8, md: 16 }}
+            bgGradient="linear(to-br, rgba(0,255,157,0.15), rgba(59,130,246,0.15))"
+            borderRadius="3xl"
+            border="2px solid"
+            borderColor="neon.400"
             w="full"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              left: '-50%',
+              width: '200%',
+              height: '200%',
+              bgGradient: 'conic(from 0deg, transparent, rgba(0,255,157,0.3), transparent 30%)',
+              animation: 'rotate 8s linear infinite',
+              pointerEvents: 'none',
+            }}
+            sx={{
+              '@keyframes rotate': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg)' },
+              },
+            }}
           >
-            <VStack spacing={6}>
-              <Heading size="xl">Get Your Free Quote Today</Heading>
-              <Text fontSize="lg" maxW="2xl">
-                No obligation, no hidden fees. Get an instant quote for your move 
-                and see exactly what you'll pay before you book.
-              </Text>
-              <HStack spacing={4}>
+            <VStack spacing={8} position="relative" zIndex={1}>
+              <Box
+                p={4}
+                bg="rgba(0,255,157,0.2)"
+                borderRadius="full"
+                border="2px solid"
+                borderColor="neon.400"
+                display="inline-flex"
+              >
+                <FiDollarSign size={40} color="rgba(0,255,157,1)" />
+              </Box>
+              <VStack spacing={4}>
+                <Badge
+                  colorScheme="green"
+                  variant="solid"
+                  fontSize="sm"
+                  px={4}
+                  py={2}
+                  borderRadius="full"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                >
+                  Free Quote • No Obligation
+                </Badge>
+                <Heading 
+                  size="3xl" 
+                  bgGradient="linear(to-r, white, neon.400, green.300)"
+                  bgClip="text"
+                  fontWeight="extrabold"
+                >
+                  Get Your Free Quote Today
+                </Heading>
+                <Text 
+                  fontSize="xl" 
+                  maxW="3xl" 
+                  color="gray.200"
+                  lineHeight="tall"
+                >
+                  <Box as="span" color="red.400" fontWeight="bold">No obligation</Box>, <Box as="span" color="red.400" fontWeight="bold">no hidden fees</Box>. Get an instant quote for your move 
+                  and see <Box as="span" color="neon.400" fontWeight="semibold">exactly what you'll pay</Box> before you book.
+                </Text>
+              </VStack>
+              <HStack spacing={4} flexWrap="wrap" justify="center">
                 <HeaderButton
                   variant="glass"
                   size="lg"
                   onClick={() => window.location.href = '/booking-luxury'}
+                  bg="neon.400"
+                  color="gray.900"
+                  fontWeight="bold"
+                  px={8}
+                  py={6}
+                  fontSize="lg"
+                  _hover={{
+                    bg: 'neon.500',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(0,255,157,0.4)',
+                  }}
                 >
                   Get Free Quote
                 </HeaderButton>
@@ -683,20 +1004,35 @@ export default function PricingPage() {
                   variant="outline"
                   size="lg"
                   onClick={() => window.open('tel:+441202129746')}
-                  borderColor="white"
+                  borderColor="neon.400"
                   color="white"
+                  borderWidth="2px"
+                  px={8}
+                  py={6}
+                  fontSize="lg"
                   _hover={{
-                    bg: 'rgba(255,255,255,0.1)',
-                    borderColor: 'white',
+                    bg: 'rgba(0,255,157,0.1)',
+                    borderColor: 'neon.500',
+                    transform: 'translateY(-4px)',
+                    shadow: '0 12px 40px rgba(0,255,157,0.2)',
                   }}
                   leftIcon={<FiPhone />}
                 >
                   Call Now
                 </HeaderButton>
               </HStack>
-              <Text fontSize="sm" opacity={0.9}>
-                💡 All quotes include insurance and professional service
-              </Text>
+              <HStack 
+                spacing={3}
+                p={4}
+                bg="rgba(0,255,157,0.1)"
+                borderRadius="xl"
+                border="1px solid rgba(0,255,157,0.3)"
+              >
+                <FiShield size={24} color="rgba(0,255,157,1)" />
+                <Text fontSize="md" color="white" fontWeight="semibold">
+                  💡 All quotes include insurance and professional service
+                </Text>
+              </HStack>
             </VStack>
           </MotionBox>
         </VStack>
