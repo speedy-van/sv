@@ -462,14 +462,20 @@ export default function RefundsPage() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
+                      <MenuList bg="gray.800" borderColor="gray.700">
                         <MenuItem
                           icon={<FiEye />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleViewRefund(refund)}
                         >
                           View Details
                         </MenuItem>
-                        <MenuItem icon={<FiDownload />}>
+                        <MenuItem
+                          icon={<FiDownload />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
                           Download Receipt
                         </MenuItem>
                       </MenuList>

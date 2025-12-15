@@ -178,9 +178,9 @@ export function AuditTrailViewer() {
             >
               تصدير
             </MenuButton>
-            <MenuList>
-              <MenuItem onClick={() => exportLogs('csv')}>تصدير CSV</MenuItem>
-              <MenuItem onClick={() => exportLogs('json')}>تصدير JSON</MenuItem>
+            <MenuList bg="gray.800" borderColor="gray.700">
+              <MenuItem bg="gray.800" _hover={{ bg: 'gray.700' }} onClick={() => exportLogs('csv')}>تصدير CSV</MenuItem>
+              <MenuItem bg="gray.800" _hover={{ bg: 'gray.700' }} onClick={() => exportLogs('json')}>تصدير JSON</MenuItem>
             </MenuList>
           </Menu>
           <Button
@@ -339,8 +339,8 @@ export function AuditTrailViewer() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
-                        <MenuItem icon={<Icon as={FiEye} />}>
+                      <MenuList bg="gray.800" borderColor="gray.700">
+                        <MenuItem bg="gray.800" _hover={{ bg: 'gray.700' }} icon={<Icon as={FiEye} />}>
                           عرض التفاصيل الكاملة
                         </MenuItem>
                       </MenuList>

@@ -261,17 +261,37 @@ export function UnifiedNavigation({
                   >
                     Drivers
                   </MenuButton>
-                  <MenuList>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVERS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                  <MenuList bg="gray.800" borderColor="gray.700">
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_DRIVERS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Drivers
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_APPLICATIONS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_DRIVER_APPLICATIONS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Driver Applications
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_SCHEDULE} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_DRIVER_SCHEDULE}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Driver Schedule
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_DRIVER_EARNINGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_DRIVER_EARNINGS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Driver Earnings
                     </MenuItem>
                   </MenuList>
@@ -291,14 +311,29 @@ export function UnifiedNavigation({
                   >
                     Staff
                   </MenuButton>
-                  <MenuList>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                  <MenuList bg="gray.800" borderColor="gray.700">
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_STAFF}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Staff
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF_ATTENDANCE} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_STAFF_ATTENDANCE}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Staff Attendance
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_STAFF_REPORTS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_STAFF_REPORTS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Staff Reports
                     </MenuItem>
                   </MenuList>
@@ -318,23 +353,53 @@ export function UnifiedNavigation({
                   >
                     More
                   </MenuButton>
-                  <MenuList>
-                    <MenuItem as={Link} href="/admin/contact-inquiries" _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                  <MenuList bg="gray.800" borderColor="gray.700">
+                    <MenuItem
+                      as={Link}
+                      href="/admin/contact-inquiries"
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Contact Inquiries
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_CONTENT} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_CONTENT}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Content
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_TRACKING} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_TRACKING}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Tracking
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_CHAT} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_CHAT}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Chat
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_LOGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_LOGS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Logs
                     </MenuItem>
-                    <MenuItem as={Link} href={ROUTES.ADMIN_SETTINGS} _hover={{ bg: 'rgba(0,194,255,0.06)' }}>
+                    <MenuItem
+                      as={Link}
+                      href={ROUTES.ADMIN_SETTINGS}
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                    >
                       Settings
                     </MenuItem>
                   </MenuList>

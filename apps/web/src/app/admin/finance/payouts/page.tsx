@@ -460,9 +460,11 @@ export default function PayoutsPage() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
+                      <MenuList bg="gray.800" borderColor="gray.700">
                         <MenuItem
                           icon={<FiEye />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleViewPayout(payout)}
                         >
                           View Details
@@ -470,12 +472,18 @@ export default function PayoutsPage() {
                         {payout.status === 'pending' && (
                           <MenuItem
                             icon={<FiCheck />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleProcessPayout(payout.id)}
                           >
                             Process Payout
                           </MenuItem>
                         )}
-                        <MenuItem icon={<FiDownload />}>
+                        <MenuItem
+                          icon={<FiDownload />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
                           Download Receipt
                         </MenuItem>
                       </MenuList>

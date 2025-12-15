@@ -319,15 +319,19 @@ const AdminManager: React.FC<AdminManagerProps> = ({ currentUserId }) => {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
+                      <MenuList bg="gray.800" borderColor="gray.700">
                         <MenuItem
                           icon={<FiEdit />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleEditUser(user)}
                         >
                           Edit User
                         </MenuItem>
                         <MenuItem
                           icon={<FiTrash2 />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleDeleteUser(user.id)}
                           color="red.500"
                         >

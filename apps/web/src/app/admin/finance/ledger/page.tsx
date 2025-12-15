@@ -537,14 +537,22 @@ export default function LedgerPage() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
+                      <MenuList bg="gray.800" borderColor="gray.700">
                         <MenuItem
                           icon={<FiEye />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleViewEntry(entry)}
                         >
                           View Details
                         </MenuItem>
-                        <MenuItem icon={<FiDownload />}>Export Entry</MenuItem>
+                        <MenuItem
+                          icon={<FiDownload />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
+                          Export Entry
+                        </MenuItem>
                       </MenuList>
                     </Menu>
                   </Td>

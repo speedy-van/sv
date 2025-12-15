@@ -1289,33 +1289,43 @@ export function OrdersTable({
                           variant="ghost"
                           size="sm"
                         />
-                        <MenuList>
+                        <MenuList bg="gray.800" borderColor="gray.700">
                           <MenuItem
                             icon={<FaEye />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleViewOrder(order.reference)}
                           >
                             View Details
                           </MenuItem>
                           <MenuItem
                             icon={<FaEdit />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleBulkAction('edit')}
                           >
                             Edit Order
                           </MenuItem>
                           <MenuItem
                             icon={<FaUser />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleBulkAction('assign')}
                           >
                             Assign Driver
                           </MenuItem>
                           <MenuItem
                             icon={<FaEnvelope />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleBulkAction('email')}
                           >
                             Email Customer
                           </MenuItem>
                           <MenuItem
                             icon={<FaTruck />}
+                            bg="gray.800"
+                            _hover={{ bg: 'gray.700' }}
                             onClick={() => handleOpenAssignModal(order)}
                             color="blue.500"
                           >
@@ -1324,6 +1334,8 @@ export function OrdersTable({
                           {order.driver && (
                             <MenuItem
                               icon={<FaUserSlash />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => handleOpenRemoveModal(order)}
                               color="red.500"
                             >
@@ -1333,6 +1345,8 @@ export function OrdersTable({
                           {order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && (
                             <MenuItem
                               icon={<FaTrash />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => handleCancelOrder(order)}
                               color="red.600"
                             >
