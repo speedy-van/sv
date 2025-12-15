@@ -3,7 +3,8 @@
     "private":  true,
     "version":  "1.0.0",
     "scripts":  {
-                    "prebuild":  "prisma db push --accept-data-loss --schema=./prisma/schema.prisma && prisma generate --schema=./prisma/schema.prisma",
+                    "prebuild":  "prisma generate --schema=./prisma/schema.prisma",
+                    "postdeploy":  "prisma db push --accept-data-loss --schema=./prisma/schema.prisma",
                     "dev":  "next dev -H 0.0.0.0",
                     "dev:clean":  "pnpm run clean:cache \u0026 pnpm run dev",
                     "clean:cache":  "powershell -Command \"Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force .next/server; Set-Content -Path .next/server/pages-manifest.json -Value \u0027{}\u0027; Set-Content -Path .next/server/app-paths-manifest.json -Value \u0027{}\u0027\"",
