@@ -411,9 +411,11 @@ export default function TeamSettings() {
                             variant="ghost"
                             size="sm"
                           />
-                          <MenuList>
+                          <MenuList bg="gray.800" borderColor="gray.700">
                             <MenuItem
                               icon={<FiEdit />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => handleEditUser(user)}
                             >
                               Edit
@@ -421,6 +423,8 @@ export default function TeamSettings() {
                             <MenuItem
                               icon={<FiTrash2 />}
                               color="red.500"
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => handleDeleteUser(user.id)}
                             >
                               Remove

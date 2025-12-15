@@ -412,15 +412,19 @@ export default function PeoplePage() {
                                     variant="ghost"
                                     size="sm"
                                   />
-                                  <MenuList>
+                                  <MenuList bg="gray.800" borderColor="gray.700">
                                     <MenuItem
                                       icon={<FiEye />}
+                                      bg="gray.800"
+                                      _hover={{ bg: 'gray.700' }}
                                       onClick={() => router.push(`/admin/drivers/${driver.id}`)}
                                     >
                                       View Details
                                     </MenuItem>
                                     <MenuItem
                                       icon={<FiEdit />}
+                                      bg="gray.800"
+                                      _hover={{ bg: 'gray.700' }}
                                       onClick={() => router.push(`/admin/drivers/${driver.id}?action=edit`)}
                                     >
                                       Edit Driver
@@ -491,9 +495,11 @@ export default function PeoplePage() {
                                     variant="ghost"
                                     size="sm"
                                   />
-                                  <MenuList>
+                                  <MenuList bg="gray.800" borderColor="gray.700">
                                     <MenuItem
                                       icon={<FiEye />}
+                                      bg="gray.800"
+                                      _hover={{ bg: 'gray.700' }}
                                       onClick={() => router.push(`/admin/drivers/applications/${application.id}`)}
                                     >
                                       Review Application
@@ -564,15 +570,19 @@ export default function PeoplePage() {
                                     variant="ghost"
                                     size="sm"
                                   />
-                                  <MenuList>
+                                  <MenuList bg="gray.800" borderColor="gray.700">
                                     <MenuItem
                                       icon={<FiEye />}
+                                      bg="gray.800"
+                                      _hover={{ bg: 'gray.700' }}
                                       onClick={() => router.push(`/admin/customers/${customer.id}`)}
                                     >
                                       View Profile
                                     </MenuItem>
                                     <MenuItem
                                       icon={<FiMail />}
+                                      bg="gray.800"
+                                      _hover={{ bg: 'gray.700' }}
                                       onClick={() => window.open(`mailto:${customer.email}`)}
                                     >
                                       Send Email

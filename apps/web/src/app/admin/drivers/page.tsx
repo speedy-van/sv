@@ -551,9 +551,11 @@ export default function AdminDriversPage() {
                             size="sm"
                             onClick={e => e.stopPropagation()}
                           />
-                          <MenuList>
+                          <MenuList bg="gray.800" borderColor="gray.700">
                             <MenuItem
                               icon={<FiEye />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={e => {
                                 e.stopPropagation();
                                 setSelectedDriver(driver);
@@ -564,6 +566,8 @@ export default function AdminDriversPage() {
                             </MenuItem>
                             <MenuItem
                               icon={<FiSettings />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={e => {
                                 e.stopPropagation();
                                 // Open settings modal
@@ -599,6 +603,8 @@ export default function AdminDriversPage() {
                             )}
                             <MenuItem
                               icon={<FiRefreshCw />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={e => {
                                 e.stopPropagation();
                                 handleDriverAction('reset-device', driver.id);
@@ -609,6 +615,8 @@ export default function AdminDriversPage() {
                             <MenuItem
                               icon={<FiLogOut />}
                               color="red.500"
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={e => {
                                 e.stopPropagation();
                                 handleDriverAction('force-logout', driver.id);

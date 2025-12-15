@@ -333,9 +333,11 @@ export default function AdminStaffPage() {
                             variant="ghost"
                             size="sm"
                           />
-                          <MenuList>
+                          <MenuList bg="gray.800" borderColor="gray.700">
                             <MenuItem
                               icon={<FiEdit />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => {
                                 setSelectedStaff(s);
                                 setIsEditModalOpen(true);
@@ -345,6 +347,8 @@ export default function AdminStaffPage() {
                             </MenuItem>
                             <MenuItem
                               icon={<FiClock />}
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => {
                                 setSelectedStaff(s);
                                 setIsRotaModalOpen(true);
@@ -356,6 +360,8 @@ export default function AdminStaffPage() {
                             <MenuItem
                               icon={<FiTrash2 />}
                               color="red.500"
+                              bg="gray.800"
+                              _hover={{ bg: 'gray.700' }}
                               onClick={() => {
                                 setSelectedStaff(s);
                                 onDeleteOpen();

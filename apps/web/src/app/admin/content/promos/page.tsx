@@ -440,12 +440,28 @@ export default function PromotionsPage() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
-                        <MenuItem icon={<FiEdit />} onClick={() => handleEdit(promo)}>
+                      <MenuList bg="gray.800" borderColor="gray.700">
+                        <MenuItem
+                          icon={<FiEdit />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                          onClick={() => handleEdit(promo)}
+                        >
                           Edit
                         </MenuItem>
-                        <MenuItem icon={<FiEye />}>View Details</MenuItem>
-                        <MenuItem icon={<FiTrash2 />} color="red.500">
+                        <MenuItem
+                          icon={<FiEye />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
+                          View Details
+                        </MenuItem>
+                        <MenuItem
+                          icon={<FiTrash2 />}
+                          color="red.500"
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
                           Delete
                         </MenuItem>
                       </MenuList>

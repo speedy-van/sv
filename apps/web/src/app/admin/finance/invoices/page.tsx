@@ -429,20 +429,30 @@ export default function InvoicesPage() {
                         variant="ghost"
                         size="sm"
                       />
-                      <MenuList>
+                      <MenuList bg="gray.800" borderColor="gray.700">
                         <MenuItem
                           icon={<FiEye />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleViewInvoice(invoice)}
                         >
                           View Details
                         </MenuItem>
                         <MenuItem
                           icon={<FiDownload />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
                           onClick={() => handleGeneratePDF(invoice)}
                         >
                           Download PDF
                         </MenuItem>
-                        <MenuItem icon={<FiMail />}>Send to Customer</MenuItem>
+                        <MenuItem
+                          icon={<FiMail />}
+                          bg="gray.800"
+                          _hover={{ bg: 'gray.700' }}
+                        >
+                          Send to Customer
+                        </MenuItem>
                         <MenuItem icon={<FiPrinter />}>Print</MenuItem>
                       </MenuList>
                     </Menu>

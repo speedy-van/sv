@@ -468,21 +468,47 @@ export default function RouteDetailsPage() {
               >
                 Actions
               </MenuButton>
-              <MenuList>
-                <MenuItem icon={<FiSettings />} onClick={onStatusModalOpen}>
+              <MenuList bg="gray.800" borderColor="gray.700">
+                <MenuItem
+                  icon={<FiSettings />}
+                  bg="gray.800"
+                  _hover={{ bg: 'gray.700' }}
+                  onClick={onStatusModalOpen}
+                >
                   Force Change Status
                 </MenuItem>
-                <MenuItem icon={<FiUser />} onClick={onDriverModalOpen}>
+                <MenuItem
+                  icon={<FiUser />}
+                  bg="gray.800"
+                  _hover={{ bg: 'gray.700' }}
+                  onClick={onDriverModalOpen}
+                >
                   Reassign Driver
                 </MenuItem>
-                <MenuItem icon={<FiRefreshCw />} onClick={loadRouteDetails}>
+                <MenuItem
+                  icon={<FiRefreshCw />}
+                  bg="gray.800"
+                  _hover={{ bg: 'gray.700' }}
+                  onClick={loadRouteDetails}
+                >
                   Refresh Data
                 </MenuItem>
-                <MenuItem icon={<FiBarChart2 />} onClick={loadAnalytics}>
+                <MenuItem
+                  icon={<FiBarChart2 />}
+                  bg="gray.800"
+                  _hover={{ bg: 'gray.700' }}
+                  onClick={loadAnalytics}
+                >
                   Load Analytics
                 </MenuItem>
                 <Divider />
-                <MenuItem icon={<FiTrash2 />} onClick={onDeleteModalOpen} color="red.500">
+                <MenuItem
+                  icon={<FiTrash2 />}
+                  bg="gray.800"
+                  _hover={{ bg: 'gray.700' }}
+                  onClick={onDeleteModalOpen}
+                  color="red.500"
+                >
                   Cancel Route
                 </MenuItem>
               </MenuList>
