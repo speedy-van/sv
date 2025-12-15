@@ -740,7 +740,7 @@ export default function ContactPage() {
                         }}
                         sx={{ transition: 'all 0.3s' }}
                       >
-                        Call Now: {SUPPORT_PHONE_DISPLAY}
+                        <span>Call Now: {SUPPORT_PHONE_DISPLAY}</span>
                       </Button>
                       <Button
                         size="lg"
