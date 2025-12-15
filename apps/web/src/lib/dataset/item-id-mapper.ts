@@ -56,6 +56,25 @@ export function findDatasetItemById(
   );
   if (match) return match;
   
+  // Try fuzzy match - strip common suffixes/prefixes from dataset IDs
+  // Dataset IDs often have format: Category_Subcategory_item_jpg_weight
+  // Frontend IDs are simpler: item or item_weight
+  match = dataset.items.find(item => {
+    const datasetIdParts = item.id.toLowerCase().split('_');
+    const searchIdParts = normalizedId.split('_');
+    
+    // Check if all search parts are in dataset ID (ignoring _jpg_ suffix)
+    const datasetIdFiltered = datasetIdParts.filter(part => part !== 'jpg');
+    const allPartsMatch = searchIdParts.every(searchPart => 
+      datasetIdFiltered.some(datasetPart => 
+        datasetPart.includes(searchPart) || searchPart.includes(datasetPart)
+      )
+    );
+    
+    return allPartsMatch;
+  });
+  if (match) return match;
+  
   return null;
 }
 

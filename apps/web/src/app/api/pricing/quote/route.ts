@@ -147,6 +147,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       pickupDate: body.pickupDate
     });
 
+    // CRITICAL: Block quotes without pickup/dropoff addresses
+    if (!body.pickupAddress || !body.pickupAddress.postcode) {
+      StructuredLogger.error(
+        'Missing pickup address',
+        new Error('Pickup address with postcode is required'),
+        ErrorCategory.VALIDATION,
+        'high',
+        { body }
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Pickup address with postcode is required for accurate pricing',
+          code: 'MISSING_PICKUP_ADDRESS',
+          correlationId: RequestTracer.getCorrelationId(),
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body.dropoffAddress || !body.dropoffAddress.postcode) {
+      StructuredLogger.error(
+        'Missing dropoff address',
+        new Error('Dropoff address with postcode is required'),
+        ErrorCategory.VALIDATION,
+        'high',
+        { body }
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Dropoff address with postcode is required for accurate pricing',
+          code: 'MISSING_DROPOFF_ADDRESS',
+          correlationId: RequestTracer.getCorrelationId(),
+        },
+        { status: 400 }
+      );
+    }
+
     // Log business event
     StructuredLogger.business(
       BusinessEvent.QUOTE_REQUESTED,

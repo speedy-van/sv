@@ -147,9 +147,19 @@ export const StructuredAddressSchema = z.object({
   line1: z.string().min(1, "Address line 1 is required"),
   line2: z.string().optional(),
   city: z.string().min(1, "City is required"),
-  postcode: z.string().regex(
-    /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i,
-    "Must be valid UK postcode format"
+  postcode: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string') return val;
+      const normalized = val.trim().toUpperCase();
+      if (!normalized) return '';
+      return normalized;
+    },
+    z.string()
+      .min(1, 'Postcode is required')
+      .regex(
+        /^([A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}|GIR\s?0AA)$/i,
+        'Invalid UK postcode format (e.g., SW1A 1AA, M1 1AE, GIR 0AA)'
+      )
   ),
   coordinates: z.object({
     lat: z.number().min(-90).max(90),

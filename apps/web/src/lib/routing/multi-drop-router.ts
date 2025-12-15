@@ -582,22 +582,23 @@ export class AdvancedMultiDropRouter {
     const totalItems = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
     // Count large/bulky items (volume > 1.0 m³ OR weight > 30 kg)
-    const largeItems = items.reduce((count, item) => {
+    // FIXED: Count actual items, not total volume
+    const largeItemCount = items.reduce((count, item) => {
       const itemVolume = (item.volume || 0);
       const itemWeight = (item.weight || 0);
       const itemQuantity = (item.quantity || 1);
       
       // Item is large if volume > 1.0 m³ OR weight > 30 kg
       if (itemVolume > 1.0 || itemWeight > 30) {
-        return count + itemQuantity;
+        return count + itemQuantity; // Add quantity of large items
       }
       return count;
     }, 0);
 
     // Multi-drop restriction: max 8 large items
     const MAX_LARGE_ITEMS_FOR_MULTI_DROP = 8;
-    if (largeItems > MAX_LARGE_ITEMS_FOR_MULTI_DROP) {
-      console.log(`🚛 Multi-drop disabled: too many large items (${largeItems} > ${MAX_LARGE_ITEMS_FOR_MULTI_DROP})`);
+    if (largeItemCount > MAX_LARGE_ITEMS_FOR_MULTI_DROP) {
+      console.log(`🚛 Multi-drop disabled: too many large items (${largeItemCount} large items > ${MAX_LARGE_ITEMS_FOR_MULTI_DROP} limit, total items: ${totalItems})`);
       return false;
     }
 
