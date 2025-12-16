@@ -222,8 +222,9 @@ export async function GET(req: NextRequest) {
     meta: deriveServiceMetadata(order),
   }));
 
-  const filteredOrders = ordersWithMeta.filter(({ meta }) => !meta.isEconomy);
-  const excludedEconomyCount = ordersWithMeta.length - filteredOrders.length;
+  // ✅ SHOW ALL ORDERS - Admin needs to see everything for management
+  // Note: Only booking-luxury flow is allowed for new bookings, but admin must see all orders
+  const filteredOrders = ordersWithMeta; // No filtering - show all orders
 
   // Log audit action (non-blocking)
   try {
@@ -239,7 +240,6 @@ export async function GET(req: NextRequest) {
         area,
         dateRange,
         take,
-        excludedEconomyCount,
       },
     });
   } catch (auditError) {
@@ -255,7 +255,6 @@ export async function GET(req: NextRequest) {
       status,
       includeTracking,
       hasNextCursor: !!nextCursor,
-      excludedEconomyCount,
     });
 
     // Transform orders to include serviceType and orderType

@@ -451,10 +451,8 @@ export function OrdersTable({
     if (showUnpaidOrders) {
       // Show ONLY unpaid orders when button is clicked
       filtered = filtered.filter(order => !order.paidAt);
-    } else {
-      // Show ONLY paid orders by default
-      filtered = filtered.filter(order => !!order.paidAt);
     }
+    // Otherwise show ALL orders (no filter applied by default)
 
     // Apply search query filter
     if (searchQuery) {
