@@ -85,19 +85,22 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [staff, total] = await Promise.all([
-      prisma.staff.findMany({
-        where,
-        include: {
-          User: {
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              phone: true,
-              role: true,
-              adminRole: true,
-            },
+    // Check if Staff table exists, return empty array if not
+    let staff, total;
+    try {
+      [staff, total] = await Promise.all([
+        prisma.staff.findMany({
+          where,
+          include: {
+            User: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                phone: true,
+                role: true,
+                adminRole: true,
+              },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -106,6 +109,24 @@ export async function GET(request: NextRequest) {
       }),
       prisma.staff.count({ where }),
     ]);
+    } catch (dbError: any) {
+      // If Staff table doesn't exist, return empty array
+      if (dbError?.code === 'P2021') {
+        console.warn('⚠️  Staff table does not exist in database. Run: prisma db push');
+        return NextResponse.json({
+          success: true,
+          staff: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset,
+            hasMore: false,
+          },
+          warning: 'Staff table not found. Please run database migration.',
+        });
+      }
+      throw dbError;
+    }
 
     return NextResponse.json({
       success: true,
