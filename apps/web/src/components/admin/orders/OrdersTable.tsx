@@ -447,13 +447,13 @@ export function OrdersTable({
       }
     }
 
-    // Apply payment filter - hide unpaid orders by default unless explicitly shown
-    if (!showUnpaidOrders) {
-      // Hide unpaid orders by default (only show orders that have been paid)
-      filtered = filtered.filter(order => {
-        // Consider orders as "paid" if they have a paidAt date
-        return !!order.paidAt;
-      });
+    // Apply payment filter
+    if (showUnpaidOrders) {
+      // Show ONLY unpaid orders when button is clicked
+      filtered = filtered.filter(order => !order.paidAt);
+    } else {
+      // Show ONLY paid orders by default
+      filtered = filtered.filter(order => !!order.paidAt);
     }
 
     // Apply search query filter

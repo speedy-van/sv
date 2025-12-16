@@ -877,7 +877,7 @@ function RotaEditorModal({
         <form onSubmit={handleSubmit}>
           <ModalBody>
             <Stack spacing={6}>
-              <Box>
+              <Box p={4} borderWidth={1} borderRadius="md" bg="gray.50" _dark={{ bg: 'gray.800' }}>
                 <Text fontWeight="bold" mb={3}>
                   Default Shift
                 </Text>
@@ -888,6 +888,8 @@ function RotaEditorModal({
                       type="time"
                       value={workSchedule.defaultShift.start}
                       onChange={(e) => updateDefaultShift('start', e.target.value)}
+                      bg="white"
+                      _dark={{ bg: 'gray.700' }}
                     />
                   </FormControl>
                   <FormControl>
@@ -896,6 +898,8 @@ function RotaEditorModal({
                       type="time"
                       value={workSchedule.defaultShift.end}
                       onChange={(e) => updateDefaultShift('end', e.target.value)}
+                      bg="white"
+                      _dark={{ bg: 'gray.700' }}
                     />
                   </FormControl>
                 </HStack>
