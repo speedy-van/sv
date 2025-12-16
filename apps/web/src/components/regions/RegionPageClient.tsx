@@ -108,7 +108,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
                 </Button>
                 <Button
                   as={Link}
-                  href={`tel:+442045429762`}
+                  href={`tel:+441202129746`}
                   size="lg"
                   variant="outline"
                   borderColor="neon.500"
@@ -124,7 +124,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
                   borderRadius="xl"
                   sx={{ transition: 'all 0.3s' }}
                 >
-                  020 4542 9762
+                  01202 129746
                 </Button>
               </HStack>
             </MotionBox>
@@ -222,7 +222,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
               Areas We Cover in {regionName}
             </Heading>
             <Text color="gray.400" fontSize="lg">
-              Professional man and van services across all these locations
+              Professional man and van services across all these locations including Aberdeen, Dundee and all cities in {regionName} except islands.
             </Text>
           </MotionBox>
 

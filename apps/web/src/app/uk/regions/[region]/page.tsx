@@ -1,5 +1,6 @@
 import places from '@/data/places.json';
 import RegionPageClient from '@/components/regions/RegionPageClient';
+import Header from '@/components/site/Header';
 import type { Metadata } from 'next';
 
 interface RegionPageProps {
@@ -41,5 +42,10 @@ export default function RegionPage({ params }: RegionPageProps) {
       p.region && p.region.toLowerCase().replace(/\s+/g, '-') === params.region
   );
 
-  return <RegionPageClient regionName={regionName} regionPlaces={regionPlaces} />;
+  return (
+    <>
+      <Header />
+      <RegionPageClient regionName={regionName} regionPlaces={regionPlaces} />
+    </>
+  );
 }
