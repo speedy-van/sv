@@ -767,6 +767,7 @@ model DriverNotificationPreferences {
   pushSystemAlerts     Boolean  @default(true)
   emailJobOffers       Boolean  @default(false)
   emailJobUpdates      Boolean  @default(false)
+  emailMessages        Boolean  @default(false)
   emailScheduleChanges Boolean  @default(false)
   emailPayoutEvents    Boolean  @default(true)
   emailSystemAlerts    Boolean  @default(true)
