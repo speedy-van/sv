@@ -166,7 +166,7 @@ export default function RegionPage({ params }: RegionPageProps) {
                 transform: 'translateY(-4px)',
                 boxShadow: '0 10px 30px rgba(0, 224, 255, 0.2)'
               }}
-              transition="all 0.3s"
+              sx={{ transition: 'all 0.3s' }}
             >
               <Icon as={feature.icon} boxSize={10} color="neon.400" mb={4} />
               <Heading size="md" color="white" mb={2}>
@@ -229,40 +229,39 @@ export default function RegionPage({ params }: RegionPageProps) {
           </Heading>
           <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4}>
             {regionPlaces.map((place: any, i: number) => (
-              <MotionBox
-                key={place.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
-                viewport={{ once: true }}
-                as={Link}
-                href={`/uk/${place.slug}`}
-                bg="gray.800"
-                p={5}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.700"
-                _hover={{
-                  borderColor: 'neon.500',
-                  bg: 'gray.750',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 5px 20px rgba(0, 224, 255, 0.15)'
-                }}
-                transition="all 0.3s"
-                cursor="pointer"
-              >
-                <Heading size="sm" color="white" mb={2}>
-                  {place.name}
-                </Heading>
-                <Text color="gray.500" fontSize="sm" mb={2}>
-                  {place.type}
-                </Text>
-                {place.population && (
-                  <Text color="neon.400" fontSize="sm" fontWeight="semibold">
-                    {place.population.toLocaleString()} people
+              <Link key={place.slug} href={`/uk/${place.slug}`}>
+                <MotionBox
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.4 }}
+                  viewport={{ once: true }}
+                  bg="gray.800"
+                  p={5}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="gray.700"
+                  _hover={{
+                    borderColor: 'neon.500',
+                    bg: 'gray.750',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 5px 20px rgba(0, 224, 255, 0.15)'
+                  }}
+                  sx={{ transition: 'all 0.3s' }}
+                  cursor="pointer"
+                >
+                  <Heading size="sm" color="white" mb={2}>
+                    {place.name}
+                  </Heading>
+                  <Text color="gray.500" fontSize="sm" mb={2}>
+                    {place.type}
                   </Text>
-                )}
-              </MotionBox>
+                  {place.population && (
+                    <Text color="neon.400" fontSize="sm" fontWeight="semibold">
+                      {place.population.toLocaleString()} people
+                    </Text>
+                  )}
+                </MotionBox>
+              </Link>
             ))}
           </SimpleGrid>
         </Box>

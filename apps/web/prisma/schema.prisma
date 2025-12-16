@@ -2365,7 +2365,7 @@ model ReferenceSequence {
 model CareerApplication {
   id           String    @id @default(cuid())
   fullName     String
-  lastName     String
+  lastName     String?
   email        String
   phone        String
  
