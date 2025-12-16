@@ -1,10 +1,11 @@
 import places from '@/data/places.json';
 import RegionPageClient from '@/components/regions/RegionPageClient';
 import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 import type { Metadata } from 'next';
 
 interface RegionPageProps {
-  params: { region: string };
+  params: Promise<{ region: string }>;
 }
 
 // Generate static params for all regions at build time
@@ -22,7 +23,8 @@ export async function generateStaticParams() {
 
 // Generate metadata
 export async function generateMetadata({ params }: RegionPageProps): Promise<Metadata> {
-  const regionName = params.region
+  const { region } = await params;
+  const regionName = region
     .replace(/-/g, ' ')
     .replace(/\b\w/g, l => l.toUpperCase());
   
@@ -32,19 +34,21 @@ export async function generateMetadata({ params }: RegionPageProps): Promise<Met
   };
 }
 
-export default function RegionPage({ params }: RegionPageProps) {
-  const regionName = params.region
+export default async function RegionPage({ params }: RegionPageProps) {
+  const { region } = await params;
+  const regionName = region
     .replace(/-/g, ' ')
     .replace(/\b\w/g, l => l.toUpperCase());
   
   const regionPlaces = places.places.filter(
     (p: any) =>
-      p.region && p.region.toLowerCase().replace(/\s+/g, '-') === params.region
+      p.region && p.region.toLowerCase().replace(/\s+/g, '-') === region
   );
 
   return (
     <>
       <Header />
+      <MobileHeader />
       <RegionPageClient regionName={regionName} regionPlaces={regionPlaces} />
     </>
   );

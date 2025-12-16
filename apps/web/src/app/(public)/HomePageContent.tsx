@@ -246,7 +246,7 @@ export default function HomePageContent() {
               </MotionBox>
 
               <SimpleGrid
-                columns={{ base: 2, md: 4 }}
+                columns={{ base: 1, '2xl': 4 }}
                 spacing={{ base: 6, md: 8 }}
                 w="full"
               >
@@ -367,7 +367,7 @@ export default function HomePageContent() {
               </MotionBox>
 
               <SimpleGrid
-                columns={{ base: 1, sm: 2, lg: 4 }}
+                columns={{ base: 1, lg: 4 }}
                 spacing={{ base: 6, md: 8 }}
                 w="full"
               >
@@ -487,7 +487,7 @@ export default function HomePageContent() {
               </MotionBox>
 
               <SimpleGrid
-                columns={{ base: 1, md: 2, lg: 3 }}
+                columns={{ base: 1, lg: 3 }}
                 spacing={{ base: 6, md: 8 }}
                 w="full"
               >
@@ -634,7 +634,7 @@ export default function HomePageContent() {
               </MotionBox>
 
               <SimpleGrid
-                columns={{ base: 1, md: 3 }}
+                columns={{ base: 1, lg: 3 }}
                 spacing={{ base: 6, md: 8 }}
                 w="full"
               >
@@ -795,7 +795,7 @@ export default function HomePageContent() {
               </MotionBox>
 
               <SimpleGrid
-                columns={{ base: 1, md: 3 }}
+                columns={{ base: 1, lg: 3 }}
                 spacing={{ base: 6, md: 8 }}
                 w="full"
               >

@@ -31,8 +31,11 @@ import {
   FiStar,
   FiCheckCircle,
   FiArrowRight,
+  FiAward,
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -138,7 +141,10 @@ export default function ServicesPage() {
   const cardBg = 'rgba(26, 26, 26, 0.95)';
 
   return (
-    <Box bg={bgColor} minH="100vh" pt={20}>
+    <>
+      <Header />
+      <MobileHeader />
+      <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
         <VStack spacing={{ base: 10, md: 16 }}>
           {/* Header Section */}
@@ -148,25 +154,79 @@ export default function ServicesPage() {
             viewport={{ once: true }}
             transition="0.6s ease-out"
             textAlign="center"
-            maxW="4xl"
+            maxW="5xl"
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.03) 100%)"
+            borderRadius="3xl"
+            p={{ base: 8, md: 12 }}
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.1)"
+            boxShadow="0 10px 40px rgba(59, 130, 246, 0.1)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: '-50%',
+              right: '-50%',
+              width: '100%',
+              height: '100%',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%)',
+              pointerEvents: 'none',
+            }}
           >
-            <Heading
-              size={{ base: "xl", md: "2xl" }}
-              mb={{ base: 4, md: 6 }}
-              bgGradient="linear(to-r, neon.400, green.400)"
-              bgClip="text"
-            >
-              Professional Moving Services
-            </Heading>
-            <Text fontSize={{ base: "md", md: "xl" }} color="text.secondary" lineHeight="tall">
-              From residential moves to commercial relocations, we provide comprehensive 
-              moving solutions tailored to your specific needs. All services include 
-              full insurance coverage and professional handling.
-            </Text>
+            <VStack spacing={6} position="relative" zIndex={1}>
+              <Badge
+                colorScheme="blue"
+                fontSize="sm"
+                px={4}
+                py={2}
+                borderRadius="full"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Our Expertise
+              </Badge>
+              <Heading
+                fontSize={{ base: '3xl', md: '5xl' }}
+                fontWeight="bold"
+                bgGradient="linear(to-r, blue.500, blue.600, purple.500)"
+                bgClip="text"
+                lineHeight="shorter"
+              >
+                Professional Moving Services
+              </Heading>
+              <Text 
+                fontSize={{ base: "lg", md: "xl" }} 
+                color="text.secondary" 
+                lineHeight="tall"
+                maxW="3xl"
+              >
+                From <Text as="span" fontWeight="semibold" color="blue.600">residential moves</Text> to{' '}
+                <Text as="span" fontWeight="semibold" color="blue.600">commercial relocations</Text>, we provide comprehensive 
+                moving solutions tailored to your specific needs. All services include{' '}
+                <Text as="span" fontWeight="semibold" color="green.600">full insurance coverage</Text> and{' '}
+                <Text as="span" fontWeight="semibold" color="green.600">professional handling</Text>.
+              </Text>
+              <HStack spacing={8} pt={2} flexWrap="wrap" justify="center">
+                <HStack spacing={2}>
+                  <Icon as={FiShield} color="green.500" boxSize={5} />
+                  <Text fontSize="sm" fontWeight="medium" color="text.secondary">Fully Insured</Text>
+                </HStack>
+                <HStack spacing={2}>
+                  <Icon as={FiAward} color="blue.500" boxSize={5} />
+                  <Text fontSize="sm" fontWeight="medium" color="text.secondary">Certified Professionals</Text>
+                </HStack>
+                <HStack spacing={2}>
+                  <Icon as={FiStar} color="yellow.500" boxSize={5} />
+                  <Text fontSize="sm" fontWeight="medium" color="text.secondary">Premium Quality</Text>
+                </HStack>
+              </HStack>
+            </VStack>
           </MotionBox>
 
           {/* Trust Indicators */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
+          <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
             {trustFeatures.map((feature, index) => (
               <MotionBox
                 key={index}
@@ -206,7 +266,7 @@ export default function ServicesPage() {
           </SimpleGrid>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
+          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 4, md: 6, lg: 8 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -310,44 +370,121 @@ export default function ServicesPage() {
             viewport={{ once: true }}
             transition="0.6s ease-out 0.4s"
             textAlign="center"
-            p={12}
-            bg="linear-gradient(135deg, neon.400, green.400)"
-            borderRadius="2xl"
+            p={{ base: 8, md: 12 }}
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.9) 100%)"
+            borderRadius="3xl"
             color="white"
             w="full"
+            position="relative"
+            overflow="hidden"
+            boxShadow="0 20px 60px rgba(59, 130, 246, 0.3)"
+            border="1px solid"
+            borderColor="rgba(255, 255, 255, 0.2)"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1), transparent 60%)',
+              pointerEvents: 'none',
+            }}
           >
-            <VStack spacing={6}>
-              <Heading size="xl">Ready to Get Started?</Heading>
-              <Text fontSize="lg" maxW="2xl">
-                Get a free instant quote for your move. Our team is standing by 
-                to help you plan your relocation with confidence.
+            <VStack spacing={{ base: 6, md: 8 }} position="relative" zIndex={1}>
+              <Badge
+                colorScheme="whiteAlpha"
+                fontSize="sm"
+                px={4}
+                py={2}
+                borderRadius="full"
+                bg="rgba(255, 255, 255, 0.2)"
+                color="white"
+                fontWeight="semibold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+              >
+                Start Your Journey
+              </Badge>
+              <Heading 
+                fontSize={{ base: '3xl', md: '5xl' }}
+                fontWeight="bold"
+                bgGradient="linear(to-r, white, whiteAlpha.800)"
+                bgClip="text"
+              >
+                Ready to Get Started?
+              </Heading>
+              <Text 
+                fontSize={{ base: 'md', md: 'xl' }} 
+                maxW="2xl"
+                color="whiteAlpha.900"
+                lineHeight="tall"
+              >
+                Get a <Text as="span" fontWeight="bold" color="white">free instant quote</Text> for your move. Our team is standing by 
+                to help you plan your relocation with <Text as="span" fontWeight="bold" color="white">confidence</Text>.
               </Text>
-              <HStack spacing={4}>
-                <HeaderButton
-                  variant="glass"
+              <HStack spacing={4} flexWrap="wrap" justify="center">
+                <Button
                   size="lg"
+                  px={8}
+                  py={7}
+                  fontSize="lg"
+                  fontWeight="bold"
+                  bg="white"
+                  color="blue.600"
                   onClick={() => window.location.href = '/booking-luxury'}
+                  _hover={{
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 40px rgba(255,255,255,0.3)',
+                  }}
+                  borderRadius="xl"
+                  transition="all 0.3s ease"
+                  leftIcon={<Icon as={FiCheckCircle} />}
                 >
                   Get Free Quote
-                </HeaderButton>
-                <HeaderButton
-                  variant="outline"
+                </Button>
+                <Button
                   size="lg"
+                  px={8}
+                  py={7}
+                  fontSize="lg"
+                  fontWeight="bold"
+                  variant="outline"
                   onClick={() => window.open('tel:+441202129746')}
                   borderColor="white"
+                  borderWidth="2px"
                   color="white"
                   _hover={{
-                    bg: 'rgba(255,255,255,0.1)',
+                    bg: 'rgba(255,255,255,0.15)',
                     borderColor: 'white',
+                    transform: 'translateY(-4px)',
                   }}
+                  borderRadius="xl"
+                  transition="all 0.3s ease"
+                  leftIcon={<Icon as={FiClock} />}
                 >
                   Call Now
-                </HeaderButton>
+                </Button>
+              </HStack>
+              <HStack spacing={6} pt={4} flexWrap="wrap" justify="center">
+                <HStack spacing={2}>
+                  <Icon as={FiShield} color="whiteAlpha.900" boxSize={5} />
+                  <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">Fully Insured</Text>
+                </HStack>
+                <HStack spacing={2}>
+                  <Icon as={FiStar} color="yellow.300" boxSize={5} />
+                  <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">5-Star Rated</Text>
+                </HStack>
+                <HStack spacing={2}>
+                  <Icon as={FiClock} color="whiteAlpha.900" boxSize={5} />
+                  <Text fontSize="sm" color="whiteAlpha.900" fontWeight="medium">24/7 Support</Text>
+                </HStack>
               </HStack>
             </VStack>
           </MotionBox>
         </VStack>
       </Container>
     </Box>
+    </>
   );
 }

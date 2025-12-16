@@ -46,6 +46,7 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -204,6 +205,7 @@ export default function StudentMovingPage() {
   return (
     <Box bg={bgColor} minH="100vh">
       <Header />
+      <MobileHeader />
       <Container maxW="container.xl" py={{ base: 6, md: 16 }} px={{ base: 4, md: 6 }} pt={{ base: 24, md: 32 }}>
         <VStack spacing={{ base: 8, md: 16 }}>
           {/* Hero Section */}
@@ -332,7 +334,7 @@ export default function StudentMovingPage() {
           </Alert>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
+          <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -405,7 +407,7 @@ export default function StudentMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }}>
+            <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={{ base: 4, md: 6 }}>
               {movingScenarios.map((scenario, index) => (
                 <MotionCard
                   key={index}
@@ -482,7 +484,7 @@ export default function StudentMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }}>
+            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }}>
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}
@@ -586,7 +588,7 @@ export default function StudentMovingPage() {
               borderColor="rgba(0, 255, 157, 0.1)"
               p={8}
             >
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={4}>
                 {universities.map((university, index) => (
                   <VStack key={index} spacing={2}>
                     <Icon as={FiBookOpen} color="orange.500" boxSize={5} />
@@ -671,7 +673,7 @@ export default function StudentMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <MotionCard
                   key={index}

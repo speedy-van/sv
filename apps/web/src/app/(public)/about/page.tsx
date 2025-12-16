@@ -25,6 +25,8 @@ import {
 import { JsonLd } from './metadata';
 import AnalyticsConsentGate from './AnalyticsConsentGate';
 import HeaderButton from '@/components/common/HeaderButton';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 import { ROUTES } from '@/lib/routing';
 import { 
   FiCheckCircle, 
@@ -48,6 +50,8 @@ import {
 export default function AboutPage() {
   return (
     <Box bg="#0D0D0D" minH="100vh">
+      <Header />
+      <MobileHeader />
       <AnalyticsConsentGate />
       <JsonLd />
       
@@ -149,7 +153,7 @@ export default function AboutPage() {
 
       <Container maxW="6xl" py={{ base: 12, md: 16 }}>
         {/* Stats Section */}
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6} mb={20}>
+        <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6} mb={20}>
           {[
             { label: 'On-time Delivery', value: '98.4%', icon: FiClock, color: 'green.400' },
             { label: 'Jobs Completed', value: '12,000+', icon: FiTruck, color: 'blue.400' },
@@ -182,7 +186,7 @@ export default function AboutPage() {
         </SimpleGrid>
 
         {/* Our Story & What We Do */}
-        <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={12} mb={20}>
+        <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={12} mb={20}>
           <GridItem>
             <VStack align="start" spacing={4}>
               <Badge colorScheme="blue" fontSize="xs" px={3} py={1}>Our Story</Badge>
@@ -208,7 +212,7 @@ export default function AboutPage() {
                 Services that move with you
               </Heading>
             </VStack>
-            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4}>
               {[
                 { 
                   title: 'Man and Van', 
@@ -268,7 +272,7 @@ export default function AboutPage() {
               Simple steps from booking to delivery
             </Heading>
           </VStack>
-          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6}>
             {[
               {
                 step: '1',
@@ -343,7 +347,7 @@ export default function AboutPage() {
               What drives us every day
             </Heading>
           </VStack>
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={6}>
             {[
               {
                 title: 'On time, every time',
@@ -387,7 +391,7 @@ export default function AboutPage() {
         </Box>
 
         {/* Coverage & Fleet */}
-        <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={12} mb={20}>
+        <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={12} mb={20}>
           <GridItem>
             <VStack align="start" spacing={4}>
               <Badge colorScheme="cyan" fontSize="xs" px={3} py={1}>Coverage</Badge>
@@ -412,7 +416,7 @@ export default function AboutPage() {
                 Right van for every job
               </Heading>
             </VStack>
-            <SimpleGrid columns={3} spacing={4}>
+            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={4}>
               {[
                 { name: 'Small', payload: 'up to ~600kg', icon: FiTruck },
                 { name: 'LWB', payload: 'up to ~1200kg', icon: FiTruck },
@@ -449,7 +453,7 @@ export default function AboutPage() {
               What our customers say
             </Heading>
           </VStack>
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={6}>
             {[
               {
                 name: 'Amira, London',

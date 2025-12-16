@@ -41,6 +41,7 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -151,6 +152,7 @@ export default function HouseMovingPage() {
   return (
     <Box bg={bgColor} minH="100vh">
       <Header />
+      <MobileHeader />
       <Container maxW="container.xl" py={{ base: 6, md: 16 }} px={{ base: 4, md: 6 }} pt={{ base: 24, md: 32 }}>
         <VStack spacing={16}>
           {/* Hero Section */}
@@ -248,7 +250,7 @@ export default function HouseMovingPage() {
           </MotionBox>
 
           {/* Services Grid */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
+          <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={{ base: 4, md: 6 }} w="full">
             {services.map((service, index) => (
               <MotionCard
                 key={index}
@@ -378,7 +380,7 @@ export default function HouseMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, md: 6, lg: 8 }} position="relative" zIndex={1}>
               {pricingTiers.map((tier, index) => (
                 <MotionCard
                   key={index}
@@ -529,7 +531,7 @@ export default function HouseMovingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <MotionCard
                   key={index}

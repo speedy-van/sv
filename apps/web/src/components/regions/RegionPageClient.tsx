@@ -39,26 +39,13 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
           animation="pulse 8s ease-in-out infinite"
         />
 
-        <Container maxW="7xl" position="relative" py={{ base: 16, md: 24 }}>
+        <Container maxW="7xl" position="relative" py={{ base: 24, md: 40 }}>
           <VStack spacing={8} textAlign="center">
             <MotionBox
               initial={{ y: -30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transitionDuration="0.6"
             >
-              <HStack justify="center" mb={4}>
-                <Icon as={FiMapPin} boxSize={8} color="neon.400" />
-                <Badge
-                  colorScheme="green"
-                  fontSize="md"
-                  px={4}
-                  py={2}
-                  borderRadius="full"
-                >
-                  {regionPlaces.length} Areas Covered
-                </Badge>
-              </HStack>
-              
               <Heading
                 fontSize={{ base: '3xl', md: '5xl', lg: '6xl' }}
                 fontWeight="bold"
@@ -134,7 +121,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
 
       {/* Features Section */}
       <Container maxW="7xl" py={20}>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
+        <VStack spacing={6} align="stretch">
           {[
             {
               icon: FiClock,
@@ -159,10 +146,11 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
               transitionDuration="0.5"
               viewport={{ once: true }}
               bg="gray.800"
-              p={8}
+              p={6}
               borderRadius="2xl"
               border="1px solid"
               borderColor="gray.700"
+              w="full"
               _hover={{
                 borderColor: 'neon.500',
                 transform: 'translateY(-8px)',
@@ -170,40 +158,47 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
               }}
               sx={{ transition: 'all 0.3s' }}
             >
-              <Icon as={feature.icon} boxSize={12} color="neon.400" mb={4} />
-              <Heading size="md" color="white" mb={3}>
-                {feature.title}
-              </Heading>
-              <Text color="gray.400">{feature.description}</Text>
+              <HStack spacing={4} align="start">
+                <Icon as={feature.icon} boxSize={{ base: 10, md: 12 }} color="neon.400" flexShrink={0} />
+                <VStack align="start" spacing={2} flex={1}>
+                  <Heading size="md" color="white">
+                    {feature.title}
+                  </Heading>
+                  <Text color="gray.400" fontSize="sm">
+                    {feature.description}
+                  </Text>
+                </VStack>
+              </HStack>
             </MotionBox>
           ))}
-        </SimpleGrid>
+        </VStack>
       </Container>
 
       {/* Stats Section */}
       <Box bg="gray.800" py={16} borderY="2px solid" borderColor="gray.700">
         <Container maxW="7xl">
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={12} textAlign="center">
+          <VStack spacing={6} align="stretch">
             {[
               { value: '10,000+', label: 'Happy Customers' },
               { value: '98%', label: 'Satisfaction Rate' },
               { value: '24/7', label: 'Customer Support' }
             ].map((stat, idx) => (
-              <VStack key={idx} spacing={2}>
+              <HStack key={idx} spacing={4} justify={{ base: 'start', md: 'center' }} p={{ base: 4, md: 0 }}>
                 <Text
-                  fontSize={{ base: '4xl', md: '5xl' }}
+                  fontSize={{ base: '3xl', md: '5xl' }}
                   fontWeight="bold"
                   bgGradient="linear(to-r, neon.400, green.400)"
                   bgClip="text"
+                  minW={{ base: '100px', md: 'auto' }}
                 >
                   {stat.value}
                 </Text>
-                <Text color="gray.400" fontSize="lg">
+                <Text color="gray.400" fontSize={{ base: 'md', md: 'lg' }} textAlign="left">
                   {stat.label}
                 </Text>
-              </VStack>
+              </HStack>
             ))}
-          </SimpleGrid>
+          </VStack>
         </Container>
       </Box>
 
@@ -222,7 +217,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
               Areas We Cover in {regionName}
             </Heading>
             <Text color="gray.400" fontSize="lg">
-              Professional man and van services across all these locations including Aberdeen, Dundee and all cities in {regionName} except islands.
+              Professional man and van services across all cities in {regionName} except islands.
             </Text>
           </MotionBox>
 

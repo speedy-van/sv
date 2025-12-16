@@ -50,6 +50,7 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -251,6 +252,7 @@ export default function PricingPage() {
   return (
     <>
       <Header />
+      <MobileHeader />
       <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
@@ -401,7 +403,7 @@ export default function PricingPage() {
             <TabPanels>
               {/* Service Type Pricing */}
               <TabPanel px={0}>
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mt={8}>
+                <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6} mt={8}>
                   {servicePricing.map((service, index) => (
                     <MotionCard
                       key={index}
@@ -460,7 +462,7 @@ export default function PricingPage() {
 
               {/* Home Size Pricing */}
               <TabPanel px={0}>
-                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} mt={8}>
+                <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={8} mt={8}>
                   {homeSizePricing.map((size, index) => (
                     <MotionCard
                       key={index}
@@ -549,7 +551,7 @@ export default function PricingPage() {
 
               {/* Add-On Services */}
               <TabPanel px={0}>
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mt={8}>
+                <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6} mt={8}>
                   {addOnServices.map((addon, index) => (
                     <MotionCard
                       key={index}
@@ -671,7 +673,7 @@ export default function PricingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6} position="relative" zIndex={1}>
               {pricingFactors.map((factor, index) => (
                 <MotionCard
                   key={index}
@@ -815,7 +817,7 @@ export default function PricingPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <MotionCard
                   key={index}

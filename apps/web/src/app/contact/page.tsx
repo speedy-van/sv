@@ -44,6 +44,7 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const SUPPORT_PHONE_DISPLAY = '01202 129746';
 const SUPPORT_PHONE_TEL = '01202129746';
@@ -220,6 +221,7 @@ export default function ContactPage() {
   return (
     <>
       <Header />
+      <MobileHeader />
       <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
@@ -930,7 +932,7 @@ export default function ContactPage() {
               </Text>
             </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8} position="relative" zIndex={1}>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
               {testimonials.map((testimonial, index) => (
                 <Card
                   as={motion.div}
