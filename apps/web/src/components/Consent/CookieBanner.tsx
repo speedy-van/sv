@@ -18,7 +18,7 @@ import { useConsent } from './ConsentProvider';
 import CookiePreferencesModal from './CookiePreferencesModal';
 
 export default function CookieBanner() {
-  const { hasConsent, setHasConsent, preferences, updatePreferences } = useConsent();
+  const { hasConsent, preferences, saveConsent } = useConsent();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -35,25 +35,27 @@ export default function CookieBanner() {
 
   const handleAcceptAll = async () => {
     setIsLoading(true);
-    updatePreferences({
+    const nextPreferences = {
       necessary: true,
+      functional: true,
       analytics: true,
       marketing: true,
       preferences: true,
-    });
-    setHasConsent(true);
+    };
+    await saveConsent(nextPreferences, true);
     setIsLoading(false);
   };
 
   const handleRejectAll = async () => {
     setIsLoading(true);
-    updatePreferences({
+    const nextPreferences = {
       necessary: true,
+      functional: false,
       analytics: false,
       marketing: false,
       preferences: false,
-    });
-    setHasConsent(true);
+    };
+    await saveConsent(nextPreferences, true);
     setIsLoading(false);
   };
 
@@ -81,8 +83,7 @@ export default function CookieBanner() {
       >
         <VStack spacing={{ base: 3, md: 4 }} maxW="4xl" mx="auto" suppressHydrationWarning>
           <Text fontSize={{ base: 'xs', md: 'sm' }} color="white" textAlign="center" suppressHydrationWarning>
-            We use cookies to enhance your experience, analyze site traffic, and personalize content. 
-            By continuing to use our site, you consent to our use of cookies.
+            We use cookies to improve functionality, analyze site traffic, and personalize content. Choose how you want to proceed.
           </Text>
           
           <Flex

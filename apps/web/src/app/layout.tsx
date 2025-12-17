@@ -14,8 +14,6 @@ import '@/styles/mobile-viewport-fixes.css';
 import '@/styles/ios-overrides.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
-import CookieBanner from '@/components/Consent/CookieBanner';
-import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';
 import { parseConsentCookie } from '@/lib/consent';
 import { cookies } from 'next/headers';
 import AnalyticsScripts from '@/components/Consent/AnalyticsScripts';
@@ -127,18 +125,6 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning translate="no">
       <head>
-        {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-M68DQFWW');`,
-          }}
-        />
-        {/* End Google Tag Manager */}
-        
         {/* CRITICAL: Emotion insertion point for consistent CSS order across dev/prod */}
         <meta name="emotion-insertion-point" content="" />
         
@@ -178,57 +164,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className} suppressHydrationWarning translate="no">
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-M68DQFWW"
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
-          />
-        </noscript>
-        {/* End Google Tag Manager (noscript) */}
-        
         {/* ColorModeScript must match initialColorMode in mobile-theme.ts (currently 'dark') */}
         <ColorModeScript initialColorMode="dark" />
         <IOSDeviceClassManager />
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-6QDDY0N36Q"
-          strategy="afterInteractive"
-          async
-        />
-        <Script id="google-analytics-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-6QDDY0N36Q');
-          `}
-        </Script>
-        
-        {/* Google Ads Global Site Tag - Conversion Tracking */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17715630822"
-          strategy="afterInteractive"
-          async
-        />
-        <Script id="google-ads-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'AW-17715630822');
-          `}
-        </Script>
         <Script src="/scripts/fix-css.js" strategy="beforeInteractive" />
         <VisitorTracker />
         <StructuredData type="moving-company" />
         <SchemaProvider>
           <Providers>
             <ConsentProvider initialConsent={initialConsent}>
-              <CookieBanner />
-              <CookiePreferencesModal />
               <AnalyticsScripts />
               <Script
                 id="cookie-bar-viewport-adjust"

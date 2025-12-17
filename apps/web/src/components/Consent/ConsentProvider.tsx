@@ -12,6 +12,7 @@ import {
 
 interface ConsentPreferences {
   necessary: boolean;
+  functional: boolean;
   analytics: boolean;
   marketing: boolean;
   preferences: boolean;
@@ -22,12 +23,14 @@ interface ConsentContextType {
   updatePreferences: (prefs: Partial<ConsentPreferences>) => void;
   hasConsent: boolean;
   setHasConsent: (hasConsent: boolean) => void;
+  saveConsent: (prefs: ConsentPreferences, consentGiven: boolean) => Promise<void>;
 }
 
 const ConsentContext = createContext<ConsentContextType | undefined>(undefined);
 
 const defaultPreferences: ConsentPreferences = {
   necessary: true,
+  functional: false,
   analytics: false,
   marketing: false,
   preferences: false,
@@ -47,11 +50,8 @@ interface ConsentProviderProps {
 export function ConsentProvider({ children, initialConsent }: ConsentProviderProps) {
   const [preferences, setPreferences] = useState<ConsentPreferences>(defaultPreferences);
   const [hasConsent, setHasConsent] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-
     // Load saved preferences from localStorage only on client
     if (typeof window !== 'undefined') {
       const savedPreferences = safeLocalStorageGetItem('consent-preferences');
@@ -59,10 +59,21 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
 
       if (savedPreferences) {
         try {
-          setPreferences(JSON.parse(savedPreferences));
+          const parsed = JSON.parse(savedPreferences) as ConsentPreferences;
+          setPreferences({
+            ...defaultPreferences,
+            ...parsed,
+            necessary: true,
+          });
         } catch (error) {
           console.warn('Failed to parse saved consent preferences:', error);
         }
+      } else if (initialConsent?.preferences) {
+        setPreferences({
+          ...defaultPreferences,
+          ...initialConsent.preferences,
+          necessary: true,
+        });
       }
 
       if (savedHasConsent === 'true') {
@@ -71,10 +82,46 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
         setHasConsent(true);
       }
     }
-  }, [initialConsent]);  const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
+  }, [initialConsent]);
+
+  const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
     const updatedPreferences = { ...preferences, ...newPrefs };
     setPreferences(updatedPreferences);
     safeLocalStorageSetItem('consent-preferences', JSON.stringify(updatedPreferences));
+  };
+
+  const persistLocalConsent = (nextPrefs: ConsentPreferences, consentGiven: boolean) => {
+    const normalized: ConsentPreferences = {
+      ...defaultPreferences,
+      ...nextPrefs,
+      necessary: true,
+    };
+    setPreferences(normalized);
+    setHasConsent(consentGiven);
+    safeLocalStorageSetItem('consent-preferences', JSON.stringify(normalized));
+    safeLocalStorageSetItem('consent-given', consentGiven.toString());
+  };
+
+  const saveConsent = async (nextPrefs: ConsentPreferences, consentGiven: boolean) => {
+    persistLocalConsent(nextPrefs, consentGiven);
+
+    try {
+      await fetch('/api/consent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          functional: nextPrefs.functional,
+          analytics: nextPrefs.analytics,
+          marketing: nextPrefs.marketing,
+          preferences: nextPrefs.preferences,
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to persist consent to server', error);
+    }
   };
 
   const handleSetHasConsent = (consent: boolean) => {
@@ -89,6 +136,7 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
         updatePreferences,
         hasConsent,
         setHasConsent: handleSetHasConsent,
+        saveConsent,
       }}
     >
       {children}

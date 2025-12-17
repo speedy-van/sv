@@ -32,75 +32,155 @@ export default function PricePreview({
   const [estimatedRange, setEstimatedRange] = useState<{ min: number; max: number } | null>(null);
   const [estimatedDuration, setEstimatedDuration] = useState<string>('');
   const [distance, setDistance] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Calculate distance using haversine formula
-    if (!pickupCoordinates?.lat || !pickupCoordinates?.lng || 
-        !dropoffCoordinates?.lat || !dropoffCoordinates?.lng) {
+    const hasCoords =
+      pickupCoordinates &&
+      dropoffCoordinates &&
+      typeof pickupCoordinates.lat === 'number' &&
+      typeof pickupCoordinates.lng === 'number' &&
+      typeof dropoffCoordinates.lat === 'number' &&
+      typeof dropoffCoordinates.lng === 'number';
+
+    if (!hasCoords) {
       setDistance(0);
       setEstimatedRange(null);
       setEstimatedDuration('');
+      setIsLoading(false);
       return;
     }
 
-    // Skip if coordinates are default (0,0)
-    if (
+    const areDefault =
       (pickupCoordinates.lat === 0 && pickupCoordinates.lng === 0) ||
-      (dropoffCoordinates.lat === 0 && dropoffCoordinates.lng === 0)
-    ) {
+      (dropoffCoordinates.lat === 0 && dropoffCoordinates.lng === 0);
+
+    if (areDefault) {
       setDistance(0);
       setEstimatedRange(null);
       setEstimatedDuration('');
+      setIsLoading(false);
       return;
     }
 
-    // Haversine formula for distance calculation
-    const R = 3958.8; // Earth's radius in miles
-    const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
-    const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
-        Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
-        Math.sin(dLng / 2) *
-        Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distanceInMiles = R * c;
-    
-    setDistance(distanceInMiles);
+    const computeEstimates = (distanceMiles: number, durationSeconds?: number) => {
+      setDistance(distanceMiles);
 
-    if (distanceInMiles === 0) {
-      setEstimatedRange(null);
-      setEstimatedDuration('');
-      return;
-    }
+      if (!distanceMiles || Number.isNaN(distanceMiles)) {
+        setEstimatedRange(null);
+        setEstimatedDuration('');
+        return;
+      }
 
-    // Calculate estimated price range based on distance
-    // Base pricing: £50-80 base + £1.5-2.5 per mile
-    const baseFee = 65; // Average base fee
-    const perMileFee = 2.0; // Average per mile
+      const baseFee = 30; // Softer base for luxury estimate preview
 
-    const estimatedBase = baseFee + (distanceInMiles * perMileFee);
-    const min = Math.round(estimatedBase * 0.85); // -15%
-    const max = Math.round(estimatedBase * 1.25); // +25%
+      const tieredDistanceFee = (miles: number) => {
+        // Progressive discounting for longer trips to avoid sticker shock
+        const tiers = [
+          { cap: 50, rate: 1.0 },       // first 50 miles
+          { cap: 150, rate: 0.7 },      // 50-150 miles
+          { cap: Infinity, rate: 0.45 }, // 150+ miles
+        ];
+        let remaining = miles;
+        let covered = 0;
+        let fee = 0;
 
-    setEstimatedRange({ min, max });
+        for (const tier of tiers) {
+          if (remaining <= 0) break;
+          const span = tier.cap === Infinity ? remaining : Math.max(0, Math.min(remaining, tier.cap - covered));
+          fee += span * tier.rate;
+          remaining -= span;
+          covered += span;
+        }
 
-    // Calculate estimated duration
-    // UK city driving: 20 mph average (slower than 30 mph due to traffic, signals)
-    // Add 15-30 minutes for loading/unloading based on distance
-    const avgSpeedMph = 20;
-    const drivingMinutes = Math.round((distanceInMiles / avgSpeedMph) * 60);
-    const loadingTime = distanceInMiles < 5 ? 15 : distanceInMiles < 15 ? 20 : 30;
-    const totalMinutes = drivingMinutes + loadingTime;
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
+        return fee;
+      };
 
-    if (hours > 0) {
-      setEstimatedDuration(`${hours}h ${minutes > 0 ? minutes + 'm' : ''}`);
-    } else {
-      setEstimatedDuration(`${minutes} min`);
-    }
+      const distanceFee = tieredDistanceFee(distanceMiles);
+      const estimatedBase = Math.max(60, baseFee + distanceFee);
+      const min = Math.round(estimatedBase * 0.75); // -25%
+      const max = Math.round(estimatedBase * 1.08); // +8%
+      setEstimatedRange({ min, max });
+
+      const durationInMinutes = durationSeconds
+        ? Math.round(durationSeconds / 60)
+        : Math.round((distanceMiles / 20) * 60) + (distanceMiles < 5 ? 15 : distanceMiles < 15 ? 20 : 30);
+
+      const hours = Math.floor(durationInMinutes / 60);
+      const minutes = durationInMinutes % 60;
+      if (hours > 0) {
+        setEstimatedDuration(`${hours}h ${minutes > 0 ? minutes + 'm' : ''}`);
+      } else {
+        setEstimatedDuration(`${minutes} min`);
+      }
+    };
+
+    const controller = new AbortController();
+    const fetchDistance = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/address/distance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            pickupLat: pickupCoordinates.lat,
+            pickupLng: pickupCoordinates.lng,
+            dropoffLat: dropoffCoordinates.lat,
+            dropoffLng: dropoffCoordinates.lng,
+          }),
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const distanceMeters = result?.data?.distance;
+          const durationSeconds = result?.data?.durationInTraffic || result?.data?.duration;
+
+          if (typeof distanceMeters === 'number' && distanceMeters > 0) {
+            const distanceMiles = distanceMeters / 1609.34;
+            computeEstimates(distanceMiles, typeof durationSeconds === 'number' ? durationSeconds : undefined);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Fallback to haversine if API fails or returns invalid data
+        const R = 3958.8;
+        const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
+        const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
+            Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distanceInMiles = R * c;
+        computeEstimates(distanceInMiles);
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          const R = 3958.8;
+          const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
+          const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
+              Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
+              Math.sin(dLng / 2) *
+              Math.sin(dLng / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distanceInMiles = R * c;
+          computeEstimates(distanceInMiles);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDistance();
+
+    return () => controller.abort();
   }, [pickupCoordinates, dropoffCoordinates]);
 
   const hasAddresses = pickupPostcode && dropoffPostcode;
@@ -255,9 +335,20 @@ export default function PricePreview({
               </VStack>
             </VStack>
           ) : (
-            <Text color="whiteAlpha.600" fontSize="sm" textAlign="center" py={2}>
-              Enter both addresses to see price estimate
-            </Text>
+            <VStack spacing={2} py={2}>
+              {isLoading ? (
+                <HStack justify="center" spacing={2}>
+                  <Spinner size="sm" color="blue.300" />
+                  <Text color="whiteAlpha.700" fontSize="sm">
+                    Calculating distance...
+                  </Text>
+                </HStack>
+              ) : (
+                <Text color="whiteAlpha.600" fontSize="sm" textAlign="center">
+                  Enter both addresses to see price estimate
+                </Text>
+              )}
+            </VStack>
           )}
         </VStack>
       </CardBody>

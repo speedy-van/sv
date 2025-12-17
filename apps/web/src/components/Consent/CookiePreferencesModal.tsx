@@ -22,7 +22,7 @@ import {
   FormHelperText,
   Box,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useConsent } from './ConsentProvider';
 
 interface CookiePreferencesModalProps {
@@ -34,13 +34,17 @@ export default function CookiePreferencesModal({
   isOpen = false,
   onClose = () => {},
 }: CookiePreferencesModalProps) {
-  const { preferences, updatePreferences, setHasConsent } = useConsent();
+  const { preferences, saveConsent } = useConsent();
   const [tempPreferences, setTempPreferences] = useState(preferences);
 
+  useEffect(() => {
+    if (isOpen) {
+      setTempPreferences(preferences);
+    }
+  }, [isOpen, preferences]);
+
   const handleSave = () => {
-    updatePreferences(tempPreferences);
-    setHasConsent(true);
-    onClose();
+    saveConsent(tempPreferences, true).finally(onClose);
   };
 
   const handlePreferenceChange = (key: keyof typeof tempPreferences) => {
@@ -74,6 +78,22 @@ export default function CookiePreferencesModal({
                 <Switch
                   isChecked={tempPreferences.necessary}
                   isDisabled
+                  colorScheme="primary"
+                />
+              </HStack>
+            </FormControl>
+
+            <FormControl>
+              <HStack justify="space-between">
+                <Box>
+                  <FormLabel mb={0} color="white">Functional Cookies</FormLabel>
+                  <FormHelperText fontSize="xs" color="gray.400">
+                    Enhance performance and reliability features
+                  </FormHelperText>
+                </Box>
+                <Switch
+                  isChecked={tempPreferences.functional}
+                  onChange={() => handlePreferenceChange('functional')}
                   colorScheme="primary"
                 />
               </HStack>

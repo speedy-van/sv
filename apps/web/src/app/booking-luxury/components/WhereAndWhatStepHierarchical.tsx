@@ -488,8 +488,8 @@ export default function WhereAndWhatStepHierarchical({
                 : "linear(135deg, #ec4899, #f43f5e)"}
               color="white"
               borderRadius="full"
-              w={{ base: '110px', md: '130px' }}
-              h={{ base: '110px', md: '130px' }}
+              w={{ base: '130px', md: '150px' }}
+              h={{ base: '130px', md: '150px' }}
               cursor="pointer"
               boxShadow={isSummaryExpanded 
                 ? "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3)" 
@@ -498,7 +498,7 @@ export default function WhereAndWhatStepHierarchical({
               border="4px solid white"
               position="relative"
               _hover={{
-                transform: 'scale(1.08)',
+                transform: 'scale(1.05)',
                 boxShadow: isSummaryExpanded 
                   ? '0 20px 50px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.5)' 
                   : '0 20px 50px rgba(236, 72, 153, 0.7), 0 0 35px rgba(236, 72, 153, 0.5)',
@@ -506,45 +506,34 @@ export default function WhereAndWhatStepHierarchical({
               _active={{
                 transform: 'scale(0.98)',
               }}
+              textAlign="center"
             >
-              {/* Icon */}
               <Icon 
                 as={isSummaryExpanded ? FaTimes : FaBox} 
-                boxSize={{ base: 8, md: 10 }} 
+                boxSize={{ base: 9, md: 11 }} 
                 color="white"
-                mb={1}
+                mb={2}
               />
-              
-              {/* Count Badge */}
-              <Flex
-                align="center"
-                justify="center"
-                bg="white"
-                borderRadius="full"
-                w={{ base: '42px', md: '50px' }}
-                h={{ base: '42px', md: '50px' }}
-                mb={1}
-                boxShadow="0 2px 8px rgba(0,0,0,0.15)"
-              >
-                <Text 
-                  fontSize={{ base: 'xl', md: '2xl' }} 
-                  fontWeight="900" 
-                  lineHeight="1"
-                  color="black"
-                >
-                  {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
-                </Text>
-              </Flex>
-              
-              {/* Label */}
               <Text 
-                fontSize={{ base: '2xs', md: 'xs' }} 
-                fontWeight="bold" 
-                textTransform="uppercase"
-                color="white"
-                letterSpacing="wide"
+                fontSize={{ base: 'md', md: 'lg' }} 
+                fontWeight="800" 
+                lineHeight="1.2"
               >
-                {isSummaryExpanded ? 'CLOSE' : 'VIEW'}
+                Selected Items
+              </Text>
+              <Text 
+                fontSize={{ base: 'sm', md: 'md' }} 
+                fontWeight="700" 
+                color="whiteAlpha.900"
+              >
+                {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)} items
+              </Text>
+              <Text 
+                fontSize={{ base: 'xs', md: 'sm' }} 
+                fontWeight="700" 
+                color="whiteAlpha.800"
+              >
+                {isSummaryExpanded ? 'Close list' : 'View list'}
               </Text>
             </Flex>
           </Box>

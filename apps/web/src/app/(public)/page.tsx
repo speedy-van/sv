@@ -1,5 +1,7 @@
 import { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
+import CookieBanner from '@/components/Consent/CookieBanner';
+import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';
 
 // PERFORMANCE: Load the home page content with SSR enabled for better initial load
 const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
@@ -53,5 +55,11 @@ export const viewport: Viewport = {
 };
 
 export default function HomePage() {
-  return <MobileHomePageContent />;
+  return (
+    <>
+      <CookieBanner />
+      <CookiePreferencesModal />
+      <MobileHomePageContent />
+    </>
+  );
 }
