@@ -779,56 +779,38 @@ export default function RoomBasedInventory({
               right={{ base: '20px', md: '30px' }}
               zIndex={1500}
             >
-              <VStack
+              <Flex
                 as="button"
                 onClick={toggleSummary}
-                bg="black"
+                align="center"
+                gap={3}
+                bgGradient={isSummaryExpanded
+                  ? 'linear(135deg, #10b981 0%, #059669 100%)'
+                  : 'linear(135deg, #ec4899 0%, #f43f5e 100%)'}
                 color="white"
-                borderRadius="2xl"
-                w={{ base: '85px', md: '95px' }}
-                h={{ base: '85px', md: '95px' }}
-                spacing={1}
-                justify="center"
+                borderRadius="full"
+                px={{ base: 4, md: 5 }}
+                py={{ base: 3, md: 4 }}
+                minW={{ base: '180px', md: '210px' }}
+                boxShadow="0 12px 30px rgba(0,0,0,0.35)"
+                border="2px solid rgba(255,255,255,0.35)"
                 cursor="pointer"
-                boxShadow="0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 2px white"
-                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                border="3px solid white"
-                _hover={{
-                  transform: 'scale(1.1)',
-                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.7), 0 0 0 3px white'
-                }}
-                _active={{
-                  transform: 'scale(1.05)'
-                }}
+                transition="all 0.25s ease"
+                _hover={{ transform: 'translateY(-3px)', boxShadow: '0 16px 36px rgba(0,0,0,0.45)' }}
+                _active={{ transform: 'translateY(-1px)' }}
               >
-                {/* Toggle Icon */}
-                <Icon 
-                  as={isSummaryExpanded ? FaTimes : FaChevronUp} 
-                  boxSize={{ base: 6, md: 7 }} 
-                  color="white"
-                  filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
-                />
-                
-                {/* Items Count */}
-                <HStack spacing={1}>
-                  <Icon as={FaBox} boxSize={{ base: 3, md: 4 }} />
-                  <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="black" lineHeight="1">
-                    {selectionStats.totalItems}
+                <Circle size={{ base: '44px', md: '48px' }} bg="rgba(255,255,255,0.15)">
+                  <Icon as={isSummaryExpanded ? FaTimes : FaBox} boxSize={{ base: 5, md: 6 }} color="white" />
+                </Circle>
+                <Box textAlign="left">
+                  <Text fontWeight="800" fontSize={{ base: 'sm', md: 'md' }} lineHeight="1.2">
+                    Selected Items
                   </Text>
-                </HStack>
-                
-                {/* Label */}
-                <Text 
-                  fontSize={{ base: 'xs', md: 'sm' }} 
-                  fontWeight="black" 
-                  letterSpacing="wider"
-                  textTransform="uppercase"
-                  color="white"
-                  textShadow="0 2px 4px rgba(0,0,0,0.4)"
-                >
-                  {isSummaryExpanded ? '✕ CLOSE' : '👁 VIEW'}
-                </Text>
-              </VStack>
+                  <Text fontWeight="700" fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.900">
+                    {selectionStats.totalItems} items • {isSummaryExpanded ? 'Close list' : 'View list'}
+                  </Text>
+                </Box>
+              </Flex>
             </Box>
 
             {/* Expanded Details Panel */}
