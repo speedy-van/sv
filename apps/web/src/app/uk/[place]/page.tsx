@@ -14,15 +14,23 @@ import '@/styles/uk-place-pages.css';
 export const runtime = 'nodejs';
 export const revalidate = 86400; // 24h ISR
 
-// If we pre-generate specific slugs, set dynamicParams=false
+// Allow dynamic params to handle places not in generateStaticParams
 export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const places = await getAllPlaces();
+  return places.map((place) => ({
+    place: place.slug,
+  }));
+}
 
 export async function generateMetadata({
   params,
 }: {
-  params: { place: string };
+  params: Promise<{ place: string }>;
 }): Promise<Metadata> {
-  const place = await getPlaceBySlug(params.place);
+  const { place: placeSlug } = await params;
+  const place = await getPlaceBySlug(placeSlug);
   if (!place) return {};
 
   const title = `Man and Van in ${place.name} | ${BRAND_NAME}`;
@@ -208,9 +216,10 @@ function VillageContent({ place }: { place: any }) {
 export default async function PlacePage({
   params,
 }: {
-  params: { place: string };
+  params: Promise<{ place: string }>;
 }) {
-  const place = await getPlaceBySlug(params.place);
+  const { place: placeSlug } = await params;
+  const place = await getPlaceBySlug(placeSlug);
   if (!place) {
     return (
       <div className="error-container">

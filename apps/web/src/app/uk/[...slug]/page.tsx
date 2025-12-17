@@ -4,11 +4,10 @@ import places from '@/data/places.json';
 
 // ✅ Force Node runtime for SSG/ISR
 export const runtime = 'nodejs';
-export const dynamic = 'force-static';
 export const revalidate = 86400; // 24h ISR
 
-// Disable dynamic params to prevent Next.js from trying to prerender non-existent pages
-export const dynamicParams = false;
+// Allow dynamic params for catch-all routes
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   // Generate params for all places to ensure they're pre-built
@@ -20,9 +19,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string[] };
+  params: Promise<{ slug: string[] }>;
 }) {
-  const slug = params.slug[params.slug.length - 1]; // Get the last slug part
+  const { slug: slugArray } = await params;
+  const slug = slugArray[slugArray.length - 1]; // Get the last slug part
   const place = places.places.find((p: any) => p.slug === slug);
 
   if (!place) {
@@ -46,13 +46,13 @@ export async function generateMetadata({
     },
   };
 }
-
 export default async function CatchAllUkPage({
   params,
 }: {
-  params: { slug: string[] };
+  params: Promise<{ slug: string[] }>;
 }) {
-  const slug = params.slug[params.slug.length - 1]; // Get the last slug part
+  const { slug: slugArray } = await params;
+  const slug = slugArray[slugArray.length - 1]; // Get the last slug part
   const place = places.places.find((p: any) => p.slug === slug);
 
   if (!place) {
