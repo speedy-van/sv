@@ -147,12 +147,12 @@ export default function PricePreview({
 
         // Fallback to haversine if API fails or returns invalid data
         const R = 3958.8;
-        const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
-        const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
+        const dLat = ((dropoffCoordinates.lat! - pickupCoordinates.lat!) * Math.PI) / 180;
+        const dLng = ((dropoffCoordinates.lng! - pickupCoordinates.lng!) * Math.PI) / 180;
         const a =
           Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
-            Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
+          Math.cos((pickupCoordinates.lat! * Math.PI) / 180) *
+            Math.cos((dropoffCoordinates.lat! * Math.PI) / 180) *
             Math.sin(dLng / 2) *
             Math.sin(dLng / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -161,12 +161,12 @@ export default function PricePreview({
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           const R = 3958.8;
-          const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
-          const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
+          const dLat = ((dropoffCoordinates.lat! - pickupCoordinates.lat!) * Math.PI) / 180;
+          const dLng = ((dropoffCoordinates.lng! - pickupCoordinates.lng!) * Math.PI) / 180;
           const a =
             Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
-              Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
+            Math.cos((pickupCoordinates.lat! * Math.PI) / 180) *
+              Math.cos((dropoffCoordinates.lat! * Math.PI) / 180) *
               Math.sin(dLng / 2) *
               Math.sin(dLng / 2);
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
