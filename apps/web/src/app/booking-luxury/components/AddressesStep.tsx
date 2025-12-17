@@ -18,6 +18,7 @@ import {
   Card,
   CardBody,
   Icon,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   FaArrowRight,
@@ -32,6 +33,7 @@ interface AddressesStepProps {
   updateFormData: (step: keyof FormData, data: Partial<FormData[keyof FormData]>) => void;
   errors: Record<string, string>;
   onNext?: () => void;
+  isTransitioning?: boolean;
 }
 
 export default function AddressesStep({
@@ -39,6 +41,7 @@ export default function AddressesStep({
   updateFormData,
   errors,
   onNext,
+  isTransitioning = false,
 }: AddressesStepProps) {
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
@@ -373,7 +376,10 @@ export default function AddressesStep({
       {onNext && (
         <Button
           onClick={onNext}
-          isDisabled={!canProceed}
+          isDisabled={!canProceed || isTransitioning}
+          isLoading={isTransitioning}
+          loadingText="Processing..."
+          spinner={<Spinner size="sm" color="white" thickness="2px" speed="0.65s" />}
           bgGradient={canProceed ? "linear(to-r, blue.500, purple.500)" : "linear(to-r, gray.600, gray.700)"}
           color="white"
           size="lg"
@@ -383,15 +389,15 @@ export default function AddressesStep({
           fontSize="md"
           fontWeight="600"
           borderRadius="xl"
-          rightIcon={<Icon as={FaArrowRight} />}
+          rightIcon={!isTransitioning ? <Icon as={FaArrowRight} /> : undefined}
           boxShadow={canProceed ? "0 15px 35px rgba(59, 130, 246, 0.4)" : "none"}
           transition="all 0.3s"
-          _hover={canProceed ? {
+          _hover={canProceed && !isTransitioning ? {
             bgGradient: "linear(to-r, blue.600, purple.600)",
             transform: "translateY(-2px)",
             boxShadow: "0 20px 45px rgba(59, 130, 246, 0.5)",
           } : {}}
-          _active={canProceed ? {
+          _active={canProceed && !isTransitioning ? {
             transform: "translateY(0)",
           } : {}}
           _disabled={{
@@ -400,7 +406,7 @@ export default function AddressesStep({
             transform: 'none',
           }}
         >
-          {canProceed ? 'Continue to Items & Time' : 'Please Enter Both Addresses'}
+          {isTransitioning ? '' : canProceed ? 'Continue to Items & Time' : 'Please Enter Both Addresses'}
         </Button>
       )}
     </Box>

@@ -1213,6 +1213,7 @@ export default function BookingLuxuryPage() {
                   updateFormData={updateFormData}
                   errors={errors}
                   onNext={handleNext}
+                  isTransitioning={isAutoTransitioning}
                 />
               </Box>
             )}
