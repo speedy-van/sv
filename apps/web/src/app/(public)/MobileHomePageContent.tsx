@@ -39,7 +39,7 @@ import dynamic from 'next/dynamic';
 
 // Lazy load non-critical components
 const HomeFooter = dynamic(() => import('@/components/site/HomeFooter'), {
-  ssr: true,
+  ssr: false,
   loading: () => null,
 });
 

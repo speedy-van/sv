@@ -31,8 +31,8 @@ import {
   useColorModeValue,
   useDisclosure,
   Tooltip,
-  Collapse,
 } from '@chakra-ui/react';
+import { Collapse } from '@chakra-ui/react';
 import {
   FaBed,
   FaCouch,

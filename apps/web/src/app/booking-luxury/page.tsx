@@ -756,6 +756,15 @@ export default function BookingLuxuryPage() {
   // Do not block UI on hydration; guard browser-only APIs inside effects
 
   return (
+    <>
+      <style jsx global>{`
+        .booking-time-select {
+          color: #ffffff !important;
+        }
+        .booking-time-select option {
+          color: #1f2937 !important;
+        }
+      `}</style>
     <Box 
       display="block" 
       w="100%" 
@@ -1359,7 +1368,7 @@ export default function BookingLuxuryPage() {
                                 backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, #3b82f6, #8b5cf6)',
                                 backgroundOrigin: 'border-box',
                                 backgroundClip: 'padding-box, border-box',
-                                color: '#1f2937',
+                                color: '#ffffff',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 outline: 'none',
@@ -1372,11 +1381,11 @@ export default function BookingLuxuryPage() {
                                 boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                               }}
                             >
-                              <option value="">Choose a time</option>
-                              <option value="morning">8 AM - 12 PM 🌅 (Morning)</option>
-                              <option value="afternoon">12 PM - 4 PM ☀️ (Afternoon)</option>
-                              <option value="evening">4 PM - 6 PM 🌆 (Evening)</option>
-                              <option value="flexible">Flexible ⏰ (Best Price)</option>
+                              <option value="" style={{ color: '#1f2937' }}>Choose a time</option>
+                              <option value="morning" style={{ color: '#1f2937' }}>8 AM - 12 PM 🌅 (Morning)</option>
+                              <option value="afternoon" style={{ color: '#1f2937' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
+                              <option value="evening" style={{ color: '#1f2937' }}>4 PM - 6 PM 🌆 (Evening)</option>
+                              <option value="flexible" style={{ color: '#1f2937' }}>Flexible ⏰ (Best Price)</option>
                             </select>
                             {errors['step1.pickupTime'] && (
                               <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupTime']}</Text>
@@ -1513,5 +1522,6 @@ export default function BookingLuxuryPage() {
 
       {/* Bottom navigation removed as per request */}
     </Box>
+    </>
   );
 }
