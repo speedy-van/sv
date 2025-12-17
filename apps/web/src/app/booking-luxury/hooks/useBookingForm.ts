@@ -646,10 +646,13 @@ export function useBookingForm() {
           specialHandling: item.special_handling_notes ? [item.special_handling_notes] : []
         })),
         
-        // 🔧 FIX: Use 'pickup' (not 'pickupAddress') to match API schema
-        pickup: {
+        // Use 'pickupAddress' to match API schema expectations
+        pickupAddress: {
           address: pickupAddress.full || pickupAddress.line1 || pickupAddress.address || pickupAddress.formatted_address || '',
+          formatted_address: pickupAddress.formatted_address || pickupAddress.full || pickupAddress.line1 || '',
           postcode: pickupAddress.postcode || '',
+          latitude: pickupAddress.coordinates?.lat || 0,
+          longitude: pickupAddress.coordinates?.lng || 0,
           coordinates: {
             lat: pickupAddress.coordinates?.lat || 0,
             lng: pickupAddress.coordinates?.lng || 0
@@ -664,10 +667,13 @@ export function useBookingForm() {
           }
         },
         
-        // 🔧 FIX: Use 'dropoffs' (array, not 'dropoffAddress') to match API schema
-        dropoffs: [{
+        // Use 'dropoffAddress' to match API schema expectations
+        dropoffAddress: {
           address: dropoffAddress.full || dropoffAddress.line1 || dropoffAddress.address || dropoffAddress.formatted_address || '',
+          formatted_address: dropoffAddress.formatted_address || dropoffAddress.full || dropoffAddress.line1 || '',
           postcode: dropoffAddress.postcode || '',
+          latitude: dropoffAddress.coordinates?.lat || 0,
+          longitude: dropoffAddress.coordinates?.lng || 0,
           coordinates: {
             lat: dropoffAddress.coordinates?.lat || 0,
             lng: dropoffAddress.coordinates?.lng || 0
@@ -679,13 +685,16 @@ export function useBookingForm() {
             hasParking: formData.step1.dropoffProperty?.hasParking !== false,
             accessNotes: formData.step1.dropoffProperty?.accessNotes,
             requiresPermit: Boolean(formData.step1.dropoffProperty?.requiresPermit)
-          },
-          itemIds: items.map(item => item.id)
-        }],
+          }
+        },
         
-        // 🔧 FIX: Use 'serviceLevel' (not 'serviceType') to match API schema
+        // Service type and scheduling
+        serviceType: formData.step1.serviceType || 'signature',
         serviceLevel: formData.step1.serviceType || 'signature',
         scheduledDate: formData.step1.pickupDate ?
+          new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() :
+          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        pickupDate: formData.step1.pickupDate ?
           new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() :
           new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         timeSlot: mapTimeSlotToAPI(formData.step1.pickupTimeSlot) || 'flexible',
@@ -712,29 +721,47 @@ export function useBookingForm() {
       console.log('🔍 Sending pricing request:', { 
         correlationId, 
         itemsCount: pricingData.items.length,
-        pickup: pricingData.pickup?.postcode,
-        dropoff: pricingData.dropoffs?.[0]?.postcode,
-        service: pricingData.serviceLevel
+        pickup: pricingData.pickupAddress?.postcode,
+        dropoff: pricingData.dropoffAddress?.postcode,
+        service: pricingData.serviceType,
+        fullData: pricingData
       });
 
       // Call the unified pricing API
-      const response = await fetch('/api/pricing/quote', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Correlation-ID': correlationId,
-        },
-        body: JSON.stringify(pricingData),
-      });
+      let response;
+      try {
+        response = await fetch('/api/pricing/quote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Correlation-ID': correlationId,
+          },
+          body: JSON.stringify(pricingData),
+        });
+      } catch (fetchError) {
+        console.error('❌ Network error during pricing API call:', fetchError);
+        throw new Error('Network error: Unable to reach pricing service');
+      }
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('❌ Failed to parse API response:', {
+          status: response.status,
+          statusText: response.statusText,
+          parseError
+        });
+        throw new Error(`Failed to parse API response: ${response.status} ${response.statusText}`);
+      }
 
       if (!response.ok) {
         console.error('❌ Pricing API error:', {
           status: response.status,
           statusText: response.statusText,
           correlationId,
-          result
+          result,
+          requestData: pricingData
         });
         
         if (result.details && Array.isArray(result.details)) {
@@ -796,14 +823,26 @@ export function useBookingForm() {
       updateFormData('step1', { pricing: finalPricing });
 
       console.log('🎉 Pricing calculation completed successfully!');
-      console.log('✅ Form data after pricing update:', {
-        hasItems: formData.step1.items.length > 0,
-        hasPricing: formData.step1.pricing.total > 0,
-        pricingTotal: formData.step1.pricing.total
+      console.log('✅ Pricing data saved:', {
+        hasItems: items.length > 0,
+        hasPricing: finalPricing.total > 0,
+        pricingTotal: finalPricing.total,
+        breakdown: finalPricing
       });
       return true;
     } catch (error) {
-      console.error('❌ Pricing calculation error:', { error, items: items.length, addresses: { pickup: !!pickupAddress.address, dropoff: !!dropoffAddress.address } });
+      console.error('❌ Pricing calculation error:', { 
+        error, 
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined,
+        items: items.length, 
+        addresses: { 
+          pickup: !!pickupAddress.address, 
+          dropoff: !!dropoffAddress.address,
+          pickupPostcode: pickupAddress.postcode,
+          dropoffPostcode: dropoffAddress.postcode
+        } 
+      });
 
       // Set error state with detailed message
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

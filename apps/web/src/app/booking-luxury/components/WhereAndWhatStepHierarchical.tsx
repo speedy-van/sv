@@ -67,6 +67,7 @@ export default function WhereAndWhatStepHierarchical({
 }: WhereAndWhatStepHierarchicalProps) {
   const toast = useToast();
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
+  const [isToggling, setIsToggling] = useState(false);
   
   // Hierarchical state
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3>(1);
@@ -378,6 +379,14 @@ export default function WhereAndWhatStepHierarchical({
     }
   };
 
+  // Handle toggle with debounce protection
+  const handleToggleSummary = () => {
+    if (isToggling) return;
+    setIsToggling(true);
+    toggleSummary();
+    setTimeout(() => setIsToggling(false), 300);
+  };
+
   // Calculate totals
   const totalItems = selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0);
   const totalWeight = selectedItemsWithRooms.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
@@ -479,7 +488,7 @@ export default function WhereAndWhatStepHierarchical({
           >
             <Flex
               as="button"
-              onClick={toggleSummary}
+              onClick={handleToggleSummary}
               direction="column"
               align="center"
               justify="center"
@@ -490,21 +499,23 @@ export default function WhereAndWhatStepHierarchical({
               borderRadius="full"
               w={{ base: '130px', md: '150px' }}
               h={{ base: '130px', md: '150px' }}
-              cursor="pointer"
+              cursor={isToggling ? 'wait' : 'pointer'}
               boxShadow={isSummaryExpanded 
                 ? "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3)" 
                 : "0 15px 40px rgba(236, 72, 153, 0.5), 0 0 25px rgba(236, 72, 153, 0.3)"}
               transition="all 0.3s ease"
               border="4px solid white"
               position="relative"
+              opacity={isToggling ? 0.7 : 1}
+              pointerEvents={isToggling ? 'none' : 'auto'}
               _hover={{
-                transform: 'scale(1.05)',
+                transform: isToggling ? 'none' : 'scale(1.05)',
                 boxShadow: isSummaryExpanded 
                   ? '0 20px 50px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.5)' 
                   : '0 20px 50px rgba(236, 72, 153, 0.7), 0 0 35px rgba(236, 72, 153, 0.5)',
               }}
               _active={{
-                transform: 'scale(0.98)',
+                transform: isToggling ? 'none' : 'scale(0.98)',
               }}
               textAlign="center"
             >

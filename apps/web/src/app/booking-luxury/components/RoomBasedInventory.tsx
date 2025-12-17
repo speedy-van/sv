@@ -27,24 +27,11 @@ import {
   Badge,
   Button,
   Input,
-  InputGroup,
-  InputLeftElement,
   Icon,
   useColorModeValue,
-  Collapse,
   useDisclosure,
-  Tag,
-  TagLabel,
-  TagLeftIcon,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
   Tooltip,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Select,
+  Collapse,
 } from '@chakra-ui/react';
 import {
   FaBed,
@@ -54,14 +41,10 @@ import {
   FaTree,
   FaBox,
   FaPlus,
-  FaMinus,
-  FaSearch,
   FaChevronDown,
   FaChevronUp,
   FaBuilding,
   FaArrowLeft,
-  FaTrash,
-  FaTimes,
 } from 'react-icons/fa';
 import { MdKitchen } from 'react-icons/md';
 import type { IconType } from 'react-icons';
@@ -186,14 +169,9 @@ export default function RoomBasedInventory({
   const [selectedRoom, setSelectedRoom] = useState<string>('bedroom');
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const { isOpen: isCustomItemOpen, onToggle: toggleCustomItem } = useDisclosure();
-  const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const bgColor = useColorModeValue('white', 'gray.800');
-  const summaryPanelBg = '#050505';
-  const summaryItemBg = '#0f0f12';
-  const summaryItemBorder = 'rgba(168, 85, 247, 0.4)';
-  const summaryCardBorder = useColorModeValue('purple.100', 'purple.500');
 
   // Filter rooms based on property type
   const relevantRooms = useMemo(() => {
@@ -739,329 +717,9 @@ export default function RoomBasedInventory({
     setOpenCategories(new Set());
   };
 
-  const selectionStats = useMemo(() => {
-    if (!selectedItems.length) {
-      return { totalItems: 0, totalWeight: 0, roomBreakdown: [] as Array<{ roomId: string; quantity: number }> };
-    }
-
-    const roomMap = new Map<string, number>();
-    let totalItems = 0;
-    let totalWeight = 0;
-
-    selectedItems.forEach((item) => {
-      totalItems += item.quantity;
-      totalWeight += item.quantity * item.weight;
-      roomMap.set(item.room, (roomMap.get(item.room) || 0) + item.quantity);
-    });
-
-    const roomBreakdown = Array.from(roomMap.entries())
-      .map(([roomId, quantity]) => ({ roomId, quantity }))
-      .sort((a, b) => b.quantity - a.quantity);
-
-    return { totalItems, totalWeight, roomBreakdown };
-  }, [selectedItems]);
-
-  const getRoomLabel = useCallback((roomId: string) => {
-    const room = ROOM_CATEGORY_LOOKUP[roomId];
-    if (!room) return roomId;
-    return room.name;
-  }, []);
-
   return (
     <Box position="relative">
       <VStack spacing={6} align="stretch">
-        {/* Floating Green Button for Selected Items */}
-        {selectedItems.length > 0 && (
-          <>
-            <Box
-              position="fixed"
-              bottom={{ base: '180px', md: '200px' }}
-              right={{ base: '20px', md: '30px' }}
-              zIndex={1500}
-            >
-              <Flex
-                as="button"
-                onClick={toggleSummary}
-                align="center"
-                gap={3}
-                bgGradient={isSummaryExpanded
-                  ? 'linear(135deg, #10b981 0%, #059669 100%)'
-                  : 'linear(135deg, #ec4899 0%, #f43f5e 100%)'}
-                color="white"
-                borderRadius="full"
-                px={{ base: 4, md: 5 }}
-                py={{ base: 3, md: 4 }}
-                minW={{ base: '180px', md: '210px' }}
-                boxShadow="0 12px 30px rgba(0,0,0,0.35)"
-                border="2px solid rgba(255,255,255,0.35)"
-                cursor="pointer"
-                transition="all 0.25s ease"
-                _hover={{ transform: 'translateY(-3px)', boxShadow: '0 16px 36px rgba(0,0,0,0.45)' }}
-                _active={{ transform: 'translateY(-1px)' }}
-              >
-                <Circle size={{ base: '44px', md: '48px' }} bg="rgba(255,255,255,0.15)">
-                  <Icon as={isSummaryExpanded ? FaTimes : FaBox} boxSize={{ base: 5, md: 6 }} color="white" />
-                </Circle>
-                <Box textAlign="left">
-                  <Text fontWeight="800" fontSize={{ base: 'sm', md: 'md' }} lineHeight="1.2">
-                    Selected Items
-                  </Text>
-                  <Text fontWeight="700" fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.900">
-                    {selectionStats.totalItems} items • {isSummaryExpanded ? 'Close list' : 'View list'}
-                  </Text>
-                </Box>
-              </Flex>
-            </Box>
-
-            {/* Expanded Details Panel */}
-            <Box
-              position="fixed"
-              bottom="0"
-              left="0"
-              right="0"
-              zIndex={1400}
-              pointerEvents={isSummaryExpanded ? 'auto' : 'none'}
-            >
-              <Collapse in={isSummaryExpanded} animateOpacity>
-                <Box 
-                  bg={summaryPanelBg} 
-                  color="white" 
-                  p={{ base: 4, md: 6 }}
-                  maxH="70vh"
-                  overflowY="auto"
-                  boxShadow="0 -4px 20px rgba(0, 0, 0, 0.5)"
-                >
-                <SimpleGrid columns={{ base: 2, md: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="full">
-                  {selectedItems.map((item, index) => {
-                    const fullItem = availableItems.find(i => i.id === item.id);
-                    const roomLabel = getRoomLabel(item.room);
-                    const RoomIcon = ROOM_CATEGORY_LOOKUP[item.room]?.icon ?? FaBox;
-                    return (
-                      <Box
-                        key={`summary-${item.id}-${item.room}-${index}`}
-                        bg="rgba(15, 23, 42, 0.8)"
-                        borderRadius="xl"
-                        overflow="hidden"
-                        borderWidth="1px"
-                        borderColor="rgba(168, 85, 247, 0.2)"
-                        transition="all 0.3s"
-                        _hover={{ 
-                          borderColor: 'rgba(168, 85, 247, 0.5)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 20px rgba(168, 85, 247, 0.2)'
-                        }}
-                      >
-                        <VStack spacing={0} align="stretch" h="100%">
-                          {/* Image Section - Fixed Aspect Ratio */}
-                          <Box
-                            w="100%"
-                            position="relative"
-                            h="220px"
-                            bg="white"
-                            overflow="hidden"
-                            borderRadius="md"
-                          >
-                            {fullItem?.image ? (
-                              <NextImage
-                                src={fullItem.image}
-                                alt={item.name}
-                                fill
-                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                style={{
-                                  objectFit: 'contain',
-                                  objectPosition: 'center',
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                position="absolute"
-                                top="0"
-                                left="0"
-                                right="0"
-                                bottom="0"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                bg="rgba(0, 0, 0, 0.3)"
-                              >
-                                <Icon as={FaBox} boxSize={8} color="whiteAlpha.400" />
-                              </Box>
-                            )}
-                            
-                            {/* Quantity Badge */}
-                            <Badge
-                              position="absolute"
-                              top={2}
-                              right={2}
-                              colorScheme="purple"
-                              fontSize="xs"
-                              borderRadius="full"
-                              px={2}
-                              py={1}
-                            >
-                              {item.quantity}x
-                            </Badge>
-                          </Box>
-
-                          {/* Content Section */}
-                          <VStack spacing={2} align="stretch" p={3} flex="1">
-                            {/* Room Label */}
-                            <HStack spacing={1.5}>
-                              <Icon as={RoomIcon} color="purple.300" boxSize={3} />
-                              <Text fontSize="2xs" fontWeight="600" color="purple.200" textTransform="uppercase" letterSpacing="wide">
-                                {roomLabel}
-                              </Text>
-                            </HStack>
-
-                            {/* Item Name */}
-                            <Text fontSize="sm" fontWeight="700" color="white" noOfLines={2} lineHeight="1.3" minH="2.6em">
-                              {item.name}
-                            </Text>
-
-                            {/* Weight Info */}
-                            <Text fontSize="2xs" color="whiteAlpha.600">
-                              {item.weight}kg each · {item.quantity * item.weight}kg total
-                            </Text>
-
-                            {/* Quantity Controls */}
-                            <HStack spacing={2} justify="center" w="full" py={2}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (item.quantity > 1) {
-                                    onUpdateQuantity(item.id, item.quantity - 1);
-                                  } else {
-                                    onRemoveItem(item.id);
-                                  }
-                                }}
-                                style={{
-                                  background: 'rgba(168, 85, 247, 0.2)',
-                                  border: '1px solid rgba(168, 85, 247, 0.3)',
-                                  borderRadius: '8px',
-                                  color: 'white',
-                                  fontSize: '20px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  padding: '4px 12px',
-                                  width: 'auto',
-                                  height: '32px',
-                                  minWidth: '32px',
-                                  lineHeight: '1',
-                                  outline: 'none',
-                                  transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'rgba(168, 85, 247, 0.3)';
-                                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.5)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
-                                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)';
-                                }}
-                              >
-                                −
-                              </button>
-                              <Text
-                                color="white"
-                                fontSize="lg"
-                                fontWeight="700"
-                                minW="36px"
-                                textAlign="center"
-                              >
-                                {item.quantity}
-                              </Text>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdateQuantity(item.id, item.quantity + 1);
-                                }}
-                                style={{
-                                  background: 'rgba(168, 85, 247, 0.2)',
-                                  border: '1px solid rgba(168, 85, 247, 0.3)',
-                                  borderRadius: '8px',
-                                  color: 'white',
-                                  fontSize: '20px',
-                                  fontWeight: 'bold',
-                                  cursor: 'pointer',
-                                  padding: '4px 12px',
-                                  width: 'auto',
-                                  height: '32px',
-                                  minWidth: '32px',
-                                  lineHeight: '1',
-                                  outline: 'none',
-                                  transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'rgba(168, 85, 247, 0.3)';
-                                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.5)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'rgba(168, 85, 247, 0.2)';
-                                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)';
-                                }}
-                              >
-                                +
-                              </button>
-                            </HStack>
-
-                            {/* Delete Icon - Positioned directly above Replace button */}
-                            <Box display="flex" justifyContent="center" pt={2}>
-                              <IconButton
-                                aria-label="Delete item"
-                                icon={<Icon as={FaTrash} boxSize={3.5} />}
-                                size="sm"
-                                variant="ghost"
-                                color="whiteAlpha.600"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onRemoveItem(item.id);
-                                }}
-                                _hover={{ 
-                                  color: 'red.400',
-                                  transform: 'scale(1.1)',
-                                  bg: 'transparent'
-                                }}
-                                transition="all 0.2s"
-                              />
-                            </Box>
-
-                            {/* Replace Button */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              color="purple.300"
-                              fontSize="xs"
-                              w="full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRemoveItem(item.id);
-                                setSelectedRoom(item.room);
-                                if (isSummaryExpanded) {
-                                  toggleSummary();
-                                }
-                                setTimeout(() => {
-                                  const tabsElement = document.querySelector('[role="tablist"]');
-                                  if (tabsElement) {
-                                    tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                  }
-                                }, 300);
-                              }}
-                              _hover={{ bg: 'rgba(168,85,247,0.2)', color: 'purple.200' }}
-                            >
-                              Replace
-                            </Button>
-                          </VStack>
-                        </VStack>
-                      </Box>
-                    );
-                  })}
-                </SimpleGrid>
-                </Box>
-              </Collapse>
-            </Box>
-          </>
-        )}
-
         {/* Header - Enhanced Typography */}
         <VStack spacing={3} align="stretch" mb={2}>
           <Heading 
