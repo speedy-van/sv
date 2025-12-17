@@ -43,9 +43,6 @@ export default function AddressesStep({
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
 
-  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
-  const [distance, setDistance] = useState<number>(formData.step1.distance || 0);
-
   const currentPickupProperty = useMemo(() => formData.step1.pickupProperty ?? {}, [formData.step1.pickupProperty]);
   const currentDropoffProperty = useMemo(() => formData.step1.dropoffProperty ?? {}, [formData.step1.dropoffProperty]);
 
@@ -98,74 +95,8 @@ export default function AddressesStep({
     };
   };
 
-  // Calculate distance when both addresses are set
-  useEffect(() => {
-    const calculateDistance = async () => {
-      const pickupCoords = formData.step1.pickupAddress?.coordinates;
-      const dropoffCoords = formData.step1.dropoffAddress?.coordinates;
-
-      if (!pickupCoords?.lat || !pickupCoords?.lng || !dropoffCoords?.lat || !dropoffCoords?.lng) {
-        setDistance(0);
-        return;
-      }
-
-      // Skip if coordinates are default (0,0)
-      if (
-        (pickupCoords.lat === 0 && pickupCoords.lng === 0) ||
-        (dropoffCoords.lat === 0 && dropoffCoords.lng === 0)
-      ) {
-        setDistance(0);
-        return;
-      }
-
-      setIsCalculatingDistance(true);
-
-      try {
-        const response = await fetch('/api/address/distance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            origin: { lat: pickupCoords.lat, lng: pickupCoords.lng },
-            destination: { lat: dropoffCoords.lat, lng: dropoffCoords.lng },
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const distanceKm = data.distance || 0;
-          setDistance(distanceKm);
-          updateFormData('step1', { distance: distanceKm });
-        } else {
-          // Fallback to haversine distance if API fails
-          const R = 6371; // Earth's radius in km
-          const dLat = ((dropoffCoords.lat - pickupCoords.lat) * Math.PI) / 180;
-          const dLng = ((dropoffCoords.lng - pickupCoords.lng) * Math.PI) / 180;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((pickupCoords.lat * Math.PI) / 180) *
-              Math.cos((dropoffCoords.lat * Math.PI) / 180) *
-              Math.sin(dLng / 2) *
-              Math.sin(dLng / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distanceKm = R * c;
-          
-          setDistance(distanceKm);
-          updateFormData('step1', { distance: distanceKm });
-        }
-      } catch (error) {
-        console.error('Error calculating distance:', error);
-        setDistance(0);
-      } finally {
-        setIsCalculatingDistance(false);
-      }
-    };
-
-    calculateDistance();
-  }, [
-    formData.step1.pickupAddress?.coordinates,
-    formData.step1.dropoffAddress?.coordinates,
-    updateFormData,
-  ]);
+  // Price preview will handle distance calculation internally using haversine formula
+  // No need for deprecated /api/address/distance endpoint
 
   return (
     <Box w="full" pb={8}>
@@ -433,8 +364,8 @@ export default function AddressesStep({
         <PricePreview
           pickupPostcode={formData.step1.pickupAddress?.postcode}
           dropoffPostcode={formData.step1.dropoffAddress?.postcode}
-          distance={distance}
-          isLoading={isCalculatingDistance}
+          pickupCoordinates={formData.step1.pickupAddress?.coordinates}
+          dropoffCoordinates={formData.step1.dropoffAddress?.coordinates}
         />
       </VStack>
 

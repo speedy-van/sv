@@ -19,21 +19,57 @@ import { FaPoundSign, FaInfoCircle, FaRoute, FaClock } from 'react-icons/fa';
 interface PricePreviewProps {
   pickupPostcode?: string;
   dropoffPostcode?: string;
-  distance?: number;
-  isLoading?: boolean;
+  pickupCoordinates?: { lat?: number; lng?: number };
+  dropoffCoordinates?: { lat?: number; lng?: number };
 }
 
 export default function PricePreview({
   pickupPostcode,
   dropoffPostcode,
-  distance,
-  isLoading = false,
+  pickupCoordinates,
+  dropoffCoordinates,
 }: PricePreviewProps) {
   const [estimatedRange, setEstimatedRange] = useState<{ min: number; max: number } | null>(null);
   const [estimatedDuration, setEstimatedDuration] = useState<string>('');
+  const [distance, setDistance] = useState<number>(0);
 
   useEffect(() => {
-    if (!distance || distance === 0) {
+    // Calculate distance using haversine formula
+    if (!pickupCoordinates?.lat || !pickupCoordinates?.lng || 
+        !dropoffCoordinates?.lat || !dropoffCoordinates?.lng) {
+      setDistance(0);
+      setEstimatedRange(null);
+      setEstimatedDuration('');
+      return;
+    }
+
+    // Skip if coordinates are default (0,0)
+    if (
+      (pickupCoordinates.lat === 0 && pickupCoordinates.lng === 0) ||
+      (dropoffCoordinates.lat === 0 && dropoffCoordinates.lng === 0)
+    ) {
+      setDistance(0);
+      setEstimatedRange(null);
+      setEstimatedDuration('');
+      return;
+    }
+
+    // Haversine formula for distance calculation
+    const R = 6371; // Earth's radius in km
+    const dLat = ((dropoffCoordinates.lat - pickupCoordinates.lat) * Math.PI) / 180;
+    const dLng = ((dropoffCoordinates.lng - pickupCoordinates.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((pickupCoordinates.lat * Math.PI) / 180) *
+        Math.cos((dropoffCoordinates.lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distanceKm = R * c;
+    
+    setDistance(distanceKm);
+
+    if (distanceKm === 0) {
       setEstimatedRange(null);
       setEstimatedDuration('');
       return;
@@ -62,10 +98,10 @@ export default function PricePreview({
     } else {
       setEstimatedDuration(`${minutes} minutes`);
     }
-  }, [distance]);
+  }, [pickupCoordinates, dropoffCoordinates]);
 
   const hasAddresses = pickupPostcode && dropoffPostcode;
-  const showPreview = hasAddresses && estimatedRange && !isLoading;
+  const showPreview = hasAddresses && estimatedRange;
 
   if (!hasAddresses) {
     return null;
@@ -138,14 +174,7 @@ export default function PricePreview({
           <Divider borderColor="whiteAlpha.200" />
 
           {/* Price Display */}
-          {isLoading ? (
-            <HStack justify="center" py={4}>
-              <Spinner size="md" color="blue.400" thickness="3px" />
-              <Text color="whiteAlpha.700" fontSize="sm">
-                Calculating estimate...
-              </Text>
-            </HStack>
-          ) : showPreview ? (
+          {showPreview ? (
             <VStack spacing={3} align="stretch">
               {/* Price Range */}
               <HStack justify="center" py={2}>
