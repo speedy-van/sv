@@ -1007,97 +1007,117 @@ export default function BookingLuxuryPage() {
                 />
               </Flex>
 
-              {/* Bottom: Progress Steps - Enhanced Design */}
-              <HStack 
-                spacing={{ base: 2, md: 3 }}
-                justify="center"
-                w="full"
-                sx={{
-                  flexDirection: 'row !important',
-                  alignItems: 'center !important',
-                }}
-              >
-                {STEPS.map((step, index) => (
-                  <React.Fragment key={step.id}>
-                    <Box
-                      w={{ base: '40px', md: '48px' }}
-                      h={{ base: '40px', md: '48px' }}
-                      borderRadius="full"
-                      bg={
-                        step.id === currentStep 
-                          ? `${step.color}.500`
-                          : step.id < currentStep 
-                          ? 'green.500'
-                          : 'whiteAlpha.200'
-                      }
-                      color="white"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      fontSize={{ base: 'md', md: 'lg' }}
-                      fontWeight="800"
-                      cursor={step.id <= currentStep ? 'pointer' : 'default'}
-                      onClick={() => step.id <= currentStep && handleStepClick(step.id)}
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      border="3px solid"
-                      borderColor={
-                        step.id === currentStep 
-                          ? `${step.color}.400`
-                          : step.id < currentStep 
-                          ? 'green.400'
-                          : 'transparent'
-                      }
-                      position="relative"
-                      animation={step.id === currentStep ? 'stepPulse 2s ease-in-out infinite' : undefined}
-                      sx={{
-                        '@keyframes stepPulse': {
-                          '0%, 100%': {
-                            boxShadow: step.id === currentStep 
+              {/* Bottom: Progress Steps - Enhanced Design with Labels */}
+              <VStack spacing={2} w="full">
+                <HStack 
+                  spacing={{ base: 2, md: 3 }}
+                  justify="center"
+                  w="full"
+                  sx={{
+                    flexDirection: 'row !important',
+                    alignItems: 'center !important',
+                  }}
+                >
+                  {STEPS.map((step, index) => (
+                    <React.Fragment key={step.id}>
+                      <VStack spacing={1}>
+                        <Box
+                          w={{ base: '40px', md: '48px' }}
+                          h={{ base: '40px', md: '48px' }}
+                          borderRadius="full"
+                          bg={
+                            step.id === currentStep 
+                              ? `${step.color}.500`
+                              : step.id < currentStep 
+                              ? 'green.500'
+                              : 'whiteAlpha.200'
+                          }
+                          color="white"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          fontSize={{ base: 'md', md: 'lg' }}
+                          fontWeight="800"
+                          cursor={step.id <= currentStep ? 'pointer' : 'default'}
+                          onClick={() => step.id <= currentStep && handleStepClick(step.id)}
+                          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                          border="3px solid"
+                          borderColor={
+                            step.id === currentStep 
+                              ? `${step.color}.400`
+                              : step.id < currentStep 
+                              ? 'green.400'
+                              : 'transparent'
+                          }
+                          position="relative"
+                          animation={step.id === currentStep ? 'stepPulse 2s ease-in-out infinite' : undefined}
+                          sx={{
+                            '@keyframes stepPulse': {
+                              '0%, 100%': {
+                                boxShadow: step.id === currentStep 
+                                  ? `0 0 20px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
+                                  : 'none',
+                                transform: 'scale(1)',
+                              },
+                              '50%': {
+                                boxShadow: step.id === currentStep 
+                                  ? `0 0 35px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.9)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.9)' : 'rgba(16, 185, 129, 0.9)'}, 0 0 50px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
+                                  : 'none',
+                                transform: 'scale(1.08)',
+                              },
+                            },
+                            '@keyframes lineProgress': {
+                              '0%': {
+                                width: '0%',
+                              },
+                              '100%': {
+                                width: '100%',
+                              },
+                            },
+                          }}
+                          boxShadow={
+                            step.id === currentStep 
                               ? `0 0 20px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
-                              : 'none',
-                            transform: 'scale(1)',
-                          },
-                          '50%': {
+                              : step.id < currentStep 
+                              ? '0 0 15px rgba(16, 185, 129, 0.5)'
+                              : 'none'
+                          }
+                          _hover={step.id <= currentStep ? { 
+                            transform: 'scale(1.15) translateY(-2px)',
                             boxShadow: step.id === currentStep 
-                              ? `0 0 35px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.9)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.9)' : 'rgba(16, 185, 129, 0.9)'}, 0 0 50px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
-                              : 'none',
-                            transform: 'scale(1.08)',
-                          },
-                        },
-                        '@keyframes lineProgress': {
-                          '0%': {
-                            width: '0%',
-                          },
-                          '100%': {
-                            width: '100%',
-                          },
-                        },
-                      }}
-                      boxShadow={
-                        step.id === currentStep 
-                          ? `0 0 20px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.6)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 'rgba(16, 185, 129, 0.6)'}`
-                          : step.id < currentStep 
-                          ? '0 0 15px rgba(16, 185, 129, 0.5)'
-                          : 'none'
-                      }
-                      _hover={step.id <= currentStep ? { 
-                        transform: 'scale(1.15) translateY(-2px)',
-                        boxShadow: step.id === currentStep 
-                          ? `0 0 25px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.8)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.8)' : 'rgba(16, 185, 129, 0.8)'}`
-                          : '0 0 20px rgba(16, 185, 129, 0.7)'
-                      } : {}}
-                      _after={step.id === currentStep ? {
-                        content: '""',
-                        position: 'absolute',
-                        inset: '-6px',
-                        borderRadius: 'full',
-                        background: `radial-gradient(circle, ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.3)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(16, 185, 129, 0.3)'}, transparent 70%)`,
-                        animation: 'stepPulse 2s ease-in-out infinite',
-                        pointerEvents: 'none',
-                      } : {}}
-                    >
-                      {step.id < currentStep ? <Icon as={FaCheck} boxSize={{ base: 4, md: 5 }} /> : step.id}
-                    </Box>
+                              ? `0 0 25px ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.8)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.8)' : 'rgba(16, 185, 129, 0.8)'}`
+                              : '0 0 20px rgba(16, 185, 129, 0.7)'
+                          } : {}}
+                          _after={step.id === currentStep ? {
+                            content: '""',
+                            position: 'absolute',
+                            inset: '-6px',
+                            borderRadius: 'full',
+                            background: `radial-gradient(circle, ${step.color === 'blue' ? 'rgba(59, 130, 246, 0.3)' : step.color === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(16, 185, 129, 0.3)'}, transparent 70%)`,
+                            animation: 'stepPulse 2s ease-in-out infinite',
+                            pointerEvents: 'none',
+                          } : {}}
+                        >
+                          {step.id < currentStep ? <Icon as={FaCheck} boxSize={{ base: 4, md: 5 }} /> : step.id}
+                        </Box>
+                        {/* Step Label */}
+                        <Text
+                          fontSize={{ base: 'xs', md: 'sm' }}
+                          fontWeight={step.id === currentStep ? '700' : '500'}
+                          color={
+                            step.id === currentStep 
+                              ? `${step.color}.400`
+                              : step.id < currentStep 
+                              ? 'green.400'
+                              : 'whiteAlpha.500'
+                          }
+                          textAlign="center"
+                          whiteSpace="nowrap"
+                          transition="all 0.3s"
+                        >
+                          {step.shortTitle}
+                        </Text>
+                      </VStack>
                     {index < STEPS.length - 1 && (
                       <Box 
                         w={{ base: '30px', md: '40px' }} 
@@ -1108,6 +1128,7 @@ export default function BookingLuxuryPage() {
                         overflow="hidden"
                         transition="all 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
                         boxShadow={step.id < currentStep ? '0 0 10px rgba(16, 185, 129, 0.5)' : 'none'}
+                        mb={6} // Add margin to account for labels below
                         _after={step.id < currentStep ? {
                           content: '""',
                           position: 'absolute',
@@ -1133,6 +1154,7 @@ export default function BookingLuxuryPage() {
                   </React.Fragment>
                 ))}
               </HStack>
+            </VStack>
             </VStack>
           </Box>
 
