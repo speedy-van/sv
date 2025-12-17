@@ -81,6 +81,23 @@ export async function POST(
         console.log('✅ Order cancellation email sent successfully:', {
           orderRef: booking.reference,
           email: booking.customerEmail,
+          provider: emailResult.provider,
+        });
+
+        // Log successful email send
+        await prisma.auditLog.create({
+          data: {
+            actorId: 'system',
+            actorRole: 'system',
+            action: 'cancellation_email_sent',
+            targetType: 'booking',
+            targetId: booking.id,
+            details: {
+              email: booking.customerEmail,
+              provider: emailResult.provider,
+              messageId: emailResult.messageId,
+            },
+          },
         });
       } else {
         console.error('❌ Failed to send order cancellation email:', emailResult.error);

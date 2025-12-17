@@ -215,8 +215,42 @@ export async function POST(
     // Send cancellation email to customer if requested
     if (notifyCustomer !== false) {
       try {
-        // TODO: Implement email sending for cancellation
-        console.log('📧 Would send cancellation email to:', booking.customerEmail);
+        const { unifiedEmailService } = await import('@/lib/email/UnifiedEmailService');
+        
+        const emailResult = await unifiedEmailService.sendOrderCancellation({
+          customerEmail: booking.customerEmail,
+          orderNumber: booking.reference,
+          customerName: booking.customerName,
+          reason: reason || 'Cancelled by admin',
+          refundAmount: booking.paidAt && refundAmount ? refundAmount : undefined,
+          currency: 'GBP',
+        });
+
+        if (emailResult.success) {
+          console.log('✅ Order cancellation email sent successfully:', {
+            orderRef: booking.reference,
+            email: booking.customerEmail,
+            provider: emailResult.provider,
+          });
+
+          // Log successful email send
+          await prisma.auditLog.create({
+            data: {
+              actorId: 'system',
+              actorRole: 'system',
+              action: 'cancellation_email_sent',
+              targetType: 'booking',
+              targetId: booking.id,
+              details: {
+                email: booking.customerEmail,
+                provider: emailResult.provider,
+                messageId: emailResult.messageId,
+              },
+            },
+          });
+        } else {
+          console.error('❌ Failed to send order cancellation email:', emailResult.error);
+        }
       } catch (emailError) {
         console.error('❌ Error sending cancellation email:', emailError);
         // Don't fail the request if email fails
