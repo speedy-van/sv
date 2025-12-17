@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PricingInput, PricingResult, MultiDropCalculation, createRequestId } from './schemas';
 import { AdvancedMultiDropRouter, type MultiDropPricing, type OptimizedRoute } from '../routing/multi-drop-router';
+import { ALL_REMOVAL_ITEMS, type RemovalItem } from '../uk-removal-items-data';
 
 // Export types for hooks
 export type UnifiedPricingRequest = PricingInput;
@@ -446,26 +447,215 @@ export class UnifiedPricingEngine {
   }
 
   /**
-   * Find item in UK dataset by ID or name
+   * Find item in UK dataset by ID or name with fuzzy matching
+   * Uses smart matching from item-id-mapper to handle frontend IDs
+   * Falls back to ALL_REMOVAL_ITEMS if not found in official dataset
    */
   private findDatasetItem(id?: string, name?: string): UKDatasetItem | null {
     if (!this.itemCatalog?.items) return null;
 
-    // Search by ID first
+    // Try exact ID match first (fast path)
     if (id) {
-      const itemById = this.itemCatalog.items.find(item => item.id === id);
-      if (itemById) return itemById;
+      const exactMatch = this.itemCatalog.items.find(item => item.id === id);
+      if (exactMatch) return exactMatch;
     }
 
-    // Search by name
+    // Try exact name match (fast path)
     if (name) {
-      const itemByName = this.itemCatalog.items.find(item =>
+      const exactNameMatch = this.itemCatalog.items.find(item =>
         item.name.toLowerCase() === name.toLowerCase()
       );
-      if (itemByName) return itemByName;
+      if (exactNameMatch) return exactNameMatch;
+    }
+
+    // Use smart fuzzy matching for non-exact matches
+    // This handles frontend IDs that don't match dataset IDs exactly
+    if (id || name) {
+      const searchId = id || '';
+      const searchName = name || '';
+      
+      // Try keyword match in official dataset
+      let match = this.itemCatalog.items.find(item => 
+        Array.isArray(item.keywords) && item.keywords.some((keyword: string) => 
+          keyword.toLowerCase() === searchId.toLowerCase() || 
+          keyword.toLowerCase() === searchName.toLowerCase()
+        )
+      );
+      if (match) return match;
+      
+      // Try partial name match (search for each word in item name)
+      const nameWords = searchName.toLowerCase().split(/[\s_-]+/).filter(w => w.length > 2);
+      if (nameWords.length > 0) {
+        match = this.itemCatalog.items.find(item => {
+          const itemNameLower = item.name.toLowerCase();
+          return nameWords.every(word => itemNameLower.includes(word));
+        });
+        if (match) return match;
+      }
+      
+      // Try searching in ID for name components in official dataset
+      if (searchName) {
+        match = this.itemCatalog.items.find(item => {
+          const itemIdLower = item.id.toLowerCase();
+          return nameWords.every(word => itemIdLower.includes(word));
+        });
+        if (match) return match;
+      }
+
+      // FALLBACK: Search in ALL_REMOVAL_ITEMS (from Images_Only folder)
+      // This handles items that exist in frontend but not in official dataset
+      const fallbackItem = this.findInRemovalItems(searchId, searchName, nameWords);
+      if (fallbackItem) {
+        // Convert RemovalItem to UKDatasetItem format
+        return this.convertRemovalItemToDatasetItem(fallbackItem);
+      }
     }
 
     return null;
+  }
+
+  /**
+   * Find item in ALL_REMOVAL_ITEMS fallback catalog
+   */
+  private findInRemovalItems(searchId: string, searchName: string, nameWords: string[]): RemovalItem | null {
+    // Try exact ID match
+    let item = ALL_REMOVAL_ITEMS.find(i => i.id === searchId);
+    if (item) return item;
+
+    // Try exact name match
+    item = ALL_REMOVAL_ITEMS.find(i => i.name.toLowerCase() === searchName.toLowerCase());
+    if (item) return item;
+
+    // Try partial match with name words
+    if (nameWords.length > 0) {
+      item = ALL_REMOVAL_ITEMS.find(i => {
+        const itemNameLower = i.name.toLowerCase();
+        return nameWords.every(word => itemNameLower.includes(word));
+      });
+      if (item) return item;
+
+      // Try ID match
+      item = ALL_REMOVAL_ITEMS.find(i => {
+        const itemIdLower = i.id.toLowerCase();
+        return nameWords.every(word => itemIdLower.includes(word));
+      });
+      if (item) return item;
+    }
+
+    return null;
+  }
+
+  /**
+   * Convert RemovalItem to UKDatasetItem format with estimated values
+   */
+  private convertRemovalItemToDatasetItem(item: RemovalItem): UKDatasetItem {
+    // Estimate volume from weight (typical ratio: 0.01 m³ per kg for furniture)
+    const estimatedVolume = Math.max(0.1, item.weight * 0.01).toFixed(3);
+
+    // Determine workers required based on weight
+    let workersRequired = 1;
+    if (item.weight > 100) workersRequired = 3;
+    else if (item.weight > 50) workersRequired = 2;
+
+    // Determine if dismantling is needed based on item type
+    const nameL = item.name.toLowerCase();
+    const needsDismantling = 
+      nameL.includes('bed') || 
+      nameL.includes('wardrobe') || 
+      nameL.includes('desk') || 
+      nameL.includes('table') ||
+      nameL.includes('shelf');
+
+    return {
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      filename: item.image.split('/').pop() || 'unknown.jpg',
+      dimensions: this.estimateDimensions(item.weight),
+      weight: item.weight,
+      volume: estimatedVolume,
+      workers_required: workersRequired,
+      dismantling_required: needsDismantling ? 'Yes' : 'No',
+      dismantling_time_minutes: needsDismantling ? 15 : 0,
+      reassembly_time_minutes: needsDismantling ? 20 : 0,
+      luton_van_fit: item.weight < 300,
+      van_capacity_estimate: Math.max(10, Math.floor(1000 / item.weight)),
+      load_priority: item.weight > 100 ? 'First-in' : 'Mid-load',
+      fragility_level: this.estimateFragilityLevel(item.name, item.category),
+      stackability: item.weight < 30 ? 'Yes' : 'No',
+      packaging_requirement: this.estimatePackagingRequirement(item.name, item.category),
+      special_handling_notes: 'Standard handling',
+      unload_difficulty: item.weight > 100 ? 'Difficult' : item.weight > 50 ? 'Moderate' : 'Easy',
+      door_width_clearance_cm: item.weight > 100 ? 90 : 75,
+      staircase_compatibility: item.weight < 100 ? 'Yes' : 'With caution',
+      elevator_requirement: item.weight > 150 ? 'Recommended' : 'Not needed',
+      insurance_category: item.weight > 100 ? 'High-Value' : 'Standard',
+      keywords: this.generateKeywords(item.name, item.id),
+    };
+  }
+
+  /**
+   * Estimate dimensions from weight
+   */
+  private estimateDimensions(weight: number): string {
+    if (weight < 10) return '40x40x40';
+    if (weight < 30) return '60x60x60';
+    if (weight < 60) return '80x80x80';
+    if (weight < 100) return '100x100x100';
+    return '120x120x120';
+  }
+
+  /**
+   * Estimate fragility level
+   */
+  private estimateFragilityLevel(name: string, category: string): string {
+    const nameL = name.toLowerCase();
+    const catL = category.toLowerCase();
+    
+    if (nameL.includes('glass') || nameL.includes('mirror') || catL.includes('antique')) {
+      return 'High';
+    }
+    if (nameL.includes('tv') || nameL.includes('electronics') || nameL.includes('lamp')) {
+      return 'High';
+    }
+    if (catL.includes('furniture')) {
+      return 'Medium';
+    }
+    return 'Low';
+  }
+
+  /**
+   * Estimate packaging requirement
+   */
+  private estimatePackagingRequirement(name: string, category: string): string {
+    const nameL = name.toLowerCase();
+    const catL = category.toLowerCase();
+    
+    if (nameL.includes('glass') || nameL.includes('mirror') || catL.includes('antique')) {
+      return 'Bubble wrap + Blankets';
+    }
+    if (nameL.includes('tv') || nameL.includes('electronics')) {
+      return 'Original box or blankets';
+    }
+    return 'Blankets';
+  }
+
+  /**
+   * Generate keywords from name and ID
+   */
+  private generateKeywords(name: string, id: string): string[] {
+    const keywords: string[] = [];
+    
+    // Split name into words
+    const nameWords = name.toLowerCase().split(/[\s_-]+/).filter(w => w.length > 2);
+    keywords.push(...nameWords);
+    
+    // Split ID into words
+    const idWords = id.toLowerCase().split(/[\s_-]+/).filter(w => w.length > 2);
+    keywords.push(...idWords);
+    
+    // Remove duplicates
+    return [...new Set(keywords)];
   }
 
   /**
