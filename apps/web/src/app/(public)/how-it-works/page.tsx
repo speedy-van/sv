@@ -63,6 +63,8 @@ function Step({ n, title, description, icon, features, cta, delay = 0 }: StepPro
       transition={{ duration: 0.6, delay }}
       position="relative"
       h="full"
+      w="full"
+      maxW={{ base: '100%', md: 'none' }}
     >
       <Box
         bg={cardBg}
@@ -71,6 +73,7 @@ function Step({ n, title, description, icon, features, cta, delay = 0 }: StepPro
         borderRadius="3xl"
         p={{ base: 6, md: 8 }}
         h="full"
+        w="full"
         position="relative"
         overflow="hidden"
         boxShadow={`0 10px 40px ${shadowColor}`}
@@ -79,6 +82,13 @@ function Step({ n, title, description, icon, features, cta, delay = 0 }: StepPro
           boxShadow: `0 20px 60px ${shadowColor}`,
         }}
         transition="all 0.3s ease"
+        sx={{
+          '@media (max-width: 767px)': {
+            width: '100% !important',
+            maxWidth: '100% !important',
+            minWidth: '100% !important',
+          }
+        }}
       >
         {/* Background gradient accent */}
         <Box
@@ -189,6 +199,8 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
     <MotionBox
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.2 }}
+      w="full"
+      maxW={{ base: '100%', md: 'none' }}
     >
       <Flex
         bg={cardBg}
@@ -199,9 +211,16 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
         align="center"
         gap={4}
         h="full"
+        w="full"
         boxShadow="sm"
         _hover={{ boxShadow: 'md' }}
         transition="all 0.3s"
+        sx={{
+          '@media (max-width: 767px)': {
+            width: '100% !important',
+            maxWidth: '100% !important',
+          }
+        }}
       >
         <Flex
           w="45px"
@@ -349,8 +368,19 @@ export default function HowItWorksPage() {
       </Box>
 
       {/* Steps Section */}
-      <Container maxW="6xl" py={{ base: 16, md: 24 }}>
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={{ base: 8, md: 10 }}>
+      <Container maxW="6xl" py={{ base: 16, md: 24 }} px={{ base: 4, md: 6 }}>
+        <SimpleGrid 
+          columns={{ base: 1, md: 2, lg: 3 }} 
+          gap={{ base: 6, md: 8, lg: 10 }}
+          w="full"
+          sx={{
+            '@media (max-width: 767px)': {
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.5rem',
+            }
+          }}
+        >
           <Step
             n="1"
             title="Enter Addresses"
@@ -420,7 +450,17 @@ export default function HowItWorksPage() {
                 What You Get
               </Heading>
               
-              <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4}>
+              <SimpleGrid 
+                columns={{ base: 1, sm: 2, lg: 4 }} 
+                gap={4}
+                sx={{
+                  '@media (max-width: 767px)': {
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                  }
+                }}
+              >
                 <FeatureCard
                   icon={FaBolt}
                   title="Instant Booking"
@@ -507,13 +547,31 @@ export default function HowItWorksPage() {
                   </Text>
                 </Box>
 
-                <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} w="full">
+                <SimpleGrid 
+                  columns={{ base: 1, md: 2 }} 
+                  gap={6} 
+                  w="full"
+                  sx={{
+                    '@media (max-width: 767px)': {
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1.5rem',
+                    }
+                  }}
+                >
                   <Box
                     p={6}
                     bg={useColorModeValue('purple.50', 'gray.700')}
                     borderRadius="2xl"
                     borderLeft="4px solid"
                     borderColor="purple.500"
+                    w="full"
+                    sx={{
+                      '@media (max-width: 767px)': {
+                        width: '100% !important',
+                        maxWidth: '100% !important',
+                      }
+                    }}
                   >
                     <Text fontSize="2xl" mb={2}>🤖</Text>
                     <Heading as="h3" size="sm" mb={2}>
@@ -530,6 +588,13 @@ export default function HowItWorksPage() {
                     borderRadius="2xl"
                     borderLeft="4px solid"
                     borderColor="blue.500"
+                    w="full"
+                    sx={{
+                      '@media (max-width: 767px)': {
+                        width: '100% !important',
+                        maxWidth: '100% !important',
+                      }
+                    }}
                   >
                     <Text fontSize="2xl" mb={2}>📊</Text>
                     <Heading as="h3" size="sm" mb={2}>
@@ -546,6 +611,13 @@ export default function HowItWorksPage() {
                     borderRadius="2xl"
                     borderLeft="4px solid"
                     borderColor="green.500"
+                    w="full"
+                    sx={{
+                      '@media (max-width: 767px)': {
+                        width: '100% !important',
+                        maxWidth: '100% !important',
+                      }
+                    }}
                   >
                     <Text fontSize="2xl" mb={2}>🗺️</Text>
                     <Heading as="h3" size="sm" mb={2}>
@@ -562,6 +634,13 @@ export default function HowItWorksPage() {
                     borderRadius="2xl"
                     borderLeft="4px solid"
                     borderColor="pink.500"
+                    w="full"
+                    sx={{
+                      '@media (max-width: 767px)': {
+                        width: '100% !important',
+                        maxWidth: '100% !important',
+                      }
+                    }}
                   >
                     <Text fontSize="2xl" mb={2}>📱</Text>
                     <Heading as="h3" size="sm" mb={2}>
