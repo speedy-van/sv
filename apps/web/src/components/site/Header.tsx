@@ -108,6 +108,12 @@ const Header: React.FC = memo(() => {
         ariaLabel: 'Learn more about Speedy Van',
       },
       {
+        label: 'How It Works',
+        href: '/how-it-works',
+        icon: FiBookOpen,
+        ariaLabel: 'See how our service works',
+      },
+      {
         label: 'Services',
         href: '/services',
         icon: FiSettings,
@@ -163,6 +169,12 @@ const Header: React.FC = memo(() => {
         href: '/about',
         icon: FiInfo,
         ariaLabel: 'Learn more about Speedy Van',
+      },
+      {
+        label: 'How It Works',
+        href: '/how-it-works',
+        icon: FiBookOpen,
+        ariaLabel: 'See how our service works',
       },
       {
         label: 'Services',
