@@ -115,6 +115,20 @@ const nextConfig = {
           },
         ],
       },
+      // Video files - long cache (CDN ready)
+      {
+        source: '/videos/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+          {
+            key: 'Accept-Ranges',
+            value: 'bytes',
+          },
+        ],
+      },
       // CRITICAL: CSS files MUST have correct MIME type and FORCE reload on new deployments
       {
         source: '/_next/static/css/:path*.css',

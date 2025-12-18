@@ -256,8 +256,8 @@ const MobileHero: React.FC = () => {
             // Video started playing - production ready
           }}
         >
-          <source src="/videos/background-original.mp4" type="video/mp4" />
-          <source src="/videos/background.mp4" type="video/mp4" />
+          <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/background-original.mp4`} type="video/mp4" />
+          <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/background.mp4`} type="video/mp4" />
         </video>
       )}
 

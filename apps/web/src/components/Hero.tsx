@@ -97,6 +97,11 @@ const Hero: React.FC<HeroProps> = ({
   const heroRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(heroRef, { once: true });
   const textColor = 'white';
+  
+  // CDN URL for video files
+  const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL || '';
+  const videoSrc1 = `${cdnUrl}/videos/background-original.mp4`;
+  const videoSrc2 = `${cdnUrl}/videos/background.mp4`;
 
   return (
     <MotionBox
@@ -138,8 +143,8 @@ const Hero: React.FC<HeroProps> = ({
         onError={(e) => console.error('❌ Video error:', e)}
         onPlay={() => console.log('▶️ Video is playing')}
       >
-        <source src="/videos/background-original.mp4" type="video/mp4" />
-        <source src="/videos/background.mp4" type="video/mp4" />
+        <source src={videoSrc1} type="video/mp4" />
+        <source src={videoSrc2} type="video/mp4" />
       </video>
 
       {/* Minimal overlay for text readability */}

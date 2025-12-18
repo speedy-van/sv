@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       body = JSON.parse(raw) as VisitorTrackingData;
     } catch {
       // Invalid JSON - avoid noisy errors and just ignore
-      return NextResponse.json({ success: false, error: 'Invalid JSON' }, { status: 400 });
+      return new Response(null, { status: 204 });
     }
 
     // Minimal required fields to proceed
@@ -47,6 +47,26 @@ export async function POST(request: NextRequest) {
       return new Response(null, { status: 204 });
     }
 
+    // Return 204 immediately - don't wait for processing
+    // This makes the API non-blocking for the client
+    const response = new Response(null, { status: 204 });
+
+    // Process tracking in background (fire and forget)
+    processTracking(request, body).catch(err => {
+      console.error('Background tracking error:', err);
+    });
+
+    return response;
+  } catch (error) {
+    console.error('Visitor tracking error:', error);
+    // Return 204 even on error to avoid blocking client
+    return new Response(null, { status: 204 });
+  }
+}
+
+// Background processing function
+async function processTracking(request: NextRequest, body: VisitorTrackingData) {
+  try {
     // Get IP address from various possible headers
     const ipAddress =
       request.headers.get('x-forwarded-for')?.split(',')[0] ||
@@ -141,21 +161,9 @@ export async function POST(request: NextRequest) {
         },
       });
     }
-
-    return NextResponse.json({
-      success: true,
-      sessionId: body.sessionId,
-      location: locationData,
-    });
   } catch (error) {
-    console.error('Visitor tracking error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
-      { status: 500 }
-    );
+    console.error('Background tracking processing error:', error);
+    // Don't throw - just log the error
   }
 }
 

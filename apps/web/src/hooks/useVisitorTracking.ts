@@ -119,7 +119,7 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
   // Geolocation removed to improve Lighthouse Best Practices score
   // Only request geolocation when explicitly needed by user action
 
-  const trackPageView = async (page: string) => {
+  const trackPageView = (page: string) => {
     try {
       // Skip if running on server
       if (typeof window === 'undefined') return;
@@ -135,11 +135,19 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
         ...deviceInfo,
       };
 
-      await fetch('/api/visitors/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trackingData),
-      });
+      // Use sendBeacon for non-blocking tracking (fires in background)
+      const data = JSON.stringify(trackingData);
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/visitors/track', data);
+      } else {
+        // Fallback for old browsers (non-blocking fetch)
+        fetch('/api/visitors/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: data,
+          keepalive: true,
+        }).catch(() => {/* Ignore errors */});
+      }
 
       lastPageRef.current = page;
     } catch (error) {
@@ -147,7 +155,7 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
     }
   };
 
-  const trackAction = async (action: string, actionData?: any) => {
+  const trackAction = (action: string, actionData?: any) => {
     try {
       // Skip if running on server
       if (typeof window === 'undefined') return;
@@ -155,18 +163,27 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
 
       const deviceInfo = getDeviceInfo();
 
-      await fetch('/api/visitors/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: sessionIdRef.current,
-          visitorId: visitorIdRef.current,
-          page: window.location.pathname,
-          action,
-          actionData,
-          ...deviceInfo,
-        }),
+      const data = JSON.stringify({
+        sessionId: sessionIdRef.current,
+        visitorId: visitorIdRef.current,
+        page: window.location.pathname,
+        action,
+        actionData,
+        ...deviceInfo,
       });
+
+      // Use sendBeacon for non-blocking tracking
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/visitors/track', data);
+      } else {
+        // Fallback for old browsers
+        fetch('/api/visitors/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: data,
+          keepalive: true,
+        }).catch(() => {/* Ignore errors */});
+      }
     } catch (error) {
       console.error('Failed to track action:', error);
     }
