@@ -420,6 +420,7 @@ export function OrdersTable({
 
   // Filter orders based on search query and type using useMemo for better performance
   const { filteredOrders, unpaidOrdersCount } = useMemo(() => {
+    console.log('🔄 Recalculating filtered orders. showUnpaidOrders=', showUnpaidOrders);
     if (!orders.length) return { filteredOrders: [], unpaidOrdersCount: 0 };
 
     let filtered = orders;
@@ -450,7 +451,9 @@ export function OrdersTable({
     // Apply payment filter
     if (showUnpaidOrders) {
       // Show ONLY unpaid orders when button is clicked
+      console.log('🔍 Filtering for unpaid orders. Before:', filtered.length);
       filtered = filtered.filter(order => !order.paidAt);
+      console.log('🔍 After unpaid filter:', filtered.length);
     }
     // Otherwise show ALL orders (no filter applied by default)
 
@@ -1805,7 +1808,10 @@ export function OrdersTable({
         leftIcon={<Icon as={FaPoundSign} />}
         variant={showUnpaidOrders ? "solid" : "outline"}
         colorScheme={showUnpaidOrders ? "red" : "gray"}
-        onClick={() => setShowUnpaidOrders(!showUnpaidOrders)}
+        onClick={() => {
+          console.log('🔘 Toggle unpaid orders:', !showUnpaidOrders);
+          setShowUnpaidOrders(!showUnpaidOrders);
+        }}
         bg={showUnpaidOrders ? "rgba(239, 68, 68, 0.2)" : "#111111"}
         color="#FFFFFF"
         borderColor={showUnpaidOrders ? "#ef4444" : "#333333"}
@@ -2089,15 +2095,6 @@ export function OrdersTable({
                           _hover={{ bg: '#1d4ed8' }}
                         >
                           Assign Driver
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleBulkAction('status')}
-                          bg="#2563eb"
-                          color="#FFFFFF"
-                          _hover={{ bg: '#1d4ed8' }}
-                        >
-                          Change Status
                         </Button>
                         <Button 
                           size="sm" 

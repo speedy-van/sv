@@ -7,24 +7,60 @@ import { upsertAssignment } from '@/lib/utils/assignment-helpers';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(req: NextRequest) {
+  console.log('❌ GET request to /api/admin/orders/bulk - method not allowed');
+  return NextResponse.json(
+    { error: 'Method not allowed. Use POST for bulk operations.' },
+    { status: 405 }
+  );
+}
+
 export async function POST(req: NextRequest) {
   const authResult = await requireAdmin(req);
   if (authResult instanceof NextResponse) {
+    console.log('❌ Bulk orders: Admin auth failed');
     return authResult;
   }
   const user = authResult;
 
   try {
-    const { orderIds, action, data } = await req.json();
+    const body = await req.json();
+    const { orderIds, action, data } = body;
+    
+    console.log('📦 Bulk orders request:', { 
+      orderIds: Array.isArray(orderIds) ? orderIds.length : typeof orderIds,
+      orderIdsType: typeof orderIds,
+      orderIdsValue: orderIds,
+      action, 
+      hasData: !!data 
+    });
 
-    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+    if (!orderIds) {
+      console.log('❌ Bulk orders: orderIds is missing');
       return NextResponse.json(
-        { error: 'Order IDs required' },
+        { error: 'orderIds parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(orderIds)) {
+      console.log('❌ Bulk orders: orderIds is not an array:', { orderIds, type: typeof orderIds });
+      return NextResponse.json(
+        { error: `orderIds must be an array, received ${typeof orderIds}` },
+        { status: 400 }
+      );
+    }
+
+    if (orderIds.length === 0) {
+      console.log('❌ Bulk orders: orderIds array is empty');
+      return NextResponse.json(
+        { error: 'orderIds array cannot be empty' },
         { status: 400 }
       );
     }
 
     if (!action) {
+      console.log('❌ Bulk orders: Missing action');
       return NextResponse.json({ error: 'Action required' }, { status: 400 });
     }
 

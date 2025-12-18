@@ -178,9 +178,11 @@ export default function BookingSuccessPage() {
               });
 
               if (updateResponse.ok) {
-                console.log('âœ… Booking updated with payment intent');
+                const result = await updateResponse.json();
+                console.log('✅ Booking updated successfully:', result);
               } else {
-                console.warn('âš ï¸ Failed to update booking');
+                const errorText = await updateResponse.text();
+                console.error('❌ Failed to update booking. Status:', updateResponse.status, 'Response:', errorText);
               }
             }
           } catch (updateError) {
