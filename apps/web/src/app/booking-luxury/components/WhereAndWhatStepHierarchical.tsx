@@ -47,6 +47,7 @@ import RoomBasedInventory from './RoomBasedInventory';
 import AIItemExtractionAssistant, { type AiAddedItemPayload } from './AIItemExtractionAssistant';
 import { getPrePopulatedItems, filterByPriority } from '@/lib/pre-populated-inventory';
 import { ALL_REMOVAL_ITEMS, type RemovalItem } from '@/lib/uk-removal-items-data';
+import { CommonItemsGrid } from '@/components/booking/CommonItemsGrid';
 
 interface WhereAndWhatStepHierarchicalProps {
   formData: FormData;
@@ -394,6 +395,52 @@ export default function WhereAndWhatStepHierarchical({
   return (
     <Box>
       <VStack spacing={8} align="stretch">
+        {/* Common Items Grid - Always visible at the top */}
+        <Card>
+          <CardBody>
+            <VStack spacing={4} align="stretch">
+              <Heading size="md" color="purple.600">
+                Most Common Items to Move
+              </Heading>
+              <Text fontSize="sm" color="gray.600">
+                Click + to add items quickly, or browse detailed categories below.
+              </Text>
+              <CommonItemsGrid 
+                onAddItem={(item, quantity) => {
+                  const removalItem = {
+                    id: item.id,
+                    name: item.name,
+                    category: item.category,
+                    weight: item.weight,
+                  };
+                  
+                  if (quantity > 0) {
+                    handleAddItem(removalItem as any, 'Quick Selection', 1);
+                  } else {
+                    // Handle removal
+                    const updated = selectedItemsWithRooms.filter(i => i.id !== item.id);
+                    setSelectedItemsWithRooms(updated);
+                    updateFormData('step1', {
+                      items: updated.map(i => ({
+                        id: i.id,
+                        name: i.name,
+                        category: i.category,
+                        weight: i.weight,
+                        quantity: i.quantity,
+                        size: 'medium',
+                        volume: 1.0,
+                        unitPrice: 25,
+                        totalPrice: 25 * i.quantity,
+                        description: `${i.name} from ${i.room}`,
+                      })),
+                    });
+                  }
+                }}
+              />
+            </VStack>
+          </CardBody>
+        </Card>
+
         {/* AI Assistant - Always visible in all levels */}
         <AIItemExtractionAssistant
           propertyType={propertyType}

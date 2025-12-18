@@ -45,6 +45,7 @@ import {
   FaEdit,
   FaSync,
 } from 'react-icons/fa';
+import { CommonItemsGrid } from './CommonItemsGrid';
 
 interface TimeSlot {
   value: string;
@@ -590,6 +591,15 @@ export const EnhancedDateTimeCard: React.FC<EnhancedDateTimeCardProps> = ({
                   </VStack>
                 </Collapse>
               </VStack>
+
+              {/* Common Items Grid Section */}
+              <Box mt={6}>
+                <Heading size="md" mb={4}>
+                  What are you moving?
+                </Heading>
+                <CommonItemsGrid />
+              </Box>
+
             </CardBody>
           </Card>
 
