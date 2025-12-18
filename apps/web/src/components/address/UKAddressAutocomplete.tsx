@@ -527,9 +527,14 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
       const rect = inputRef.current?.getBoundingClientRect();
       if (!rect) return;
       
+      // iOS Safari: Use visualViewport if available for accurate positioning when keyboard is open
+      const viewport = (window as any).visualViewport;
+      const viewportOffsetY = viewport ? viewport.offsetTop : 0;
+      const viewportOffsetX = viewport ? viewport.offsetLeft : 0;
+      
       setDropdownPos({
-        top: rect.bottom + 8,
-        left: rect.left,
+        top: rect.bottom + viewportOffsetY + 8,
+        left: rect.left + viewportOffsetX,
         width: rect.width
       });
     };
@@ -552,11 +557,24 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
     window.addEventListener('scroll', updatePosition, { passive: true, capture: true });
     window.addEventListener('resize', updatePosition);
     document.addEventListener('mousedown', handleMouseDownOutside);
+    
+    // iOS Safari: Listen to visualViewport changes (keyboard open/close)
+    const viewport = (window as any).visualViewport;
+    if (viewport) {
+      viewport.addEventListener('resize', updatePosition);
+      viewport.addEventListener('scroll', updatePosition);
+    }
 
     return () => {
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       document.removeEventListener('mousedown', handleMouseDownOutside);
+      
+      // iOS Safari: Clean up visualViewport listeners
+      if (viewport) {
+        viewport.removeEventListener('resize', updatePosition);
+        viewport.removeEventListener('scroll', updatePosition);
+      }
     };
   }, [showSuggestions]);
 
@@ -675,7 +693,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
           </Fade>
         )}
 
-        {/* Premium Suggestions Dropdown - FIXED: Use Portal to render at body level */}
+        {/* Premium Suggestions Dropdown - iOS FIXED: Portal + visualViewport positioning */}
         {showSuggestions && suggestions.length > 0 && (
           <Portal>
             <Box
@@ -695,8 +713,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
             py={2}
             pointerEvents={isSelectingRef.current ? "none" : "auto"}
             opacity={1}
-            transform="translateY(0)"
-            transition="opacity 0.2s, transform 0.2s"
+            transition="opacity 0.2s"
             css={{
               '&::-webkit-scrollbar': {
                 width: '6px',
@@ -709,13 +726,14 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
                 background: 'rgba(255, 255, 255, 0.2)',
                 borderRadius: '3px',
               },
-              // iOS optimization
+              // iOS-specific optimizations for stable positioning
               WebkitOverflowScrolling: 'touch',
-              WebkitTransform: 'translate3d(0, 0, 0)',
               WebkitBackfaceVisibility: 'hidden',
-              willChange: 'transform, opacity',
-              transform: 'translateZ(0)',
-              touchAction: 'manipulation',
+              WebkitPerspective: '1000px',
+              willChange: 'auto', // Avoid transform animations that break positioning
+              isolation: 'isolate', // Create stacking context without transform
+              contain: 'layout style', // Optimize rendering
+              touchAction: 'pan-y', // Only allow vertical scrolling on touch
             }}
           >
               {suggestions.map((suggestion, index) => (

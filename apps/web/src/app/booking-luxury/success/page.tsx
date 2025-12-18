@@ -27,10 +27,13 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, PhoneIcon, EmailIcon } from '@chakra-ui/icons';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import Link from 'next/link';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 // SMS will be sent via API endpoint
 
 interface BookingDetails {
@@ -156,7 +159,7 @@ export default function BookingSuccessPage() {
             toast({
               title: 'Booking Confirmed!',
               description:
-                "Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.",
+                "🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.",
               status: 'success',
               duration: 5000,
               isClosable: true,
@@ -355,198 +358,672 @@ export default function BookingSuccessPage() {
   }
 
   return (
-    <Container maxW="container.md" py={{ base: 4, md: 8 }}>
-      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
-        {/* Success Header */}
-        <VStack spacing={{ base: 3, md: 4 }} textAlign="center">
-          <Icon as={CheckCircleIcon} w={{ base: 12, md: 16 }} h={{ base: 12, md: 16 }} color="green.500" />
-          <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="green.600">
-            Booking Confirmed!
-          </Text>
-          <Text fontSize={{ base: "md", md: "lg" }} color="gray.600">
-            Your Speedy Van booking has been confirmed. We'll notify you once your driver is assigned.
-          </Text>
-        </VStack>
-
-        {/* Booking Details Card */}
-        <Card>
-          <CardBody>
-            <VStack spacing={{ base: 3, md: 4 }} align="stretch">
-              <HStack justify="space-between" align="center">
-                <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="semibold">
-                  Booking Details
-                </Text>
-                <Badge colorScheme="green" fontSize={{ base: "xs", md: "sm" }} px={{ base: 2, md: 3 }} py={{ base: 1, md: 1 }} borderRadius="full">
-                  CONFIRMED
-                </Badge>
-              </HStack>
-              
-              <Divider />
-              
-              <VStack spacing={{ base: 2, md: 3 }} align="stretch">
-                <HStack justify="space-between">
-                  <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>Booking Reference:</Text>
-                  <Text fontWeight="semibold" fontFamily="mono" fontSize={{ base: "sm", md: "md" }}>
-                    {bookingDetails.reference}
-                  </Text>
-                </HStack>
-                
-                <HStack justify="space-between">
-                  <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>Customer Name:</Text>
-                  <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>{bookingDetails.customer.name}</Text>
-                </HStack>
-                
-                <HStack justify="space-between">
-                  <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>Total Amount:</Text>
-                  <Text fontWeight="semibold" fontSize={{ base: "md", md: "lg" }} color="green.600">
-                    Â£{bookingDetails.totalAmount.toFixed(2)}
-                  </Text>
-                </HStack>
-                
-                <HStack justify="space-between">
-                  <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>Status:</Text>
-                  <Badge colorScheme="green" size={{ base: "sm", md: "md" }}>Confirmed</Badge>
-                </HStack>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        {/* Next Steps */}
-        <Card>
-          <CardBody>
-            <VStack spacing={{ base: 3, md: 4 }} align="stretch">
-              <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold">
-                What happens next?
+    <Box 
+      minH="100vh" 
+      bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 50%, rgba(15, 23, 42, 0.98) 100%)"
+      position="relative"
+      overflow="hidden"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        bgGradient: 'radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.15), transparent 50%), radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.15), transparent 50%)',
+        animation: 'pulse 4s ease-in-out infinite',
+        pointerEvents: 'none',
+      }}
+    >
+      <Box position="relative" zIndex={100}>
+        <Header />
+        <MobileHeader />
+      </Box>
+      <Container maxW="container.lg" py={{ base: 6, md: 12 }} position="relative" zIndex={1}>
+        <VStack spacing={{ base: 6, md: 10 }} align="stretch">
+          {/* Success Header - Enhanced */}
+          <VStack 
+            spacing={{ base: 4, md: 6 }} 
+            textAlign="center"
+            position="relative"
+            py={{ base: 6, md: 8 }}
+            pt={{ base: 24, md: 32 }}
+          >
+            <Box
+              position="relative"
+              animation="successPulse 2s ease-in-out infinite"
+              sx={{
+                '@keyframes successPulse': {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.05)' },
+                }
+              }}
+            >
+              <Box
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
+                w={{ base: 24, md: 32 }}
+                h={{ base: 24, md: 32 }}
+                bg="radial-gradient(circle, rgba(34, 197, 94, 0.3), transparent 70%)"
+                borderRadius="full"
+                animation="ripple 2s ease-out infinite"
+                sx={{
+                  '@keyframes ripple': {
+                    '0%': { opacity: 1, transform: 'translate(-50%, -50%) scale(0.5)' },
+                    '100%': { opacity: 0, transform: 'translate(-50%, -50%) scale(2)' },
+                  }
+                }}
+              />
+              <Icon 
+                as={CheckCircleIcon} 
+                w={{ base: 16, md: 20 }} 
+                h={{ base: 16, md: 20 }} 
+                color="green.400"
+                filter="drop-shadow(0 0 20px rgba(34, 197, 94, 0.6))"
+              />
+            </Box>
+            
+            <VStack spacing={3}>
+              <Text 
+                fontSize={{ base: "3xl", md: "5xl" }} 
+                fontWeight="900" 
+                bgGradient="linear(to-r, green.300, emerald.400)"
+                bgClip="text"
+                letterSpacing="tight"
+              >
+                Booking Confirmed!
               </Text>
-              
-              <VStack spacing={{ base: 2, md: 3 }} align="stretch">
-                <HStack>
-                  <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
-                  <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Driver Assignment:</strong> We'll notify you once your driver is assigned with their contact details.
-                  </Text>
-                </HStack>
-                
-                <HStack>
-                  <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
-                  <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Track Your Booking:</strong> Monitor your booking status at <a href="https://speedy-van.co.uk/track" style={{ color: '#3182ce', textDecoration: 'underline' }}>https://speedy-van.co.uk/track</a>
-                  </Text>
-                </HStack>
-                
-                <HStack>
-                  <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
-                  <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Pre-Move Contact:</strong> Your driver will contact you 30 minutes before arrival.
-                  </Text>
-                </HStack>
-                
-                <HStack>
-                  <Box w={2} h={2} bg="blue.500" borderRadius="full" mt={2} />
-                  <Text fontSize={{ base: "sm", md: "md" }}>
-                    <strong>Need Help?</strong> Call 01202 129746 or email support@speedy-van.co.uk for assistance.
-                  </Text>
-                </HStack>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
-
-        {/* Contact Information */}
-        <Card>
-          <CardBody>
-            <VStack spacing={{ base: 3, md: 4 }} align="stretch">
-              <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold">
-                Need help or have questions?
+              <Text 
+                fontSize={{ base: "md", md: "xl" }} 
+                color="whiteAlpha.800"
+                maxW="2xl"
+                lineHeight="tall"
+              >
+                🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.
               </Text>
-              
-              <VStack spacing={{ base: 2, md: 3 }}>
-                <HStack spacing={4}>
-                  <Icon as={PhoneIcon} color="blue.500" />
-                  <VStack spacing={0} align="start">
-                    <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>Call us</Text>
-                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>01202 129746</Text>
-                  </VStack>
+            </VStack>
+          </VStack>
+
+          {/* Booking Details Card - Premium Design */}
+          <Card
+            bg="linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(45, 55, 72, 0.9) 100%)"
+            border="2px solid"
+            borderColor="rgba(34, 197, 94, 0.3)"
+            borderRadius="2xl"
+            backdropFilter="blur(20px)"
+            boxShadow="0 25px 60px rgba(0,0,0,0.5), 0 0 80px rgba(34, 197, 94, 0.15)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              bgGradient: 'linear(to-r, green.400, emerald.500, teal.400)',
+            }}
+          >
+            <CardBody p={{ base: 6, md: 8 }}>
+              <VStack spacing={{ base: 5, md: 6 }} align="stretch">
+                <HStack justify="space-between" align="center">
+                  <HStack spacing={3}>
+                    <Box
+                      w="10px"
+                      h="10px"
+                      bg="green.400"
+                      borderRadius="full"
+                      boxShadow="0 0 20px rgba(34, 197, 94, 0.8)"
+                      animation="blink 2s ease-in-out infinite"
+                      sx={{
+                        '@keyframes blink': {
+                          '0%, 100%': { opacity: 1 },
+                          '50%': { opacity: 0.3 },
+                        }
+                      }}
+                    />
+                    <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white">
+                      Booking Details
+                    </Text>
+                  </HStack>
+                  <Badge 
+                    colorScheme="green" 
+                    fontSize={{ base: "xs", md: "sm" }} 
+                    px={{ base: 3, md: 4 }} 
+                    py={{ base: 1, md: 2 }} 
+                    borderRadius="full"
+                    textTransform="uppercase"
+                    letterSpacing="wide"
+                  >
+                    ✓ CONFIRMED
+                  </Badge>
                 </HStack>
                 
-                <HStack spacing={4}>
-                  <Icon as={EmailIcon} color="blue.500" />
-                  <VStack spacing={0} align="start">
-                    <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }}>Email us</Text>
-                    <Text color="gray.600" fontSize={{ base: "sm", md: "md" }}>support@speedy-van.co.uk</Text>
-                  </VStack>
-                </HStack>
+                <Divider borderColor="whiteAlpha.200" />
+                
+                <VStack spacing={{ base: 4, md: 5 }} align="stretch">
+                  <HStack 
+                    justify="space-between" 
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    transition="all 0.3s"
+                    _hover={{ bg: "whiteAlpha.100" }}
+                  >
+                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Booking Reference:</Text>
+                    <Text 
+                      fontWeight="bold" 
+                      fontFamily="mono" 
+                      fontSize={{ base: "md", md: "lg" }}
+                      color="green.300"
+                      letterSpacing="wider"
+                    >
+                      {bookingDetails.reference}
+                    </Text>
+                  </HStack>
+                  
+                  <HStack 
+                    justify="space-between"
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    transition="all 0.3s"
+                    _hover={{ bg: "whiteAlpha.100" }}
+                  >
+                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Customer Name:</Text>
+                    <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }} color="white">{bookingDetails.customer.name}</Text>
+                  </HStack>
+                  
+                  <HStack 
+                    justify="space-between"
+                    p={4}
+                    bg="linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))"
+                    border="2px solid"
+                    borderColor="rgba(34, 197, 94, 0.3)"
+                    borderRadius="xl"
+                    transition="all 0.3s"
+                    _hover={{ 
+                      bg: "linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.15))",
+                      borderColor: "rgba(34, 197, 94, 0.5)"
+                    }}
+                  >
+                    <Text color="white" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Total Amount:</Text>
+                    <Text 
+                      fontWeight="bold" 
+                      fontSize={{ base: "xl", md: "2xl" }}
+                      color="white"
+                    >
+                      £{bookingDetails.totalAmount.toFixed(2)}
+                    </Text>
+                  </HStack>
+                  
+                  <HStack 
+                    justify="space-between"
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    transition="all 0.3s"
+                    _hover={{ bg: "whiteAlpha.100" }}
+                  >
+                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Status:</Text>
+                    <Badge 
+                      colorScheme="green" 
+                      size={{ base: "md", md: "lg" }}
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      fontSize={{ base: "xs", md: "sm" }}
+                    >
+                      ✓ Confirmed
+                    </Badge>
+                  </HStack>
+                </VStack>
               </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
+            </CardBody>
+          </Card>
 
-        {/* Action Buttons */}
-        <HStack spacing={{ base: 3, md: 4 }} justify="center" wrap="wrap">
-          <Button as={Link} href="/" size={{ base: "md", md: "lg" }} variant="outline">
-            Return Home
-          </Button>
-          <Button 
-            as={Link} 
-            href={`/track?ref=${bookingDetails.reference}`}
-            size={{ base: "md", md: "lg" }} 
-            colorScheme="green"
-            leftIcon={<Icon as={CheckCircleIcon} />}
+          {/* Next Steps - Enhanced */}
+          <Card
+            bg="linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(45, 55, 72, 0.9))"
+            border="2px solid"
+            borderColor="rgba(59, 130, 246, 0.3)"
+            borderRadius="2xl"
+            backdropFilter="blur(20px)"
+            boxShadow="0 20px 50px rgba(59, 130, 246, 0.15)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              bgGradient: 'linear(to-r, blue.400, cyan.400, teal.400)',
+            }}
           >
-            Track Your Order
-          </Button>
-          <Button 
-            as="a"
-            href={`/api/booking-luxury/invoice/${bookingDetails.reference}`}
-            target="_blank"
-            size={{ base: "md", md: "lg" }} 
-            colorScheme="purple"
-            leftIcon={<Icon as={EmailIcon} />}
+            <CardBody p={{ base: 6, md: 8 }}>
+              <VStack spacing={{ base: 5, md: 6 }} align="stretch">
+                <HStack spacing={3}>
+                  <Box
+                    w={3}
+                    h={3}
+                    bg="blue.400"
+                    borderRadius="full"
+                    boxShadow="0 0 15px rgba(59, 130, 246, 0.8)"
+                  />
+                  <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white">
+                    What happens next?
+                  </Text>
+                </HStack>
+                
+                <VStack spacing={{ base: 4, md: 5 }} align="stretch">
+                  <HStack 
+                    align="start" 
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    borderLeft="4px solid"
+                    borderColor="blue.400"
+                    transition="all 0.3s"
+                    _hover={{ 
+                      bg: "whiteAlpha.100",
+                      transform: "translateX(4px)"
+                    }}
+                  >
+                    <Box
+                      minW={10}
+                      h={10}
+                      bg="linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 197, 253, 0.2))"
+                      borderRadius="lg"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      border="2px solid"
+                      borderColor="blue.400"
+                    >
+                      <Text fontSize="xl" fontWeight="bold" color="blue.300">1</Text>
+                    </Box>
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text fontSize={{ base: "sm", md: "md" }} fontWeight="bold" color="blue.300">
+                        Driver Assignment
+                      </Text>
+                      <Text fontSize={{ base: "sm", md: "md" }} color="whiteAlpha.800">
+                        We'll notify you once your driver is assigned with their contact details.
+                      </Text>
+                    </VStack>
+                  </HStack>
+                  
+                  <HStack 
+                    align="start"
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    borderLeft="4px solid"
+                    borderColor="cyan.400"
+                    transition="all 0.3s"
+                    _hover={{ 
+                      bg: "whiteAlpha.100",
+                      transform: "translateX(4px)"
+                    }}
+                  >
+                    <Box
+                      minW={10}
+                      h={10}
+                      bg="linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(103, 232, 249, 0.2))"
+                      borderRadius="lg"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      border="2px solid"
+                      borderColor="cyan.400"
+                    >
+                      <Text fontSize="xl" fontWeight="bold" color="cyan.300">2</Text>
+                    </Box>
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text fontSize={{ base: "sm", md: "md" }} fontWeight="bold" color="cyan.300">
+                        Track Your Booking
+                      </Text>
+                      <Text fontSize={{ base: "sm", md: "md" }} color="whiteAlpha.800">
+                        Monitor your booking status at{' '}
+                        <Text 
+                          as="a" 
+                          href="https://speedy-van.co.uk/track" 
+                          color="cyan.300"
+                          fontWeight="semibold"
+                          textDecoration="underline"
+                          _hover={{ color: "cyan.200" }}
+                        >
+                          speedy-van.co.uk/track
+                        </Text>
+                      </Text>
+                    </VStack>
+                  </HStack>
+                  
+                  <HStack 
+                    align="start"
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    borderLeft="4px solid"
+                    borderColor="teal.400"
+                    transition="all 0.3s"
+                    _hover={{ 
+                      bg: "whiteAlpha.100",
+                      transform: "translateX(4px)"
+                    }}
+                  >
+                    <Box
+                      minW={10}
+                      h={10}
+                      bg="linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(94, 234, 212, 0.2))"
+                      borderRadius="lg"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      border="2px solid"
+                      borderColor="teal.400"
+                    >
+                      <Text fontSize="xl" fontWeight="bold" color="teal.300">3</Text>
+                    </Box>
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text fontSize={{ base: "sm", md: "md" }} fontWeight="bold" color="teal.300">
+                        Pre-Move Contact
+                      </Text>
+                      <Text fontSize={{ base: "sm", md: "md" }} color="whiteAlpha.800">
+                        Your driver will contact you 30 minutes before arrival.
+                      </Text>
+                    </VStack>
+                  </HStack>
+                  
+                  <HStack 
+                    align="start"
+                    p={4}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    borderLeft="4px solid"
+                    borderColor="purple.400"
+                    transition="all 0.3s"
+                    _hover={{ 
+                      bg: "whiteAlpha.100",
+                      transform: "translateX(4px)"
+                    }}
+                  >
+                    <Box
+                      minW={10}
+                      h={10}
+                      bg="linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(192, 132, 252, 0.2))"
+                      borderRadius="lg"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      border="2px solid"
+                      borderColor="purple.400"
+                    >
+                      <Text fontSize="xl" fontWeight="bold" color="purple.300">?</Text>
+                    </Box>
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text fontSize={{ base: "sm", md: "md" }} fontWeight="bold" color="purple.300">
+                        Need Help?
+                      </Text>
+                      <Text fontSize={{ base: "sm", md: "md" }} color="whiteAlpha.800">
+                        Call <Text as="span" fontWeight="bold" color="purple.300">01202 129746</Text> or email{' '}
+                        <Text as="span" fontWeight="bold" color="purple.300">support@speedy-van.co.uk</Text> for assistance.
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </VStack>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Contact Information - Premium */}
+          <Card
+            bg="linear-gradient(135deg, rgba(45, 55, 72, 0.95), rgba(26, 32, 44, 0.9))"
+            border="2px solid"
+            borderColor="rgba(236, 72, 153, 0.3)"
+            borderRadius="2xl"
+            backdropFilter="blur(20px)"
+            boxShadow="0 20px 50px rgba(236, 72, 153, 0.15)"
+            position="relative"
+            overflow="hidden"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              bgGradient: 'linear(to-r, pink.400, purple.400, fuchsia.400)',
+            }}
           >
-            Download Invoice
-          </Button>
-          <Button
-            as={Link}
-            href="/customer"
-            size={{ base: "md", md: "lg" }}
-            colorScheme="blue"
-          >
-            View My Bookings
-          </Button>
-        </HStack>
+            <CardBody p={{ base: 6, md: 8 }}>
+              <VStack spacing={{ base: 5, md: 6 }} align="stretch">
+                <HStack spacing={3}>
+                  <Box
+                    w={3}
+                    h={3}
+                    bg="pink.400"
+                    borderRadius="full"
+                    boxShadow="0 0 15px rgba(236, 72, 153, 0.8)"
+                  />
+                  <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white">
+                    Need help or have questions?
+                  </Text>
+                </HStack>
+                
+                <VStack spacing={{ base: 3, md: 4 }} w="full">
+                  <HStack 
+                    spacing={4}
+                    p={5}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor="whiteAlpha.100"
+                    transition="all 0.3s"
+                    w="full"
+                    _hover={{
+                      bg: "whiteAlpha.100",
+                      borderColor: "pink.400",
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 10px 30px rgba(236, 72, 153, 0.2)"
+                    }}
+                  >
+                    <Box
+                      p={3}
+                      bg="linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(219, 39, 119, 0.2))"
+                      borderRadius="lg"
+                      border="2px solid"
+                      borderColor="pink.400"
+                    >
+                      <Icon as={PhoneIcon} color="pink.300" boxSize={6} />
+                    </Box>
+                    <VStack spacing={1} align="start" flex={1}>
+                      <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }} color="white">Call us</Text>
+                      <Text color="pink.300" fontSize={{ base: "md", md: "lg" }} fontWeight="semibold">01202 129746</Text>
+                    </VStack>
+                  </HStack>
+                  
+                  <HStack 
+                    spacing={4}
+                    p={5}
+                    bg="whiteAlpha.50"
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor="whiteAlpha.100"
+                    transition="all 0.3s"
+                    w="full"
+                    _hover={{
+                      bg: "whiteAlpha.100",
+                      borderColor: "purple.400",
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 10px 30px rgba(168, 85, 247, 0.2)"
+                    }}
+                  >
+                    <Box
+                      p={3}
+                      bg="linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(147, 51, 234, 0.2))"
+                      borderRadius="lg"
+                      border="2px solid"
+                      borderColor="purple.400"
+                    >
+                      <Icon as={EmailIcon} color="purple.300" boxSize={6} />
+                    </Box>
+                    <VStack spacing={1} align="start" flex={1}>
+                      <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }} color="white">Email us</Text>
+                      <Text color="purple.300" fontSize={{ base: "sm", md: "md" }} fontWeight="semibold">support@speedy-van.co.uk</Text>
+                    </VStack>
+                  </HStack>
+                </VStack>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Action Buttons - Enhanced */}
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 3, md: 4 }} w="full">
+            <Button 
+              as={Link} 
+              href="/" 
+              size="lg"
+              h="60px"
+              bg="whiteAlpha.100"
+              color="white"
+              border="2px solid"
+              borderColor="whiteAlpha.200"
+              borderRadius="xl"
+              fontWeight="bold"
+              fontSize="md"
+              transition="all 0.3s"
+              _hover={{ 
+                bg: "whiteAlpha.200",
+                borderColor: "whiteAlpha.400",
+                transform: "translateY(-2px)",
+                boxShadow: "0 10px 30px rgba(255, 255, 255, 0.1)"
+              }}
+            >
+              Return Home
+            </Button>
+            
+            <Button 
+              as={Link} 
+              href={`/track?ref=${bookingDetails.reference}`}
+              size="lg"
+              h="60px"
+              bgGradient="linear(to-r, green.400, emerald.500)"
+              color="white"
+              borderRadius="xl"
+              fontWeight="bold"
+              fontSize="md"
+              leftIcon={<Icon as={CheckCircleIcon} />}
+              boxShadow="0 10px 30px rgba(34, 197, 94, 0.3)"
+              transition="all 0.3s"
+              _hover={{ 
+                bgGradient: "linear(to-r, green.500, emerald.600)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 15px 40px rgba(34, 197, 94, 0.5)"
+              }}
+              _active={{
+                transform: "translateY(0)",
+              }}
+            >
+              Track Your Order
+            </Button>
+            
+            <Button 
+              as="a"
+              href={`/api/booking-luxury/invoice/${bookingDetails.reference}`}
+              target="_blank"
+              size="lg"
+              h="60px"
+              bgGradient="linear(to-r, purple.400, fuchsia.500)"
+              color="white"
+              borderRadius="xl"
+              fontWeight="bold"
+              fontSize="md"
+              leftIcon={<Icon as={EmailIcon} />}
+              boxShadow="0 10px 30px rgba(168, 85, 247, 0.3)"
+              transition="all 0.3s"
+              _hover={{ 
+                bgGradient: "linear(to-r, purple.500, fuchsia.600)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 15px 40px rgba(168, 85, 247, 0.5)"
+              }}
+              _active={{
+                transform: "translateY(0)",
+              }}
+            >
+              Download Invoice
+            </Button>
+            
+            <Button
+              as={Link}
+              href="/customer"
+              size="lg"
+              h="60px"
+              bgGradient="linear(to-r, blue.400, cyan.500)"
+              color="white"
+              borderRadius="xl"
+              fontWeight="bold"
+              fontSize="md"
+              boxShadow="0 10px 30px rgba(59, 130, 246, 0.3)"
+              transition="all 0.3s"
+              _hover={{ 
+                bgGradient: "linear(to-r, blue.500, cyan.600)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 15px 40px rgba(59, 130, 246, 0.5)"
+              }}
+              _active={{
+                transform: "translateY(0)",
+              }}
+            >
+              View My Bookings
+            </Button>
+          </SimpleGrid>
 
         {/* Enhanced Trustpilot Review Section */}
         {(() => {
           const config = getTrustpilotConfig();
           return config.isConfigured ? (
             <Box
-              mt={8}
-              p={8}
-              bg="linear-gradient(135deg, rgba(0, 194, 255, 0.03) 0%, rgba(59, 130, 246, 0.05) 100%)"
+              mt={6}
+              p={{ base: 6, md: 10 }}
+              bg="linear-gradient(135deg, rgba(0, 194, 255, 0.08) 0%, rgba(59, 130, 246, 0.12) 100%)"
               borderRadius="2xl"
-              border="2px solid"
-              borderColor="rgba(0, 194, 255, 0.2)"
+              border="3px solid"
+              borderColor="rgba(0, 194, 255, 0.3)"
               textAlign="center"
-              boxShadow="0 4px 20px rgba(0, 194, 255, 0.1)"
-              transition="all 0.3s ease"
+              boxShadow="0 20px 50px rgba(0, 194, 255, 0.2)"
+              position="relative"
+              overflow="hidden"
+              transition="all 0.4s ease"
               _hover={{
-                boxShadow: '0 8px 30px rgba(0, 194, 255, 0.2)',
-                borderColor: 'rgba(0, 194, 255, 0.4)',
-                transform: 'translateY(-2px)',
+                boxShadow: '0 30px 70px rgba(0, 194, 255, 0.35)',
+                borderColor: 'rgba(0, 194, 255, 0.5)',
+                transform: 'translateY(-4px)',
+              }}
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                bgGradient: 'linear(to-r, cyan.400, blue.500, purple.500)',
               }}
             >
-              <VStack spacing={6}>
+              <VStack spacing={{ base: 6, md: 8 }}>
                 <Box>
-                  <Text fontSize="2xl" fontWeight="bold" color="gray.800" mb={2}>
+                  <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="black" color="white" mb={3}>
                     ⭐ Share Your Experience
                   </Text>
-                  <Text fontSize="md" color="gray.600">
-                    Your feedback helps us serve you better
+                  <Text fontSize={{ base: "md", md: "lg" }} color="whiteAlpha.800" maxW="2xl" mx="auto">
+                    Your feedback helps us serve you better and helps others make informed decisions
                   </Text>
                 </Box>
 
-                {/* Trustpilot Widget - Official TrustBox snippet with all required attributes */}
+                {/* Trustpilot Widget */}
                 <Box
                   className="trustpilot-widget"
                   data-locale={config.locale}
@@ -555,8 +1032,11 @@ export default function BookingSuccessPage() {
                   data-style-height="52px"
                   data-style-width="100%"
                   data-token={config.token}
-                  maxW="500px"
+                  maxW="600px"
                   mx="auto"
+                  p={4}
+                  bg="whiteAlpha.100"
+                  borderRadius="xl"
                   sx={{
                     '& a': {
                       textDecoration: 'none',
@@ -591,26 +1071,28 @@ export default function BookingSuccessPage() {
                   rel="noopener noreferrer"
                   display="inline-flex"
                   alignItems="center"
-                  gap={2}
-                  px={8}
-                  py={4}
-                  bg="linear-gradient(135deg, #00C2FF 0%, #3B82F6 100%)"
+                  gap={3}
+                  px={{ base: 8, md: 12 }}
+                  py={{ base: 4, md: 5 }}
+                  bgGradient="linear(to-r, cyan.400, blue.500)"
                   color="white"
-                  fontWeight="bold"
-                  fontSize="md"
+                  fontWeight="black"
+                  fontSize={{ base: "md", md: "lg" }}
                   borderRadius="full"
                   textDecoration="none"
                   transition="all 0.3s ease"
-                  boxShadow="0 4px 15px rgba(0, 194, 255, 0.3)"
+                  boxShadow="0 10px 35px rgba(0, 194, 255, 0.4)"
                   _hover={{
-                    transform: 'translateY(-2px) scale(1.02)',
-                    boxShadow: '0 8px 25px rgba(0, 194, 255, 0.5)',
+                    transform: 'translateY(-3px) scale(1.03)',
+                    boxShadow: '0 15px 50px rgba(0, 194, 255, 0.6)',
+                    bgGradient: "linear(to-r, cyan.500, blue.600)",
                   }}
                   _active={{
                     transform: 'translateY(0) scale(0.98)',
                   }}
                 >
-                  Write a Review
+                  <Text fontSize="2xl">⭐</Text>
+                  <Text>Write a Review on Trustpilot</Text>
                 </Box>
               </VStack>
             </Box>
@@ -618,5 +1100,6 @@ export default function BookingSuccessPage() {
         })()}
       </VStack>
     </Container>
+  </Box>
   );
 }

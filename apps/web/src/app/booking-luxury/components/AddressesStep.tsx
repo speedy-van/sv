@@ -118,7 +118,6 @@ export default function AddressesStep({
             _hover={{
               borderColor: "rgba(34, 197, 94, 0.6)",
               boxShadow: "0 30px 75px rgba(0,0,0,0.7), 0 0 100px rgba(34, 197, 94, 0.25)",
-              transform: "translateY(-4px)",
             }}
             _before={{
               content: '""',
@@ -249,7 +248,6 @@ export default function AddressesStep({
             _hover={{
               borderColor: "rgba(236, 72, 153, 0.6)",
               boxShadow: "0 30px 70px rgba(236, 72, 153, 0.35)",
-              transform: "translateY(-2px)",
             }}
           >
             <CardBody p={8}>
