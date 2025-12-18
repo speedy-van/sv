@@ -328,6 +328,44 @@ export default function MobileHeader() {
                   e.preventDefault();
                   e.stopPropagation();
                   onClose();
+                  window.location.href = '/how-it-works';
+                }}
+                cursor="pointer"
+                textAlign="left"
+                w="full"
+                bg="transparent"
+                border="none"
+                transition="all 0.2s"
+              >
+                <HStack spacing={3}>
+                  <Box 
+                    w="40px" 
+                    h="40px" 
+                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    borderRadius="lg"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                  >
+                    <FaQuestionCircle color="white" size={20} />
+                  </Box>
+                  <Text color="white" fontWeight="600" fontSize="16px">How It Works</Text>
+                </HStack>
+              </Box>
+              
+              <Box
+                as="button"
+                p={4}
+                borderRadius="xl"
+                _hover={{ 
+                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  transform: 'translateX(4px)',
+                }}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
                   window.location.href = '/pricing';
                 }}
                 cursor="pointer"
