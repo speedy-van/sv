@@ -287,10 +287,37 @@ export class ComprehensivePricingEngine {
   }
 
   /**
+   * Load active pricing settings from database
+   */
+  private async loadPricingSettings(): Promise<{ customerAdjustment: number; driverMultiplier: number } | null> {
+    try {
+      const { prisma } = await import('@/lib/prisma');
+      const settings = await prisma.pricingSettings.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (settings) {
+        return {
+          customerAdjustment: Number(settings.customerPriceAdjustment),
+          driverMultiplier: Number(settings.driverRateMultiplier),
+        };
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to load pricing settings, using defaults:', error);
+      return null;
+    }
+  }
+
+  /**
    * MAIN ENHANCED PRICING METHOD - 100% Documentation Compliance
    */
   async calculatePrice(input: EnhancedPricingInput): Promise<EnhancedPricingResult> {
     const startTime = Date.now();
+
+    // Load active pricing settings from database
+    const pricingSettings = await this.loadPricingSettings();
 
     // Validate input with enhanced schemas
     const validatedInput = EnhancedPricingInputSchema.parse(input);
@@ -309,6 +336,9 @@ export class ComprehensivePricingEngine {
     const inputHash = this.generateInputHash(validatedInput);
 
     console.log(`🧮 [${requestId}] Starting enhanced comprehensive pricing calculation`);
+    if (pricingSettings) {
+      console.log(`💰 [${requestId}] Applied pricing settings: customer adjustment ${(pricingSettings.customerAdjustment * 100).toFixed(0)}%, driver multiplier ${pricingSettings.driverMultiplier}x`);
+    }
 
     // 1. ENRICH ITEMS WITH FULL DATASET (22 fields each) + Operational Rules
     const enrichedItems = this.enrichItemsWithDataset(validatedInput.items, operationalConfig);
@@ -352,7 +382,11 @@ export class ComprehensivePricingEngine {
     );
 
     // 9. FINALIZE WITH VAT AND ROUNDING (No rounding until final step)
-    const finalPricing = this.finalizePricing(adjustedPricing);
+    // Apply customer price adjustment from admin settings
+    const finalPricing = this.finalizePricing(
+      adjustedPricing,
+      pricingSettings?.customerAdjustment
+    );
 
     // 10. ECONOMY SERVICE DATE CHECK (≤7 days if multi-drop)
     const availableDate = this.calculateAvailableDate(
@@ -1057,16 +1091,23 @@ export class ComprehensivePricingEngine {
     };
   }
 
-  private finalizePricing(breakdown: ComprehensivePricingBreakdown): ComprehensivePricingBreakdown {
+  private finalizePricing(breakdown: ComprehensivePricingBreakdown, customerAdjustment?: number): ComprehensivePricingBreakdown {
+    // Apply customer price adjustment from admin settings (if any)
+    let adjustedSubtotal = breakdown.subtotalBeforeVat;
+    if (customerAdjustment !== undefined && customerAdjustment !== 0) {
+      adjustedSubtotal = breakdown.subtotalBeforeVat * (1 + customerAdjustment);
+    }
+
     // Add VAT (20%)
     const vatRate = 0.20;
-    const vatAmount = breakdown.subtotalBeforeVat * vatRate;
+    const vatAmount = adjustedSubtotal * vatRate;
 
     // Final total (round to nearest penny - no intermediate rounding)
-    const totalAmount = Math.round((breakdown.subtotalBeforeVat + vatAmount) * 100) / 100;
+    const totalAmount = Math.round((adjustedSubtotal + vatAmount) * 100) / 100;
 
     return {
       ...breakdown,
+      subtotalBeforeVat: adjustedSubtotal,
       vatAmount,
       totalAmount
     };

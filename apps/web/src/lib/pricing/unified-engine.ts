@@ -235,13 +235,46 @@ export class UnifiedPricingEngine {
   }
 
   /**
+   * Load active pricing settings from database
+   */
+  private async loadPricingSettings(): Promise<{ customerAdjustment: number; driverMultiplier: number } | null> {
+    try {
+      const { prisma } = await import('@/lib/prisma');
+      const settings = await prisma.pricingSettings.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (settings) {
+        return {
+          customerAdjustment: Number(settings.customerPriceAdjustment),
+          driverMultiplier: Number(settings.driverRateMultiplier),
+        };
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to load pricing settings, using defaults:', error);
+      return null;
+    }
+  }
+
+  /**
    * Main pricing calculation method
    */
   async calculatePrice(input: PricingInput): Promise<PricingResult> {
     const requestId = createRequestId();
     const calculatedAt = new Date().toISOString();
 
+    // Load active pricing settings from database
+    const pricingSettings = await this.loadPricingSettings();
+
     this.logInfo('Starting pricing calculation', { requestId, inputHash: this.hashInput(input) });
+    if (pricingSettings) {
+      this.logInfo('Applied pricing settings', {
+        customerAdjustment: `${(pricingSettings.customerAdjustment * 100).toFixed(0)}%`,
+        driverMultiplier: `${pricingSettings.driverMultiplier}x`
+      });
+    }
 
     // Ensure data sources are loaded
     if (!this.itemCatalog || !this.pricingConfig) {
@@ -289,7 +322,17 @@ export class UnifiedPricingEngine {
       const serviceMultiplier = this.getServiceMultiplier(input.serviceLevel);
       const subtotalBeforeMultiplier = baseFee + itemsFee + distanceFee + serviceFee + vehicleFee + propertyAccessFee + addOnsFee + totalSurcharges;
       const subtotalAfterMultiplier = Math.round(subtotalBeforeMultiplier * serviceMultiplier);
-      const subtotalAfterDiscounts = Math.max(0, subtotalAfterMultiplier - totalDiscounts);
+      let subtotalAfterDiscounts = Math.max(0, subtotalAfterMultiplier - totalDiscounts);
+      
+      // 7.5. Apply customer price adjustment from admin settings
+      if (pricingSettings && pricingSettings.customerAdjustment !== 0) {
+        subtotalAfterDiscounts = Math.round(subtotalAfterDiscounts * (1 + pricingSettings.customerAdjustment));
+        this.logInfo('Applied customer price adjustment', {
+          original: subtotalAfterMultiplier - totalDiscounts,
+          adjusted: subtotalAfterDiscounts,
+          adjustment: `${(pricingSettings.customerAdjustment * 100).toFixed(0)}%`
+        });
+      }
       
       // 8. Calculate VAT
       const vatAmount = Math.round(subtotalAfterDiscounts * 0.2); // 20% VAT

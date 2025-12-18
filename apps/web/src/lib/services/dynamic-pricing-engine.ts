@@ -85,8 +85,41 @@ export class DynamicPricingEngine {
     return DynamicPricingEngine.instance;
   }
 
+  /**
+   * Load active pricing settings from database
+   */
+  private async loadPricingSettings(): Promise<{ customerAdjustment: number; driverMultiplier: number } | null> {
+    try {
+      const { prisma } = await import('@/lib/prisma');
+      const settings = await prisma.pricingSettings.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (settings) {
+        return {
+          customerAdjustment: Number(settings.customerPriceAdjustment),
+          driverMultiplier: Number(settings.driverRateMultiplier),
+        };
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to load pricing settings, using defaults:', error);
+      return null;
+    }
+  }
+
   async calculateDynamicPrice(request: DynamicPricingRequest): Promise<DynamicPricingResponse> {
     try {
+      // Load active pricing settings from database
+      const pricingSettings = await this.loadPricingSettings();
+      if (pricingSettings) {
+        console.log('💰 Applied pricing settings to dynamic pricing:', {
+          customerAdjustment: `${(pricingSettings.customerAdjustment * 100).toFixed(0)}%`,
+          driverMultiplier: `${pricingSettings.driverMultiplier}x`
+        });
+      }
+
       // Step 1: Calculate base price
       const basePrice = await this.calculateBasePrice(request);
 
@@ -100,7 +133,18 @@ export class DynamicPricingEngine {
       const customerAdjustments = await this.getCustomerAdjustments(request);
 
       // Step 5: Calculate final price
-      const finalPrice = this.applyDynamicPricing(basePrice, multipliers, customerAdjustments);
+      let finalPrice = this.applyDynamicPricing(basePrice, multipliers, customerAdjustments);
+
+      // Step 5.5: Apply admin pricing settings
+      if (pricingSettings && pricingSettings.customerAdjustment !== 0) {
+        const originalPrice = finalPrice;
+        finalPrice = finalPrice * (1 + pricingSettings.customerAdjustment);
+        console.log('💰 Applied customer price adjustment:', {
+          original: `£${originalPrice.toFixed(2)}`,
+          adjusted: `£${finalPrice.toFixed(2)}`,
+          adjustment: `${(pricingSettings.customerAdjustment * 100).toFixed(0)}%`
+        });
+      }
 
       // Step 6: Generate breakdown
       const breakdown = this.generatePriceBreakdown(basePrice, multipliers, customerAdjustments);
