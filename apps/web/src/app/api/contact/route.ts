@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { UnifiedEmailService } from '@/lib/email/UnifiedEmailService';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,8 +27,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let contactInquiryId: string | null = null;
+    let submittedAt = new Date().toISOString();
+
+    // Try to save to database (optional - won't block email)
     try {
-      // Create a contact inquiry record
       const contactInquiry = await prisma.contactInquiry.create({
         data: {
           name,
@@ -39,35 +43,43 @@ export async function POST(request: NextRequest) {
           source: 'contact_form',
         },
       });
-
-      // TODO: Send notification to admin
-      // TODO: Send confirmation email to customer
-
-      return NextResponse.json({
-        success: true,
-        message: 'Your message has been received. We\'ll get back to you within 2 hours.',
-        id: contactInquiry.id,
-      });
+      contactInquiryId = contactInquiry.id;
+      submittedAt = contactInquiry.createdAt.toISOString();
+      console.log('✅ Contact inquiry saved to database:', contactInquiryId);
     } catch (dbError) {
-      // If database operation fails, log the inquiry to console
-      // This is a fallback to ensure we don't lose customer inquiries
-      console.error('Database error - logging contact inquiry:', {
+      // Log database error but continue to send email
+      console.error('⚠️ Database error (non-critical) - inquiry logged to console:', {
         name,
         email,
         phone,
         service,
         message,
-        timestamp: new Date().toISOString(),
+        timestamp: submittedAt,
         error: dbError instanceof Error ? dbError.message : 'Unknown database error'
       });
-
-      // Still return success to user (inquiry is logged)
-      return NextResponse.json({
-        success: true,
-        message: 'Your message has been received. We\'ll get back to you within 2 hours.',
-        fallback: true,
-      });
     }
+
+    // Always send confirmation email (regardless of database status)
+    try {
+      await UnifiedEmailService.sendContactInquiryConfirmation({
+        customerEmail: email,
+        customerName: name,
+        service: service || undefined,
+        message,
+        submittedAt,
+      });
+      console.log('✅ Contact confirmation email sent to:', email);
+    } catch (emailError) {
+      // Log email error but don't fail the request
+      console.error('⚠️ Failed to send confirmation email:', emailError);
+    }
+
+    // Always return success to user
+    return NextResponse.json({
+      success: true,
+      message: 'Your message has been received. We\'ll get back to you within 2 hours.',
+      id: contactInquiryId,
+    });
   } catch (error) {
     console.error('Contact form submission error:', error);
     

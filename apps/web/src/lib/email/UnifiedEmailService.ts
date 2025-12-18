@@ -100,6 +100,14 @@ export interface RefundNotificationData {
   reason: string;
 }
 
+export interface ContactInquiryConfirmationData {
+  customerEmail: string;
+  customerName: string;
+  service?: string;
+  message: string;
+  submittedAt: string;
+}
+
 interface EmailResult {
   success: boolean;
   error: string | null;
@@ -585,6 +593,107 @@ function generatePasswordResetHTML(data: { email: string; resetUrl: string; driv
         <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
           <p>Speedy Van - Professional Moving Services<br>
           Email: support@speedy-van.co.uk | Phone: 01202 129746</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateContactConfirmationHTML(data: ContactInquiryConfirmationData): string {
+  const serviceText = data.service ? `<p style="margin: 5px 0; color: #6c757d;"><strong>Service:</strong> ${data.service}</p>` : '';
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Thank You for Contacting Us - Speedy Van</title>
+      <style>
+        @media only screen and (max-width: 600px) {
+          .container { padding: 10px !important; }
+          .header { padding: 15px !important; }
+          .content { padding: 15px !important; }
+        }
+      </style>
+    </head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div class="header" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 30px 20px; text-align: center;">
+          <div style="background: white; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <span style="font-size: 40px;">✉️</span>
+          </div>
+          <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Speedy Van</h1>
+          <h2 style="margin: 8px 0 0 0; color: #e8f4fd; font-weight: 300; font-size: 18px;">We've Received Your Message</h2>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content" style="padding: 40px 30px;">
+          
+          <!-- Thank You Message -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 28px; font-weight: 500;">Thank You for Contacting Us! 🙏</h2>
+            <p style="font-size: 18px; color: #5a6c7d; margin: 0; line-height: 1.5;">
+              Dear ${data.customerName},<br>
+              We have received your message and our support team will respond within <strong>2 hours</strong>.
+            </p>
+          </div>
+
+          <!-- Message Summary -->
+          <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; margin: 25px 0;">
+            <h3 style="margin: 0 0 20px 0; color: #495057; font-size: 20px; font-weight: 600; text-align: center;">📋 Your Message Details</h3>
+            <div style="padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">
+              <p style="margin: 5px 0; color: #6c757d;"><strong>Name:</strong> ${data.customerName}</p>
+              <p style="margin: 5px 0; color: #6c757d;"><strong>Email:</strong> ${data.customerEmail}</p>
+              ${serviceText}
+              <p style="margin: 10px 0 5px 0; color: #6c757d;"><strong>Message:</strong></p>
+              <p style="margin: 5px 0; color: #2c3e50; padding: 10px; background: #f8f9fa; border-radius: 6px; font-style: italic;">${data.message}</p>
+              <p style="margin: 10px 0 0 0; color: #6c757d; font-size: 14px;"><strong>Submitted:</strong> ${new Date(data.submittedAt).toLocaleDateString('en-GB', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</p>
+            </div>
+          </div>
+
+          <!-- Contact Info -->
+          <div style="background: linear-gradient(135deg, #00b67a 0%, #00a86b 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 15px rgba(0, 182, 122, 0.3);">
+            <h3 style="margin: 0 0 15px 0; color: white; font-size: 24px; font-weight: 600;">📞 Contact Us</h3>
+            <p style="margin: 10px 0; color: white; font-size: 16px;">
+              <strong>Phone:</strong> <a href="tel:01202129746" style="color: white; text-decoration: none; font-weight: 600;">01202 129746</a>
+            </p>
+            <p style="margin: 10px 0; color: white; font-size: 16px;">
+              <strong>Email:</strong> <a href="mailto:support@speedy-van.co.uk" style="color: white; text-decoration: none; font-weight: 600;">support@speedy-van.co.uk</a>
+            </p>
+            <p style="margin: 10px 0; color: white; font-size: 16px;">
+              <strong>Website:</strong> <a href="https://www.speedy-van.co.uk" style="color: white; text-decoration: none; font-weight: 600;">www.speedy-van.co.uk</a>
+            </p>
+          </div>
+
+          <!-- Response Time Promise -->
+          <div style="background: linear-gradient(135deg, #fff3cd 0%, #fef9e7 100%); border: 2px solid #ffeaa7; border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center;">
+            <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 20px; font-weight: 600;">⏱️ Our Commitment</h3>
+            <p style="margin: 0; color: #2c3e50; font-size: 16px; line-height: 1.6;">
+              We commit to responding to your message within <strong style="color: #856404;">2 hours</strong> during business hours.<br>
+              If you need urgent assistance, you can call us directly at <a href="tel:01202129746" style="color: #856404; font-weight: 600;">01202 129746</a>
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; padding-top: 30px; border-top: 2px solid #e9ecef; margin-top: 40px;">
+            <p style="color: #6c757d; font-size: 14px; margin: 10px 0;">
+              Thank you for choosing Speedy Van - Reliable Moving & Delivery Services in the UK 🚚
+            </p>
+            <p style="color: #6c757d; font-size: 12px; margin: 10px 0;">
+              This is an automated email, please do not reply directly.
+            </p>
+          </div>
         </div>
       </div>
     </body>
@@ -1776,6 +1885,23 @@ export const unifiedEmailService = {
       return await sendEmail(data.customerEmail, subject, html);
     } catch (error) {
       console.error('Trustpilot feedback email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
+  async sendContactInquiryConfirmation(data: ContactInquiryConfirmationData) {
+    try {
+      console.log('📧 Sending contact inquiry confirmation to:', data.customerEmail);
+      const subject = 'Thank You for Contacting Speedy Van';
+      const html = generateContactConfirmationHTML(data);
+      return await sendEmail(data.customerEmail, subject, html);
+    } catch (error) {
+      console.error('Contact inquiry confirmation email failed:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

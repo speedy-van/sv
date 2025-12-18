@@ -763,6 +763,7 @@ export default function BookingLuxuryPage() {
         }
         .booking-time-select option {
           color: #1f2937 !important;
+          background-color: white !important;
         }
       `}</style>
     <Box 
