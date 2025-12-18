@@ -22,6 +22,7 @@ import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { FaMapMarkerAlt, FaBoxes, FaCreditCard, FaCheckCircle, FaRocket, FaBolt, FaShieldAlt, FaClock } from 'react-icons/fa';
 import { ROUTES } from '@/lib/routing';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -238,6 +239,8 @@ export default function HowItWorksPage() {
 
   return (
     <Box as="main">
+      <MobileHeader />
+      
       {/* Hero Section */}
       <Box
         bgGradient={heroBg}
