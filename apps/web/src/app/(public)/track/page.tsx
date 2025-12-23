@@ -492,10 +492,10 @@ export default function TrackPage() {
                       </HStack>
                       <VStack align="start" spacing={1} pl={2}>
                         <Text color="white" fontSize="sm">
-                          Pickup Address
+                          {(trackingData as any).pickupAddress?.label || (trackingData as any).pickupAddress?.full || (trackingData as any).pickupAddress?.street || 'Address not available'}
                         </Text>
                         <Text color="gray.400" fontSize="xs">
-                          Postcode: Not available
+                          Postcode: {(trackingData as any).pickupAddress?.postcode || 'Not available'}
                         </Text>
                       </VStack>
                     </Box>
@@ -521,10 +521,10 @@ export default function TrackPage() {
                       </HStack>
                       <VStack align="start" spacing={1} pl={2}>
                         <Text color="white" fontSize="sm">
-                          Delivery Address
+                          {(trackingData as any).dropoffAddress?.label || (trackingData as any).dropoffAddress?.full || (trackingData as any).dropoffAddress?.street || 'Address not available'}
                         </Text>
                         <Text color="gray.400" fontSize="xs">
-                          Postcode: Not available
+                          Postcode: {(trackingData as any).dropoffAddress?.postcode || 'Not available'}
                         </Text>
                       </VStack>
                     </Box>
