@@ -1224,6 +1224,8 @@ export default function WhoAndPaymentStepSimple({
                     total: actualPrice, // Use actualPrice which respects selectedService
                   } as any,
                   serviceType: selectedService,
+                  // Crew size (number of helpers)
+                  crewSize: formData.step1.crewSize || '2',
                   // Pass tier prices for correct calculation in StripePaymentButton
                   economyPrice: safeEconomyPrice,
                   standardPrice: standardBase,

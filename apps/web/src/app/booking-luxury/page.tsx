@@ -2021,6 +2021,94 @@ export default function BookingLuxuryPage() {
                             )}
                           </Box>
                         </SimpleGrid>
+
+                        {/* Crew Size Selection */}
+                        <Box mt={4}>
+                          <Text 
+                            color="white" 
+                            fontSize={{ base: "sm", md: "md" }} 
+                            mb={3}
+                            fontWeight="bold"
+                            letterSpacing="wide"
+                          >
+                            👷 How many helpers do you need?
+                          </Text>
+                          <SimpleGrid columns={4} spacing={3}>
+                            {[
+                              { value: '1', label: '1 Man', desc: 'Small items', price: 'Base' },
+                              { value: '2', label: '2 Men', desc: 'Standard move', price: 'Popular', popular: true },
+                              { value: '3', label: '3 Men', desc: 'Large items', price: '+25%' },
+                              { value: '4', label: '4 Men', desc: 'Full house', price: '+50%' },
+                            ].map((option) => {
+                              const isSelected = formData.step1.crewSize === option.value;
+                              return (
+                                <Box
+                                  key={option.value}
+                                  onClick={() => {
+                                    updateFormData('step1', { crewSize: option.value as '1' | '2' | '3' | '4' });
+                                    console.log('👷 Crew size changed:', option.value);
+                                  }}
+                                  cursor="pointer"
+                                  p={{ base: 3, md: 4 }}
+                                  borderRadius="xl"
+                                  border="2px solid"
+                                  borderColor={isSelected ? 'blue.400' : 'whiteAlpha.200'}
+                                  bg={isSelected 
+                                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))'
+                                    : 'rgba(26, 32, 44, 0.6)'
+                                  }
+                                  boxShadow={isSelected ? '0 0 20px rgba(59, 130, 246, 0.4)' : 'none'}
+                                  transition="all 0.3s"
+                                  _hover={{
+                                    borderColor: isSelected ? 'blue.400' : 'whiteAlpha.400',
+                                    transform: 'translateY(-2px)',
+                                  }}
+                                  position="relative"
+                                >
+                                  {option.popular && (
+                                    <Badge
+                                      position="absolute"
+                                      top={-2}
+                                      right={-2}
+                                      colorScheme="green"
+                                      fontSize="2xs"
+                                      px={2}
+                                      borderRadius="full"
+                                    >
+                                      Popular
+                                    </Badge>
+                                  )}
+                                  <VStack spacing={1}>
+                                    <Text 
+                                      fontSize={{ base: "xl", md: "2xl" }} 
+                                      fontWeight="bold" 
+                                      color={isSelected ? 'blue.300' : 'white'}
+                                    >
+                                      {option.label}
+                                    </Text>
+                                    <Text 
+                                      fontSize={{ base: "2xs", md: "xs" }} 
+                                      color="whiteAlpha.700"
+                                      textAlign="center"
+                                    >
+                                      {option.desc}
+                                    </Text>
+                                    <Badge 
+                                      colorScheme={option.price === 'Base' ? 'green' : option.price === 'Popular' ? 'blue' : 'orange'}
+                                      fontSize="2xs"
+                                      mt={1}
+                                    >
+                                      {option.price}
+                                    </Badge>
+                                  </VStack>
+                                </Box>
+                              );
+                            })}
+                          </SimpleGrid>
+                          <Text color="whiteAlpha.600" fontSize="xs" mt={2} textAlign="center">
+                            More helpers = faster move. Price adjusts based on crew size.
+                          </Text>
+                        </Box>
                       </VStack>
                     </CardBody>
                   </Card>

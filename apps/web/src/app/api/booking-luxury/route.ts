@@ -801,6 +801,30 @@ export async function POST(request: NextRequest) {
     });
 
     // Create the main booking with unified step tracking and multi-leg support
+    // Map frontend crewSize to database enum
+    const crewSizeMap: Record<string, 'ONE' | 'TWO' | 'THREE' | 'FOUR'> = {
+      '1': 'ONE',
+      '2': 'TWO',
+      '3': 'THREE',
+      '4': 'FOUR',
+    };
+    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '2'] || 'TWO';
+    
+    // Calculate crew multiplier (affects price)
+    const crewMultipliers: Record<string, number> = {
+      'ONE': 0,    // Base price (1 man)
+      'TWO': 0,    // Standard (included in base)
+      'THREE': 25, // +25%
+      'FOUR': 50,  // +50%
+    };
+    const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
+    
+    console.log('👷 Crew size:', {
+      frontend: bookingData.crewSize,
+      mapped: mappedCrewSize,
+      multiplierPercent: crewMultiplierPercent,
+    });
+
     const booking = await prisma.booking.create({
       data: {
         reference,
@@ -810,7 +834,7 @@ export async function POST(request: NextRequest) {
         pickupTimeSlot: bookingData.pickupTimeSlot || null,
         urgency: bookingData.urgency || 'scheduled',
         estimatedDurationMinutes: Math.round(pricingResult.estimatedDuration), // From pricing engine
-        crewSize: 'TWO', // Default crew size
+        crewSize: mappedCrewSize, // From frontend selection
         baseDistanceMiles: distanceMeters > 0 ? Math.round((distanceMeters / 1609.34) * 10) / 10 : 0,
         distanceMeters: distanceMeters, // ✅ NOW SAVED!
         durationSeconds: durationSeconds, // ✅ NOW SAVED!
@@ -822,7 +846,7 @@ export async function POST(request: NextRequest) {
         accessSurchargeGBP: amountsInPence.accessSurchargeGBP,
         weatherSurchargeGBP: amountsInPence.weatherSurchargeGBP,
         itemsSurchargeGBP: amountsInPence.itemsSurchargeGBP,
-        crewMultiplierPercent: 0, // Will be calculated
+        crewMultiplierPercent: crewMultiplierPercent, // Calculated from crew size
         availabilityMultiplierPercent: 0, // Will be calculated
         totalGBP: amountsInPence.totalGBP,
         

@@ -166,6 +166,9 @@ const bookingSegmentSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Crew size schema - number of helpers/workers
+const crewSizeSchema = z.enum(['1', '2', '3', '4']).default('2');
+
 const step1Schema = z.object({
   pickupAddress: frontendAddressSchema,
   dropoffAddress: frontendAddressSchema,
@@ -173,6 +176,7 @@ const step1Schema = z.object({
   dropoffProperty: frontendPropertyDetailsSchema,
   items: z.array(itemSchema).min(1, 'Please select at least one item'),
   serviceType: serviceTypeSchema,
+  crewSize: crewSizeSchema, // Number of helpers/workers (1-4)
   pickupDate: z.string()
     .min(1, 'Please select a pickup date')
     .refine((date) => {
@@ -270,6 +274,7 @@ const initialFormData: FormData = {
     },
     items: [],
     serviceType: 'standard',
+    crewSize: '2', // Default to 2 helpers
     pickupDate: '',
     pickupTimeSlot: undefined,
     urgency: 'scheduled',

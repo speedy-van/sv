@@ -101,6 +101,8 @@ interface BookingData {
   economyPrice?: number;
   standardPrice?: number;
   priorityPrice?: number;
+  // Crew size (number of helpers)
+  crewSize?: '1' | '2' | '3' | '4';
   // Promotion code support
   promotionCode?: string;
   promotionDetails?: {
@@ -356,6 +358,8 @@ export default function StripePaymentButton({
           pickupDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate).toISOString() : undefined,
           pickupTimeSlot: bookingData.scheduledTime || 'flexible',
           urgency: 'scheduled' as const,
+          serviceType: bookingData.serviceType || 'standard',
+          crewSize: bookingData.crewSize || '2', // Number of helpers
           notes: bookingData.notes || '',
           pricing: {
             subtotal: Math.round(getCorrectSubtotal(bookingData) * 100) / 100,
