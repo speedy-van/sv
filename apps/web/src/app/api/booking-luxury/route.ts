@@ -683,20 +683,51 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Pricing calculated successfully');
 
-    // Use calculated total from Enterprise Pricing Engine
-    const calculatedTotal = pricingResult.totalPrice;
+    // Map frontend crewSize to database enum FIRST (before price calculation)
+    const crewSizeMap: Record<string, 'ONE' | 'TWO' | 'THREE' | 'FOUR'> = {
+      '1': 'ONE',
+      '2': 'TWO',
+      '3': 'THREE',
+      '4': 'FOUR',
+    };
+    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '2'] || 'TWO';
+    
+    // Calculate crew multiplier (affects price)
+    const crewMultipliers: Record<string, number> = {
+      'ONE': 0,    // Base price (1 man)
+      'TWO': 0,    // Standard (included in base)
+      'THREE': 25, // +25%
+      'FOUR': 50,  // +50%
+    };
+    const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
+    
+    // Apply crew multiplier to the total price
+    const baseTotal = pricingResult.totalPrice;
+    const crewSurcharge = baseTotal * (crewMultiplierPercent / 100);
+    const calculatedTotal = baseTotal + crewSurcharge;
+    
+    console.log('👷 Crew size pricing:', {
+      frontend: bookingData.crewSize,
+      mapped: mappedCrewSize,
+      multiplierPercent: crewMultiplierPercent,
+      baseTotal: baseTotal.toFixed(2),
+      crewSurcharge: crewSurcharge.toFixed(2),
+      finalTotal: calculatedTotal.toFixed(2),
+    });
 
-    // Store pricing breakdown for future reference
+    // Store pricing breakdown for future reference (including crew surcharge)
     pricingBreakdown = {
       basePrice: pricingResult.basePrice,
       distancePrice: 0, // No longer calculated
       itemsPrice: pricingResult.itemsPrice,
       timePrice: pricingResult.servicePrice,
       urgencyPrice: pricingResult.urgencyPrice,
-      subtotalBeforeVAT: pricingResult.subtotalBeforeVAT,
-      vatAmount: pricingResult.vatAmount,
+      crewSurcharge: crewSurcharge, // NEW: Crew size surcharge
+      crewSize: mappedCrewSize, // NEW: Selected crew size
+      subtotalBeforeVAT: calculatedTotal / 1.2, // Updated with crew surcharge
+      vatAmount: calculatedTotal - (calculatedTotal / 1.2), // Updated with crew surcharge
       promoDiscount: pricingResult.promoDiscount,
-      totalPrice: pricingResult.totalPrice,
+      totalPrice: calculatedTotal, // Updated with crew surcharge
       breakdown: pricingResult.breakdown,
       recommendations: pricingResult.recommendations,
       calculatedAt: new Date().toISOString(),
@@ -801,30 +832,6 @@ export async function POST(request: NextRequest) {
     });
 
     // Create the main booking with unified step tracking and multi-leg support
-    // Map frontend crewSize to database enum
-    const crewSizeMap: Record<string, 'ONE' | 'TWO' | 'THREE' | 'FOUR'> = {
-      '1': 'ONE',
-      '2': 'TWO',
-      '3': 'THREE',
-      '4': 'FOUR',
-    };
-    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '2'] || 'TWO';
-    
-    // Calculate crew multiplier (affects price)
-    const crewMultipliers: Record<string, number> = {
-      'ONE': 0,    // Base price (1 man)
-      'TWO': 0,    // Standard (included in base)
-      'THREE': 25, // +25%
-      'FOUR': 50,  // +50%
-    };
-    const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
-    
-    console.log('👷 Crew size:', {
-      frontend: bookingData.crewSize,
-      mapped: mappedCrewSize,
-      multiplierPercent: crewMultiplierPercent,
-    });
-
     const booking = await prisma.booking.create({
       data: {
         reference,

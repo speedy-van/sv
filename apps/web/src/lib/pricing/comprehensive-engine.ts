@@ -382,10 +382,11 @@ export class ComprehensivePricingEngine {
     );
 
     // 9. FINALIZE WITH VAT AND ROUNDING (No rounding until final step)
-    // Apply customer price adjustment from admin settings
+    // Apply customer price adjustment from admin settings + crew size multiplier
     const finalPricing = this.finalizePricing(
       adjustedPricing,
-      pricingSettings?.customerAdjustment
+      pricingSettings?.customerAdjustment,
+      validatedInput.crewSize || '2'
     );
 
     // 10. ECONOMY SERVICE DATE CHECK (≤7 days if multi-drop)
@@ -1109,12 +1110,30 @@ export class ComprehensivePricingEngine {
     };
   }
 
-  private finalizePricing(breakdown: ComprehensivePricingBreakdown, customerAdjustment?: number): ComprehensivePricingBreakdown {
+  private finalizePricing(
+    breakdown: ComprehensivePricingBreakdown, 
+    customerAdjustment?: number,
+    crewSize: '1' | '2' | '3' | '4' = '2'
+  ): ComprehensivePricingBreakdown {
     // Apply customer price adjustment from admin settings (if any)
     let adjustedSubtotal = breakdown.subtotalBeforeVat;
     if (customerAdjustment !== undefined && customerAdjustment !== 0) {
       adjustedSubtotal = breakdown.subtotalBeforeVat * (1 + customerAdjustment);
     }
+
+    // ✅ CRITICAL: Apply crew size multiplier
+    // 1-man: 0%, 2-men: 0%, 3-men: +25%, 4-men: +50%
+    const crewMultipliers: Record<string, number> = {
+      '1': 0,
+      '2': 0,
+      '3': 0.25,
+      '4': 0.50
+    };
+    const crewMultiplier = crewMultipliers[crewSize] || 0;
+    const crewSurcharge = adjustedSubtotal * crewMultiplier;
+    adjustedSubtotal = adjustedSubtotal + crewSurcharge;
+    
+    console.log(`👷 Crew size: ${crewSize}, multiplier: ${crewMultiplier * 100}%, surcharge: £${crewSurcharge.toFixed(2)}`);
 
     // Add VAT (20%)
     const vatRate = 0.20;

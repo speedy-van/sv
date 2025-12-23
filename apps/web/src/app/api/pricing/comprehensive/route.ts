@@ -167,6 +167,8 @@ async function transformRequestToPricingInput(
     serviceLevel: validatedRequest.serviceLevel as 'economy' | 'standard' | 'premium',
     scheduledDate: validatedRequest.scheduledDate,
     customerSegment: validatedRequest.customerSegment as 'bronze' | 'silver' | 'gold' | 'platinum',
+    // ✅ CRITICAL: Pass crewSize for crew surcharge calculation
+    crewSize: validatedRequest.crewSize || '2',
     timeFactors: {
       isRushHour: timeFactors.isRushHour ?? false,
       isPeakSeason: timeFactors.isPeakSeason ?? false,

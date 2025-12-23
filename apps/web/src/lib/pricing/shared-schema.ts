@@ -160,6 +160,10 @@ export const BasePricingRequestSchema = z.object({
   urgency: z.enum(['standard', 'express', 'urgent']).optional(),
   timeSlot: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
   
+  // ✅ Crew size: number of helpers (1-4), affects price with multipliers
+  // 1-man: 0%, 2-men: 0%, 3-men: +25%, 4-men: +50%
+  crewSize: z.enum(['1', '2', '3', '4']).optional().default('2'),
+  
   timeFactors: TimeFactorsSchema.optional(),
   serviceOptions: ServiceOptionsSchema.optional(),
   operationalConfig: z.any().optional(),

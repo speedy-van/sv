@@ -892,6 +892,8 @@ export function useBookingForm() {
             dropoffAddress: buildAddressPayload(dropoffAddress, segment.dropoffProperty, step1.dropoffProperty),
             serviceType: step1.serviceType || 'signature',
             serviceLevel: step1.serviceType || 'signature',
+            // ✅ CRITICAL: Include crewSize for crew surcharge calculation
+            crewSize: step1.crewSize || '2',
             scheduledDate: segment.datetime
               ? new Date(segment.datetime).toISOString()
               : step1.pickupDate
@@ -1031,6 +1033,8 @@ export function useBookingForm() {
         dropoffAddress: buildAddressPayload(step1.dropoffAddress, step1.dropoffProperty, step1.dropoffProperty),
         serviceType: step1.serviceType || 'signature',
         serviceLevel: step1.serviceType || 'signature',
+        // ✅ CRITICAL: Include crewSize for crew surcharge calculation
+        crewSize: step1.crewSize || '2',
         scheduledDate: step1.pickupDate
           ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
           : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),

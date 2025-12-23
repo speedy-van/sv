@@ -665,6 +665,10 @@ export const OperationalPricingConfigSchema = z.object({
 
 export const EnhancedPricingInputSchema = ComprehensivePricingInputSchema.extend({
   operationalConfig: OperationalPricingConfigSchema.optional(),
+  
+  // ✅ Crew size: number of helpers (1-4), affects price with multipliers
+  // 1-man: 0%, 2-men: 0%, 3-men: +25%, 4-men: +50%
+  crewSize: z.enum(['1', '2', '3', '4']).optional().default('2'),
 
   // Enhanced address validation
   pickup: StructuredAddressSchema.extend({
