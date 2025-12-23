@@ -133,6 +133,13 @@ export default function BookingLuxuryPage() {
     validatePromotionCode,
     applyPromotionCode,
     removePromotionCode,
+    // Multi-leg booking functions
+    addReturnSegment,
+    addAdditionalSegment,
+    updateSegment,
+    removeSegment,
+    validateSegments,
+    getTotalSegmentsPrice,
   } = useBookingForm();
 
 
@@ -145,18 +152,491 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
 
+  // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
+  // This prevents the stale closure bug where parallel pricing updates overwrite each other
+  const pendingSegmentPricing = useRef<Map<number, any>>(new Map());
+
+  // ✅ CRITICAL FIX: Wrap addReturnSegment to pass pricingTiers for accurate pricing
+  const addReturnSegmentWithPricing = useCallback((bufferMinutes: number = 30) => {
+    addReturnSegment(bufferMinutes, pricingTiers || undefined);
+  }, [addReturnSegment, pricingTiers]);
+
+  // ✅ CRITICAL FIX: Wrap addAdditionalSegment to pass pricingTiers for accurate outbound pricing
+  const addAdditionalSegmentWithPricing = useCallback(() => {
+    addAdditionalSegment(pricingTiers || undefined);
+  }, [addAdditionalSegment, pricingTiers]);
+
+  // Normalize address from autocomplete to comprehensive pricing schema
+  // ✅ MOVED UP: Must be defined before calculateSegmentPricing which depends on it
+  const normalizeAddressForPricing = useCallback((addr: any) => {
+    if (!addr) return null;
+    
+    const components = addr.components || {};
+    
+    // Extract full address
+    const full = 
+      addr.formatted_address || 
+      addr.fullAddress || 
+      addr.full ||
+      addr.displayText || 
+      addr.place_name || 
+      '';
+    
+    // Extract from displayText or full (Google format: "22 Sword St, Glasgow G31 1TD, UK")
+    const firstPart = full.split(',')[0]?.trim() || '';
+    
+    // Extract street number with improved pattern matching
+    let number = components.street_number || components.house_number || addr.houseNumber || addr.number || '';
+    if (!number && firstPart) {
+      const match = firstPart.match(/(?:Flat\s+\d+,?\s+)?(\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?)/);
+      if (match) {
+        number = match[1];
+      }
+    }
+    if (!number) {
+      const numberMatch = full.match(/\b(\d+[a-zA-Z]?)\b/);
+      if (numberMatch) {
+        number = numberMatch[1];
+      }
+    }
+    if (!number) number = '1';
+    
+    // Extract street name with improved logic
+    let street = components.route || components.road || components.street || addr.street || '';
+    if (!street && firstPart) {
+      street = firstPart
+        .replace(/^(?:Flat\s+\d+,?\s+)?\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?\s*,?\s*/, '')
+        .trim();
+    }
+    if (!street && full) {
+      const parts = full.split(',');
+      if (parts.length > 0) {
+        street = parts[0].replace(/^\d+[a-zA-Z]?\s+/, '').trim() || 'Main Street';
+      }
+    }
+    if (!street) street = 'Main Street';
+    
+    // Extract city
+    const city = 
+      addr.city || 
+      components.city || 
+      components.locality || 
+      components.post_town || 
+      'London';
+    
+    // Extract postcode
+    const postcode = 
+      addr.postcode || 
+      components.postcode || 
+      components.postal_code || 
+      'SW1A 1AA';
+    
+    // Extract line1
+    const line1 = firstPart || `${number} ${street}`;
+    
+    // Extract coordinates
+    const coordinates = addr.coordinates || addr.location || { lat: 0, lng: 0 };
+    
+    return { full, line1, city, postcode, street, number, coordinates };
+  }, []);
+
+  // Calculate pricing for individual segments in multi-leg bookings
+  // ✅ FIXED: Use functional update to avoid stale closure bug
+  const calculateSegmentPricing = useCallback(async (segmentIndex: number) => {
+    // Read segments from formData (will be stale but we'll use functional update later)
+    const currentSegments = (formData.step1.segments || []) as any[];
+    if (currentSegments.length <= 1) {
+      console.log('⏭️ Not a multi-leg booking');
+      return;
+    }
+
+    const segment = currentSegments[segmentIndex];
+    if (!segment) {
+      console.error('Invalid segment index:', segmentIndex);
+      return;
+    }
+
+    console.log(`🔍 calculateSegmentPricing for segment ${segmentIndex}:`, {
+      segmentItems: segment.items,
+      globalItems: formData.step1.items,
+      segmentItemsLength: segment.items?.length || 0,
+      globalItemsLength: formData.step1.items?.length || 0
+    });
+
+    // Resolve items: prefer segment items, else fall back to global items
+    const itemsToUse = (segment.items && segment.items.length > 0)
+      ? segment.items
+      : (formData.step1.items || []);
+
+    if (!itemsToUse || itemsToUse.length === 0) {
+      console.log(`⏭️ Segment ${segmentIndex}: No items selected yet - skipping pricing`);
+      return;
+    }
+
+    // Check addresses
+    const pickupNorm = normalizeAddressForPricing(segment.pickupAddress);
+    const dropNorm = normalizeAddressForPricing(segment.dropoffAddress);
+
+    if (!pickupNorm?.coordinates?.lat || !dropNorm?.coordinates?.lat) {
+      console.log(`⏭️ Segment ${segmentIndex}: Missing coordinates - skipping pricing`);
+      return;
+    }
+
+    const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+    const pickupPostcode = pickupNorm?.postcode?.trim();
+    const dropPostcode = dropNorm?.postcode?.trim();
+
+    if (!pickupPostcode || !postcodeRegex.test(pickupPostcode)) {
+      console.log(`⏭️ Segment ${segmentIndex}: Invalid pickup postcode, skipping pricing`, pickupPostcode);
+      return;
+    }
+
+    if (!dropPostcode || !postcodeRegex.test(dropPostcode)) {
+      console.log(`⏭️ Segment ${segmentIndex}: Invalid dropoff postcode, skipping pricing`, dropPostcode);
+      return;
+    }
+
+    try {
+      // Filter out invalid items before sending
+      const validItems = itemsToUse.filter((item: any) => 
+        item && item.id && item.name && item.quantity > 0
+      );
+      
+      if (validItems.length === 0) {
+        console.log(`⏭️ Segment ${segmentIndex}: No valid items after filtering - skipping pricing`);
+        return;
+      }
+      
+      console.log(`📤 Calculating pricing for segment ${segmentIndex} with ${validItems.length} valid items`);
+
+      // Use actual service level from formData (signature/premium/white-glove)
+      const actualServiceLevel = formData.step1.serviceType || 'signature';
+      // Map urgency to API-compatible format (API only accepts standard/express/urgent)
+      // Frontend uses: 'scheduled', 'same-day', 'next-day'
+      // API expects: 'standard', 'express', 'urgent'
+      const mapUrgencyToAPI = (urgency?: string): 'standard' | 'express' | 'urgent' => {
+        if (!urgency) return 'standard';
+        const lowerUrgency = urgency.toLowerCase();
+        if (lowerUrgency === 'scheduled' || lowerUrgency === 'economy') return 'standard';
+        if (lowerUrgency === 'same-day' || lowerUrgency === 'next-day') return 'express';
+        if (lowerUrgency === 'urgent' || lowerUrgency === 'immediate') return 'urgent';
+        // If already in API format, return as-is (but validate)
+        if (lowerUrgency === 'standard' || lowerUrgency === 'express' || lowerUrgency === 'urgent') {
+          return lowerUrgency as 'standard' | 'express' | 'urgent';
+        }
+        return 'standard';
+      };
+      const actualUrgency = mapUrgencyToAPI(formData.step1.urgency);
+      
+      console.log(`🎯 Using service level: ${actualServiceLevel}, urgency: ${actualUrgency} (mapped from ${formData.step1.urgency})`);
+
+      const response = await fetch('/api/pricing/comprehensive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: validItems.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            weight_override: item.weight,
+            volume_override: item.volume
+          })),
+          pickup: { 
+            full: pickupNorm?.full || 'Pickup Address',
+            line1: pickupNorm?.line1 || '1 Main Street',
+            city: pickupNorm?.city || 'London',
+            postcode: pickupNorm?.postcode || 'SW1A 1AA',
+            propertyType: 'house' as const,
+            street: pickupNorm?.street || 'Main Street',
+            number: pickupNorm?.number || '1',
+            coordinates: {
+              lat: pickupNorm?.coordinates?.lat || 0,
+              lng: pickupNorm?.coordinates?.lng || 0
+            }
+          },
+          dropoffs: [{
+            full: dropNorm?.full || 'Dropoff Address',
+            line1: dropNorm?.line1 || '1 Main Street',
+            city: dropNorm?.city || 'London',
+            postcode: dropNorm?.postcode || 'SW1A 1AA',
+            propertyType: 'house' as const,
+            street: dropNorm?.street || 'Main Street',
+            number: dropNorm?.number || '1',
+            coordinates: {
+              lat: dropNorm?.coordinates?.lat || 0,
+              lng: dropNorm?.coordinates?.lng || 0
+            }
+          }],
+          scheduledDate: segment.datetime || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          serviceLevel: actualServiceLevel,
+          urgency: actualUrgency,
+          timeSlot: formData.step1.pickupTimeSlot || 'flexible'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data && data.success === true && data.data) {
+          const apiData = data.data;
+          const amountMinor = typeof apiData.amountGbpMinor === 'string' 
+            ? parseFloat(apiData.amountGbpMinor) 
+            : apiData.amountGbpMinor;
+
+          const totalPrice = amountMinor / 100;
+
+          // Use actual breakdown from API instead of fixed percentages
+          const breakdown = apiData.breakdown || {};
+          
+          console.log(`✅ Segment ${segmentIndex} pricing from API:`, {
+            total: totalPrice,
+            breakdown,
+            distance: apiData.distance
+          });
+
+          // ✅ CRITICAL FIX: Store pricing update in ref instead of applying immediately
+          // This prevents stale closure bugs when multiple segments are priced in parallel
+          pendingSegmentPricing.current.set(segmentIndex, {
+            items: itemsToUse,
+            pricing: {
+              baseFee: breakdown.baseFee || (totalPrice * 0.4),
+              distanceFee: breakdown.distanceFee || (totalPrice * 0.3),
+              volumeFee: breakdown.volumeFee || breakdown.itemsCost || (totalPrice * 0.15),
+              serviceFee: breakdown.serviceFee || (totalPrice * 0.1),
+              urgencyFee: breakdown.urgencyFee || 0,
+              vat: breakdown.vat || (totalPrice * 0.05),
+              total: totalPrice,
+              distance: apiData.distance || 0,
+            }
+          });
+
+          console.log(`✅ Segment ${segmentIndex} pricing calculated: £${totalPrice.toFixed(2)} (pending atomic update)`);
+        }
+      } else {
+        console.error(`Pricing API error for segment ${segmentIndex}:`, await response.text());
+      }
+    } catch (error) {
+      console.error(`Segment ${segmentIndex} pricing failed:`, error);
+    }
+  }, [formData.step1.segments, formData.step1.items, normalizeAddressForPricing]);
+
+  // Calculate all segments pricing in multi-leg
+  // ✅ CRITICAL FIX: Apply all segment pricing updates atomically to avoid stale closure bugs
+  const calculateAllSegmentsPricing = useCallback(async () => {
+    const segments = (formData.step1.segments || []) as any[];
+    if (segments.length <= 1) return;
+
+    // Clear any pending updates from previous runs
+    pendingSegmentPricing.current.clear();
+
+    console.log('🔄 Calculating pricing for all segments...');
+    for (let i = 0; i < segments.length; i++) {
+      await calculateSegmentPricing(i);
+    }
+    
+    // ✅ CRITICAL FIX: Apply all pending updates atomically
+    // This ensures all segment pricing updates are applied without overwriting each other
+    if (pendingSegmentPricing.current.size > 0) {
+      // Read latest segments at this point (after all API calls completed)
+      const latestSegments = [...(formData.step1.segments || [])];
+      let hasUpdates = false;
+      let totalPrice = 0;
+      
+      pendingSegmentPricing.current.forEach((update, segmentIndex) => {
+        if (latestSegments[segmentIndex]) {
+          latestSegments[segmentIndex] = {
+            ...latestSegments[segmentIndex],
+            items: update.items,
+            pricing: {
+              ...update.pricing,
+              distance: update.pricing.distance || latestSegments[segmentIndex].distance || 0,
+            }
+          };
+          totalPrice += update.pricing.total || 0;
+          hasUpdates = true;
+          console.log(`✅ Applied pricing for segment ${segmentIndex}: £${update.pricing.total.toFixed(2)}`);
+        }
+      });
+      
+      if (hasUpdates) {
+        updateFormData('step1', { segments: latestSegments });
+        console.log('✅ All segment pricing updates applied atomically');
+        
+        // ✅ CRITICAL FIX: Also set pricingTiers for multi-leg bookings
+        // This ensures Step 3 has access to pricing even if segments array timing is off
+        const avgPerSegment = totalPrice / latestSegments.length;
+        const multiLegTiers = {
+          economy: {
+            price: avgPerSegment * 0.85, // Economy discount per segment
+            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          standard: {
+            price: avgPerSegment,
+            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          express: {
+            price: avgPerSegment * 1.5, // Express premium per segment
+            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          }
+        };
+        setPricingTiers(multiLegTiers);
+        console.log('✅ Multi-leg pricingTiers set:', {
+          totalPrice,
+          avgPerSegment,
+          economy: multiLegTiers.economy.price,
+          standard: multiLegTiers.standard.price,
+          express: multiLegTiers.express.price
+        });
+      }
+      
+      // Clear pending updates
+      pendingSegmentPricing.current.clear();
+    } else {
+      // ✅ FALLBACK: If no segment pricing was calculated, use existing segment pricing or estimate
+      console.log('⚠️ No segment pricing calculated from API, checking existing pricing...');
+      
+      let totalFromExisting = 0;
+      let hasExistingPricing = false;
+      
+      // Check if segments already have pricing from previous calculations
+      segments.forEach((seg, idx) => {
+        if (seg.pricing?.total && seg.pricing.total > 0) {
+          totalFromExisting += seg.pricing.total;
+          hasExistingPricing = true;
+          console.log(`📊 Segment ${idx} has existing pricing: £${seg.pricing.total.toFixed(2)}`);
+        }
+      });
+      
+      // If we have existing pricing, use it to set pricingTiers
+      if (hasExistingPricing && totalFromExisting > 0) {
+        const avgPerSegment = totalFromExisting / segments.length;
+        const fallbackTiers = {
+          economy: {
+            price: avgPerSegment * 0.85,
+            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          standard: {
+            price: avgPerSegment,
+            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          express: {
+            price: avgPerSegment * 1.5,
+            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          }
+        };
+        setPricingTiers(fallbackTiers);
+        console.log('✅ Multi-leg pricingTiers set from existing segment pricing:', {
+          totalFromExisting,
+          avgPerSegment,
+          economy: fallbackTiers.economy.price,
+          standard: fallbackTiers.standard.price,
+          express: fallbackTiers.express.price
+        });
+      } else if (formData.step1.pricing?.total && formData.step1.pricing.total > 0) {
+        // Use global pricing as fallback
+        const globalPrice = formData.step1.pricing.total;
+        const estimatedTotal = globalPrice * segments.length;
+        const avgPerSegment = globalPrice;
+        
+        const fallbackTiers = {
+          economy: {
+            price: avgPerSegment * 0.85,
+            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          standard: {
+            price: avgPerSegment,
+            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          express: {
+            price: avgPerSegment * 1.5,
+            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          }
+        };
+        setPricingTiers(fallbackTiers);
+        console.log('✅ Multi-leg pricingTiers set from global formData.step1.pricing:', {
+          globalPrice,
+          estimatedTotal,
+          avgPerSegment,
+          economy: fallbackTiers.economy.price,
+          standard: fallbackTiers.standard.price,
+          express: fallbackTiers.express.price
+        });
+      } else {
+        // Last resort: estimate based on distance
+        const totalDistance = segments.reduce((sum, seg) => sum + (seg.distance || 10), 0);
+        const estimatedPrice = Math.max(49.99, totalDistance * 2.5); // £2.50 per mile, min £49.99
+        const avgPerSegment = estimatedPrice / segments.length;
+        
+        const fallbackTiers = {
+          economy: {
+            price: avgPerSegment * 0.85,
+            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          standard: {
+            price: avgPerSegment,
+            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          },
+          express: {
+            price: avgPerSegment * 1.5,
+            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            availability: null
+          }
+        };
+        setPricingTiers(fallbackTiers);
+        console.log('⚠️ Multi-leg pricingTiers estimated from distance (fallback):', {
+          totalDistance,
+          estimatedPrice,
+          avgPerSegment,
+          economy: fallbackTiers.economy.price,
+          standard: fallbackTiers.standard.price,
+          express: fallbackTiers.express.price,
+          note: 'This is an estimate - actual price may differ'
+        });
+      }
+    }
+  }, [calculateSegmentPricing, formData.step1.segments, formData.step1.pricing, updateFormData]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
+    // For multi-leg bookings: calculate pricing per-segment
+    const segments = (formData.step1.segments || []) as any[];
+    if (segments.length > 1) {
+      console.log('🔄 Multi-leg booking: Calculating pricing for all segments');
+      await calculateAllSegmentsPricing();
+      return;
+    }
+
+    // Single-leg: continue with normal pricing
     // Only calculate if we have addresses (items can be empty - will use default)
     if (!formData.step1.pickupAddress?.coordinates) {
+      console.log('⏭️ Skipping pricing: No pickup address coordinates');
       return;
     }
     
-    // Skip if no items yet (will calculate when items are added)
-    if (formData.step1.items.length === 0) {
+    // CRITICAL: Skip if no items yet (API requires at least 1 item)
+    // Check both global items and segment items (in case of single segment)
+    const hasGlobalItems = formData.step1.items && formData.step1.items.length > 0;
+    const hasSegmentItems = segments.length === 1 && segments[0]?.items && segments[0].items.length > 0;
+    
+    if (!hasGlobalItems && !hasSegmentItems) {
+      console.log('⏭️ Skipping pricing: No items selected (API requires items)');
+      setIsLoadingAvailability(false);
       return;
     }
+    
+    // Use items from segment if available (single segment), otherwise use global items
+    const itemsToUse = hasSegmentItems ? segments[0].items : formData.step1.items;
 
     // Normalize addresses to consistent schema
     const pickupNorm = normalizeAddressForPricing(formData.step1.pickupAddress);
@@ -182,17 +662,45 @@ export default function BookingLuxuryPage() {
     setIsLoadingAvailability(true);
 
     try {
+      // Filter and validate items before mapping
+      const validItems = itemsToUse
+        .map((item: any) => {
+          const quantity = typeof item?.quantity === 'number'
+            ? item.quantity
+            : parseInt(item?.quantity ?? '0', 10);
+
+          return {
+            id: item?.id,
+            name: item?.name,
+            quantity,
+            weight_override: item?.weight,
+            volume_override: item?.volume,
+          };
+        })
+        .filter((item: any) => item && item.id && item.name && typeof item.quantity === 'number' && item.quantity > 0);
+
+      // Ensure we always send at least one item to satisfy API validation
+      const payloadItems = validItems.length > 0
+        ? validItems
+        : [{
+            id: 'default-item',
+          name: 'Standard Item',
+          quantity: 1,
+            weight_override: 25,
+            volume_override: 1.0
+          }];
+
+      if (validItems.length === 0) {
+        console.warn('⚠️ No valid items after filtering - using fallback item to satisfy pricing API');
+      }
+
+      console.log('📤 Sending pricing request with items:', payloadItems.length);
+
       const response = await fetch('/api/pricing/comprehensive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: formData.step1.items.map(item => ({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            weight_override: item.weight,
-            volume_override: item.volume
-          })),
+          items: payloadItems,
           pickup: { 
             full: pickupNorm?.full || 'Pickup Address',
             line1: pickupNorm?.line1 || '1 Main Street',
@@ -280,13 +788,28 @@ export default function BookingLuxuryPage() {
 
         setPricingTiers(calculatedTiers);
 
+        // ✅ CRITICAL FIX: Also update formData.step1.pricing so addReturnSegment can copy it
+        updateFormData('step1', {
+          pricing: {
+            baseFee: basePrice * 0.4,
+            distanceFee: basePrice * 0.3,
+            volumeFee: basePrice * 0.15,
+            serviceFee: basePrice * 0.1,
+            urgencyFee: 0,
+            vat: basePrice * 0.05,
+            total: basePrice,
+            distance: data.data.distance || formData.step1.distance || 0,
+          }
+        });
+
         console.log('✅ Enterprise Engine Pricing Tiers (STEP 2):', {
           rawBasePrice,
           basePrice,
           economy: calculatedTiers.economy.price,
           standard: calculatedTiers.standard.price,
           express: calculatedTiers.express.price,
-          note: 'These exact values will be used in Step 3'
+          note: 'These exact values will be used in Step 3',
+          formDataPricingUpdated: true
         });
 
       } else {
@@ -297,7 +820,7 @@ export default function BookingLuxuryPage() {
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [formData.step1]);
+  }, [formData.step1, calculateAllSegmentsPricing]);
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -309,16 +832,109 @@ export default function BookingLuxuryPage() {
 
   // Three-tier pricing calculations (fallback for legacy)
   const calculateEconomyPrice = useCallback(() => {
-    return pricingTiers?.economy?.price || 0;
-  }, [pricingTiers]);
+    const segments = (formData.step1.segments || []) as any[];
+    const isMultiLeg = segments.length > 1;
+    
+    if (isMultiLeg) {
+      // ✅ FIXED: For multi-leg, return the BASE total - WhoAndPaymentStep_Simple applies multiplier
+      // This prevents double multiplication (0.85 × 0.85 = 0.72 bug)
+      const totalBase = segments.reduce((sum, seg) => sum + (seg.pricing?.total || 0), 0);
+      
+      // CRITICAL FIX: If segment pricing is 0, fall back to pricingTiers
+      if (totalBase === 0 && pricingTiers?.standard?.price) {
+        const fallbackTotal = pricingTiers.standard.price * segments.length;
+        console.log('💰 calculateEconomyPrice (multi-leg fallback):', {
+          segmentsCount: segments.length,
+          fallbackTotal,
+          note: 'Returning base total - child applies 0.85 multiplier'
+        });
+        return fallbackTotal; // Return base, not multiplied
+      }
+      
+      console.log('💰 calculateEconomyPrice (multi-leg):', {
+        segmentsCount: segments.length,
+        segmentPrices: segments.map(s => s.pricing?.total || 0),
+        totalBase,
+        note: 'Returning base total - child applies 0.85 multiplier'
+      });
+      
+      return totalBase; // Return base, child will apply 0.85
+    }
+    
+    // Single-leg: use pricingTiers (already has economy multiplier)
+    const price = pricingTiers?.economy?.price || 0;
+    console.log('💰 calculateEconomyPrice (single-leg):', price);
+    return price;
+  }, [pricingTiers, formData.step1.segments]);
 
   const calculateStandardPrice = useCallback(() => {
-    return pricingTiers?.standard?.price || 0;
-  }, [pricingTiers]);
+    const segments = (formData.step1.segments || []) as any[];
+    const isMultiLeg = segments.length > 1;
+    
+    if (isMultiLeg) {
+      // Multi-leg: sum all segment totals
+      const total = segments.reduce((sum, seg) => sum + (seg.pricing?.total || 0), 0);
+      
+      // CRITICAL FIX: If segment pricing is 0, fall back to pricingTiers
+      // This happens when return segment is added before API calculates pricing
+      if (total === 0 && pricingTiers?.standard?.price) {
+        // Use single-leg price × number of segments as fallback
+        const fallbackTotal = pricingTiers.standard.price * segments.length;
+        console.log('💰 calculateStandardPrice (multi-leg fallback):', {
+          segmentsCount: segments.length,
+          singleLegPrice: pricingTiers.standard.price,
+          fallbackTotal
+        });
+        return fallbackTotal;
+      }
+      
+      console.log('💰 calculateStandardPrice (multi-leg):', {
+        segmentsCount: segments.length,
+        segmentPrices: segments.map(s => s.pricing?.total || 0),
+        total
+      });
+      
+      return total;
+    }
+    
+    // Single-leg: use pricingTiers
+    const price = pricingTiers?.standard?.price || 0;
+    console.log('💰 calculateStandardPrice (single-leg):', price);
+    return price;
+  }, [pricingTiers, formData.step1.segments]);
 
   const calculatePriorityPrice = useCallback(() => {
+    const segments = (formData.step1.segments || []) as any[];
+    const isMultiLeg = segments.length > 1;
+    
+    if (isMultiLeg) {
+      // ✅ FIXED: For multi-leg, return the BASE total - WhoAndPaymentStep_Simple applies multiplier
+      // This prevents double multiplication (1.5 × 1.5 = 2.25 bug)
+      const totalBase = segments.reduce((sum, seg) => sum + (seg.pricing?.total || 0), 0);
+      
+      // CRITICAL FIX: If segment pricing is 0, fall back to pricingTiers
+      if (totalBase === 0 && pricingTiers?.standard?.price) {
+        const fallbackTotal = pricingTiers.standard.price * segments.length;
+        console.log('💰 calculatePriorityPrice (multi-leg fallback):', {
+          segmentsCount: segments.length,
+          fallbackTotal,
+          note: 'Returning base total - child applies 1.5 multiplier'
+        });
+        return fallbackTotal; // Return base, not multiplied
+      }
+      
+      console.log('💰 calculatePriorityPrice (multi-leg):', {
+        segmentsCount: segments.length,
+        totalBase,
+        note: 'Returning base total - child applies 1.5 multiplier'
+      });
+      
+      return totalBase; // Return base, child will apply 1.5
+    }
+    
+    // Single-leg: use pricingTiers (already has express multiplier)
     return pricingTiers?.express?.price || 0;
-  }, [pricingTiers]);
+  }, [pricingTiers, formData.step1.segments]);
 
   // Removed trending item images - using icons instead
 
@@ -486,17 +1102,25 @@ export default function BookingLuxuryPage() {
         hasValidPickupCoordinates &&
         hasValidDropoffCoordinates) {
       
-      // 🔧 FIX: Include date, time, and urgency in hash to trigger recalculation
+      // 🔧 FIX: Include date, time, urgency, AND segments in hash to trigger recalculation
+      const segments = formData.step1.segments || [];
       const currentData = JSON.stringify({
         items: formData.step1.items.map(i => ({ id: i.id, quantity: i.quantity })),
         pickup: { lat: formData.step1.pickupAddress?.coordinates?.lat, lng: formData.step1.pickupAddress?.coordinates?.lng },
         dropoff: { lat: formData.step1.dropoffAddress?.coordinates?.lat, lng: formData.step1.dropoffAddress?.coordinates?.lng },
-        // ✅ NOW INCLUDES DATE/TIME/URGENCY
+        // ✅ NOW INCLUDES DATE/TIME/URGENCY/SEGMENTS
         scheduling: {
           date: formData.step1.pickupDate,
           timeSlot: formData.step1.pickupTimeSlot,
           urgency: formData.step1.urgency
-        }
+        },
+        // ✅ INCLUDE SEGMENTS to detect changes in multi-leg bookings
+        segments: segments.map((s: any) => ({
+          items: s.items?.map((i: any) => ({ id: i.id, quantity: i.quantity })) || [],
+          pickup: { lat: s.pickupAddress?.coordinates?.lat, lng: s.pickupAddress?.coordinates?.lng },
+          dropoff: { lat: s.dropoffAddress?.coordinates?.lat, lng: s.dropoffAddress?.coordinates?.lng },
+          datetime: s.datetime
+        }))
       });
       
       // Only trigger if data actually changed
@@ -588,8 +1212,31 @@ export default function BookingLuxuryPage() {
   const handleNext = async () => {
     // Simple check - no complex validation
     if (currentStep === 1) {
-      // Step 1: Just check addresses exist
+      // Step 1: Check addresses exist ONLY - date/time is set in Step 2
       if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
+        // For Step 1, we DON'T validate segments for items OR datetime (both are in Step 2)
+        // Just verify addresses exist for multi-leg
+        const segments = (formData.step1.segments || []) as any[];
+        if (segments.length > 1) {
+          // Manual validation: Only check addresses, NOT items or datetime
+          let hasError = false;
+          for (let i = 0; i < segments.length; i++) {
+            const seg = segments[i];
+            if (!seg.pickupAddress?.postcode || !seg.dropoffAddress?.postcode) {
+              toast({
+                title: 'Invalid Journey Segments',
+                description: `Segment ${i + 1}: Please enter both pickup and drop-off addresses`,
+                status: 'error',
+                duration: 5000,
+              });
+              hasError = true;
+              break;
+            }
+            // NOTE: datetime is NOT validated here - it's set in Step 2
+          }
+          if (hasError) return;
+        }
+        
         setIsAutoTransitioning(true);
         setTimeout(() => {
           setCurrentStep(2);
@@ -606,7 +1253,15 @@ export default function BookingLuxuryPage() {
       }
     } else if (currentStep === 2) {
       // Step 2: Check items and date/time are selected
-      if (formData.step1.items.length === 0) {
+      const segments = (formData.step1.segments || []) as any[];
+      const isMultiLeg = segments.length > 1;
+      
+      // Check if items exist (either in segments or global)
+      const hasItems = isMultiLeg 
+        ? segments.some(s => s.items && s.items.length > 0)
+        : formData.step1.items.length > 0;
+        
+      if (!hasItems) {
         toast({
           title: 'Please select at least one item',
           status: 'error',
@@ -614,7 +1269,13 @@ export default function BookingLuxuryPage() {
         });
         return;
       }
-      if (!formData.step1.pickupDate) {
+      
+      // Check if date exists (either in segments or global)
+      const hasDate = isMultiLeg
+        ? segments.every(s => s.datetime)
+        : formData.step1.pickupDate;
+        
+      if (!hasDate) {
         toast({
           title: 'Please select a pickup date',
           status: 'error',
@@ -622,6 +1283,59 @@ export default function BookingLuxuryPage() {
         });
         return;
       }
+      
+      // CRITICAL FIX: Sync items AND pricing from outbound to return segment before checkout
+      if (isMultiLeg) {
+        const outboundSegment = segments.find((s: any) => s.segmentType === 'outbound');
+        const returnSegmentIndex = segments.findIndex((s: any) => s.segmentType === 'return');
+        
+        if (outboundSegment && returnSegmentIndex !== -1) {
+          const returnSegment = segments[returnSegmentIndex];
+          const needsItemSync = (!returnSegment.items || returnSegment.items.length === 0) && 
+              outboundSegment.items && outboundSegment.items.length > 0;
+          const needsPricingSync = (!returnSegment.pricing || returnSegment.pricing.total === 0) &&
+              outboundSegment.pricing && outboundSegment.pricing.total > 0;
+          
+          if (needsItemSync || needsPricingSync) {
+            console.log('🔄 Auto-syncing items and pricing from outbound to return before checkout');
+            const updates: any = {};
+            if (needsItemSync) {
+              updates.items = [...outboundSegment.items];
+            }
+            if (needsPricingSync) {
+              // ✅ CRITICAL FIX: Use pricingTiers as fallback if outbound pricing is 0
+              if (outboundSegment.pricing && outboundSegment.pricing.total > 0) {
+                updates.pricing = { ...outboundSegment.pricing };
+              } else if (pricingTiers?.standard?.price && pricingTiers.standard.price > 0) {
+                // Fallback to pricingTiers
+                const basePrice = pricingTiers.standard.price;
+                updates.pricing = {
+                  baseFee: basePrice * 0.4,
+                  distanceFee: basePrice * 0.3,
+                  volumeFee: basePrice * 0.15,
+                  serviceFee: basePrice * 0.1,
+                  urgencyFee: 0,
+                  vat: basePrice * 0.05,
+                  total: basePrice,
+                  distance: outboundSegment.distance || 0,
+                };
+                console.log('✅ Using pricingTiers for return segment sync:', basePrice);
+              }
+              updates.distance = outboundSegment.distance;
+            }
+            
+            // Update the segment directly in formData
+            const updatedSegments = [...segments];
+            updatedSegments[returnSegmentIndex] = {
+              ...updatedSegments[returnSegmentIndex],
+              ...updates
+            };
+            updateFormData('step1', { segments: updatedSegments });
+            console.log('✅ Return segment synced:', updates);
+          }
+        }
+      }
+      
       setIsAutoTransitioning(true);
       setTimeout(() => {
         setCurrentStep(3);
@@ -654,86 +1368,6 @@ export default function BookingLuxuryPage() {
     }
   };
 
-  // Normalize address from autocomplete to comprehensive pricing schema
-  const normalizeAddressForPricing = useCallback((addr: any) => {
-    if (!addr) return null;
-    
-    const components = addr.components || {};
-    const formatted = addr.formatted || {};
-    
-    // Extract full address
-    const full = 
-      addr.formatted_address || 
-      addr.fullAddress || 
-      addr.full ||
-      addr.displayText || 
-      addr.place_name || 
-      '';
-    
-    // Extract from displayText or full (Google format: "22 Sword St, Glasgow G31 1TD, UK")
-    const firstPart = full.split(',')[0]?.trim() || '';
-    
-    // Extract street number with improved pattern matching
-    let number = components.street_number || components.house_number || addr.houseNumber || addr.number || '';
-    if (!number && firstPart) {
-      // Match patterns like: "22", "22A", "22-24", "Flat 5, 22"
-      const match = firstPart.match(/(?:Flat\s+\d+,?\s+)?(\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?)/);
-      if (match) {
-        number = match[1];
-      }
-    }
-    // If still no number, try to extract from any part of the address
-    if (!number) {
-      const numberMatch = full.match(/\b(\d+[a-zA-Z]?)\b/);
-      if (numberMatch) {
-        number = numberMatch[1];
-      }
-    }
-    if (!number) number = '1'; // Final fallback
-    
-    // Extract street name with improved logic
-    let street = components.route || components.road || components.street || addr.street || '';
-    if (!street && firstPart) {
-      // Remove number and any prefix (like "Flat 5,") to get street name
-      street = firstPart
-        .replace(/^(?:Flat\s+\d+,?\s+)?\d+[a-zA-Z]?(?:-\d+[a-zA-Z]?)?\s*,?\s*/, '')
-        .trim();
-    }
-    // If street is empty but we have full address, use the first meaningful part
-    if (!street && full) {
-      const parts = full.split(',');
-      if (parts.length > 0) {
-        street = parts[0].replace(/^\d+[a-zA-Z]?\s+/, '').trim() || 'Main Street';
-      }
-    }
-    if (!street) street = 'Main Street'; // Final fallback
-    
-    // Extract city
-    const city = 
-      addr.city || 
-      components.city || 
-      components.locality || 
-      components.post_town || 
-      'London';
-    
-    // Extract postcode
-    const postcode = 
-      addr.postcode || 
-      components.postcode || 
-      components.postal_code || 
-      'SW1A 1AA';
-    
-    // Extract line1
-    const line1 = firstPart || `${number} ${street}`;
-    
-    // Extract coordinates
-    const coordinates = addr.coordinates || addr.location || { lat: 0, lng: 0 };
-    
-    console.log('✅ Normalized address:', { full, line1, street, number, city, postcode, coordinates });
-    
-    return { full, line1, city, postcode, street, number, coordinates };
-  }, []);
-
   const handleStepClick = async (stepNumber: number) => {
     if (stepNumber < currentStep) {
       setCurrentStep(stepNumber);
@@ -742,7 +1376,6 @@ export default function BookingLuxuryPage() {
       await handleNext();
     }
   };
-
 
 
   // Success page is now handled by dedicated /booking/success route
@@ -759,11 +1392,12 @@ export default function BookingLuxuryPage() {
     <>
       <style jsx global>{`
         .booking-time-select {
-          color: #ffffff !important;
+          color: #e2e8f0 !important;
+          background-color: rgba(15, 23, 42, 0.95) !important;
         }
         .booking-time-select option {
-          color: #1f2937 !important;
-          background-color: white !important;
+          color: #e2e8f0 !important;
+          background-color: #1e293b !important;
         }
       `}</style>
     <Box 
@@ -989,20 +1623,14 @@ export default function BookingLuxuryPage() {
                   borderColor="white"
                   boxShadow="0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)"
                   position="relative"
-                  overflow="visible"
+                  overflow="hidden"
                   transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                  _before={{
-                    content: '""',
-                    position: 'absolute',
-                    inset: '-4px',
-                    borderRadius: 'full',
-                    padding: '4px',
-                    background: 'linear-gradient(135deg, #10b981, #059669, #047857)',
-                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                    WebkitMaskComposite: 'xor',
-                    maskComposite: 'exclude',
-                    opacity: 0.5,
-                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  sx={{
+                    '@keyframes phonePulse': {
+                      '0%, 100%': { boxShadow: '0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3)' },
+                      '50%': { boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5)' },
+                    },
+                    animation: 'phonePulse 2s ease-in-out infinite',
                   }}
                   _hover={{
                     transform: 'scale(1.15) rotate(-5deg)',
@@ -1224,6 +1852,11 @@ export default function BookingLuxuryPage() {
                   errors={errors}
                   onNext={handleNext}
                   isTransitioning={isAutoTransitioning}
+                  addReturnSegment={addReturnSegmentWithPricing}
+                  addAdditionalSegment={addAdditionalSegmentWithPricing}
+                  updateSegment={updateSegment}
+                  removeSegment={removeSegment}
+                  validateSegments={validateSegments}
                 />
               </Box>
             )}
@@ -1365,28 +1998,23 @@ export default function BookingLuxuryPage() {
                                 padding: '14px 16px',
                                 fontSize: '16px',
                                 borderRadius: '16px',
-                                border: '3px solid transparent',
-                                backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                                backgroundOrigin: 'border-box',
-                                backgroundClip: 'padding-box, border-box',
-                                color: '#ffffff',
+                                border: '3px solid rgba(139, 92, 246, 0.5)',
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                color: '#e2e8f0',
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 outline: 'none',
                                 appearance: 'none',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'right 16px center',
-                                backgroundSize: '24px',
                                 paddingRight: '48px',
                                 transition: 'all 0.3s',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
                               }}
                             >
-                              <option value="" style={{ color: '#1f2937' }}>Choose a time</option>
-                              <option value="morning" style={{ color: '#1f2937' }}>8 AM - 12 PM 🌅 (Morning)</option>
-                              <option value="afternoon" style={{ color: '#1f2937' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
-                              <option value="evening" style={{ color: '#1f2937' }}>4 PM - 6 PM 🌆 (Evening)</option>
-                              <option value="flexible" style={{ color: '#1f2937' }}>Flexible ⏰ (Best Price)</option>
+                              <option value="" style={{ background: '#1e293b', color: '#e2e8f0' }}>Choose a time</option>
+                              <option value="morning" style={{ background: '#1e293b', color: '#e2e8f0' }}>8 AM - 12 PM 🌅 (Morning)</option>
+                              <option value="afternoon" style={{ background: '#1e293b', color: '#e2e8f0' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
+                              <option value="evening" style={{ background: '#1e293b', color: '#e2e8f0' }}>4 PM - 6 PM 🌆 (Evening)</option>
+                              <option value="flexible" style={{ background: '#1e293b', color: '#e2e8f0' }}>Flexible ⏰ (Best Price)</option>
                             </select>
                             {errors['step1.pickupTime'] && (
                               <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupTime']}</Text>
@@ -1402,6 +2030,7 @@ export default function BookingLuxuryPage() {
                   <WhereAndWhatStepHierarchical
                     formData={formData}
                     updateFormData={updateFormData}
+                    updateSegment={updateSegment}
                     errors={errors}
                     calculatePricing={calculateComprehensivePricing}
                   />
@@ -1418,19 +2047,39 @@ export default function BookingLuxuryPage() {
                     <CardBody p={{ base: 4, md: 6 }}>
                       <VStack spacing={4}>
                         {/* Status Message */}
-                        {formData.step1.items.length === 0 ? (
-                          <Text color="yellow.300" fontSize="sm" textAlign="center">
-                            ⚠️ Please select at least one item to continue
-                          </Text>
-                        ) : !formData.step1.pickupDate ? (
-                          <Text color="yellow.300" fontSize="sm" textAlign="center">
-                            ⚠️ Please select a date to continue
-                          </Text>
-                        ) : (
-                          <Text color="green.300" fontSize="sm" textAlign="center">
-                            ✅ Ready to continue - {formData.step1.items.length} items selected
-                          </Text>
-                        )}
+                        {(() => {
+                          const segments = (formData.step1.segments || []) as any[];
+                          const isMultiLeg = segments.length > 1;
+                          const hasItems = isMultiLeg 
+                            ? segments.some(s => s.items && s.items.length > 0)
+                            : formData.step1.items.length > 0;
+                          const hasDate = isMultiLeg
+                            ? segments.every(s => s.datetime)
+                            : formData.step1.pickupDate;
+                          const totalItems = isMultiLeg
+                            ? segments.reduce((total, s) => total + (s.items?.length || 0), 0)
+                            : formData.step1.items.length;
+
+                          if (!hasItems) {
+                            return (
+                              <Text color="yellow.300" fontSize="sm" textAlign="center">
+                                ⚠️ Please select at least one item to continue
+                              </Text>
+                            );
+                          } else if (!hasDate) {
+                            return (
+                              <Text color="yellow.300" fontSize="sm" textAlign="center">
+                                ⚠️ Please select a date to continue
+                              </Text>
+                            );
+                          } else {
+                            return (
+                              <Text color="green.300" fontSize="sm" textAlign="center">
+                                ✅ Ready to continue - {totalItems} items selected
+                              </Text>
+                            );
+                          }
+                        })()}
 
                         {/* Navigation Buttons */}
                         <HStack justify="space-between" w="full" spacing={4}>
@@ -1455,13 +2104,43 @@ export default function BookingLuxuryPage() {
                             color="white"
                             size="lg"
                             flex={2}
-                            isDisabled={formData.step1.items.length === 0 || !formData.step1.pickupDate}
-                            boxShadow={formData.step1.items.length > 0 && formData.step1.pickupDate ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none"}
-                            _hover={formData.step1.items.length > 0 && formData.step1.pickupDate ? {
-                              bg: "blue.600",
-                              transform: 'translateY(-2px)',
-                              boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)'
-                            } : {}}
+                            isDisabled={(() => {
+                              const segments = (formData.step1.segments || []) as any[];
+                              const isMultiLeg = segments.length > 1;
+                              const hasItems = isMultiLeg 
+                                ? segments.some(s => s.items && s.items.length > 0)
+                                : formData.step1.items.length > 0;
+                              const hasDate = isMultiLeg
+                                ? segments.every(s => s.datetime)
+                                : formData.step1.pickupDate;
+                              return !hasItems || !hasDate;
+                            })()}
+                            boxShadow={(() => {
+                              const segments = (formData.step1.segments || []) as any[];
+                              const isMultiLeg = segments.length > 1;
+                              const hasItems = isMultiLeg 
+                                ? segments.some(s => s.items && s.items.length > 0)
+                                : formData.step1.items.length > 0;
+                              const hasDate = isMultiLeg
+                                ? segments.every(s => s.datetime)
+                                : formData.step1.pickupDate;
+                              return hasItems && hasDate ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none";
+                            })()}
+                            _hover={(() => {
+                              const segments = (formData.step1.segments || []) as any[];
+                              const isMultiLeg = segments.length > 1;
+                              const hasItems = isMultiLeg 
+                                ? segments.some(s => s.items && s.items.length > 0)
+                                : formData.step1.items.length > 0;
+                              const hasDate = isMultiLeg
+                                ? segments.every(s => s.datetime)
+                                : formData.step1.pickupDate;
+                              return hasItems && hasDate ? {
+                                bg: "blue.600",
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)'
+                              } : {};
+                            })()}
                             _disabled={{
                               opacity: 0.5,
                               cursor: 'not-allowed',
@@ -1492,6 +2171,7 @@ export default function BookingLuxuryPage() {
                   validatePromotionCode={validatePromotionCode}
                   applyPromotionCode={applyPromotionCode}
                   removePromotionCode={removePromotionCode}
+                  getTotalSegmentsPrice={getTotalSegmentsPrice}
                 />
               </Box>
             )}

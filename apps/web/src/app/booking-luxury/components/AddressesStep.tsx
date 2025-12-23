@@ -2,7 +2,7 @@
 
 /**
  * Step 1: Pickup and Drop-off Addresses
- * Luxury Booking Design
+ * Luxury Booking Design with Multi-Leg Support
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -25,7 +25,9 @@ import {
 } from 'react-icons/fa';
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
 import type { FormData } from '../hooks/useBookingForm';
+import type { BookingSegment } from '../types/segment';
 import PricePreview from './PricePreview';
+import SegmentManager from './SegmentManager';
 
 
 interface AddressesStepProps {
@@ -34,6 +36,12 @@ interface AddressesStepProps {
   errors: Record<string, string>;
   onNext?: () => void;
   isTransitioning?: boolean;
+  // Multi-leg functions
+  addReturnSegment?: (bufferMinutes?: number) => void;
+  addAdditionalSegment?: () => void;
+  updateSegment?: (index: number, data: Partial<BookingSegment>) => void;
+  removeSegment?: (index: number) => void;
+  validateSegments?: () => { valid: boolean; errors: string[] };
 }
 
 export default function AddressesStep({
@@ -42,6 +50,11 @@ export default function AddressesStep({
   errors,
   onNext,
   isTransitioning = false,
+  addReturnSegment,
+  addAdditionalSegment,
+  updateSegment,
+  removeSegment,
+  validateSegments,
 }: AddressesStepProps) {
   // Validate if can proceed
   const canProceed = formData.step1.pickupAddress && formData.step1.dropoffAddress;
@@ -361,13 +374,18 @@ export default function AddressesStep({
           </Card>
         </SimpleGrid>
 
-        {/* Price Preview - Shows when both addresses are entered */}
-        <PricePreview
-          pickupPostcode={formData.step1.pickupAddress?.postcode}
-          dropoffPostcode={formData.step1.dropoffAddress?.postcode}
-          pickupCoordinates={formData.step1.pickupAddress?.coordinates}
-          dropoffCoordinates={formData.step1.dropoffAddress?.coordinates}
-        />
+        {/* Multi-Leg Segment Manager */}
+        {canProceed && addReturnSegment && addAdditionalSegment && updateSegment && removeSegment && validateSegments && (
+          <SegmentManager
+            formData={formData}
+            segments={(formData.step1.segments || []) as BookingSegment[]}
+            onAddReturnSegment={addReturnSegment}
+            onAddAdditionalSegment={addAdditionalSegment}
+            onUpdateSegment={updateSegment}
+            onRemoveSegment={removeSegment}
+            validateSegments={validateSegments}
+          />
+        )}
       </VStack>
 
       {/* Continue Button - Always visible when addresses are complete */}

@@ -29,17 +29,26 @@ import {
   SimpleGrid,
   Collapse,
   useDisclosure,
+  Heading,
+  Button,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
-  FaBox,
+  FaShoppingBag,
   FaChevronUp,
   FaTimes,
+  FaMapMarkerAlt,
+  FaPlus,
+  FaMinus,
+  FaTrash,
 } from 'react-icons/fa';
+import type { BookingSegment } from '../types/segment';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 import { SelectableCard } from '@/components/shared/SelectableCard';
+import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
+import SelectedItemsManager from './SelectedItemsManager';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -54,6 +63,7 @@ interface WhoAndPaymentStepProps {
   validatePromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
   applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
   removePromotionCode?: () => void;
+  getTotalSegmentsPrice?: () => number;
 }
 
 export default function WhoAndPaymentStepSimple({
@@ -63,6 +73,8 @@ export default function WhoAndPaymentStepSimple({
   economyPrice = 0,
   standardPrice = 0,
   priorityPrice = 0,
+  calculatePricing,
+  getTotalSegmentsPrice,
 }: WhoAndPaymentStepProps) {
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -86,6 +98,23 @@ export default function WhoAndPaymentStepSimple({
     return undefined;
   };
 
+  const segments = (formData.step1.segments || []) as BookingSegment[];
+  const segmentTotal = useMemo(() => {
+    return segments.reduce((sum, segment) => {
+      const value = segment?.pricing?.total;
+      if (typeof value === 'number' && value > 0) {
+        return sum + value;
+      }
+      return sum;
+    }, 0);
+  }, [segments]);
+
+  // CRITICAL FIX: Check if we have multi-leg with actual pricing
+  // If segmentTotal is 0 but we have segments, the pricing hasn't been calculated yet
+  // In that case, fall back to standardPrice prop which now has fallback logic
+  const hasMultiLegPrice = segments.length > 1 && segmentTotal > 0;
+  const isMultiLegWithoutPricing = segments.length > 1 && segmentTotal === 0;
+
   let safeStandardPrice = sanitizePrice(standardPrice);
   if (safeStandardPrice === undefined) {
     const fallbackStandard = sanitizePrice(formData.step1.pricing?.total);
@@ -96,31 +125,67 @@ export default function WhoAndPaymentStepSimple({
     }
   }
 
-  let safeEconomyPrice = sanitizePrice(economyPrice);
-  if (safeEconomyPrice === undefined) {
-    if (safeStandardPrice > 0) {
-      const computedEconomy = (safeStandardPrice * 0.85).toFixed(2);
-      safeEconomyPrice = parseFloat(computedEconomy);
-    } else {
-      safeEconomyPrice = 0;
-    }
+  // For multi-leg without segment pricing, use standardPrice (which now has fallback)
+  const standardBase = hasMultiLegPrice ? segmentTotal : safeStandardPrice;
+
+  console.log('🔴 PRICING DEBUG:', {
+    hasMultiLegPrice,
+    isMultiLegWithoutPricing,
+    segmentsLength: segments.length,
+    segmentTotal,
+    standardBase,
+    safeStandardPrice,
+    willCalculateFromBase: hasMultiLegPrice || isMultiLegWithoutPricing
+  });
+
+  // ✅ CRITICAL FIX: For multi-leg, ALWAYS calculate economy/express from standardBase
+  // The props from parent contain BASE price (same for all tiers in multi-leg)
+  // We must apply multipliers here to get correct tiered pricing
+  let safeEconomyPrice: number;
+  if (hasMultiLegPrice || isMultiLegWithoutPricing) {
+    // Multi-leg: always calculate from standardBase
+    safeEconomyPrice = parseFloat((standardBase * 0.85).toFixed(2));
+    console.log('🟢 Multi-leg economy calculated:', safeEconomyPrice, '= ', standardBase, '* 0.85');
+  } else {
+    // Single-leg: use props (which already have multipliers from pricingTiers)
+    const fromProps = sanitizePrice(economyPrice);
+    safeEconomyPrice = fromProps !== undefined ? fromProps : parseFloat((standardBase * 0.85).toFixed(2));
   }
 
-  let safeExpressPrice = sanitizePrice(priorityPrice);
-  if (safeExpressPrice === undefined) {
-    if (safeStandardPrice > 0) {
-      const computedExpress = (safeStandardPrice * 1.5).toFixed(2);
-      safeExpressPrice = parseFloat(computedExpress);
-    } else {
-      safeExpressPrice = 0;
-    }
+  let safeExpressPrice: number;
+  if (hasMultiLegPrice || isMultiLegWithoutPricing) {
+    // Multi-leg: always calculate from standardBase
+    safeExpressPrice = parseFloat((standardBase * 1.5).toFixed(2));
+    console.log('🟢 Multi-leg express calculated:', safeExpressPrice, '= ', standardBase, '* 1.5');
+  } else {
+    // Single-leg: use props (which already have multipliers from pricingTiers)
+    const fromProps = sanitizePrice(priorityPrice);
+    safeExpressPrice = fromProps !== undefined ? fromProps : parseFloat((standardBase * 1.5).toFixed(2));
   }
 
-  const actualPrice = selectedService === 'economy'
+  const isMultiLeg = segments.length > 1;
+
+  // Calculate base price based on selected service
+  // ✅ FIXED: For multi-leg, use segmentTotal as base and apply multipliers ONCE
+  // The props (economyPrice, priorityPrice) already have multipliers applied for single-leg
+  // But for multi-leg, we need to apply them to segmentTotal (which is sum of standard prices)
+  const selectedBase = selectedService === 'economy'
     ? safeEconomyPrice
     : selectedService === 'express'
     ? safeExpressPrice
-    : safeStandardPrice;
+    : standardBase;
+
+  // ✅ CRITICAL FIX: Use selectedBase which already has correct multipliers applied
+  // - For single-leg: selectedBase comes from props (economy/standard/express price from pricingTiers)
+  // - For multi-leg: selectedBase = segmentTotal when standard, or props for economy/express
+  // DO NOT apply multipliers again - they're already in the props!
+  const actualPrice = hasMultiLegPrice 
+    ? (selectedService === 'economy'
+        ? segmentTotal * 0.85  // Apply 15% discount to segment total
+        : selectedService === 'express'
+        ? segmentTotal * 1.5   // Apply 50% premium to segment total  
+        : segmentTotal)         // Standard: segment total as-is
+    : selectedBase;  // Single-leg: use props which already have multipliers
 
   console.log('💰 Step 3 Pricing Sanity Check:', {
     economyFromProps: economyPrice,
@@ -130,10 +195,51 @@ export default function WhoAndPaymentStepSimple({
     safeStandardPrice,
     safeExpressPrice,
     selectedService,
+    isMultiLeg,
+    isMultiLegWithoutPricing,
+    hasMultiLegPrice,
+    segmentCount: segments.length,
+    segmentTotal,
+    standardBase,
+    totalSegmentsPrice: hasMultiLegPrice ? segmentTotal : 'N/A (using standardBase fallback)',
     actualPrice
   });
 
-  const selectedItems = formData.step1.items || [];
+  // ✅ FIXED: For multi-leg, get items from first segment (all segments have same items)
+  // This ensures consistency between Step 2 and Step 3
+  const selectedItems = useMemo(() => {
+    const segments = (formData.step1.segments || []) as BookingSegment[];
+    const isMultiLeg = segments.length > 1;
+    
+    if (isMultiLeg) {
+      // ✅ CRITICAL FIX: For multi-leg, all segments have the same items
+      // Just return items from the first segment (no aggregation needed)
+      const firstSegment = segments[0];
+      if (firstSegment?.items && Array.isArray(firstSegment.items) && firstSegment.items.length > 0) {
+        // Deep copy to avoid reference issues
+        return firstSegment.items.map(item => ({ ...item }));
+      }
+      
+      // Fallback: check other segments if first segment has no items
+      for (const segment of segments) {
+        if (segment?.items && Array.isArray(segment.items) && segment.items.length > 0) {
+          return segment.items.map(item => ({ ...item }));
+        }
+      }
+      
+      // If no items in segments, fallback to global items
+      if (formData.step1.items && Array.isArray(formData.step1.items) && formData.step1.items.length > 0) {
+        return formData.step1.items.map(item => ({ ...item }));
+      }
+      
+      return [];
+    }
+    
+    // Single-leg: use global items
+    return (formData.step1.items && Array.isArray(formData.step1.items)) 
+      ? formData.step1.items.map(item => ({ ...item }))
+      : [];
+  }, [formData.step1.items, formData.step1.segments]);
 
   const selectionStats = useMemo(() => {
     if (!selectedItems.length) {
@@ -151,6 +257,8 @@ export default function WhoAndPaymentStepSimple({
     return { totalItems, totalWeight };
   }, [selectedItems]);
 
+  // ✅ FIXED: Apply item updates to all segments (multi-leg) or global items (single-leg)
+  // Ensures all segments stay synchronized with proper deep copying
   const applyItemUpdates = useCallback(
     (items: typeof selectedItems) => {
       // Save scroll position before update (mobile only)
@@ -164,9 +272,32 @@ export default function WhoAndPaymentStepSimple({
         }))
         .filter((item) => item.quantity > 0);
 
-      updateFormData('step1', {
-        items: sanitizedItems.map((item) => ({ ...item })),
-      });
+      const segments = (formData.step1.segments || []) as BookingSegment[];
+      const isMultiLeg = segments.length > 1;
+
+      if (isMultiLeg) {
+        // ✅ CRITICAL FIX: For multi-leg, keep ALL items in ALL segments with SAME quantities
+        // This is correct because each journey leg carries the same items
+        // (e.g., outbound brings items A→B, return brings same items B→A)
+        const updatedSegments = segments.map((segment) => {
+          return {
+            ...segment,
+            // Each segment gets the full items list (not divided) with deep copy
+            items: sanitizedItems.map(item => ({ ...item }))
+          };
+        });
+
+        updateFormData('step1', { 
+          segments: updatedSegments,
+          // Also update global items for consistency
+          items: sanitizedItems.map((item) => ({ ...item }))
+        });
+      } else {
+        // Single-leg: update global items
+        updateFormData('step1', {
+          items: sanitizedItems.map((item) => ({ ...item })),
+        });
+      }
       
       // Restore scroll position after update (mobile only)
       if (isMobile && scrollY !== undefined) {
@@ -175,52 +306,162 @@ export default function WhoAndPaymentStepSimple({
         });
       }
     },
-    [updateFormData]
+    [updateFormData, formData.step1.segments]
   );
 
   const incrementItem = useCallback(
     (itemId: string) => {
-      const currentItems = formData.step1.items || [];
-      const nextItems = currentItems.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
-          : item
-      );
-      applyItemUpdates(nextItems);
-    },
-    [formData.step1.items, applyItemUpdates]
-  );
+      const segments = (formData.step1.segments || []) as BookingSegment[];
+      const isMultiLeg = segments.length > 1;
 
-  const decrementItem = useCallback(
-    (itemId: string) => {
-      const currentItems = formData.step1.items || [];
-      const target = currentItems.find((item) => item.id === itemId);
-      if (!target) {
-        return;
-      }
+      if (isMultiLeg) {
+        // Multi-leg: Increment item quantity in ALL segments equally
+        // This maintains consistency - when user adds 1, it adds 1 to total
+        // by adding 1 to the first segment only (matching displayed behavior)
+        const updatedSegments = [...segments];
+        let incrementedOnce = false;
+        
+        for (let i = 0; i < updatedSegments.length && !incrementedOnce; i++) {
+          const segment = updatedSegments[i];
+          if (!segment.items) continue;
+          
+          const itemIndex = segment.items.findIndex(item => item.id === itemId);
+          if (itemIndex !== -1) {
+            // Found the item, increment only in this segment
+            updatedSegments[i] = {
+              ...segment,
+              items: segment.items.map((item, idx) =>
+                idx === itemIndex
+                  ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
+                  : item
+              )
+            };
+            incrementedOnce = true;
+          }
+        }
 
-      if ((target.quantity || 0) <= 1) {
-        const nextItems = currentItems.filter((item) => item.id !== itemId);
-        applyItemUpdates(nextItems);
+        updateFormData('step1', { segments: updatedSegments });
       } else {
+        // Single-leg: update global items
+        const currentItems = formData.step1.items || [];
         const nextItems = currentItems.map((item) =>
           item.id === itemId
-            ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
+            ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
             : item
         );
         applyItemUpdates(nextItems);
       }
     },
-    [formData.step1.items, applyItemUpdates]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
+  );
+
+  const decrementItem = useCallback(
+    (itemId: string) => {
+      const segments = (formData.step1.segments || []) as BookingSegment[];
+      const isMultiLeg = segments.length > 1;
+
+      if (isMultiLeg) {
+        // Multi-leg: Decrement item quantity in first segment that has it
+        // This maintains consistency - when user removes 1, it removes 1 from total
+        const updatedSegments = [...segments];
+        let decrementedOnce = false;
+        
+        for (let i = 0; i < updatedSegments.length && !decrementedOnce; i++) {
+          const segment = updatedSegments[i];
+          if (!segment.items) continue;
+          
+          const itemIndex = segment.items.findIndex(item => item.id === itemId);
+          if (itemIndex !== -1) {
+            const targetItem = segment.items[itemIndex];
+            
+            if ((targetItem.quantity || 0) <= 1) {
+              // Check if item exists in other segments
+              const existsInOtherSegments = segments.some((s, idx) => 
+                idx !== i && s.items?.some(item => item.id === itemId && (item.quantity || 0) > 0)
+              );
+              
+              if (existsInOtherSegments) {
+                // Remove from this segment only
+                updatedSegments[i] = {
+                  ...segment,
+                  items: segment.items.filter((_, idx) => idx !== itemIndex)
+                };
+              } else {
+                // Last instance - remove from all segments
+                for (let j = 0; j < updatedSegments.length; j++) {
+                  if (updatedSegments[j].items) {
+                    updatedSegments[j] = {
+                      ...updatedSegments[j],
+                      items: updatedSegments[j].items!.filter(item => item.id !== itemId)
+                    };
+                  }
+                }
+              }
+            } else {
+              // Decrease quantity in this segment only
+              updatedSegments[i] = {
+                ...segment,
+                items: segment.items.map((item, idx) =>
+                  idx === itemIndex
+                    ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
+                    : item
+                )
+              };
+            }
+            decrementedOnce = true;
+          }
+        }
+
+        updateFormData('step1', { segments: updatedSegments });
+      } else {
+        // Single-leg: update global items
+        const currentItems = formData.step1.items || [];
+        const target = currentItems.find((item) => item.id === itemId);
+        if (!target) {
+          return;
+        }
+
+        if ((target.quantity || 0) <= 1) {
+          const nextItems = currentItems.filter((item) => item.id !== itemId);
+          applyItemUpdates(nextItems);
+        } else {
+          const nextItems = currentItems.map((item) =>
+            item.id === itemId
+              ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
+              : item
+          );
+          applyItemUpdates(nextItems);
+        }
+      }
+    },
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
   );
 
   const removeItem = useCallback(
     (itemId: string) => {
-      const currentItems = formData.step1.items || [];
-      const nextItems = currentItems.filter((item) => item.id !== itemId);
-      applyItemUpdates(nextItems);
+      const segments = (formData.step1.segments || []) as BookingSegment[];
+      const isMultiLeg = segments.length > 1;
+
+      if (isMultiLeg) {
+        // Multi-leg: Remove item from all segments
+        const updatedSegments = segments.map(segment => {
+          if (!segment.items) return segment;
+          
+          return {
+            ...segment,
+            items: segment.items.filter(item => item.id !== itemId)
+          };
+        });
+
+        updateFormData('step1', { segments: updatedSegments });
+      } else {
+        // Single-leg: remove from global items
+        const currentItems = formData.step1.items || [];
+        const nextItems = currentItems.filter((item) => item.id !== itemId);
+        applyItemUpdates(nextItems);
+      }
     },
-    [formData.step1.items, applyItemUpdates]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
   );
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
@@ -256,7 +497,7 @@ export default function WhoAndPaymentStepSimple({
       ? safeEconomyPrice
       : serviceId === 'express'
       ? safeExpressPrice
-      : safeStandardPrice;
+      : standardBase;
     
     console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
     
@@ -266,7 +507,7 @@ export default function WhoAndPaymentStepSimple({
         window.scrollTo(0, scrollY);
       });
     }
-  }, [safeEconomyPrice, safeStandardPrice, safeExpressPrice]);
+  }, [safeEconomyPrice, safeExpressPrice, standardBase]);
 
   // CRITICAL: Use calculated prices (not static props)
   const services = [
@@ -281,7 +522,7 @@ export default function WhoAndPaymentStepSimple({
     {
       id: 'standard' as const,
       name: 'Standard',
-      price: safeStandardPrice,
+      price: standardBase,
       description: 'Direct service, flexible scheduling',
       icon: '🚚',
       popular: true,
@@ -299,7 +540,7 @@ export default function WhoAndPaymentStepSimple({
   return (
     <Box w="full">
       <VStack spacing={6} align="stretch">
-        {/* Floating Green Button for Selected Items */}
+        {/* Floating Purple Button for Selected Items - Step 2 Design */}
         {selectedItems.length > 0 && (
           <>
             <Box
@@ -315,72 +556,113 @@ export default function WhoAndPaymentStepSimple({
                 align="center"
                 justify="center"
                 bgGradient={isSummaryExpanded 
-                  ? "linear(135deg, #8b5cf6, #6366f1)" 
-                  : "linear(135deg, #ec4899, #f43f5e)"}
+                  ? "linear(135deg, #f43f5e, #ec4899)" 
+                  : "linear(135deg, #8b5cf6, #7c3aed)"}
                 color="white"
                 borderRadius="full"
-                w={{ base: '110px', md: '130px' }}
-                h={{ base: '110px', md: '130px' }}
+                w={{ base: '120px', md: '140px' }}
+                h={{ base: '120px', md: '140px' }}
                 cursor="pointer"
                 boxShadow={isSummaryExpanded 
-                  ? "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3)" 
-                  : "0 15px 40px rgba(236, 72, 153, 0.5), 0 0 25px rgba(236, 72, 153, 0.3)"}
-                transition="all 0.3s ease"
+                  ? "0 15px 40px rgba(244, 63, 94, 0.5), 0 0 25px rgba(244, 63, 94, 0.3), inset 0 -5px 20px rgba(0,0,0,0.2)" 
+                  : "0 15px 40px rgba(139, 92, 246, 0.5), 0 0 25px rgba(139, 92, 246, 0.3), inset 0 -5px 20px rgba(0,0,0,0.2)"}
+                transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                 border="4px solid white"
                 position="relative"
+                overflow="hidden"
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  top: '-50%',
+                  left: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)',
+                  transform: 'rotate(45deg)',
+                  animation: 'shimmer 3s infinite',
+                }}
+                sx={{
+                  '@keyframes shimmer': {
+                    '0%': { transform: 'translateX(-100%) rotate(45deg)' },
+                    '100%': { transform: 'translateX(100%) rotate(45deg)' },
+                  },
+                }}
                 _hover={{
                   transform: 'scale(1.08)',
                   boxShadow: isSummaryExpanded 
-                    ? '0 20px 50px rgba(139, 92, 246, 0.7), 0 0 35px rgba(139, 92, 246, 0.5)' 
-                    : '0 20px 50px rgba(236, 72, 153, 0.7), 0 0 35px rgba(236, 72, 153, 0.5)',
+                    ? '0 25px 60px rgba(244, 63, 94, 0.7), 0 0 45px rgba(244, 63, 94, 0.5)' 
+                    : '0 25px 60px rgba(139, 92, 246, 0.7), 0 0 45px rgba(139, 92, 246, 0.5)',
                 }}
                 _active={{
-                  transform: 'scale(0.98)',
+                  transform: 'scale(0.95)',
                 }}
               >
-                {/* Icon */}
+                {/* Animated ring */}
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  w={{ base: '45px', md: '55px' }}
+                  h={{ base: '45px', md: '55px' }}
+                  borderRadius="full"
+                  border="2px solid"
+                  borderColor="whiteAlpha.400"
+                  animation="selectedItemsPulse 2s ease-in-out infinite"
+                  sx={{
+                    '@keyframes selectedItemsPulse': {
+                      '0%, 100%': { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.6 },
+                      '50%': { transform: 'translate(-50%, -50%) scale(1.2)', opacity: 0 },
+                    },
+                  }}
+                />
                 <Icon 
-                  as={isSummaryExpanded ? FaTimes : FaBox} 
-                  boxSize={{ base: 8, md: 10 }} 
+                  as={isSummaryExpanded ? FaChevronUp : FaShoppingBag} 
+                  boxSize={{ base: 9, md: 11 }} 
                   color="white"
-                  mb={1}
+                  mb={2}
+                  transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                  transform={isSummaryExpanded ? "rotate(0deg)" : "rotate(-10deg)"}
+                  filter="drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))"
+                  zIndex={1}
                 />
                 
-                {/* Count Badge */}
                 <Flex
                   align="center"
                   justify="center"
                   bg="white"
                   borderRadius="full"
-                  w={{ base: '42px', md: '50px' }}
-                  h={{ base: '42px', md: '50px' }}
+                  w={{ base: '44px', md: '52px' }}
+                  h={{ base: '44px', md: '52px' }}
                   mb={1}
-                  boxShadow="0 2px 8px rgba(0,0,0,0.15)"
+                  boxShadow="0 4px 15px rgba(0,0,0,0.2)"
+                  zIndex={1}
                 >
                   <Text 
                     fontSize={{ base: 'xl', md: '2xl' }} 
                     fontWeight="900" 
                     lineHeight="1"
-                    color="black"
+                    color={isSummaryExpanded ? "#f43f5e" : "#8b5cf6"}
                   >
                     {selectionStats.totalItems}
                   </Text>
                 </Flex>
                 
-                {/* Label */}
                 <Text 
-                  fontSize={{ base: '2xs', md: 'xs' }} 
+                  fontSize={{ base: 'xs', md: 'sm' }} 
                   fontWeight="bold" 
                   textTransform="uppercase"
                   color="white"
-                  letterSpacing="wide"
+                  letterSpacing="wider"
+                  textShadow="0 2px 4px rgba(0,0,0,0.3)"
+                  zIndex={1}
                 >
                   {isSummaryExpanded ? 'CLOSE' : 'VIEW'}
                 </Text>
               </Flex>
             </Box>
 
-            {/* Expanded Details Panel */}
+            {/* Expanded Details Panel - Step 2 Design */}
             <Box
               position="fixed"
               bottom="0"
@@ -391,166 +673,47 @@ export default function WhoAndPaymentStepSimple({
             >
               <Collapse in={isSummaryExpanded} animateOpacity>
                 <Box 
-                  bg="#050505" 
-                  color="white" 
-                  p={{ base: 4, md: 6 }}
-                  maxH="70vh"
+                  bg="linear-gradient(180deg, rgba(10, 10, 15, 0.98) 0%, rgba(5, 5, 8, 0.99) 100%)" 
+                  backdropFilter="blur(20px)"
+                  borderTop="2px solid"
+                  borderColor="rgba(168, 85, 247, 0.4)"
+                  boxShadow="0 -8px 32px rgba(0, 0, 0, 0.8)"
+                  maxH="60vh"
                   overflowY="auto"
-                  boxShadow="0 -4px 20px rgba(0, 0, 0, 0.5)"
+                  p={{ base: 4, md: 6 }}
                 >
-                  <SimpleGrid columns={2} spacing={4} w="full">
-                    {selectedItems.map((item, index) => (
-                      <Box
-                        key={`summary-${item.id}-${index}`}
-                        p={3}
-                        borderRadius="lg"
-                        bg="rgba(255, 255, 255, 0.05)"
-                        borderWidth="1px"
-                        borderColor="rgba(255, 255, 255, 0.1)"
-                        transition="all 0.2s"
-                        _hover={{ 
-                          bg: 'rgba(255, 255, 255, 0.08)',
-                          borderColor: 'rgba(255, 255, 255, 0.2)'
-                        }}
-                      >
-                        <VStack spacing={3} align="stretch">
-                          <HStack justify="space-between" align="center">
-                            <Badge colorScheme="green" fontSize="2xs" borderRadius="full">
-                              {item.quantity}x
-                            </Badge>
-                          </HStack>
-
-                          <Box
-                            h="80px"
-                            position="relative"
-                            overflow="hidden"
-                            border="none"
-                            borderRadius="0"
-                            bg="transparent"
-                            boxShadow="none"
-                          >
-                            {item.image ? (
-                              <NextImage
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="50vw"
-                                style={{
-                                  objectFit: 'cover',
-                                }}
-                              />
-                            ) : (
-                              <Box
-                                w="100%"
-                                h="100%"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                bg="transparent"
-                              >
-                                <Icon as={FaBox} boxSize={6} color="gray.500" />
-                              </Box>
-                            )}
-                          </Box>
-
-                          <Box>
-                            <Text fontSize="xs" fontWeight="bold" noOfLines={2} lineHeight="1.3" mb={1}>
-                              {item.name}
-                            </Text>
-                            <Text fontSize="2xs" color="whiteAlpha.600">
-                              {item.weight}kg each · {item.quantity * item.weight}kg total
-                            </Text>
-                          </Box>
-
-                          <HStack spacing={3} justify="center" w="full">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                decrementItem(item.id);
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'white',
-                                fontSize: '28px',
-                                fontWeight: 'normal',
-                                cursor: 'pointer',
-                                padding: '0',
-                                margin: '0',
-                                width: 'auto',
-                                height: 'auto',
-                                minWidth: '24px',
-                                lineHeight: '1',
-                                outline: 'none',
-                                WebkitTapHighlightColor: 'transparent',
-                                opacity: item.quantity <= 1 ? 0.5 : 1
-                              }}
-                              disabled={item.quantity <= 1}
-                            >
-                              −
-                            </button>
-                            <span
-                              style={{
-                                color: 'white',
-                                fontSize: '18px',
-                                fontWeight: '600',
-                                minWidth: '24px',
-                                textAlign: 'center',
-                                lineHeight: '1'
-                              }}
-                            >
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                incrementItem(item.id);
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'white',
-                                fontSize: '24px',
-                                fontWeight: 'normal',
-                                cursor: 'pointer',
-                                padding: '0',
-                                margin: '0',
-                                width: 'auto',
-                                height: 'auto',
-                                minWidth: '24px',
-                                lineHeight: '1',
-                                outline: 'none',
-                                WebkitTapHighlightColor: 'transparent',
-                                opacity: 1
-                              }}
-                            >
-                              +
-                            </button>
-                          </HStack>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeItem(item.id);
-                            }}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#f87171',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              padding: '4px 0',
-                              textAlign: 'center',
-                              outline: 'none',
-                              WebkitTapHighlightColor: 'transparent',
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </VStack>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
+                  {/* Use new comprehensive Selected Items Manager */}
+                  <SelectedItemsManager
+                    segments={formData.step1.segments || []}
+                    isMultiLeg={(formData.step1.segments || []).length > 1}
+                    globalItems={formData.step1.items || []}
+                    onIncrement={(segmentIndex, itemId) => {
+                      // Allow editing items in Step 3 and trigger price recalculation
+                      incrementItem(itemId);
+                      // Trigger price recalculation after item change
+                      if (calculatePricing) {
+                        setTimeout(() => calculatePricing(), 100);
+                      }
+                    }}
+                    onDecrement={(segmentIndex, itemId) => {
+                      // Allow editing items in Step 3 and trigger price recalculation
+                      decrementItem(itemId);
+                      // Trigger price recalculation after item change
+                      if (calculatePricing) {
+                        setTimeout(() => calculatePricing(), 100);
+                      }
+                    }}
+                    onRemove={(segmentIndex, itemId) => {
+                      // Allow editing items in Step 3 and trigger price recalculation
+                      removeItem(itemId);
+                      // Trigger price recalculation after item change
+                      if (calculatePricing) {
+                        setTimeout(() => calculatePricing(), 100);
+                      }
+                    }}
+                    showPricing={false}
+                    readonly={false}
+                  />
                 </Box>
               </Collapse>
             </Box>
@@ -845,32 +1008,100 @@ export default function WhoAndPaymentStepSimple({
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
               {/* Booking Summary */}
-              <VStack spacing={3} align="stretch">
-                <HStack justify="space-between">
-                  <Text color="gray.400" fontSize="sm">Pickup</Text>
-                  <Text color="white" fontSize="sm" fontWeight="500">
-                    {formData.step1.pickupAddress?.city || 'Not set'}
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color="gray.400" fontSize="sm">Dropoff</Text>
-                  <Text color="white" fontSize="sm" fontWeight="500">
-                    {formData.step1.dropoffAddress?.city || 'Not set'}
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color="gray.400" fontSize="sm">Items</Text>
-                  <Text color="white" fontSize="sm" fontWeight="500">
-                    {formData.step1.items.length} items
-                  </Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color="gray.400" fontSize="sm">Service</Text>
-                  <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
-                    {selectedService}
-                  </Text>
-                </HStack>
-              </VStack>
+              {(() => {
+                const segments = (formData.step1.segments || []) as BookingSegment[];
+                const isMultiLeg = segments.length > 1;
+
+                if (isMultiLeg) {
+                  return (
+                    <VStack spacing={4} align="stretch">
+                      <HStack justify="space-between" align="center">
+                        <Text color="white" fontSize="md" fontWeight="700">
+                          Journey Segments ({segments.length})
+                        </Text>
+                        <Badge colorScheme="purple" variant="subtle" borderRadius="full">
+                          Multi-leg
+                        </Badge>
+                      </HStack>
+                      {segments.map((segment, idx) => {
+                        const getSegmentColor = (type: string) => {
+                          if (type === 'outbound') return 'green';
+                          if (type === 'return') return 'blue';
+                          return 'purple';
+                        };
+
+                        return (
+                          <Box
+                            key={segment.id || idx}
+                            p={4}
+                            bg="linear-gradient(135deg, rgba(59,130,246,0.18), rgba(124,58,237,0.18))"
+                            borderRadius="xl"
+                            borderWidth="1px"
+                            borderColor="rgba(255, 255, 255, 0.08)"
+                            boxShadow="0 16px 40px rgba(15,23,42,0.35)"
+                          >
+                            <VStack spacing={2} align="stretch">
+                              <HStack justify="space-between">
+                                <Badge colorScheme={getSegmentColor(segment.segmentType)} fontSize="xs">
+                                  {segment.segmentType.charAt(0).toUpperCase() + segment.segmentType.slice(1)} Journey
+                                </Badge>
+                              </HStack>
+                              <HStack spacing={2} color="whiteAlpha.900" fontSize="xs">
+                                <Icon as={FaMapMarkerAlt} />
+                                <Text>
+                                  {segment.pickupAddress?.postcode} → {segment.dropoffAddress?.postcode}
+                                </Text>
+                              </HStack>
+                              <HStack justify="space-between" fontSize="xs" color="gray.300">
+                                <Text>{segment.datetime ? new Date(segment.datetime).toLocaleString('en-GB') : 'Not scheduled'}</Text>
+                                <Text>{segment.items?.length || 0} items</Text>
+                              </HStack>
+                            </VStack>
+                          </Box>
+                        );
+                      })}
+                      <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+                      <HStack justify="space-between">
+                        <Text color="gray.400" fontSize="sm">Service</Text>
+                        <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
+                          {selectedService}
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  );
+                }
+
+                // Single journey view
+                return (
+                  <VStack spacing={3} align="stretch">
+                    <HStack justify="space-between">
+                      <Text color="gray.400" fontSize="sm">Pickup</Text>
+                      <Text color="white" fontSize="sm" fontWeight="500">
+                        {formData.step1.pickupAddress?.city || 'Not set'}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="gray.400" fontSize="sm">Dropoff</Text>
+                      <Text color="white" fontSize="sm" fontWeight="500">
+                        {formData.step1.dropoffAddress?.city || 'Not set'}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="gray.400" fontSize="sm">Items</Text>
+                      <Text color="white" fontSize="sm" fontWeight="500">
+                        {formData.step1.items.length} items
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="gray.400" fontSize="sm">Service</Text>
+                      <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
+                        {selectedService}
+                      </Text>
+                    </HStack>
+                  </VStack>
+                );
+              })()}
+              
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
@@ -951,14 +1182,29 @@ export default function WhoAndPaymentStepSimple({
                   },
                   pickupAddress: formData.step1.pickupAddress as any,
                   dropoffAddress: formData.step1.dropoffAddress as any,
-                  items: formData.step1.items,
-                  pricing: formData.step1.pricing as any,
+                  // ✅ CRITICAL FIX: For multi-leg, use items from segments (selectedItems already handles this)
+                  items: selectedItems.length > 0 ? selectedItems : (
+                    // Fallback: try to get items from segments first, then from formData
+                    segments.length > 0 && segments[0]?.items?.length > 0 
+                      ? segments[0].items 
+                      : (formData.step1.items || [])
+                  ),
+                  pricing: {
+                    ...(formData.step1.pricing as any),
+                    total: actualPrice, // Use actualPrice which respects selectedService
+                  } as any,
                   serviceType: selectedService,
+                  // Pass tier prices for correct calculation in StripePaymentButton
+                  economyPrice: safeEconomyPrice,
+                  standardPrice: standardBase,
+                  priorityPrice: safeExpressPrice,
                   scheduledDate: formData.step1.pickupDate || new Date().toISOString().split('T')[0],
                   scheduledTime: formData.step1.pickupTimeSlot,
                   pickupDetails: formData.step1.pickupProperty as any,
                   dropoffDetails: formData.step1.dropoffProperty as any,
                   notes: formData.step2.specialInstructions,
+                  // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
+                  segments: segments.length > 1 ? segments : undefined,
                 }}
                 amount={actualPrice}
                 disabled={

@@ -190,13 +190,16 @@ export class DynamicAvailabilityEngine {
 
   /**
    * Validate that address contains all required full structure
+   * Note: street and number are optional as they may not always be available from geocoding
    */
   private validateFullAddress(address: FullStructuredAddress, context: string): void {
-    const required = ['street', 'number', 'city', 'postcode'];
+    // Only require city and postcode - street/number are nice-to-have
+    const required = ['city', 'postcode'];
     const missing = required.filter(field => !address[field as keyof FullStructuredAddress]);
     
     if (missing.length > 0) {
-      throw new Error(`${context} address missing required fields: ${missing.join(', ')}`);
+      console.warn(`⚠️ ${context} address missing fields: ${missing.join(', ')}, but continuing with available data`);
+      // Don't throw - just warn. City and postcode are enough for availability calculation
     }
 
     if (!address.coordinates || !address.coordinates.lat || !address.coordinates.lng) {

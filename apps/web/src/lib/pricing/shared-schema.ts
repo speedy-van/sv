@@ -136,9 +136,29 @@ export const BasePricingRequestSchema = z.object({
   pickup: PricingAddressSchema,
   dropoffs: z.array(PricingAddressSchema).max(5, 'Maximum 5 dropoff locations'),
   
-  serviceLevel: z.enum(['economy', 'standard', 'premium']).default('standard'),
-  scheduledDate: z.string().datetime('Invalid date format'),
+  serviceLevel: z.enum(['economy', 'standard', 'premium', 'signature', 'white-glove']).default('standard'),
+  // Accept various date formats and normalize to ISO string
+  scheduledDate: z.string().transform((val) => {
+    // If already valid ISO datetime, return as is
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(val)) {
+      return val;
+    }
+    // Try to parse and convert to ISO
+    const date = new Date(val);
+    if (isNaN(date.getTime())) {
+      // If invalid, use tomorrow as fallback
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(9, 0, 0, 0);
+      return tomorrow.toISOString();
+    }
+    return date.toISOString();
+  }),
   customerSegment: z.enum(['bronze', 'silver', 'gold', 'platinum']).default('bronze'),
+  
+  // ✅ Add urgency and timeSlot for accurate pricing
+  urgency: z.enum(['standard', 'express', 'urgent']).optional(),
+  timeSlot: z.enum(['morning', 'afternoon', 'evening', 'flexible']).optional(),
   
   timeFactors: TimeFactorsSchema.optional(),
   serviceOptions: ServiceOptionsSchema.optional(),

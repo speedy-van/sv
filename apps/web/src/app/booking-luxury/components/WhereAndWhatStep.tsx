@@ -91,6 +91,8 @@ import {
   getItemPackages
 } from '@/lib/uk-removal-items-data';
 
+import type { BookingSegment } from '../types/segment';
+
 interface WhereAndWhatStepProps {
   formData: FormData;
   updateFormData: (step: keyof FormData, data: Partial<FormData[keyof FormData]>) => void;
@@ -101,6 +103,8 @@ interface WhereAndWhatStepProps {
   pricingTiers?: any;
   availabilityData?: any;
   isLoadingAvailability?: boolean;
+  // Multi-leg support
+  updateSegment?: (index: number, data: Partial<BookingSegment>) => void;
 }
 
 export default function WhereAndWhatStep({
@@ -113,6 +117,7 @@ export default function WhereAndWhatStep({
   pricingTiers,
   availabilityData,
   isLoadingAvailability,
+  updateSegment,
 }: WhereAndWhatStepProps) {
   
   // State for item selection mode
@@ -128,6 +133,8 @@ export default function WhereAndWhatStep({
   const [showPopularFirst, setShowPopularFirst] = useState(true);
   
   const { step1 } = formData;
+  const segments = (formData.step1.segments || []) as BookingSegment[];
+  const isMultiLeg = segments.length > 1;
   const toast = useToast();
   const {
     isOpen: isSelectedItemsPanelOpen,
@@ -135,11 +142,41 @@ export default function WhereAndWhatStep({
     onClose: onSelectedItemsPanelClose,
   } = useDisclosure();
 
+  // ✅ FIXED: Get current items based on single-leg or multi-leg
+  // For multi-leg, we show items from the first segment (all segments have same items)
+  // This prevents double-counting and confusion
+  const getCurrentItems = useCallback((): any[] => {
+    if (isMultiLeg && segments.length > 0) {
+      // ✅ CRITICAL FIX: For multi-leg, use items from first segment (outbound)
+      // All segments should have the same items, so we don't need to aggregate
+      const firstSegment = segments[0];
+      if (firstSegment?.items && Array.isArray(firstSegment.items) && firstSegment.items.length > 0) {
+        // Deep copy to avoid reference issues
+        return firstSegment.items.map(item => ({ ...item }));
+      }
+      
+      // Fallback: check other segments if first segment has no items
+      for (const segment of segments) {
+        if (segment?.items && Array.isArray(segment.items) && segment.items.length > 0) {
+          return segment.items.map(item => ({ ...item }));
+        }
+      }
+      
+      // If no items in segments, return empty array
+      return [];
+    }
+    
+    // Single-leg: use global items
+    return (step1.items && Array.isArray(step1.items)) ? step1.items.map(item => ({ ...item })) : [];
+  }, [isMultiLeg, segments, step1.items]);
+
+  const currentItems = getCurrentItems();
+
   useEffect(() => {
-    if (step1.items.length === 0 && isSelectedItemsPanelOpen) {
+    if (currentItems.length === 0 && isSelectedItemsPanelOpen) {
       onSelectedItemsPanelClose();
     }
-  }, [step1.items.length, isSelectedItemsPanelOpen, onSelectedItemsPanelClose]);
+  }, [currentItems.length, isSelectedItemsPanelOpen, onSelectedItemsPanelClose]);
 
   // Get all categories and subcategories
   const categories = getAllCategories();
@@ -195,47 +232,46 @@ export default function WhereAndWhatStep({
     { id: '5bedroom', name: '5 Bedrooms', packageKey: '5bedroom', image: '/items/one%20bedroom.png' },
   ];
 
-  // Handlers
-  const addItem = (item: any) => {
-    // Save scroll position before update (mobile only)
-    const isMobile = window.innerWidth < 768;
-    const scrollY = isMobile ? window.scrollY : undefined;
-    
-    const currentItems = step1.items || [];
-    const existingItem = currentItems.find((i: any) => i.id === item.id);
-    if (existingItem) {
-      const updatedItems = currentItems.map((i: any) => 
-        i.id === item.id ? { ...i, quantity: (i.quantity || 0) + 1 } : i
-      );
-      // Force update by creating a new array reference
-      updateFormData('step1', {
-        items: [...updatedItems]
+  // ✅ FIXED: Update items in all segments (for multi-leg) or global items (for single-leg)
+  // Ensures all segments have the same items with proper deep copying
+  const updateItemsInAllSegments = useCallback((updater: (items: any[]) => any[]) => {
+    if (isMultiLeg && updateSegment && segments.length > 0) {
+      // ✅ CRITICAL FIX: Update items in ALL segments to keep them synchronized
+      // This ensures that when user adds/removes items in Step 2, all segments are updated
+      segments.forEach((segment, index) => {
+        const segmentItems = (segment.items && Array.isArray(segment.items)) ? segment.items : [];
+        const updatedItems = updater([...segmentItems]);
+        // Deep copy items to avoid reference issues
+        updateSegment(index, { items: updatedItems.map(item => ({ ...item })) });
       });
+      
+      // Also update global items for consistency
+      const firstSegmentItems = (segments[0]?.items && Array.isArray(segments[0].items)) ? segments[0].items : [];
+      const updatedGlobalItems = updater([...firstSegmentItems]);
+      updateFormData('step1', { items: updatedGlobalItems.map(item => ({ ...item })) });
     } else {
-      const newItem = { ...item, quantity: 1 };
-      updateFormData('step1', {
-        items: [...currentItems, newItem]
-      });
+      // Single-leg: update global items
+      const globalItems = (step1.items && Array.isArray(step1.items)) ? step1.items : [];
+      const updatedItems = updater([...globalItems]);
+      updateFormData('step1', { items: updatedItems.map(item => ({ ...item })) });
     }
-    
-    // Restore scroll position after update (mobile only)
-    if (isMobile && scrollY !== undefined) {
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
-    }
-  };
+  }, [isMultiLeg, updateSegment, segments, step1.items, updateFormData]);
 
-  const removeItem = (itemId: any) => {
+  // Handlers
+  const addItem = useCallback((item: any) => {
     // Save scroll position before update (mobile only)
     const isMobile = window.innerWidth < 768;
     const scrollY = isMobile ? window.scrollY : undefined;
     
-    const currentItems = step1.items || [];
-    const filteredItems = currentItems.filter((i: any) => i.id !== itemId);
-    // Force update by creating a new array reference
-    updateFormData('step1', {
-      items: [...filteredItems]
+    updateItemsInAllSegments((items) => {
+      const existingItem = items.find((i: any) => i.id === item.id);
+      if (existingItem) {
+        return items.map((i: any) => 
+          i.id === item.id ? { ...i, quantity: (i.quantity || 0) + 1 } : i
+        );
+      } else {
+        return [...items, { ...item, quantity: 1 }];
+      }
     });
     
     // Restore scroll position after update (mobile only)
@@ -244,40 +280,16 @@ export default function WhereAndWhatStep({
         window.scrollTo(0, scrollY);
       });
     }
-  };
+  }, [updateItemsInAllSegments]);
 
-  const updateQuantity = (itemId: any, quantity: number, item?: any) => {
+  const removeItem = useCallback((itemId: any) => {
     // Save scroll position before update (mobile only)
     const isMobile = window.innerWidth < 768;
     const scrollY = isMobile ? window.scrollY : undefined;
     
-    if (quantity === 0) {
-      removeItem(itemId);
-    } else {
-      const currentItems = step1.items || [];
-      const existingItem = currentItems.find((i: any) => i.id === itemId);
-      
-      if (existingItem) {
-        // Update existing item - create new array to ensure change detection
-        const updatedItems = currentItems.map((i: any) =>
-          i.id === itemId ? { ...i, quantity } : i
-        );
-        // Force update by creating a new array reference
-        updateFormData('step1', {
-          items: [...updatedItems]
-        });
-      } else if (item) {
-        // Add new item if it doesn't exist
-        const newItem = { ...item, quantity };
-        updateFormData('step1', {
-          items: [...currentItems, newItem]
-        });
-      } else {
-        // Fallback: try to find item from displayed items
-        console.warn(`Item ${itemId} not found in current items and no item provided`);
-        // Don't add item without proper data - log warning only
-      }
-    }
+    updateItemsInAllSegments((items) => {
+      return items.filter((i: any) => i.id !== itemId);
+    });
     
     // Restore scroll position after update (mobile only)
     if (isMobile && scrollY !== undefined) {
@@ -285,15 +297,75 @@ export default function WhereAndWhatStep({
         window.scrollTo(0, scrollY);
       });
     }
-  };
+  }, [updateItemsInAllSegments]);
 
-  const getItemQuantity = (itemId: any) => {
-    const item = step1.items.find(i => i.id === itemId);
+  const updateQuantity = useCallback((itemId: any, quantity: number, item?: any) => {
+    // Save scroll position before update (mobile only)
+    const isMobile = window.innerWidth < 768;
+    const scrollY = isMobile ? window.scrollY : undefined;
+    
+    if (quantity === 0) {
+      removeItem(itemId);
+      return;
+    }
+    
+    updateItemsInAllSegments((items) => {
+      const existingItem = items.find((i: any) => i.id === itemId);
+      if (existingItem) {
+        return items.map((i: any) =>
+          i.id === itemId ? { ...i, quantity } : i
+        );
+      } else if (item) {
+        return [...items, { ...item, quantity }];
+      } else {
+        console.warn(`Item ${itemId} not found in current items and no item provided`);
+        return items;
+      }
+    });
+    
+    // Restore scroll position after update (mobile only)
+    if (isMobile && scrollY !== undefined) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
+    }
+  }, [updateItemsInAllSegments, removeItem]);
+
+  const getItemQuantity = useCallback((itemId: any) => {
+    // ✅ FIXED: For multi-leg, get quantity from first segment (all segments have same items)
+    // This prevents double-counting and confusion
+    if (isMultiLeg && segments.length > 0) {
+      // Check first segment (outbound) - all segments should have same items
+      const firstSegment = segments[0];
+      if (firstSegment?.items && Array.isArray(firstSegment.items)) {
+        const segmentItem = firstSegment.items.find((i: any) => i.id === itemId);
+        if (segmentItem) {
+          return segmentItem.quantity || 0;
+        }
+      }
+      
+      // Fallback: check other segments
+      for (const segment of segments) {
+        if (segment?.items && Array.isArray(segment.items)) {
+          const segmentItem = segment.items.find((i: any) => i.id === itemId);
+          if (segmentItem) {
+            return segmentItem.quantity || 0;
+          }
+        }
+      }
+      
+      return 0;
+    }
+    
+    // Single-leg: use global items
+    const item = (step1.items && Array.isArray(step1.items)) 
+      ? step1.items.find((i: any) => i.id === itemId)
+      : undefined;
     return item ? item.quantity : 0;
-  };
+  }, [isMultiLeg, segments, step1.items]);
 
   const renderSelectedItemsContent = (options?: { includeHeading?: boolean }) => {
-    if (step1.items.length === 0) {
+    if (currentItems.length === 0) {
       return null;
     }
 
@@ -303,7 +375,7 @@ export default function WhereAndWhatStep({
       <VStack spacing={4}>
         {includeHeading && (
           <Heading size={{ base: "sm", md: "md" }} color="white">
-            ✅ Selected Items ({step1.items.length})
+            ✅ Selected Items ({currentItems.length})
           </Heading>
         )}
 
@@ -313,7 +385,7 @@ export default function WhereAndWhatStep({
           className="selected-items-cart"
           style={{ display: 'flex', flexDirection: 'column' } as React.CSSProperties}
         >
-          {step1.items.map((item) => (
+          {currentItems.map((item) => (
             <Box
               key={item.id}
               w="full"
@@ -468,7 +540,7 @@ export default function WhereAndWhatStep({
       <VStack
         spacing={{ base: 6, md: 8 }}
         align="stretch"
-        pb={{ base: step1.items.length > 0 ? 140 : 0, lg: 0 }}
+        pb={{ base: currentItems.length > 0 ? 140 : 0, lg: 0 }}
       >
         
         {/* Header */}
@@ -487,6 +559,79 @@ export default function WhereAndWhatStep({
             Select your moving date and choose items - Enterprise Engine will calculate the best price
           </Text>
         </VStack>
+
+        {/* Multi-leg summary (matches luxury booking styling) */}
+        {isMultiLeg && (
+          <Card
+            bg="linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(17, 24, 39, 0.92))"
+            border="1px solid"
+            borderColor="rgba(147, 51, 234, 0.35)"
+            borderRadius="2xl"
+            boxShadow="0 18px 50px rgba(147, 51, 234, 0.25)"
+          >
+            <CardBody>
+              <VStack align="stretch" spacing={3}>
+                <HStack justify="space-between">
+                  <HStack spacing={3}>
+                    <Badge colorScheme="purple" variant="subtle" borderRadius="full" px={3}>
+                      Multi-leg
+                    </Badge>
+                    <Text color="white" fontWeight="700">
+                      {segments.length} journeys in this booking
+                    </Text>
+                  </HStack>
+                  <Text color="gray.300" fontSize="sm">
+                    Edit addresses/times in Step 1 if needed
+                  </Text>
+                </HStack>
+                <SimpleGrid columns={{ base: 1, md: segments.length > 2 ? 3 : segments.length }} spacing={3}>
+                  {segments.map((segment: any, idx: number) => {
+                    const badge =
+                      segment.segmentType === 'outbound'
+                        ? { label: 'Outbound', color: 'green' }
+                        : segment.segmentType === 'return'
+                        ? { label: 'Return', color: 'blue' }
+                        : { label: 'Additional', color: 'purple' };
+                    return (
+                      <Box
+                        key={segment.id || idx}
+                        p={4}
+                        borderRadius="xl"
+                        bg="rgba(255,255,255,0.04)"
+                        borderWidth="1px"
+                        borderColor="rgba(255,255,255,0.08)"
+                        boxShadow="0 10px 30px rgba(0,0,0,0.2)"
+                      >
+                        <VStack align="stretch" spacing={2}>
+                          <HStack justify="space-between">
+                            <Badge colorScheme={badge.color} variant="solid" borderRadius="full">
+                              {badge.label}
+                            </Badge>
+                            <Text color="white" fontSize="sm" fontWeight="700">
+                              {segment.pricing?.total > 0 ? `£${segment.pricing.total.toFixed(2)}` : '—'}
+                            </Text>
+                          </HStack>
+                          <HStack spacing={2} color="whiteAlpha.900" fontSize="sm">
+                            <Icon as={FaMapMarkerAlt} />
+                            <Text>
+                              {segment.pickupAddress?.postcode || 'Pickup'} → {segment.dropoffAddress?.postcode || 'Drop-off'}
+                            </Text>
+                          </HStack>
+                          {segment.datetime && (
+                            <HStack spacing={2} color="gray.300" fontSize="xs">
+                              <Icon as={FaClock} />
+                              <Text>{new Date(segment.datetime).toLocaleString('en-GB')}</Text>
+                            </HStack>
+                          )}
+                        </VStack>
+                      </Box>
+                    );
+                  })}
+                </SimpleGrid>
+              </VStack>
+            </CardBody>
+          </Card>
+        )}
 
         {/* Date & Time Selection */}
         <Card 
@@ -1452,9 +1597,9 @@ export default function WhereAndWhatStep({
         >
           <CardBody p={6}>
             <VStack w="full" spacing={3}>
-              {step1.items.length > 0 && (
+              {currentItems.length > 0 && (
                 <Badge bg="green.600" color="white" p={3} borderRadius="lg" fontSize="md" w="full" textAlign="center">
-                  ✅ {step1.items.length} Items Selected
+                  ✅ {currentItems.length} Items Selected
                 </Badge>
               )}
 
@@ -1462,7 +1607,7 @@ export default function WhereAndWhatStep({
                 <Button
                   rightIcon={<Icon as={FaArrowRight} />}
                   onClick={onNext}
-                  isDisabled={step1.items.length === 0 || !step1.pickupDate || !step1.pickupTimeSlot}
+                  isDisabled={currentItems.length === 0 || !step1.pickupDate || !step1.pickupTimeSlot}
                   bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                   color="white"
                   size="lg"
@@ -1507,7 +1652,7 @@ export default function WhereAndWhatStep({
         </Card>
 
       </VStack>
-      {step1.items.length > 0 && (
+      {currentItems.length > 0 && (
         <>
           {!isSelectedItemsPanelOpen && (
             <Portal>
@@ -1543,7 +1688,7 @@ export default function WhereAndWhatStep({
                       <Icon as={FaBoxOpen} color="white" boxSize={{ base: 5, md: 5 }} />
                     </Circle>
                     <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="800">
-                      Selected Items ({step1.items.length})
+                      Selected Items ({currentItems.length})
                     </Text>
                   </HStack>
                 </Button>
@@ -1575,7 +1720,7 @@ export default function WhereAndWhatStep({
                 color="white"
                 fontWeight="900"
               >
-                ✅ Selected Items ({step1.items.length})
+                ✅ Selected Items ({currentItems.length})
               </DrawerHeader>
               <DrawerBody px={{ base: 4, md: 6 }} pt={4} pb={0}>
                 {renderSelectedItemsContent({ includeHeading: false })}

@@ -230,7 +230,10 @@ model Booking {
   serviceType                                                String?               @default("STANDARD")
   isEconomyService                                           Boolean               @default(false)
   shouldBeMultiDrop                                          Boolean               @default(false)
+  isMultiLeg                                                 Boolean               @default(false)
+  totalSegments                                              Int                   @default(1)
   Assignment                                                 Assignment[]
+  BookingSegment                                             BookingSegment[]
   customer                                                   User?                 @relation(fields: [customerId], references: [id])
   driver                                                     Driver?               @relation(fields: [driverId], references: [id])
   dropoffAddress                                             BookingAddress        @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
@@ -271,6 +274,8 @@ model BookingAddress {
   lng                                              Float
   Booking_Booking_dropoffAddressIdToBookingAddress Booking[] @relation("Booking_dropoffAddressIdToBookingAddress")
   Booking_Booking_pickupAddressIdToBookingAddress  Booking[] @relation("Booking_pickupAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_pickupAddressIdToBookingAddress  BookingSegment[] @relation("BookingSegment_pickupAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_dropoffAddressIdToBookingAddress BookingSegment[] @relation("BookingSegment_dropoffAddressIdToBookingAddress")
 }
 
 model BookingCancellation {
@@ -321,6 +326,37 @@ model BookingProgress {
   @@unique([bookingId, step])
   @@index([bookingId, step])
   @@index([status, createdAt])
+}
+
+model BookingSegment {
+  id                 String          @id @default(cuid())
+  bookingId          String
+  segmentType        String          // 'outbound' | 'return' | 'additional'
+  sequenceNumber     Int
+  pickupAddressId    String
+  dropoffAddressId   String
+  pickupPropertyId   String
+  dropoffPropertyId  String
+  scheduledAt        DateTime
+  estimatedArrival   DateTime?
+  items              Json            @default("[]")
+  priceGBP           Int             @default(0)
+  distanceMeters     Int?
+  durationSeconds    Int?
+  notes              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  
+  // Relations
+  booking            Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  pickupAddress      BookingAddress  @relation("BookingSegment_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
+  dropoffAddress     BookingAddress  @relation("BookingSegment_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
+  pickupProperty     PropertyDetails @relation("BookingSegment_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  dropoffProperty    PropertyDetails @relation("BookingSegment_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
+  
+  @@index([bookingId, sequenceNumber])
+  @@index([segmentType])
+  @@index([scheduledAt])
 }
 
 model BusinessMetric {
@@ -1403,6 +1439,8 @@ model PropertyDetails {
   floors                                             Int          @default(0)
   Booking_Booking_dropoffPropertyIdToPropertyDetails Booking[]    @relation("Booking_dropoffPropertyIdToPropertyDetails")
   Booking_Booking_pickupPropertyIdToPropertyDetails  Booking[]    @relation("Booking_pickupPropertyIdToPropertyDetails")
+  BookingSegment_BookingSegment_pickupPropertyIdToPropertyDetails  BookingSegment[] @relation("BookingSegment_pickupPropertyIdToPropertyDetails")
+  BookingSegment_BookingSegment_dropoffPropertyIdToPropertyDetails BookingSegment[] @relation("BookingSegment_dropoffPropertyIdToPropertyDetails")
 }
 
 model PushSubscription {

@@ -114,6 +114,8 @@ interface BookingData {
     originalAmount?: number;
     finalAmount?: number;
   };
+  // Multi-leg support
+  segments?: any[];
 }
 
 const normaliseFlatNumber = (address?: AddressData): string | undefined => {
@@ -174,15 +176,17 @@ const getCorrectTotal = (bookingData: BookingData): number => {
     return bookingData.promotionDetails.finalAmount;
   }
 
-  // Otherwise use three-tier pricing
+  // Use three-tier pricing with correct service type mapping
+  // serviceType comes as 'economy' | 'standard' | 'express' from selectedService
   switch (serviceType) {
-    case 'standard':
+    case 'economy':
       return bookingData.economyPrice || (baseTotal * 0.85); // 15% discount for economy
-    case 'premium':
+    case 'standard':
       return bookingData.standardPrice || baseTotal; // Standard price
-    case 'white-glove':
-      return bookingData.priorityPrice || (baseTotal * 1.5); // 50% premium for priority
+    case 'express':
+      return bookingData.priorityPrice || (baseTotal * 1.5); // 50% premium for express/priority
     default:
+      // Fallback: use the total from pricing (which should already be correct)
       return baseTotal;
   }
 };
@@ -337,16 +341,18 @@ export default function StripePaymentButton({
             requiresPermit: bookingData.dropoffDetails?.requiresPermit || false,
             flatNumber: bookingData.dropoffDetails?.flatNumber || dropoffFlatNumber,
           },
-          items: bookingData.items.map(item => ({
-            id: item.id || `item-${Date.now()}-${Math.random()}`,
-            name: item.name || 'Unknown Item',
-            quantity: item.quantity || 1,
-            category: item.category || 'furniture',
-            volumeFactor: item.volume || 0.1,
-            requiresTwoPerson: false,
-            isFragile: false,
-            requiresDisassembly: false,
-          })),
+          items: (bookingData.items && Array.isArray(bookingData.items) && bookingData.items.length > 0)
+            ? bookingData.items.map(item => ({
+                id: item.id || `item-${Date.now()}-${Math.random()}`,
+                name: item.name || 'Unknown Item',
+                quantity: item.quantity || 1,
+                category: item.category || 'furniture',
+                volumeFactor: item.volume || 0.1,
+                requiresTwoPerson: false,
+                isFragile: false,
+                requiresDisassembly: false,
+              }))
+            : [],
           pickupDate: bookingData.scheduledDate ? new Date(bookingData.scheduledDate).toISOString() : undefined,
           pickupTimeSlot: bookingData.scheduledTime || 'flexible',
           urgency: 'scheduled' as const,
@@ -357,6 +363,36 @@ export default function StripePaymentButton({
             total: Math.round(getCorrectTotal(bookingData) * 100) / 100,
             currency: 'GBP',
           },
+          // ✅ CRITICAL FIX: Include segments for multi-leg bookings
+          segments: bookingData.segments && Array.isArray(bookingData.segments) && bookingData.segments.length > 1
+            ? bookingData.segments.map((segment: any, idx: number) => ({
+                id: segment.id || `segment-${idx}`,
+                segmentType: segment.segmentType || (idx === 0 ? 'outbound' : 'return'),
+                sequenceNumber: segment.sequenceNumber ?? idx,
+                pickupAddress: {
+                  street: segment.pickupAddress?.street || segment.pickupAddress?.address || segment.pickupAddress?.full || '',
+                  city: segment.pickupAddress?.city || 'Unknown City',
+                  postcode: segment.pickupAddress?.postcode || '',
+                  coordinates: segment.pickupAddress?.coordinates,
+                },
+                dropoffAddress: {
+                  street: segment.dropoffAddress?.street || segment.dropoffAddress?.address || segment.dropoffAddress?.full || '',
+                  city: segment.dropoffAddress?.city || 'Unknown City',
+                  postcode: segment.dropoffAddress?.postcode || '',
+                  coordinates: segment.dropoffAddress?.coordinates,
+                },
+                items: (segment.items || []).map((item: any) => ({
+                  id: item.id || `item-${Date.now()}-${Math.random()}`,
+                  name: item.name || 'Unknown Item',
+                  quantity: item.quantity || 1,
+                  category: item.category || 'furniture',
+                  volumeFactor: item.volume || 0.1,
+                })),
+                pricing: segment.pricing || { total: 0 },
+                datetime: segment.datetime,
+                distance: segment.distance,
+              }))
+            : undefined,
         };
 
         // Validate all required fields before sending

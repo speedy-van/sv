@@ -404,32 +404,182 @@ export async function POST(request: NextRequest) {
       else if (customerBookings >= 10) loyaltyTier = 'SILVER';
     }
 
-    // Call dynamic pricing engine
-    const dynamicPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
-      pickupAddress: {
-        address: bookingData.pickupAddress.street || '',
-        postcode: bookingData.pickupAddress.postcode || '',
-        coordinates: rawPickupAddress.coordinates,
+    // Check if multi-leg booking with segments
+    const rawSegments = (rawData.segments || []) as any[];
+    
+    // Validate segment structure for multi-leg bookings
+    const validateSegment = (segment: any, index: number): { valid: boolean; errors: string[] } => {
+      const errors: string[] = [];
+      
+      if (!segment.pickupAddress?.postcode) {
+        errors.push(`Segment ${index + 1}: Missing pickup postcode`);
+      }
+      if (!segment.dropoffAddress?.postcode) {
+        errors.push(`Segment ${index + 1}: Missing dropoff postcode`);
+      }
+      if (!segment.segmentType || !['outbound', 'return', 'additional'].includes(segment.segmentType)) {
+        errors.push(`Segment ${index + 1}: Invalid segment type`);
+      }
+      if (!Array.isArray(segment.items)) {
+        errors.push(`Segment ${index + 1}: Items must be an array`);
+      }
+      
+      return { valid: errors.length === 0, errors };
+    };
+    
+    // Validate all segments
+    if (rawSegments.length > 1) {
+      const segmentErrors: string[] = [];
+      rawSegments.forEach((segment, index) => {
+        const validation = validateSegment(segment, index);
+        if (!validation.valid) {
+          segmentErrors.push(...validation.errors);
+        }
+      });
+      
+      if (segmentErrors.length > 0) {
+        console.error('❌ Segment validation errors:', segmentErrors);
+        // Log but don't fail - allow booking to proceed with best-effort pricing
+      }
+    }
+    
+    const isMultiLeg = rawSegments && rawSegments.length > 1;
+    let dynamicPricingResult: any;
+    let aggregatedPricing = {
+      finalPrice: 0,
+      basePrice: 0,
+      breakdown: {
+        itemsCost: 0,
+        timeCost: 0,
+        surcharges: 0,
+        discounts: 0,
       },
-      dropoffAddress: {
-        address: bookingData.dropoffAddress.street || '',
-        postcode: bookingData.dropoffAddress.postcode || '',
-        coordinates: rawDropoffAddress.coordinates,
-      },
-      scheduledDate: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
-                     bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
-      serviceType,
-      customerSegment,
-      loyaltyTier,
-      items: pricingItems,
-      customerId: customerId || undefined,
-    });
+      dynamicMultipliers: {},
+      confidence: 1.0,
+      validUntil: new Date(Date.now() + 30 * 60 * 1000),
+      capacityCheck: { fits: true },
+      recommendations: [],
+    };
+
+    if (isMultiLeg) {
+      console.log(`🚗 Multi-leg booking detected: ${rawSegments.length} segments`);
+      
+      // ✅ FIXED: Calculate pricing for each segment with proper item handling
+      for (let i = 0; i < rawSegments.length; i++) {
+        const segment = rawSegments[i];
+        const segmentPickup = segment.pickupAddress;
+        const segmentDropoff = segment.dropoffAddress;
+        
+        // ✅ CRITICAL FIX: Ensure items exist for each segment
+        // If segment has no items, use items from first segment or global items
+        let segmentItems = segment.items || [];
+        if (!segmentItems || segmentItems.length === 0) {
+          // Fallback to first segment items
+          if (rawSegments[0]?.items && Array.isArray(rawSegments[0].items) && rawSegments[0].items.length > 0) {
+            segmentItems = rawSegments[0].items;
+            console.log(`⚠️ Segment ${i + 1} has no items, using items from first segment`);
+          } else if (pricingItems && pricingItems.length > 0) {
+            // Fallback to global items
+            segmentItems = pricingItems;
+            console.log(`⚠️ Segment ${i + 1} has no items, using global items`);
+          } else {
+            console.error(`❌ Segment ${i + 1} has no items and no fallback available`);
+            throw new Error(`Segment ${i + 1} must have items`);
+          }
+        }
+        
+        const segmentDatetime = segment.datetime ? new Date(segment.datetime) : new Date();
+
+        console.log(`📍 Calculating segment ${i + 1}: ${segmentPickup?.postcode || 'N/A'} → ${segmentDropoff?.postcode || 'N/A'}`, {
+          itemsCount: segmentItems.length,
+          totalQuantity: segmentItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
+        });
+
+        // ✅ CRITICAL FIX: Validate addresses before pricing
+        if (!segmentPickup?.postcode || !segmentDropoff?.postcode) {
+          console.error(`❌ Segment ${i + 1} missing addresses:`, {
+            pickup: segmentPickup?.postcode || 'missing',
+            dropoff: segmentDropoff?.postcode || 'missing'
+          });
+          throw new Error(`Segment ${i + 1} must have valid pickup and dropoff addresses`);
+        }
+
+        const segmentPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
+          pickupAddress: {
+            address: segmentPickup.street || segmentPickup.address || segmentPickup.line1 || '',
+            postcode: segmentPickup.postcode || '',
+            coordinates: segmentPickup.coordinates,
+          },
+          dropoffAddress: {
+            address: segmentDropoff.street || segmentDropoff.address || segmentDropoff.line1 || '',
+            postcode: segmentDropoff.postcode || '',
+            coordinates: segmentDropoff.coordinates,
+          },
+          scheduledDate: segmentDatetime,
+          serviceType,
+          customerSegment,
+          loyaltyTier,
+          items: segmentItems.map((item: any) => ({
+            name: item.name || 'Item',
+            category: item.category || 'general',
+            quantity: item.quantity || 1,
+            weight: item.weight || 0,
+            volume: item.volumeFactor || item.volume || 0,
+            fragile: item.fragile || item.fragility_level === 'High' || item.fragility_level === 'Medium',
+          })),
+          customerId: customerId || undefined,
+        });
+
+        // Aggregate pricing
+        aggregatedPricing.finalPrice += segmentPricingResult.finalPrice;
+        aggregatedPricing.basePrice += segmentPricingResult.basePrice;
+        aggregatedPricing.breakdown.itemsCost += segmentPricingResult.breakdown.itemsCost;
+        aggregatedPricing.breakdown.timeCost += segmentPricingResult.breakdown.timeCost;
+        aggregatedPricing.breakdown.surcharges += segmentPricingResult.breakdown.surcharges;
+        aggregatedPricing.breakdown.discounts += segmentPricingResult.breakdown.discounts;
+
+        console.log(`✅ Segment ${i + 1} price: £${segmentPricingResult.finalPrice.toFixed(2)}`, {
+          itemsCount: segmentItems.length,
+          basePrice: segmentPricingResult.basePrice,
+          finalPrice: segmentPricingResult.finalPrice
+        });
+      }
+
+      dynamicPricingResult = aggregatedPricing;
+      console.log(`💰 Total multi-leg price: £${aggregatedPricing.finalPrice.toFixed(2)}`, {
+        segmentsCount: rawSegments.length,
+        averagePricePerSegment: (aggregatedPricing.finalPrice / rawSegments.length).toFixed(2)
+      });
+    } else {
+      // Single journey - original logic
+      dynamicPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
+        pickupAddress: {
+          address: bookingData.pickupAddress.street || '',
+          postcode: bookingData.pickupAddress.postcode || '',
+          coordinates: rawPickupAddress.coordinates,
+        },
+        dropoffAddress: {
+          address: bookingData.dropoffAddress.street || '',
+          postcode: bookingData.dropoffAddress.postcode || '',
+          coordinates: rawDropoffAddress.coordinates,
+        },
+        scheduledDate: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
+                       bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
+        serviceType,
+        customerSegment,
+        loyaltyTier,
+        items: pricingItems,
+        customerId: customerId || undefined,
+      });
+    }
 
     console.log('✅ Dynamic pricing calculated:', {
       basePrice: dynamicPricingResult.basePrice,
       finalPrice: dynamicPricingResult.finalPrice,
       multipliers: dynamicPricingResult.dynamicMultipliers,
       confidence: dynamicPricingResult.confidence,
+      isMultiLeg,
+      segments: isMultiLeg ? rawSegments.length : 1,
     });
 
     // Compare with frontend pricing and log any significant differences
@@ -599,7 +749,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create the main booking with unified step tracking
+    // rawSegments and isMultiLeg already defined above, no need to redefine
+    console.log('📦 Multi-leg booking check:', {
+      hasSegments: rawSegments.length > 0,
+      segmentCount: rawSegments.length,
+      isMultiLeg,
+    });
+
+    // Create the main booking with unified step tracking and multi-leg support
     const booking = await prisma.booking.create({
       data: {
         reference,
@@ -624,6 +781,10 @@ export async function POST(request: NextRequest) {
         crewMultiplierPercent: 0, // Will be calculated
         availabilityMultiplierPercent: 0, // Will be calculated
         totalGBP: amountsInPence.totalGBP,
+        
+        // ✅ Multi-leg booking support
+        isMultiLeg: isMultiLeg,
+        totalSegments: isMultiLeg ? rawSegments.length : 1,
         
         // ✅ FIX: Save service type explicitly for routing logic
         serviceType: serviceType,
@@ -671,6 +832,78 @@ export async function POST(request: NextRequest) {
     });
 
     // Booking progress tracking removed - using simple status tracking
+
+    // ✅ Create booking segments if this is a multi-leg booking
+    if (isMultiLeg && rawSegments.length > 0) {
+      console.log('🚀 Creating booking segments:', rawSegments.length);
+      
+      for (let i = 0; i < rawSegments.length; i++) {
+        const segment = rawSegments[i];
+        
+        try {
+          // Create segment addresses
+          const segmentPickupAddress = await prisma.bookingAddress.create({
+            data: {
+              label: segment.pickupAddress?.street || segment.pickupAddress?.postcode || 'Segment Pickup',
+              postcode: segment.pickupAddress?.postcode || '',
+              lat: segment.pickupAddress?.coordinates?.lat || 0,
+              lng: segment.pickupAddress?.coordinates?.lng || 0,
+            },
+          });
+          
+          const segmentDropoffAddress = await prisma.bookingAddress.create({
+            data: {
+              label: segment.dropoffAddress?.street || segment.dropoffAddress?.postcode || 'Segment Dropoff',
+              postcode: segment.dropoffAddress?.postcode || '',
+              lat: segment.dropoffAddress?.coordinates?.lat || 0,
+              lng: segment.dropoffAddress?.coordinates?.lng || 0,
+            },
+          });
+          
+          // Create segment properties
+          const segmentPickupProperty = await prisma.propertyDetails.create({
+            data: {
+              propertyType: mapPropertyTypeToPrisma(segment.pickupProperty?.type || 'house') as any,
+              floors: segment.pickupProperty?.floors || 0,
+              accessType: segment.pickupProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',
+            },
+          });
+          
+          const segmentDropoffProperty = await prisma.propertyDetails.create({
+            data: {
+              propertyType: mapPropertyTypeToPrisma(segment.dropoffProperty?.type || 'house') as any,
+              floors: segment.dropoffProperty?.floors || 0,
+              accessType: segment.dropoffProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',
+            },
+          });
+          
+          // Create the segment
+          await prisma.bookingSegment.create({
+            data: {
+              bookingId: booking.id,
+              segmentType: segment.segmentType || (i === 0 ? 'outbound' : 'additional'),
+              sequenceNumber: i,
+              pickupAddressId: segmentPickupAddress.id,
+              dropoffAddressId: segmentDropoffAddress.id,
+              pickupPropertyId: segmentPickupProperty.id,
+              dropoffPropertyId: segmentDropoffProperty.id,
+              scheduledAt: segment.datetime ? new Date(segment.datetime) : new Date(),
+              estimatedArrival: segment.estimatedArrival ? new Date(segment.estimatedArrival) : null,
+              items: segment.items || [],
+              priceGBP: segment.pricing?.total ? poundsToPence(segment.pricing.total) : 0,
+              distanceMeters: segment.distance || null,
+              durationSeconds: segment.estimatedDuration || null,
+              notes: segment.notes || null,
+            },
+          });
+          
+          console.log(`✅ Created segment ${i + 1}/${rawSegments.length}: ${segment.segmentType}`);
+        } catch (segmentError) {
+          console.error(`❌ Failed to create segment ${i + 1}:`, segmentError);
+          // Continue with other segments
+        }
+      }
+    }
 
     // Create booking items if any
     if (bookingData.items && bookingData.items.length > 0) {

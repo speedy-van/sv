@@ -2,6 +2,15 @@
 
 import { useState, useCallback } from 'react';
 import { z } from 'zod';
+import type { BookingSegment } from '../types/segment';
+import { 
+  mirrorSegmentForReturn, 
+  createBlankSegment, 
+  validateSegmentChronology,
+  validateSegmentRequiredFields,
+  updateSequenceNumbers,
+  calculateTotalPrice
+} from '../utils/segmentHelpers';
 // import {
 //   addressSchema,
 //   customerSchema,
@@ -92,6 +101,9 @@ const pricingBreakdownSchema = z.object({
   distance: z.number().min(0), // Distance in kilometers
 });
 
+// Segment type schema
+const segmentTypeSchema = z.enum(['outbound', 'return', 'additional']);
+
 // CompleteAddress-compatible schema to match UKAddressAutocomplete
 const frontendAddressSchema = z.object({
   // Legacy fields for backward compatibility
@@ -135,6 +147,25 @@ const frontendAddressSchema = z.object({
   }).optional(),
 });
 
+// BookingSegment schema - proper type validation for multi-leg bookings
+// Must be defined AFTER frontendAddressSchema and frontendPropertyDetailsSchema
+const bookingSegmentSchema = z.object({
+  id: z.string(),
+  segmentType: segmentTypeSchema,
+  sequenceNumber: z.number().int().min(0),
+  pickupAddress: frontendAddressSchema,
+  dropoffAddress: frontendAddressSchema,
+  pickupProperty: frontendPropertyDetailsSchema,
+  dropoffProperty: frontendPropertyDetailsSchema,
+  datetime: z.string().optional(),
+  estimatedArrival: z.string().optional(),
+  items: z.array(itemSchema).default([]),
+  pricing: pricingBreakdownSchema.optional(),
+  distance: z.number().optional(),
+  estimatedDuration: z.number().optional(),
+  notes: z.string().optional(),
+});
+
 const step1Schema = z.object({
   pickupAddress: frontendAddressSchema,
   dropoffAddress: frontendAddressSchema,
@@ -156,6 +187,10 @@ const step1Schema = z.object({
   distance: z.number().min(0),
   estimatedDuration: z.number().min(0),
   pricing: pricingBreakdownSchema,
+  
+  // Multi-leg booking support
+  isMultiLeg: z.boolean().default(false),
+  segments: z.array(bookingSegmentSchema).optional().default([]), // Properly validated BookingSegment
 });
 
 const step2Schema = z.object({
@@ -250,6 +285,8 @@ const initialFormData: FormData = {
       total: 0,
       distance: 0,
     },
+    isMultiLeg: false,
+    segments: [],
   },
   step2: {
     customerDetails: {
@@ -288,6 +325,29 @@ function mapTimeSlotToAPI(timeSlot?: string): 'morning' | 'afternoon' | 'evening
   return 'flexible';
 }
 
+// Extract timeSlot from datetime for segments
+function extractTimeSlotFromDatetime(datetime: string): 'morning' | 'afternoon' | 'evening' | 'flexible' {
+  const date = new Date(datetime);
+  const hours = date.getHours();
+  
+  if (hours >= 6 && hours < 12) return 'morning';
+  if (hours >= 12 && hours < 17) return 'afternoon';
+  if (hours >= 17 && hours < 21) return 'evening';
+  return 'flexible';
+}
+
+// Map urgency values to API-compatible format
+function mapUrgencyToAPI(urgency?: string): 'standard' | 'express' | 'urgent' {
+  if (!urgency) return 'standard';
+  
+  const lowerUrgency = urgency.toLowerCase();
+  if (lowerUrgency === 'scheduled' || lowerUrgency === 'economy') return 'standard';
+  if (lowerUrgency === 'same-day' || lowerUrgency === 'next-day') return 'express';
+  if (lowerUrgency === 'urgent' || lowerUrgency === 'immediate') return 'urgent';
+  
+  return 'standard';
+}
+
 export function useBookingForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -305,9 +365,9 @@ export function useBookingForm() {
         
         // Special handling for arrays (like items) - always update if array is provided
         if (Array.isArray(newValue)) {
-          // If items array is being updated, always allow it
-          if (key === 'items') {
-            return true; // Always update items array
+          // If items or segments array is being updated, always allow it
+          if (key === 'items' || key === 'segments') {
+            return true; // Always update items/segments array
           }
           // For other arrays, check length and content
           if (!Array.isArray(currentValue) || newValue.length !== currentValue.length) {
@@ -366,7 +426,20 @@ export function useBookingForm() {
         ...prev,
         [stepKey]: nextStepData,
       };
-      console.log(`Updating ${step}:`, data);
+      
+      // Enhanced logging for segments updates
+      if ((data as any).segments) {
+        const segs = (data as any).segments;
+        console.log(`📦 Updating segments:`, segs.map((s: any, i: number) => ({
+          index: i,
+          type: s.segmentType,
+          itemsCount: s.items?.length || 0,
+          items: s.items?.map((item: any) => ({ id: item.id, name: item.name })) || []
+        })));
+      } else {
+        console.log(`Updating ${step}:`, data);
+      }
+      
       return newData;
     });
   }, []);
@@ -545,13 +618,17 @@ export function useBookingForm() {
     });
   }, [updateFormData, formData.step2.promotionDetails, formData.step1.pricing]);
 
-  // Calculate pricing using the unified pricing API
+  // Calculate pricing using the unified pricing API (supports multi-leg)
   const calculatePricing = useCallback(async (): Promise<boolean> => {
-    const { items, pickupAddress, dropoffAddress } = formData.step1;
+    const step1 = formData.step1;
+    const items = step1.items || [];
+    const segments = Array.isArray(step1.segments) ? step1.segments : [];
+    // ✅ CRITICAL FIX: Only treat as multi-leg if there are 2+ segments
+    // 0 or 1 segment = single-leg journey (use normal pricing flow)
+    // 2+ segments = multi-leg journey (calculate each segment separately)
+    const hasSegments = segments.length > 1;
 
-    // Early validation - don't proceed without required data
-    if (items.length === 0) {
-      // Reset pricing if no items
+    const resetPricing = () => {
       updateFormData('step1', {
         pricing: {
           baseFee: 0,
@@ -564,40 +641,58 @@ export function useBookingForm() {
           distance: 0,
         },
       });
+    };
+
+    if (items.length === 0) {
+      resetPricing();
       return true;
     }
 
-    // CRITICAL FIX: Check CompleteAddress format from UKAddressAutocomplete
-    const hasPickupAddress = pickupAddress?.full || pickupAddress?.line1 || pickupAddress?.address || pickupAddress?.formatted_address;
-    const hasDropoffAddress = dropoffAddress?.full || dropoffAddress?.line1 || dropoffAddress?.address || dropoffAddress?.formatted_address;
+    const hasMainPickupAddress =
+      step1.pickupAddress?.full ||
+      step1.pickupAddress?.line1 ||
+      step1.pickupAddress?.address ||
+      step1.pickupAddress?.formatted_address;
+    const hasMainDropoffAddress =
+      step1.dropoffAddress?.full ||
+      step1.dropoffAddress?.line1 ||
+      step1.dropoffAddress?.address ||
+      step1.dropoffAddress?.formatted_address;
 
-    // Check for valid coordinates (not default 0,0 values)
-    const hasValidPickupCoordinates = pickupAddress?.coordinates?.lat && pickupAddress?.coordinates?.lng &&
-                                     (pickupAddress.coordinates.lat !== 0 || pickupAddress.coordinates.lng !== 0);
-    const hasValidDropoffCoordinates = dropoffAddress?.coordinates?.lat && dropoffAddress?.coordinates?.lng &&
-                                      (dropoffAddress.coordinates.lat !== 0 || dropoffAddress.coordinates.lng !== 0);
+    const hasValidMainPickupCoordinates = (() => {
+      const lat = step1.pickupAddress?.coordinates?.lat;
+      const lng = step1.pickupAddress?.coordinates?.lng;
+      if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+      return lat !== 0 || lng !== 0;
+    })();
 
-    if (!hasPickupAddress || !hasDropoffAddress) {
+    const hasValidMainDropoffCoordinates = (() => {
+      const lat = step1.dropoffAddress?.coordinates?.lat;
+      const lng = step1.dropoffAddress?.coordinates?.lng;
+      if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+      return lat !== 0 || lng !== 0;
+    })();
+
+    if (!hasMainPickupAddress || !hasMainDropoffAddress) {
       console.log('⏳ Skipping pricing calculation - addresses not yet selected', {
-        pickup: !!hasPickupAddress,
-        dropoff: !!hasDropoffAddress,
-        pickupData: pickupAddress,
-        dropoffData: dropoffAddress
+        pickup: Boolean(hasMainPickupAddress),
+        dropoff: Boolean(hasMainDropoffAddress),
+        pickupData: step1.pickupAddress,
+        dropoffData: step1.dropoffAddress,
       });
       return false;
     }
 
-    if (!hasValidPickupCoordinates || !hasValidDropoffCoordinates) {
+    if (!hasValidMainPickupCoordinates || !hasValidMainDropoffCoordinates) {
       console.log('⏳ Skipping pricing calculation - coordinates not yet resolved', {
-        pickup: !!hasValidPickupCoordinates,
-        dropoff: !!hasValidDropoffCoordinates,
-        pickupCoords: pickupAddress?.coordinates,
-        dropoffCoords: dropoffAddress?.coordinates
+        pickup: Boolean(hasValidMainPickupCoordinates),
+        dropoff: Boolean(hasValidMainDropoffCoordinates),
+        pickupCoords: step1.pickupAddress?.coordinates,
+        dropoffCoords: step1.dropoffAddress?.coordinates,
       });
       return false;
     }
 
-    // Skip pricing if no items selected (avoid 400 error from API)
     if (!items || items.length === 0) {
       console.log('⏳ Skipping pricing calculation - no items selected');
       setIsCalculatingPricing(false);
@@ -605,129 +700,71 @@ export function useBookingForm() {
     }
 
     setIsCalculatingPricing(true);
-    clearErrors(); // Clear any previous errors
+    clearErrors();
 
-    try {
-      // CRITICAL FIX: Extract address text from CompleteAddress format
-      const pickupAddressText = pickupAddress.full || pickupAddress.line1 || pickupAddress.address || pickupAddress.formatted_address;
-      const dropoffAddressText = dropoffAddress.full || dropoffAddress.line1 || dropoffAddress.address || dropoffAddress.formatted_address;
-      
-      if (!pickupAddressText || !dropoffAddressText) {
-        throw new Error('Pickup and dropoff addresses are required');
-      }
-
-      console.log('🧮 Starting pricing calculation with:', {
-        items: items.length,
-        pickup: pickupAddressText,
-        dropoff: dropoffAddressText,
-        pickupPostcode: pickupAddress?.postcode,
-        dropoffPostcode: dropoffAddress?.postcode,
-        pickupCoordinates: pickupAddress.coordinates,
-        dropoffCoordinates: dropoffAddress.coordinates,
-        serviceType: formData.step1.serviceType,
-        pickupDate: formData.step1.pickupDate
-      });
-
-      // Generate correlation ID for tracking
-      const correlationId = `pricing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      // 🔧 FIX: Prepare data for API call matching the expected PricingInputSchema format
-      const pricingData = {
-        items: items.map(item => ({
-          id: item.id || `item-${Date.now()}-${Math.random()}`,
-          name: item.name || 'Unknown Item',
-          category: item.category || 'furniture',
-          quantity: item.quantity || 1,
-          weight: item.weight || 10, // Use actual weight from UK dataset
-          volume: item.volume || 0.1, // Use actual volume from UK dataset
-          fragile: item.fragility_level === 'High' || item.fragility_level === 'Medium',
-          oversize: (item.weight || 0) > 100 || (item.volume || 0) > 2,
-          disassemblyRequired: item.dismantling_required === 'Yes',
-          specialHandling: item.special_handling_notes ? [item.special_handling_notes] : []
-        })),
-        
-        // Use 'pickupAddress' to match API schema expectations
-        pickupAddress: {
-          address: pickupAddress.full || pickupAddress.line1 || pickupAddress.address || pickupAddress.formatted_address || '',
-          formatted_address: pickupAddress.formatted_address || pickupAddress.full || pickupAddress.line1 || '',
-          postcode: pickupAddress.postcode || '',
-          latitude: pickupAddress.coordinates?.lat || 0,
-          longitude: pickupAddress.coordinates?.lng || 0,
-          coordinates: {
-            lat: pickupAddress.coordinates?.lat || 0,
-            lng: pickupAddress.coordinates?.lng || 0
-          },
-          propertyDetails: {
-            type: formData.step1.pickupProperty?.type || 'house',
-            floors: formData.step1.pickupProperty?.floors || 0,
-            hasLift: Boolean(formData.step1.pickupProperty?.hasLift),
-            hasParking: formData.step1.pickupProperty?.hasParking !== false,
-            accessNotes: formData.step1.pickupProperty?.accessNotes,
-            requiresPermit: Boolean(formData.step1.pickupProperty?.requiresPermit)
-          }
+    const buildAddressPayload = (address: Address | undefined, propertyDetails: PropertyDetails | undefined, propertyFallback: PropertyDetails | undefined) => {
+      const selectedAddress = address || ({} as Address);
+      const selectedProperty = propertyDetails || propertyFallback || ({} as PropertyDetails);
+      return {
+        address:
+          selectedAddress.full ||
+          selectedAddress.line1 ||
+          selectedAddress.address ||
+          selectedAddress.formatted_address ||
+          '',
+        formatted_address:
+          selectedAddress.formatted_address ||
+          selectedAddress.full ||
+          selectedAddress.line1 ||
+          '',
+        postcode: selectedAddress.postcode || '',
+        latitude: selectedAddress.coordinates?.lat || 0,
+        longitude: selectedAddress.coordinates?.lng || 0,
+        coordinates: {
+          lat: selectedAddress.coordinates?.lat || 0,
+          lng: selectedAddress.coordinates?.lng || 0,
         },
-        
-        // Use 'dropoffAddress' to match API schema expectations
-        dropoffAddress: {
-          address: dropoffAddress.full || dropoffAddress.line1 || dropoffAddress.address || dropoffAddress.formatted_address || '',
-          formatted_address: dropoffAddress.formatted_address || dropoffAddress.full || dropoffAddress.line1 || '',
-          postcode: dropoffAddress.postcode || '',
-          latitude: dropoffAddress.coordinates?.lat || 0,
-          longitude: dropoffAddress.coordinates?.lng || 0,
-          coordinates: {
-            lat: dropoffAddress.coordinates?.lat || 0,
-            lng: dropoffAddress.coordinates?.lng || 0
-          },
-          propertyDetails: {
-            type: formData.step1.dropoffProperty?.type || 'house',
-            floors: formData.step1.dropoffProperty?.floors || 0,
-            hasLift: Boolean(formData.step1.dropoffProperty?.hasLift),
-            hasParking: formData.step1.dropoffProperty?.hasParking !== false,
-            accessNotes: formData.step1.dropoffProperty?.accessNotes,
-            requiresPermit: Boolean(formData.step1.dropoffProperty?.requiresPermit)
-          }
+        propertyDetails: {
+          type: selectedProperty.type || 'house',
+          floors: selectedProperty.floors || 0,
+          hasLift: Boolean(selectedProperty.hasLift),
+          hasParking: selectedProperty.hasParking !== false,
+          accessNotes: selectedProperty.accessNotes,
+          requiresPermit: Boolean(selectedProperty.requiresPermit),
         },
-        
-        // Service type and scheduling
-        serviceType: formData.step1.serviceType || 'signature',
-        serviceLevel: formData.step1.serviceType || 'signature',
-        scheduledDate: formData.step1.pickupDate ?
-          new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() :
-          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        pickupDate: formData.step1.pickupDate ?
-          new Date(formData.step1.pickupDate + 'T10:00:00').toISOString() :
-          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        timeSlot: mapTimeSlotToAPI(formData.step1.pickupTimeSlot) || 'flexible',
-        
-        addOns: {
-          packingService: false,
-          insuranceCoverage: false,
-          storageRequired: false,
-          dismantlingRequired: items.some(item => item.dismantling_required === 'Yes')
-        },
-        
-        preferences: {
-          vehicleType: 'van',
-          urgency: formData.step1.urgency || 'standard',
-          environmentalPreference: 'standard'
-        },
-        
-        metadata: {
-          source: 'booking-luxury',
-          version: '1.0.0'
-        }
       };
+    };
 
-      console.log('🔍 Sending pricing request:', { 
-        correlationId, 
-        itemsCount: pricingData.items.length,
-        pickup: pricingData.pickupAddress?.postcode,
-        dropoff: pricingData.dropoffAddress?.postcode,
-        service: pricingData.serviceType,
-        fullData: pricingData
-      });
+    const buildSegmentItems = (segmentItems: Item[] | undefined) => {
+      if (segmentItems && segmentItems.length > 0) return segmentItems;
+      return items;
+    };
 
-      // Call the unified pricing API
+    const ensureAddressText = (address: Address | undefined) => {
+      if (!address) return '';
+      return (
+        address.full ||
+        address.line1 ||
+        address.address ||
+        address.formatted_address ||
+        ''
+      );
+    };
+
+    const updatedSegments = segments.map(segment => ({ ...segment }));
+    let aggregatedBase = 0;
+    let aggregatedDistanceFee = 0;
+    let aggregatedVolume = 0;
+    let aggregatedService = 0;
+    let aggregatedUrgency = 0;
+    let aggregatedVat = 0;
+    let aggregatedTotal = 0;
+    let aggregatedDistance = 0;
+
+    const processSinglePricing = async (
+      pricingData: any,
+      correlationId: string
+    ) => {
       let response;
       try {
         response = await fetch('/api/pricing/quote', {
@@ -750,7 +787,7 @@ export function useBookingForm() {
         console.error('❌ Failed to parse API response:', {
           status: response.status,
           statusText: response.statusText,
-          parseError
+          parseError,
         });
         throw new Error(`Failed to parse API response: ${response.status} ${response.statusText}`);
       }
@@ -761,100 +798,336 @@ export function useBookingForm() {
           statusText: response.statusText,
           correlationId,
           result,
-          requestData: pricingData
+          requestData: pricingData,
         });
-        
+
         if (result.details && Array.isArray(result.details)) {
           console.error('Validation errors:', result.details);
         }
-        
+
         throw new Error(result.error || `API error: ${response.status}`);
       }
 
       if (!result.success) {
         console.error('❌ Pricing calculation failed:', { correlationId, result });
-        
+
         if (result.details && Array.isArray(result.details)) {
           console.error('Validation errors:', result.details);
         }
-        
+
         throw new Error(result.error || 'Failed to calculate pricing');
       }
 
-      // Update pricing in form data using API response
-      const apiPricing = result.data;
+      return result.data;
+    };
 
-      // Calculate three-tier pricing based on API response
+    const mapApiPricingToBreakdown = (apiPricing: any) => {
       const basePrice = apiPricing.amountGbpMinor / 100;
-
-      console.log('✅ Pricing calculated successfully:', {
-        total: `£${basePrice}`,
-        breakdown: {
-          base: `£${(apiPricing.breakdown.baseFee / 100).toFixed(2)}`,
-          distance: `£${(apiPricing.breakdown.distanceFee / 100).toFixed(2)}`,
-          service: `£${(apiPricing.breakdown.serviceFee / 100).toFixed(2)}`,
-          vat: `£${(apiPricing.vatAmount / 100).toFixed(2)}`
-        },
-        distance: `${apiPricing.route.totalDistance.toFixed(1)} miles`,
-        vehicle: apiPricing.recommendedVehicle.name
-      });
-
-      const finalPricing = {
-        baseFee: Math.round(apiPricing.breakdown.baseFee / 100 * 100) / 100, // Convert from pence: divide first, then round
+      return {
+        baseFee: Math.round(apiPricing.breakdown.baseFee / 100 * 100) / 100,
         distanceFee: Math.round(apiPricing.breakdown.distanceFee / 100 * 100) / 100,
-        volumeFee: Math.round(apiPricing.breakdown.itemsFee / 100 * 100) / 100, // Items fee from API
+        volumeFee: Math.round(apiPricing.breakdown.itemsFee / 100 * 100) / 100,
         serviceFee: Math.round(apiPricing.breakdown.serviceFee / 100 * 100) / 100,
-        urgencyFee: Math.round(apiPricing.breakdown.vehicleFee / 100 * 100) / 100, // Vehicle fee as urgency fee for UI compatibility
+        urgencyFee: Math.round(apiPricing.breakdown.vehicleFee / 100 * 100) / 100,
         vat: Math.round(apiPricing.vatAmount / 100 * 100) / 100,
-        total: Math.round(basePrice * 100) / 100, // Store base price for calculations
+        total: Math.round(basePrice * 100) / 100,
         distance: Math.round(apiPricing.route.totalDistance * 100) / 100,
       };
+    };
 
-      console.log('💰 Updating form data with pricing:', finalPricing);
-      console.log('📊 Pricing update details:', {
-        hasValidPricing: finalPricing.total > 0,
-        totalAmount: finalPricing.total,
-        baseFee: finalPricing.baseFee,
-        distanceFee: finalPricing.distanceFee,
-        itemsFee: finalPricing.volumeFee,
-        serviceFee: finalPricing.serviceFee
+    try {
+      const correlationIdBase = `pricing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      if (hasSegments) {
+        let processedSegments = 0;
+
+        for (let index = 0; index < segments.length; index++) {
+          const segment = segments[index];
+          const segmentItems = buildSegmentItems(segment.items);
+          if (segmentItems.length === 0) {
+            throw new Error(`Items are required for journey ${index + 1}`);
+          }
+
+          const pickupAddress = segment.pickupAddress || step1.pickupAddress;
+          const dropoffAddress = segment.dropoffAddress || step1.dropoffAddress;
+
+          const pickupText = ensureAddressText(pickupAddress);
+          const dropoffText = ensureAddressText(dropoffAddress);
+          if (!pickupText || !dropoffText) {
+            throw new Error(`Pickup and dropoff addresses are required for journey ${index + 1}`);
+          }
+
+          const pickupLat = pickupAddress?.coordinates?.lat;
+          const pickupLng = pickupAddress?.coordinates?.lng;
+          const dropoffLat = dropoffAddress?.coordinates?.lat;
+          const dropoffLng = dropoffAddress?.coordinates?.lng;
+
+          if (typeof pickupLat !== 'number' || typeof pickupLng !== 'number' || typeof dropoffLat !== 'number' || typeof dropoffLng !== 'number') {
+            throw new Error(`Coordinates are missing for journey ${index + 1}`);
+          }
+
+          if ((pickupLat === 0 && pickupLng === 0) || (dropoffLat === 0 && dropoffLng === 0)) {
+            throw new Error(`Coordinates are not resolved for journey ${index + 1}`);
+          }
+
+          const pricingData = {
+            items: segmentItems.map(item => ({
+              id: item.id || `item-${Date.now()}-${Math.random()}`,
+              name: item.name || 'Unknown Item',
+              category: item.category || 'furniture',
+              quantity: item.quantity || 1,
+              weight: item.weight || 10,
+              volume: item.volume || 0.1,
+              fragile: item.fragility_level === 'High' || item.fragility_level === 'Medium',
+              oversize: (item.weight || 0) > 100 || (item.volume || 0) > 2,
+              disassemblyRequired: item.dismantling_required === 'Yes',
+              specialHandling: item.special_handling_notes ? [item.special_handling_notes] : [],
+            })),
+            pickupAddress: buildAddressPayload(pickupAddress, segment.pickupProperty, step1.pickupProperty),
+            dropoffAddress: buildAddressPayload(dropoffAddress, segment.dropoffProperty, step1.dropoffProperty),
+            serviceType: step1.serviceType || 'signature',
+            serviceLevel: step1.serviceType || 'signature',
+            scheduledDate: segment.datetime
+              ? new Date(segment.datetime).toISOString()
+              : step1.pickupDate
+                ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
+                : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            pickupDate: segment.datetime
+              ? new Date(segment.datetime).toISOString()
+              : step1.pickupDate
+                ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
+                : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            timeSlot: segment.datetime 
+              ? extractTimeSlotFromDatetime(segment.datetime)
+              : mapTimeSlotToAPI(step1.pickupTimeSlot) || 'flexible',
+            addOns: {
+              packingService: false,
+              insuranceCoverage: false,
+              storageRequired: false,
+              dismantlingRequired: segmentItems.some(item => item.dismantling_required === 'Yes'),
+            },
+            preferences: {
+              vehicleType: 'van',
+              urgency: mapUrgencyToAPI(step1.urgency),
+              environmentalPreference: 'standard',
+            },
+            metadata: {
+              source: 'booking-luxury',
+              version: '1.0.0',
+              segmentIndex: index,
+            },
+          };
+
+          console.log('🔍 Sending pricing request for segment:', {
+            correlationId: `${correlationIdBase}-${index}`,
+            itemsCount: pricingData.items.length,
+            pickup: pricingData.pickupAddress?.postcode,
+            dropoff: pricingData.dropoffAddress?.postcode,
+            service: pricingData.serviceType,
+            segment: index,
+          });
+
+          const apiPricing = await processSinglePricing(pricingData, `${correlationIdBase}-${index}`);
+          const finalPricing = mapApiPricingToBreakdown(apiPricing);
+
+          aggregatedBase += finalPricing.baseFee;
+          aggregatedDistanceFee += finalPricing.distanceFee;
+          aggregatedVolume += finalPricing.volumeFee;
+          aggregatedService += finalPricing.serviceFee;
+          aggregatedUrgency += finalPricing.urgencyFee;
+          aggregatedVat += finalPricing.vat;
+          aggregatedTotal += finalPricing.total;
+          aggregatedDistance += finalPricing.distance;
+
+          // ✅ CRITICAL FIX: Update segment with pricing while preserving items
+          updatedSegments[index] = {
+            ...updatedSegments[index],
+            pricing: finalPricing,
+            distance: finalPricing.distance,
+            // Ensure items are preserved (deep copy)
+            items: updatedSegments[index].items 
+              ? updatedSegments[index].items.map(item => ({ ...item }))
+              : segmentItems.map(item => ({ ...item }))
+          };
+          processedSegments += 1;
+        }
+
+        if (processedSegments === 0) {
+          throw new Error('No journeys could be priced. Please check addresses and items.');
+        }
+
+        // ✅ CRITICAL FIX: Ensure all segments have items before updating
+        // This prevents segments from losing items during pricing calculation
+        const segmentsWithItems = updatedSegments.map((segment, index) => {
+          // If segment has no items, copy from first segment or global items
+          if (!segment.items || segment.items.length === 0) {
+            const sourceItems = updatedSegments[0]?.items && updatedSegments[0].items.length > 0
+              ? updatedSegments[0].items
+              : (items && items.length > 0 ? items : []);
+            
+            return {
+              ...segment,
+              items: sourceItems.map(item => ({ ...item }))
+            };
+          }
+          return segment;
+        });
+
+        updateFormData('step1', {
+          pricing: {
+            baseFee: Math.round(aggregatedBase * 100) / 100,
+            distanceFee: Math.round(aggregatedDistanceFee * 100) / 100,
+            volumeFee: Math.round(aggregatedVolume * 100) / 100,
+            serviceFee: Math.round(aggregatedService * 100) / 100,
+            urgencyFee: Math.round(aggregatedUrgency * 100) / 100,
+            vat: Math.round(aggregatedVat * 100) / 100,
+            total: Math.round(aggregatedTotal * 100) / 100,
+            distance: Math.round(aggregatedDistance * 100) / 100,
+          },
+          segments: segmentsWithItems,
+          isMultiLeg: true,
+        });
+
+        console.log('🎉 Multi-leg pricing completed successfully!', {
+          journeysPriced: segments.length,
+          total: aggregatedTotal,
+          segmentsWithPricing: segmentsWithItems.map((s, i) => ({
+            index: i,
+            pricing: s.pricing?.total || 0,
+            itemsCount: s.items?.length || 0
+          }))
+        });
+        return true;
+      }
+
+      // Single journey flow (legacy)
+      const correlationId = correlationIdBase;
+      const pickupAddressText = ensureAddressText(step1.pickupAddress);
+      const dropoffAddressText = ensureAddressText(step1.dropoffAddress);
+
+      if (!pickupAddressText || !dropoffAddressText) {
+        throw new Error('Pickup and dropoff addresses are required');
+      }
+
+      const pricingData = {
+        items: items.map(item => ({
+          id: item.id || `item-${Date.now()}-${Math.random()}`,
+          name: item.name || 'Unknown Item',
+          category: item.category || 'furniture',
+          quantity: item.quantity || 1,
+          weight: item.weight || 10,
+          volume: item.volume || 0.1,
+          fragile: item.fragility_level === 'High' || item.fragility_level === 'Medium',
+          oversize: (item.weight || 0) > 100 || (item.volume || 0) > 2,
+          disassemblyRequired: item.dismantling_required === 'Yes',
+          specialHandling: item.special_handling_notes ? [item.special_handling_notes] : [],
+        })),
+        pickupAddress: buildAddressPayload(step1.pickupAddress, step1.pickupProperty, step1.pickupProperty),
+        dropoffAddress: buildAddressPayload(step1.dropoffAddress, step1.dropoffProperty, step1.dropoffProperty),
+        serviceType: step1.serviceType || 'signature',
+        serviceLevel: step1.serviceType || 'signature',
+        scheduledDate: step1.pickupDate
+          ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
+          : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        pickupDate: step1.pickupDate
+          ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
+          : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        timeSlot: mapTimeSlotToAPI(step1.pickupTimeSlot) || 'flexible',
+        addOns: {
+          packingService: false,
+          insuranceCoverage: false,
+          storageRequired: false,
+          dismantlingRequired: items.some(item => item.dismantling_required === 'Yes'),
+        },
+        preferences: {
+          vehicleType: 'van',
+          urgency: mapUrgencyToAPI(step1.urgency),
+          environmentalPreference: 'standard',
+        },
+        metadata: {
+          source: 'booking-luxury',
+          version: '1.0.0',
+        },
+      };
+
+      console.log('🔍 Sending pricing request:', {
+        correlationId,
+        itemsCount: pricingData.items.length,
+        pickup: pricingData.pickupAddress?.postcode,
+        dropoff: pricingData.dropoffAddress?.postcode,
+        service: pricingData.serviceType,
       });
+
+      const apiPricing = await processSinglePricing(pricingData, correlationId);
+      const finalPricing = mapApiPricingToBreakdown(apiPricing);
 
       updateFormData('step1', { pricing: finalPricing });
 
-      console.log('🎉 Pricing calculation completed successfully!');
-      console.log('✅ Pricing data saved:', {
-        hasItems: items.length > 0,
-        hasPricing: finalPricing.total > 0,
-        pricingTotal: finalPricing.total,
-        breakdown: finalPricing
+      console.log('🎉 Pricing calculation completed successfully!', {
+        total: finalPricing.total,
       });
       return true;
     } catch (error) {
-      console.error('❌ Pricing calculation error:', { 
-        error, 
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorStack: error instanceof Error ? error.stack : undefined,
-        items: items.length, 
-        addresses: { 
-          pickup: !!pickupAddress.address, 
-          dropoff: !!dropoffAddress.address,
-          pickupPostcode: pickupAddress.postcode,
-          dropoffPostcode: dropoffAddress.postcode
-        } 
+      // Enhanced error logging - handle all error types properly
+      console.error('❌ RAW ERROR CAUGHT:', error);
+      console.error('❌ Error type:', typeof error);
+      console.error('❌ Error constructor:', error?.constructor?.name);
+      console.error('❌ Error keys:', error && typeof error === 'object' ? Object.keys(error as object) : 'N/A');
+      console.error('❌ Error prototype:', Object.prototype.toString.call(error));
+      
+      let errorMessage = 'Unknown error';
+      let errorStack: string | undefined;
+      let errorDetails: unknown = error;
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorStack = error.stack;
+        errorDetails = { name: error.name, message: error.message, cause: (error as any).cause };
+        console.error('❌ Error is Error instance:', errorMessage);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+        errorDetails = error;
+        console.error('❌ Error is string:', error);
+      } else if (error && typeof error === 'object') {
+        // Try to extract useful info from non-Error objects
+        const errorObj = error as Record<string, unknown>;
+        // Try multiple methods to extract info
+        errorMessage = String(
+          errorObj.message || 
+          errorObj.error || 
+          errorObj.msg ||
+          errorObj.reason ||
+          (Object.keys(errorObj).length > 0 ? JSON.stringify(errorObj, Object.getOwnPropertyNames(errorObj)) : 'Empty object error')
+        );
+        errorDetails = errorObj;
+        console.error('❌ Error is object with keys:', Object.keys(errorObj));
+        console.error('❌ Error own property names:', Object.getOwnPropertyNames(errorObj));
+      } else {
+        console.error('❌ Error is unknown type:', String(error));
+        errorMessage = String(error);
+      }
+
+      console.error('❌ Pricing calculation error:', {
+        errorMessage,
+        errorDetails,
+        errorStack,
+        items: items.length,
+        addresses: {
+          pickup: Boolean(step1.pickupAddress.address),
+          dropoff: Boolean(step1.dropoffAddress.address),
+          pickupPostcode: step1.pickupAddress.postcode,
+          dropoffPostcode: step1.dropoffAddress.postcode,
+        },
       });
 
-      // Set error state with detailed message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setErrors({
-        pricing: `Unable to calculate pricing: ${errorMessage}. Please check your items and addresses and try again.`
+        pricing: `Unable to calculate pricing: ${errorMessage}. Please check your items and addresses and try again.`,
       });
 
-      // Improved fallback price based on items and estimated distance
       const itemsTotal = items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-      const estimatedDistance = 10; // Default 10 miles if coordinates unavailable
-      const distanceCharge = estimatedDistance * 2; // £2 per mile
-      const subtotal = Math.max(35, itemsTotal * 1.2 + distanceCharge); // Items + distance
+      const estimatedDistance = 10;
+      const distanceCharge = estimatedDistance * 2;
+      const subtotal = Math.max(35, itemsTotal * 1.2 + distanceCharge);
       const vat = Math.round(subtotal * 0.2 * 100) / 100;
       const fallbackTotal = subtotal + vat;
 
@@ -877,6 +1150,419 @@ export function useBookingForm() {
     }
   }, [formData.step1, updateFormData, clearErrors]);
 
+  // ============================================
+  // MULTI-LEG BOOKING FUNCTIONS
+  // ============================================
+
+  /**
+   * Add return segment (mirror of outbound)
+   * Swaps pickup ↔ dropoff, copies items, calculates return time
+   * ✅ FIXED: Ensures items are properly copied and pricing is preserved
+   */
+  const addReturnSegment = useCallback((bufferMinutes: number = 30, pricingTiersRef?: { standard?: { price: number } }) => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    
+    // If this is the first time adding segments, create outbound from existing data first
+    if (currentSegments.length === 0) {
+      // ✅ CRITICAL FIX: Get pricing from formData first, then try pricingTiers as fallback
+      let outboundPricing: PricingBreakdown;
+      
+      if (formData.step1.pricing && formData.step1.pricing.total > 0) {
+        outboundPricing = { ...formData.step1.pricing };
+      } else if (pricingTiersRef?.standard?.price && pricingTiersRef.standard.price > 0) {
+        // Use pricingTiers if formData.step1.pricing is not set
+        const basePrice = pricingTiersRef.standard.price;
+        outboundPricing = {
+          baseFee: basePrice * 0.4,
+          distanceFee: basePrice * 0.3,
+          volumeFee: basePrice * 0.15,
+          serviceFee: basePrice * 0.1,
+          urgencyFee: 0,
+          vat: basePrice * 0.05,
+          total: basePrice,
+          distance: formData.step1.distance || 0,
+        };
+        console.log('✅ Using pricingTiers for return segment pricing:', basePrice);
+      } else {
+        outboundPricing = {
+          baseFee: 0,
+          distanceFee: 0,
+          volumeFee: 0,
+          serviceFee: 0,
+          urgencyFee: 0,
+          vat: 0,
+          total: 0,
+          distance: formData.step1.distance || 0,
+        };
+      }
+      
+      // ✅ CRITICAL FIX: Ensure items are properly copied with deep copy
+      const outboundItems = (formData.step1.items && Array.isArray(formData.step1.items) && formData.step1.items.length > 0)
+        ? formData.step1.items.map(item => ({ ...item }))
+        : [];
+      
+      const outboundSegment: BookingSegment = {
+        id: `segment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        segmentType: 'outbound',
+        sequenceNumber: 0,
+        pickupAddress: formData.step1.pickupAddress,
+        dropoffAddress: formData.step1.dropoffAddress,
+        pickupProperty: formData.step1.pickupProperty,
+        dropoffProperty: formData.step1.dropoffProperty,
+        datetime: formData.step1.pickupDate || new Date().toISOString(),
+        estimatedArrival: undefined,
+        items: outboundItems,
+        pricing: outboundPricing,
+        distance: formData.step1.distance || 0,
+        estimatedDuration: formData.step1.estimatedDuration || 0,
+        notes: '',
+      };
+      
+      const returnSegment = mirrorSegmentForReturn(outboundSegment, bufferMinutes);
+      
+      // ✅ CRITICAL FIX: Copy pricing from outbound for return journey (same distance = same price)
+      // This prevents £0.00 pricing bug when API hasn't calculated return segment yet
+      returnSegment.pricing = {
+        ...outboundPricing,
+        distance: outboundSegment.distance || 0,
+      };
+      returnSegment.distance = outboundSegment.distance;
+      returnSegment.estimatedDuration = outboundSegment.estimatedDuration;
+      
+      // ✅ CRITICAL FIX: Ensure return segment has items (deep copy from outbound)
+      // This ensures items are always present in return segment
+      if (!returnSegment.items || returnSegment.items.length === 0) {
+        returnSegment.items = outboundItems.length > 0 
+          ? outboundItems.map(item => ({ ...item }))
+          : [];
+      } else {
+        // Ensure items are deep copied
+        returnSegment.items = returnSegment.items.map(item => ({ ...item }));
+      }
+      
+      updateFormData('step1', {
+        isMultiLeg: true,
+        segments: [outboundSegment, returnSegment],
+      });
+      
+      console.log('✅ Created outbound segment from existing data and added return segment', {
+        outboundItemsCount: outboundItems.length,
+        returnItemsCount: returnSegment.items.length,
+        outboundPricing: outboundPricing.total,
+        returnPricing: returnSegment.pricing.total,
+      });
+      return;
+    }
+    
+    // Find outbound segment (first segment or last segment if no outbound)
+    const outboundSegment = currentSegments.find(s => s.segmentType === 'outbound') || currentSegments[currentSegments.length - 1];
+    
+    if (!outboundSegment) {
+      console.error('No outbound segment found to create return from');
+      return;
+    }
+
+    // ✅ CRITICAL FIX: Ensure outbound segment has items before creating return
+    const outboundItems = (outboundSegment.items && Array.isArray(outboundSegment.items) && outboundSegment.items.length > 0)
+      ? outboundSegment.items.map(item => ({ ...item }))
+      : (formData.step1.items && Array.isArray(formData.step1.items) && formData.step1.items.length > 0)
+      ? formData.step1.items.map(item => ({ ...item }))
+      : [];
+
+    // Create return segment
+    const returnSegment = mirrorSegmentForReturn(outboundSegment, bufferMinutes);
+    
+    // ✅ CRITICAL FIX: Ensure return segment has items (deep copy from outbound)
+    returnSegment.items = outboundItems.length > 0 
+      ? outboundItems.map(item => ({ ...item }))
+      : [];
+    
+    // ✅ CRITICAL FIX: Get pricing from outbound segment first, then try pricingTiers as fallback
+    let outboundPricing: PricingBreakdown;
+    
+    if (outboundSegment.pricing && outboundSegment.pricing.total > 0) {
+      outboundPricing = { ...outboundSegment.pricing };
+    } else if (pricingTiersRef?.standard?.price && pricingTiersRef.standard.price > 0) {
+      // Use pricingTiers if outbound segment pricing is not set
+      const basePrice = pricingTiersRef.standard.price;
+      outboundPricing = {
+        baseFee: basePrice * 0.4,
+        distanceFee: basePrice * 0.3,
+        volumeFee: basePrice * 0.15,
+        serviceFee: basePrice * 0.1,
+        urgencyFee: 0,
+        vat: basePrice * 0.05,
+        total: basePrice,
+        distance: outboundSegment.distance || 0,
+      };
+      console.log('✅ Using pricingTiers for return segment pricing (existing segments):', basePrice);
+    } else {
+      outboundPricing = {
+        baseFee: 0,
+        distanceFee: 0,
+        volumeFee: 0,
+        serviceFee: 0,
+        urgencyFee: 0,
+        vat: 0,
+        total: 0,
+        distance: outboundSegment.distance || 0,
+      };
+    }
+    
+    returnSegment.pricing = {
+      ...outboundPricing,
+      distance: outboundSegment.distance || 0,
+    };
+    returnSegment.distance = outboundSegment.distance;
+    returnSegment.estimatedDuration = outboundSegment.estimatedDuration;
+    
+    // Add to segments
+    const updatedSegments = [...currentSegments, returnSegment];
+    
+    updateFormData('step1', {
+      isMultiLeg: true,
+      segments: updatedSegments,
+    });
+
+    console.log('✅ Return segment added:', {
+      returnSegment: returnSegment.id,
+      itemsCount: returnSegment.items.length,
+      pricing: returnSegment.pricing.total,
+      outboundItemsCount: outboundItems.length,
+    });
+  }, [formData.step1, updateFormData]);
+
+  /**
+   * Add blank additional segment
+   * ✅ FIXED: Ensures items are properly copied from outbound segment
+   * ✅ FIXED: Accepts pricingTiers to set accurate outbound pricing when segments don't exist yet
+   */
+  const addAdditionalSegment = useCallback((pricingTiersRef?: { standard?: { price: number } }) => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    
+    // ✅ CRITICAL FIX: Get items from the most reliable source
+    const getItemsForSegment = (): any[] => {
+      // Priority 1: Items from first segment (outbound) if exists
+      if (currentSegments.length > 0 && currentSegments[0]?.items && Array.isArray(currentSegments[0].items) && currentSegments[0].items.length > 0) {
+        return currentSegments[0].items.map(item => ({ ...item }));
+      }
+      // Priority 2: Global items from formData
+      if (formData.step1.items && Array.isArray(formData.step1.items) && formData.step1.items.length > 0) {
+        return formData.step1.items.map(item => ({ ...item }));
+      }
+      // Priority 3: Empty array
+      return [];
+    };
+    
+    const itemsToCopy = getItemsForSegment();
+    
+    // If this is the first time adding segments, create outbound from existing data first
+    if (currentSegments.length === 0) {
+      // ✅ CRITICAL FIX: Get pricing from formData first, then try pricingTiers as fallback
+      let outboundPricing: PricingBreakdown;
+      
+      if (formData.step1.pricing && formData.step1.pricing.total > 0) {
+        outboundPricing = { ...formData.step1.pricing };
+      } else if (pricingTiersRef?.standard?.price && pricingTiersRef.standard.price > 0) {
+        // Use pricingTiers if formData.step1.pricing is not set
+        const basePrice = pricingTiersRef.standard.price;
+        outboundPricing = {
+          baseFee: basePrice * 0.4,
+          distanceFee: basePrice * 0.3,
+          volumeFee: basePrice * 0.15,
+          serviceFee: basePrice * 0.1,
+          urgencyFee: 0,
+          vat: basePrice * 0.05,
+          total: basePrice,
+          distance: formData.step1.distance || 0,
+        };
+        console.log('✅ Using pricingTiers for outbound segment pricing (addAdditionalSegment):', basePrice);
+      } else {
+        outboundPricing = {
+          baseFee: 0,
+          distanceFee: 0,
+          volumeFee: 0,
+          serviceFee: 0,
+          urgencyFee: 0,
+          vat: 0,
+          total: 0,
+          distance: formData.step1.distance || 0,
+        };
+      }
+      
+      const outboundSegment: BookingSegment = {
+        id: `segment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        segmentType: 'outbound',
+        sequenceNumber: 0,
+        pickupAddress: formData.step1.pickupAddress,
+        dropoffAddress: formData.step1.dropoffAddress,
+        pickupProperty: formData.step1.pickupProperty,
+        dropoffProperty: formData.step1.dropoffProperty,
+        datetime: formData.step1.pickupDate || new Date().toISOString(),
+        estimatedArrival: undefined,
+        items: itemsToCopy.length > 0 ? itemsToCopy.map(item => ({ ...item })) : [],
+        pricing: outboundPricing,
+        distance: formData.step1.distance || 0,
+        estimatedDuration: formData.step1.estimatedDuration || 0,
+        notes: '',
+      };
+      
+      const additionalSegment = createBlankSegment(1);
+      // ✅ CRITICAL FIX: Deep copy items from outbound segment to additional segment
+      additionalSegment.items = itemsToCopy.length > 0 ? itemsToCopy.map(item => ({ ...item })) : [];
+      
+      updateFormData('step1', {
+        isMultiLeg: true,
+        segments: [outboundSegment, additionalSegment],
+      });
+      
+      console.log('✅ Created outbound segment from existing data and added additional segment with items:', {
+        outboundItemsCount: outboundSegment.items.length,
+        additionalItemsCount: additionalSegment.items.length,
+        outboundPricing: outboundPricing.total,
+      });
+      return;
+    }
+    
+    // Otherwise, just add a new additional segment
+    // ✅ CRITICAL FIX: Copy items from the first segment (outbound) - this is the most common case
+    // Users typically want the same items for all segments
+    const nextSequenceNumber = currentSegments.length;
+    const newSegment = createBlankSegment(nextSequenceNumber);
+    // ✅ CRITICAL FIX: Deep copy items from source to ensure no reference issues
+    newSegment.items = itemsToCopy.length > 0 ? itemsToCopy.map(item => ({ ...item })) : [];
+    
+    const updatedSegments = [...currentSegments, newSegment];
+    
+    updateFormData('step1', {
+      isMultiLeg: true,
+      segments: updatedSegments,
+    });
+
+    console.log('✅ Additional segment added with items copied:', {
+      segmentIndex: nextSequenceNumber,
+      itemsCount: newSegment.items.length,
+      items: newSegment.items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity }))
+    });
+  }, [formData.step1, updateFormData]);
+
+  /**
+   * Update specific segment
+   */
+  const updateSegment = useCallback((index: number, segmentData: Partial<BookingSegment>) => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    
+    if (index < 0 || index >= currentSegments.length) {
+      console.error('Invalid segment index:', index);
+      return;
+    }
+
+    // Deep copy items array if provided to preserve structure
+    let mergedSegmentData = { ...segmentData };
+    if ('items' in segmentData && Array.isArray(segmentData.items)) {
+      // Deep copy items array to avoid reference issues
+      mergedSegmentData.items = segmentData.items.map(item => ({ ...item }));
+    }
+
+    const updatedSegments = currentSegments.map((segment, i) => 
+      i === index ? { ...segment, ...mergedSegmentData } : segment
+    );
+
+    console.log(`📝 Updating segment ${index} with data:`, {
+      ...segmentData,
+      itemsCount: segmentData.items?.length || 'not provided'
+    });
+    console.log(`📝 Segment ${index} after update:`, {
+      hasItems: !!updatedSegments[index]?.items,
+      itemsCount: updatedSegments[index]?.items?.length || 0,
+      items: updatedSegments[index]?.items?.map(i => ({ id: i.id, name: i.name, quantity: i.quantity })) || []
+    });
+
+    updateFormData('step1', {
+      segments: updatedSegments,
+    });
+
+    console.log(`✅ Segment ${index} updated successfully`);
+  }, [formData.step1.segments, updateFormData]);
+
+  /**
+   * Remove segment
+   */
+  const removeSegment = useCallback(async (index: number) => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    
+    if (index < 0 || index >= currentSegments.length) {
+      console.error('Invalid segment index:', index);
+      return;
+    }
+
+    // Remove segment and update sequence numbers
+    const filteredSegments = currentSegments.filter((_, i) => i !== index);
+    const updatedSegments = updateSequenceNumbers(filteredSegments);
+
+    updateFormData('step1', {
+      isMultiLeg: updatedSegments.length > 1,
+      segments: updatedSegments,
+    });
+
+    console.log(`✅ Segment ${index} removed, triggering pricing recalculation`);
+    
+    // Trigger pricing recalculation after segment removal
+    // This ensures the total price updates immediately
+    if (updatedSegments.length > 0) {
+      setTimeout(() => {
+        calculatePricing();
+      }, 100);
+    }
+  }, [formData.step1.segments, updateFormData, calculatePricing]);
+
+  /**
+   * Validate segment chronology
+   * Returns true if all segments are in correct time order
+   */
+  const validateSegments = useCallback((): { valid: boolean; errors: string[] } => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    
+    if (currentSegments.length === 0) {
+      return { valid: true, errors: [] };
+    }
+
+    const allErrors: string[] = [];
+
+    // Validate required fields for each segment
+    currentSegments.forEach((segment, index) => {
+      const fieldErrors = validateSegmentRequiredFields(segment);
+      fieldErrors.forEach(error => {
+        allErrors.push(`Segment ${index + 1}: ${error.message}`);
+      });
+    });
+
+    // Validate chronology
+    const chronologyValidation = validateSegmentChronology(currentSegments);
+    if (!chronologyValidation.valid) {
+      chronologyValidation.errors.forEach(error => {
+        allErrors.push(error.message);
+      });
+    }
+
+    return {
+      valid: allErrors.length === 0,
+      errors: allErrors,
+    };
+  }, [formData.step1.segments]);
+
+  /**
+   * Get total price from all segments
+   */
+  const getTotalSegmentsPrice = useCallback((): number => {
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+    return calculateTotalPrice(currentSegments);
+  }, [formData.step1.segments]);
+
+  // ============================================
+  // END MULTI-LEG BOOKING FUNCTIONS
+  // ============================================
+
   return {
     formData,
     updateFormData,
@@ -890,5 +1576,13 @@ export function useBookingForm() {
     validatePromotionCode,
     applyPromotionCode,
     removePromotionCode,
+    
+    // Multi-leg booking functions
+    addReturnSegment,
+    addAdditionalSegment,
+    updateSegment,
+    removeSegment,
+    validateSegments,
+    getTotalSegmentsPrice,
   };
 }

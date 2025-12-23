@@ -16,11 +16,17 @@ import {
 } from '@chakra-ui/react';
 import { FaPoundSign, FaInfoCircle, FaRoute, FaClock } from 'react-icons/fa';
 
+interface BookingSegment {
+  pickupAddress?: { postcode?: string; coordinates?: { lat?: number; lng?: number } };
+  dropoffAddress?: { postcode?: string; coordinates?: { lat?: number; lng?: number } };
+}
+
 interface PricePreviewProps {
   pickupPostcode?: string;
   dropoffPostcode?: string;
   pickupCoordinates?: { lat?: number; lng?: number };
   dropoffCoordinates?: { lat?: number; lng?: number };
+  segments?: BookingSegment[];
 }
 
 export default function PricePreview({
@@ -28,13 +34,115 @@ export default function PricePreview({
   dropoffPostcode,
   pickupCoordinates,
   dropoffCoordinates,
+  segments = [],
 }: PricePreviewProps) {
   const [estimatedRange, setEstimatedRange] = useState<{ min: number; max: number } | null>(null);
   const [estimatedDuration, setEstimatedDuration] = useState<string>('');
   const [distance, setDistance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const computeEstimates = (distanceMiles: number, durationSeconds?: number) => {
+    setDistance(distanceMiles);
+
+    if (!distanceMiles || Number.isNaN(distanceMiles)) {
+      setEstimatedRange(null);
+      setEstimatedDuration('');
+      return;
+    }
+
+    const baseFee = 12;
+
+    const tieredDistanceFee = (miles: number) => {
+      const tiers = [
+        { cap: 50, rate: 0.35 },
+        { cap: 150, rate: 0.25 },
+        { cap: Infinity, rate: 0.18 },
+      ];
+      let remaining = miles;
+      let covered = 0;
+      let fee = 0;
+
+      for (const tier of tiers) {
+        if (remaining <= 0) break;
+        const span = tier.cap === Infinity ? remaining : Math.max(0, Math.min(remaining, tier.cap - covered));
+        fee += span * tier.rate;
+        remaining -= span;
+        covered += span;
+      }
+
+      return fee;
+    };
+
+    const distanceFee = tieredDistanceFee(distanceMiles);
+    const estimatedBase = Math.max(25, baseFee + distanceFee);
+    const min = Math.round(estimatedBase * 0.85);
+    const max = Math.round(estimatedBase * 0.95);
+    setEstimatedRange({ min, max });
+
+    const durationInMinutes = durationSeconds
+      ? Math.round(durationSeconds / 60)
+      : Math.round((distanceMiles / 20) * 60) + (distanceMiles < 5 ? 15 : distanceMiles < 15 ? 20 : 30);
+
+    const hours = Math.floor(durationInMinutes / 60);
+    const minutes = durationInMinutes % 60;
+    if (hours > 0) {
+      setEstimatedDuration(`${hours}h ${minutes > 0 ? minutes + 'm' : ''}`);
+    } else {
+      setEstimatedDuration(`${minutes} min`);
+    }
+  };
+
   useEffect(() => {
+    const hasSegments = Array.isArray(segments) ? segments.length > 0 : false;
+
+    if (hasSegments) {
+      const validDistances: number[] = [];
+
+      segments.forEach(segment => {
+        const pickup = segment.pickupAddress?.coordinates;
+        const dropoff = segment.dropoffAddress?.coordinates;
+
+        if (!pickup || !dropoff) return;
+        if (typeof pickup.lat !== 'number' || typeof pickup.lng !== 'number') return;
+        if (typeof dropoff.lat !== 'number' || typeof dropoff.lng !== 'number') return;
+        if ((pickup.lat === 0 && pickup.lng === 0) || (dropoff.lat === 0 && dropoff.lng === 0)) return;
+        if (pickup.lat < 49 || pickup.lat > 61) return;
+        if (dropoff.lat < 49 || dropoff.lat > 61) return;
+        if (pickup.lng < -8 || pickup.lng > 2) return;
+        if (dropoff.lng < -8 || dropoff.lng > 2) return;
+
+        const R = 3958.8;
+        const dLat = ((dropoff.lat - pickup.lat) * Math.PI) / 180;
+        const dLng = ((dropoff.lng - pickup.lng) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((pickup.lat * Math.PI) / 180) *
+            Math.cos((dropoff.lat * Math.PI) / 180) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distanceInMiles = R * c;
+
+        if (distanceInMiles > 0) {
+          if (distanceInMiles <= 700) {
+            validDistances.push(distanceInMiles);
+          }
+        }
+      });
+
+      if (validDistances.length === 0) {
+        setDistance(0);
+        setEstimatedRange(null);
+        setEstimatedDuration('');
+        return;
+      }
+
+      const totalDistance = validDistances.reduce((sum, value) => sum + value, 0);
+      computeEstimates(totalDistance);
+      return;
+    }
+
+    // Single journey calculation
     const hasCoords =
       pickupCoordinates &&
       dropoffCoordinates &&
@@ -62,58 +170,6 @@ export default function PricePreview({
       setIsLoading(false);
       return;
     }
-
-    const computeEstimates = (distanceMiles: number, durationSeconds?: number) => {
-      setDistance(distanceMiles);
-
-      if (!distanceMiles || Number.isNaN(distanceMiles)) {
-        setEstimatedRange(null);
-        setEstimatedDuration('');
-        return;
-      }
-
-      const baseFee = 30; // Softer base for luxury estimate preview
-
-      const tieredDistanceFee = (miles: number) => {
-        // Progressive discounting for longer trips to avoid sticker shock
-        const tiers = [
-          { cap: 50, rate: 1.0 },       // first 50 miles
-          { cap: 150, rate: 0.7 },      // 50-150 miles
-          { cap: Infinity, rate: 0.45 }, // 150+ miles
-        ];
-        let remaining = miles;
-        let covered = 0;
-        let fee = 0;
-
-        for (const tier of tiers) {
-          if (remaining <= 0) break;
-          const span = tier.cap === Infinity ? remaining : Math.max(0, Math.min(remaining, tier.cap - covered));
-          fee += span * tier.rate;
-          remaining -= span;
-          covered += span;
-        }
-
-        return fee;
-      };
-
-      const distanceFee = tieredDistanceFee(distanceMiles);
-      const estimatedBase = Math.max(60, baseFee + distanceFee);
-      const min = Math.round(estimatedBase * 0.75); // -25%
-      const max = Math.round(estimatedBase * 1.08); // +8%
-      setEstimatedRange({ min, max });
-
-      const durationInMinutes = durationSeconds
-        ? Math.round(durationSeconds / 60)
-        : Math.round((distanceMiles / 20) * 60) + (distanceMiles < 5 ? 15 : distanceMiles < 15 ? 20 : 30);
-
-      const hours = Math.floor(durationInMinutes / 60);
-      const minutes = durationInMinutes % 60;
-      if (hours > 0) {
-        setEstimatedDuration(`${hours}h ${minutes > 0 ? minutes + 'm' : ''}`);
-      } else {
-        setEstimatedDuration(`${minutes} min`);
-      }
-    };
 
     const controller = new AbortController();
     const fetchDistance = async () => {
@@ -145,7 +201,7 @@ export default function PricePreview({
           }
         }
 
-        // Fallback to haversine if API fails or returns invalid data
+        // Fallback to haversine
         const R = 3958.8;
         const dLat = ((dropoffCoordinates.lat! - pickupCoordinates.lat!) * Math.PI) / 180;
         const dLng = ((dropoffCoordinates.lng! - pickupCoordinates.lng!) * Math.PI) / 180;
@@ -179,9 +235,8 @@ export default function PricePreview({
     };
 
     fetchDistance();
-
     return () => controller.abort();
-  }, [pickupCoordinates, dropoffCoordinates]);
+  }, [pickupCoordinates, dropoffCoordinates, segments]);
 
   const hasAddresses = pickupPostcode && dropoffPostcode;
   const showPreview = hasAddresses && estimatedRange;
@@ -213,7 +268,6 @@ export default function PricePreview({
     >
       <CardBody p={{ base: 4, md: 6 }}>
         <VStack spacing={4} align="stretch">
-          {/* Header */}
           <HStack justify="space-between" align="center" flexWrap={{ base: 'wrap', md: 'nowrap' }}>
             <HStack spacing={3}>
               <Box
@@ -230,24 +284,15 @@ export default function PricePreview({
                 <Icon as={FaPoundSign} color="blue.400" boxSize={{ base: 4, md: 5 }} />
               </Box>
               <VStack spacing={0} align="flex-start">
-                <Text
-                  color="white"
-                  fontWeight="700"
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  letterSpacing="tight"
-                >
+                <Text color="white" fontWeight="700" fontSize={{ base: 'md', md: 'lg' }} letterSpacing="tight">
                   Estimated Price
                 </Text>
                 <Text color="whiteAlpha.600" fontSize={{ base: '2xs', md: 'xs' }} fontWeight="500">
-                  Final price shown after selecting items
+                  {segments.length > 1 ? `Starting from - ${segments.length} journeys combined` : 'Starting estimate - final price after item selection'}
                 </Text>
               </VStack>
             </HStack>
-            <Tooltip
-              label="This is an estimate based on distance only. Final price includes items, service level, and time selected."
-              placement="top"
-              hasArrow
-            >
+            <Tooltip label="This is an estimate based on distance. Final price includes items, service level, and timing." placement="top" hasArrow>
               <Box>
                 <Icon as={FaInfoCircle} color="whiteAlpha.500" boxSize={4} cursor="help" />
               </Box>
@@ -256,36 +301,20 @@ export default function PricePreview({
 
           <Divider borderColor="whiteAlpha.200" />
 
-          {/* Price Display */}
           {showPreview ? (
             <VStack spacing={3} align="stretch">
-              {/* Price Range */}
               <HStack justify="center" py={{ base: 1, md: 2 }}>
-                <Text
-                  fontSize={{ base: '2xl', md: '3xl' }}
-                  fontWeight="800"
-                  bgGradient="linear(to-r, blue.300, purple.400)"
-                  bgClip="text"
-                  letterSpacing="tight"
-                >
+                <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="800" bgGradient="linear(to-r, blue.300, purple.400)" bgClip="text" letterSpacing="tight">
                   £{estimatedRange.min} - £{estimatedRange.max}
                 </Text>
               </HStack>
 
-              {/* Details */}
               <VStack spacing={2} align="stretch">
-                {/* Distance */}
-                <HStack
-                  justify="space-between"
-                  px={{ base: 3, md: 4 }}
-                  py={{ base: 2, md: 2 }}
-                  borderRadius="lg"
-                  bg="whiteAlpha.50"
-                >
+                <HStack justify="space-between" px={{ base: 3, md: 4 }} py={{ base: 2, md: 2 }} borderRadius="lg" bg="whiteAlpha.50">
                   <HStack spacing={2}>
                     <Icon as={FaRoute} color="blue.300" boxSize={{ base: 3.5, md: 4 }} />
                     <Text color="whiteAlpha.800" fontSize="sm" fontWeight="500">
-                      Distance
+                      {segments.length > 1 ? 'Total Distance' : 'Distance'}
                     </Text>
                   </HStack>
                   <Text color="white" fontSize="sm" fontWeight="600">
@@ -293,15 +322,8 @@ export default function PricePreview({
                   </Text>
                 </HStack>
 
-                {/* Duration */}
                 {estimatedDuration && (
-                  <HStack
-                    justify="space-between"
-                    px={{ base: 3, md: 4 }}
-                    py={{ base: 2, md: 2 }}
-                    borderRadius="lg"
-                    bg="whiteAlpha.50"
-                  >
+                  <HStack justify="space-between" px={{ base: 3, md: 4 }} py={{ base: 2, md: 2 }} borderRadius="lg" bg="whiteAlpha.50">
                     <HStack spacing={2}>
                       <Icon as={FaClock} color="purple.300" boxSize={{ base: 3.5, md: 4 }} />
                       <Text color="whiteAlpha.800" fontSize="sm" fontWeight="500">
@@ -313,25 +335,6 @@ export default function PricePreview({
                     </Text>
                   </HStack>
                 )}
-
-                {/* Note */}
-                <Box
-                  px={{ base: 3, md: 4 }}
-                  py={{ base: 2.5, md: 3 }}
-                  borderRadius="lg"
-                  bg="rgba(59, 130, 246, 0.1)"
-                  border="1px solid"
-                  borderColor="rgba(59, 130, 246, 0.2)"
-                  mt={2}
-                >
-                  <HStack spacing={2} align="flex-start">
-                    <Icon as={FaInfoCircle} color="blue.300" boxSize={3} mt={0.5} flexShrink={0} />
-                    <Text color="whiteAlpha.700" fontSize={{ base: '2xs', md: 'xs' }} lineHeight="tall">
-                      This estimate is based on distance only. Your final price will be calculated
-                      based on items selected, service level, and pickup time.
-                    </Text>
-                  </HStack>
-                </Box>
               </VStack>
             </VStack>
           ) : (
@@ -339,9 +342,7 @@ export default function PricePreview({
               {isLoading ? (
                 <HStack justify="center" spacing={2}>
                   <Spinner size="sm" color="blue.300" />
-                  <Text color="whiteAlpha.700" fontSize="sm">
-                    Calculating distance...
-                  </Text>
+                  <Text color="whiteAlpha.700" fontSize="sm">Calculating distance...</Text>
                 </HStack>
               ) : (
                 <Text color="whiteAlpha.600" fontSize="sm" textAlign="center">

@@ -1059,6 +1059,52 @@ export class UnifiedPricingEngine {
   private calculateSurcharges(input: PricingInput, items: any[], route: any) {
     const surcharges = [];
     
+    // Time-based surcharges
+    if (input.scheduledDate) {
+      const pickupDate = new Date(input.scheduledDate);
+      const dayOfWeek = pickupDate.getDay(); // 0 = Sunday, 6 = Saturday
+      const hours = pickupDate.getHours();
+      const month = pickupDate.getMonth(); // 0-11
+      
+      // Weekend surcharge (Saturday/Sunday)
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        surcharges.push({
+          category: 'weekend',
+          amount: Math.round(route.totalDistance * 0.15 * 100), // 15% of distance fee
+          reason: 'Weekend delivery'
+        });
+      }
+      
+      // Peak hours surcharge (8-10 AM, 5-7 PM on weekdays)
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        if ((hours >= 8 && hours < 10) || (hours >= 17 && hours < 19)) {
+          surcharges.push({
+            category: 'peak_hours',
+            amount: Math.round(route.totalDistance * 0.20 * 100), // 20% of distance fee
+            reason: 'Peak hours (8-10 AM or 5-7 PM)'
+          });
+        }
+      }
+      
+      // Evening surcharge (7-11 PM)
+      if (hours >= 19 && hours < 23) {
+        surcharges.push({
+          category: 'evening',
+          amount: Math.round(route.totalDistance * 0.10 * 100), // 10% of distance fee
+          reason: 'Evening delivery (7-11 PM)'
+        });
+      }
+      
+      // Summer peak season (July-August)
+      if (month === 6 || month === 7) {
+        surcharges.push({
+          category: 'seasonal',
+          amount: Math.round(route.totalDistance * 0.08 * 100), // 8% of distance fee
+          reason: 'Summer peak season'
+        });
+      }
+    }
+    
     // Extra stops surcharge (multi-drop)
     if (input.dropoffs.length > 1) {
       const extraStops = input.dropoffs.length - 1;

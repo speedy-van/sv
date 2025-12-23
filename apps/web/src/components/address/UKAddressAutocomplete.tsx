@@ -738,7 +738,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
           >
               {suggestions.map((suggestion, index) => (
                 <Box
-                  key={suggestion.id}
+                  key={`${id}-${suggestion.id}-${index}`}
                   px={4}
                   py={3}
                   mx={2}
@@ -870,7 +870,7 @@ const [apartmentNumber, setApartmentNumber] = useState(value?.buildingDetails?.a
               
 
       {/* Floor and Flat Numbers */}
-              <SimpleGrid columns={2} spacing={3}>
+              <SimpleGrid columns={{ base: 2, md: 2 }} spacing={3}>
                 <Box>
                   <FormLabel fontSize="xs" color="#ffffff" mb={1}>
                     Floor Number

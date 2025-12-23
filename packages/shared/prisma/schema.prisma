@@ -245,6 +245,8 @@ model Booking {
   serviceType                                                String?                 @default("STANDARD")
   isEconomyService                                           Boolean?                @default(false)
   shouldBeMultiDrop                                          Boolean?                @default(false)
+  isMultiLeg                                                 Boolean                 @default(false)
+  totalSegments                                              Int                     @default(1)
   Assignment                                                 Assignment[]
   User                                                       User?                   @relation(fields: [customerId], references: [id])
   Driver                                                     Driver?                 @relation(fields: [driverId], references: [id])
@@ -256,6 +258,7 @@ model Booking {
   BookingCancellation                                        BookingCancellation[]
   BookingItem                                                BookingItem[]
   BookingProgress                                            BookingProgress[]
+  BookingSegment                                             BookingSegment[]
   ChatSession                                                ChatSession[]
   CommunicationLog                                           CommunicationLog[]
   Drop                                                       Drop[]
@@ -276,13 +279,15 @@ model Booking {
 }
 
 model BookingAddress {
-  id                                               String    @id
-  label                                            String
-  postcode                                         String
-  lat                                              Float
-  lng                                              Float
-  Booking_Booking_dropoffAddressIdToBookingAddress Booking[] @relation("Booking_dropoffAddressIdToBookingAddress")
-  Booking_Booking_pickupAddressIdToBookingAddress  Booking[] @relation("Booking_pickupAddressIdToBookingAddress")
+  id                                                        String           @id
+  label                                                     String
+  postcode                                                  String
+  lat                                                       Float
+  lng                                                       Float
+  Booking_Booking_dropoffAddressIdToBookingAddress          Booking[]        @relation("Booking_dropoffAddressIdToBookingAddress")
+  Booking_Booking_pickupAddressIdToBookingAddress           Booking[]        @relation("Booking_pickupAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_dropoffAddressIdToBookingAddress  BookingSegment[] @relation("BookingSegment_dropoffAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_pickupAddressIdToBookingAddress   BookingSegment[] @relation("BookingSegment_pickupAddressIdToBookingAddress")
 }
 
 model BookingCancellation {
@@ -333,6 +338,35 @@ model BookingProgress {
   @@unique([bookingId, step])
   @@index([bookingId, step])
   @@index([status, createdAt])
+}
+
+model BookingSegment {
+  id                                                             String          @id @default(uuid())
+  bookingId                                                      String
+  booking                                                        Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  segmentType                                                    String
+  sequenceNumber                                                 Int
+  pickupAddressId                                                String
+  pickupAddress                                                  BookingAddress  @relation("BookingSegment_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
+  dropoffAddressId                                               String
+  dropoffAddress                                                 BookingAddress  @relation("BookingSegment_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
+  pickupPropertyId                                               String
+  pickupProperty                                                 PropertyDetails @relation("BookingSegment_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  dropoffPropertyId                                              String
+  dropoffProperty                                                PropertyDetails @relation("BookingSegment_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
+  scheduledAt                                                    DateTime
+  estimatedArrival                                               DateTime?
+  items                                                          Json
+  priceGBP                                                       Int
+  distanceMeters                                                 Int?
+  durationSeconds                                                Int?
+  notes                                                          String?
+  createdAt                                                      DateTime        @default(now())
+  updatedAt                                                      DateTime        @updatedAt
+
+  @@index([bookingId, sequenceNumber])
+  @@index([segmentType])
+  @@index([scheduledAt])
 }
 
 model BusinessMetric {
@@ -1478,12 +1512,14 @@ model Promotion {
 }
 
 model PropertyDetails {
-  id                                                 String       @id
+  id                                                 String           @id
   propertyType                                       PropertyType
   accessType                                         AccessType
-  floors                                             Int          @default(0)
-  Booking_Booking_dropoffPropertyIdToPropertyDetails Booking[]    @relation("Booking_dropoffPropertyIdToPropertyDetails")
-  Booking_Booking_pickupPropertyIdToPropertyDetails  Booking[]    @relation("Booking_pickupPropertyIdToPropertyDetails")
+  floors                                             Int              @default(0)
+  Booking_Booking_dropoffPropertyIdToPropertyDetails Booking[]        @relation("Booking_dropoffPropertyIdToPropertyDetails")
+  Booking_Booking_pickupPropertyIdToPropertyDetails  Booking[]        @relation("Booking_pickupPropertyIdToPropertyDetails")
+  BookingSegment_BookingSegment_dropoffPropertyIdToPropertyDetails BookingSegment[] @relation("BookingSegment_dropoffPropertyIdToPropertyDetails")
+  BookingSegment_BookingSegment_pickupPropertyIdToPropertyDetails  BookingSegment[] @relation("BookingSegment_pickupPropertyIdToPropertyDetails")
 }
 
 model PushSubscription {

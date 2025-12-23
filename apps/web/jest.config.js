@@ -15,6 +15,9 @@ const customJestConfig = {
     '^@speedy-van/shared/(.*)$': '<rootDir>/../../packages/shared/src/$1',
     '^@speedy-van/utils/(.*)$': '<rootDir>/../../packages/utils/src/$1',
     '^@speedy-van/pricing/(.*)$': '<rootDir>/../../packages/pricing/src/$1',
+    '^react$': '<rootDir>/../../node_modules/react',
+    '^react-dom$': '<rootDir>/../../node_modules/react-dom',
+    '^react/jsx-runtime$': '<rootDir>/../../node_modules/react/jsx-runtime',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

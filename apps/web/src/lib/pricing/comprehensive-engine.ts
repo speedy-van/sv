@@ -985,11 +985,14 @@ export class ComprehensivePricingEngine {
       ? baseFee * config.baseRates.multiDropDiscount * (route.stops.length - 1)
       : 0;
 
-    // 8. Seasonal/time multipliers (Section 7)
+    // 8. Urgency fee (express/urgent bookings)
+    const urgencyFee = this.calculateUrgencyFee(input, config);
+
+    // 9. Seasonal/time multipliers (Section 7)
     const seasonalMultiplier = this.calculateSeasonalMultiplier(input.timeFactors, config);
 
     // Calculate subtotal before service multiplier
-    const subtotalBeforeService = baseFee + itemsCost + laborCost + distanceCost + timeCost + accessSurcharges;
+    const subtotalBeforeService = baseFee + itemsCost + laborCost + distanceCost + timeCost + accessSurcharges + urgencyFee;
     const subtotalWithDiscounts = subtotalBeforeService - multiDropDiscount;
     const subtotalWithSeasonal = subtotalWithDiscounts * seasonalMultiplier;
 
@@ -1039,6 +1042,21 @@ export class ComprehensivePricingEngine {
     });
 
     return totalSurcharges;
+  }
+
+  private calculateUrgencyFee(input: EnhancedPricingInput, config: OperationalPricingConfig): number {
+    // Check for urgency in input (from API request)
+    const urgency = (input as any).urgency || 'standard';
+    
+    // Apply urgency multiplier to base fee
+    switch (urgency) {
+      case 'express':
+        return config.baseRates.baseFee * 0.25; // 25% surcharge
+      case 'urgent':
+        return config.baseRates.baseFee * 0.50; // 50% surcharge
+      default:
+        return 0; // No surcharge for standard
+    }
   }
 
   private calculateSeasonalMultiplier(timeFactors: any, config: OperationalPricingConfig): number {
@@ -1283,8 +1301,40 @@ export class ComprehensivePricingEngine {
   }
 
   private calculateMultiDropDistance(stops: MultiDropStop[]): number {
-    // Simplified distance calculation
-    return stops.length * 15; // Assume 15km between each stop
+    // Calculate actual distance using Haversine formula between consecutive stops
+    if (stops.length < 2) return 0;
+    
+    let totalDistance = 0;
+    for (let i = 0; i < stops.length - 1; i++) {
+      const from = stops[i].address.coordinates;
+      const to = stops[i + 1].address.coordinates;
+      
+      if (from && to && from.lat && from.lng && to.lat && to.lng) {
+        totalDistance += this.calculateHaversineDistance(
+          from.lat, from.lng,
+          to.lat, to.lng
+        );
+      }
+    }
+    
+    return Math.round(totalDistance * 10) / 10; // Round to 1 decimal place
+  }
+  
+  private calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in km
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+  }
+  
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
   }
 
   private calculateMultiDropDuration(

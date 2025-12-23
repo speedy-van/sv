@@ -208,7 +208,7 @@ export const MultiDropStopSchema = z.object({
   type: z.enum(["pickup", "dropoff"]),
   address: StructuredAddressSchema,
   timeSlot: z.string().optional(), // "HH:mm-HH:mm" format
-  items: z.array(PricingItemSchema).min(1),
+  items: z.array(PricingItemSchema).min(0), // Allow empty arrays for stops without items
   capacityUsed: z.object({
     weight: z.number().min(0),
     volume: z.number().min(0),
