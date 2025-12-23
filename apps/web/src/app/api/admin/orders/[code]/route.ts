@@ -183,7 +183,7 @@ export async function GET(
       durationSeconds: order.estimatedDurationMinutes ? order.estimatedDurationMinutes * 60 : null,
       distanceMeters: null, // Will be calculated from baseDistanceMiles if available
       baseDistanceMiles: order.baseDistanceMiles,
-      notes: null, // Add when customer notes field is available
+      notes: order.notes || null, // Customer special instructions
       pickupTimeSlot: order.pickupTimeSlot,
       items: order.BookingItem?.map(item => ({
         id: item.id,

@@ -809,6 +809,9 @@ export async function POST(request: NextRequest) {
         pickupPropertyId: pickupProperty.id,
         dropoffPropertyId: dropoffProperty.id,
 
+        // ✅ Customer special instructions
+        notes: bookingData.notes || null,
+
         customerPreferences: {
           serviceType: serviceType.toLowerCase(),
           pickupAddressMeta: {

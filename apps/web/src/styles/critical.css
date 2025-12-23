@@ -19,14 +19,29 @@ body {
   overflow-x: hidden;
 }
 
-/* Hero section critical styles */
+/* Hero section critical styles - Reserve space to prevent CLS */
 .mobile-hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   overflow: hidden;
   width: 100%;
+  /* Reserve space for video background */
+  contain: layout style paint;
+}
+
+/* Video background - Prevent CLS with fixed aspect ratio */
+.mobile-hero video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Reserve space immediately */
+  aspect-ratio: 16 / 9;
 }
 
 /* Container critical styles */
@@ -36,6 +51,22 @@ body {
   margin: 0 auto;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+/* Mobile header - Reserve space */
+.mobile-header {
+  height: 60px;
+  min-height: 60px;
+}
+
+/* Stats section - Reserve minimum height */
+.mobile-stats {
+  min-height: 200px;
+}
+
+/* Features section - Reserve minimum height */  
+.mobile-features {
+  min-height: 300px;
 }
 
 /* Prevent layout shift */
@@ -61,10 +92,26 @@ body {
   src: local('Inter'), local('Inter-SemiBold');
 }
 
-/* Prevent CLS */
+/* Prevent CLS - Set explicit dimensions */
 img, video {
   max-width: 100%;
   height: auto;
+}
+
+/* Avatar placeholder to prevent CLS */
+.chakra-avatar {
+  background: #1a1a1a;
+}
+
+/* Button placeholder dimensions */
+.chakra-button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Card placeholder */
+.chakra-card {
+  min-height: 100px;
 }
 
 /* Loading state */
@@ -77,4 +124,36 @@ img, video {
 @keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Skip to content link - CSS-only approach for accessibility */
+.skip-to-content {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  background-color: #2563EB;
+  color: white;
+  padding: 12px 24px;
+  z-index: 10000;
+  transition: top 0.3s ease;
+  border-radius: 0 0 8px 0;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.skip-to-content:focus {
+  top: 0 !important;
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Touch target minimum size for accessibility */
+button, 
+a, 
+[role="button"],
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: 44px;
+  min-width: 44px;
 }

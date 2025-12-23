@@ -1150,7 +1150,16 @@ const MobileCTA: React.FC = () => {
 // Main Mobile Home Page Component
 export default function MobileHomePageContent() {
   return (
-    <Box bg="bg.canvas" minH="100vh" w="100%" maxW="100%" overflowX="hidden" suppressHydrationWarning>
+    <Box 
+      id="main-content"
+      as="main"
+      bg="bg.canvas" 
+      minH="100vh" 
+      w="100%" 
+      maxW="100%" 
+      overflowX="hidden" 
+      suppressHydrationWarning
+    >
       {/* Mobile Header with scroll behavior */}
       <MobileHeader />
       

@@ -164,6 +164,13 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className} suppressHydrationWarning translate="no">
+        {/* Skip to main content link for accessibility - CSS-only approach */}
+        <a
+          href="#main-content"
+          className="skip-to-content"
+        >
+          Skip to main content
+        </a>
         {/* ColorModeScript must match initialColorMode in mobile-theme.ts (currently 'dark') */}
         <ColorModeScript initialColorMode="dark" />
         <IOSDeviceClassManager />
