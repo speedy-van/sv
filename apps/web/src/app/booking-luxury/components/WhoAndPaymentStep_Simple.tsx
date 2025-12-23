@@ -845,6 +845,36 @@ export default function WhoAndPaymentStepSimple({
                   );
                 })}
               </Box>
+              
+              {/* Economy Service Warning - Important delivery info */}
+              {selectedService === 'economy' && (
+                <Box
+                  mt={4}
+                  p={4}
+                  bg="rgba(251, 191, 36, 0.15)"
+                  border="1px solid"
+                  borderColor="rgba(251, 191, 36, 0.4)"
+                  borderRadius="xl"
+                >
+                  <HStack spacing={3} align="flex-start">
+                    <Text fontSize="xl" role="img" aria-label="Warning">⚠️</Text>
+                    <VStack align="start" spacing={1}>
+                      <Text color="yellow.300" fontWeight="bold" fontSize="sm">
+                        Economy Service - Flexible Delivery
+                      </Text>
+                      <Text color="whiteAlpha.800" fontSize="xs" lineHeight="1.5">
+                        Your items will be delivered within <strong>7 days</strong> via our shared route service. 
+                        The exact delivery date will be confirmed once we optimize our routes.
+                        {formData.step1.pickupDate && (
+                          <Text as="span" color="yellow.200">
+                            {' '}Your original date ({new Date(formData.step1.pickupDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}) will be used as the earliest possible delivery date.
+                          </Text>
+                        )}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+              )}
             </VStack>
           </CardBody>
         </Card>

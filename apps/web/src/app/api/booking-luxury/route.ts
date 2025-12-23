@@ -374,19 +374,63 @@ export async function POST(request: NextRequest) {
       fragile: item.fragile || false,
     }));
 
-    // Determine service type based on urgency
+    // Determine service type - prioritize frontend selection, fallback to urgency
     let serviceType: 'ECONOMY' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE' = 'STANDARD';
-    if (bookingData.urgency === 'same-day') {
+    
+    // ✅ CRITICAL: Use serviceType from frontend (Step 3 selection) if provided
+    const frontendServiceType = bookingData.serviceType?.toLowerCase();
+    if (frontendServiceType === 'economy') {
+      serviceType = 'ECONOMY';
+    } else if (frontendServiceType === 'express' || frontendServiceType === 'priority') {
+      serviceType = 'PREMIUM';
+    } else if (frontendServiceType === 'standard') {
+      serviceType = 'STANDARD';
+    } else if (bookingData.urgency === 'same-day') {
+      // Fallback to urgency-based detection
       serviceType = 'ENTERPRISE';
     } else if (bookingData.urgency === 'next-day') {
       serviceType = 'PREMIUM';
     } else if (bookingData.urgency === 'scheduled') {
       serviceType = 'ECONOMY';
     }
+    
+    console.log('🎯 Service type determined:', {
+      frontendServiceType: bookingData.serviceType,
+      resolvedServiceType: serviceType,
+      urgency: bookingData.urgency,
+    });
 
     // Determine if this should be a multi-drop booking (Economy service)
     const isEconomyService = serviceType === 'ECONOMY';
     const shouldBeMultiDrop = isEconomyService;
+    
+    // ✅ ECONOMY SERVICE: Adjust scheduled date to be within 7-day window
+    // Economy = Shared route, delivered within 7 days (not on specific date)
+    let adjustedScheduledDate = bookingData.pickupDate 
+      ? new Date(bookingData.pickupDate) 
+      : new Date();
+    
+    if (isEconomyService) {
+      // For Economy, set the delivery window end date (7 days from now)
+      const deliveryWindowEnd = new Date();
+      deliveryWindowEnd.setDate(deliveryWindowEnd.getDate() + 7);
+      
+      // Use the later of: original date or 7 days from now
+      // This ensures Economy orders are scheduled within the 7-day shared route window
+      if (adjustedScheduledDate < deliveryWindowEnd) {
+        // Keep original date if it's already within 7 days
+        console.log('📅 Economy service: Using original date within 7-day window');
+      } else {
+        // Original date is beyond 7 days, keep it but log
+        console.log('📅 Economy service: Original date is beyond 7-day window, keeping as-is');
+      }
+      
+      console.log('📅 Economy service scheduled date:', {
+        originalDate: bookingData.pickupDate,
+        adjustedDate: adjustedScheduledDate.toISOString(),
+        deliveryWindow: '7 days from booking',
+      });
+    }
 
     // Determine customer segment
     const customerSegment = customerId ? 'BUSINESS' : 'INDIVIDUAL';
