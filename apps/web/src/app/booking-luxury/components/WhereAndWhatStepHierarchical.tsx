@@ -80,6 +80,9 @@ export default function WhereAndWhatStepHierarchical({
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const [isToggling, setIsToggling] = useState(false);
   
+  // Search state for quick item search
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Hierarchical state
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3>(1);
   const [propertyType, setPropertyType] = useState<PropertyType | undefined>();
@@ -917,34 +920,94 @@ export default function WhereAndWhatStepHierarchical({
             </CardBody>
           </Card>
         ) : (
-          /* Single Journey Info */
-          <Card 
-            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.95))" 
-            borderRadius="2xl"
-            border="1px solid"
-            borderColor="blue.400"
-            boxShadow="0 10px 40px rgba(59, 130, 246, 0.3)"
-          >
-            <CardBody p={5}>
-              <HStack spacing={4}>
-                <Box
-                  p={3}
-                  borderRadius="xl"
-                  bg="whiteAlpha.200"
-                >
-                  <Icon as={FaShoppingBag} color="white" boxSize={5} />
-                </Box>
-                <VStack spacing={0} align="flex-start">
-                  <Text color="white" fontSize="md" fontWeight="bold">
-                    Single Journey
-                  </Text>
-                  <Text color="whiteAlpha.800" fontSize="sm">
-                    Select your items below to get started
-                  </Text>
-                </VStack>
-              </HStack>
-            </CardBody>
-          </Card>
+          /* Search Box for Quick Item Search */
+          <Box>
+            <Input
+              size="lg"
+              placeholder="🔍 Search for any item... (sofa, bed, boxes, etc.)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              bg="whiteAlpha.100"
+              border="2px solid"
+              borderColor="purple.400"
+              borderRadius="xl"
+              color="white"
+              fontSize="md"
+              py={6}
+              _placeholder={{ color: 'whiteAlpha.600' }}
+              _hover={{ borderColor: 'purple.300', bg: 'whiteAlpha.150' }}
+              _focus={{ 
+                borderColor: 'purple.300', 
+                boxShadow: '0 0 0 3px rgba(168, 85, 247, 0.3)',
+                bg: 'whiteAlpha.200'
+              }}
+            />
+            
+            {/* Search Results */}
+            {searchQuery.trim() && (
+              <Card mt={3} bg="whiteAlpha.100" borderRadius="xl" border="1px solid" borderColor="purple.400">
+                <CardBody p={4}>
+                  <VStack spacing={3} align="stretch">
+                    <Text fontSize="sm" color="whiteAlpha.700" fontWeight="600">
+                      Search results for "{searchQuery}"
+                    </Text>
+                    <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
+                      {ALL_REMOVAL_ITEMS
+                        .filter(item => 
+                          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .slice(0, 12)
+                        .map(item => {
+                          const existingItem = selectedItemsWithRooms.find(i => i.id === item.id);
+                          const quantity = existingItem?.quantity || 0;
+                          return (
+                            <Box
+                              key={item.id}
+                              bg={quantity > 0 ? 'purple.600' : 'whiteAlpha.100'}
+                              borderRadius="lg"
+                              p={3}
+                              border="1px solid"
+                              borderColor={quantity > 0 ? 'purple.400' : 'whiteAlpha.200'}
+                              cursor="pointer"
+                              transition="all 0.2s"
+                              _hover={{ 
+                                bg: quantity > 0 ? 'purple.500' : 'whiteAlpha.200',
+                                transform: 'translateY(-2px)'
+                              }}
+                              onClick={() => {
+                                handleAddItem(item as any, 'Search', 1);
+                                setSearchQuery('');
+                              }}
+                            >
+                              <VStack spacing={1}>
+                                <Text fontSize="sm" fontWeight="600" color="white" textAlign="center" noOfLines={2}>
+                                  {item.name}
+                                </Text>
+                                {quantity > 0 && (
+                                  <Badge colorScheme="green" borderRadius="full">
+                                    {quantity} added
+                                  </Badge>
+                                )}
+                                <Icon as={FaPlus} color="whiteAlpha.600" boxSize={4} />
+                              </VStack>
+                            </Box>
+                          );
+                        })}
+                    </SimpleGrid>
+                    {ALL_REMOVAL_ITEMS.filter(item => 
+                      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).length === 0 && (
+                      <Text fontSize="sm" color="whiteAlpha.500" textAlign="center" py={4}>
+                        No items found. Try a different search term.
+                      </Text>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
+          </Box>
         )}
 
         {/* Common Items Grid - Always visible at the top */}
@@ -1102,7 +1165,7 @@ export default function WhereAndWhatStepHierarchical({
         <>
           <Box
             position="fixed"
-            bottom={{ base: '180px', md: '200px' }}
+            bottom={{ base: '180px', md: '110px' }}
             right={{ base: '20px', md: '30px' }}
             zIndex={1500}
           >
@@ -1117,109 +1180,55 @@ export default function WhereAndWhatStepHierarchical({
                 : "linear(135deg, #f43f5e, #ec4899)"}
               color="white"
               borderRadius="full"
-              w={{ base: '130px', md: '150px' }}
-              h={{ base: '130px', md: '150px' }}
+              w={{ base: '70px', md: '80px' }}
+              h={{ base: '70px', md: '80px' }}
               cursor={isToggling ? 'wait' : 'pointer'}
               boxShadow={isSummaryExpanded 
-                ? "0 15px 40px rgba(124, 58, 237, 0.5), 0 0 25px rgba(124, 58, 237, 0.3), inset 0 -5px 20px rgba(0,0,0,0.2)" 
-                : "0 15px 40px rgba(244, 63, 94, 0.5), 0 0 25px rgba(244, 63, 94, 0.3), inset 0 -5px 20px rgba(0,0,0,0.2)"}
-              transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-              border="4px solid white"
+                ? "0 8px 32px rgba(124, 58, 237, 0.5)" 
+                : "0 8px 32px rgba(244, 63, 94, 0.5)"}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              border="3px solid white"
               position="relative"
               opacity={isToggling ? 0.7 : 1}
               pointerEvents={isToggling ? 'none' : 'auto'}
               overflow="hidden"
-              _before={{
-                content: '""',
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)',
-                transform: 'rotate(45deg)',
-                animation: 'shimmer 3s infinite',
-              }}
-              sx={{
-                '@keyframes shimmer': {
-                  '0%': { transform: 'translateX(-100%) rotate(45deg)' },
-                  '100%': { transform: 'translateX(100%) rotate(45deg)' },
-                },
-                '@keyframes pulse-glow': {
-                  '0%, 100%': { boxShadow: isSummaryExpanded 
-                    ? '0 15px 40px rgba(124, 58, 237, 0.5), 0 0 25px rgba(124, 58, 237, 0.3)' 
-                    : '0 15px 40px rgba(244, 63, 94, 0.5), 0 0 25px rgba(244, 63, 94, 0.3)' },
-                  '50%': { boxShadow: isSummaryExpanded 
-                    ? '0 20px 50px rgba(124, 58, 237, 0.7), 0 0 40px rgba(124, 58, 237, 0.5)' 
-                    : '0 20px 50px rgba(244, 63, 94, 0.7), 0 0 40px rgba(244, 63, 94, 0.5)' },
-                },
-              }}
               _hover={{
-                transform: isToggling ? 'none' : 'scale(1.08)',
+                transform: isToggling ? 'none' : 'scale(1.1)',
                 boxShadow: isSummaryExpanded 
-                  ? '0 25px 60px rgba(124, 58, 237, 0.7), 0 0 45px rgba(124, 58, 237, 0.5)' 
-                  : '0 25px 60px rgba(244, 63, 94, 0.7), 0 0 45px rgba(244, 63, 94, 0.5)',
+                  ? '0 12px 40px rgba(124, 58, 237, 0.6)' 
+                  : '0 12px 40px rgba(244, 63, 94, 0.6)',
               }}
               _active={{
                 transform: isToggling ? 'none' : 'scale(0.95)',
               }}
               textAlign="center"
             >
-              {/* Animated ring around icon */}
-              <Box
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-                w={{ base: '50px', md: '60px' }}
-                h={{ base: '50px', md: '60px' }}
-                borderRadius="full"
-                border="2px solid"
-                borderColor="whiteAlpha.400"
-                animation="selectedItemsPulse 2s ease-in-out infinite"
-                sx={{
-                  '@keyframes selectedItemsPulse': {
-                    '0%, 100%': { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.6 },
-                    '50%': { transform: 'translate(-50%, -50%) scale(1.2)', opacity: 0 },
-                  },
-                }}
-              />
               <Icon 
                 as={isSummaryExpanded ? FaTimes : FaShoppingBag} 
-                boxSize={{ base: 10, md: 12 }} 
+                boxSize={{ base: 6, md: 7 }} 
                 color="white"
-                mb={2}
-                transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                transform={isSummaryExpanded ? "rotate(0deg)" : "rotate(-10deg)"}
-                filter="drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))"
+                transition="all 0.3s"
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
                 zIndex={1}
               />
-              <Text 
-                fontSize={{ base: 'md', md: 'lg' }} 
-                fontWeight="800" 
-                lineHeight="1.2"
-                textShadow="0 2px 4px rgba(0,0,0,0.3)"
-                zIndex={1}
+              {/* Item count badge */}
+              <Badge
+                position="absolute"
+                top="-4px"
+                right="-4px"
+                colorScheme="yellow"
+                borderRadius="full"
+                minW="24px"
+                h="24px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                fontSize="xs"
+                fontWeight="bold"
+                boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
               >
-                Selected Items
-              </Text>
-              <Text 
-                fontSize={{ base: 'sm', md: 'md' }} 
-                fontWeight="700" 
-                color="whiteAlpha.900"
-                textShadow="0 1px 2px rgba(0,0,0,0.3)"
-                zIndex={1}
-              >
-                {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)} items
-              </Text>
-              <Text 
-                fontSize={{ base: 'xs', md: 'sm' }} 
-                fontWeight="600" 
-                color="whiteAlpha.800"
-                zIndex={1}
-              >
-                {isSummaryExpanded ? 'Tap to close' : 'Tap to view'}
-              </Text>
+                {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
+              </Badge>
             </Flex>
           </Box>
 
