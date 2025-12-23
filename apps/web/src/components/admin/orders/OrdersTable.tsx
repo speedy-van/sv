@@ -980,6 +980,7 @@ export function OrdersTable({
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Type</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Route</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Time Window</Th>
+              <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Booked At</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Status</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Driver</Th>
               <Th color="#FFFFFF" bg="#111111" borderColor="#333333">Price</Th>
@@ -993,7 +994,7 @@ export function OrdersTable({
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <Tr key={`loading-${i}`}>
-                  <Td colSpan={13}>
+                  <Td colSpan={14}>
                     <Flex justify="center" py={8}>
                       <Spinner />
                     </Flex>
@@ -1002,7 +1003,7 @@ export function OrdersTable({
               ))
             ) : filteredOrders.length === 0 ? (
               <Tr>
-                <Td colSpan={13} color="#FFFFFF">
+                <Td colSpan={14} color="#FFFFFF">
                   <Flex justify="center" py={8}>
                     <Text color="#FFFFFF">No orders found</Text>
                   </Flex>
@@ -1172,6 +1173,25 @@ export function OrdersTable({
                              order.urgency === 'next-day' ? 'Next Day' : 'Scheduled'}
                           </Badge>
                         )}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="sm" color="#FFFFFF" fontWeight="medium">
+                          {order.createdAt
+                            ? format(new Date(order.createdAt), 'MMM dd, yyyy')
+                            : '-'}
+                        </Text>
+                        <Text fontSize="xs" color="#9ca3af">
+                          {order.createdAt
+                            ? format(new Date(order.createdAt), 'HH:mm')
+                            : ''}
+                        </Text>
+                        <Text fontSize="xs" color="#6b7280">
+                          {order.createdAt
+                            ? formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })
+                            : ''}
+                        </Text>
                       </VStack>
                     </Td>
                     <Td>
