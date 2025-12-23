@@ -224,6 +224,7 @@ interface OrderDetail {
   notes?: string;
   pickupTimeSlot?: string;
   serviceType?: string;
+  crewSize?: string; // Number of helpers: ONE, TWO, THREE, FOUR
   orderType?: string;
   isMultiDrop?: boolean;
   routeId?: string | null;
@@ -1484,6 +1485,19 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         {order.serviceType === 'economy' ? 'Economy' :
                          order.serviceType === 'express' ? 'Express' :
                          'Standard'}
+                      </Badge>
+                    )}
+                    {order.crewSize && (
+                      <Badge 
+                        colorScheme="orange" 
+                        size="md"
+                        title="Number of helpers"
+                      >
+                        👷 {order.crewSize === 'ONE' ? '1 Man' :
+                           order.crewSize === 'TWO' ? '2 Men' :
+                           order.crewSize === 'THREE' ? '3 Men' :
+                           order.crewSize === 'FOUR' ? '4 Men' :
+                           '2 Men'}
                       </Badge>
                     )}
                     {order.isMultiDrop || order.orderType === 'multi-drop' ? (

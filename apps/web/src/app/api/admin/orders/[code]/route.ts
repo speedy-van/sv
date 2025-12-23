@@ -162,6 +162,7 @@ export async function GET(
         accessType: order.dropoffProperty.accessType,
       } : null,
       serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
+      crewSize: order.crewSize || 'TWO', // Number of helpers (ONE, TWO, THREE, FOUR)
       orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
       isMultiDrop: order.isMultiDrop || false,
       routeId: order.routeId,

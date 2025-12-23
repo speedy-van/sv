@@ -2033,7 +2033,16 @@ export default function BookingLuxuryPage() {
                           >
                             👷 How many helpers do you need?
                           </Text>
-                          <SimpleGrid columns={4} spacing={3}>
+                          <SimpleGrid 
+                            columns={{ base: 2, sm: 4 }} 
+                            spacing={{ base: 2, md: 3 }}
+                            sx={{
+                              '@media screen and (max-width: 480px)': {
+                                gridTemplateColumns: 'repeat(2, 1fr) !important',
+                                gap: '8px !important',
+                              }
+                            }}
+                          >
                             {[
                               { value: '1', label: '1 Man', desc: 'Small items', price: 'Base' },
                               { value: '2', label: '2 Men', desc: 'Standard move', price: 'Popular', popular: true },
@@ -2049,7 +2058,7 @@ export default function BookingLuxuryPage() {
                                     console.log('👷 Crew size changed:', option.value);
                                   }}
                                   cursor="pointer"
-                                  p={{ base: 3, md: 4 }}
+                                  p={{ base: 2, md: 4 }}
                                   borderRadius="xl"
                                   border="2px solid"
                                   borderColor={isSelected ? 'blue.400' : 'whiteAlpha.200'}
@@ -2064,6 +2073,7 @@ export default function BookingLuxuryPage() {
                                     transform: 'translateY(-2px)',
                                   }}
                                   position="relative"
+                                  minH={{ base: "80px", md: "auto" }}
                                 >
                                   {option.popular && (
                                     <Badge
@@ -2078,11 +2088,12 @@ export default function BookingLuxuryPage() {
                                       Popular
                                     </Badge>
                                   )}
-                                  <VStack spacing={1}>
+                                  <VStack spacing={0.5}>
                                     <Text 
-                                      fontSize={{ base: "xl", md: "2xl" }} 
+                                      fontSize={{ base: "md", md: "2xl" }} 
                                       fontWeight="bold" 
                                       color={isSelected ? 'blue.300' : 'white'}
+                                      lineHeight="1.2"
                                     >
                                       {option.label}
                                     </Text>
@@ -2090,13 +2101,14 @@ export default function BookingLuxuryPage() {
                                       fontSize={{ base: "2xs", md: "xs" }} 
                                       color="whiteAlpha.700"
                                       textAlign="center"
+                                      display={{ base: "none", sm: "block" }}
                                     >
                                       {option.desc}
                                     </Text>
                                     <Badge 
                                       colorScheme={option.price === 'Base' ? 'green' : option.price === 'Popular' ? 'blue' : 'orange'}
                                       fontSize="2xs"
-                                      mt={1}
+                                      mt={0.5}
                                     >
                                       {option.price}
                                     </Badge>
