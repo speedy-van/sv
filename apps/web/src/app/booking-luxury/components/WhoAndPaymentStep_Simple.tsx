@@ -77,13 +77,75 @@ export default function WhoAndPaymentStepSimple({
   calculatePricing,
   calculateComprehensivePricing,
   getTotalSegmentsPrice,
+  validatePromotionCode,
+  applyPromotionCode,
+  removePromotionCode,
 }: WhoAndPaymentStepProps) {
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [promotionCode, setPromotionCode] = useState('');
+  const [isValidatingPromotion, setIsValidatingPromotion] = useState(false);
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const toast = useToast();
   const isIOSDevice = useIsIOSDevice();
+
+  // Handle promotion code application
+  const handleApplyPromotionCode = async () => {
+    if (!promotionCode.trim()) {
+      toast({
+        title: 'Invalid Code',
+        description: 'Please enter a promotion code',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!applyPromotionCode) {
+      toast({
+        title: 'Error',
+        description: 'Promotion validation is not available',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsValidatingPromotion(true);
+    try {
+      const result = await applyPromotionCode(promotionCode.trim());
+      
+      if (result.success && result.promotion) {
+        setPromotionCode('');
+        toast({
+          title: 'Promotion Applied! 🎉',
+          description: `${result.promotion.name} - You saved £${result.promotion.discountAmount?.toFixed(2) || '0.00'}!`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Invalid Promotion Code',
+          description: result.error || 'Please check your code and try again',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error applying promotion:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to apply promotion code. Please try again.',
+        status: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsValidatingPromotion(false);
+    }
+  };
   
   // ✅ FIX: Track previous items and crewSize to detect changes and trigger price recalculation
   // This replaces the setTimeout workaround with proper React state management
@@ -1207,6 +1269,121 @@ export default function WhoAndPaymentStepSimple({
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
+              {/* Promotion Code Section */}
+              <VStack spacing={4} align="stretch">
+                <Heading size="sm" color="white" fontWeight="600">
+                  🎟️ Promotion Code
+                </Heading>
+                
+                {formData.step2.promotionDetails ? (
+                  // Show applied promotion
+                  <Box
+                    bg="rgba(16, 185, 129, 0.15)"
+                    border="2px solid"
+                    borderColor="rgba(16, 185, 129, 0.4)"
+                    borderRadius="xl"
+                    p={4}
+                  >
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between" align="center">
+                        <VStack align="start" spacing={1}>
+                          <Text fontWeight="bold" color="white" fontSize="md">
+                            {formData.step2.promotionDetails.name}
+                          </Text>
+                          {formData.step2.promotionDetails.description && (
+                            <Text fontSize="sm" color="whiteAlpha.700">
+                              {formData.step2.promotionDetails.description}
+                            </Text>
+                          )}
+                        </VStack>
+                        <Button
+                          size="sm"
+                          colorScheme="red"
+                          variant="outline"
+                          onClick={() => {
+                            if (removePromotionCode) {
+                              removePromotionCode();
+                              toast({
+                                title: 'Promotion Removed',
+                                description: 'Promotion code has been removed',
+                                status: 'info',
+                                duration: 3000,
+                              });
+                            }
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </HStack>
+                      
+                      <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                      
+                      <HStack justify="space-between" align="center">
+                        <Text fontSize="sm" color="whiteAlpha.700">
+                          Discount:
+                        </Text>
+                        <Text fontWeight="bold" color="green.400" fontSize="lg">
+                          -£{formData.step2.promotionDetails.discountAmount?.toFixed(2) || '0.00'}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack justify="space-between" align="center">
+                        <Text fontSize="sm" color="whiteAlpha.600" textDecoration="line-through">
+                          Original: £{formData.step2.promotionDetails.originalAmount?.toFixed(2) || actualPrice.toFixed(2)}
+                        </Text>
+                        <Text fontWeight="bold" color="green.400" fontSize="xl">
+                          Final: £{formData.step2.promotionDetails.finalAmount?.toFixed(2) || actualPrice.toFixed(2)}
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  </Box>
+                ) : (
+                  // Show promotion code input
+                  <VStack spacing={3} align="stretch">
+                    <HStack spacing={2}>
+                      <Input
+                        placeholder="Enter code (e.g., SUMMER10)"
+                        value={promotionCode}
+                        onChange={(e) => setPromotionCode(e.target.value.toUpperCase())}
+                        bg="rgba(0, 0, 0, 0.3)"
+                        border="1px solid"
+                        borderColor="rgba(251, 146, 60, 0.3)"
+                        color="white"
+                        size="md"
+                        _hover={{ borderColor: 'rgba(251, 146, 60, 0.5)' }}
+                        _focus={{ borderColor: 'orange.500', boxShadow: '0 0 0 1px rgba(251, 146, 60, 0.3)' }}
+                        textTransform="uppercase"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && promotionCode.trim()) {
+                            handleApplyPromotionCode();
+                          }
+                        }}
+                        flex={1}
+                      />
+                      <Button
+                        bg="linear-gradient(135deg, #FB923C 0%, #EA580C 100%)"
+                        color="white"
+                        onClick={handleApplyPromotionCode}
+                        isLoading={isValidatingPromotion}
+                        loadingText="Applying..."
+                        disabled={!promotionCode.trim() || isValidatingPromotion}
+                        size="md"
+                        px={6}
+                        fontWeight="bold"
+                        _hover={{
+                          bg: 'linear-gradient(135deg, #EA580C 0%, #DC2626 100%)',
+                          transform: 'translateY(-1px)',
+                        }}
+                      >
+                        Apply
+                      </Button>
+                    </HStack>
+                  </VStack>
+                )}
+              </VStack>
+
+              <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+
               {/* Terms & Conditions */}
               <VStack spacing={3} align="start">
                 <Checkbox
@@ -1293,8 +1470,10 @@ export default function WhoAndPaymentStepSimple({
                   ),
                   pricing: {
                     ...(formData.step1.pricing as any),
-                    total: actualPrice, // Use actualPrice which respects selectedService
+                    total: formData.step2.promotionDetails?.finalAmount || actualPrice, // Use promotion final amount if applied
                   } as any,
+                  promotionCode: formData.step2.promotionCode,
+                  promotionDetails: formData.step2.promotionDetails,
                   serviceType: selectedService,
                   // Crew size (number of helpers)
                   crewSize: formData.step1.crewSize || '2',
@@ -1310,7 +1489,7 @@ export default function WhoAndPaymentStepSimple({
                   // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
                   segments: segments.length > 1 ? segments : undefined,
                 }}
-                amount={actualPrice}
+                amount={formData.step2.promotionDetails?.finalAmount || actualPrice}
                 disabled={
                   !formData.step2.customerDetails.firstName ||
                   !formData.step2.customerDetails.lastName ||

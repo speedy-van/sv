@@ -235,12 +235,12 @@ export default function ContentPage() {
                         <Td>
                           <Text>
                             {promo.type === 'percentage'
-                              ? `${promo.value}%`
-                              : `£${promo.value.toFixed(2)}`}
+                              ? `${Number(promo.value)}%`
+                              : `£${Number(promo.value).toFixed(2)}`}
                           </Text>
                         </Td>
                         <Td>
-                          <Text>£{promo.minSpend.toFixed(2)}</Text>
+                          <Text>£{Number(promo.minSpend).toFixed(2)}</Text>
                         </Td>
                         <Td>
                           <Text fontSize="sm">
