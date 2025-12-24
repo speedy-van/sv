@@ -45,6 +45,7 @@ import {
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import FloatingCustomerChatButton from '@/components/customer/FloatingCustomerChatButton';
 
 const SUPPORT_PHONE_DISPLAY = '01202 129746';
 const SUPPORT_PHONE_TEL = '01202129746';
@@ -1143,6 +1144,9 @@ export default function ContactPage() {
           </MotionBox>
         </VStack>
       </Container>
+      
+      {/* Floating Chat Button */}
+      <FloatingCustomerChatButton />
     </Box>
     </>
   );

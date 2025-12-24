@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UnifiedEmailService } from '@/lib/email/UnifiedEmailService';
+import { getPusherServer } from '@/lib/pusher';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -46,6 +47,28 @@ export async function POST(request: NextRequest) {
       contactInquiryId = contactInquiry.id;
       submittedAt = contactInquiry.createdAt.toISOString();
       console.log('✅ Contact inquiry saved to database:', contactInquiryId);
+      
+      // Send Pusher notification for Live Chat messages
+      if (body.source === 'live-chat') {
+        try {
+          const pusher = getPusherServer();
+          await pusher.trigger('admin-notifications', 'live-chat-message', {
+            type: 'live-chat-message',
+            data: {
+              inquiryId: contactInquiry.id,
+              customerName: name,
+              customerEmail: email,
+              message: message,
+              timestamp: submittedAt,
+              chatSessionId: body.chatSessionId || null,
+            },
+          });
+          console.log('✅ Live chat notification sent to admin');
+        } catch (pusherError) {
+          console.error('⚠️ Failed to send live chat notification:', pusherError);
+          // Don't fail the request if Pusher fails
+        }
+      }
     } catch (dbError) {
       // Log database error but continue to send email
       console.error('⚠️ Database error (non-critical) - inquiry logged to console:', {

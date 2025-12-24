@@ -35,6 +35,71 @@ const pulseAnimation = keyframes`
   50% { opacity: 0.7; transform: scale(1.05); }
 `;
 
+// Function to play chat notification sound
+const playChatNotificationSound = () => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    // Use Web Audio API to create a pleasant notification sound
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Create a pleasant two-tone chime sound for chat notifications
+    // First tone (higher)
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.type = 'sine';
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+    
+    // Play second tone after a short delay
+    setTimeout(() => {
+      try {
+        const audioContext2 = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator2 = audioContext2.createOscillator();
+        const gainNode2 = audioContext2.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext2.destination);
+        
+        oscillator2.frequency.setValueAtTime(1000, audioContext2.currentTime);
+        oscillator2.frequency.setValueAtTime(1200, audioContext2.currentTime + 0.1);
+        
+        gainNode2.gain.setValueAtTime(0, audioContext2.currentTime);
+        gainNode2.gain.linearRampToValueAtTime(0.3, audioContext2.currentTime + 0.01);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext2.currentTime + 0.3);
+        
+        oscillator2.type = 'sine';
+        oscillator2.start(audioContext2.currentTime);
+        oscillator2.stop(audioContext2.currentTime + 0.3);
+      } catch (e) {
+        // Ignore errors for second tone
+      }
+    }, 150);
+  } catch (e) {
+    console.log('Audio notification not available:', e);
+    // Fallback: Try to play a simple beep using HTML5 Audio
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURAJR6Hh8sBrJAUwgM/y2IU1CBxou+3nn00QDFCn4/C2YxwGOJHX8sx5LAUkd8fw3ZBAC');
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        // Ignore audio play errors
+      });
+    } catch (fallbackError) {
+      // Ignore all audio errors
+    }
+  }
+};
+
 /**
  * Unified Operations Dashboard
  * 
@@ -322,6 +387,46 @@ export default function UnifiedOperationsDashboard() {
         } catch (e) {
           console.log('Audio notification not available');
         }
+      });
+
+      // ✅ NEW: Listen for live chat messages
+      notificationsChannel.bind('live-chat-message', (data: any) => {
+        console.log('💬 Live chat message received:', data);
+        
+        const toastId = toast({
+          title: '💬 New Live Chat Message',
+          description: (
+            <Box>
+              <Text fontWeight="bold" fontSize="md" mb={1}>
+                {data.data.customerName} - Live Chat Support
+              </Text>
+              <Text fontSize="sm" noOfLines={2}>
+                {data.data.message.substring(0, 100)}
+                {data.data.message.length > 100 ? '...' : ''}
+              </Text>
+              <Text fontSize="xs" opacity={0.8} mt={1}>
+                Email: {data.data.customerEmail}
+              </Text>
+              <Button
+                size="xs"
+                mt={2}
+                colorScheme="blue"
+                onClick={() => {
+                  window.location.href = `/admin/contact-inquiries`;
+                }}
+              >
+                View Message
+              </Button>
+            </Box>
+          ),
+          status: 'info',
+          duration: 8000,
+          isClosable: true,
+          position: 'top-right',
+        });
+        
+        // Play notification sound
+        playChatNotificationSound();
       });
 
       // ✅ NEW: Listen for new journey opportunities

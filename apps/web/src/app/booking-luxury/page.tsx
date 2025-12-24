@@ -42,6 +42,7 @@ import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
+import FloatingCustomerChatButton from '@/components/customer/FloatingCustomerChatButton';
 
 // Removed ItemImage component - using icons instead
 
@@ -2317,6 +2318,9 @@ export default function BookingLuxuryPage() {
       )}
 
       {/* Bottom navigation removed as per request */}
+      
+      {/* Floating Chat Button */}
+      <FloatingCustomerChatButton />
     </Box>
     </>
   );
