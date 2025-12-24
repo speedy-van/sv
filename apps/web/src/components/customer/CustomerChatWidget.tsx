@@ -249,7 +249,7 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
         bg="white"
         borderRadius={{ base: 0, md: '16px 16px 0 0' }}
         boxShadow="0 -4px 20px rgba(0, 0, 0, 0.15)"
-        zIndex={9999}
+        zIndex={10001}
         display="flex"
         flexDirection="column"
         overflow="hidden"

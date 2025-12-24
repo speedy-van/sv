@@ -21,11 +21,19 @@ export default function FloatingCustomerChatButton({
 }: FloatingCustomerChatButtonProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Mount check
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check if we should show the button on current page
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!mounted || typeof window === 'undefined') {
+      return;
+    }
 
     const currentPath = window.location.pathname;
 
@@ -48,8 +56,9 @@ export default function FloatingCustomerChatButton({
       return;
     }
 
+    // Default: show on all public pages
     setIsVisible(true);
-  }, [showOnPages, hideOnPages]);
+  }, [mounted, showOnPages, hideOnPages]);
 
   // Fetch unread count (optional - can be implemented later)
   useEffect(() => {
@@ -57,25 +66,26 @@ export default function FloatingCustomerChatButton({
     // This would require checking for active chat sessions with unread messages
   }, []);
 
-  if (!isVisible) {
+  if (!mounted || !isVisible) {
     return null;
   }
 
   return (
     <>
       {/* Floating Chat Button */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!isOpen && (
           <MotionBox
             position="fixed"
-            bottom={{ base: '20px', md: '30px' }}
+            bottom={{ base: '80px', md: '140px' }}
             right={position === 'bottom-right' ? { base: '20px', md: '30px' } : 'auto'}
             left={position === 'bottom-left' ? { base: '20px', md: '30px' } : 'auto'}
-            zIndex={9998}
+            zIndex={10000}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.3, type: 'spring' }}
+            style={{ pointerEvents: 'auto' }}
           >
             <Button
               onClick={onOpen}
