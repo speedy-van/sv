@@ -2268,6 +2268,7 @@ export default function BookingLuxuryPage() {
                   standardPrice={calculateStandardPrice()}
                   priorityPrice={calculatePriorityPrice()}
                   calculatePricing={calculatePricing}
+                  calculateComprehensivePricing={calculateComprehensivePricing}
                   validatePromotionCode={validatePromotionCode}
                   applyPromotionCode={applyPromotionCode}
                   removePromotionCode={removePromotionCode}

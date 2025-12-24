@@ -60,6 +60,7 @@ interface WhoAndPaymentStepProps {
   standardPrice?: number;
   priorityPrice?: number;
   calculatePricing?: () => Promise<boolean>;
+  calculateComprehensivePricing?: () => Promise<void>;
   validatePromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
   applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
   removePromotionCode?: () => void;
@@ -74,6 +75,7 @@ export default function WhoAndPaymentStepSimple({
   standardPrice = 0,
   priorityPrice = 0,
   calculatePricing,
+  calculateComprehensivePricing,
   getTotalSegmentsPrice,
 }: WhoAndPaymentStepProps) {
   const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
@@ -310,7 +312,7 @@ export default function WhoAndPaymentStepSimple({
   );
 
   const incrementItem = useCallback(
-    (itemId: string) => {
+    async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
 
@@ -340,7 +342,35 @@ export default function WhoAndPaymentStepSimple({
           }
         }
 
-        updateFormData('step1', { segments: updatedSegments });
+        // Update ALL segments with the same items (deep copy for each)
+        const finalSegments = updatedSegments.map((segment) => ({
+          ...segment,
+          items: updatedSegments[0].items?.map(item => ({ ...item })) || []
+        }));
+
+        updateFormData('step1', { 
+          segments: finalSegments,
+          items: finalSegments[0].items?.map(item => ({ ...item })) || []
+        });
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       } else {
         // Single-leg: update global items
         const currentItems = formData.step1.items || [];
@@ -350,13 +380,32 @@ export default function WhoAndPaymentStepSimple({
             : item
         );
         applyItemUpdates(nextItems);
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
   );
 
   const decrementItem = useCallback(
-    (itemId: string) => {
+    async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
 
@@ -412,7 +461,35 @@ export default function WhoAndPaymentStepSimple({
           }
         }
 
-        updateFormData('step1', { segments: updatedSegments });
+        // Update ALL segments with the same items (deep copy for each)
+        const finalSegments = updatedSegments.map((segment) => ({
+          ...segment,
+          items: updatedSegments[0].items?.map(item => ({ ...item })) || []
+        }));
+
+        updateFormData('step1', { 
+          segments: finalSegments,
+          items: finalSegments[0].items?.map(item => ({ ...item })) || []
+        });
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       } else {
         // Single-leg: update global items
         const currentItems = formData.step1.items || [];
@@ -432,13 +509,32 @@ export default function WhoAndPaymentStepSimple({
           );
           applyItemUpdates(nextItems);
         }
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
   );
 
   const removeItem = useCallback(
-    (itemId: string) => {
+    async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
 
@@ -453,15 +549,62 @@ export default function WhoAndPaymentStepSimple({
           };
         });
 
-        updateFormData('step1', { segments: updatedSegments });
+        // Update ALL segments with the same items (deep copy for each)
+        const finalSegments = updatedSegments.map((segment) => ({
+          ...segment,
+          items: updatedSegments[0].items?.map(item => ({ ...item })) || []
+        }));
+
+        updateFormData('step1', { 
+          segments: finalSegments,
+          items: finalSegments[0].items?.map(item => ({ ...item })) || []
+        });
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       } else {
         // Single-leg: remove from global items
         const currentItems = formData.step1.items || [];
         const nextItems = currentItems.filter((item) => item.id !== itemId);
         applyItemUpdates(nextItems);
+
+        // CRITICAL: Recalculate pricing after items change
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
+        try {
+          if (calculateComprehensivePricing) {
+            await calculateComprehensivePricing();
+          } else if (calculatePricing) {
+            await calculatePricing();
+          }
+        } catch (error) {
+          console.error('Failed to recalculate pricing after item change:', error);
+          toast({
+            title: 'Price update failed',
+            description: 'Please refresh the page to see updated prices',
+            status: 'warning',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
   );
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
@@ -687,29 +830,17 @@ export default function WhoAndPaymentStepSimple({
                     segments={formData.step1.segments || []}
                     isMultiLeg={(formData.step1.segments || []).length > 1}
                     globalItems={formData.step1.items || []}
-                    onIncrement={(segmentIndex, itemId) => {
+                    onIncrement={async (segmentIndex, itemId) => {
                       // Allow editing items in Step 3 and trigger price recalculation
-                      incrementItem(itemId);
-                      // Trigger price recalculation after item change
-                      if (calculatePricing) {
-                        setTimeout(() => calculatePricing(), 100);
-                      }
+                      await incrementItem(itemId);
                     }}
-                    onDecrement={(segmentIndex, itemId) => {
+                    onDecrement={async (segmentIndex, itemId) => {
                       // Allow editing items in Step 3 and trigger price recalculation
-                      decrementItem(itemId);
-                      // Trigger price recalculation after item change
-                      if (calculatePricing) {
-                        setTimeout(() => calculatePricing(), 100);
-                      }
+                      await decrementItem(itemId);
                     }}
-                    onRemove={(segmentIndex, itemId) => {
+                    onRemove={async (segmentIndex, itemId) => {
                       // Allow editing items in Step 3 and trigger price recalculation
-                      removeItem(itemId);
-                      // Trigger price recalculation after item change
-                      if (calculatePricing) {
-                        setTimeout(() => calculatePricing(), 100);
-                      }
+                      await removeItem(itemId);
                     }}
                     showPricing={false}
                     readonly={false}
