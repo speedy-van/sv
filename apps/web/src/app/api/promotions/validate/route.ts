@@ -5,10 +5,16 @@ import { z } from 'zod';
 // Validation schema for promotion code request
 const validatePromotionSchema = z.object({
   code: z.string().min(1, 'Promotion code is required'),
-  amount: z.number().positive('Amount must be positive'),
-  customerEmail: z.string().email('Valid email is required').optional(),
-  pickupPostcode: z.string().optional(),
-  serviceType: z.string().optional(),
+  amount: z.number().positive('Amount must be positive').or(z.string().transform((val) => {
+    const num = parseFloat(val);
+    if (isNaN(num) || num <= 0) {
+      throw new Error('Amount must be a positive number');
+    }
+    return num;
+  })),
+  customerEmail: z.string().email('Valid email is required').optional().or(z.literal('')),
+  pickupPostcode: z.string().optional().or(z.literal('')),
+  serviceType: z.string().optional().or(z.literal('')),
 });
 
 export async function POST(request: NextRequest) {

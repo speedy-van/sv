@@ -102,7 +102,7 @@ export default function WhoAndPaymentStepSimple({
       return;
     }
 
-    if (!applyPromotionCode) {
+    if (!validatePromotionCode || !applyPromotionCode) {
       toast({
         title: 'Error',
         description: 'Promotion validation is not available',
@@ -114,6 +114,50 @@ export default function WhoAndPaymentStepSimple({
 
     setIsValidatingPromotion(true);
     try {
+      // Use actualPrice (the current displayed price) instead of formData.step1.pricing.total
+      // This ensures we validate against the correct price (after service selection)
+      const currentPrice = actualPrice;
+      
+      // First validate the promotion code with the current price
+      const validationResult = await fetch('/api/promotions/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: promotionCode.trim(),
+          amount: currentPrice,
+          customerEmail: formData.step2.customerDetails.email || undefined,
+          pickupPostcode: formData.step1.pickupAddress?.postcode || '',
+          serviceType: selectedService,
+        }),
+      });
+
+      const validationData = await validationResult.json();
+
+      if (!validationResult.ok) {
+        toast({
+          title: 'Error',
+          description: validationData.error || 'Failed to validate promotion code',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (!validationData.valid) {
+        toast({
+          title: 'Invalid Promotion Code',
+          description: validationData.error || 'Please check your code and try again',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // If validation succeeds, apply the promotion
       const result = await applyPromotionCode(promotionCode.trim());
       
       if (result.success && result.promotion) {
@@ -246,16 +290,6 @@ export default function WhoAndPaymentStepSimple({
   // For multi-leg without segment pricing, use standardPrice (which now has fallback)
   const standardBase = hasMultiLegPrice ? segmentTotal : safeStandardPrice;
 
-  console.log('🔴 PRICING DEBUG:', {
-    hasMultiLegPrice,
-    isMultiLegWithoutPricing,
-    segmentsLength: segments.length,
-    segmentTotal,
-    standardBase,
-    safeStandardPrice,
-    willCalculateFromBase: hasMultiLegPrice || isMultiLegWithoutPricing
-  });
-
   // ✅ CRITICAL FIX: For multi-leg, ALWAYS calculate economy/express from standardBase
   // The props from parent contain BASE price (same for all tiers in multi-leg)
   // We must apply multipliers here to get correct tiered pricing
@@ -263,7 +297,6 @@ export default function WhoAndPaymentStepSimple({
   if (hasMultiLegPrice || isMultiLegWithoutPricing) {
     // Multi-leg: always calculate from standardBase
     safeEconomyPrice = parseFloat((standardBase * 0.85).toFixed(2));
-    console.log('🟢 Multi-leg economy calculated:', safeEconomyPrice, '= ', standardBase, '* 0.85');
   } else {
     // Single-leg: use props (which already have multipliers from pricingTiers)
     const fromProps = sanitizePrice(economyPrice);
@@ -274,7 +307,6 @@ export default function WhoAndPaymentStepSimple({
   if (hasMultiLegPrice || isMultiLegWithoutPricing) {
     // Multi-leg: always calculate from standardBase
     safeExpressPrice = parseFloat((standardBase * 1.5).toFixed(2));
-    console.log('🟢 Multi-leg express calculated:', safeExpressPrice, '= ', standardBase, '* 1.5');
   } else {
     // Single-leg: use props (which already have multipliers from pricingTiers)
     const fromProps = sanitizePrice(priorityPrice);
@@ -305,23 +337,26 @@ export default function WhoAndPaymentStepSimple({
         : segmentTotal)         // Standard: segment total as-is
     : selectedBase;  // Single-leg: use props which already have multipliers
 
-  console.log('💰 Step 3 Pricing Sanity Check:', {
-    economyFromProps: economyPrice,
-    standardFromProps: standardPrice,
-    expressFromProps: priorityPrice,
-    safeEconomyPrice,
-    safeStandardPrice,
-    safeExpressPrice,
-    selectedService,
-    isMultiLeg,
-    isMultiLegWithoutPricing,
-    hasMultiLegPrice,
-    segmentCount: segments.length,
-    segmentTotal,
-    standardBase,
-    totalSegmentsPrice: hasMultiLegPrice ? segmentTotal : 'N/A (using standardBase fallback)',
-    actualPrice
-  });
+  // Debug logging only in development mode to reduce console noise
+  if (process.env.NODE_ENV === 'development') {
+    console.log('💰 Step 3 Pricing Sanity Check:', {
+      economyFromProps: economyPrice,
+      standardFromProps: standardPrice,
+      expressFromProps: priorityPrice,
+      safeEconomyPrice,
+      safeStandardPrice,
+      safeExpressPrice,
+      selectedService,
+      isMultiLeg,
+      isMultiLegWithoutPricing,
+      hasMultiLegPrice,
+      segmentCount: segments.length,
+      segmentTotal,
+      standardBase,
+      totalSegmentsPrice: hasMultiLegPrice ? segmentTotal : 'N/A (using standardBase fallback)',
+      actualPrice
+    });
+  }
 
   // ✅ FIXED: For multi-leg, get items from first segment (all segments have same items)
   // This ensures consistency between Step 2 and Step 3
@@ -645,7 +680,10 @@ export default function WhoAndPaymentStepSimple({
       ? safeExpressPrice
       : standardBase;
     
-    console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
+    // Debug logging only in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
+    }
     
     // Restore scroll position after update (mobile only)
     if (isMobile && scrollY !== undefined) {
@@ -1340,7 +1378,7 @@ export default function WhoAndPaymentStepSimple({
                 ) : (
                   // Show promotion code input
                   <VStack spacing={3} align="stretch">
-                    <HStack spacing={2}>
+                    <VStack spacing={3} w="full">
                       <Input
                         placeholder="Enter code (e.g., SUMMER10)"
                         value={promotionCode}
@@ -1349,7 +1387,8 @@ export default function WhoAndPaymentStepSimple({
                         border="1px solid"
                         borderColor="rgba(251, 146, 60, 0.3)"
                         color="white"
-                        size="md"
+                        size="lg"
+                        h={{ base: '48px', sm: '44px' }}
                         _hover={{ borderColor: 'rgba(251, 146, 60, 0.5)' }}
                         _focus={{ borderColor: 'orange.500', boxShadow: '0 0 0 1px rgba(251, 146, 60, 0.3)' }}
                         textTransform="uppercase"
@@ -1358,7 +1397,7 @@ export default function WhoAndPaymentStepSimple({
                             handleApplyPromotionCode();
                           }
                         }}
-                        flex={1}
+                        w="full"
                       />
                       <Button
                         bg="linear-gradient(135deg, #FB923C 0%, #EA580C 100%)"
@@ -1367,17 +1406,23 @@ export default function WhoAndPaymentStepSimple({
                         isLoading={isValidatingPromotion}
                         loadingText="Applying..."
                         disabled={!promotionCode.trim() || isValidatingPromotion}
-                        size="md"
-                        px={6}
+                        size="lg"
+                        h={{ base: '48px', sm: '44px' }}
+                        px={{ base: 4, sm: 6 }}
                         fontWeight="bold"
+                        w="full"
                         _hover={{
                           bg: 'linear-gradient(135deg, #EA580C 0%, #DC2626 100%)',
                           transform: 'translateY(-1px)',
                         }}
+                        _disabled={{
+                          opacity: 0.5,
+                          cursor: 'not-allowed',
+                        }}
                       >
                         Apply
                       </Button>
-                    </HStack>
+                    </VStack>
                   </VStack>
                 )}
               </VStack>

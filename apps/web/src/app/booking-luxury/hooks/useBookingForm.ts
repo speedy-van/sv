@@ -539,9 +539,16 @@ export function useBookingForm() {
   }, []);
 
   // Validate and apply promotion code
-  const validatePromotionCode = useCallback(async (code: string): Promise<{ success: boolean; error?: string; promotion?: any }> => {
+  const validatePromotionCode = useCallback(async (code: string, amount?: number): Promise<{ success: boolean; error?: string; promotion?: any }> => {
     if (!code.trim()) {
       return { success: false, error: 'Please enter a promotion code' };
+    }
+
+    // Use provided amount or fallback to formData pricing total
+    const priceToUse = amount ?? formData.step1.pricing?.total ?? 0;
+    
+    if (!priceToUse || priceToUse <= 0) {
+      return { success: false, error: 'Please calculate pricing first before applying promotion code' };
     }
 
     try {
@@ -552,17 +559,17 @@ export function useBookingForm() {
         },
         body: JSON.stringify({
           code: code.trim(),
-          amount: formData.step1.pricing.total,
-          customerEmail: formData.step2.customerDetails.email,
+          amount: priceToUse,
+          customerEmail: formData.step2.customerDetails.email || undefined,
           pickupPostcode: formData.step1.pickupAddress?.postcode || '',
-          serviceType: formData.step1.serviceType,
+          serviceType: formData.step1.serviceType || 'standard',
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        return { success: false, error: result.error || 'Failed to validate promotion code' };
+        return { success: false, error: result.error || result.details?.[0]?.message || 'Failed to validate promotion code' };
       }
 
       if (!result.valid) {
@@ -574,7 +581,7 @@ export function useBookingForm() {
       console.error('Promotion validation error:', error);
       return { success: false, error: 'Failed to validate promotion code' };
     }
-  }, [formData.step1.pricing.total, formData.step2.customerDetails.email, formData.step1.pickupAddress?.postcode, formData.step1.serviceType]);
+  }, [formData.step1.pricing?.total, formData.step2.customerDetails.email, formData.step1.pickupAddress?.postcode, formData.step1.serviceType]);
 
   // Apply promotion code
   const applyPromotionCode = useCallback(async (code: string) => {

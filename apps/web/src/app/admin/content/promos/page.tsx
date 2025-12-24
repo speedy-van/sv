@@ -164,9 +164,9 @@ export default function PromotionsPage() {
       name: promo.name,
       description: promo.description || '',
       type: promo.type,
-      value: promo.value,
-      minSpend: promo.minSpend,
-      maxDiscount: promo.maxDiscount,
+      value: Number(promo.value),
+      minSpend: Number(promo.minSpend),
+      maxDiscount: Number(promo.maxDiscount),
       usageLimit: promo.usageLimit,
       validFrom: new Date(promo.validFrom).toISOString().split('T')[0],
       validTo: new Date(promo.validTo).toISOString().split('T')[0],
@@ -189,8 +189,14 @@ export default function PromotionsPage() {
     }
 
     try {
-      const response = await fetch('/api/admin/content/promos', {
-        method: 'POST',
+      const url = selectedPromo
+        ? `/api/admin/content/promos/${selectedPromo.id}`
+        : '/api/admin/content/promos';
+      
+      const method = selectedPromo ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -198,7 +204,9 @@ export default function PromotionsPage() {
       if (response.ok) {
         toast({
           title: 'Success',
-          description: 'Promotion saved successfully',
+          description: selectedPromo
+            ? 'Promotion updated successfully'
+            : 'Promotion created successfully',
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -220,6 +228,47 @@ export default function PromotionsPage() {
       toast({
         title: 'Error',
         description: 'Failed to save promotion',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDelete = async (promo: Promotion) => {
+    if (!confirm(`Are you sure you want to delete promotion "${promo.name}" (${promo.code})? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/content/promos/${promo.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Promotion deleted successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        fetchPromotions();
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Error',
+          description: error.error || 'Failed to delete promotion',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting promotion:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete promotion',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -460,7 +509,8 @@ export default function PromotionsPage() {
                           icon={<FiTrash2 />}
                           color="red.500"
                           bg="gray.800"
-                          _hover={{ bg: 'gray.700' }}
+                          _hover={{ bg: 'red.900' }}
+                          onClick={() => handleDelete(promo)}
                         >
                           Delete
                         </MenuItem>
@@ -482,14 +532,14 @@ export default function PromotionsPage() {
                       <HStack>
                         {promo.type === 'percentage' ? <FiPercent /> : <FiDollarSign />}
                         <Text fontWeight="bold" fontSize="lg">
-                          {promo.type === 'percentage' ? `${promo.value}%` : `£${promo.value}`}
+                          {promo.type === 'percentage' ? `${Number(promo.value)}%` : `£${Number(promo.value)}`}
                         </Text>
                       </HStack>
                     </Box>
                     <Box>
                       <Text fontSize="xs" color="gray.500" mb={1}>Min Spend</Text>
                       <Text fontWeight="semibold">
-                        {promo.minSpend > 0 ? `£${promo.minSpend}` : 'No minimum'}
+                        {Number(promo.minSpend) > 0 ? `£${Number(promo.minSpend)}` : 'No minimum'}
                       </Text>
                     </Box>
                   </SimpleGrid>
