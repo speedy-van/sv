@@ -51,6 +51,8 @@ export default function UnifiedOperationsDashboard() {
   const [declinedNotifications, setDeclinedNotifications] = useState<string[]>([]);
   const [acceptedNotifications, setAcceptedNotifications] = useState<string[]>([]);
   const [inProgressNotifications, setInProgressNotifications] = useState<string[]>([]);
+  const [returnJourneyNotifications, setReturnJourneyNotifications] = useState<any[]>([]);
+  const [newJourneyNotifications, setNewJourneyNotifications] = useState<any[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const toast = useToast();
@@ -240,6 +242,173 @@ export default function UnifiedOperationsDashboard() {
         console.log('✅ Job accepted (routes channel):', data);
         setDeclinedNotifications(prev => prev.filter(id => id !== data.jobId));
         setAcceptedNotifications(prev => [...prev, data.jobId]);
+      });
+
+      // ✅ NEW: Listen for return journey opportunities
+      notificationsChannel.bind('return-journey-available', (data: any) => {
+        console.log('🔄 Return journey opportunity:', data);
+        
+        setReturnJourneyNotifications(prev => [...prev, data]);
+        
+        toast({
+          title: '🔄 RETURN JOURNEY OPPORTUNITY',
+          description: (
+            <Box>
+              <Text fontWeight="bold" fontSize="md" mb={1}>
+                New return journey match available!
+              </Text>
+              <Text fontSize="sm">
+                {data.data.opportunity.from.postcode || data.data.opportunity.from} → {data.data.opportunity.to.postcode || data.data.opportunity.to}
+              </Text>
+              {data.data.opportunity.from.address && (
+                <Text fontSize="xs" opacity={0.8}>
+                  From: {data.data.opportunity.from.address}
+                </Text>
+              )}
+              {data.data.opportunity.to.address && (
+                <Text fontSize="xs" opacity={0.8}>
+                  To: {data.data.opportunity.to.address}
+                </Text>
+              )}
+              {data.data.opportunity.itemsCount > 0 && (
+                <Text fontSize="xs" mt={1} opacity={0.9}>
+                  Items: {data.data.opportunity.itemsCount}
+                </Text>
+              )}
+              <Text fontSize="sm">
+                Customer saves: £{data.data.opportunity.discount.toFixed(2)} ({data.data.opportunity.discountPercentage}%)
+              </Text>
+              <Text fontSize="sm">
+                Driver earns: £{data.data.opportunity.driverEarnings.toFixed(2)}
+              </Text>
+              <Text fontSize="xs" mt={1} opacity={0.9}>
+                Match Score: {data.data.opportunity.matchScore}%
+              </Text>
+              {data.data.journeyOpportunityId && (
+                <Button
+                  size="xs"
+                  mt={2}
+                  colorScheme="blue"
+                  onClick={() => {
+                    // Open full details in new tab or modal
+                    window.open(`/admin/journey-opportunities/${data.data.journeyOpportunityId}`, '_blank');
+                  }}
+                >
+                  View Full Details
+                </Button>
+              )}
+            </Box>
+          ),
+          status: 'info',
+          duration: 15000,
+          isClosable: true,
+          position: 'top',
+        });
+
+        // Optional: Play notification sound
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = 600; // Medium pitch for info
+          gainNode.gain.value = 0.2;
+          
+          oscillator.start();
+          setTimeout(() => oscillator.stop(), 150);
+        } catch (e) {
+          console.log('Audio notification not available');
+        }
+      });
+
+      // ✅ NEW: Listen for new journey opportunities
+      notificationsChannel.bind('new-journey-available', (data: any) => {
+        console.log('🆕 New journey available:', data);
+        
+        setNewJourneyNotifications(prev => [...prev, data]);
+        
+        toast({
+          title: '🆕 NEW JOURNEY AVAILABLE',
+          description: (
+            <Box>
+              <Text fontWeight="bold" fontSize="md" mb={1}>
+                {data.data.journey.customer} - New booking!
+              </Text>
+              <Text fontSize="sm">
+                {data.data.journey.from.postcode || data.data.journey.from} → {data.data.journey.to.postcode || data.data.journey.to}
+              </Text>
+              {data.data.journey.from.address && (
+                <Text fontSize="xs" opacity={0.8}>
+                  From: {data.data.journey.from.address}
+                </Text>
+              )}
+              {data.data.journey.to.address && (
+                <Text fontSize="xs" opacity={0.8}>
+                  To: {data.data.journey.to.address}
+                </Text>
+              )}
+              <Text fontSize="sm">
+                Price: £{data.data.journey.price.toFixed(2)} | Items: {data.data.journey.itemsCount}
+              </Text>
+              {data.data.journey.items && data.data.journey.items.length > 0 && (
+                <Text fontSize="xs" opacity={0.9}>
+                  Items: {data.data.journey.items.map((item: any) => `${item.name} (x${item.quantity})`).join(', ')}
+                </Text>
+              )}
+              <Text fontSize="sm">
+                Service: {data.data.journey.serviceLevel.toUpperCase()} | Crew: {data.data.journey.crewSize || '2'} | Distance: {data.data.journey.distanceMiles?.toFixed(1) || '0'} miles
+              </Text>
+              {data.data.customer?.email && (
+                <Text fontSize="xs" opacity={0.8}>
+                  Customer: {data.data.customer.email} | {data.data.customer.phone}
+                </Text>
+              )}
+              {data.data.journey.multiDropPotential && (
+                <Text fontSize="xs" mt={1} color="green.300">
+                  💰 Multi-drop potential: Save £{data.data.journey.potentialSavings.toFixed(2)}
+                </Text>
+              )}
+              {data.data.journeyOpportunityId && (
+                <Button
+                  size="xs"
+                  mt={2}
+                  colorScheme="green"
+                  onClick={() => {
+                    // Open full details in new tab
+                    window.open(`/admin/journey-opportunities/${data.data.journeyOpportunityId}`, '_blank');
+                  }}
+                >
+                  View Full Details
+                </Button>
+              )}
+            </Box>
+          ),
+          status: 'success',
+          duration: 12000,
+          isClosable: true,
+          position: 'top',
+        });
+
+        // Optional: Play notification sound
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = 700; // Higher pitch for new journey
+          gainNode.gain.value = 0.2;
+          
+          oscillator.start();
+          setTimeout(() => oscillator.stop(), 100);
+        } catch (e) {
+          console.log('Audio notification not available');
+        }
       });
 
       ordersChannel.bind('order-accepted', (data: any) => {

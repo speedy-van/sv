@@ -34,6 +34,231 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
+// ✅ NEW: Notify admin about return journey opportunity
+async function notifyAdminAboutReturnJourney(bookingData: {
+  bookingId: string;
+  reference: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerId?: string | null;
+  pickupAddress: string;
+  pickupPostcode: string;
+  pickupCity?: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  dropoffAddress: string;
+  dropoffPostcode: string;
+  dropoffCity?: string;
+  dropoffLat?: number;
+  dropoffLng?: number;
+  totalPrice: number;
+  discount: number;
+  discountPercentage: number;
+  driverEarnings: number;
+  matchScore: number;
+  originalBookingReference?: string;
+  scheduledDate?: Date | null;
+  itemsCount?: number;
+  items?: Array<{ name: string; quantity: number; weight?: number; volume?: number; category?: string }>;
+  serviceLevel?: string;
+  crewSize?: string;
+  distanceMiles?: number | null;
+  estimatedDuration?: number | null;
+}) {
+  try {
+    console.log('🔄 Notifying admin about return journey opportunity:', bookingData.reference);
+
+    // ✅ CRITICAL: Save complete journey opportunity to database
+    const journeyOpportunity = await prisma.journeyOpportunity.create({
+      data: {
+        type: 'return-journey',
+        bookingId: bookingData.bookingId,
+        bookingReference: bookingData.reference,
+        originalBookingReference: bookingData.originalBookingReference || bookingData.reference,
+        customerName: bookingData.customerName,
+        customerEmail: bookingData.customerEmail || undefined,
+        customerPhone: bookingData.customerPhone || undefined,
+        customerId: bookingData.customerId || undefined,
+        pickupAddress: bookingData.pickupAddress,
+        pickupPostcode: bookingData.pickupPostcode,
+        pickupCity: bookingData.pickupCity ?? null,
+        pickupLat: bookingData.pickupLat ?? null,
+        pickupLng: bookingData.pickupLng ?? null,
+        dropoffAddress: bookingData.dropoffAddress,
+        dropoffPostcode: bookingData.dropoffPostcode,
+        dropoffCity: bookingData.dropoffCity ?? null,
+        dropoffLat: bookingData.dropoffLat ?? null,
+        dropoffLng: bookingData.dropoffLng ?? null,
+        totalPrice: bookingData.totalPrice,
+        discount: bookingData.discount,
+        discountPercentage: bookingData.discountPercentage,
+        driverEarnings: bookingData.driverEarnings,
+        matchScore: bookingData.matchScore,
+        scheduledDate: bookingData.scheduledDate || null,
+        itemsCount: bookingData.itemsCount || 0,
+        items: bookingData.items ? JSON.parse(JSON.stringify(bookingData.items)) : null,
+        serviceLevel: bookingData.serviceLevel || null,
+        crewSize: bookingData.crewSize || '2',
+        distanceMiles: bookingData.distanceMiles || null,
+        estimatedDuration: bookingData.estimatedDuration || null,
+        notificationSent: true,
+        notificationSentAt: new Date(),
+      },
+    });
+
+    const returnJourneyNotification = {
+      type: 'return-journey-available' as const,
+      data: {
+        journeyOpportunityId: journeyOpportunity.id, // ✅ CRITICAL: Send ID for full details access
+        bookingId: bookingData.bookingId,
+        bookingReference: bookingData.reference,
+        originalBookingReference: bookingData.originalBookingReference || bookingData.reference,
+        opportunity: {
+          from: {
+            address: bookingData.pickupAddress,
+            postcode: bookingData.pickupPostcode,
+          },
+          to: {
+            address: bookingData.dropoffAddress,
+            postcode: bookingData.dropoffPostcode,
+          },
+          customerPrice: bookingData.totalPrice,
+          discount: bookingData.discount,
+          discountPercentage: bookingData.discountPercentage,
+          driverEarnings: bookingData.driverEarnings,
+          matchScore: bookingData.matchScore, // 0-100
+          scheduledDate: bookingData.scheduledDate ? bookingData.scheduledDate.toISOString() : null,
+          itemsCount: bookingData.itemsCount || 0,
+        },
+        timestamp: new Date().toISOString(),
+        action: 'View in Operations Dashboard',
+      },
+    };
+
+    // Trigger Pusher notification
+    await pusher.trigger('admin-notifications', 'return-journey-available', returnJourneyNotification);
+    
+    console.log('✅ Return journey notification sent to admin with ID:', journeyOpportunity.id);
+  } catch (error) {
+    console.error('❌ Failed to notify admin about return journey:', error);
+    // Don't throw - this is non-critical
+  }
+}
+
+// ✅ NEW: Notify admin about new journey opportunity
+async function notifyAdminAboutNewJourney(bookingData: {
+  bookingId: string;
+  reference: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerId?: string | null;
+  pickupAddress: string;
+  pickupPostcode: string;
+  pickupCity?: string | null;
+  pickupLat?: number | null;
+  pickupLng?: number | null;
+  dropoffAddress: string;
+  dropoffPostcode: string;
+  dropoffCity?: string | null;
+  dropoffLat?: number | null;
+  dropoffLng?: number | null;
+  totalPrice: number;
+  scheduledDate: Date | null;
+  itemsCount: number;
+  serviceLevel: string;
+  multiDropPotential: boolean;
+  potentialSavings?: number;
+  distanceMiles?: number;
+  crewSize?: string;
+  items?: Array<{ name: string; quantity: number; weight?: number; volume?: number; category?: string }>;
+  estimatedDuration?: number | null;
+}) {
+  try {
+    console.log('🆕 Notifying admin about new journey:', bookingData.reference);
+
+    // ✅ CRITICAL: Save complete journey opportunity to database
+    const journeyOpportunity = await prisma.journeyOpportunity.create({
+      data: {
+        type: 'new-journey',
+        bookingId: bookingData.bookingId,
+        bookingReference: bookingData.reference,
+        customerName: bookingData.customerName,
+        customerEmail: bookingData.customerEmail || undefined,
+        customerPhone: bookingData.customerPhone || undefined,
+        customerId: bookingData.customerId || undefined,
+        pickupAddress: bookingData.pickupAddress,
+        pickupPostcode: bookingData.pickupPostcode,
+        pickupCity: bookingData.pickupCity ?? null,
+        pickupLat: bookingData.pickupLat ?? null,
+        pickupLng: bookingData.pickupLng ?? null,
+        dropoffAddress: bookingData.dropoffAddress,
+        dropoffPostcode: bookingData.dropoffPostcode,
+        dropoffCity: bookingData.dropoffCity ?? null,
+        dropoffLat: bookingData.dropoffLat ?? null,
+        dropoffLng: bookingData.dropoffLng ?? null,
+        totalPrice: bookingData.totalPrice,
+        itemsCount: bookingData.itemsCount,
+        items: bookingData.items ? JSON.parse(JSON.stringify(bookingData.items)) : null,
+        serviceLevel: bookingData.serviceLevel,
+        crewSize: bookingData.crewSize || '2',
+        distanceMiles: bookingData.distanceMiles || null,
+        scheduledDate: bookingData.scheduledDate || null,
+        estimatedDuration: bookingData.estimatedDuration || null,
+        isMultiDrop: false,
+        multiDropPotential: bookingData.multiDropPotential,
+        potentialSavings: bookingData.potentialSavings || 0,
+        notificationSent: true,
+        notificationSentAt: new Date(),
+      },
+    });
+
+    const newJourneyNotification = {
+      type: 'new-journey-available' as const,
+      data: {
+        journeyOpportunityId: journeyOpportunity.id, // ✅ CRITICAL: Send ID for full details access
+        bookingId: bookingData.bookingId,
+        bookingReference: bookingData.reference,
+        customer: {
+          name: bookingData.customerName,
+          email: bookingData.customerEmail || '',
+          phone: bookingData.customerPhone || '',
+        },
+        journey: {
+          from: {
+            address: bookingData.pickupAddress,
+            postcode: bookingData.pickupPostcode,
+          },
+          to: {
+            address: bookingData.dropoffAddress,
+            postcode: bookingData.dropoffPostcode,
+          },
+          price: bookingData.totalPrice,
+          scheduledDate: bookingData.scheduledDate ? bookingData.scheduledDate.toISOString() : null,
+          itemsCount: bookingData.itemsCount,
+          items: bookingData.items || [],
+          serviceLevel: bookingData.serviceLevel,
+          distanceMiles: bookingData.distanceMiles || 0,
+          crewSize: bookingData.crewSize || '2',
+          multiDropPotential: bookingData.multiDropPotential,
+          potentialSavings: bookingData.potentialSavings || 0,
+        },
+        timestamp: new Date().toISOString(),
+        action: 'View in Operations Dashboard',
+      },
+    };
+
+    // Trigger Pusher notification
+    await pusher.trigger('admin-notifications', 'new-journey-available', newJourneyNotification);
+    
+    console.log('✅ New journey notification sent to admin');
+  } catch (error) {
+    console.error('❌ Failed to notify admin about new journey:', error);
+    // Don't throw - this is non-critical
+  }
+}
+
 // Function to notify available drivers about new jobs
 async function notifyAvailableDrivers(bookingData: {
   bookingId: string;
@@ -1150,6 +1375,148 @@ export async function POST(request: NextRequest) {
     } catch (notificationError) {
       console.error('⚠️ Failed to notify drivers:', notificationError);
       // Don't fail the booking if notification fails
+    }
+
+    // ✅ NEW: Notify admin about new journey opportunity
+    try {
+      await notifyAdminAboutNewJourney({
+        bookingId: booking.id,
+        reference: booking.reference,
+        customerName: bookingData.customer.name,
+        customerEmail: bookingData.customer.email,
+        customerPhone: bookingData.customer.phone,
+        customerId: customerId,
+        pickupAddress: bookingData.pickupAddress.street || '',
+        pickupPostcode: bookingData.pickupAddress.postcode,
+        pickupCity: bookingData.pickupAddress.city ?? null,
+        pickupLat: booking.pickupLat ?? null,
+        pickupLng: booking.pickupLng ?? null,
+        dropoffAddress: bookingData.dropoffAddress.street || '',
+        dropoffPostcode: bookingData.dropoffAddress.postcode,
+        dropoffCity: bookingData.dropoffAddress.city ?? null,
+        dropoffLat: booking.dropoffLat ?? null,
+        dropoffLng: booking.dropoffLng ?? null,
+        totalPrice: calculatedTotal || 0,
+        scheduledDate: booking.scheduledAt,
+        itemsCount: bookingData.items?.length || 0,
+        items: bookingData.items?.map((item: any) => ({
+          name: item.name || 'Unknown Item',
+          quantity: item.quantity || 1,
+          weight: item.weight,
+          volume: item.volume,
+          category: item.category,
+        })) || [],
+        serviceLevel: booking.urgency || 'standard',
+        distanceMiles: booking.baseDistanceMiles || 0,
+        crewSize: bookingData.crewSize || '2',
+        estimatedDuration: booking.estimatedDurationMinutes || null,
+        multiDropPotential: isMultiLeg,
+        potentialSavings: 0, // Can be calculated if multi-drop discount exists
+      });
+    } catch (notificationError) {
+      console.error('⚠️ Failed to notify admin about new journey:', notificationError);
+      // Don't fail the booking if notification fails
+    }
+
+    // ✅ NEW: Check for return journey opportunity and notify admin
+    // This would typically be checked after a long-distance booking is created
+    // For now, we'll check if it's a multi-leg booking (outbound + return)
+    if (isMultiLeg && rawSegments.length > 1) {
+      // This might be a return journey - check eligibility
+      try {
+        const { ReturnJourneyService } = await import('@/lib/services/return-journey-service');
+        const returnJourneyService = ReturnJourneyService.getInstance();
+        
+        // Check if this booking could be a return journey match
+        // We'll use the first segment as original and check if there's a return opportunity
+        const firstSegment = rawSegments[0];
+        const lastSegment = rawSegments[rawSegments.length - 1];
+        
+        if (firstSegment && lastSegment && 
+            firstSegment.pickupAddress?.postcode && 
+            lastSegment.dropoffAddress?.postcode) {
+          
+          // Calculate return journey pricing (reverse of original)
+          const returnJourneyPricing = await returnJourneyService.calculateReturnJourneyPricing({
+            originalPickup: {
+              address: firstSegment.pickupAddress.street || '',
+              postcode: firstSegment.pickupAddress.postcode,
+              coordinates: firstSegment.pickupAddress.coordinates || { lat: 0, lng: 0 },
+              city: firstSegment.pickupAddress.city || '',
+            },
+            originalDropoff: {
+              address: lastSegment.dropoffAddress.street || '',
+              postcode: lastSegment.dropoffAddress.postcode,
+              coordinates: lastSegment.dropoffAddress.coordinates || { lat: 0, lng: 0 },
+              city: lastSegment.dropoffAddress.city || '',
+            },
+            originalDeliveryDate: booking.scheduledAt || new Date(),
+            estimatedReturnDate: new Date((booking.scheduledAt?.getTime() || Date.now()) + 24 * 60 * 60 * 1000),
+            returnCustomerPickup: {
+              address: lastSegment.dropoffAddress.street || '',
+              postcode: lastSegment.dropoffAddress.postcode,
+              coordinates: lastSegment.dropoffAddress.coordinates || { lat: 0, lng: 0 },
+            },
+            returnCustomerDropoff: {
+              address: firstSegment.pickupAddress.street || '',
+              postcode: firstSegment.pickupAddress.postcode,
+              coordinates: firstSegment.pickupAddress.coordinates || { lat: 0, lng: 0 },
+            },
+            items: bookingData.items?.map((item: any) => ({
+              category: item.category || 'general',
+              quantity: item.quantity || 1,
+              weight: item.weight,
+              volume: item.volume,
+              fragile: item.fragile || false,
+            })) || [],
+            serviceType: booking.urgency === 'urgent' ? 'PREMIUM' : 
+                       booking.urgency === 'express' ? 'STANDARD' : 'ECONOMY',
+          });
+
+          if (returnJourneyPricing.eligible && returnJourneyPricing.matchScore > 70) {
+            await notifyAdminAboutReturnJourney({
+              bookingId: booking.id,
+              reference: booking.reference,
+              originalBookingReference: booking.reference,
+              customerName: bookingData.customer.name,
+              customerEmail: bookingData.customer.email,
+              customerPhone: bookingData.customer.phone,
+              customerId: customerId,
+              pickupAddress: lastSegment.dropoffAddress.street || '',
+              pickupPostcode: lastSegment.dropoffAddress.postcode,
+              pickupCity: lastSegment.dropoffAddress.city ?? null,
+              pickupLat: lastSegment.dropoffAddress.coordinates?.lat ?? null,
+              pickupLng: lastSegment.dropoffAddress.coordinates?.lng ?? null,
+              dropoffAddress: firstSegment.pickupAddress.street || '',
+              dropoffPostcode: firstSegment.pickupAddress.postcode,
+              dropoffCity: firstSegment.pickupAddress.city ?? null,
+              dropoffLat: firstSegment.pickupAddress.coordinates?.lat ?? null,
+              dropoffLng: firstSegment.pickupAddress.coordinates?.lng ?? null,
+              totalPrice: returnJourneyPricing.returnJourneyPrice,
+              discount: returnJourneyPricing.discount,
+              discountPercentage: returnJourneyPricing.discountPercentage,
+              driverEarnings: returnJourneyPricing.driverEarnings,
+              matchScore: returnJourneyPricing.matchScore,
+              scheduledDate: booking.scheduledAt,
+              itemsCount: bookingData.items?.length || 0,
+              items: bookingData.items?.map((item: any) => ({
+                name: item.name || 'Unknown Item',
+                quantity: item.quantity || 1,
+                weight: item.weight,
+                volume: item.volume,
+                category: item.category,
+              })) || [],
+              serviceLevel: booking.urgency || 'standard',
+              crewSize: bookingData.crewSize || '2',
+              distanceMiles: returnJourneyPricing.deviationDistance ? (returnJourneyPricing.deviationDistance / 1609.34) : undefined,
+              estimatedDuration: booking.estimatedDurationMinutes || undefined,
+            });
+          }
+        }
+      } catch (returnJourneyError) {
+        console.error('⚠️ Failed to check return journey opportunity:', returnJourneyError);
+        // Don't fail the booking if return journey check fails
+      }
     }
 
     // IMPORTANT: Do NOT send email here - it will be sent after payment confirmation via webhook
