@@ -370,7 +370,10 @@ export default function BookingLuxuryPage() {
           scheduledDate: segment.datetime || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           serviceLevel: actualServiceLevel,
           urgency: actualUrgency,
-          timeSlot: formData.step1.pickupTimeSlot || 'flexible'
+          timeSlot: formData.step1.pickupTimeSlot || 'flexible',
+          // ✅ CRITICAL: Include crewSize for crew surcharge calculation
+          // Crew size affects price: 3-men = +25%, 4-men = +50%
+          crewSize: formData.step1.crewSize || '2'
         })
       });
 
@@ -418,7 +421,7 @@ export default function BookingLuxuryPage() {
     } catch (error) {
       console.error(`Segment ${segmentIndex} pricing failed:`, error);
     }
-  }, [formData.step1.segments, formData.step1.items, normalizeAddressForPricing]);
+  }, [formData.step1.segments, formData.step1.items, formData.step1.crewSize, formData.step1.serviceType, formData.step1.urgency, formData.step1.pickupTimeSlot, normalizeAddressForPricing]);
 
   // Calculate all segments pricing in multi-leg
   // ✅ CRITICAL FIX: Apply all segment pricing updates atomically to avoid stale closure bugs
@@ -730,7 +733,10 @@ export default function BookingLuxuryPage() {
           scheduledDate: (formData.step1.pickupDate
             ? new Date(`${formData.step1.pickupDate}T09:00:00.000Z`).toISOString()
             : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
-          serviceLevel: 'standard'
+          serviceLevel: 'standard',
+          // ✅ CRITICAL: Include crewSize for crew surcharge calculation
+          // Crew size affects price: 3-men = +25%, 4-men = +50%
+          crewSize: formData.step1.crewSize || '2'
         })
       });
 
@@ -2053,9 +2059,17 @@ export default function BookingLuxuryPage() {
                               return (
                                 <Box
                                   key={option.value}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     updateFormData('step1', { crewSize: option.value as '1' | '2' | '3' | '4' });
                                     console.log('👷 Crew size changed:', option.value);
+                                    
+                                    // CRITICAL: Recalculate pricing after crew size change
+                                    // Crew size affects price: 3-men = +25%, 4-men = +50%
+                                    try {
+                                      await calculateComprehensivePricing();
+                                    } catch (error) {
+                                      console.error('Failed to recalculate pricing after crew size change:', error);
+                                    }
                                   }}
                                   cursor="pointer"
                                   p={{ base: 2, md: 4 }}

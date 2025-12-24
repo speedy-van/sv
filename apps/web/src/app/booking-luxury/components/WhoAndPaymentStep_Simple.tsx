@@ -353,9 +353,12 @@ export default function WhoAndPaymentStepSimple({
           items: finalSegments[0].items?.map(item => ({ ...item })) || []
         });
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
@@ -381,9 +384,12 @@ export default function WhoAndPaymentStepSimple({
         );
         applyItemUpdates(nextItems);
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
@@ -410,71 +416,51 @@ export default function WhoAndPaymentStepSimple({
       const isMultiLeg = segments.length > 1;
 
       if (isMultiLeg) {
-        // Multi-leg: Decrement item quantity in first segment that has it
+        // Multi-leg: Decrement item quantity in ALL segments equally
         // This maintains consistency - when user removes 1, it removes 1 from total
-        const updatedSegments = [...segments];
-        let decrementedOnce = false;
+        const firstSegment = segments[0];
+        if (!firstSegment?.items) {
+          return;
+        }
         
-        for (let i = 0; i < updatedSegments.length && !decrementedOnce; i++) {
-          const segment = updatedSegments[i];
-          if (!segment.items) continue;
-          
-          const itemIndex = segment.items.findIndex(item => item.id === itemId);
-          if (itemIndex !== -1) {
-            const targetItem = segment.items[itemIndex];
-            
-            if ((targetItem.quantity || 0) <= 1) {
-              // Check if item exists in other segments
-              const existsInOtherSegments = segments.some((s, idx) => 
-                idx !== i && s.items?.some(item => item.id === itemId && (item.quantity || 0) > 0)
-              );
-              
-              if (existsInOtherSegments) {
-                // Remove from this segment only
-                updatedSegments[i] = {
-                  ...segment,
-                  items: segment.items.filter((_, idx) => idx !== itemIndex)
-                };
-              } else {
-                // Last instance - remove from all segments
-                for (let j = 0; j < updatedSegments.length; j++) {
-                  if (updatedSegments[j].items) {
-                    updatedSegments[j] = {
-                      ...updatedSegments[j],
-                      items: updatedSegments[j].items!.filter(item => item.id !== itemId)
-                    };
-                  }
-                }
-              }
-            } else {
-              // Decrease quantity in this segment only
-              updatedSegments[i] = {
-                ...segment,
-                items: segment.items.map((item, idx) =>
-                  idx === itemIndex
-                    ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
-                    : item
-                )
-              };
-            }
-            decrementedOnce = true;
-          }
+        const itemIndex = firstSegment.items.findIndex(item => item.id === itemId);
+        if (itemIndex === -1) {
+          return;
+        }
+        
+        const targetItem = firstSegment.items[itemIndex];
+        let updatedItems: typeof firstSegment.items;
+        
+        if ((targetItem.quantity || 0) <= 1) {
+          // Remove item completely from all segments
+          updatedItems = firstSegment.items.filter((_, idx) => idx !== itemIndex);
+        } else {
+          // Decrease quantity in all segments
+          updatedItems = firstSegment.items.map((item, idx) =>
+            idx === itemIndex
+              ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 1) }
+              : item
+          );
         }
 
         // Update ALL segments with the same items (deep copy for each)
-        const finalSegments = updatedSegments.map((segment) => ({
+        const finalSegments = segments.map((segment) => ({
           ...segment,
-          items: updatedSegments[0].items?.map(item => ({ ...item })) || []
+          items: updatedItems.map(item => ({ ...item }))
         }));
 
+        // CRITICAL: Update formData first, then wait a bit for state to update before recalculating
         updateFormData('step1', { 
           segments: finalSegments,
-          items: finalSegments[0].items?.map(item => ({ ...item })) || []
+          items: updatedItems.map(item => ({ ...item }))
         });
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
@@ -510,9 +496,12 @@ export default function WhoAndPaymentStepSimple({
           applyItemUpdates(nextItems);
         }
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
@@ -560,9 +549,12 @@ export default function WhoAndPaymentStepSimple({
           items: finalSegments[0].items?.map(item => ({ ...item })) || []
         });
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
@@ -584,9 +576,12 @@ export default function WhoAndPaymentStepSimple({
         const nextItems = currentItems.filter((item) => item.id !== itemId);
         applyItemUpdates(nextItems);
 
-        // CRITICAL: Recalculate pricing after items change
+        // CRITICAL: Wait for state update, then recalculate pricing
         // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         try {
+          // Wait a bit for React state to update
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
           if (calculateComprehensivePricing) {
             await calculateComprehensivePricing();
           } else if (calculatePricing) {
