@@ -6,7 +6,7 @@
  * Clean, modern design like Uber/Airbnb
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import NextImage from 'next/image';
 import {
   Box,
@@ -84,6 +84,60 @@ export default function WhoAndPaymentStepSimple({
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const toast = useToast();
   const isIOSDevice = useIsIOSDevice();
+  
+  // ✅ FIX: Track previous items and crewSize to detect changes and trigger price recalculation
+  // This replaces the setTimeout workaround with proper React state management
+  const prevItemsRef = useRef<string>('');
+  const prevCrewSizeRef = useRef<string>('');
+  const isRecalculatingRef = useRef(false);
+  
+  // Track items and crewSize changes for automatic price recalculation
+  useEffect(() => {
+    // Create a stable string representation of items for comparison
+    const currentItemsKey = JSON.stringify(
+      (formData.step1.items || []).map((item: any) => ({ id: item.id, quantity: item.quantity }))
+    );
+    const currentCrewSize = formData.step1.crewSize || '2';
+    
+    // Skip if already recalculating or if nothing changed
+    if (isRecalculatingRef.current) {
+      return;
+    }
+    
+    // Check if items changed
+    const itemsChanged = prevItemsRef.current !== currentItemsKey;
+    const crewSizeChanged = prevCrewSizeRef.current !== currentCrewSize;
+    
+    if (itemsChanged || crewSizeChanged) {
+      // Update refs
+      prevItemsRef.current = currentItemsKey;
+      prevCrewSizeRef.current = currentCrewSize;
+      
+      // Only recalculate if we have the necessary data
+      const hasAddresses = formData.step1.pickupAddress?.coordinates && formData.step1.dropoffAddress?.coordinates;
+      const hasItems = (formData.step1.items || []).length > 0;
+      
+      if (hasAddresses && hasItems && calculateComprehensivePricing) {
+        isRecalculatingRef.current = true;
+        calculateComprehensivePricing()
+          .catch((error) => {
+            console.error('Failed to recalculate pricing after change:', error);
+          })
+          .finally(() => {
+            // Reset flag after a short delay to allow state to settle
+            setTimeout(() => {
+              isRecalculatingRef.current = false;
+            }, 200);
+          });
+      }
+    }
+  }, [
+    formData.step1.items,
+    formData.step1.crewSize,
+    formData.step1.pickupAddress?.coordinates,
+    formData.step1.dropoffAddress?.coordinates,
+    calculateComprehensivePricing
+  ]);
   
   // REMOVED: This useEffect was causing auto-scroll on desktop on every render
   // Mobile scroll position is now handled properly in individual event handlers
@@ -353,27 +407,9 @@ export default function WhoAndPaymentStepSimple({
           items: finalSegments[0].items?.map(item => ({ ...item })) || []
         });
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       } else {
         // Single-leg: update global items
         const currentItems = formData.step1.items || [];
@@ -384,27 +420,9 @@ export default function WhoAndPaymentStepSimple({
         );
         applyItemUpdates(nextItems);
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       }
     },
     [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
@@ -455,27 +473,9 @@ export default function WhoAndPaymentStepSimple({
           items: updatedItems.map(item => ({ ...item }))
         });
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       } else {
         // Single-leg: update global items
         const currentItems = formData.step1.items || [];
@@ -496,27 +496,9 @@ export default function WhoAndPaymentStepSimple({
           applyItemUpdates(nextItems);
         }
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       }
     },
     [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
@@ -549,54 +531,18 @@ export default function WhoAndPaymentStepSimple({
           items: finalSegments[0].items?.map(item => ({ ...item })) || []
         });
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       } else {
         // Single-leg: remove from global items
         const currentItems = formData.step1.items || [];
         const nextItems = currentItems.filter((item) => item.id !== itemId);
         applyItemUpdates(nextItems);
 
-        // CRITICAL: Wait for state update, then recalculate pricing
-        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
-        try {
-          // Wait a bit for React state to update
-          await new Promise(resolve => setTimeout(resolve, 150));
-          
-          if (calculateComprehensivePricing) {
-            await calculateComprehensivePricing();
-          } else if (calculatePricing) {
-            await calculatePricing();
-          }
-        } catch (error) {
-          console.error('Failed to recalculate pricing after item change:', error);
-          toast({
-            title: 'Price update failed',
-            description: 'Please refresh the page to see updated prices',
-            status: 'warning',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // ✅ FIX: Price recalculation is now handled automatically by useEffect
+        // No need for setTimeout - React state updates will trigger useEffect
+        // This ensures proper state synchronization without race conditions
       }
     },
     [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]

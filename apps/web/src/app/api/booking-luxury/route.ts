@@ -514,21 +514,42 @@ export async function POST(request: NextRequest) {
         const segmentPickup = segment.pickupAddress;
         const segmentDropoff = segment.dropoffAddress;
         
-        // ✅ CRITICAL FIX: Ensure items exist for each segment
-        // If segment has no items, use items from first segment or global items
+        // ✅ CRITICAL FIX: Multi-leg bookings - all segments carry the SAME items
+        // In multi-leg (e.g., outbound + return), the same items are transported in each leg
+        // Therefore, all segments should use the same items list to avoid double-counting
         let segmentItems = segment.items || [];
         if (!segmentItems || segmentItems.length === 0) {
-          // Fallback to first segment items
+          // For multi-leg: use items from first segment (they're the same items for all legs)
           if (rawSegments[0]?.items && Array.isArray(rawSegments[0].items) && rawSegments[0].items.length > 0) {
-            segmentItems = rawSegments[0].items;
-            console.log(`⚠️ Segment ${i + 1} has no items, using items from first segment`);
+            // Deep copy to avoid reference issues
+            segmentItems = rawSegments[0].items.map((item: any) => ({ ...item }));
+            console.log(`ℹ️ Segment ${i + 1} has no items, using items from first segment (same items for all legs)`);
           } else if (pricingItems && pricingItems.length > 0) {
             // Fallback to global items
-            segmentItems = pricingItems;
-            console.log(`⚠️ Segment ${i + 1} has no items, using global items`);
+            segmentItems = pricingItems.map((item: any) => ({ ...item }));
+            console.log(`ℹ️ Segment ${i + 1} has no items, using global items`);
           } else {
             console.error(`❌ Segment ${i + 1} has no items and no fallback available`);
-            throw new Error(`Segment ${i + 1} must have items`);
+            throw new Error(`Segment ${i + 1} must have items. In multi-leg bookings, all segments carry the same items.`);
+          }
+        }
+        
+        // ✅ VALIDATION: Ensure segment items match first segment items (for consistency)
+        // This prevents double-counting and ensures pricing accuracy
+        if (i > 0 && rawSegments[0]?.items && rawSegments[0].items.length > 0) {
+          const firstSegmentItems = rawSegments[0].items;
+          const segmentItemsIds = new Set(segmentItems.map((item: any) => item.id));
+          const firstSegmentItemsIds = new Set(firstSegmentItems.map((item: any) => item.id));
+          
+          // Check if items are different (should be same in multi-leg)
+          if (segmentItemsIds.size !== firstSegmentItemsIds.size || 
+              ![...segmentItemsIds].every(id => firstSegmentItemsIds.has(id))) {
+            console.warn(`⚠️ Segment ${i + 1} has different items than first segment. Using first segment items for consistency.`, {
+              segmentItems: segmentItems.map((item: any) => item.id),
+              firstSegmentItems: firstSegmentItems.map((item: any) => item.id)
+            });
+            // Use first segment items to ensure consistency
+            segmentItems = firstSegmentItems.map((item: any) => ({ ...item }));
           }
         }
         

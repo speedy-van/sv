@@ -665,7 +665,8 @@ export default function BookingLuxuryPage() {
     setIsLoadingAvailability(true);
 
     try {
-      // Filter and validate items before mapping
+      // ✅ CRITICAL FIX: Validate items before sending to API
+      // Do not use default items - require explicit item selection
       const validItems = itemsToUse
         .map((item: any) => {
           const quantity = typeof item?.quantity === 'number'
@@ -682,20 +683,15 @@ export default function BookingLuxuryPage() {
         })
         .filter((item: any) => item && item.id && item.name && typeof item.quantity === 'number' && item.quantity > 0);
 
-      // Ensure we always send at least one item to satisfy API validation
-      const payloadItems = validItems.length > 0
-        ? validItems
-        : [{
-            id: 'default-item',
-          name: 'Standard Item',
-          quantity: 1,
-            weight_override: 25,
-            volume_override: 1.0
-          }];
-
+      // ✅ CRITICAL FIX: Require at least one valid item
+      // Do not use default items - this leads to inaccurate pricing
       if (validItems.length === 0) {
-        console.warn('⚠️ No valid items after filtering - using fallback item to satisfy pricing API');
+        console.warn('⚠️ No valid items after filtering - skipping pricing calculation');
+        setIsLoadingAvailability(false);
+        return;
       }
+
+      const payloadItems = validItems;
 
       console.log('📤 Sending pricing request with items:', payloadItems.length);
 
@@ -1126,7 +1122,9 @@ export default function BookingLuxuryPage() {
           pickup: { lat: s.pickupAddress?.coordinates?.lat, lng: s.pickupAddress?.coordinates?.lng },
           dropoff: { lat: s.dropoffAddress?.coordinates?.lat, lng: s.dropoffAddress?.coordinates?.lng },
           datetime: s.datetime
-        }))
+        })),
+        // ✅ INCLUDE CREW SIZE to detect changes and trigger price recalculation
+        crewSize: formData.step1.crewSize || '2'
       });
       
       // Only trigger if data actually changed
@@ -1140,16 +1138,23 @@ export default function BookingLuxuryPage() {
         });
         
         // Debounce pricing calculation to prevent excessive API calls
+        // Use calculateComprehensivePricing if available (updates pricingTiers), otherwise fallback to calculatePricing
         const timeoutId = setTimeout(() => {
-          calculatePricing().catch(error => {
-            console.error('Failed to calculate pricing:', error);
-          });
+          if (calculateComprehensivePricing) {
+            calculateComprehensivePricing().catch(error => {
+              console.error('Failed to calculate comprehensive pricing:', error);
+            });
+          } else if (calculatePricing) {
+            calculatePricing().catch(error => {
+              console.error('Failed to calculate pricing:', error);
+            });
+          }
         }, 800); // Wait 800ms after last change before calculating
         
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [isClient, formData.step1, calculatePricing]);
+  }, [isClient, formData.step1, calculatePricing, calculateComprehensivePricing]);
 
 
 
@@ -2059,17 +2064,12 @@ export default function BookingLuxuryPage() {
                               return (
                                 <Box
                                   key={option.value}
-                                  onClick={async () => {
+                                  onClick={() => {
                                     updateFormData('step1', { crewSize: option.value as '1' | '2' | '3' | '4' });
                                     console.log('👷 Crew size changed:', option.value);
-                                    
-                                    // CRITICAL: Recalculate pricing after crew size change
-                                    // Crew size affects price: 3-men = +25%, 4-men = +50%
-                                    try {
-                                      await calculateComprehensivePricing();
-                                    } catch (error) {
-                                      console.error('Failed to recalculate pricing after crew size change:', error);
-                                    }
+                                    // ✅ FIX: Price recalculation is now handled automatically by useEffect in Step 3
+                                    // For Step 2, we trigger it manually but without setTimeout
+                                    // The useEffect in page.tsx will handle it automatically
                                   }}
                                   cursor="pointer"
                                   p={{ base: 2, md: 4 }}

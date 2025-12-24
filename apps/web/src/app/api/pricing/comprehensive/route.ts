@@ -60,7 +60,8 @@ async function transformRequestToPricingInput(
   // Ensure dataset is loaded
   await comprehensivePricingEngine.loadDataset();
 
-  // Load dataset directly to enrich items
+  // ✅ CRITICAL FIX: Load dataset with proper error handling
+  // If dataset fails to load, we should still proceed but log the error
   let dataset: any[] = [];
   
   try {
@@ -68,23 +69,28 @@ async function transformRequestToPricingInput(
     const datasetContent = readFileSync(datasetPath, 'utf-8');
     const datasetData = JSON.parse(datasetContent);
     dataset = datasetData.items || [];
+    
+    if (dataset.length === 0) {
+      console.error(`❌ Dataset loaded but is empty - this may affect item enrichment accuracy`);
+    }
   } catch (error) {
-    console.warn(`⚠️ Could not load dataset, using fallback:`, error);
+    // ✅ CRITICAL FIX: Log error properly instead of silent failure
+    console.error(`❌ Failed to load UK Removal Dataset:`, {
+      error: error instanceof Error ? error.message : String(error),
+      path: join(process.cwd(), 'public', 'UK_Removal_Dataset', 'items_dataset.json'),
+      note: 'Pricing will continue but item enrichment may be less accurate'
+    });
+    // Continue without dataset - fallback items will be used
   }
 
-  // Transform items: enrich with dataset information
-  // Handle empty items array (return empty transformed array with default item)
-  const itemsToTransform = validatedRequest.items && validatedRequest.items.length > 0 
-    ? validatedRequest.items 
-    : [{
-        id: 'default-item',
-        name: 'Standard Item',
-        quantity: 1
-      }];
-  
+  // ✅ CRITICAL FIX: Require items - do not use default items
+  // Items should have been validated before reaching this function
+  // If we reach here with no items, it's a programming error
   if (!validatedRequest.items || validatedRequest.items.length === 0) {
-    console.warn('⚠️ No items provided in request - using default item for pricing calculation');
+    throw new Error('Items validation failed: No items provided. This should have been caught earlier in the validation chain.');
   }
+  
+  const itemsToTransform = validatedRequest.items;
   
   const transformedItems = await Promise.all(
     itemsToTransform.map(async (item) => {
@@ -212,6 +218,24 @@ export async function POST(request: NextRequest) {
     }
     
     const normalizedRequest = normalized.data;
+    
+    // ✅ CRITICAL FIX: Validate that we have at least one valid item
+    // Do not use default items - require explicit item selection
+    if (!normalizedRequest.items || normalizedRequest.items.length === 0) {
+      console.error(`❌ [${requestId}] No valid items provided in request`);
+      return NextResponse.json<PricingError>(
+        {
+          error: 'At least one item is required for pricing calculation. Please select items before requesting a price.',
+          code: 'VALIDATION_ERROR' as PricingErrorCode,
+          timestamp: new Date().toISOString(),
+          details: {
+            field: 'items',
+            message: 'Items array is empty or all items were filtered out due to invalid quantities'
+          }
+        },
+        { status: 400 }
+      );
+    }
     
     // Log normalization results
     if (normalizedRequest.originalItemCount !== normalizedRequest.validItemCount) {
