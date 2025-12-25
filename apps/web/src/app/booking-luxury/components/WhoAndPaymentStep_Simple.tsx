@@ -358,34 +358,40 @@ export default function WhoAndPaymentStepSimple({
     });
   }
 
-  // ✅ FIXED: For multi-leg, get items from first segment (all segments have same items)
-  // This ensures consistency between Step 2 and Step 3
+  // ✅ FIXED: For multi-leg, items are now isolated per segment
+  // Each segment has its own items array - NO cross-segment sync
+  // Step 3 displays items from ALL segments for checkout summary
   const selectedItems = useMemo(() => {
     const segments = (formData.step1.segments || []) as BookingSegment[];
     const isMultiLeg = segments.length > 1;
     
     if (isMultiLeg) {
-      // ✅ CRITICAL FIX: For multi-leg, all segments have the same items
-      // Just return items from the first segment (no aggregation needed)
-      const firstSegment = segments[0];
-      if (firstSegment?.items && Array.isArray(firstSegment.items) && firstSegment.items.length > 0) {
-        // Deep copy to avoid reference issues
-        return firstSegment.items.map(item => ({ ...item }));
-      }
+      // ✅ CRITICAL FIX: For multi-leg, aggregate ALL items from ALL segments
+      // Each segment now has its own isolated items (fixed in Step 2)
+      // Create a map to aggregate quantities: { itemId: totalQuantity }
+      const itemsMap = new Map<string, any>();
       
-      // Fallback: check other segments if first segment has no items
-      for (const segment of segments) {
-        if (segment?.items && Array.isArray(segment.items) && segment.items.length > 0) {
-          return segment.items.map(item => ({ ...item }));
+      segments.forEach(segment => {
+        if (segment.items && Array.isArray(segment.items)) {
+          segment.items.forEach(item => {
+            const existing = itemsMap.get(item.id);
+            if (existing) {
+              // Increment quantity for existing item
+              existing.quantity += item.quantity;
+            } else {
+              // Add new item with full properties
+              const catalogItem = ALL_REMOVAL_ITEMS.find(c => c.id === item.id);
+              itemsMap.set(item.id, {
+                ...item,
+                ...catalogItem, // Merge catalog data (name, category, etc.)
+                quantity: item.quantity, // Override with actual quantity
+              });
+            }
+          });
         }
-      }
+      });
       
-      // If no items in segments, fallback to global items
-      if (formData.step1.items && Array.isArray(formData.step1.items) && formData.step1.items.length > 0) {
-        return formData.step1.items.map(item => ({ ...item }));
-      }
-      
-      return [];
+      return Array.from(itemsMap.values());
     }
     
     // Single-leg: use global items
@@ -1090,8 +1096,30 @@ export default function WhoAndPaymentStepSimple({
                               </HStack>
                               <HStack justify="space-between" fontSize="xs" color="gray.300">
                                 <Text>{segment.datetime ? new Date(segment.datetime).toLocaleString('en-GB') : 'Not scheduled'}</Text>
-                                <Text>{segment.items?.length || 0} items</Text>
                               </HStack>
+                              
+                              {/* Items List for this segment */}
+                              {segment.items && segment.items.length > 0 && (
+                                <VStack spacing={1} align="stretch" mt={2}>
+                                  <Text fontSize="xs" fontWeight="600" color="blue.300">
+                                    Items for this journey:
+                                  </Text>
+                                  {segment.items.map((item, itemIdx) => {
+                                    const catalogItem = ALL_REMOVAL_ITEMS.find(c => c.id === item.id);
+                                    const itemName = catalogItem?.name || item.id;
+                                    return (
+                                      <HStack key={itemIdx} justify="space-between" fontSize="xs" color="whiteAlpha.800">
+                                        <Text>
+                                          {item.quantity}x {itemName}
+                                        </Text>
+                                      </HStack>
+                                    );
+                                  })}
+                                  <Text fontSize="xs" color="gray.400" mt={1}>
+                                    Total: {segment.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                                  </Text>
+                                </VStack>
+                              )}
                             </VStack>
                           </Box>
                         );

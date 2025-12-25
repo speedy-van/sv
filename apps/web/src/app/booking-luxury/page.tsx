@@ -46,6 +46,7 @@ import FloatingActionButtons from './components/FloatingActionButtons';
 import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
 import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
 import SelectedItemsManager from './components/SelectedItemsManager';
+import type { BookingSegment } from './types/segment';
 import { 
   useDisclosure,
   Modal,
@@ -2435,125 +2436,149 @@ export default function BookingLuxuryPage() {
         />
       )}
 
-      {/* Selected Items Modal - With edit controls */}
+      {/* Selected Items Modal - Multi-leg Journey Switcher */}
       <Modal isOpen={isItemsOpen} onClose={onItemsClose} size="xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            Selected Items ({(formData.step1.items || []).reduce((sum, item) => sum + item.quantity, 0)})
+        <ModalContent bg="gray.900" color="white" maxW="900px">
+          <ModalHeader borderBottom="1px solid" borderColor="whiteAlpha.200">
+            Selected Items 
+            {(() => {
+              const segments = (formData.step1.segments || []) as BookingSegment[];
+              const isMultiLeg = segments.length > 1;
+              const totalItems = isMultiLeg 
+                ? segments.reduce((sum, seg) => sum + (seg.items?.reduce((s, i) => s + i.quantity, 0) || 0), 0)
+                : (formData.step1.items || []).reduce((sum, item) => sum + item.quantity, 0);
+              return ` (${totalItems})`;
+            })()}
           </ModalHeader>
           <ModalCloseButton 
             color="white" 
             _hover={{ bg: 'whiteAlpha.300' }} 
-            sx={{ 
-              right: '4px !important',
-              top: '-8px !important'
-            }} 
           />
-          <ModalBody pb={6}>
-            <VStack align="stretch" spacing={4}>
-              {(formData.step1.items || []).map((item, idx) => (
-                <Box 
-                  key={`${item.id}-${idx}`}
-                  p={4}
-                  bg="gray.50"
-                  borderRadius="lg"
-                  border="2px solid"
-                  borderColor="gray.300"
-                  boxShadow="sm"
-                  position="relative"
-                >
-                  {/* Close button in top right */}
-                  <IconButton
-                    aria-label="Remove item"
-                    icon={<FaTrash />}
-                    size="xs"
-                    position="absolute"
-                    top={2}
-                    right={8}
-                    color="red.500"
-                    variant="ghost"
-                    _hover={{ color: 'red.600' }}
-                    _active={{ color: 'red.700' }}
-                    onClick={() => {
-                      const currentItems = formData.step1.items || [];
-                      const updatedItems = currentItems.filter((_, i) => i !== idx);
-                      updateFormData('step1', {
-                        ...formData.step1,
-                        items: updatedItems,
-                      });
-                      
-                      toast({
-                        title: 'Item Removed',
-                        description: `${item.name} has been removed`,
-                        status: 'info',
-                        duration: 2000,
-                      });
-                    }}
-                  />
-                  
-                  <HStack justify="space-between" align="center">
-                    <VStack align="start" spacing={1} flex={1} pr={8}>
-                      <Text fontWeight="bold" color="gray.800">{item.name}</Text>
-                      <Text fontSize="sm" color="gray.600">{item.category}</Text>
-                    </VStack>
+          <ModalBody pb={6} pt={4}>
+            <SelectedItemsManager
+              segments={(formData.step1.segments || []) as BookingSegment[]}
+              isMultiLeg={(formData.step1.segments || []).length > 1}
+              globalItems={formData.step1.items || []}
+              onIncrement={(segmentIndex, itemId) => {
+                const segments = (formData.step1.segments || []) as BookingSegment[];
+                const isMultiLeg = segments.length > 1;
+
+                if (isMultiLeg && segmentIndex !== null) {
+                  // Multi-leg: increment in specific segment
+                  const updatedSegments = segments.map((segment, idx) => {
+                    if (idx !== segmentIndex) return segment;
                     
-                    <HStack spacing={2}>
-                      {/* Decrease quantity */}
-                      <IconButton
-                        aria-label="Decrease quantity"
-                        icon={<FaMinus />}
-                        size="sm"
-                        bg="orange.500"
-                        color="white"
-                        _hover={{ bg: 'orange.600' }}
-                        _active={{ bg: 'orange.700' }}
-                        onClick={() => {
-                          const currentItems = formData.step1.items || [];
-                          const updatedItems = [...currentItems];
-                          if (updatedItems[idx].quantity > 1) {
-                            updatedItems[idx].quantity -= 1;
-                            updateFormData('step1', {
-                              ...formData.step1,
-                              items: updatedItems,
-                            });
-                          }
-                        }}
-                        isDisabled={item.quantity <= 1}
-                      />
-                      
-                      {/* Quantity badge */}
-                      <Badge colorScheme="blue" fontSize="lg" px={3} py={1}>
-                        {item.quantity}
-                      </Badge>
-                      
-                      {/* Increase quantity */}
-                      <IconButton
-                        aria-label="Increase quantity"
-                        icon={<FaPlus />}
-                        size="sm"
-                        bg="green.500"
-                        color="white"
-                        _hover={{ bg: 'green.600' }}
-                        _active={{ bg: 'green.700' }}
-                        onClick={() => {
-                          const currentItems = formData.step1.items || [];
-                          const updatedItems = [...currentItems];
-                          updatedItems[idx].quantity += 1;
-                          updateFormData('step1', {
-                            ...formData.step1,
-                            items: updatedItems,
-                          });
-                        }}
-                      />
-                    </HStack>
-                  </HStack>
-                </Box>
-              ))}
-              {(formData.step1.items || []).length === 0 && (
-                <Text color="gray.500" textAlign="center">No items selected yet</Text>
-              )}
-            </VStack>
+                    const items = segment.items || [];
+                    const itemIndex = items.findIndex(i => i.id === itemId);
+                    if (itemIndex === -1) return segment;
+                    
+                    return {
+                      ...segment,
+                      items: items.map((item, i) => 
+                        i === itemIndex 
+                          ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
+                          : item
+                      ),
+                    };
+                  });
+                  
+                  updateFormData('step1', { segments: updatedSegments });
+                } else {
+                  // Single-leg: increment in global items
+                  const items = formData.step1.items || [];
+                  const itemIndex = items.findIndex(i => i.id === itemId);
+                  if (itemIndex !== -1) {
+                    const updatedItems = items.map((item, i) =>
+                      i === itemIndex
+                        ? { ...item, quantity: Math.min((item.quantity || 0) + 1, 99) }
+                        : item
+                    );
+                    updateFormData('step1', { items: updatedItems });
+                  }
+                }
+              }}
+              onDecrement={(segmentIndex, itemId) => {
+                const segments = (formData.step1.segments || []) as BookingSegment[];
+                const isMultiLeg = segments.length > 1;
+
+                if (isMultiLeg && segmentIndex !== null) {
+                  // Multi-leg: decrement in specific segment
+                  const updatedSegments = segments.map((segment, idx) => {
+                    if (idx !== segmentIndex) return segment;
+                    
+                    const items = segment.items || [];
+                    const itemIndex = items.findIndex(i => i.id === itemId);
+                    if (itemIndex === -1) return segment;
+                    
+                    return {
+                      ...segment,
+                      items: items.map((item, i) => 
+                        i === itemIndex 
+                          ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 0) }
+                          : item
+                      ).filter(item => item.quantity > 0), // Remove if quantity is 0
+                    };
+                  });
+                  
+                  updateFormData('step1', { segments: updatedSegments });
+                } else {
+                  // Single-leg: decrement in global items
+                  const items = formData.step1.items || [];
+                  const itemIndex = items.findIndex(i => i.id === itemId);
+                  if (itemIndex !== -1) {
+                    const updatedItems = items.map((item, i) =>
+                      i === itemIndex
+                        ? { ...item, quantity: Math.max((item.quantity || 0) - 1, 0) }
+                        : item
+                    ).filter(item => item.quantity > 0);
+                    updateFormData('step1', { items: updatedItems });
+                  }
+                }
+              }}
+              onRemove={(segmentIndex, itemId) => {
+                const segments = (formData.step1.segments || []) as BookingSegment[];
+                const isMultiLeg = segments.length > 1;
+
+                if (isMultiLeg && segmentIndex !== null) {
+                  // Multi-leg: remove from specific segment
+                  const updatedSegments = segments.map((segment, idx) => {
+                    if (idx !== segmentIndex) return segment;
+                    
+                    return {
+                      ...segment,
+                      items: (segment.items || []).filter(item => item.id !== itemId),
+                    };
+                  });
+                  
+                  updateFormData('step1', { segments: updatedSegments });
+                  
+                  toast({
+                    title: 'Item Removed',
+                    description: `Item removed from ${segments[segmentIndex].segmentType} journey`,
+                    status: 'info',
+                    duration: 2000,
+                  });
+                } else {
+                  // Single-leg: remove from global items
+                  const items = formData.step1.items || [];
+                  const removedItem = items.find(i => i.id === itemId);
+                  const updatedItems = items.filter(item => item.id !== itemId);
+                  
+                  updateFormData('step1', { items: updatedItems });
+                  
+                  toast({
+                    title: 'Item Removed',
+                    description: removedItem ? `${removedItem.name} has been removed` : 'Item removed',
+                    status: 'info',
+                    duration: 2000,
+                  });
+                }
+              }}
+              showPricing={false}
+              readonly={false}
+              currentSegmentIndex={0}
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

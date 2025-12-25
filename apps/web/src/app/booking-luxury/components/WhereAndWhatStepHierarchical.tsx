@@ -95,28 +95,6 @@ export default function WhereAndWhatStepHierarchical({
   const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0);
   const prevSegmentsLengthRef = useRef(segments.length);
   const isNewSegmentAddedRef = useRef(false);
-
-  // Helper: Sync items bidirectionally between all segments
-  // This ensures all segments have the same items for multi-leg bookings
-  const syncItemsToAllSegments = useCallback((mappedItems: any[], sourceSegmentIndex: number) => {
-    if (!isMultiLeg || !updateSegment) return;
-    
-    // Deep copy items for each segment to avoid reference issues
-    const itemsCopy = mappedItems.map(item => ({ ...item }));
-    
-    // Sync to all other segments
-    segments.forEach((segment, idx) => {
-      if (idx !== sourceSegmentIndex) {
-        console.log(`🔄 Syncing items from segment ${sourceSegmentIndex} to segment ${idx}`);
-        updateSegment(idx, { items: itemsCopy.map(item => ({ ...item })) });
-      }
-    });
-  }, [isMultiLeg, updateSegment, segments]);
-  
-  // Backward compatibility wrapper
-  const syncItemsToReturnSegment = useCallback((mappedItems: any[]) => {
-    syncItemsToAllSegments(mappedItems, selectedSegmentIndex);
-  }, [syncItemsToAllSegments, selectedSegmentIndex]);
   
   // Track segment count changes - but DON'T auto-switch to new segment
   // This was causing items to be added to the wrong segment (additional journey instead of main)
@@ -165,6 +143,7 @@ export default function WhereAndWhatStepHierarchical({
   // Multi-leg: Load items from active segment when switching
   // Use a ref to track when WE just updated segments (to avoid re-reading our own changes)
   const justUpdatedSegmentsRef = useRef(false);
+  const lastItemsCountRef = useRef<number>(0);
   
   useEffect(() => {
     // CRITICAL: Always read fresh from formData, not from props
@@ -182,11 +161,18 @@ export default function WhereAndWhatStepHierarchical({
     
     const currentSegment = freshSegments[selectedSegmentIndex];
     const isJustAdded = isNewSegmentAddedRef.current;
+    const currentItemsCount = currentSegment?.items?.length || 0;
+    
+    // Skip reload if items count hasn't changed (prevents unnecessary reloads)
+    if (currentItemsCount === lastItemsCountRef.current && !isJustAdded) {
+      return;
+    }
     
     console.log(`🔄 Loading items for segment ${selectedSegmentIndex}:`, {
       segmentExists: !!currentSegment,
       hasItems: !!currentSegment?.items,
-      itemsCount: currentSegment?.items?.length || 0,
+      itemsCount: currentItemsCount,
+      lastCount: lastItemsCountRef.current,
       isNewSegmentAdded: isJustAdded
     });
     
@@ -195,6 +181,7 @@ export default function WhereAndWhatStepHierarchical({
     if (itemsWithRooms && itemsWithRooms.length > 0) {
       console.log(`✅ Loaded ${itemsWithRooms.length} items for segment ${selectedSegmentIndex}`);
       setSelectedItemsWithRooms(itemsWithRooms);
+      lastItemsCountRef.current = itemsWithRooms.length;
       isNewSegmentAddedRef.current = false;
     } else if (isJustAdded) {
       // Newly added segment - items might not have propagated yet
@@ -208,8 +195,10 @@ export default function WhereAndWhatStepHierarchical({
         if (retryItems && retryItems.length > 0) {
           console.log(`✅ Retry successful: Loaded ${retryItems.length} items for segment ${selectedSegmentIndex}`);
           setSelectedItemsWithRooms(retryItems);
+          lastItemsCountRef.current = retryItems.length;
         } else {
           console.log(`⚠️ Retry: Still no items found for segment ${selectedSegmentIndex}`);
+          lastItemsCountRef.current = 0;
         }
         isNewSegmentAddedRef.current = false;
       }, 50);
@@ -220,6 +209,7 @@ export default function WhereAndWhatStepHierarchical({
       if (!currentSegment?.items || currentSegment.items.length === 0) {
         console.log(`⚠️ No items found for segment ${selectedSegmentIndex}, clearing selection`);
         setSelectedItemsWithRooms([]);
+        lastItemsCountRef.current = 0;
       }
     }
   }, [selectedSegmentIndex, formData.step1.segments, loadItemsFromSegment]);
@@ -338,17 +328,13 @@ export default function WhereAndWhatStepHierarchical({
     const currentSegments = (formData.step1.segments || []) as BookingSegment[];
     const currentIsMultiLeg = currentSegments.length > 1;
 
-    // For multi-leg: save to ALL segments (same items for outbound and return)
-    if (currentIsMultiLeg) {
-      // Update ALL segments with the same items (deep copy for each)
-      const updatedSegments = currentSegments.map((segment) => ({
-        ...segment,
-        items: mappedItems.map(item => ({ ...item }))
-      }));
-      
-      // Also update global items for fallback compatibility
-      updateFormData('step1', { segments: updatedSegments, items: mappedItems });
-      console.log(`✅ Pre-populated: Updated ALL ${currentSegments.length} segments with ${mappedItems.length} items`);
+    // For multi-leg: save to CURRENT segment ONLY (not synced anymore)
+    if (currentIsMultiLeg && updateSegment) {
+      // Update ONLY the selected segment
+      updateSegment(selectedSegmentIndex, { items: mappedItems });
+      // Also update global items for backward compatibility
+      updateFormData('step1', { items: mappedItems });
+      console.log(`✅ Pre-populated: Updated segment ${selectedSegmentIndex} with ${mappedItems.length} items (NOT synced to other segments)`);
     } else {
       // Single-leg: save to global items
       updateFormData('step1', { items: mappedItems });
@@ -431,28 +417,27 @@ export default function WhereAndWhatStepHierarchical({
     console.log('🔍 DEBUG handleAddItem:', {
       isMultiLeg: currentIsMultiLeg,
       segmentsCount: currentSegments.length,
+      selectedSegmentIndex,
       mappedItemsCount: mappedItems.length,
       segmentTypes: currentSegments.map(s => s.segmentType)
     });
 
-    // For multi-leg: save to ALL segments (same items for outbound and return)
-    if (currentIsMultiLeg) {
-      // Update ALL segments with the same items (deep copy for each)
-      const updatedSegments = currentSegments.map((segment) => ({
-        ...segment,
-        items: mappedItems.map(item => ({ ...item }))
-      }));
+    // For multi-leg: save to CURRENT segment ONLY (isolated per journey)
+    if (currentIsMultiLeg && updateSegment) {
+      // Update ONLY the selected segment (items are now isolated per journey)
+      updateSegment(selectedSegmentIndex, { items: mappedItems });
       
-      console.log('🔍 DEBUG handleAddItem - Updating segments:', {
-        updatedSegmentsItems: updatedSegments.map(s => ({ type: s.segmentType, items: s.items?.length || 0 }))
+      console.log('🔍 DEBUG handleAddItem - Updated segment:', {
+        segmentIndex: selectedSegmentIndex,
+        itemsCount: mappedItems.length
       });
       
       // Mark that we're updating segments to prevent useEffect from clearing items
       justUpdatedSegmentsRef.current = true;
       
       // Also update global items for fallback compatibility
-      updateFormData('step1', { segments: updatedSegments, items: mappedItems });
-      console.log(`✅ Updated ALL ${currentSegments.length} segments with ${mappedItems.length} items`);
+      updateFormData('step1', { items: mappedItems });
+      console.log(`✅ Updated segment ${selectedSegmentIndex} with ${mappedItems.length} items (isolated - NOT synced to other segments)`);
     } else {
       // Single-leg: save to global items
       updateFormData('step1', { items: mappedItems });
@@ -510,20 +495,17 @@ export default function WhereAndWhatStepHierarchical({
     const currentSegments = (formData.step1.segments || []) as BookingSegment[];
     const currentIsMultiLeg = currentSegments.length > 1;
 
-    // For multi-leg: save to ALL segments (same items for outbound and return)
-    if (currentIsMultiLeg) {
-      // Update ALL segments with the same items (deep copy for each)
-      const updatedSegments = currentSegments.map((segment) => ({
-        ...segment,
-        items: mappedItems.map(item => ({ ...item }))
-      }));
+    // For multi-leg: save to CURRENT segment ONLY (isolated per journey)
+    if (currentIsMultiLeg && updateSegment) {
+      // Update ONLY the selected segment
+      updateSegment(selectedSegmentIndex, { items: mappedItems });
       
       // Mark that we're updating segments to prevent useEffect from clearing items
       justUpdatedSegmentsRef.current = true;
       
       // Also update global items for fallback compatibility
-      updateFormData('step1', { segments: updatedSegments, items: mappedItems });
-      console.log(`✅ AI items: Updated ALL ${currentSegments.length} segments with ${mappedItems.length} items`);
+      updateFormData('step1', { items: mappedItems });
+      console.log(`✅ AI items: Updated segment ${selectedSegmentIndex} with ${mappedItems.length} items (isolated)`);
     } else {
       // Single-leg: save to global items
       updateFormData('step1', { items: mappedItems });
@@ -566,19 +548,16 @@ export default function WhereAndWhatStepHierarchical({
     const currentSegments = (formData.step1.segments || []) as BookingSegment[];
     const currentIsMultiLeg = currentSegments.length > 1;
 
-    // For multi-leg: save to ALL segments (same items for outbound and return)
-    if (currentIsMultiLeg) {
-      // Update ALL segments with the same items (deep copy for each)
-      const updatedSegments = currentSegments.map((segment) => ({
-        ...segment,
-        items: mappedItems.map(item => ({ ...item }))
-      }));
+    // For multi-leg: save to CURRENT segment ONLY (isolated per journey)
+    if (currentIsMultiLeg && updateSegment) {
+      // Update ONLY the selected segment
+      updateSegment(selectedSegmentIndex, { items: mappedItems });
       
       // Mark that we're updating segments to prevent useEffect from clearing items
       justUpdatedSegmentsRef.current = true;
       
       // Also update global items for fallback compatibility
-      updateFormData('step1', { segments: updatedSegments, items: mappedItems });
+      updateFormData('step1', { items: mappedItems });
     } else {
       // Single-leg: save to global items
       updateFormData('step1', { items: mappedItems });
@@ -609,6 +588,7 @@ export default function WhereAndWhatStepHierarchical({
       const updatedItems = segment.items.map((item: any) =>
         item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
       );
+      justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
@@ -634,6 +614,7 @@ export default function WhereAndWhatStepHierarchical({
             : item
         )
         .filter((item: any) => item.quantity > 0);
+      justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
@@ -657,6 +638,7 @@ export default function WhereAndWhatStepHierarchical({
       // Multi-leg: update specific segment
       const segment = segments[segmentIndex];
       const updatedItems = segment.items.filter((item: any) => item.id !== itemId);
+      justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
@@ -1053,19 +1035,16 @@ export default function WhereAndWhatStepHierarchical({
                     const currentSegments = (formData.step1.segments || []) as BookingSegment[];
                     const currentIsMultiLeg = currentSegments.length > 1;
 
-                    // For multi-leg: save to ALL segments (same items for outbound and return)
-                    if (currentIsMultiLeg) {
-                      // Update ALL segments with the same items (deep copy for each)
-                      const updatedSegments = currentSegments.map((segment) => ({
-                        ...segment,
-                        items: mappedItems.map(item => ({ ...item }))
-                      }));
+                    // For multi-leg: save to CURRENT segment ONLY (isolated per journey)
+                    if (currentIsMultiLeg && updateSegment) {
+                      // Update ONLY the selected segment
+                      updateSegment(selectedSegmentIndex, { items: mappedItems });
                       
                       // Mark that we're updating segments to prevent useEffect from clearing items
                       justUpdatedSegmentsRef.current = true;
                       
                       // Also update global items for fallback compatibility
-                      updateFormData('step1', { segments: updatedSegments, items: mappedItems });
+                      updateFormData('step1', { items: mappedItems });
                     } else {
                       // Single-leg: save to global items
                       updateFormData('step1', { items: mappedItems });

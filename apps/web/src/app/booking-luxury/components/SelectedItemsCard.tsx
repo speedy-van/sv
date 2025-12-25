@@ -316,78 +316,100 @@ export default function SelectedItemsCard({
   return (
     <ScaleFade initialScale={0.98} in>
       <VStack spacing={4} align="stretch" w="100%">
-        {/* Header */}
+        {/* Header - Single Line Layout */}
         <Card
           bg={theme.fallbackBg}
           bgGradient={theme.bgGradient}
-          color="white"
+          borderWidth="2px"
+          borderColor={theme.accentColor}
           borderRadius="xl"
           overflow="hidden"
-          boxShadow="0 4px 20px rgba(0,0,0,0.15)"
-          sx={{
-            WebkitBackgroundClip: 'padding-box',
-            backgroundClip: 'padding-box',
-          }}
+          boxShadow="xl"
         >
-          <CardBody py={{ base: 4, md: 5 }} px={{ base: 4, md: 5 }}>
+          <CardBody py={{ base: 3, sm: 4, md: 5 }} px={{ base: 3, sm: 4, md: 5 }}>
             <Flex 
-              justify="space-between" 
-              align={{ base: 'start', sm: 'center' }}
-              direction={{ base: 'column', sm: 'row' }}
-              gap={{ base: 3, sm: 0 }}
+              direction="column"
+              gap={{ base: 2, sm: 2.5 }}
             >
-              <HStack spacing={3}>
-                <Circle 
-                  size={{ base: '44px', md: '50px' }} 
-                  bg="whiteAlpha.200"
-                  backdropFilter="blur(8px)"
-                >
-                  <Icon as={theme.headerIcon} boxSize={{ base: 5, md: 6 }} />
-                </Circle>
-                <VStack align="start" spacing={0}>
-                  <HStack spacing={2}>
-                    <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold">
-                      {segmentLabel || 'Selected Items'}
-                    </Text>
-                  </HStack>
-                  <HStack spacing={3} mt={1} flexWrap="wrap">
-                    <HStack spacing={1}>
-                      <Icon as={FaCubes} boxSize={3} opacity={0.8} />
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} opacity={0.9}>
-                        {items.length} {items.length === 1 ? 'item' : 'items'}
+              {/* Title Row - Single Line */}
+              <Text 
+                fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }} 
+                fontWeight="900"
+                color="white"
+                letterSpacing="tight"
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+                lineHeight="1.2"
+              >
+                {segmentLabel || 'Selected Items'}
+              </Text>
+              
+              {/* Meta Row - Single Line with Bullet Separators */}
+              <Flex
+                direction="row"
+                align="center"
+                gap={{ base: 2, sm: 2.5, md: 3 }}
+                flexWrap="nowrap"
+                overflow="hidden"
+              >
+                <HStack spacing={1} flexShrink={0}>
+                  <Icon as={FaCubes} boxSize={{ base: 3, sm: 3.5, md: 4 }} color="white" />
+                  <Text 
+                    fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }} 
+                    fontWeight="700" 
+                    color="white"
+                    whiteSpace="nowrap"
+                  >
+                    {items.length} {items.length === 1 ? 'item' : 'items'}
+                  </Text>
+                </HStack>
+                <Text color="whiteAlpha.700" fontSize={{ base: 'xs', sm: 'sm' }} flexShrink={0}>•</Text>
+                <HStack spacing={1} flexShrink={0}>
+                  <Icon as={FaBox} boxSize={{ base: 3, sm: 3.5, md: 4 }} color="white" />
+                  <Text 
+                    fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }} 
+                    fontWeight="700" 
+                    color="white"
+                    whiteSpace="nowrap"
+                  >
+                    {totalQuantity} qty
+                  </Text>
+                </HStack>
+                <Text color="whiteAlpha.700" fontSize={{ base: 'xs', sm: 'sm' }} flexShrink={0}>•</Text>
+                <HStack spacing={1} flexShrink={0}>
+                  <Icon as={FaWeight} boxSize={{ base: 3, sm: 3.5, md: 4 }} color="white" />
+                  <Text 
+                    fontSize={{ base: 'xs', sm: 'sm', md: 'sm' }} 
+                    fontWeight="700" 
+                    color="white"
+                    whiteSpace="nowrap"
+                  >
+                    {totalWeight.toFixed(0)} kg
+                  </Text>
+                </HStack>
+                {showPricing && totalPrice > 0 && (
+                  <>
+                    <Text color="whiteAlpha.700" fontSize={{ base: 'xs', sm: 'sm' }} flexShrink={0}>•</Text>
+                    <Box
+                      bg="whiteAlpha.200"
+                      px={{ base: 2, sm: 2.5, md: 3 }}
+                      py={{ base: 1, sm: 1.5 }}
+                      borderRadius="md"
+                      flexShrink={0}
+                    >
+                      <Text 
+                        fontSize={{ base: 'xs', sm: 'sm', md: 'md' }} 
+                        fontWeight="800" 
+                        color="white"
+                        whiteSpace="nowrap"
+                      >
+                        £{totalPrice.toFixed(2)}
                       </Text>
-                    </HStack>
-                    <HStack spacing={1}>
-                      <Icon as={FaBox} boxSize={3} opacity={0.8} />
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} opacity={0.9}>
-                        {totalQuantity} qty
-                      </Text>
-                    </HStack>
-                    <HStack spacing={1}>
-                      <Icon as={FaWeight} boxSize={3} opacity={0.8} />
-                      <Text fontSize={{ base: 'xs', md: 'sm' }} opacity={0.9}>
-                        {totalWeight.toFixed(0)} kg
-                      </Text>
-                    </HStack>
-                  </HStack>
-                </VStack>
-              </HStack>
-              {showPricing && totalPrice > 0 && (
-                <Box
-                  bg="whiteAlpha.200"
-                  backdropFilter="blur(8px)"
-                  px={4}
-                  py={2}
-                  borderRadius="lg"
-                >
-                  <VStack align={{ base: 'start', sm: 'end' }} spacing={0}>
-                    <Text fontSize="xs" opacity={0.8}>Estimated</Text>
-                    <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold">
-                      £{totalPrice.toFixed(2)}
-                    </Text>
-                  </VStack>
-                </Box>
-              )}
+                    </Box>
+                  </>
+                )}
+              </Flex>
             </Flex>
           </CardBody>
         </Card>
@@ -409,16 +431,29 @@ export default function SelectedItemsCard({
                   transform: 'translateY(-2px)',
                 }}
               >
-                <CardBody p={{ base: 3, md: 4 }}>
-                  <Flex gap={{ base: 3, md: 4 }} align="center" flexWrap={{ base: 'wrap', sm: 'nowrap' }}>
-                    {/* Image with overlay badge */}
-                    <Box position="relative" flexShrink={0}>
+                <CardBody p={{ base: 2, sm: 3, md: 4 }}>
+                  <Flex 
+                    gap={{ base: 1.5, sm: 2.5, md: 4 }} 
+                    align="center" 
+                    flexWrap="nowrap" 
+                    overflow="visible"
+                    direction="row"
+                    w="100%"
+                  >
+                    {/* Left: Thumbnail */}
+                    <Box 
+                      position="relative" 
+                      flexShrink={0}
+                      w={{ base: '50px', sm: '60px', md: '85px' }}
+                      h={{ base: '50px', sm: '60px', md: '85px' }}
+                      minW={{ base: '50px', sm: '60px', md: '85px' }}
+                    >
                       {item.image ? (
                         <Box
                           position="relative"
-                          w={{ base: '70px', md: '85px' }}
-                          h={{ base: '70px', md: '85px' }}
-                          borderRadius="xl"
+                          w="100%"
+                          h="100%"
+                          borderRadius={{ base: 'lg', md: 'xl' }}
                           overflow="hidden"
                           bg="gray.100"
                           boxShadow="0 2px 8px rgba(0,0,0,0.1)"
@@ -429,16 +464,16 @@ export default function SelectedItemsCard({
                             fill
                             style={{ objectFit: 'cover' }}
                           />
-                          {/* Quantity badge on image */}
                           <Badge
                             position="absolute"
                             bottom={1}
                             right={1}
                             colorScheme={theme.badgeColorScheme}
                             borderRadius="full"
-                            px={2}
-                            fontSize="xs"
+                            px={1.5}
+                            fontSize={{ base: '9px', sm: '10px', md: 'xs' }}
                             boxShadow="0 2px 4px rgba(0,0,0,0.2)"
+                            fontWeight="800"
                           >
                             ×{item.quantity}
                           </Badge>
@@ -446,44 +481,31 @@ export default function SelectedItemsCard({
                       ) : (
                         <Box
                           position="relative"
-                          w={{ base: '70px', md: '85px' }}
-                          h={{ base: '70px', md: '85px' }}
-                          borderRadius="xl"
+                          w="100%"
+                          h="100%"
+                          borderRadius={{ base: 'lg', md: 'xl' }}
                           bg={getCategoryGradient()}
                           boxShadow="0 4px 12px rgba(0,0,0,0.1)"
                           display="flex"
                           alignItems="center"
                           justifyContent="center"
                           overflow="hidden"
-                          _before={{
-                            content: '""',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            borderRadius: 'xl',
-                            border: '2px solid',
-                            borderColor: theme.borderColor,
-                            opacity: 0.5,
-                          }}
                         >
                           <Icon 
                             as={getCategoryIcon(item.category)} 
-                            boxSize={{ base: 7, md: 9 }} 
+                            boxSize={{ base: 5, sm: 6, md: 7 }} 
                             color={theme.accentColor}
-                            animation={`${floatAnimation} 3s ease-in-out infinite`}
                           />
-                          {/* Quantity badge */}
                           <Badge
                             position="absolute"
                             bottom={1}
                             right={1}
                             colorScheme={theme.badgeColorScheme}
                             borderRadius="full"
-                            px={2}
-                            fontSize="xs"
+                            px={1.5}
+                            fontSize={{ base: '9px', sm: '10px', md: 'xs' }}
                             boxShadow="0 2px 4px rgba(0,0,0,0.2)"
+                            fontWeight="800"
                           >
                             ×{item.quantity}
                           </Badge>
@@ -491,144 +513,166 @@ export default function SelectedItemsCard({
                       )}
                     </Box>
 
-                    {/* Info */}
-                    <VStack align="start" spacing={1.5} flex={1} minW={0}>
-                      <Text fontWeight="bold" fontSize={{ base: 'md', md: 'lg' }} color="gray.800" noOfLines={2}>
+                    {/* Middle: Item Name (Truncated) */}
+                    <Box 
+                      flex={1} 
+                      minW={0}
+                      overflow="hidden"
+                      pr={{ base: 1, sm: 2 }}
+                    >
+                      <Text 
+                        fontWeight="700" 
+                        fontSize={{ base: 'sm', sm: 'md', md: 'lg' }} 
+                        color="gray.800" 
+                        noOfLines={1}
+                        whiteSpace="nowrap"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        lineHeight="1.3"
+                      >
                         {item.name}
                       </Text>
-                      <HStack spacing={2} flexWrap="wrap">
+                      <HStack 
+                        spacing={1.5} 
+                        mt={0.5}
+                        flexWrap="nowrap"
+                        overflow="hidden"
+                      >
                         <Badge 
                           colorScheme={theme.badgeColorScheme} 
-                          fontSize="xs"
-                          px={2}
+                          fontSize={{ base: '9px', sm: '10px', md: 'xs' }}
+                          px={{ base: 1, sm: 1.5 }}
                           py={0.5}
                           borderRadius="full"
                           textTransform="capitalize"
+                          flexShrink={0}
+                          whiteSpace="nowrap"
                         >
                           {item.category}
                         </Badge>
-                        <HStack spacing={1} color="gray.500" fontSize="xs">
-                          <Icon as={FaWeight} boxSize={3} />
-                          <Text>{item.weight} kg</Text>
+                        <HStack spacing={0.5} color="gray.500" fontSize={{ base: '10px', sm: '11px', md: 'xs' }} flexShrink={0}>
+                          <Icon as={FaWeight} boxSize={{ base: 2.5, sm: 3 }} />
+                          <Text whiteSpace="nowrap">{item.weight} kg</Text>
                         </HStack>
                       </HStack>
-                      {item.description && (
-                        <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                          {item.description}
-                        </Text>
-                      )}
-                      {showPricing && item.unitPrice && (
-                        <Text fontSize="sm" color={theme.accentDark} fontWeight="medium">
-                          £{item.unitPrice.toFixed(2)} each
-                        </Text>
-                      )}
-                    </VStack>
+                    </Box>
 
-                    {/* Controls */}
+                    {/* Right: Quantity Controls + Delete */}
                     {!readonly && (
-                      <VStack spacing={3} align="center">
+                      <VStack 
+                        spacing={{ base: 1, sm: 1.5 }} 
+                        align="center" 
+                        flexShrink={0}
+                      >
+                        {/* Quantity Controls */}
                         <HStack
                           spacing={0}
                           bg={theme.quantityBg}
                           borderRadius="full"
-                          p={1}
+                          p={{ base: 0.5, sm: 1 }}
                           boxShadow="inset 0 2px 4px rgba(0,0,0,0.06)"
+                          flexShrink={0}
                         >
-                          <Tooltip label="Decrease" placement="top" hasArrow>
-                            <IconButton
-                              aria-label="Decrease quantity"
-                              icon={<FaMinus />}
-                              size="sm"
-                              colorScheme="gray"
-                              variant="ghost"
-                              borderRadius="full"
-                              onClick={() => {
-                                if (item.quantity > 1) {
-                                  onDecrement(item.id);
-                                } else {
-                                  toast({
-                                    title: 'Remove item?',
-                                    description: 'Use the delete button to remove this item.',
-                                    status: 'info',
-                                    duration: 2000,
-                                    isClosable: true,
-                                  });
-                                }
-                              }}
-                              isDisabled={item.quantity <= 1}
-                            />
-                          </Tooltip>
+                          <IconButton
+                            aria-label="Decrease quantity"
+                            icon={<FaMinus />}
+                            size={{ base: 'xs', sm: 'sm' }}
+                            colorScheme="gray"
+                            variant="ghost"
+                            borderRadius="full"
+                            onClick={() => {
+                              if (item.quantity > 1) {
+                                onDecrement(item.id);
+                              } else {
+                                toast({
+                                  title: 'Remove item?',
+                                  description: 'Use the delete button to remove this item.',
+                                  status: 'info',
+                                  duration: 2000,
+                                  isClosable: true,
+                                });
+                              }
+                            }}
+                            isDisabled={item.quantity <= 1}
+                            minW={{ base: '24px', sm: '28px' }}
+                            h={{ base: '24px', sm: '28px' }}
+                          />
                           
                           <Box
-                            px={3}
-                            py={1}
-                            minW="45px"
+                            px={{ base: 2, sm: 2.5 }}
+                            minW={{ base: '32px', sm: '40px' }}
                             textAlign="center"
                           >
                             <Text
-                              fontWeight="bold"
-                              fontSize="lg"
+                              fontWeight="800"
+                              fontSize={{ base: 'sm', sm: 'md', md: 'lg' }}
                               color={theme.accentDark}
+                              lineHeight="1"
                             >
                               {item.quantity}
                             </Text>
                           </Box>
                           
-                          <Tooltip label="Increase" placement="top" hasArrow>
-                            <IconButton
-                              aria-label="Increase quantity"
-                              icon={<FaPlus />}
-                              size="sm"
-                              colorScheme={theme.badgeColorScheme}
-                              variant="ghost"
-                              borderRadius="full"
-                              onClick={() => onIncrement(item.id)}
-                            />
-                          </Tooltip>
-                        </HStack>
-
-                        <Tooltip label="Remove item" placement="top" hasArrow>
                           <IconButton
-                            aria-label="Remove item"
-                            icon={<FaTrash />}
-                            size="sm"
-                            colorScheme="red"
+                            aria-label="Increase quantity"
+                            icon={<FaPlus />}
+                            size={{ base: 'xs', sm: 'sm' }}
+                            colorScheme={theme.badgeColorScheme}
                             variant="ghost"
                             borderRadius="full"
-                            onClick={() => {
-                              onRemove(item.id);
-                              toast({
-                                title: 'Item removed',
-                                description: `${item.name} removed from selection`,
-                                status: 'success',
-                                duration: 2000,
-                                isClosable: true,
-                              });
-                            }}
+                            onClick={() => onIncrement(item.id)}
+                            minW={{ base: '24px', sm: '28px' }}
+                            h={{ base: '24px', sm: '28px' }}
                           />
-                        </Tooltip>
+                        </HStack>
+
+                        {/* Delete Button - Below quantity controls */}
+                        <IconButton
+                          aria-label="Remove item"
+                          icon={<FaTrash />}
+                          size={{ base: 'xs', sm: 'sm' }}
+                          colorScheme="red"
+                          variant="solid"
+                          borderRadius="full"
+                          onClick={() => {
+                            onRemove(item.id);
+                            toast({
+                              title: 'Item removed',
+                              description: `${item.name} removed from selection`,
+                              status: 'success',
+                              duration: 2000,
+                              isClosable: true,
+                            });
+                          }}
+                          minW={{ base: '28px', sm: '32px' }}
+                          h={{ base: '28px', sm: '32px' }}
+                          _hover={{
+                            transform: 'scale(1.1)',
+                          }}
+                        />
                       </VStack>
                     )}
 
                     {readonly && (
                       <Box
                         bg={theme.quantityBg}
-                        px={4}
-                        py={3}
+                        px={{ base: 3, sm: 4 }}
+                        py={{ base: 2, sm: 2.5 }}
                         borderRadius="xl"
                         textAlign="center"
-                        minW="80px"
+                        minW={{ base: '60px', sm: '70px', md: '80px' }}
+                        flexShrink={0}
                       >
                         <Text
-                          fontWeight="bold"
-                          fontSize="2xl"
+                          fontWeight="800"
+                          fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}
                           color={theme.accentDark}
                           lineHeight="1"
                         >
                           {item.quantity}
                         </Text>
-                        <Text fontSize="xs" color="gray.500" mt={1}>
-                          Quantity
+                        <Text fontSize={{ base: '10px', sm: '11px', md: 'xs' }} color="gray.500" mt={0.5} whiteSpace="nowrap">
+                          Qty
                         </Text>
                       </Box>
                     )}
