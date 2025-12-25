@@ -10,6 +10,7 @@ import { ReactNode, useRef, useState, useEffect } from 'react';
 import { ROUTES, type UserRole } from '@/lib/routing';
 import { FiMenu, FiRefreshCw } from 'react-icons/fi';
 import { usePathname, useRouter } from 'next/navigation';
+import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 
 interface NavigationItem {
   label: string;
@@ -410,6 +411,9 @@ export function UnifiedNavigation({
                     _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
                   />
                 </Tooltip>
+
+                {/* Notification Bell */}
+                <AdminNotificationBell />
 
                 {/* Open AI Assistant */}
                 <Button

@@ -1348,6 +1348,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // ✅ Send real-time notification to admin
+    try {
+      const { notifyNewBooking } = await import('@/lib/services/admin-notification-service');
+      await notifyNewBooking(
+        booking.id,
+        booking.reference,
+        serviceType
+      );
+      console.log('📢 Admin notified of new booking:', booking.reference);
+    } catch (notifError) {
+      console.error('⚠️ Failed to send admin notification:', notifError);
+      // Non-critical, continue
+    }
+
     console.log('✅ Booking created successfully:', {
       id: booking.id,
       reference: booking.reference,

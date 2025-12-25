@@ -48,6 +48,15 @@ export async function POST(request: NextRequest) {
       submittedAt = contactInquiry.createdAt.toISOString();
       console.log('✅ Contact inquiry saved to database:', contactInquiryId);
       
+      // ✅ Send admin notification for new contact inquiry
+      try {
+        const { notifyNewContact } = await import('@/lib/services/admin-notification-service');
+        await notifyNewContact(contactInquiry.id, name, email);
+        console.log('📢 Admin notified of new contact inquiry');
+      } catch (notifError) {
+        console.error('⚠️ Failed to send admin notification:', notifError);
+      }
+      
       // Send Pusher notification for Live Chat messages
       if (body.source === 'live-chat') {
         try {
