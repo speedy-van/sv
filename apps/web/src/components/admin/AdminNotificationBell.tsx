@@ -82,7 +82,7 @@ export function AdminNotificationBell() {
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(`/api/admin/notifications/${notificationId}/read`, {
-        method: 'POST',
+        method: 'PUT',
       });
       
       if (!response.ok) throw new Error('Failed to mark as read');
