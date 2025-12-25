@@ -19,7 +19,6 @@ import {
   Text,
   Textarea,
   Tooltip,
-  useDisclosure,
   VStack,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
@@ -54,6 +53,8 @@ interface AIItemExtractionAssistantProps {
   propertyType?: PropertyType;
   selectedItems: { id: string; name: string; quantity: number }[];
   onAddItems: (items: AiAddedItemPayload[]) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const INITIAL_MESSAGE =
@@ -76,6 +77,8 @@ export default function AIItemExtractionAssistant({
   propertyType,
   selectedItems,
   onAddItems,
+  isOpen,
+  onClose,
 }: AIItemExtractionAssistantProps) {
   console.log('🤖 AIItemExtractionAssistant RENDERED', { propertyType, selectedItemsCount: selectedItems.length });
   
@@ -155,8 +158,6 @@ export default function AIItemExtractionAssistant({
       text: question.question,
     }));
   }, [pendingQuestions]);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Chat content component to avoid duplication
   const ChatContent = () => (
@@ -413,97 +414,40 @@ export default function AIItemExtractionAssistant({
   );
 
   return (
-    <>
-      {/* Floating Action Button */}
-      <Tooltip 
-        label="AI Assistant - Let AI add items for you!" 
-        placement="left"
-        hasArrow
-        bg="green.500"
-        color="white"
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size={{ base: "full", md: "xl" }}
+      motionPreset="slideInBottom"
+      scrollBehavior="inside"
+    >
+      <ModalOverlay 
+        bg="blackAlpha.800"
+        backdropFilter="blur(10px)"
+      />
+      <ModalContent
+        bgGradient="linear(to-br, gray.900, gray.800)"
+        border="2px solid"
+        borderColor="green.400"
+        borderRadius={{ base: "0", md: "3xl" }}
+        mx={{ base: 0, md: 4 }}
+        my={{ base: 0, md: 4 }}
+        maxH={{ base: "100vh", md: "90vh" }}
+        overflow="hidden"
       >
-        <Box
-          position="fixed"
-          bottom={{ base: "100px", md: "30px" }}
-          right={{ base: "20px", md: "30px" }}
-          zIndex={1000}
-        >
-          <IconButton
-            aria-label="Open AI Assistant"
-            icon={<Icon as={FaRobot} boxSize={7} />}
-            onClick={onOpen}
-            size="lg"
-            w="70px"
-            h="70px"
-            borderRadius="full"
-            bgGradient="linear(to-br, green.400, teal.500)"
-            color="white"
-            boxShadow="0 8px 32px rgba(16, 185, 129, 0.5)"
-            animation={`${pulseAnimation} 2s infinite`}
-            _hover={{
-              bgGradient: 'linear(to-br, green.500, teal.600)',
-              transform: 'scale(1.1)',
-              boxShadow: '0 12px 40px rgba(16, 185, 129, 0.6)',
-            }}
-            _active={{
-              transform: 'scale(0.95)',
-            }}
-            transition="all 0.3s"
-          />
-          {/* Notification badge showing it's available */}
-          <Badge
-            position="absolute"
-            top="-2px"
-            right="-2px"
-            colorScheme="orange"
-            borderRadius="full"
-            px={2}
-            py={1}
-            fontSize="xs"
-            fontWeight="bold"
-            boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
-          >
-            AI
-          </Badge>
-        </Box>
-      </Tooltip>
-
-      {/* Modal */}
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        size={{ base: "full", md: "xl" }}
-        motionPreset="slideInBottom"
-        scrollBehavior="inside"
-      >
-        <ModalOverlay 
-          bg="blackAlpha.800"
-          backdropFilter="blur(10px)"
+        <ModalCloseButton 
+          color="white" 
+          size="lg"
+          top={4}
+          right={4}
+          zIndex={10}
+          _hover={{ bg: 'whiteAlpha.200' }}
         />
-        <ModalContent
-          bgGradient="linear(to-br, gray.900, gray.800)"
-          border="2px solid"
-          borderColor="green.400"
-          borderRadius={{ base: "0", md: "3xl" }}
-          mx={{ base: 0, md: 4 }}
-          my={{ base: 0, md: 4 }}
-          maxH={{ base: "100vh", md: "90vh" }}
-          overflow="hidden"
-        >
-          <ModalCloseButton 
-            color="white" 
-            size="lg"
-            top={4}
-            right={4}
-            zIndex={10}
-            _hover={{ bg: 'whiteAlpha.200' }}
-          />
-          <ModalBody p={{ base: 4, md: 6 }} pt={{ base: 6, md: 6 }}>
-            <ChatContent />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+        <ModalBody p={{ base: 4, md: 6 }} pt={{ base: 6, md: 6 }}>
+          <ChatContent />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 }
 

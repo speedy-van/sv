@@ -42,7 +42,19 @@ import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
-import FloatingCustomerChatButton from '@/components/customer/FloatingCustomerChatButton';
+import FloatingActionButtons from './components/FloatingActionButtons';
+import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
+import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
+import SelectedItemsManager from './components/SelectedItemsManager';
+import { 
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react';
 
 // Removed ItemImage component - using icons instead
 
@@ -87,6 +99,25 @@ export default function BookingLuxuryPage() {
   
   // Auto-progression flags
   const [isAutoTransitioning, setIsAutoTransitioning] = useState(false);
+  
+  // Unified floating buttons state
+  const { 
+    isOpen: isChatOpen, 
+    onOpen: onChatOpen, 
+    onClose: onChatClose 
+  } = useDisclosure();
+  
+  const { 
+    isOpen: isAIOpen, 
+    onOpen: onAIOpen, 
+    onClose: onAIClose 
+  } = useDisclosure();
+  
+  const { 
+    isOpen: isItemsOpen, 
+    onOpen: onItemsOpen, 
+    onClose: onItemsClose 
+  } = useDisclosure();
 
   // Ensure the booking flow uses immediate scroll behavior to avoid jump-to-top glitches
   useEffect(() => {
@@ -2319,8 +2350,213 @@ export default function BookingLuxuryPage() {
 
       {/* Bottom navigation removed as per request */}
       
-      {/* Floating Chat Button */}
-      <FloatingCustomerChatButton />
+      {/* Unified Floating Action Buttons */}
+      <FloatingActionButtons
+        itemCount={(() => {
+          const segments = (formData.step1.segments || []) as any[];
+          const isMultiLeg = segments.length > 1;
+          if (isMultiLeg) {
+            return segments.reduce((total, seg) => {
+              const items = seg.items || [];
+              return total + items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+            }, 0);
+          }
+          return (formData.step1.items || []).reduce((sum, item) => sum + item.quantity, 0);
+        })()}
+        onItemsClick={onItemsOpen}
+        showItemsButton={currentStep === 2 || currentStep === 3}
+        onAIClick={onAIOpen}
+        showAIButton={currentStep === 2}
+        onChatClick={onChatOpen}
+        showChatButton={true}
+      />
+      
+      {/* Customer Chat Widget */}
+      <CustomerChatWidget isOpen={isChatOpen} onClose={onChatClose} />
+      
+      {/* AI Assistant - Only show on step 2 */}
+      {currentStep === 2 && (
+        <AIItemExtractionAssistant
+          isOpen={isAIOpen}
+          onClose={onAIClose}
+          propertyType={'house'}
+          selectedItems={(formData.step1.items || []).map((item) => ({
+            id: item.id || item.name,
+            name: item.name,
+            quantity: item.quantity,
+          }))}
+          onAddItems={(extractedItems) => {
+            // Handle extracted items
+            const segments = (formData.step1.segments || []) as any[];
+            const isMultiLeg = segments.length > 1;
+            
+            if (isMultiLeg) {
+              // For multi-leg, add to current segment (or first segment)
+              // This logic can be improved based on your requirements
+              console.log('AI extracted items for multi-leg booking:', extractedItems);
+            } else {
+              // For single journey, add to items list
+              const currentItems = formData.step1.items || [];
+              const updatedItems = [...currentItems];
+              
+              extractedItems.forEach(aiItem => {
+                const existingIndex = updatedItems.findIndex(item => item.name === aiItem.item.name);
+                if (existingIndex >= 0) {
+                  updatedItems[existingIndex].quantity += aiItem.quantity;
+                } else {
+                  updatedItems.push({
+                    id: aiItem.item.id || aiItem.item.name,
+                    name: aiItem.item.name,
+                    quantity: aiItem.quantity,
+                    category: aiItem.item.category || '',
+                    description: '',
+                    size: (aiItem.size as 'small' | 'medium' | 'large') || 'medium',
+                    unitPrice: 0,
+                    totalPrice: 0,
+                    weight: aiItem.item.weight || 0,
+                    volume: 0,
+                  });
+                }
+              });
+              
+              updateFormData('step1', {
+                ...formData.step1,
+                items: updatedItems,
+              });
+            }
+            
+            toast({
+              title: 'Items Added',
+              description: `${extractedItems.length} item(s) added by AI`,
+              status: 'success',
+              duration: 3000,
+            });
+          }}
+        />
+      )}
+
+      {/* Selected Items Modal - With edit controls */}
+      <Modal isOpen={isItemsOpen} onClose={onItemsClose} size="xl" scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            Selected Items ({(formData.step1.items || []).reduce((sum, item) => sum + item.quantity, 0)})
+          </ModalHeader>
+          <ModalCloseButton 
+            color="white" 
+            _hover={{ bg: 'whiteAlpha.300' }} 
+            sx={{ 
+              right: '4px !important',
+              top: '-8px !important'
+            }} 
+          />
+          <ModalBody pb={6}>
+            <VStack align="stretch" spacing={4}>
+              {(formData.step1.items || []).map((item, idx) => (
+                <Box 
+                  key={`${item.id}-${idx}`}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor="gray.300"
+                  boxShadow="sm"
+                  position="relative"
+                >
+                  {/* Close button in top right */}
+                  <IconButton
+                    aria-label="Remove item"
+                    icon={<FaTrash />}
+                    size="xs"
+                    position="absolute"
+                    top={2}
+                    right={8}
+                    color="red.500"
+                    variant="ghost"
+                    _hover={{ color: 'red.600' }}
+                    _active={{ color: 'red.700' }}
+                    onClick={() => {
+                      const currentItems = formData.step1.items || [];
+                      const updatedItems = currentItems.filter((_, i) => i !== idx);
+                      updateFormData('step1', {
+                        ...formData.step1,
+                        items: updatedItems,
+                      });
+                      
+                      toast({
+                        title: 'Item Removed',
+                        description: `${item.name} has been removed`,
+                        status: 'info',
+                        duration: 2000,
+                      });
+                    }}
+                  />
+                  
+                  <HStack justify="space-between" align="center">
+                    <VStack align="start" spacing={1} flex={1} pr={8}>
+                      <Text fontWeight="bold" color="gray.800">{item.name}</Text>
+                      <Text fontSize="sm" color="gray.600">{item.category}</Text>
+                    </VStack>
+                    
+                    <HStack spacing={2}>
+                      {/* Decrease quantity */}
+                      <IconButton
+                        aria-label="Decrease quantity"
+                        icon={<FaMinus />}
+                        size="sm"
+                        bg="orange.500"
+                        color="white"
+                        _hover={{ bg: 'orange.600' }}
+                        _active={{ bg: 'orange.700' }}
+                        onClick={() => {
+                          const currentItems = formData.step1.items || [];
+                          const updatedItems = [...currentItems];
+                          if (updatedItems[idx].quantity > 1) {
+                            updatedItems[idx].quantity -= 1;
+                            updateFormData('step1', {
+                              ...formData.step1,
+                              items: updatedItems,
+                            });
+                          }
+                        }}
+                        isDisabled={item.quantity <= 1}
+                      />
+                      
+                      {/* Quantity badge */}
+                      <Badge colorScheme="blue" fontSize="lg" px={3} py={1}>
+                        {item.quantity}
+                      </Badge>
+                      
+                      {/* Increase quantity */}
+                      <IconButton
+                        aria-label="Increase quantity"
+                        icon={<FaPlus />}
+                        size="sm"
+                        bg="green.500"
+                        color="white"
+                        _hover={{ bg: 'green.600' }}
+                        _active={{ bg: 'green.700' }}
+                        onClick={() => {
+                          const currentItems = formData.step1.items || [];
+                          const updatedItems = [...currentItems];
+                          updatedItems[idx].quantity += 1;
+                          updateFormData('step1', {
+                            ...formData.step1,
+                            items: updatedItems,
+                          });
+                        }}
+                      />
+                    </HStack>
+                  </HStack>
+                </Box>
+              ))}
+              {(formData.step1.items || []).length === 0 && (
+                <Text color="gray.500" textAlign="center">No items selected yet</Text>
+              )}
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
     </>
   );

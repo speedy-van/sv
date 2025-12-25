@@ -1077,16 +1077,7 @@ export default function WhereAndWhatStepHierarchical({
           </CardBody>
         </Card>
 
-        {/* AI Assistant - Always visible in all levels */}
-        <AIItemExtractionAssistant
-          propertyType={propertyType}
-          selectedItems={selectedItemsWithRooms.map(item => ({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-          }))}
-          onAddItems={handleAiAddItems}
-        />
+        {/* AI Assistant - Controlled by parent via FloatingActionButtons */}
 
         {/* Level 1: Property Type Selection */}
         {currentLevel === 1 && (
@@ -1160,115 +1151,15 @@ export default function WhereAndWhatStepHierarchical({
         )}
       </VStack>
 
-      {/* Floating Black Button for Selected Items - Show in ALL levels when items exist */}
+      {/* Selected Items Floating Button - Handled by parent */}
       {selectedItemsWithRooms.length > 0 && (
         <>
-          <Box
-            position="fixed"
-            bottom={{ base: '180px', md: '110px' }}
-            right={{ base: '20px', md: '30px' }}
-            zIndex={1500}
-          >
-            <Flex
-              as="button"
-              onClick={handleToggleSummary}
-              direction="column"
-              align="center"
-              justify="center"
-              bgGradient={isSummaryExpanded 
-                ? "linear(135deg, #7c3aed, #4f46e5)" 
-                : "linear(135deg, #f43f5e, #ec4899)"}
-              color="white"
-              borderRadius="full"
-              w={{ base: '70px', md: '80px' }}
-              h={{ base: '70px', md: '80px' }}
-              cursor={isToggling ? 'wait' : 'pointer'}
-              boxShadow={isSummaryExpanded 
-                ? "0 8px 32px rgba(124, 58, 237, 0.5)" 
-                : "0 8px 32px rgba(244, 63, 94, 0.5)"}
-              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              border="3px solid white"
-              position="relative"
-              opacity={isToggling ? 0.7 : 1}
-              pointerEvents={isToggling ? 'none' : 'auto'}
-              overflow="hidden"
-              _hover={{
-                transform: isToggling ? 'none' : 'scale(1.1)',
-                boxShadow: isSummaryExpanded 
-                  ? '0 12px 40px rgba(124, 58, 237, 0.6)' 
-                  : '0 12px 40px rgba(244, 63, 94, 0.6)',
-              }}
-              _active={{
-                transform: isToggling ? 'none' : 'scale(0.95)',
-              }}
-              textAlign="center"
-            >
-              <Icon 
-                as={isSummaryExpanded ? FaTimes : FaShoppingBag} 
-                boxSize={{ base: 6, md: 7 }} 
-                color="white"
-                transition="all 0.3s"
-                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
-                zIndex={1}
-              />
-              {/* Item count badge */}
-              <Badge
-                position="absolute"
-                top="-4px"
-                right="-4px"
-                colorScheme="yellow"
-                borderRadius="full"
-                minW="24px"
-                h="24px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                fontSize="xs"
-                fontWeight="bold"
-                boxShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
-              >
-                {selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0)}
-              </Badge>
-            </Flex>
-          </Box>
 
-          {/* Expanded Details Panel */}
-          <Box
-            position="fixed"
-            bottom="0"
-            left="0"
-            right="0"
-            zIndex={1400}
-            pointerEvents={isSummaryExpanded ? 'auto' : 'none'}
-          >
-            <Collapse in={isSummaryExpanded} animateOpacity>
-              <Box
-                bg="#050505"
-                backdropFilter="blur(20px)"
-                borderTop="2px solid"
-                borderColor="rgba(168, 85, 247, 0.4)"
-                boxShadow="0 -8px 32px rgba(0, 0, 0, 0.8)"
-                maxH="60vh"
-                overflowY="auto"
-                p={{ base: 4, md: 6 }}
-              >
-                {/* Use new comprehensive Selected Items Manager */}
-                <SelectedItemsManager
-                  segments={segments}
-                  isMultiLeg={isMultiLeg}
-                  globalItems={formData.step1.items || []}
-                  onIncrement={handleIncrementItem}
-                  onDecrement={handleDecrementItem}
-                  onRemove={handleRemoveItem}
-                  showPricing={false}
-                  readonly={false}
-                  currentSegmentIndex={selectedSegmentIndex}
-                />
-              </Box>
-            </Collapse>
-          </Box>
         </>
       )}
+
+      {/* Expose toggle function to parent via ref */}
+      {/* This allows parent to control summary panel */}
     </Box>
   );
 }
