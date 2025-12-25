@@ -167,7 +167,7 @@ const bookingSegmentSchema = z.object({
 });
 
 // Crew size schema - number of helpers/workers
-const crewSizeSchema = z.enum(['1', '2', '3', '4']).default('2');
+const crewSizeSchema = z.enum(['1', '2', '3', '4']).default('1');
 
 const step1Schema = z.object({
   pickupAddress: frontendAddressSchema,
@@ -274,7 +274,7 @@ const initialFormData: FormData = {
     },
     items: [],
     serviceType: 'standard',
-    crewSize: '2', // Default to 2 helpers
+    crewSize: '1', // Default to 1 man (driver only) - base price
     pickupDate: '',
     pickupTimeSlot: undefined,
     urgency: 'scheduled',

@@ -99,7 +99,7 @@ async function notifyAdminAboutReturnJourney(bookingData: {
         itemsCount: bookingData.itemsCount || 0,
         items: bookingData.items ? JSON.parse(JSON.stringify(bookingData.items)) : null,
         serviceLevel: bookingData.serviceLevel || null,
-        crewSize: bookingData.crewSize || '2',
+        crewSize: bookingData.crewSize || '1',
         distanceMiles: bookingData.distanceMiles || null,
         estimatedDuration: bookingData.estimatedDuration || null,
         notificationSent: true,
@@ -202,7 +202,7 @@ async function notifyAdminAboutNewJourney(bookingData: {
         itemsCount: bookingData.itemsCount,
         items: bookingData.items ? JSON.parse(JSON.stringify(bookingData.items)) : null,
         serviceLevel: bookingData.serviceLevel,
-        crewSize: bookingData.crewSize || '2',
+        crewSize: bookingData.crewSize || '1',
         distanceMiles: bookingData.distanceMiles || null,
         scheduledDate: bookingData.scheduledDate || null,
         estimatedDuration: bookingData.estimatedDuration || null,
@@ -240,7 +240,7 @@ async function notifyAdminAboutNewJourney(bookingData: {
           items: bookingData.items || [],
           serviceLevel: bookingData.serviceLevel,
           distanceMiles: bookingData.distanceMiles || 0,
-          crewSize: bookingData.crewSize || '2',
+          crewSize: bookingData.crewSize || '1',
           multiDropPotential: bookingData.multiDropPotential,
           potentialSavings: bookingData.potentialSavings || 0,
         },
@@ -936,14 +936,15 @@ export async function POST(request: NextRequest) {
       '3': 'THREE',
       '4': 'FOUR',
     };
-    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '2'] || 'TWO';
+    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '1'] || 'ONE';
     
     // Calculate crew multiplier (affects price)
+    // ✅ CRITICAL FIX: Only 1 Man = base price. 2+ Men = crew surcharge applied.
     const crewMultipliers: Record<string, number> = {
-      'ONE': 0,    // Base price (1 man)
-      'TWO': 0,    // Standard (included in base)
-      'THREE': 25, // +25%
-      'FOUR': 50,  // +50%
+      'ONE': 0,    // Base price (1 man = driver only)
+      'TWO': 20,   // +20% for 2-man crew (FIXED: was 0%, causing revenue loss)
+      'THREE': 35, // +35% for 3-man crew
+      'FOUR': 50,  // +50% for 4-man crew
     };
     const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
     
@@ -1422,7 +1423,7 @@ export async function POST(request: NextRequest) {
         })) || [],
         serviceLevel: booking.urgency || 'standard',
         distanceMiles: booking.baseDistanceMiles || 0,
-        crewSize: bookingData.crewSize || '2',
+        crewSize: bookingData.crewSize || '1',
         estimatedDuration: booking.estimatedDurationMinutes || null,
         multiDropPotential: isMultiLeg,
         potentialSavings: 0, // Can be calculated if multi-drop discount exists
@@ -1521,7 +1522,7 @@ export async function POST(request: NextRequest) {
                 category: item.category,
               })) || [],
               serviceLevel: booking.urgency || 'standard',
-              crewSize: bookingData.crewSize || '2',
+              crewSize: bookingData.crewSize || '1',
               distanceMiles: returnJourneyPricing.deviationDistance ? (returnJourneyPricing.deviationDistance / 1609.34) : undefined,
               estimatedDuration: booking.estimatedDurationMinutes || undefined,
             });

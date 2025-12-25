@@ -404,8 +404,8 @@ export default function BookingLuxuryPage() {
           urgency: actualUrgency,
           timeSlot: formData.step1.pickupTimeSlot || 'flexible',
           // ✅ CRITICAL: Include crewSize for crew surcharge calculation
-          // Crew size affects price: 3-men = +25%, 4-men = +50%
-          crewSize: formData.step1.crewSize || '2'
+          // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
+          crewSize: formData.step1.crewSize || '1'
         })
       });
 
@@ -763,8 +763,8 @@ export default function BookingLuxuryPage() {
             : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
           serviceLevel: 'standard',
           // ✅ CRITICAL: Include crewSize for crew surcharge calculation
-          // Crew size affects price: 3-men = +25%, 4-men = +50%
-          crewSize: formData.step1.crewSize || '2'
+          // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
+          crewSize: formData.step1.crewSize || '1'
         })
       });
 
@@ -1156,7 +1156,7 @@ export default function BookingLuxuryPage() {
           datetime: s.datetime
         })),
         // ✅ INCLUDE CREW SIZE to detect changes and trigger price recalculation
-        crewSize: formData.step1.crewSize || '2'
+        crewSize: formData.step1.crewSize || '1'
       });
       
       // Only trigger if data actually changed
@@ -2087,9 +2087,9 @@ export default function BookingLuxuryPage() {
                             }}
                           >
                             {[
-                              { value: '1', label: '1 Man', desc: 'Small items', price: 'Base' },
-                              { value: '2', label: '2 Men', desc: 'Standard move', price: 'Popular', popular: true },
-                              { value: '3', label: '3 Men', desc: 'Large items', price: '+25%' },
+                              { value: '1', label: '1 Man', desc: 'Driver only', price: 'Base' },
+                              { value: '2', label: '2 Men', desc: 'Standard move', price: '+20%', popular: true },
+                              { value: '3', label: '3 Men', desc: 'Large items', price: '+35%' },
                               { value: '4', label: '4 Men', desc: 'Full house', price: '+50%' },
                             ].map((option) => {
                               const isSelected = formData.step1.crewSize === option.value;
