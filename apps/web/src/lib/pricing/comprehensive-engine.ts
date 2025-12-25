@@ -51,6 +51,11 @@ import {
   type MultiDropStop,
   type ComprehensivePricingBreakdown
 } from './comprehensive-schemas';
+import { 
+  isRemoteMainlandPickupLocation, 
+  getRemoteLocationCountry,
+  REMOTE_LOCATION_CONFIG 
+} from './remote-location-checker';
 
 // ============================================================================
 // OPERATIONAL PRICING CONFIGURATION - 100% Documentation Compliance
@@ -382,11 +387,12 @@ export class ComprehensivePricingEngine {
     );
 
     // 9. FINALIZE WITH VAT AND ROUNDING (No rounding until final step)
-    // Apply customer price adjustment from admin settings + crew size multiplier
+    // Apply customer price adjustment from admin settings + crew size multiplier + remote pickup surcharge
     const finalPricing = this.finalizePricing(
       adjustedPricing,
       pricingSettings?.customerAdjustment,
-      validatedInput.crewSize || '2'
+      validatedInput.crewSize || '2',
+      validatedInput.pickup // Pass pickup address for remote location check
     );
 
     // 10. ECONOMY SERVICE DATE CHECK (≤7 days if multi-drop)
@@ -1004,6 +1010,7 @@ export class ComprehensivePricingEngine {
       distanceCost,
       timeCost,
       accessSurcharges,
+      remotePickupSurcharge: 0, // Applied in finalizePricing
       serviceMultiplier: 1.0, // Applied separately
       seasonalMultiplier,
       multiDropDiscount,
@@ -1113,7 +1120,8 @@ export class ComprehensivePricingEngine {
   private finalizePricing(
     breakdown: ComprehensivePricingBreakdown, 
     customerAdjustment?: number,
-    crewSize: '1' | '2' | '3' | '4' = '2'
+    crewSize: '1' | '2' | '3' | '4' = '2',
+    pickupAddress?: any // StructuredAddress for remote location check
   ): ComprehensivePricingBreakdown {
     // Apply customer price adjustment from admin settings (if any)
     let adjustedSubtotal = breakdown.subtotalBeforeVat;
@@ -1139,11 +1147,31 @@ export class ComprehensivePricingEngine {
     const vatRate = 0.20;
     const vatAmount = adjustedSubtotal * vatRate;
 
-    // Final total (round to nearest penny - no intermediate rounding)
-    const totalAmount = Math.round((adjustedSubtotal + vatAmount) * 100) / 100;
+    // Calculate total BEFORE remote pickup surcharge check
+    let totalAmount = Math.round((adjustedSubtotal + vatAmount) * 100) / 100;
+
+    // ✅ NEW: REMOTE MAINLAND PICKUP SURCHARGE
+    // If pickup is from remote mainland location AND total < £300, add £120 surcharge
+    let remotePickupSurcharge = 0;
+    if (pickupAddress) {
+      const isRemote = isRemoteMainlandPickupLocation(pickupAddress);
+      
+      if (isRemote && totalAmount < REMOTE_LOCATION_CONFIG.PRICE_THRESHOLD) {
+        remotePickupSurcharge = REMOTE_LOCATION_CONFIG.SURCHARGE_AMOUNT;
+        totalAmount += remotePickupSurcharge;
+        
+        const country = getRemoteLocationCountry(pickupAddress);
+        console.log(`🏔️  REMOTE PICKUP SURCHARGE: Location "${pickupAddress.city}" (${country || 'unknown'}) is remote mainland`);
+        console.log(`💰 Original total: £${(totalAmount - remotePickupSurcharge).toFixed(2)} < £${REMOTE_LOCATION_CONFIG.PRICE_THRESHOLD} → Adding £${remotePickupSurcharge} surcharge`);
+        console.log(`💰 New total: £${totalAmount.toFixed(2)}`);
+      } else if (isRemote) {
+        console.log(`🏔️  Remote pickup detected but total ≥ £${REMOTE_LOCATION_CONFIG.PRICE_THRESHOLD}, no surcharge applied`);
+      }
+    }
 
     return {
       ...breakdown,
+      remotePickupSurcharge, // Add to breakdown
       subtotalBeforeVat: adjustedSubtotal,
       vatAmount,
       totalAmount

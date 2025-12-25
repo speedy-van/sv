@@ -304,6 +304,7 @@ export const ComprehensivePricingBreakdownSchema = z.object({
 
   // Surcharges
   accessSurcharges: z.number().min(0),
+  remotePickupSurcharge: z.number().min(0).default(0), // £120 for remote mainland pickups when total < £300
   serviceMultiplier: z.number().min(0),
   seasonalMultiplier: z.number().min(0),
 
