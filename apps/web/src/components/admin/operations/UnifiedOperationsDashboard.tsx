@@ -390,32 +390,35 @@ export default function UnifiedOperationsDashboard() {
       });
 
       // ✅ NEW: Listen for live chat messages
-      notificationsChannel.bind('live-chat-message', (data: any) => {
-        console.log('💬 Live chat message received:', data);
+      // Listen for customer chat messages (separate from contact inquiries)
+      notificationsChannel.bind('customer-chat-message', (data: any) => {
+        console.log('💬 Customer chat message received:', data);
         
-        const toastId = toast({
-          title: '💬 New Live Chat Message',
+        // Play notification sound
+        playChatNotificationSound();
+        
+        toast({
+          title: '💬 New Customer Chat Message',
           description: (
             <Box>
               <Text fontWeight="bold" fontSize="md" mb={1}>
-                {data.data.customerName} - Live Chat Support
+                {data.data.customerName}
               </Text>
               <Text fontSize="sm" noOfLines={2}>
-                {data.data.message.substring(0, 100)}
-                {data.data.message.length > 100 ? '...' : ''}
+                {data.data.message}
               </Text>
-              <Text fontSize="xs" opacity={0.8} mt={1}>
-                Email: {data.data.customerEmail}
+              <Text fontSize="xs" mt={1} opacity={0.9}>
+                {data.data.customerEmail}
               </Text>
               <Button
-                size="xs"
-                mt={2}
+                size="sm"
                 colorScheme="blue"
+                mt={2}
                 onClick={() => {
-                  window.location.href = `/admin/contact-inquiries`;
+                  window.location.href = `/admin/chat?sessionId=${data.data.sessionId}`;
                 }}
               >
-                View Message
+                View Chat
               </Button>
             </Box>
           ),
@@ -424,9 +427,42 @@ export default function UnifiedOperationsDashboard() {
           isClosable: true,
           position: 'top-right',
         });
+      });
+
+      // Listen for new customer chat session started
+      notificationsChannel.bind('customer-chat-started', (data: any) => {
+        console.log('💬 New customer chat session started:', data);
         
-        // Play notification sound
-        playChatNotificationSound();
+        toast({
+          title: '💬 New Customer Chat Started',
+          description: (
+            <Box>
+              <Text fontWeight="bold" fontSize="md" mb={1}>
+                {data.data.customerName}
+              </Text>
+              <Text fontSize="sm">
+                Started a new chat session
+              </Text>
+              <Text fontSize="xs" mt={1} opacity={0.9}>
+                {data.data.customerEmail}
+              </Text>
+              <Button
+                size="sm"
+                colorScheme="blue"
+                mt={2}
+                onClick={() => {
+                  window.location.href = `/admin/chat?sessionId=${data.data.sessionId}`;
+                }}
+              >
+                View Chat
+              </Button>
+            </Box>
+          ),
+          status: 'info',
+          duration: 6000,
+          isClosable: true,
+          position: 'top-right',
+        });
       });
 
       // ✅ NEW: Listen for new journey opportunities

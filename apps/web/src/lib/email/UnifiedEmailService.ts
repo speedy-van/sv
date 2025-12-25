@@ -1529,6 +1529,20 @@ function generateRefundNotificationHTML(data: RefundNotificationData): string {
 }
 
 export const unifiedEmailService = {
+  async sendEmail(options: { to: string; subject: string; html: string; attachments?: EmailAttachment[] }) {
+    try {
+      return await sendEmail(options.to, options.subject, options.html, options.attachments);
+    } catch (error) {
+      console.error('Send email failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        messageId: null,
+        provider: 'error'
+      };
+    }
+  },
+
   async sendOrderConfirmation(data: OrderConfirmationData, invoicePDF?: Buffer) {
     try {
       console.log('Sending order confirmation email to:', data.customerEmail);

@@ -77,10 +77,10 @@ export default function FloatingCustomerChatButton({
         {!isOpen && (
           <MotionBox
             position="fixed"
-            bottom={{ base: '80px', md: '140px' }}
+            bottom={{ base: '140px', md: '220px' }}
             right={position === 'bottom-right' ? { base: '20px', md: '30px' } : 'auto'}
             left={position === 'bottom-left' ? { base: '20px', md: '30px' } : 'auto'}
-            zIndex={10000}
+            zIndex={9998}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}

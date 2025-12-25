@@ -241,6 +241,7 @@ export function UnifiedNavigation({
                   { label: 'Operations', href: ROUTES.ADMIN_OPERATIONS },
                   { label: 'Customers', href: ROUTES.ADMIN_CUSTOMERS },
                   { label: 'Dispatch', href: ROUTES.ADMIN_DISPATCH },
+                  { label: 'Chat', href: ROUTES.ADMIN_CHAT },
                   { label: 'Analytics', href: ROUTES.ADMIN_ANALYTICS },
                   { label: 'Finance', href: ROUTES.ADMIN_FINANCE },
                 ].map((item) => (
@@ -377,14 +378,6 @@ export function UnifiedNavigation({
                       _hover={{ bg: 'gray.700' }}
                     >
                       Tracking
-                    </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_CHAT}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
-                    >
-                      Chat
                     </MenuItem>
                     <MenuItem
                       as={Link}
