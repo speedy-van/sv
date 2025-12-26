@@ -1130,11 +1130,11 @@ export class ComprehensivePricingEngine {
     }
 
     // ✅ CRITICAL: Apply crew size multiplier
-    // 1-man: 0%, 2-men: 0%, 3-men: +25%, 4-men: +50%
+    // 1-man: 0%, 2-men: +20%, 3-men: +35%, 4-men: +50%
     const crewMultipliers: Record<string, number> = {
       '1': 0,
-      '2': 0,
-      '3': 0.25,
+      '2': 0.20,
+      '3': 0.35,
       '4': 0.50
     };
     const crewMultiplier = crewMultipliers[crewSize] || 0;
