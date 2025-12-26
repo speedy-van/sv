@@ -763,130 +763,171 @@ export default function WhoAndPaymentStepSimple({
                   const isSelected = selectedService === service.id;
 
                   return (
-                    <SelectableCard
-                      key={service.id}
-                      className={`price-card price-card-${service.id}`}
-                      isSelected={isSelected}
-                      onClick={() => handleServiceChange(service.id)}
-                      w="full"
-                      p={{ base: 4, md: 5 }}
-                    >
-                      <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
-                        <HStack justify="space-between" align="center">
-                          <Box
-                            p={{ base: 2, md: 3 }}
-                            borderRadius="xl"
-                            bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
-                            transition="all 0.3s"
-                            boxShadow={isSelected ? '0 0 15px rgba(59, 130, 246, 0.45)' : 'none'}
-                          >
-                            <Text fontSize={{ base: '2xl', md: '3xl' }} role="img" aria-hidden="true">
-                              {service.icon}
+                    <React.Fragment key={service.id}>
+                      <SelectableCard
+                        className={`price-card price-card-${service.id}`}
+                        isSelected={isSelected}
+                        onClick={() => handleServiceChange(service.id)}
+                        w="full"
+                        p={{ base: 4, md: 5 }}
+                        sx={{
+                          gridColumn: { base: '1', md: 'auto' }
+                        }}
+                      >
+                        <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
+                          <HStack justify="space-between" align="center">
+                            <Box
+                              p={{ base: 2, md: 3 }}
+                              borderRadius="xl"
+                              bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
+                              transition="all 0.3s"
+                              boxShadow={isSelected ? '0 0 15px rgba(59, 130, 246, 0.45)' : 'none'}
+                            >
+                              <Text fontSize={{ base: '2xl', md: '3xl' }} role="img" aria-hidden="true">
+                                {service.icon}
+                              </Text>
+                            </Box>
+                            <Text
+                              fontSize={{ base: 'xl', md: '2xl' }}
+                              fontWeight="extrabold"
+                              color="white"
+                            >
+                              £{service.price.toFixed(2)}
+                            </Text>
+                          </HStack>
+
+                          <Box>
+                            <Text
+                              fontSize={{ base: 'md', md: 'lg' }}
+                              fontWeight="bold"
+                              color="white"
+                              noOfLines={1}
+                            >
+                              {service.name}
+                            </Text>
+                            <Text
+                              fontSize={{ base: 'xs', md: 'sm' }}
+                              color="whiteAlpha.700"
+                              noOfLines={2}
+                              lineHeight="1.4"
+                            >
+                              {service.description}
                             </Text>
                           </Box>
-                          <Text
-                            fontSize={{ base: 'xl', md: '2xl' }}
-                            fontWeight="extrabold"
-                            color="white"
-                          >
-                            £{service.price.toFixed(2)}
-                          </Text>
-                        </HStack>
 
-                        <Box>
-                          <Text
-                            fontSize={{ base: 'md', md: 'lg' }}
-                            fontWeight="bold"
-                            color="white"
-                            noOfLines={1}
-                          >
-                            {service.name}
-                          </Text>
-                          <Text
-                            fontSize={{ base: 'xs', md: 'sm' }}
-                            color="whiteAlpha.700"
-                            noOfLines={2}
-                            lineHeight="1.4"
-                          >
-                            {service.description}
-                          </Text>
+                          {(service.popular || service.discount || service.premium) && (
+                            <HStack spacing={2} flexWrap="wrap">
+                              {service.popular && (
+                                <Badge
+                                  colorScheme="purple"
+                                  variant={isSelected ? 'solid' : 'subtle'}
+                                  fontSize="2xs"
+                                  fontWeight="700"
+                                  borderRadius="full"
+                                  textTransform="uppercase"
+                                >
+                                  Popular
+                                </Badge>
+                              )}
+                              {service.discount && (
+                                <Badge
+                                  colorScheme="green"
+                                  variant={isSelected ? 'solid' : 'subtle'}
+                                  fontSize="2xs"
+                                  fontWeight="700"
+                                  borderRadius="full"
+                                  textTransform="uppercase"
+                                >
+                                  {service.discount}
+                                </Badge>
+                              )}
+                              {service.premium && (
+                                <Badge
+                                  colorScheme="orange"
+                                  variant={isSelected ? 'solid' : 'subtle'}
+                                  fontSize="2xs"
+                                  fontWeight="700"
+                                  borderRadius="full"
+                                  textTransform="uppercase"
+                                >
+                                  {service.premium}
+                                </Badge>
+                              )}
+                            </HStack>
+                          )}
+                        </VStack>
+                      </SelectableCard>
+                      
+                      {/* Economy Service Warning - Shows directly below Economy card when selected */}
+                      {service.id === 'economy' && isSelected && (
+                        <Box
+                          sx={{
+                            gridColumn: { base: '1', md: '1 / -1' },
+                          }}
+                          mt={{ base: 2, md: 0 }}
+                          p={{ base: 3, md: 4 }}
+                          bg="rgba(251, 191, 36, 0.15)"
+                          border="2px solid"
+                          borderColor="rgba(251, 191, 36, 0.5)"
+                          borderRadius="xl"
+                          boxShadow="0 0 20px rgba(251, 191, 36, 0.2)"
+                        >
+                          <VStack spacing={3} align="stretch">
+                            <HStack spacing={2}>
+                              <Text fontSize={{ base: "2xl", md: "xl" }} role="img" aria-label="Warning">⚠️</Text>
+                              <Text 
+                                color="yellow.300" 
+                                fontWeight="bold" 
+                                fontSize={{ base: "md", md: "sm" }}
+                                lineHeight="1.4"
+                              >
+                                Economy Service - Flexible Delivery
+                              </Text>
+                            </HStack>
+                            
+                            <VStack align="start" spacing={2} pl={{ base: 0, md: 8 }}>
+                              <Text 
+                                color="yellow.100" 
+                                fontSize={{ base: "sm", md: "xs" }} 
+                                fontWeight="600"
+                                lineHeight="1.6"
+                              >
+                                📦 <Text as="span" color="white" fontWeight="bold">Delivery Timeline: 7-10 Days</Text>
+                              </Text>
+                              
+                              <Text 
+                                color="whiteAlpha.900" 
+                                fontSize={{ base: "xs", md: "xs" }} 
+                                lineHeight="1.7"
+                              >
+                                Your items will be delivered via our <Text as="span" fontWeight="bold">shared route service</Text>. 
+                                The exact delivery date depends on <Text as="span" color="yellow.200" fontWeight="bold">driver availability</Text> and 
+                                <Text as="span" color="yellow.200" fontWeight="bold"> route optimization</Text>.
+                              </Text>
+                              
+                              {formData.step1.pickupDate && (
+                                <Text 
+                                  color="green.300" 
+                                  fontSize={{ base: "xs", md: "xs" }} 
+                                  fontWeight="600"
+                                  lineHeight="1.6"
+                                  pt={1}
+                                >
+                                  ✅ Your selected date ({new Date(formData.step1.pickupDate).toLocaleDateString('en-GB', { 
+                                    weekday: 'short', 
+                                    day: 'numeric', 
+                                    month: 'short' 
+                                  })}) will be the <Text as="span" textDecoration="underline">earliest possible</Text> pickup date.
+                                </Text>
+                              )}
+                            </VStack>
+                          </VStack>
                         </Box>
-
-                        {(service.popular || service.discount || service.premium) && (
-                          <HStack spacing={2} flexWrap="wrap">
-                            {service.popular && (
-                              <Badge
-                                colorScheme="purple"
-                                variant={isSelected ? 'solid' : 'subtle'}
-                                fontSize="2xs"
-                                fontWeight="700"
-                                borderRadius="full"
-                                textTransform="uppercase"
-                              >
-                                Popular
-                              </Badge>
-                            )}
-                            {service.discount && (
-                              <Badge
-                                colorScheme="green"
-                                variant={isSelected ? 'solid' : 'subtle'}
-                                fontSize="2xs"
-                                fontWeight="700"
-                                borderRadius="full"
-                                textTransform="uppercase"
-                              >
-                                {service.discount}
-                              </Badge>
-                            )}
-                            {service.premium && (
-                              <Badge
-                                colorScheme="orange"
-                                variant={isSelected ? 'solid' : 'subtle'}
-                                fontSize="2xs"
-                                fontWeight="700"
-                                borderRadius="full"
-                                textTransform="uppercase"
-                              >
-                                {service.premium}
-                              </Badge>
-                            )}
-                          </HStack>
-                        )}
-                      </VStack>
-                    </SelectableCard>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </Box>
-              
-              {/* Economy Service Warning - Important delivery info */}
-              {selectedService === 'economy' && (
-                <Box
-                  mt={4}
-                  p={4}
-                  bg="rgba(251, 191, 36, 0.15)"
-                  border="1px solid"
-                  borderColor="rgba(251, 191, 36, 0.4)"
-                  borderRadius="xl"
-                >
-                  <HStack spacing={3} align="flex-start">
-                    <Text fontSize="xl" role="img" aria-label="Warning">⚠️</Text>
-                    <VStack align="start" spacing={1}>
-                      <Text color="yellow.300" fontWeight="bold" fontSize="sm">
-                        Economy Service - Flexible Delivery
-                      </Text>
-                      <Text color="whiteAlpha.800" fontSize="xs" lineHeight="1.5">
-                        Your items will be delivered within <strong>7 days</strong> via our shared route service. 
-                        The exact delivery date will be confirmed once we optimize our routes.
-                        {formData.step1.pickupDate && (
-                          <Text as="span" color="yellow.200">
-                            {' '}Your original date ({new Date(formData.step1.pickupDate).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}) will be used as the earliest possible delivery date.
-                          </Text>
-                        )}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                </Box>
-              )}
             </VStack>
           </CardBody>
         </Card>

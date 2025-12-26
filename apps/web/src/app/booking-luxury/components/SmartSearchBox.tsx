@@ -29,6 +29,7 @@ import { convertPopularToItem } from '../../../lib/items/popular-items';
 import { COMPREHENSIVE_CATALOG } from '../../../lib/pricing/catalog-dataset';
 import NLPResultsDisplay from './NLPResultsDisplay';
 import type { Item } from '../hooks/useBookingForm';
+import { isPopularItem, getAllPopularItemIds } from '@/lib/popular-items-data';
 
 interface SmartSearchBoxProps {
   value: string;
@@ -180,15 +181,21 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
     });
 
     if (!query || query.length < 1) {
-      // Return popular items when no query
-      return catalogItems.slice(0, limit).map(item => ({
-        id: item.id,
-        text: item.name,
-        type: 'item' as const,
-        popularity: 100,
-        matchedKeywords: item.keywords || [],
-        item: item
-      }));
+      // Return popular items when no query (prioritize items from popular categories)
+      const popularIds = getAllPopularItemIds();
+      const popularItems = catalogItems.filter(item => popularIds.includes(item.id));
+      const regularItems = catalogItems.filter(item => !popularIds.includes(item.id));
+      
+      return [...popularItems.slice(0, limit), ...regularItems]
+        .slice(0, limit)
+        .map(item => ({
+          id: item.id,
+          text: item.name,
+          type: 'item' as const,
+          popularity: isPopularItem(item.id) ? 200 : 100,
+          matchedKeywords: item.keywords || [],
+          item: item
+        }));
     }
 
     const queryLower = query.toLowerCase();
@@ -219,15 +226,30 @@ export const SmartSearchBox: React.FC<SmartSearchBoxProps> = ({
       }
       
       return false;
+    });
+
+    // Sort results: popular items first, then by relevance
+    const sortedResults = results.sort((a, b) => {
+      const aIsPopular = isPopularItem(a.id);
+      const bIsPopular = isPopularItem(b.id);
+      
+      if (aIsPopular && !bIsPopular) return -1;
+      if (!aIsPopular && bIsPopular) return 1;
+      
+      // Both popular or both not popular - sort by name match quality
+      const aNameMatch = a.name?.toLowerCase?.()?.startsWith(queryLower) ? 1 : 0;
+      const bNameMatch = b.name?.toLowerCase?.()?.startsWith(queryLower) ? 1 : 0;
+      
+      return bNameMatch - aNameMatch;
     }).slice(0, limit);
 
-    console.log('🎯 Search results:', results.length, 'items found');
+    console.log('🎯 Search results:', sortedResults.length, 'items found');
 
-    return results.map(item => ({
+    return sortedResults.map(item => ({
       id: item.id,
       text: item.name,
       type: 'item' as const,
-      popularity: 100,
+      popularity: isPopularItem(item.id) ? 200 : 100,
       matchedKeywords: item.keywords || [],
       item: item
     }));

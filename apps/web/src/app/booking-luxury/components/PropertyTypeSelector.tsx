@@ -89,16 +89,17 @@ export default function PropertyTypeSelector({
           textShadow="0 0 20px rgba(16, 185, 129, 0.2)"
           fontFamily="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
         >
-          What are you moving?
+          🏠 What Type of Move Do You Need?
         </Heading>
         <Text 
-          color="whiteAlpha.800"
-          fontWeight="500"
+          color="whiteAlpha.900"
+          fontWeight="600"
           fontSize={{ base: "md", md: "lg" }}
           letterSpacing="wide"
-          lineHeight="1.6"
+          lineHeight="1.8"
         >
-          Select the property type to get a tailored list of items
+          ⚡ <Text as="span" color="yellow.300" fontWeight="bold">Save Time!</Text> Select your property type below and we'll automatically suggest the most common items for your move — 
+          <Text as="span" color="green.300" fontWeight="bold"> no need to add items one by one!</Text>
         </Text>
       </VStack>
 

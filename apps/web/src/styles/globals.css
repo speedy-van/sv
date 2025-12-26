@@ -1973,3 +1973,87 @@ select option {
     min-height: 44px !important; /* iOS touch target minimum */
   }
 }
+
+/* CRITICAL FIX: Category Card Text Horizontal Display on iPhone */
+/* Force horizontal text for "Most Common Items to Move" category cards */
+.category-card-text-fix,
+.category-card-text-fix *,
+.category-text-horizontal-fix,
+.category-text-horizontal-fix *,
+.common-items-grid-container,
+.common-items-grid-container *,
+.category-card-pure-html,
+.category-card-pure-html *,
+.category-name-pure-text,
+.category-name-pure-text * {
+  writing-mode: horizontal-tb !important;
+  -webkit-writing-mode: horizontal-tb !important;
+  -moz-writing-mode: horizontal-tb !important;
+  -ms-writing-mode: lr-tb !important;
+  text-orientation: mixed !important;
+  -webkit-text-orientation: mixed !important;
+  direction: ltr !important;
+  unicode-bidi: normal !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4 !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Common Items Grid - Pure CSS Grid */
+.common-items-grid-container {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
+/* Category Card Pure HTML */
+.category-card-pure-html {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.category-card-pure-html:hover {
+  border-color: rgb(159, 122, 234) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Safari-specific fix for category cards */
+@supports (-webkit-touch-callout: none) {
+  .category-card-text-fix,
+  .category-card-text-fix *,
+  .category-text-horizontal-fix,
+  .category-text-horizontal-fix *,
+  .common-items-grid-container,
+  .common-items-grid-container *,
+  .category-card-pure-html,
+  .category-card-pure-html *,
+  .category-name-pure-text,
+  .category-name-pure-text * {
+    writing-mode: horizontal-tb !important;
+    -webkit-writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    -webkit-text-orientation: mixed !important;
+    direction: ltr !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .common-items-grid-container {
+    grid-template-columns: repeat(9, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+}

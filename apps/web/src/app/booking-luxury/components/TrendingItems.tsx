@@ -210,8 +210,8 @@ export default function TrendingItems({
                     </Box>
 
                     {/* Item Info */}
-                    <VStack align="start" spacing={1} flex="1">
-                      <Text fontSize="sm" fontWeight="bold" color="gray.800">
+                    <VStack align="start" spacing={1} flex="1" minW="0">
+                      <Text fontSize="sm" fontWeight="bold" color="gray.800" noOfLines={2}>
                         {item.name}
                       </Text>
                       <HStack spacing={2}>

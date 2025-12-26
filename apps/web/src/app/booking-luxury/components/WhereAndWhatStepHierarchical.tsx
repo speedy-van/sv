@@ -997,12 +997,19 @@ export default function WhereAndWhatStepHierarchical({
           <CardBody>
             <VStack spacing={4} align="stretch">
               <Heading size="md" color="purple.600">
-                Most Common Items to Move
+                ⚡ Quick Add - Most Popular Items
               </Heading>
-              <Text fontSize="sm" color="gray.600">
-                Click + to add items quickly, or browse detailed categories below.
+              <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                💡 Tap <Text as="span" fontWeight="bold" color="green.600">+</Text> to instantly add items | 
+                Use <Text as="span" fontWeight="bold" color="red.600">-</Text> to remove | 
+                Or explore full categories below ⬇️
               </Text>
               <CommonItemsGrid 
+                selectedItems={selectedItemsWithRooms.map(i => ({
+                  id: i.id,
+                  name: i.name,
+                  quantity: i.quantity
+                }))}
                 onAddItem={(item, quantity) => {
                   const removalItem = {
                     id: item.id,
@@ -1012,9 +1019,64 @@ export default function WhereAndWhatStepHierarchical({
                   };
                   
                   if (quantity > 0) {
-                    handleAddItem(removalItem as any, 'Quick Selection', 1);
+                    // Check if item already exists
+                    const existingItemIndex = selectedItemsWithRooms.findIndex(i => i.id === item.id);
+                    
+                    let updated;
+                    if (existingItemIndex >= 0) {
+                      // Update existing item quantity
+                      updated = [...selectedItemsWithRooms];
+                      updated[existingItemIndex] = {
+                        ...updated[existingItemIndex],
+                        quantity: quantity
+                      };
+                    } else {
+                      // Add new item
+                      updated = [
+                        ...selectedItemsWithRooms,
+                        {
+                          ...removalItem,
+                          quantity: quantity,
+                          room: 'Quick Selection'
+                        }
+                      ];
+                    }
+                    
+                    setSelectedItemsWithRooms(updated);
+                    
+                    const mappedItems = updated.map(i => ({
+                      id: i.id,
+                      name: i.name,
+                      category: i.category,
+                      weight: i.weight,
+                      quantity: i.quantity,
+                      size: 'medium' as const,
+                      volume: 1.0,
+                      unitPrice: 25,
+                      totalPrice: 25 * i.quantity,
+                      description: `${i.name} from ${i.room}`,
+                    }));
+                    
+                    // CRITICAL: Read fresh from formData to check if multi-leg
+                    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+                    const currentIsMultiLeg = currentSegments.length > 1;
+
+                    // For multi-leg: save to CURRENT segment ONLY (isolated per journey)
+                    if (currentIsMultiLeg && updateSegment) {
+                      // Update ONLY the selected segment
+                      updateSegment(selectedSegmentIndex, { items: mappedItems });
+                      
+                      // Mark that we're updating segments to prevent useEffect from clearing items
+                      justUpdatedSegmentsRef.current = true;
+                      
+                      // Also update global items for fallback compatibility
+                      updateFormData('step1', { items: mappedItems });
+                    } else {
+                      // Single-leg: save to global items
+                      updateFormData('step1', { items: mappedItems });
+                    }
                   } else {
-                    // Handle removal
+                    // quantity is 0 - remove item
                     const updated = selectedItemsWithRooms.filter(i => i.id !== item.id);
                     setSelectedItemsWithRooms(updated);
                     
