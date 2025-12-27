@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 566,
+  "total": 636,
   "places": [
     {
       "slug": "london",
@@ -5231,6 +5231,618 @@
       "lat": 50.9217,
       "lon": -1.4817,
       "population": 28590
+    },
+    {
+      "slug": "hexham",
+      "name": "Hexham",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9714,
+      "lon": -2.1014,
+      "population": 11388
+    },
+    {
+      "slug": "alnwick",
+      "name": "Alnwick",
+      "type": "town",
+      "region": "England",
+      "lat": 55.4132,
+      "lon": -1.7063,
+      "population": 8116
+    },
+    {
+      "slug": "morpeth",
+      "name": "Morpeth",
+      "type": "town",
+      "region": "England",
+      "lat": 55.1675,
+      "lon": -1.6869,
+      "population": 14403
+    },
+    {
+      "slug": "ashington",
+      "name": "Ashington",
+      "type": "town",
+      "region": "England",
+      "lat": 55.1811,
+      "lon": -1.5681,
+      "population": 27335
+    },
+    {
+      "slug": "blyth",
+      "name": "Blyth",
+      "type": "town",
+      "region": "England",
+      "lat": 55.1261,
+      "lon": -1.5086,
+      "population": 37339
+    },
+    {
+      "slug": "cramlington",
+      "name": "Cramlington",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0869,
+      "lon": -1.5967,
+      "population": 39964
+    },
+    {
+      "slug": "bedlington",
+      "name": "Bedlington",
+      "type": "town",
+      "region": "England",
+      "lat": 55.1311,
+      "lon": -1.5903,
+      "population": 15000
+    },
+    {
+      "slug": "prudhoe",
+      "name": "Prudhoe",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9633,
+      "lon": -1.8519,
+      "population": 11675
+    },
+    {
+      "slug": "consett",
+      "name": "Consett",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8536,
+      "lon": -1.8314,
+      "population": 29111
+    },
+    {
+      "slug": "stanley",
+      "name": "Stanley",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8675,
+      "lon": -1.6992,
+      "population": 18207
+    },
+    {
+      "slug": "chester-le-street",
+      "name": "Chester-le-Street",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8589,
+      "lon": -1.5722,
+      "population": 24226
+    },
+    {
+      "slug": "seaham",
+      "name": "Seaham",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8378,
+      "lon": -1.3456,
+      "population": 21153
+    },
+    {
+      "slug": "peterlee",
+      "name": "Peterlee",
+      "type": "town",
+      "region": "England",
+      "lat": 54.7603,
+      "lon": -1.3339,
+      "population": 30000
+    },
+    {
+      "slug": "newton-aycliffe",
+      "name": "Newton Aycliffe",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6192,
+      "lon": -1.5800,
+      "population": 26633
+    },
+    {
+      "slug": "bishop-auckland",
+      "name": "Bishop Auckland",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6628,
+      "lon": -1.6756,
+      "population": 24312
+    },
+    {
+      "slug": "spennymoor",
+      "name": "Spennymoor",
+      "type": "town",
+      "region": "England",
+      "lat": 54.7000,
+      "lon": -1.5922,
+      "population": 19816
+    },
+    {
+      "slug": "crook",
+      "name": "Crook",
+      "type": "town",
+      "region": "England",
+      "lat": 54.7147,
+      "lon": -1.7422,
+      "population": 10000
+    },
+    {
+      "slug": "ferryhill",
+      "name": "Ferryhill",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6844,
+      "lon": -1.5492,
+      "population": 9444
+    },
+    {
+      "slug": "sedgefield",
+      "name": "Sedgefield",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6528,
+      "lon": -1.4536,
+      "population": 5211
+    },
+    {
+      "slug": "shildon",
+      "name": "Shildon",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6289,
+      "lon": -1.6444,
+      "population": 10000
+    },
+    {
+      "slug": "barnard-castle",
+      "name": "Barnard Castle",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5458,
+      "lon": -1.9214,
+      "population": 6400
+    },
+    {
+      "slug": "stanhope",
+      "name": "Stanhope",
+      "type": "town",
+      "region": "England",
+      "lat": 54.7428,
+      "lon": -2.0028,
+      "population": 1800
+    },
+    {
+      "slug": "corbridge",
+      "name": "Corbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9733,
+      "lon": -2.0253,
+      "population": 3500
+    },
+    {
+      "slug": "haltwhistle",
+      "name": "Haltwhistle",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9683,
+      "lon": -2.4572,
+      "population": 3800
+    },
+    {
+      "slug": "ponteland",
+      "name": "Ponteland",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0492,
+      "lon": -1.7467,
+      "population": 8830
+    },
+    {
+      "slug": "longbenton",
+      "name": "Longbenton",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0072,
+      "lon": -1.5703,
+      "population": 35000
+    },
+    {
+      "slug": "wallsend",
+      "name": "Wallsend",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9917,
+      "lon": -1.5344,
+      "population": 43826
+    },
+    {
+      "slug": "whitley-bay",
+      "name": "Whitley Bay",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0422,
+      "lon": -1.4447,
+      "population": 36168
+    },
+    {
+      "slug": "tynemouth",
+      "name": "Tynemouth",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0175,
+      "lon": -1.4250,
+      "population": 20000
+    },
+    {
+      "slug": "north-shields",
+      "name": "North Shields",
+      "type": "town",
+      "region": "England",
+      "lat": 55.0094,
+      "lon": -1.4447,
+      "population": 39800
+    },
+    {
+      "slug": "south-shields",
+      "name": "South Shields",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9986,
+      "lon": -1.4317,
+      "population": 82854
+    },
+    {
+      "slug": "jarrow",
+      "name": "Jarrow",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9808,
+      "lon": -1.4897,
+      "population": 27526
+    },
+    {
+      "slug": "hebburn",
+      "name": "Hebburn",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9722,
+      "lon": -1.5167,
+      "population": 18608
+    },
+    {
+      "slug": "washington",
+      "name": "Washington",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9000,
+      "lon": -1.5186,
+      "population": 67158
+    },
+    {
+      "slug": "houghton-le-spring",
+      "name": "Houghton-le-Spring",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8419,
+      "lon": -1.4694,
+      "population": 36746
+    },
+    {
+      "slug": "hetton-le-hole",
+      "name": "Hetton-le-Hole",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8211,
+      "lon": -1.4486,
+      "population": 14000
+    },
+    {
+      "slug": "sacriston",
+      "name": "Sacriston",
+      "type": "village",
+      "region": "England",
+      "lat": 54.8203,
+      "lon": -1.6264,
+      "population": 4600
+    },
+    {
+      "slug": "langley-park",
+      "name": "Langley Park",
+      "type": "village",
+      "region": "England",
+      "lat": 54.8106,
+      "lon": -1.6833,
+      "population": 4000
+    },
+    {
+      "slug": "whickham",
+      "name": "Whickham",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9456,
+      "lon": -1.6761,
+      "population": 16779
+    },
+    {
+      "slug": "blaydon-on-tyne",
+      "name": "Blaydon-on-Tyne",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9633,
+      "lon": -1.7133,
+      "population": 15000
+    },
+    {
+      "slug": "ryton",
+      "name": "Ryton",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9736,
+      "lon": -1.7614,
+      "population": 9500
+    },
+    {
+      "slug": "birtley",
+      "name": "Birtley",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9019,
+      "lon": -1.5742,
+      "population": 9500
+    },
+    {
+      "slug": "felling",
+      "name": "Felling",
+      "type": "town",
+      "region": "England",
+      "lat": 54.9522,
+      "lon": -1.5683,
+      "population": 10000
+    },
+    {
+      "slug": "pelaw",
+      "name": "Pelaw",
+      "type": "village",
+      "region": "England",
+      "lat": 54.9561,
+      "lon": -1.5394,
+      "population": 5000
+    },
+    {
+      "slug": "guisborough",
+      "name": "Guisborough",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5344,
+      "lon": -1.0542,
+      "population": 17777
+    },
+    {
+      "slug": "loftus",
+      "name": "Loftus",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5589,
+      "lon": -0.8992,
+      "population": 7000
+    },
+    {
+      "slug": "skelton",
+      "name": "Skelton",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5633,
+      "lon": -0.9967,
+      "population": 6000
+    },
+    {
+      "slug": "saltburn-by-the-sea",
+      "name": "Saltburn-by-the-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5822,
+      "lon": -0.9750,
+      "population": 5958
+    },
+    {
+      "slug": "marske-by-the-sea",
+      "name": "Marske-by-the-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5889,
+      "lon": -1.0186,
+      "population": 8000
+    },
+    {
+      "slug": "eston",
+      "name": "Eston",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5547,
+      "lon": -1.1183,
+      "population": 10000
+    },
+    {
+      "slug": "northallerton",
+      "name": "Northallerton",
+      "type": "town",
+      "region": "England",
+      "lat": 54.3378,
+      "lon": -1.4294,
+      "population": 16833
+    },
+    {
+      "slug": "thirsk",
+      "name": "Thirsk",
+      "type": "town",
+      "region": "England",
+      "lat": 54.2333,
+      "lon": -1.3417,
+      "population": 9099
+    },
+    {
+      "slug": "bedale",
+      "name": "Bedale",
+      "type": "town",
+      "region": "England",
+      "lat": 54.2878,
+      "lon": -1.5903,
+      "population": 5000
+    },
+    {
+      "slug": "leyburn",
+      "name": "Leyburn",
+      "type": "town",
+      "region": "England",
+      "lat": 54.3094,
+      "lon": -1.8303,
+      "population": 2000
+    },
+    {
+      "slug": "hawes",
+      "name": "Hawes",
+      "type": "town",
+      "region": "England",
+      "lat": 54.3036,
+      "lon": -2.1986,
+      "population": 850
+    },
+    {
+      "slug": "richmond",
+      "name": "Richmond",
+      "type": "town",
+      "region": "England",
+      "lat": 54.4039,
+      "lon": -1.7367,
+      "population": 8413
+    },
+    {
+      "slug": "catterick",
+      "name": "Catterick",
+      "type": "village",
+      "region": "England",
+      "lat": 54.3758,
+      "lon": -1.6350,
+      "population": 13000
+    },
+    {
+      "slug": "stokesley",
+      "name": "Stokesley",
+      "type": "town",
+      "region": "England",
+      "lat": 54.4706,
+      "lon": -1.1892,
+      "population": 5000
+    },
+    {
+      "slug": "yarm",
+      "name": "Yarm",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5036,
+      "lon": -1.3539,
+      "population": 9000
+    },
+    {
+      "slug": "eaglescliffe",
+      "name": "Eaglescliffe",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5247,
+      "lon": -1.3611,
+      "population": 9000
+    },
+    {
+      "slug": "ingleby-barwick",
+      "name": "Ingleby Barwick",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5083,
+      "lon": -1.3108,
+      "population": 22000
+    },
+    {
+      "slug": "thornaby-on-tees",
+      "name": "Thornaby-on-Tees",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5328,
+      "lon": -1.2942,
+      "population": 24741
+    },
+    {
+      "slug": "billingham",
+      "name": "Billingham",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6069,
+      "lon": -1.2781,
+      "population": 35165
+    },
+    {
+      "slug": "norton-on-tees",
+      "name": "Norton-on-Tees",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5908,
+      "lon": -1.3100,
+      "population": 25000
+    },
+    {
+      "slug": "wynyard",
+      "name": "Wynyard",
+      "type": "village",
+      "region": "England",
+      "lat": 54.6133,
+      "lon": -1.3481,
+      "population": 3000
+    },
+    {
+      "slug": "trimdon",
+      "name": "Trimdon",
+      "type": "village",
+      "region": "England",
+      "lat": 54.7000,
+      "lon": -1.4333,
+      "population": 5000
+    },
+    {
+      "slug": "fishburn",
+      "name": "Fishburn",
+      "type": "village",
+      "region": "England",
+      "lat": 54.6789,
+      "lon": -1.4442,
+      "population": 2500
+    },
+    {
+      "slug": "bowburn",
+      "name": "Bowburn",
+      "type": "village",
+      "region": "England",
+      "lat": 54.7358,
+      "lon": -1.4944,
+      "population": 4500
     }
   ]
 }
