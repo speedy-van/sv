@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 286,
+  "total": 356,
   "places": [
     {
       "slug": "london",
@@ -2765,6 +2765,627 @@
       "lat": 55.9450,
       "lon": -4.5667,
       "population": 20000
+    },
+    {
+      "slug": "brentwood",
+      "name": "Brentwood",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6208,
+      "lon": 0.3058,
+      "population": 52000
+    },
+    {
+      "slug": "billericay",
+      "name": "Billericay",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6281,
+      "lon": 0.4186,
+      "population": 34000
+    },
+    {
+      "slug": "wickford",
+      "name": "Wickford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6114,
+      "lon": 0.5219,
+      "population": 33000
+    },
+    {
+      "slug": "rayleigh",
+      "name": "Rayleigh",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5867,
+      "lon": 0.6050,
+      "population": 32000
+    },
+    {
+      "slug": "canvey-island",
+      "name": "Canvey Island",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5217,
+      "lon": 0.5800,
+      "population": 40000
+    },
+    {
+      "slug": "benfleet",
+      "name": "Benfleet",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5467,
+      "lon": 0.5617,
+      "population": 49000
+    },
+    {
+      "slug": "leigh-on-sea",
+      "name": "Leigh-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5417,
+      "lon": 0.6500,
+      "population": 22000
+    },
+    {
+      "slug": "westcliff-on-sea",
+      "name": "Westcliff-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5372,
+      "lon": 0.6886,
+      "population": 30000
+    },
+    {
+      "slug": "rochford",
+      "name": "Rochford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5817,
+      "lon": 0.7067,
+      "population": 8000
+    },
+    {
+      "slug": "hockley",
+      "name": "Hockley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6033,
+      "lon": 0.6567,
+      "population": 10000
+    },
+    {
+      "slug": "clacton-on-sea",
+      "name": "Clacton-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7897,
+      "lon": 1.1552,
+      "population": 53000
+    },
+    {
+      "slug": "frinton-on-sea",
+      "name": "Frinton-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8306,
+      "lon": 1.2436,
+      "population": 5000
+    },
+    {
+      "slug": "walton-on-the-naze",
+      "name": "Walton-on-the-Naze",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8472,
+      "lon": 1.2681,
+      "population": 12000
+    },
+    {
+      "slug": "harwich",
+      "name": "Harwich",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9450,
+      "lon": 1.2861,
+      "population": 17000
+    },
+    {
+      "slug": "manningtree",
+      "name": "Manningtree",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9456,
+      "lon": 1.0661,
+      "population": 3000
+    },
+    {
+      "slug": "braintree",
+      "name": "Braintree",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8783,
+      "lon": 0.5500,
+      "population": 42000
+    },
+    {
+      "slug": "witham",
+      "name": "Witham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7992,
+      "lon": 0.6392,
+      "population": 25000
+    },
+    {
+      "slug": "maldon",
+      "name": "Maldon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7319,
+      "lon": 0.6758,
+      "population": 21000
+    },
+    {
+      "slug": "halstead",
+      "name": "Halstead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9444,
+      "lon": 0.6403,
+      "population": 12000
+    },
+    {
+      "slug": "sudbury",
+      "name": "Sudbury",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0383,
+      "lon": 0.7297,
+      "population": 13000
+    },
+    {
+      "slug": "haverhill",
+      "name": "Haverhill",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0828,
+      "lon": 0.4400,
+      "population": 27000
+    },
+    {
+      "slug": "newmarket",
+      "name": "Newmarket",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2458,
+      "lon": 0.4056,
+      "population": 16000
+    },
+    {
+      "slug": "mildenhall",
+      "name": "Mildenhall",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3447,
+      "lon": 0.5106,
+      "population": 11000
+    },
+    {
+      "slug": "thetford",
+      "name": "Thetford",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4175,
+      "lon": 0.7500,
+      "population": 25000
+    },
+    {
+      "slug": "brandon",
+      "name": "Brandon",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4497,
+      "lon": 0.6256,
+      "population": 9000
+    },
+    {
+      "slug": "diss",
+      "name": "Diss",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3756,
+      "lon": 1.1094,
+      "population": 8000
+    },
+    {
+      "slug": "wymondham",
+      "name": "Wymondham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5703,
+      "lon": 1.1161,
+      "population": 14000
+    },
+    {
+      "slug": "attleborough",
+      "name": "Attleborough",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5172,
+      "lon": 1.0186,
+      "population": 11000
+    },
+    {
+      "slug": "watton",
+      "name": "Watton",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5686,
+      "lon": 0.8331,
+      "population": 8000
+    },
+    {
+      "slug": "swaffham",
+      "name": "Swaffham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6469,
+      "lon": 0.6856,
+      "population": 8000
+    },
+    {
+      "slug": "downham-market",
+      "name": "Downham Market",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6069,
+      "lon": 0.3847,
+      "population": 10000
+    },
+    {
+      "slug": "fakenham",
+      "name": "Fakenham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.8308,
+      "lon": 0.8486,
+      "population": 8000
+    },
+    {
+      "slug": "cromer",
+      "name": "Cromer",
+      "type": "town",
+      "region": "England",
+      "lat": 52.9311,
+      "lon": 1.3019,
+      "population": 7000
+    },
+    {
+      "slug": "sheringham",
+      "name": "Sheringham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.9411,
+      "lon": 1.2089,
+      "population": 7000
+    },
+    {
+      "slug": "north-walsham",
+      "name": "North Walsham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.8194,
+      "lon": 1.3861,
+      "population": 12000
+    },
+    {
+      "slug": "aylsham",
+      "name": "Aylsham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7944,
+      "lon": 1.2539,
+      "population": 6000
+    },
+    {
+      "slug": "beccles",
+      "name": "Beccles",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4589,
+      "lon": 1.5639,
+      "population": 10000
+    },
+    {
+      "slug": "bungay",
+      "name": "Bungay",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4556,
+      "lon": 1.4392,
+      "population": 5000
+    },
+    {
+      "slug": "halesworth",
+      "name": "Halesworth",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3489,
+      "lon": 1.5022,
+      "population": 5000
+    },
+    {
+      "slug": "southwold",
+      "name": "Southwold",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3264,
+      "lon": 1.6797,
+      "population": 1000
+    },
+    {
+      "slug": "aldeburgh",
+      "name": "Aldeburgh",
+      "type": "town",
+      "region": "England",
+      "lat": 52.1531,
+      "lon": 1.6022,
+      "population": 3000
+    },
+    {
+      "slug": "leiston",
+      "name": "Leiston",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2058,
+      "lon": 1.5778,
+      "population": 6000
+    },
+    {
+      "slug": "saxmundham",
+      "name": "Saxmundham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2161,
+      "lon": 1.4886,
+      "population": 4000
+    },
+    {
+      "slug": "woodbridge",
+      "name": "Woodbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0942,
+      "lon": 1.3175,
+      "population": 11000
+    },
+    {
+      "slug": "framlingham",
+      "name": "Framlingham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2219,
+      "lon": 1.3417,
+      "population": 4000
+    },
+    {
+      "slug": "stowmarket",
+      "name": "Stowmarket",
+      "type": "town",
+      "region": "England",
+      "lat": 52.1894,
+      "lon": 0.9992,
+      "population": 19000
+    },
+    {
+      "slug": "needham-market",
+      "name": "Needham Market",
+      "type": "town",
+      "region": "England",
+      "lat": 52.1533,
+      "lon": 1.0539,
+      "population": 5000
+    },
+    {
+      "slug": "hadleigh",
+      "name": "Hadleigh",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0450,
+      "lon": 0.9553,
+      "population": 9000
+    },
+    {
+      "slug": "lavenham",
+      "name": "Lavenham",
+      "type": "village",
+      "region": "England",
+      "lat": 52.1083,
+      "lon": 0.7978,
+      "population": 2000
+    },
+    {
+      "slug": "long-melford",
+      "name": "Long Melford",
+      "type": "village",
+      "region": "England",
+      "lat": 52.0750,
+      "lon": 0.7167,
+      "population": 3000
+    },
+    {
+      "slug": "clare",
+      "name": "Clare",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0786,
+      "lon": 0.5833,
+      "population": 2000
+    },
+    {
+      "slug": "saffron-walden",
+      "name": "Saffron Walden",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0231,
+      "lon": 0.2436,
+      "population": 16000
+    },
+    {
+      "slug": "great-dunmow",
+      "name": "Great Dunmow",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8717,
+      "lon": 0.3617,
+      "population": 9000
+    },
+    {
+      "slug": "stansted-mountfitchet",
+      "name": "Stansted Mountfitchet",
+      "type": "village",
+      "region": "England",
+      "lat": 51.8997,
+      "lon": 0.1978,
+      "population": 6000
+    },
+    {
+      "slug": "bishops-stortford",
+      "name": "Bishop's Stortford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8722,
+      "lon": 0.1603,
+      "population": 40000
+    },
+    {
+      "slug": "sawbridgeworth",
+      "name": "Sawbridgeworth",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8139,
+      "lon": 0.1542,
+      "population": 9000
+    },
+    {
+      "slug": "ware",
+      "name": "Ware",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8097,
+      "lon": -0.0314,
+      "population": 18000
+    },
+    {
+      "slug": "hertford",
+      "name": "Hertford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7967,
+      "lon": -0.0792,
+      "population": 26000
+    },
+    {
+      "slug": "hoddesdon",
+      "name": "Hoddesdon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7611,
+      "lon": -0.0131,
+      "population": 21000
+    },
+    {
+      "slug": "broxbourne",
+      "name": "Broxbourne",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7472,
+      "lon": -0.0208,
+      "population": 16000
+    },
+    {
+      "slug": "cheshunt",
+      "name": "Cheshunt",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7017,
+      "lon": -0.0328,
+      "population": 45000
+    },
+    {
+      "slug": "waltham-abbey",
+      "name": "Waltham Abbey",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6867,
+      "lon": -0.0003,
+      "population": 20000
+    },
+    {
+      "slug": "epping",
+      "name": "Epping",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6994,
+      "lon": 0.1119,
+      "population": 12000
+    },
+    {
+      "slug": "loughton",
+      "name": "Loughton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6494,
+      "lon": 0.0553,
+      "population": 31000
+    },
+    {
+      "slug": "buckhurst-hill",
+      "name": "Buckhurst Hill",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6267,
+      "lon": 0.0397,
+      "population": 12000
+    },
+    {
+      "slug": "chigwell",
+      "name": "Chigwell",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6244,
+      "lon": 0.0728,
+      "population": 12000
+    },
+    {
+      "slug": "woodford-green",
+      "name": "Woodford Green",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6083,
+      "lon": 0.0244,
+      "population": 25000
+    },
+    {
+      "slug": "wanstead",
+      "name": "Wanstead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5775,
+      "lon": 0.0286,
+      "population": 12000
+    },
+    {
+      "slug": "ilford",
+      "name": "Ilford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5575,
+      "lon": 0.0858,
+      "population": 168000
     }
   ]
 }
