@@ -1547,18 +1547,34 @@ html {
 }
 
 /* Forms and inputs - dark but usable */
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
-textarea,
-select {
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.customer-chat-input),
+textarea:not(.customer-chat-input),
+select:not(.customer-chat-input) {
   background: rgba(255, 255, 255, 0.1) !important;
   background-color: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
-input::placeholder,
-textarea::placeholder {
+input::placeholder:not(.customer-chat-input::placeholder),
+textarea::placeholder:not(.customer-chat-input::placeholder) {
   color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Customer Chat Input - Light Background Override */
+.customer-chat-input,
+input.customer-chat-input,
+textarea.customer-chat-input {
+  background: white !important;
+  background-color: white !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border-color: #e5e7eb !important;
+}
+
+.customer-chat-input::placeholder {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
 }
 
 /* Buttons keep their intended colors */

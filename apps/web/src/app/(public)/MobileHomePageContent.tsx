@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Box,
   Container,
@@ -17,6 +17,7 @@ import {
   chakra,
   shouldForwardProp,
   Button,
+  usePrefersReducedMotion,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { motion, isValidMotionProp } from 'framer-motion';
@@ -80,6 +81,15 @@ const MotionCard = chakra(motion.div, {
       return true;
     }
     // Use Chakra's shouldForwardProp for everything else (this handles Chakra UI props properly)
+    return shouldForwardProp(prop);
+  },
+});
+
+const MotionText = chakra(motion.span, {
+  shouldForwardProp: (prop) => {
+    if (isValidMotionProp(prop)) {
+      return true;
+    }
     return shouldForwardProp(prop);
   },
 });
@@ -196,8 +206,79 @@ const stats = [
   { number: '£50', label: 'From', icon: FaTruck, color: 'neon' },
 ];
 
+const viewportMotion = { once: true, amount: 0.25 };
+
+const createFadeInUp = (reduceMotion: boolean, delay = 0, distance = 18) => ({
+  hidden: { opacity: 0, y: reduceMotion ? 0 : distance },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: 'easeOut' as const, delay },
+  },
+});
+
+const createStaggerContainer = (reduceMotion: boolean, delayChildren = 0.12, staggerChildren = 0.08) => ({
+  hidden: {},
+  show: {
+    transition: reduceMotion
+      ? undefined
+      : {
+          delayChildren,
+          staggerChildren,
+        },
+  },
+});
+
+const hoverLift = (reduceMotion: boolean) =>
+  reduceMotion
+    ? undefined
+    : {
+        y: -8,
+        scale: 1.01,
+        boxShadow: '0 0 35px rgba(0,194,255,0.35)',
+        transition: { type: 'spring' as const, stiffness: 180, damping: 16 },
+      };
+
+const floatPulse = (reduceMotion: boolean) =>
+  reduceMotion
+    ? undefined
+    : {
+        y: [0, -6, 0],
+        opacity: [0.96, 1, 0.96],
+        transition: { duration: 7, repeat: Infinity, ease: 'easeInOut' as const },
+      };
+
+const createWordFade = (reduceMotion: boolean, delay = 0) => ({
+  hidden: { opacity: 0, y: reduceMotion ? 0 : 10 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: 'easeOut' as const, delay },
+  },
+});
+
 // Mobile Hero Section
 const MobileHero: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const heroStagger = useMemo(
+    () => createStaggerContainer(prefersReducedMotion, 0.15, 0.1),
+    [prefersReducedMotion]
+  );
+  const heroBadges = useMemo(() => createFadeInUp(prefersReducedMotion, 0.08, 12), [prefersReducedMotion]);
+  const heroHeadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.25, 26), [prefersReducedMotion]);
+  const heroSubheadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.4, 20), [prefersReducedMotion]);
+  const heroCtas = useMemo(() => createFadeInUp(prefersReducedMotion, 0.55, 18), [prefersReducedMotion]);
+  const heroTitleWords = useMemo(
+    () => 'Professional Man and Van Service Across the UK'.split(' '),
+    []
+  );
+  const heroSubtitleWords = useMemo(
+    () =>
+      'Expert house removals, furniture delivery, and man and van services in London, Manchester, Birmingham, Glasgow, Edinburgh, Cardiff, Belfast, and all UK cities. Same day service from £25/hour with fully insured drivers.'
+        .split(' '),
+    []
+  );
+
   return (
     <Box
       className="mobile-hero"
@@ -213,6 +294,21 @@ const MobileHero: React.FC = () => {
         '@supports not (height: 100svh)': {
           minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
           height: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: '-30%',
+          background:
+            'radial-gradient(circle at 30% 30%, rgba(0,194,255,0.16), transparent 45%), radial-gradient(circle at 70% 70%, rgba(0,209,143,0.14), transparent 50%)',
+          animation: prefersReducedMotion ? undefined : 'gradientShift 18s ease-in-out infinite',
+          filter: 'blur(40px)',
+          zIndex: 0,
+        },
+        '@keyframes gradientShift': {
+          '0%': { transform: 'translate3d(0px, 0px, 0)' },
+          '50%': { transform: 'translate3d(18px, -14px, 0)' },
+          '100%': { transform: 'translate3d(0px, 0px, 0)' },
         },
       }}
     >
@@ -297,64 +393,49 @@ const MobileHero: React.FC = () => {
           {/* Trust Indicators - Moved to top */}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <MotionBox
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.1 } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={heroStagger}
+            viewport={viewportMotion}
           >
             <HStack spacing={3} justify="center" wrap="wrap" mb={4}>
-              <Badge
-                colorScheme="green"
-                size="lg"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="rgba(0,209,143,0.9)"
-                color="white"
-                fontWeight="bold"
-                boxShadow="0 4px 15px rgba(0,209,143,0.3)"
-              >
-                <Icon as={FaShieldAlt} mr={2} boxSize={3} />
-                Fully Insured
-              </Badge>
-              <Badge
-                colorScheme="yellow"
-                size="lg"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="rgba(255,193,7,0.9)"
-                color="black"
-                fontWeight="bold"
-                boxShadow="0 4px 15px rgba(255,193,7,0.3)"
-              >
-                <Icon as={FaStar} mr={2} boxSize={3} />
-                5-Star Rated
-              </Badge>
-              <Badge
-                colorScheme="blue"
-                size="lg"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="rgba(0,194,255,0.9)"
-                color="white"
-                fontWeight="bold"
-                boxShadow="0 4px 15px rgba(0,194,255,0.3)"
-              >
-                <Icon as={FaClock} mr={2} boxSize={3} />
-                24/7 Support
-              </Badge>
+              {[ 
+                { label: 'Fully Insured', icon: FaShieldAlt, bg: 'rgba(0,209,143,0.9)', color: 'white' },
+                { label: '5-Star Rated', icon: FaStar, bg: 'rgba(255,193,7,0.9)', color: 'black' },
+                { label: '24/7 Support', icon: FaClock, bg: 'rgba(0,194,255,0.9)', color: 'white' },
+              ].map((badge, index) => (
+                <MotionBox
+                  key={badge.label}
+                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.05, 12)}
+                  animate={floatPulse(prefersReducedMotion)}
+                >
+                  <Badge
+                    colorScheme="green"
+                    size="lg"
+                    px={4}
+                    py={2}
+                    borderRadius="full"
+                    bg={badge.bg}
+                    color={badge.color}
+                    fontWeight="bold"
+                    boxShadow="0 4px 15px rgba(0,0,0,0.25)"
+                    backdropFilter="blur(4px)"
+                  >
+                    <Icon as={badge.icon} mr={2} boxSize={3} />
+                    {badge.label}
+                  </Badge>
+                </MotionBox>
+              ))}
             </HStack>
           </MotionBox>
 
           {/* Main Heading */}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <MotionBox
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.3 } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={heroHeadline}
+            viewport={viewportMotion}
           >
             <Heading
               as="h1"
@@ -367,17 +448,27 @@ const MobileHero: React.FC = () => {
               maxW="90%"
               mx="auto"
             >
-              Professional Man and Van Service Across the UK
+              {heroTitleWords.map((word, index) => (
+                <MotionText
+                  key={`${word}-${index}`}
+                  display="inline-block"
+                  mr={word.endsWith('.') ? 0 : 1}
+                  variants={createWordFade(prefersReducedMotion, 0.12 + index * 0.03)}
+                >
+                  {word}
+                  {index < heroTitleWords.length - 1 ? ' ' : ''}
+                </MotionText>
+              ))}
             </Heading>
           </MotionBox>
 
           {/* Subtitle */}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.5 } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={heroSubheadline}
+            viewport={viewportMotion}
             mt={{ base: 8, md: 0 }}
           >
             <Text
@@ -389,112 +480,127 @@ const MobileHero: React.FC = () => {
               fontWeight="medium"
               textShadow="0 1px 5px rgba(0,0,0,0.3)"
             >
-              Expert house removals, furniture delivery, and man and van services in London, Manchester, Birmingham, Glasgow, Edinburgh, Cardiff, Belfast, and all UK cities. Same day service from £25/hour with fully insured drivers.
+              {heroSubtitleWords.map((word, index) => (
+                <MotionText
+                  key={`${word}-${index}`}
+                  display="inline-block"
+                  mr={word.endsWith('.') ? 0 : 1}
+                  variants={createWordFade(prefersReducedMotion, 0.18 + index * 0.012)}
+                >
+                  {word}
+                  {index < heroSubtitleWords.length - 1 ? ' ' : ''}
+                </MotionText>
+              ))}
             </Text>
           </MotionBox>
 
           {/* Enhanced CTA Buttons */}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.8, ease: "easeOut", delay: 0.7 } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={heroCtas}
+            viewport={viewportMotion}
             w="full"
             maxW="500px"
           >
             <VStack spacing={4} w="full">
               {/* Primary CTA */}
-              <TouchButton
-                size="xl"
-                bg="linear-gradient(135deg, #001F3F, #002D6B)"
-                color="white"
-                fontWeight="bold"
-                px={8}
-                py={6}
-                fontSize="lg"
-                borderRadius="2xl"
-                rightIcon={<FaArrowRight />}
-                boxShadow="0 8px 25px rgba(0,180,255,0.6)"
-                _hover={{
-                  bg: 'linear-gradient(135deg, #002D6B, #001F3F)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 35px rgba(0,240,255,0.2)',
-                }}
-                fullWidth
-                onClick={() => (window.location.href = '/booking-luxury')}
-                position="relative"
-                overflow="hidden"
-                className="hero-cta-button"
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '0',
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-                    animation: 'wave-light-move 3s ease-in-out infinite',
-                    zIndex: 1,
-                  },
-                  '& > span': {
-                    position: 'relative',
-                    zIndex: 2,
-                  },
-                }}
-              >
-                Book Your Move Now
-              </TouchButton>
+              <MotionBox whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
+                <TouchButton
+                  size="xl"
+                  bg="linear-gradient(135deg, #001F3F, #002D6B)"
+                  color="white"
+                  fontWeight="bold"
+                  px={8}
+                  py={6}
+                  fontSize="lg"
+                  borderRadius="2xl"
+                  rightIcon={<FaArrowRight />}
+                  boxShadow="0 8px 25px rgba(0,180,255,0.6)"
+                  _hover={{
+                    bg: 'linear-gradient(135deg, #002D6B, #001F3F)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 12px 35px rgba(0,240,255,0.2)',
+                  }}
+                  fullWidth
+                  onClick={() => (window.location.href = '/booking-luxury')}
+                  position="relative"
+                  overflow="hidden"
+                  className="hero-cta-button"
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '0',
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                      animation: prefersReducedMotion ? undefined : 'wave-light-move 3s ease-in-out infinite',
+                      zIndex: 1,
+                    },
+                    '& > span': {
+                      position: 'relative',
+                      zIndex: 2,
+                    },
+                  }}
+                >
+                  Book Your Move Now
+                </TouchButton>
+              </MotionBox>
 
               {/* Secondary Actions */}
               <HStack spacing={3} w="full" justify="center">
-                <TouchButton
-                  size="lg"
-                  variant="outline"
-                  borderColor="white"
-                  color="white"
-                  bg="rgba(255,255,255,0.1)"
-                  backdropFilter="blur(10px)"
-                  leftIcon={<FaTruck />}
-                  _hover={{
-                    bg: 'rgba(255,255,255,0.2)',
-                    borderColor: 'neon.400',
-                    color: 'neon.400',
-                    transform: 'translateY(-2px)',
-                  }}
-                  borderRadius="xl"
-                  fontWeight="semibold"
-                  flex={1}
-                  onClick={() => (window.location.href = '/track')}
-                >
-                  Track Move
-                </TouchButton>
+                <MotionBox flex={1} whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
+                  <TouchButton
+                    size="lg"
+                    variant="outline"
+                    borderColor="white"
+                    color="white"
+                    bg="rgba(255,255,255,0.1)"
+                    backdropFilter="blur(10px)"
+                    leftIcon={<FaTruck />}
+                    _hover={{
+                      bg: 'rgba(255,255,255,0.2)',
+                      borderColor: 'neon.400',
+                      color: 'neon.400',
+                      transform: 'translateY(-2px)',
+                    }}
+                    borderRadius="xl"
+                    fontWeight="semibold"
+                    flex={1}
+                    onClick={() => (window.location.href = '/track')}
+                  >
+                    Track Move
+                  </TouchButton>
+                </MotionBox>
 
-                <Button
-                  as="a"
-                  href="tel:+441202129746"
-                  
-                  size="lg"
-                  variant="outline"
-                  borderColor="white"
-                  color="white"
-                  bg="rgba(255,255,255,0.1)"
-                  backdropFilter="blur(10px)"
-                  leftIcon={<FaPhone />}
-                  _hover={{
-                    bg: 'rgba(255,255,255,0.2)',
-                    borderColor: 'green.400',
-                    color: 'green.400',
-                    transform: 'translateY(-2px)',
-                    textDecoration: 'none',
-                  }}
-                  borderRadius="xl"
-                  fontWeight="semibold"
-                  flex={1}
-                >
-                  Call Now
-                </Button>
+                <MotionBox flex={1} whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
+                  <Button
+                    as="a"
+                    href="tel:+441202129746"
+                    size="lg"
+                    variant="outline"
+                    borderColor="white"
+                    color="white"
+                    bg="rgba(255,255,255,0.1)"
+                    backdropFilter="blur(10px)"
+                    leftIcon={<FaPhone />}
+                    _hover={{
+                      bg: 'rgba(255,255,255,0.2)',
+                      borderColor: 'green.400',
+                      color: 'green.400',
+                      transform: 'translateY(-2px)',
+                      textDecoration: 'none',
+                    }}
+                    borderRadius="xl"
+                    fontWeight="semibold"
+                    flex={1}
+                  >
+                    Call Now
+                  </Button>
+                </MotionBox>
               </HStack>
             </VStack>
           </MotionBox>
@@ -507,15 +613,18 @@ const MobileHero: React.FC = () => {
 
 // Mobile Stats Section
 const MobileStats: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const statsStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.12, 0.1), [prefersReducedMotion]);
+
   return (
     <Box className="mobile-stats" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.6, ease: "easeOut" } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={createFadeInUp(prefersReducedMotion, 0.05, 18)}
+            viewport={viewportMotion}
             textAlign="center"
           >
             <Heading
@@ -530,93 +639,104 @@ const MobileStats: React.FC = () => {
             </Text>
           </MotionBox>
 
-          <SimpleGrid
-            columns={{ base: 2, md: 4 }}
-            spacing={{ base: 4, md: 6 }}
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={statsStagger}
+            viewport={viewportMotion}
             w="full"
           >
-            {stats.map((stat, index) => (
-              <MotionBox
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                {...({ transition: { duration: 0.6, ease: "easeOut", delay: index * 0.1 } } as any)}
-              >
-                <Box
-                  p={{ base: 4, md: 6 }}
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="#00C2FF"
-                  bg="bg.card"
-                  textAlign="center"
-                  position="relative"
-                  overflow="visible"
-                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                  className="stat-card-neon"
-                  _hover={{
-                    borderColor: `${stat.color}.400`,
-                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
-                  }}
-                  _before={{
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                    backgroundSize: '300% 300%',
-                    borderRadius: 'xl',
-                    zIndex: -1,
-                    filter: 'blur(8px)',
-                    opacity: 0.6,
-                    animation: 'neon-glow 3s ease-in-out infinite',
-                  }}
-                  _after={{
-                    content: '""',
-                    position: 'absolute',
-                    width: '10px',
-                    height: '10px',
-                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                    borderRadius: 'full',
-                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                    zIndex: 10,
-                    animation: 'light-point-move 3s linear infinite',
-                  }}
+            <SimpleGrid
+              columns={4}
+              spacing={{ base: 2, sm: 4, md: 6 }}
+              w="full"
+              minChildWidth={{ base: '70px', sm: '100px', md: '150px' }}
+            >
+              {stats.map((stat, index) => (
+                <MotionBox
+                  key={index}
+                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.08, 14)}
+                  whileHover={hoverLift(prefersReducedMotion)}
                 >
-                  <VStack spacing={3}>
-                    <Box
-                      p={2}
-                      borderRadius="lg"
-                      bg={`${stat.color}.500`}
-                      color="white"
-                      boxSize={{ base: '40px', md: '48px' }}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Icon as={stat.icon} boxSize={{ base: 4, md: 5 }} />
-                    </Box>
-                    <Text
-                      fontSize={{ base: 'xl', md: '2xl' }}
-                      fontWeight="bold"
-                      color={`${stat.color}.500`}
-                    >
-                      {stat.number}
-                    </Text>
-                    <Text
-                      color="text.secondary"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      fontWeight="medium"
-                    >
-                      {stat.label}
-                    </Text>
-                  </VStack>
-                </Box>
-              </MotionBox>
-            ))}
-          </SimpleGrid>
+                  <Box
+                    p={{ base: 3, sm: 4, md: 6 }}
+                    borderRadius="xl"
+                    borderWidth="2px"
+                    borderColor="#00C2FF"
+                    bg="bg.card"
+                    textAlign="center"
+                    position="relative"
+                    overflow="visible"
+                    boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                    className="stat-card-neon"
+                    minW="0"
+                    _hover={{
+                      borderColor: `${stat.color}.400`,
+                      boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    }}
+                    _before={{
+                      content: '""',
+                      position: 'absolute',
+                      top: '-2px',
+                      left: '-2px',
+                      right: '-2px',
+                      bottom: '-2px',
+                      background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                      backgroundSize: '300% 300%',
+                      borderRadius: 'xl',
+                      zIndex: -1,
+                      filter: 'blur(8px)',
+                      opacity: 0.6,
+                      animation: 'neon-glow 3s ease-in-out infinite',
+                    }}
+                    _after={{
+                      content: '""',
+                      position: 'absolute',
+                      width: '10px',
+                      height: '10px',
+                      background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                      borderRadius: 'full',
+                      boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                      zIndex: 10,
+                      animation: 'light-point-move 3s linear infinite',
+                    }}
+                  >
+                    <VStack spacing={{ base: 1, sm: 2, md: 3 }}>
+                      <Box
+                        p={{ base: 1.5, sm: 2 }}
+                        borderRadius="lg"
+                        bg={`${stat.color}.500`}
+                        color="white"
+                        boxSize={{ base: '32px', sm: '40px', md: '48px' }}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Icon as={stat.icon} boxSize={{ base: 3, sm: 4, md: 5 }} />
+                      </Box>
+                      <Text
+                        fontSize={{ base: 'md', sm: 'lg', md: '2xl' }}
+                        fontWeight="bold"
+                        color={`${stat.color}.500`}
+                        lineHeight="1.2"
+                      >
+                        {stat.number}
+                      </Text>
+                      <Text
+                        color="text.secondary"
+                        fontSize={{ base: '2xs', sm: 'xs', md: 'sm' }}
+                        fontWeight="medium"
+                        lineHeight="1.2"
+                        noOfLines={2}
+                      >
+                        {stat.label}
+                      </Text>
+                    </VStack>
+                  </Box>
+                </MotionBox>
+              ))}
+            </SimpleGrid>
+          </MotionBox>
         </VStack>
       </Container>
     </Box>
@@ -625,15 +745,18 @@ const MobileStats: React.FC = () => {
 
 // Mobile Features Section
 const MobileFeatures: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const featuresStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.14, 0.1), [prefersReducedMotion]);
+
   return (
     <Box className="mobile-features" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.6, ease: "easeOut" } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={createFadeInUp(prefersReducedMotion, 0.05, 18)}
+            viewport={viewportMotion}
             textAlign="center"
           >
             <Heading
@@ -648,90 +771,96 @@ const MobileFeatures: React.FC = () => {
             </Text>
           </MotionBox>
 
-          <SimpleGrid
-            columns={{ base: 1, sm: 2 }}
-            spacing={{ base: 4, md: 6 }}
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={featuresStagger}
+            viewport={viewportMotion}
             w="full"
           >
-            {features.map((feature, index) => (
-              <MotionCard
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                {...({ transition: { duration: 0.6, ease: "easeOut", delay: index * 0.1 } } as any)}
-                p={{ base: 6, md: 8 }}
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor="#00C2FF"
-                bg="bg.card"
-                position="relative"
-                overflow="visible"
-                boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                className="stat-card-neon"
-                _hover={{
-                  borderColor: `${feature.color}.400`,
-                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
-                  transform: 'translateY(-4px)',
-                }}
-                cursor="pointer"
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                    backgroundSize: '300% 300%',
-                    borderRadius: 'xl',
-                    zIndex: -1,
-                    filter: 'blur(8px)',
-                    opacity: 0.6,
-                    animation: 'neon-glow 3s ease-in-out infinite',
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    width: '10px',
-                    height: '10px',
-                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                    borderRadius: 'full',
-                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                    zIndex: 10,
-                    animation: 'light-point-move 3s linear infinite',
-                  },
-                }}
-              >
-                <VStack spacing={4} textAlign="center">
-                  <Box
-                    p={3}
-                    borderRadius="lg"
-                    bgGradient={feature.gradient}
-                    color="white"
-                    boxSize={{ base: '60px', md: '70px' }}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    boxShadow="0 4px 15px rgba(0,0,0,0.2)"
-                  >
-                    <Icon as={feature.icon} boxSize={{ base: 6, md: 7 }} />
-                  </Box>
-                  <Heading size={{ base: 'md', md: 'lg' }} color="text.primary">
-                    {feature.title}
-                  </Heading>
-                  <Text
-                    color="text.secondary"
-                    fontSize={{ base: 'sm', md: 'md' }}
-                    lineHeight="tall"
-                  >
-                    {feature.description}
-                  </Text>
-                </VStack>
-              </MotionCard>
-            ))}
-          </SimpleGrid>
+            <SimpleGrid
+              columns={{ base: 1, sm: 2 }}
+              spacing={{ base: 4, md: 6 }}
+              w="full"
+            >
+              {features.map((feature, index) => (
+                <MotionCard
+                  key={index}
+                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.08, 16)}
+                  whileHover={hoverLift(prefersReducedMotion)}
+                  p={{ base: 6, md: 8 }}
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="#00C2FF"
+                  bg="bg.card"
+                  position="relative"
+                  overflow="visible"
+                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  className="stat-card-neon"
+                  _hover={{
+                    borderColor: `${feature.color}.400`,
+                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    transform: 'translateY(-4px)',
+                  }}
+                  cursor="pointer"
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-2px',
+                      left: '-2px',
+                      right: '-2px',
+                      bottom: '-2px',
+                      background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                      backgroundSize: '300% 300%',
+                      borderRadius: 'xl',
+                      zIndex: -1,
+                      filter: 'blur(8px)',
+                      opacity: 0.6,
+                      animation: 'neon-glow 3s ease-in-out infinite',
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      width: '10px',
+                      height: '10px',
+                      background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                      borderRadius: 'full',
+                      boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                      zIndex: 10,
+                      animation: 'light-point-move 3s linear infinite',
+                    },
+                  }}
+                >
+                  <VStack spacing={4} textAlign="center">
+                    <Box
+                      p={3}
+                      borderRadius="lg"
+                      bgGradient={feature.gradient}
+                      color="white"
+                      boxSize={{ base: '60px', md: '70px' }}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      boxShadow="0 4px 15px rgba(0,0,0,0.2)"
+                    >
+                      <Icon as={feature.icon} boxSize={{ base: 6, md: 7 }} />
+                    </Box>
+                    <Heading size={{ base: 'md', md: 'lg' }} color="text.primary">
+                      {feature.title}
+                    </Heading>
+                    <Text
+                      color="text.secondary"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      lineHeight="tall"
+                    >
+                      {feature.description}
+                    </Text>
+                  </VStack>
+                </MotionCard>
+              ))}
+            </SimpleGrid>
+          </MotionBox>
         </VStack>
       </Container>
     </Box>
@@ -740,15 +869,18 @@ const MobileFeatures: React.FC = () => {
 
 // Mobile Services Section
 const MobileServices: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const servicesStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.14, 0.1), [prefersReducedMotion]);
+
   return (
     <Box className="mobile-services" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.6, ease: "easeOut" } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={createFadeInUp(prefersReducedMotion, 0.05, 18)}
+            viewport={viewportMotion}
             textAlign="center"
           >
             <Heading
@@ -763,119 +895,125 @@ const MobileServices: React.FC = () => {
             </Text>
           </MotionBox>
 
-          <SimpleGrid
-            columns={{ base: 1, md: 2 }}
-            spacing={{ base: 4, md: 6 }}
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={servicesStagger}
+            viewport={viewportMotion}
             w="full"
           >
-            {services.map((service, index) => (
-              <MotionCard
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                {...({ transition: { duration: 0.6, ease: "easeOut", delay: index * 0.1 } } as any)}
-                p={{ base: 6, md: 8 }}
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor="#00C2FF"
-                bg="dark.800"
-                position="relative"
-                overflow="visible"
-                boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                className="stat-card-neon"
-                _hover={{
-                  borderColor: 'neon.400',
-                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
-                  transform: 'translateY(-4px)',
-                }}
-                cursor="pointer"
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                    backgroundSize: '300% 300%',
-                    borderRadius: 'xl',
-                    zIndex: -1,
-                    filter: 'blur(8px)',
-                    opacity: 0.6,
-                    animation: 'neon-glow 3s ease-in-out infinite',
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    width: '10px',
-                    height: '10px',
-                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                    borderRadius: 'full',
-                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                    zIndex: 10,
-                    animation: 'light-point-move 3s linear infinite',
-                  },
-                }}
-              >
-
-                <VStack
-                  spacing={4}
-                  align="center"
-                  textAlign="center"
+            <SimpleGrid
+              columns={{ base: 1, md: 2 }}
+              spacing={{ base: 4, md: 6 }}
+              w="full"
+            >
+              {services.map((service, index) => (
+                <MotionCard
+                  key={index}
+                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.08, 16)}
+                  whileHover={hoverLift(prefersReducedMotion)}
+                  p={{ base: 6, md: 8 }}
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="#00C2FF"
+                  bg="dark.800"
                   position="relative"
-                  zIndex={1}
+                  overflow="visible"
+                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  className="stat-card-neon"
+                  _hover={{
+                    borderColor: 'neon.400',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    transform: 'translateY(-4px)',
+                  }}
+                  cursor="pointer"
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-2px',
+                      left: '-2px',
+                      right: '-2px',
+                      bottom: '-2px',
+                      background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                      backgroundSize: '300% 300%',
+                      borderRadius: 'xl',
+                      zIndex: -1,
+                      filter: 'blur(8px)',
+                      opacity: 0.6,
+                      animation: 'neon-glow 3s ease-in-out infinite',
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      width: '10px',
+                      height: '10px',
+                      background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                      borderRadius: 'full',
+                      boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                      zIndex: 10,
+                      animation: 'light-point-move 3s linear infinite',
+                    },
+                  }}
                 >
-                  <HStack spacing={3} align="center">
-                    <Box
-                      p={2}
-                      borderRadius="lg"
-                      bg="neon.500"
-                      color="white"
-                      fontSize={{ base: 'xl', md: '2xl' }}
-                      boxShadow="0 4px 15px rgba(0,194,255,0.3)"
-                    >
-                      {service.emoji}
-                    </Box>
-                    <Icon
-                      as={service.icon}
-                      boxSize={{ base: 6, md: 8 }}
-                      color="neon.400"
-                    />
-                  </HStack>
 
-                  <Heading size={{ base: 'md', md: 'lg' }} color="white">
-                    {service.title}
-                  </Heading>
-
-                  <Text
-                    color="gray.300"
-                    fontSize={{ base: 'sm', md: 'md' }}
-                    lineHeight="tall"
+                  <VStack
+                    spacing={4}
+                    align="center"
+                    textAlign="center"
+                    position="relative"
+                    zIndex={1}
                   >
-                    {service.description}
-                  </Text>
+                    <HStack spacing={3} align="center">
+                      <Box
+                        p={2}
+                        borderRadius="lg"
+                        bg="neon.500"
+                        color="white"
+                        fontSize={{ base: 'xl', md: '2xl' }}
+                        boxShadow="0 4px 15px rgba(0,194,255,0.3)"
+                      >
+                        {service.emoji}
+                      </Box>
+                      <Icon
+                        as={service.icon}
+                        boxSize={{ base: 6, md: 8 }}
+                        color="neon.400"
+                      />
+                    </HStack>
 
-                  {/* Service Features */}
-                  <VStack spacing={2} align="start" w="full">
-                    {service.features.map((feature, idx) => (
-                      <HStack key={idx} spacing={2}>
-                        <Icon
-                          as={FaCheckCircle}
-                          color="green.400"
-                          boxSize={3}
-                        />
-                        <Text color="gray.400" fontSize="xs">
-                          {feature}
-                        </Text>
-                      </HStack>
-                    ))}
+                    <Heading size={{ base: 'md', md: 'lg' }} color="white">
+                      {service.title}
+                    </Heading>
+
+                    <Text
+                      color="gray.300"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      lineHeight="tall"
+                    >
+                      {service.description}
+                    </Text>
+
+                    {/* Service Features */}
+                    <VStack spacing={2} align="start" w="full">
+                      {service.features.map((feature, idx) => (
+                        <HStack key={idx} spacing={2}>
+                          <Icon
+                            as={FaCheckCircle}
+                            color="green.400"
+                            boxSize={3}
+                          />
+                          <Text color="gray.400" fontSize="xs">
+                            {feature}
+                          </Text>
+                        </HStack>
+                      ))}
+                    </VStack>
                   </VStack>
-                </VStack>
-              </MotionCard>
-            ))}
-          </SimpleGrid>
+                </MotionCard>
+              ))}
+            </SimpleGrid>
+          </MotionBox>
         </VStack>
       </Container>
     </Box>
@@ -884,15 +1022,21 @@ const MobileServices: React.FC = () => {
 
 // Mobile Testimonials Section
 const MobileTestimonials: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const testimonialStagger = useMemo(
+    () => createStaggerContainer(prefersReducedMotion, 0.14, 0.1),
+    [prefersReducedMotion]
+  );
+
   return (
     <Box className="mobile-testimonials" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            {...({ transition: { duration: 0.6, ease: "easeOut" } } as any)}
+            initial="hidden"
+            whileInView="show"
+            variants={createFadeInUp(prefersReducedMotion, 0.05, 18)}
+            viewport={viewportMotion}
             textAlign="center"
           >
             <Heading
@@ -907,107 +1051,113 @@ const MobileTestimonials: React.FC = () => {
             </Text>
           </MotionBox>
 
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
-            spacing={{ base: 4, md: 6 }}
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={testimonialStagger}
+            viewport={viewportMotion}
             w="full"
           >
-            {testimonials.map((testimonial, index) => (
-              <MotionCard
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                {...({ transition: { duration: 0.6, ease: "easeOut", delay: index * 0.1 } } as any)}
-                p={{ base: 6, md: 8 }}
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor="#00C2FF"
-                bg="bg.card"
-                position="relative"
-                overflow="visible"
-                boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                className="stat-card-neon"
-                _hover={{
-                  borderColor: 'neon.400',
-                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
-                }}
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                    backgroundSize: '300% 300%',
-                    borderRadius: 'xl',
-                    zIndex: -1,
-                    filter: 'blur(8px)',
-                    opacity: 0.6,
-                    animation: 'neon-glow 3s ease-in-out infinite',
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    width: '10px',
-                    height: '10px',
-                    background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                    borderRadius: 'full',
-                    boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                    zIndex: 10,
-                    animation: 'light-point-move 3s linear infinite',
-                  },
-                }}
-              >
-                <VStack spacing={4} align="start">
-                  {/* Rating */}
-                  <HStack spacing={1}>
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Icon
-                        key={i}
-                        as={FaStar}
-                        color="yellow.400"
-                        boxSize={4}
+            <SimpleGrid
+              columns={{ base: 1, md: 2, lg: 3 }}
+              spacing={{ base: 4, md: 6 }}
+              w="full"
+            >
+              {testimonials.map((testimonial, index) => (
+                <MotionCard
+                  key={index}
+                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.08, 16)}
+                  whileHover={hoverLift(prefersReducedMotion)}
+                  p={{ base: 6, md: 8 }}
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="#00C2FF"
+                  bg="bg.card"
+                  position="relative"
+                  overflow="visible"
+                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  className="stat-card-neon"
+                  _hover={{
+                    borderColor: 'neon.400',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                  }}
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-2px',
+                      left: '-2px',
+                      right: '-2px',
+                      bottom: '-2px',
+                      background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
+                      backgroundSize: '300% 300%',
+                      borderRadius: 'xl',
+                      zIndex: -1,
+                      filter: 'blur(8px)',
+                      opacity: 0.6,
+                      animation: 'neon-glow 3s ease-in-out infinite',
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      width: '10px',
+                      height: '10px',
+                      background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
+                      borderRadius: 'full',
+                      boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
+                      zIndex: 10,
+                      animation: 'light-point-move 3s linear infinite',
+                    },
+                  }}
+                >
+                  <VStack spacing={4} align="start">
+                    {/* Rating */}
+                    <HStack spacing={1}>
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Icon
+                          key={i}
+                          as={FaStar}
+                          color="yellow.400"
+                          boxSize={4}
+                        />
+                      ))}
+                    </HStack>
+
+                    {/* Quote */}
+                    <Text
+                      color="text.secondary"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      lineHeight="tall"
+                      fontStyle="italic"
+                    >
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </Text>
+
+                    {/* Customer info */}
+                    <HStack spacing={3} w="full">
+                      <Avatar
+                        size="sm"
+                        name={testimonial.name}
+                        src={testimonial.avatar}
                       />
-                    ))}
-                  </HStack>
-
-                  {/* Quote */}
-                  <Text
-                    color="text.secondary"
-                    fontSize={{ base: 'sm', md: 'md' }}
-                    lineHeight="tall"
-                    fontStyle="italic"
-                  >
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </Text>
-
-                  {/* Customer info */}
-                  <HStack spacing={3} w="full">
-                    <Avatar
-                      size="sm"
-                      name={testimonial.name}
-                      src={testimonial.avatar}
-                    />
-                    <VStack spacing={0} align="start" flex={1}>
-                      <Text
-                        fontSize="sm"
-                        fontWeight="bold"
-                        color="text.primary"
-                      >
-                        {testimonial.name}
-                      </Text>
-                      <Text fontSize="xs" color="text.tertiary">
-                        {testimonial.city} • {testimonial.service}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                </VStack>
-              </MotionCard>
-            ))}
-          </SimpleGrid>
+                      <VStack spacing={0} align="start" flex={1}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          color="text.primary"
+                        >
+                          {testimonial.name}
+                        </Text>
+                        <Text fontSize="xs" color="text.tertiary">
+                          {testimonial.city} • {testimonial.service}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </VStack>
+                </MotionCard>
+              ))}
+            </SimpleGrid>
+          </MotionBox>
         </VStack>
       </Container>
     </Box>
@@ -1016,14 +1166,17 @@ const MobileTestimonials: React.FC = () => {
 
 // Mobile CTA Section
 const MobileCTA: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const ctaFade = useMemo(() => createFadeInUp(prefersReducedMotion, 0.1, 18), [prefersReducedMotion]);
+
   return (
     <Box className="mobile-cta" py={{ base: 12, md: 16 }} bg="bg.surface">
       <Container maxW="container.xl">
         <MotionBox
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition="0.6s ease-out"
+          initial="hidden"
+          whileInView="show"
+          variants={ctaFade}
+          viewport={viewportMotion}
           p={{ base: 8, md: 12 }}
           borderRadius="2xl"
           bg="bg.card"
@@ -1084,61 +1237,72 @@ const MobileCTA: React.FC = () => {
             </Text>
 
             <Stack
-              direction={{ base: 'column', sm: 'row' }}
+              direction={{ base: 'column', md: 'row' }}
               spacing={4}
               w="full"
-              maxW="500px"
+              maxW={{ base: '400px', md: '700px' }}
+              flexWrap="wrap"
+              justify="center"
             >
-              <TouchButton
-                size="xl"
-                bg="linear-gradient(135deg, #00C2FF, #00D18F)"
-                color="white"
-                fontWeight="bold"
-                rightIcon={<FaArrowRight />}
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0,194,255,0.4)',
-                }}
-                fullWidth
-                onClick={() => (window.location.href = '/booking-luxury')}
-              >
-                Get Quote Now
-              </TouchButton>
+              <Box flex={{ base: '1 1 100%', md: '1 1 auto' }} minW={{ md: '180px' }}>
+                <TouchButton
+                  size="xl"
+                  bg="linear-gradient(135deg, #00C2FF, #00D18F)"
+                  color="white"
+                  fontWeight="bold"
+                  rightIcon={<FaArrowRight />}
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,194,255,0.4)',
+                  }}
+                  fullWidth
+                  onClick={() => (window.location.href = '/booking-luxury')}
+                >
+                  Get Quote Now
+                </TouchButton>
+              </Box>
 
-              <TouchButton
-                size="xl"
-                variant="outline"
-                borderColor="neon.400"
-                color="neon.400"
-                leftIcon={<FaTruck />}
-                _hover={{
-                  bg: 'neon.400',
-                  color: 'white',
-                }}
-                fullWidth
-                onClick={() => (window.location.href = '/track')}
-              >
-                Track Move
-              </TouchButton>
+              <Box flex={{ base: '1 1 100%', md: '0 1 auto' }} minW={{ md: '150px' }}>
+                <MotionBox whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
+                  <TouchButton
+                    size="xl"
+                    variant="outline"
+                    borderColor="neon.400"
+                    color="neon.400"
+                    leftIcon={<FaTruck />}
+                    _hover={{
+                      bg: 'neon.400',
+                      color: 'white',
+                    }}
+                    fullWidth
+                    onClick={() => (window.location.href = '/track')}
+                  >
+                    Track Move
+                  </TouchButton>
+                </MotionBox>
+              </Box>
 
-              <Button
-                as="a"
-                href="tel:+441202129746"
-                
-                size="xl"
-                variant="outline"
-                borderColor="neon.400"
-                color="neon.400"
-                leftIcon={<FaPhone />}
-                _hover={{
-                  bg: 'neon.400',
-                  color: 'white',
-                  textDecoration: 'none',
-                }}
-                width="full"
-              >
-                Call Us
-              </Button>
+              <Box flex={{ base: '1 1 100%', md: '0 1 auto' }} minW={{ md: '130px' }}>
+                <MotionBox whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
+                  <Button
+                    as="a"
+                    href="tel:+441202129746"
+                    size="xl"
+                    variant="outline"
+                    borderColor="neon.400"
+                    color="neon.400"
+                    leftIcon={<FaPhone />}
+                    _hover={{
+                      bg: 'neon.400',
+                      color: 'white',
+                      textDecoration: 'none',
+                    }}
+                    width="full"
+                  >
+                    Call Us
+                  </Button>
+                </MotionBox>
+              </Box>
             </Stack>
           </VStack>
         </MotionBox>

@@ -41,6 +41,10 @@ if (typeof document !== 'undefined') {
         -webkit-text-stroke-color: #000000 !important;
         -webkit-text-stroke-width: 0px !important;
         opacity: 1 !important;
+        font-size: 16px !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
       }
       .customer-chat-input::placeholder,
       .customer-chat-input input::placeholder {
@@ -68,6 +72,27 @@ if (typeof document !== 'undefined') {
         -webkit-text-fill-color: #000000 !important;
         opacity: 1 !important;
         cursor: text !important;
+      }
+      /* iOS Safari specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        .customer-chat-input {
+          color: #000000 !important;
+          -webkit-text-fill-color: #000000 !important;
+          background-color: white !important;
+          font-size: 16px !important;
+        }
+      }
+      /* Autofill fixes */
+      .customer-chat-input:-webkit-autofill,
+      .customer-chat-input:-webkit-autofill:hover,
+      .customer-chat-input:-webkit-autofill:focus,
+      .customer-chat-input:-webkit-autofill:active {
+        -webkit-text-fill-color: #000000 !important;
+        -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+        box-shadow: 0 0 0px 1000px white inset !important;
+        background-color: white !important;
+        color: #000000 !important;
+        transition: background-color 5000s ease-in-out 0s;
       }
     `;
     document.head.appendChild(style);
@@ -589,16 +614,17 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       Your Name *
                     </Text>
                     <Input
+                      className="customer-chat-input"
                       placeholder="Enter your full name"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       size="lg"
                       bg="white"
-                      color="black"
+                      color="#000000"
                       border="2px solid"
                       borderColor="gray.200"
                       borderRadius="md"
-                      _placeholder={{ color: 'gray.400' }}
+                      _placeholder={{ color: 'gray.400', WebkitTextFillColor: '#9CA3AF' }}
                       _hover={{
                         borderColor: 'gray.300',
                       }}
@@ -606,6 +632,23 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                         borderColor: 'blue.500',
                         boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
                         bg: 'white',
+                        color: '#000000',
+                      }}
+                      sx={{
+                        WebkitTextFillColor: '#000000 !important',
+                        WebkitTextStrokeColor: '#000000',
+                        caretColor: '#000000',
+                        opacity: '1 !important',
+                        fontSize: '16px',
+                        '&:-webkit-autofill': {
+                          WebkitTextFillColor: '#000000 !important',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                          backgroundColor: 'white !important',
+                        },
+                        '&:-webkit-autofill:focus': {
+                          WebkitTextFillColor: '#000000 !important',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                        },
                       }}
                     />
                   </Box>
@@ -615,17 +658,18 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       Email Address *
                     </Text>
                     <Input
+                      className="customer-chat-input"
                       type="email"
                       placeholder="Enter your email address"
                       value={formEmail}
                       onChange={(e) => setFormEmail(e.target.value)}
                       size="lg"
                       bg="white"
-                      color="black"
+                      color="#000000"
                       border="2px solid"
                       borderColor="gray.200"
                       borderRadius="md"
-                      _placeholder={{ color: 'gray.400' }}
+                      _placeholder={{ color: 'gray.400', WebkitTextFillColor: '#9CA3AF' }}
                       _hover={{
                         borderColor: 'gray.300',
                       }}
@@ -633,6 +677,23 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                         borderColor: 'blue.500',
                         boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
                         bg: 'white',
+                        color: '#000000',
+                      }}
+                      sx={{
+                        WebkitTextFillColor: '#000000 !important',
+                        WebkitTextStrokeColor: '#000000',
+                        caretColor: '#000000',
+                        opacity: '1 !important',
+                        fontSize: '16px',
+                        '&:-webkit-autofill': {
+                          WebkitTextFillColor: '#000000 !important',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                          backgroundColor: 'white !important',
+                        },
+                        '&:-webkit-autofill:focus': {
+                          WebkitTextFillColor: '#000000 !important',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                        },
                       }}
                     />
                   </Box>
