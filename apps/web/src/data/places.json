@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 216,
+  "total": 286,
   "places": [
     {
       "slug": "london",
@@ -2144,6 +2144,627 @@
       "lat": 51.5906,
       "lon": -3.7984,
       "population": 37000
+    },
+    {
+      "slug": "bury",
+      "name": "Bury",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5933,
+      "lon": -2.2966,
+      "population": 79000
+    },
+    {
+      "slug": "sale",
+      "name": "Sale",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4239,
+      "lon": -2.3219,
+      "population": 55000
+    },
+    {
+      "slug": "altrincham",
+      "name": "Altrincham",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3838,
+      "lon": -2.3547,
+      "population": 52000
+    },
+    {
+      "slug": "urmston",
+      "name": "Urmston",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4486,
+      "lon": -2.3745,
+      "population": 41000
+    },
+    {
+      "slug": "stretford",
+      "name": "Stretford",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4467,
+      "lon": -2.3087,
+      "population": 46000
+    },
+    {
+      "slug": "ashton-under-lyne",
+      "name": "Ashton-under-Lyne",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4897,
+      "lon": -2.0951,
+      "population": 45000
+    },
+    {
+      "slug": "hyde",
+      "name": "Hyde",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4516,
+      "lon": -2.0795,
+      "population": 34000
+    },
+    {
+      "slug": "glossop",
+      "name": "Glossop",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4433,
+      "lon": -1.9489,
+      "population": 33000
+    },
+    {
+      "slug": "wilmslow",
+      "name": "Wilmslow",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3270,
+      "lon": -2.2310,
+      "population": 24000
+    },
+    {
+      "slug": "knutsford",
+      "name": "Knutsford",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3024,
+      "lon": -2.3717,
+      "population": 13000
+    },
+    {
+      "slug": "congleton",
+      "name": "Congleton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.1624,
+      "lon": -2.2126,
+      "population": 26000
+    },
+    {
+      "slug": "sandbach",
+      "name": "Sandbach",
+      "type": "town",
+      "region": "England",
+      "lat": 53.1447,
+      "lon": -2.3667,
+      "population": 18000
+    },
+    {
+      "slug": "nantwich",
+      "name": "Nantwich",
+      "type": "town",
+      "region": "England",
+      "lat": 53.0678,
+      "lon": -2.5217,
+      "population": 17000
+    },
+    {
+      "slug": "northwich",
+      "name": "Northwich",
+      "type": "town",
+      "region": "England",
+      "lat": 53.2587,
+      "lon": -2.5188,
+      "population": 20000
+    },
+    {
+      "slug": "winsford",
+      "name": "Winsford",
+      "type": "town",
+      "region": "England",
+      "lat": 53.1906,
+      "lon": -2.5256,
+      "population": 32000
+    },
+    {
+      "slug": "ellesmere-port",
+      "name": "Ellesmere Port",
+      "type": "town",
+      "region": "England",
+      "lat": 53.2791,
+      "lon": -2.8974,
+      "population": 55000
+    },
+    {
+      "slug": "neston",
+      "name": "Neston",
+      "type": "town",
+      "region": "England",
+      "lat": 53.2908,
+      "lon": -3.0642,
+      "population": 15000
+    },
+    {
+      "slug": "formby",
+      "name": "Formby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5558,
+      "lon": -3.0703,
+      "population": 24000
+    },
+    {
+      "slug": "crosby",
+      "name": "Crosby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4875,
+      "lon": -3.0344,
+      "population": 52000
+    },
+    {
+      "slug": "bootle",
+      "name": "Bootle",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4458,
+      "lon": -2.9891,
+      "population": 77000
+    },
+    {
+      "slug": "wallasey",
+      "name": "Wallasey",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4239,
+      "lon": -3.0583,
+      "population": 60000
+    },
+    {
+      "slug": "bebington",
+      "name": "Bebington",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3528,
+      "lon": -3.0039,
+      "population": 57000
+    },
+    {
+      "slug": "ormskirk",
+      "name": "Ormskirk",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5675,
+      "lon": -2.8833,
+      "population": 24000
+    },
+    {
+      "slug": "kirkby",
+      "name": "Kirkby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4833,
+      "lon": -2.8989,
+      "population": 40000
+    },
+    {
+      "slug": "newton-le-willows",
+      "name": "Newton-le-Willows",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4500,
+      "lon": -2.6333,
+      "population": 22000
+    },
+    {
+      "slug": "leigh",
+      "name": "Leigh",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4967,
+      "lon": -2.5167,
+      "population": 43000
+    },
+    {
+      "slug": "atherton",
+      "name": "Atherton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5233,
+      "lon": -2.4939,
+      "population": 20000
+    },
+    {
+      "slug": "horwich",
+      "name": "Horwich",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5942,
+      "lon": -2.5408,
+      "population": 20000
+    },
+    {
+      "slug": "farnworth",
+      "name": "Farnworth",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5500,
+      "lon": -2.3992,
+      "population": 28000
+    },
+    {
+      "slug": "radcliffe",
+      "name": "Radcliffe",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5608,
+      "lon": -2.3275,
+      "population": 30000
+    },
+    {
+      "slug": "whitefield",
+      "name": "Whitefield",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5508,
+      "lon": -2.2989,
+      "population": 23000
+    },
+    {
+      "slug": "prestwich",
+      "name": "Prestwich",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5317,
+      "lon": -2.2836,
+      "population": 31000
+    },
+    {
+      "slug": "middleton",
+      "name": "Middleton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5550,
+      "lon": -2.1867,
+      "population": 45000
+    },
+    {
+      "slug": "heywood",
+      "name": "Heywood",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5936,
+      "lon": -2.2192,
+      "population": 29000
+    },
+    {
+      "slug": "littleborough",
+      "name": "Littleborough",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6433,
+      "lon": -2.0967,
+      "population": 14000
+    },
+    {
+      "slug": "milnrow",
+      "name": "Milnrow",
+      "type": "village",
+      "region": "England",
+      "lat": 53.6108,
+      "lon": -2.1117,
+      "population": 10000
+    },
+    {
+      "slug": "shaw",
+      "name": "Shaw",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5775,
+      "lon": -2.0908,
+      "population": 14000
+    },
+    {
+      "slug": "royton",
+      "name": "Royton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5658,
+      "lon": -2.1217,
+      "population": 22000
+    },
+    {
+      "slug": "failsworth",
+      "name": "Failsworth",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5100,
+      "lon": -2.1583,
+      "population": 20000
+    },
+    {
+      "slug": "droylsden",
+      "name": "Droylsden",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4800,
+      "lon": -2.1533,
+      "population": 23000
+    },
+    {
+      "slug": "denton",
+      "name": "Denton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4550,
+      "lon": -2.1133,
+      "population": 36000
+    },
+    {
+      "slug": "stalybridge",
+      "name": "Stalybridge",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4836,
+      "lon": -2.0492,
+      "population": 24000
+    },
+    {
+      "slug": "mossley",
+      "name": "Mossley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5142,
+      "lon": -2.0381,
+      "population": 10000
+    },
+    {
+      "slug": "dukinfield",
+      "name": "Dukinfield",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4739,
+      "lon": -2.0853,
+      "population": 19000
+    },
+    {
+      "slug": "marple",
+      "name": "Marple",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3972,
+      "lon": -2.0628,
+      "population": 23000
+    },
+    {
+      "slug": "hazel-grove",
+      "name": "Hazel Grove",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3750,
+      "lon": -2.1167,
+      "population": 15000
+    },
+    {
+      "slug": "bramhall",
+      "name": "Bramhall",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3592,
+      "lon": -2.1633,
+      "population": 17000
+    },
+    {
+      "slug": "cheadle",
+      "name": "Cheadle",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3942,
+      "lon": -2.2133,
+      "population": 13000
+    },
+    {
+      "slug": "poynton",
+      "name": "Poynton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3517,
+      "lon": -2.1217,
+      "population": 14000
+    },
+    {
+      "slug": "wythenshawe",
+      "name": "Wythenshawe",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3889,
+      "lon": -2.2642,
+      "population": 110000
+    },
+    {
+      "slug": "didsbury",
+      "name": "Didsbury",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4167,
+      "lon": -2.2333,
+      "population": 26000
+    },
+    {
+      "slug": "chorlton",
+      "name": "Chorlton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4408,
+      "lon": -2.2717,
+      "population": 18000
+    },
+    {
+      "slug": "eccles",
+      "name": "Eccles",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4833,
+      "lon": -2.3350,
+      "population": 38000
+    },
+    {
+      "slug": "swinton",
+      "name": "Swinton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5125,
+      "lon": -2.3417,
+      "population": 22000
+    },
+    {
+      "slug": "salford",
+      "name": "Salford",
+      "type": "city",
+      "region": "England",
+      "lat": 53.4875,
+      "lon": -2.2901,
+      "population": 103000
+    },
+    {
+      "slug": "walkden",
+      "name": "Walkden",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5236,
+      "lon": -2.3967,
+      "population": 37000
+    },
+    {
+      "slug": "worsley",
+      "name": "Worsley",
+      "type": "village",
+      "region": "England",
+      "lat": 53.5025,
+      "lon": -2.3833,
+      "population": 11000
+    },
+    {
+      "slug": "irlam",
+      "name": "Irlam",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4417,
+      "lon": -2.4250,
+      "population": 19000
+    },
+    {
+      "slug": "partington",
+      "name": "Partington",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4200,
+      "lon": -2.4267,
+      "population": 8000
+    },
+    {
+      "slug": "airdrie",
+      "name": "Airdrie",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8633,
+      "lon": -3.9808,
+      "population": 37000
+    },
+    {
+      "slug": "bellshill",
+      "name": "Bellshill",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8175,
+      "lon": -4.0267,
+      "population": 21000
+    },
+    {
+      "slug": "wishaw",
+      "name": "Wishaw",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.7742,
+      "lon": -3.9183,
+      "population": 30000
+    },
+    {
+      "slug": "blantyre",
+      "name": "Blantyre",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.7958,
+      "lon": -4.0917,
+      "population": 17000
+    },
+    {
+      "slug": "rutherglen",
+      "name": "Rutherglen",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8283,
+      "lon": -4.2133,
+      "population": 32000
+    },
+    {
+      "slug": "cambuslang",
+      "name": "Cambuslang",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8175,
+      "lon": -4.1700,
+      "population": 28000
+    },
+    {
+      "slug": "bearsden",
+      "name": "Bearsden",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9192,
+      "lon": -4.3342,
+      "population": 28000
+    },
+    {
+      "slug": "milngavie",
+      "name": "Milngavie",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9417,
+      "lon": -4.3167,
+      "population": 13000
+    },
+    {
+      "slug": "clydebank",
+      "name": "Clydebank",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9000,
+      "lon": -4.4000,
+      "population": 29000
+    },
+    {
+      "slug": "dumbarton",
+      "name": "Dumbarton",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9450,
+      "lon": -4.5667,
+      "population": 20000
     }
   ]
 }
