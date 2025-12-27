@@ -9,6 +9,9 @@ import {
 } from '@/lib/places';
 import { APP_BASE_URL, BRAND_NAME } from '@/lib/seo/constants';
 import '@/styles/uk-place-pages.css';
+import { FaTruck, FaShieldAlt, FaClock, FaStar, FaMapMarkerAlt, FaRoute, FaCheckCircle, FaPhone, FaArrowRight } from 'react-icons/fa';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 // ✅ Force Node runtime for SSG/ISR
 export const runtime = 'nodejs';
@@ -161,17 +164,18 @@ function JsonLd({ place, nearby }: { place: any; nearby: any[] }) {
 // A/B content blocks based on place type
 function CityContent({ place }: { place: any }) {
   return (
-    <div className="city-content">
+    <div className="place-content-card city-content">
+      <div className="content-icon">🏙️</div>
       <h2>Major City Removals in {place.name}</h2>
       <p>
-        As one of the UK's largest cities, {place.name} offers extensive removal
+        As one of the UK&apos;s largest cities, {place.name} offers extensive removal
         services with our network of professional movers covering all postcodes.
       </p>
-      <ul>
-        <li>Same-day collection across {place.name}</li>
-        <li>Storage solutions for city living</li>
-        <li>Packing and unpacking services</li>
-        <li>Furniture assembly and disassembly</li>
+      <ul className="feature-list">
+        <li><FaCheckCircle className="check-icon" /> Same-day collection across {place.name}</li>
+        <li><FaCheckCircle className="check-icon" /> Storage solutions for city living</li>
+        <li><FaCheckCircle className="check-icon" /> Packing and unpacking services</li>
+        <li><FaCheckCircle className="check-icon" /> Furniture assembly and disassembly</li>
       </ul>
     </div>
   );
@@ -179,17 +183,18 @@ function CityContent({ place }: { place: any }) {
 
 function TownContent({ place }: { place: any }) {
   return (
-    <div className="town-content">
+    <div className="place-content-card town-content">
+      <div className="content-icon">🏘️</div>
       <h2>Local Town Removals in {place.name}</h2>
       <p>
         Trusted local removal services in {place.name} and surrounding villages.
         We know the area and provide reliable, affordable moving solutions.
       </p>
-      <ul>
-        <li>Local area expertise</li>
-        <li>Flexible scheduling</li>
-        <li>Competitive local rates</li>
-        <li>Community-focused service</li>
+      <ul className="feature-list">
+        <li><FaCheckCircle className="check-icon" /> Local area expertise</li>
+        <li><FaCheckCircle className="check-icon" /> Flexible scheduling</li>
+        <li><FaCheckCircle className="check-icon" /> Competitive local rates</li>
+        <li><FaCheckCircle className="check-icon" /> Community-focused service</li>
       </ul>
     </div>
   );
@@ -197,18 +202,63 @@ function TownContent({ place }: { place: any }) {
 
 function VillageContent({ place }: { place: any }) {
   return (
-    <div className="village-content">
+    <div className="place-content-card village-content">
+      <div className="content-icon">🏡</div>
       <h2>Village Removals in {place.name}</h2>
       <p>
         Personalized removal services for {place.name} and nearby areas. We
         understand rural moving challenges and provide tailored solutions.
       </p>
-      <ul>
-        <li>Rural area navigation</li>
-        <li>Flexible access arrangements</li>
-        <li>Local knowledge and connections</li>
-        <li>Personalized service</li>
+      <ul className="feature-list">
+        <li><FaCheckCircle className="check-icon" /> Rural area navigation</li>
+        <li><FaCheckCircle className="check-icon" /> Flexible access arrangements</li>
+        <li><FaCheckCircle className="check-icon" /> Local knowledge and connections</li>
+        <li><FaCheckCircle className="check-icon" /> Personalized service</li>
       </ul>
+    </div>
+  );
+}
+
+// Trust badges component
+function TrustBadges() {
+  return (
+    <div className="trust-badges">
+      <div className="trust-badge">
+        <FaShieldAlt className="badge-icon shield" />
+        <span>Fully Insured</span>
+      </div>
+      <div className="trust-badge">
+        <FaStar className="badge-icon star" />
+        <span>5-Star Rated</span>
+      </div>
+      <div className="trust-badge">
+        <FaClock className="badge-icon clock" />
+        <span>24/7 Support</span>
+      </div>
+    </div>
+  );
+}
+
+// Stats component
+function PlaceStats({ place }: { place: any }) {
+  return (
+    <div className="place-stats">
+      <div className="stat-card">
+        <div className="stat-number">500+</div>
+        <div className="stat-label">Moves in {place.name}</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-number">4.9</div>
+        <div className="stat-label">Customer Rating</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-number">30min</div>
+        <div className="stat-label">Avg Response</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-number">£25</div>
+        <div className="stat-label">From /hour</div>
+      </div>
     </div>
   );
 }
@@ -248,49 +298,103 @@ export default async function PlacePage({
   };
 
   return (
-    <main className="uk-place-container">
+    <main className="uk-place-container enhanced">
+      <Header />
+      <MobileHeader />
       <JsonLd place={place} nearby={nearby} />
 
-      <section className="uk-place-hero">
-        <h1>Man and Van in {place.name}</h1>
-        <p>
-          Fast, insured removals in {place.name} and surrounding areas.
-          Transparent pricing and real-time tracking.
-        </p>
-        <div className="uk-place-cta">
-          <Link className="btn btn-primary" href="/booking-luxury">
-            Get a quote
-          </Link>
-          <Link className="btn btn-secondary" href="/how-it-works">
-            How it works
-          </Link>
+      {/* Hero Section */}
+      <section className="uk-place-hero enhanced-hero">
+        <div className="hero-background">
+          <div className="hero-gradient"></div>
+          <div className="hero-particles"></div>
+        </div>
+        <div className="hero-content">
+          <div className="location-badge">
+            <FaMapMarkerAlt className="location-icon" />
+            <span>{place.name}, UK</span>
+          </div>
+          <h1>
+            <span className="title-line">Man and Van in</span>
+            <span className="title-highlight">{place.name}</span>
+          </h1>
+          <p className="hero-description">
+            Fast, insured removals in {place.name} and surrounding areas.
+            Transparent pricing and real-time tracking for your peace of mind.
+          </p>
+          <TrustBadges />
+          <div className="uk-place-cta">
+            <Link className="btn btn-primary btn-glow" href="/booking-luxury">
+              <FaTruck className="btn-icon" />
+              Get Instant Quote
+              <FaArrowRight className="btn-arrow" />
+            </Link>
+            <Link className="btn btn-secondary" href="/how-it-works">
+              How it works
+            </Link>
+            <a className="btn btn-call" href="tel:+441202129746">
+              <FaPhone className="btn-icon" />
+              Call Now
+            </a>
+          </div>
         </div>
       </section>
 
+      {/* Stats Section */}
+      <PlaceStats place={place} />
+
+      {/* Content Block */}
       {renderContentBlock()}
 
-      <section className="uk-place-routes">
-        <h2>Popular routes from {place.name}</h2>
+      {/* Popular Routes Section */}
+      <section className="uk-place-routes enhanced-routes">
+        <div className="section-header">
+          <FaRoute className="section-icon" />
+          <h2>Popular Routes from {place.name}</h2>
+          <p className="section-subtitle">Most requested moving destinations</p>
+        </div>
         <ul className="uk-routes-grid">
-          {nearby.slice(0, 6).map((n: any) => (
-            <li key={n.slug}>
+          {nearby.slice(0, 6).map((n: any, index: number) => (
+            <li key={n.slug} className="route-card" style={{ animationDelay: `${index * 0.1}s` }}>
               <Link href={routeSlug(place, n)}>
-                {place.name} → {n.name} removals
+                <div className="route-from">{place.name}</div>
+                <div className="route-arrow">→</div>
+                <div className="route-to">{n.name}</div>
+                <span className="route-label">View route</span>
               </Link>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="uk-place-nearby">
-        <h3>Nearby areas</h3>
+      {/* Nearby Areas Section */}
+      <section className="uk-place-nearby enhanced-nearby">
+        <div className="section-header">
+          <FaMapMarkerAlt className="section-icon" />
+          <h3>Nearby Areas We Cover</h3>
+        </div>
         <ul className="uk-nearby-chips">
-          {nearby.map((n: any) => (
-            <li key={n.slug}>
-              <Link href={`/uk/${n.slug}`}>{n.name}</Link>
+          {nearby.map((n: any, index: number) => (
+            <li key={n.slug} style={{ animationDelay: `${index * 0.05}s` }}>
+              <Link href={`/uk/${n.slug}`}>
+                <FaMapMarkerAlt className="chip-icon" />
+                {n.name}
+              </Link>
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* CTA Section */}
+      <section className="uk-place-final-cta">
+        <div className="cta-content">
+          <h2>Ready to Move in {place.name}?</h2>
+          <p>Get your instant quote now. No hidden fees, no surprises.</p>
+          <Link className="btn btn-primary btn-large btn-glow" href="/booking-luxury">
+            Get Your Free Quote
+            <FaArrowRight className="btn-arrow" />
+          </Link>
+        </div>
       </section>
     </main>
   );

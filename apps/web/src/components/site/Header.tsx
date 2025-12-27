@@ -233,25 +233,12 @@ const Header: React.FC = memo(() => {
       borderBottom={`1px solid ${themeColors.borderColor}`}
       boxShadow={isScrolled ? `0 4px 20px ${themeColors.shadowColor}` : 'sm'}
       backdropFilter={isScrolled ? 'blur(20px)' : 'none'}
-      display={{ base: 'none', md: 'block' }}
       suppressHydrationWarning
-      sx={{
-        '@media (max-width: 767px)': {
-          display: 'none !important',
-          visibility: 'hidden !important',
-          opacity: '0 !important',
-          height: '0 !important',
-          pointerEvents: 'none !important',
-        },
-        '@media (min-width: 768px)': {
-          display: 'block !important',
-          visibility: 'visible !important',
-        }
-      }}
+      w="100%"
     >
       <Box maxW="container.xl" mx="auto" px={{ base: 4, md: 6, lg: 8 }}>
         <Flex
-          h={{ base: '80px', md: '130px', lg: '140px' }}
+          h={{ base: '72px', md: '120px', lg: '140px' }}
           align="center"
           justify="space-between"
           gap={6}
