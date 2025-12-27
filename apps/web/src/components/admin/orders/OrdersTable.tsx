@@ -1270,17 +1270,32 @@ export function OrdersTable({
     onRemoveOpen();
   };
 
-  // Calculate distance between two coordinates using Haversine formula
-  const calculateDistanceMiles = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 3959; // Earth radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+  // Calculate distance using unified pricing system API endpoint
+  const calculateDistanceMiles = async (lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> => {
+    try {
+      const response = await fetch('/api/address/distance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pickupLat: lat1,
+          pickupLng: lng1,
+          dropoffLat: lat2,
+          dropoffLng: lng2,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data?.distance) {
+          // Convert km to miles if needed
+          return data.data.distance * 0.621371;
+        }
+      }
+    } catch (error) {
+      console.error('Distance calculation error:', error);
+    }
+    // Fallback: return 0 if API fails (non-critical for display purposes)
+    return 0;
   };
 
   // Get postcode coordinates using Mapbox API
@@ -1355,7 +1370,7 @@ export function OrdersTable({
 
               if (driverLat && driverLng) {
                 if (pickupCoords) {
-                  distanceToPickup = calculateDistanceMiles(
+                  distanceToPickup = await calculateDistanceMiles(
                     driverLat,
                     driverLng,
                     pickupCoords.lat,
@@ -1363,7 +1378,7 @@ export function OrdersTable({
                   );
                 }
                 if (dropoffCoords) {
-                  distanceToDropoff = calculateDistanceMiles(
+                  distanceToDropoff = await calculateDistanceMiles(
                     driverLat,
                     driverLng,
                     dropoffCoords.lat,

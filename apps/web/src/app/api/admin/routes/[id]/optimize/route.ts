@@ -22,28 +22,45 @@ interface OptimizationRequest {
 }
 
 /**
- * Calculate distance between two points (Haversine formula)
+ * Calculate distance using unified pricing system API endpoint
+ * Note: This is for route optimization display purposes only, not for pricing calculations
  */
-function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+async function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/address/distance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pickupLat: lat1,
+        pickupLng: lng1,
+        dropoffLat: lat2,
+        dropoffLng: lng2,
+      }),
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.data?.distance) {
+        return data.data.distance; // Already in km
+      }
+    }
+  } catch (error) {
+    console.error('Distance calculation error:', error);
+  }
+  // Fallback: return 0 if API fails (non-critical for optimization display)
+  return 0;
 }
 
 /**
  * Nearest Neighbor algorithm for route optimization
+ * Uses unified pricing system API for distance calculations
  */
-function optimizeRouteNearestNeighbor(
+async function optimizeRouteNearestNeighbor(
   drops: Array<{ id: string; lat: number; lng: number; sequenceNumber: number }>,
   startLat?: number,
   startLng?: number
-): Array<{ id: string; sequenceNumber: number }> {
+): Promise<Array<{ id: string; sequenceNumber: number }>> {
   if (drops.length <= 1) {
     return drops.map(d => ({ id: d.id, sequenceNumber: d.sequenceNumber }));
   }
@@ -59,8 +76,11 @@ function optimizeRouteNearestNeighbor(
   // Find starting point
   if (startLat && startLng) {
     let minDist = Infinity;
-    drops.forEach((drop, idx) => {
-      const dist = calculateDistance(startLat, startLng, drop.lat, drop.lng);
+    const distancePromises = drops.map((drop, idx) => 
+      calculateDistance(startLat, startLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
+    );
+    const distances = await Promise.all(distancePromises);
+    distances.forEach(({ dist, idx }) => {
       if (dist < minDist) {
         minDist = dist;
         currentIndex = idx;
@@ -80,8 +100,11 @@ function optimizeRouteNearestNeighbor(
     let nearestIndex = 0;
     let nearestDist = Infinity;
 
-    unvisited.forEach((drop, idx) => {
-      const dist = calculateDistance(currentLat, currentLng, drop.lat, drop.lng);
+    const distancePromises = unvisited.map((drop, idx) =>
+      calculateDistance(currentLat, currentLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
+    );
+    const distances = await Promise.all(distancePromises);
+    distances.forEach(({ dist, idx }) => {
       if (dist < nearestDist) {
         nearestDist = dist;
         nearestIndex = idx;
@@ -161,38 +184,48 @@ export async function POST(
       );
     }
 
-    // Calculate current route metrics
+    // Calculate current route metrics using unified pricing system
     let currentDistance = 0;
+    const currentDistancePromises = [];
     for (let i = 0; i < dropsWithCoords.length - 1; i++) {
-      currentDistance += calculateDistance(
-        dropsWithCoords[i].lat,
-        dropsWithCoords[i].lng,
-        dropsWithCoords[i + 1].lat,
-        dropsWithCoords[i + 1].lng
+      currentDistancePromises.push(
+        calculateDistance(
+          dropsWithCoords[i].lat,
+          dropsWithCoords[i].lng,
+          dropsWithCoords[i + 1].lat,
+          dropsWithCoords[i + 1].lng
+        )
       );
     }
+    const currentDistances = await Promise.all(currentDistancePromises);
+    currentDistance = currentDistances.reduce((sum, dist) => sum + dist, 0);
 
     const currentDuration = currentDistance * 2; // Rough estimate: 2 min per km
     const currentCost = currentDistance * 0.5; // Rough estimate: £0.50 per km
 
     // Optimize route
-    const optimizedOrder = optimizeRouteNearestNeighbor(dropsWithCoords);
+    const optimizedOrder = await optimizeRouteNearestNeighbor(dropsWithCoords);
 
-    // Calculate optimized route metrics
+    // Calculate optimized route metrics using unified pricing system
     let optimizedDistance = 0;
+    const optimizedDistancePromises: Promise<number>[] = [];
     const optimizedDrops = optimizedOrder.map((opt, idx) => {
       const drop = dropsWithCoords.find(d => d.id === opt.id)!;
       if (idx > 0) {
         const prevDrop = dropsWithCoords.find(d => d.id === optimizedOrder[idx - 1].id)!;
-        optimizedDistance += calculateDistance(
-          prevDrop.lat,
-          prevDrop.lng,
-          drop.lat,
-          drop.lng
+        optimizedDistancePromises.push(
+          calculateDistance(
+            prevDrop.lat,
+            prevDrop.lng,
+            drop.lat,
+            drop.lng
+          )
         );
       }
       return drop;
     });
+    const optimizedDistances = await Promise.all(optimizedDistancePromises);
+    optimizedDistance = optimizedDistances.reduce((sum, dist) => sum + dist, 0);
 
     const optimizedDuration = optimizedDistance * 2;
     const optimizedCost = optimizedDistance * 0.5;
