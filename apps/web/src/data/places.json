@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 496,
+  "total": 566,
   "places": [
     {
       "slug": "london",
@@ -4610,6 +4610,627 @@
       "lat": 51.1417,
       "lon": -0.4833,
       "population": 11000
+    },
+    {
+      "slug": "billingshurst",
+      "name": "Billingshurst",
+      "type": "village",
+      "region": "England",
+      "lat": 51.0217,
+      "lon": -0.4500,
+      "population": 8000
+    },
+    {
+      "slug": "pulborough",
+      "name": "Pulborough",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9567,
+      "lon": -0.5167,
+      "population": 4500
+    },
+    {
+      "slug": "storrington",
+      "name": "Storrington",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9167,
+      "lon": -0.4500,
+      "population": 5000
+    },
+    {
+      "slug": "steyning",
+      "name": "Steyning",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8883,
+      "lon": -0.3267,
+      "population": 6000
+    },
+    {
+      "slug": "henfield",
+      "name": "Henfield",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9333,
+      "lon": -0.2667,
+      "population": 5500
+    },
+    {
+      "slug": "burgess-hill",
+      "name": "Burgess Hill",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9533,
+      "lon": -0.1283,
+      "population": 30635
+    },
+    {
+      "slug": "haywards-heath",
+      "name": "Haywards Heath",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0050,
+      "lon": -0.1033,
+      "population": 33845
+    },
+    {
+      "slug": "east-grinstead",
+      "name": "East Grinstead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1267,
+      "lon": -0.0117,
+      "population": 26383
+    },
+    {
+      "slug": "crowborough",
+      "name": "Crowborough",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0600,
+      "lon": 0.1633,
+      "population": 20607
+    },
+    {
+      "slug": "uckfield",
+      "name": "Uckfield",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9683,
+      "lon": 0.0967,
+      "population": 14501
+    },
+    {
+      "slug": "lewes",
+      "name": "Lewes",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8733,
+      "lon": 0.0100,
+      "population": 17297
+    },
+    {
+      "slug": "seaford",
+      "name": "Seaford",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7700,
+      "lon": 0.1050,
+      "population": 24500
+    },
+    {
+      "slug": "newhaven",
+      "name": "Newhaven",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7933,
+      "lon": 0.0517,
+      "population": 12232
+    },
+    {
+      "slug": "peacehaven",
+      "name": "Peacehaven",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7933,
+      "lon": -0.0117,
+      "population": 15000
+    },
+    {
+      "slug": "hailsham",
+      "name": "Hailsham",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8617,
+      "lon": 0.2583,
+      "population": 20800
+    },
+    {
+      "slug": "heathfield",
+      "name": "Heathfield",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9683,
+      "lon": 0.2517,
+      "population": 10500
+    },
+    {
+      "slug": "bexhill-on-sea",
+      "name": "Bexhill-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8417,
+      "lon": 0.4667,
+      "population": 43478
+    },
+    {
+      "slug": "battle",
+      "name": "Battle",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9150,
+      "lon": 0.4883,
+      "population": 6048
+    },
+    {
+      "slug": "rye",
+      "name": "Rye",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9500,
+      "lon": 0.7333,
+      "population": 4773
+    },
+    {
+      "slug": "tenterden",
+      "name": "Tenterden",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0683,
+      "lon": 0.6867,
+      "population": 7500
+    },
+    {
+      "slug": "cranbrook",
+      "name": "Cranbrook",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0967,
+      "lon": 0.5333,
+      "population": 6700
+    },
+    {
+      "slug": "paddock-wood",
+      "name": "Paddock Wood",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1833,
+      "lon": 0.3883,
+      "population": 9000
+    },
+    {
+      "slug": "headcorn",
+      "name": "Headcorn",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1650,
+      "lon": 0.6267,
+      "population": 3500
+    },
+    {
+      "slug": "staplehurst",
+      "name": "Staplehurst",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1750,
+      "lon": 0.5517,
+      "population": 5900
+    },
+    {
+      "slug": "marden",
+      "name": "Marden",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1767,
+      "lon": 0.4883,
+      "population": 5000
+    },
+    {
+      "slug": "edenbridge",
+      "name": "Edenbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1950,
+      "lon": 0.0633,
+      "population": 8700
+    },
+    {
+      "slug": "westerham",
+      "name": "Westerham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2633,
+      "lon": 0.0683,
+      "population": 4700
+    },
+    {
+      "slug": "oxted",
+      "name": "Oxted",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2567,
+      "lon": -0.0017,
+      "population": 12500
+    },
+    {
+      "slug": "caterham",
+      "name": "Caterham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2850,
+      "lon": -0.0783,
+      "population": 21403
+    },
+    {
+      "slug": "redhill",
+      "name": "Redhill",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2400,
+      "lon": -0.1700,
+      "population": 30000
+    },
+    {
+      "slug": "horley",
+      "name": "Horley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1733,
+      "lon": -0.1583,
+      "population": 22500
+    },
+    {
+      "slug": "lingfield",
+      "name": "Lingfield",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1767,
+      "lon": -0.0117,
+      "population": 4500
+    },
+    {
+      "slug": "dorking",
+      "name": "Dorking",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2333,
+      "lon": -0.3300,
+      "population": 17000
+    },
+    {
+      "slug": "cobham",
+      "name": "Cobham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3283,
+      "lon": -0.4100,
+      "population": 9700
+    },
+    {
+      "slug": "esher",
+      "name": "Esher",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3700,
+      "lon": -0.3650,
+      "population": 50000
+    },
+    {
+      "slug": "weybridge",
+      "name": "Weybridge",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3717,
+      "lon": -0.4583,
+      "population": 20000
+    },
+    {
+      "slug": "addlestone",
+      "name": "Addlestone",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3733,
+      "lon": -0.4917,
+      "population": 15500
+    },
+    {
+      "slug": "chertsey",
+      "name": "Chertsey",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3867,
+      "lon": -0.5117,
+      "population": 15000
+    },
+    {
+      "slug": "walton-on-thames",
+      "name": "Walton-on-Thames",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3867,
+      "lon": -0.4133,
+      "population": 22834
+    },
+    {
+      "slug": "sunbury-on-thames",
+      "name": "Sunbury-on-Thames",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4167,
+      "lon": -0.4167,
+      "population": 30000
+    },
+    {
+      "slug": "shepperton",
+      "name": "Shepperton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3950,
+      "lon": -0.4483,
+      "population": 14000
+    },
+    {
+      "slug": "staines-upon-thames",
+      "name": "Staines-upon-Thames",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4333,
+      "lon": -0.5083,
+      "population": 53000
+    },
+    {
+      "slug": "egham",
+      "name": "Egham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4317,
+      "lon": -0.5450,
+      "population": 31700
+    },
+    {
+      "slug": "virginia-water",
+      "name": "Virginia Water",
+      "type": "village",
+      "region": "England",
+      "lat": 51.4017,
+      "lon": -0.5617,
+      "population": 5500
+    },
+    {
+      "slug": "windlesham",
+      "name": "Windlesham",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3633,
+      "lon": -0.6533,
+      "population": 4000
+    },
+    {
+      "slug": "bagshot",
+      "name": "Bagshot",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3617,
+      "lon": -0.7567,
+      "population": 5500
+    },
+    {
+      "slug": "lightwater",
+      "name": "Lightwater",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3517,
+      "lon": -0.6667,
+      "population": 7000
+    },
+    {
+      "slug": "ash",
+      "name": "Ash",
+      "type": "village",
+      "region": "England",
+      "lat": 51.2500,
+      "lon": -0.7167,
+      "population": 6500
+    },
+    {
+      "slug": "tongham",
+      "name": "Tongham",
+      "type": "village",
+      "region": "England",
+      "lat": 51.2267,
+      "lon": -0.7317,
+      "population": 3500
+    },
+    {
+      "slug": "witley",
+      "name": "Witley",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1350,
+      "lon": -0.6333,
+      "population": 4000
+    },
+    {
+      "slug": "milford",
+      "name": "Milford",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1617,
+      "lon": -0.6500,
+      "population": 4500
+    },
+    {
+      "slug": "hindhead",
+      "name": "Hindhead",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1117,
+      "lon": -0.7217,
+      "population": 3200
+    },
+    {
+      "slug": "petersfield",
+      "name": "Petersfield",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0033,
+      "lon": -0.9350,
+      "population": 15040
+    },
+    {
+      "slug": "midhurst",
+      "name": "Midhurst",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9867,
+      "lon": -0.7383,
+      "population": 4914
+    },
+    {
+      "slug": "petworth",
+      "name": "Petworth",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9867,
+      "lon": -0.6067,
+      "population": 3000
+    },
+    {
+      "slug": "arundel",
+      "name": "Arundel",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8550,
+      "lon": -0.5533,
+      "population": 3500
+    },
+    {
+      "slug": "selsey",
+      "name": "Selsey",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7317,
+      "lon": -0.7883,
+      "population": 10737
+    },
+    {
+      "slug": "emsworth",
+      "name": "Emsworth",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8483,
+      "lon": -0.9383,
+      "population": 9700
+    },
+    {
+      "slug": "rowlands-castle",
+      "name": "Rowlands Castle",
+      "type": "village",
+      "region": "England",
+      "lat": 50.8917,
+      "lon": -0.9683,
+      "population": 3500
+    },
+    {
+      "slug": "waterlooville",
+      "name": "Waterlooville",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8800,
+      "lon": -1.0317,
+      "population": 63558
+    },
+    {
+      "slug": "horndean",
+      "name": "Horndean",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9167,
+      "lon": -1.0083,
+      "population": 12500
+    },
+    {
+      "slug": "clanfield",
+      "name": "Clanfield",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9367,
+      "lon": -1.0000,
+      "population": 4500
+    },
+    {
+      "slug": "wickham",
+      "name": "Wickham",
+      "type": "village",
+      "region": "England",
+      "lat": 50.9017,
+      "lon": -1.1833,
+      "population": 5000
+    },
+    {
+      "slug": "bishops-waltham",
+      "name": "Bishop's Waltham",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9533,
+      "lon": -1.2117,
+      "population": 7000
+    },
+    {
+      "slug": "hedge-end",
+      "name": "Hedge End",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9150,
+      "lon": -1.2983,
+      "population": 21500
+    },
+    {
+      "slug": "eastleigh",
+      "name": "Eastleigh",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9700,
+      "lon": -1.3500,
+      "population": 125199
+    },
+    {
+      "slug": "chandlers-ford",
+      "name": "Chandler's Ford",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9833,
+      "lon": -1.3833,
+      "population": 21436
+    },
+    {
+      "slug": "romsey",
+      "name": "Romsey",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9883,
+      "lon": -1.4967,
+      "population": 17738
+    },
+    {
+      "slug": "totton",
+      "name": "Totton",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9217,
+      "lon": -1.4817,
+      "population": 28590
     }
   ]
 }
