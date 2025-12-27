@@ -7,7 +7,7 @@ export async function GET() {
   // Complete UK cities and regions for location-based SEO
   const ukRegions = [
     // Countries
-    'england', 'scotland', 'wales', 'northern-ireland',
+    'england', 'scotland', 'wales',
     
     // Major Cities - England
     'london', 'birmingham', 'manchester', 'liverpool', 'leeds', 'sheffield', 
@@ -25,10 +25,7 @@ export async function GET() {
     'perth', 'paisley',
     
     // Wales  
-    'cardiff', 'swansea', 'newport', 'wrexham', 'bangor', 'st-asaph', 'st-davids',
-    
-    // Northern Ireland
-    'belfast', 'derry', 'lisburn', 'newry',
+    'cardiff', 'swansea', 'newport', 'wrexham', 'bangor', 'st-davids',
     
     // Notable Towns
     'shrewsbury', 'telford', 'torquay', 'scarborough', 'hastings', 'harrogate'

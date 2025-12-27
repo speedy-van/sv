@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 81,
+  "total": 146,
   "places": [
     {
       "slug": "london",
@@ -561,51 +561,6 @@
       "population": 37000
     },
     {
-      "slug": "belfast",
-      "name": "Belfast",
-      "type": "city",
-      "region": "Northern Ireland",
-      "lat": 54.5973,
-      "lon": -5.9301,
-      "population": 343000
-    },
-    {
-      "slug": "derry",
-      "name": "Derry",
-      "type": "city",
-      "region": "Northern Ireland",
-      "lat": 54.9966,
-      "lon": -7.3086,
-      "population": 85000
-    },
-    {
-      "slug": "lisburn",
-      "name": "Lisburn",
-      "type": "city",
-      "region": "Northern Ireland",
-      "lat": 54.5162,
-      "lon": -6.0580,
-      "population": 45000
-    },
-    {
-      "slug": "newry",
-      "name": "Newry",
-      "type": "city",
-      "region": "Northern Ireland",
-      "lat": 54.1751,
-      "lon": -6.3492,
-      "population": 27000
-    },
-    {
-      "slug": "armagh",
-      "name": "Armagh",
-      "type": "city",
-      "region": "Northern Ireland",
-      "lat": 54.3503,
-      "lon": -6.6528,
-      "population": 15000
-    },
-    {
       "slug": "newport",
       "name": "Newport",
       "type": "city",
@@ -713,6 +668,861 @@
       "lon": -1.2828,
       "population": 36000,
       "parentSlug": "oxford"
+    },
+    {
+      "slug": "bradford",
+      "name": "Bradford",
+      "type": "city",
+      "region": "England",
+      "lat": 53.7960,
+      "lon": -1.7594,
+      "population": 537000
+    },
+    {
+      "slug": "wigan",
+      "name": "Wigan",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5450,
+      "lon": -2.6325,
+      "population": 103000
+    },
+    {
+      "slug": "rotherham",
+      "name": "Rotherham",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4326,
+      "lon": -1.3635,
+      "population": 109000
+    },
+    {
+      "slug": "doncaster",
+      "name": "Doncaster",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5228,
+      "lon": -1.1285,
+      "population": 109000
+    },
+    {
+      "slug": "barnsley",
+      "name": "Barnsley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5529,
+      "lon": -1.4791,
+      "population": 91000
+    },
+    {
+      "slug": "oldham",
+      "name": "Oldham",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5409,
+      "lon": -2.1114,
+      "population": 96000
+    },
+    {
+      "slug": "rochdale",
+      "name": "Rochdale",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6097,
+      "lon": -2.1561,
+      "population": 107000
+    },
+    {
+      "slug": "warrington",
+      "name": "Warrington",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3900,
+      "lon": -2.5970,
+      "population": 210000
+    },
+    {
+      "slug": "basingstoke",
+      "name": "Basingstoke",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2667,
+      "lon": -1.0876,
+      "population": 113000
+    },
+    {
+      "slug": "crawley",
+      "name": "Crawley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1092,
+      "lon": -0.1872,
+      "population": 112000
+    },
+    {
+      "slug": "eastbourne",
+      "name": "Eastbourne",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7684,
+      "lon": 0.2908,
+      "population": 103000
+    },
+    {
+      "slug": "worthing",
+      "name": "Worthing",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8147,
+      "lon": -0.3714,
+      "population": 110000
+    },
+    {
+      "slug": "hastings",
+      "name": "Hastings",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8540,
+      "lon": 0.5730,
+      "population": 92000
+    },
+    {
+      "slug": "maidstone",
+      "name": "Maidstone",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2720,
+      "lon": 0.5290,
+      "population": 107000
+    },
+    {
+      "slug": "colchester",
+      "name": "Colchester",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8860,
+      "lon": 0.8920,
+      "population": 104000
+    },
+    {
+      "slug": "southend-on-sea",
+      "name": "Southend-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5459,
+      "lon": 0.7077,
+      "population": 183000
+    },
+    {
+      "slug": "basildon",
+      "name": "Basildon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5761,
+      "lon": 0.4886,
+      "population": 107000
+    },
+    {
+      "slug": "harlow",
+      "name": "Harlow",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7737,
+      "lon": 0.1152,
+      "population": 87000
+    },
+    {
+      "slug": "stevenage",
+      "name": "Stevenage",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9017,
+      "lon": -0.2019,
+      "population": 90000
+    },
+    {
+      "slug": "hemel-hempstead",
+      "name": "Hemel Hempstead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7534,
+      "lon": -0.4489,
+      "population": 97000
+    },
+    {
+      "slug": "bedford",
+      "name": "Bedford",
+      "type": "town",
+      "region": "England",
+      "lat": 52.1356,
+      "lon": -0.4666,
+      "population": 106000
+    },
+    {
+      "slug": "welwyn-garden-city",
+      "name": "Welwyn Garden City",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8015,
+      "lon": -0.2072,
+      "population": 51000
+    },
+    {
+      "slug": "hatfield",
+      "name": "Hatfield",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7636,
+      "lon": -0.2280,
+      "population": 39000
+    },
+    {
+      "slug": "swindon",
+      "name": "Swindon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5558,
+      "lon": -1.7797,
+      "population": 185000
+    },
+    {
+      "slug": "cheltenham",
+      "name": "Cheltenham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.8994,
+      "lon": -2.0783,
+      "population": 117000
+    },
+    {
+      "slug": "taunton",
+      "name": "Taunton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0147,
+      "lon": -3.1029,
+      "population": 65000
+    },
+    {
+      "slug": "yeovil",
+      "name": "Yeovil",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9422,
+      "lon": -2.6326,
+      "population": 45000
+    },
+    {
+      "slug": "weston-super-mare",
+      "name": "Weston-super-Mare",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3459,
+      "lon": -2.9748,
+      "population": 76000
+    },
+    {
+      "slug": "torquay",
+      "name": "Torquay",
+      "type": "town",
+      "region": "England",
+      "lat": 50.4619,
+      "lon": -3.5253,
+      "population": 65000
+    },
+    {
+      "slug": "paignton",
+      "name": "Paignton",
+      "type": "town",
+      "region": "England",
+      "lat": 50.4357,
+      "lon": -3.5629,
+      "population": 50000
+    },
+    {
+      "slug": "newton-abbot",
+      "name": "Newton Abbot",
+      "type": "town",
+      "region": "England",
+      "lat": 50.5297,
+      "lon": -3.6099,
+      "population": 26000
+    },
+    {
+      "slug": "tiverton",
+      "name": "Tiverton",
+      "type": "town",
+      "region": "England",
+      "lat": 50.9022,
+      "lon": -3.4925,
+      "population": 22000
+    },
+    {
+      "slug": "barnstaple",
+      "name": "Barnstaple",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0795,
+      "lon": -4.0583,
+      "population": 24000
+    },
+    {
+      "slug": "poole",
+      "name": "Poole",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7151,
+      "lon": -1.9876,
+      "population": 154000
+    },
+    {
+      "slug": "weymouth",
+      "name": "Weymouth",
+      "type": "town",
+      "region": "England",
+      "lat": 50.6144,
+      "lon": -2.4578,
+      "population": 53000
+    },
+    {
+      "slug": "dorchester",
+      "name": "Dorchester",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7136,
+      "lon": -2.4376,
+      "population": 20000
+    },
+    {
+      "slug": "fareham",
+      "name": "Fareham",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8522,
+      "lon": -1.1780,
+      "population": 42000
+    },
+    {
+      "slug": "gosport",
+      "name": "Gosport",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7948,
+      "lon": -1.1244,
+      "population": 82000
+    },
+    {
+      "slug": "havant",
+      "name": "Havant",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8551,
+      "lon": -0.9846,
+      "population": 45000
+    },
+    {
+      "slug": "andover",
+      "name": "Andover",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2114,
+      "lon": -1.4914,
+      "population": 52000
+    },
+    {
+      "slug": "newbury",
+      "name": "Newbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4015,
+      "lon": -1.3230,
+      "population": 41000
+    },
+    {
+      "slug": "maidenhead",
+      "name": "Maidenhead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5217,
+      "lon": -0.7177,
+      "population": 75000
+    },
+    {
+      "slug": "bracknell",
+      "name": "Bracknell",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4136,
+      "lon": -0.7519,
+      "population": 84000
+    },
+    {
+      "slug": "woking",
+      "name": "Woking",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3186,
+      "lon": -0.5586,
+      "population": 105000
+    },
+    {
+      "slug": "aldershot",
+      "name": "Aldershot",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2476,
+      "lon": -0.7610,
+      "population": 36000
+    },
+    {
+      "slug": "farnborough",
+      "name": "Farnborough",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2957,
+      "lon": -0.7529,
+      "population": 65000
+    },
+    {
+      "slug": "reigate",
+      "name": "Reigate",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2375,
+      "lon": -0.2058,
+      "population": 23000
+    },
+    {
+      "slug": "epsom",
+      "name": "Epsom",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3360,
+      "lon": -0.2677,
+      "population": 31000
+    },
+    {
+      "slug": "leatherhead",
+      "name": "Leatherhead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2960,
+      "lon": -0.3301,
+      "population": 11000
+    },
+    {
+      "slug": "horsham",
+      "name": "Horsham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0628,
+      "lon": -0.3254,
+      "population": 56000
+    },
+    {
+      "slug": "bognor-regis",
+      "name": "Bognor Regis",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7822,
+      "lon": -0.6740,
+      "population": 24000
+    },
+    {
+      "slug": "littlehampton",
+      "name": "Littlehampton",
+      "type": "town",
+      "region": "England",
+      "lat": 50.8094,
+      "lon": -0.5410,
+      "population": 28000
+    },
+    {
+      "slug": "folkestone",
+      "name": "Folkestone",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0816,
+      "lon": 1.1667,
+      "population": 47000
+    },
+    {
+      "slug": "dover",
+      "name": "Dover",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1279,
+      "lon": 1.3134,
+      "population": 32000
+    },
+    {
+      "slug": "margate",
+      "name": "Margate",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3851,
+      "lon": 1.3868,
+      "population": 61000
+    },
+    {
+      "slug": "ramsgate",
+      "name": "Ramsgate",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3362,
+      "lon": 1.4168,
+      "population": 40000
+    },
+    {
+      "slug": "ashford",
+      "name": "Ashford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1469,
+      "lon": 0.8749,
+      "population": 75000
+    },
+    {
+      "slug": "tunbridge-wells",
+      "name": "Tunbridge Wells",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1322,
+      "lon": 0.2639,
+      "population": 60000
+    },
+    {
+      "slug": "sevenoaks",
+      "name": "Sevenoaks",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2730,
+      "lon": 0.1878,
+      "population": 30000
+    },
+    {
+      "slug": "tonbridge",
+      "name": "Tonbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1949,
+      "lon": 0.2710,
+      "population": 31000
+    },
+    {
+      "slug": "chatham",
+      "name": "Chatham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3700,
+      "lon": 0.5217,
+      "population": 72000
+    },
+    {
+      "slug": "rochester",
+      "name": "Rochester",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3879,
+      "lon": 0.5042,
+      "population": 27000
+    },
+    {
+      "slug": "gillingham",
+      "name": "Gillingham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3863,
+      "lon": 0.5497,
+      "population": 106000
+    },
+    {
+      "slug": "gravesend",
+      "name": "Gravesend",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4413,
+      "lon": 0.3684,
+      "population": 55000
+    },
+    {
+      "slug": "dartford",
+      "name": "Dartford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4463,
+      "lon": 0.2148,
+      "population": 67000
+    },
+    {
+      "slug": "grays",
+      "name": "Grays",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4758,
+      "lon": 0.3223,
+      "population": 79000
+    },
+    {
+      "slug": "kings-lynn",
+      "name": "King's Lynn",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7516,
+      "lon": 0.3958,
+      "population": 46000
+    },
+    {
+      "slug": "great-yarmouth",
+      "name": "Great Yarmouth",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6059,
+      "lon": 1.7291,
+      "population": 39000
+    },
+    {
+      "slug": "lowestoft",
+      "name": "Lowestoft",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4809,
+      "lon": 1.7557,
+      "population": 70000
+    },
+    {
+      "slug": "bury-st-edmunds",
+      "name": "Bury St Edmunds",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2467,
+      "lon": 0.7170,
+      "population": 45000
+    },
+    {
+      "slug": "felixstowe",
+      "name": "Felixstowe",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9639,
+      "lon": 1.3515,
+      "population": 24000
+    },
+    {
+      "slug": "harrogate",
+      "name": "Harrogate",
+      "type": "town",
+      "region": "England",
+      "lat": 53.9921,
+      "lon": -1.5418,
+      "population": 75000
+    },
+    {
+      "slug": "scarborough",
+      "name": "Scarborough",
+      "type": "town",
+      "region": "England",
+      "lat": 54.2794,
+      "lon": -0.4040,
+      "population": 61000
+    },
+    {
+      "slug": "bridlington",
+      "name": "Bridlington",
+      "type": "town",
+      "region": "England",
+      "lat": 54.0853,
+      "lon": -0.1928,
+      "population": 35000
+    },
+    {
+      "slug": "grimsby",
+      "name": "Grimsby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5675,
+      "lon": -0.0803,
+      "population": 88000
+    },
+    {
+      "slug": "scunthorpe",
+      "name": "Scunthorpe",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5809,
+      "lon": -0.6502,
+      "population": 82000
+    },
+    {
+      "slug": "grantham",
+      "name": "Grantham",
+      "type": "town",
+      "region": "England",
+      "lat": 52.9118,
+      "lon": -0.6387,
+      "population": 44000
+    },
+    {
+      "slug": "boston",
+      "name": "Boston",
+      "type": "town",
+      "region": "England",
+      "lat": 52.9784,
+      "lon": -0.0266,
+      "population": 41000
+    },
+    {
+      "slug": "spalding",
+      "name": "Spalding",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7883,
+      "lon": -0.1524,
+      "population": 31000
+    },
+    {
+      "slug": "paisley",
+      "name": "Paisley",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8456,
+      "lon": -4.4237,
+      "population": 77000
+    },
+    {
+      "slug": "east-kilbride",
+      "name": "East Kilbride",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.7649,
+      "lon": -4.1770,
+      "population": 75000
+    },
+    {
+      "slug": "livingston",
+      "name": "Livingston",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9024,
+      "lon": -3.5227,
+      "population": 57000
+    },
+    {
+      "slug": "cumbernauld",
+      "name": "Cumbernauld",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9466,
+      "lon": -3.9936,
+      "population": 52000
+    },
+    {
+      "slug": "kirkcaldy",
+      "name": "Kirkcaldy",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1120,
+      "lon": -3.1599,
+      "population": 50000
+    },
+    {
+      "slug": "dunfermline",
+      "name": "Dunfermline",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.0719,
+      "lon": -3.4393,
+      "population": 58000
+    },
+    {
+      "slug": "ayr",
+      "name": "Ayr",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.4583,
+      "lon": -4.6292,
+      "population": 46000
+    },
+    {
+      "slug": "kilmarnock",
+      "name": "Kilmarnock",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.6121,
+      "lon": -4.4957,
+      "population": 46000
+    },
+    {
+      "slug": "wrexham",
+      "name": "Wrexham",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.0468,
+      "lon": -2.9925,
+      "population": 65000
+    },
+    {
+      "slug": "barry",
+      "name": "Barry",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.4020,
+      "lon": -3.2713,
+      "population": 55000
+    },
+    {
+      "slug": "neath",
+      "name": "Neath",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6603,
+      "lon": -3.8045,
+      "population": 51000
+    },
+    {
+      "slug": "bridgend",
+      "name": "Bridgend",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.5049,
+      "lon": -3.5769,
+      "population": 49000
+    },
+    {
+      "slug": "llanelli",
+      "name": "Llanelli",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6840,
+      "lon": -4.1628,
+      "population": 49000
+    },
+    {
+      "slug": "pontypridd",
+      "name": "Pontypridd",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6017,
+      "lon": -3.3428,
+      "population": 33000
+    },
+    {
+      "slug": "cwmbran",
+      "name": "Cwmbran",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6538,
+      "lon": -3.0212,
+      "population": 48000
+    },
+    {
+      "slug": "merthyr-tydfil",
+      "name": "Merthyr Tydfil",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7461,
+      "lon": -3.3756,
+      "population": 60000
     }
   ]
 }
