@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 356,
+  "total": 426,
   "places": [
     {
       "slug": "london",
@@ -3386,6 +3386,627 @@
       "lat": 51.5575,
       "lon": 0.0858,
       "population": 168000
+    },
+    {
+      "slug": "bromsgrove",
+      "name": "Bromsgrove",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3356,
+      "lon": -2.0575,
+      "population": 29237
+    },
+    {
+      "slug": "redditch",
+      "name": "Redditch",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3065,
+      "lon": -1.9458,
+      "population": 84214
+    },
+    {
+      "slug": "kidderminster",
+      "name": "Kidderminster",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3871,
+      "lon": -2.2478,
+      "population": 55530
+    },
+    {
+      "slug": "stourbridge",
+      "name": "Stourbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4567,
+      "lon": -2.1477,
+      "population": 63298
+    },
+    {
+      "slug": "halesowen",
+      "name": "Halesowen",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4499,
+      "lon": -2.0493,
+      "population": 58135
+    },
+    {
+      "slug": "rugeley",
+      "name": "Rugeley",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7589,
+      "lon": -1.9367,
+      "population": 24033
+    },
+    {
+      "slug": "cannock",
+      "name": "Cannock",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6909,
+      "lon": -2.0276,
+      "population": 65022
+    },
+    {
+      "slug": "brownhills",
+      "name": "Brownhills",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6474,
+      "lon": -1.9330,
+      "population": 24523
+    },
+    {
+      "slug": "aldridge",
+      "name": "Aldridge",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6058,
+      "lon": -1.9177,
+      "population": 19970
+    },
+    {
+      "slug": "wednesbury",
+      "name": "Wednesbury",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5515,
+      "lon": -2.0244,
+      "population": 37817
+    },
+    {
+      "slug": "tipton",
+      "name": "Tipton",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5286,
+      "lon": -2.0671,
+      "population": 39737
+    },
+    {
+      "slug": "smethwick",
+      "name": "Smethwick",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4897,
+      "lon": -1.9669,
+      "population": 55234
+    },
+    {
+      "slug": "oldbury",
+      "name": "Oldbury",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5044,
+      "lon": -2.0162,
+      "population": 31266
+    },
+    {
+      "slug": "rowley-regis",
+      "name": "Rowley Regis",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4777,
+      "lon": -2.0527,
+      "population": 50257
+    },
+    {
+      "slug": "kingswinford",
+      "name": "Kingswinford",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4983,
+      "lon": -2.1675,
+      "population": 24644
+    },
+    {
+      "slug": "sedgley",
+      "name": "Sedgley",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5397,
+      "lon": -2.1219,
+      "population": 23489
+    },
+    {
+      "slug": "coseley",
+      "name": "Coseley",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5467,
+      "lon": -2.0856,
+      "population": 21000
+    },
+    {
+      "slug": "bilston",
+      "name": "Bilston",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5653,
+      "lon": -2.0728,
+      "population": 35803
+    },
+    {
+      "slug": "willenhall",
+      "name": "Willenhall",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5839,
+      "lon": -2.0597,
+      "population": 26870
+    },
+    {
+      "slug": "bloxwich",
+      "name": "Bloxwich",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6169,
+      "lon": -2.0036,
+      "population": 29454
+    },
+    {
+      "slug": "darlaston",
+      "name": "Darlaston",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5711,
+      "lon": -2.0411,
+      "population": 20450
+    },
+    {
+      "slug": "short-heath",
+      "name": "Short Heath",
+      "type": "village",
+      "region": "England",
+      "lat": 52.5983,
+      "lon": -2.0467,
+      "population": 8500
+    },
+    {
+      "slug": "pelsall",
+      "name": "Pelsall",
+      "type": "village",
+      "region": "England",
+      "lat": 52.6322,
+      "lon": -1.9722,
+      "population": 9200
+    },
+    {
+      "slug": "rushall",
+      "name": "Rushall",
+      "type": "village",
+      "region": "England",
+      "lat": 52.6197,
+      "lon": -1.9536,
+      "population": 7800
+    },
+    {
+      "slug": "streetly",
+      "name": "Streetly",
+      "type": "village",
+      "region": "England",
+      "lat": 52.5847,
+      "lon": -1.8831,
+      "population": 11500
+    },
+    {
+      "slug": "great-barr",
+      "name": "Great Barr",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5533,
+      "lon": -1.9306,
+      "population": 24900
+    },
+    {
+      "slug": "pheasey",
+      "name": "Pheasey",
+      "type": "village",
+      "region": "England",
+      "lat": 52.5672,
+      "lon": -1.9139,
+      "population": 6500
+    },
+    {
+      "slug": "kingstanding",
+      "name": "Kingstanding",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5386,
+      "lon": -1.8992,
+      "population": 19800
+    },
+    {
+      "slug": "erdington",
+      "name": "Erdington",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5275,
+      "lon": -1.8389,
+      "population": 24000
+    },
+    {
+      "slug": "castle-bromwich",
+      "name": "Castle Bromwich",
+      "type": "village",
+      "region": "England",
+      "lat": 52.5014,
+      "lon": -1.7881,
+      "population": 10200
+    },
+    {
+      "slug": "water-orton",
+      "name": "Water Orton",
+      "type": "village",
+      "region": "England",
+      "lat": 52.5119,
+      "lon": -1.7417,
+      "population": 5400
+    },
+    {
+      "slug": "coleshill",
+      "name": "Coleshill",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4997,
+      "lon": -1.7072,
+      "population": 6100
+    },
+    {
+      "slug": "atherstone",
+      "name": "Atherstone",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5772,
+      "lon": -1.5489,
+      "population": 8670
+    },
+    {
+      "slug": "nuneaton",
+      "name": "Nuneaton",
+      "type": "town",
+      "region": "England",
+      "lat": 52.5225,
+      "lon": -1.4683,
+      "population": 86552
+    },
+    {
+      "slug": "bedworth",
+      "name": "Bedworth",
+      "type": "town",
+      "region": "England",
+      "lat": 52.4775,
+      "lon": -1.4764,
+      "population": 32268
+    },
+    {
+      "slug": "bulkington",
+      "name": "Bulkington",
+      "type": "village",
+      "region": "England",
+      "lat": 52.4533,
+      "lon": -1.4267,
+      "population": 6500
+    },
+    {
+      "slug": "kenilworth",
+      "name": "Kenilworth",
+      "type": "town",
+      "region": "England",
+      "lat": 52.3419,
+      "lon": -1.5672,
+      "population": 22413
+    },
+    {
+      "slug": "warwick",
+      "name": "Warwick",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2819,
+      "lon": -1.5847,
+      "population": 31345
+    },
+    {
+      "slug": "leamington-spa",
+      "name": "Leamington Spa",
+      "type": "town",
+      "region": "England",
+      "lat": 52.2919,
+      "lon": -1.5364,
+      "population": 49662
+    },
+    {
+      "slug": "stratford-upon-avon",
+      "name": "Stratford-upon-Avon",
+      "type": "town",
+      "region": "England",
+      "lat": 52.1917,
+      "lon": -1.7083,
+      "population": 27445
+    },
+    {
+      "slug": "shipston-on-stour",
+      "name": "Shipston-on-Stour",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0608,
+      "lon": -1.6269,
+      "population": 5038
+    },
+    {
+      "slug": "chipping-campden",
+      "name": "Chipping Campden",
+      "type": "town",
+      "region": "England",
+      "lat": 52.0531,
+      "lon": -1.7800,
+      "population": 2200
+    },
+    {
+      "slug": "moreton-in-marsh",
+      "name": "Moreton-in-Marsh",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9894,
+      "lon": -1.7036,
+      "population": 3670
+    },
+    {
+      "slug": "stow-on-the-wold",
+      "name": "Stow-on-the-Wold",
+      "type": "town",
+      "region": "England",
+      "lat": 51.9311,
+      "lon": -1.7225,
+      "population": 2042
+    },
+    {
+      "slug": "bourton-on-the-water",
+      "name": "Bourton-on-the-Water",
+      "type": "village",
+      "region": "England",
+      "lat": 51.8867,
+      "lon": -1.7564,
+      "population": 3296
+    },
+    {
+      "slug": "cirencester",
+      "name": "Cirencester",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7178,
+      "lon": -1.9686,
+      "population": 19076
+    },
+    {
+      "slug": "tetbury",
+      "name": "Tetbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6383,
+      "lon": -2.1617,
+      "population": 5472
+    },
+    {
+      "slug": "malmesbury",
+      "name": "Malmesbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5850,
+      "lon": -2.0986,
+      "population": 5797
+    },
+    {
+      "slug": "chippenham",
+      "name": "Chippenham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4619,
+      "lon": -2.1169,
+      "population": 45337
+    },
+    {
+      "slug": "corsham",
+      "name": "Corsham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4333,
+      "lon": -2.1861,
+      "population": 13842
+    },
+    {
+      "slug": "bradford-on-avon",
+      "name": "Bradford-on-Avon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3472,
+      "lon": -2.2500,
+      "population": 9402
+    },
+    {
+      "slug": "trowbridge",
+      "name": "Trowbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3197,
+      "lon": -2.2083,
+      "population": 33108
+    },
+    {
+      "slug": "melksham",
+      "name": "Melksham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3722,
+      "lon": -2.1375,
+      "population": 19357
+    },
+    {
+      "slug": "devizes",
+      "name": "Devizes",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3500,
+      "lon": -1.9956,
+      "population": 18064
+    },
+    {
+      "slug": "calne",
+      "name": "Calne",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4383,
+      "lon": -1.9997,
+      "population": 18023
+    },
+    {
+      "slug": "marlborough",
+      "name": "Marlborough",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4194,
+      "lon": -1.7292,
+      "population": 8395
+    },
+    {
+      "slug": "pewsey",
+      "name": "Pewsey",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3406,
+      "lon": -1.7686,
+      "population": 3618
+    },
+    {
+      "slug": "tidworth",
+      "name": "Tidworth",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2372,
+      "lon": -1.6625,
+      "population": 9500
+    },
+    {
+      "slug": "amesbury",
+      "name": "Amesbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1728,
+      "lon": -1.7783,
+      "population": 10724
+    },
+    {
+      "slug": "warminster",
+      "name": "Warminster",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2044,
+      "lon": -2.1783,
+      "population": 17490
+    },
+    {
+      "slug": "westbury",
+      "name": "Westbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2597,
+      "lon": -2.1861,
+      "population": 15449
+    },
+    {
+      "slug": "frome",
+      "name": "Frome",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2278,
+      "lon": -2.3214,
+      "population": 26203
+    },
+    {
+      "slug": "shepton-mallet",
+      "name": "Shepton Mallet",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1906,
+      "lon": -2.5450,
+      "population": 10369
+    },
+    {
+      "slug": "glastonbury",
+      "name": "Glastonbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1481,
+      "lon": -2.7147,
+      "population": 8932
+    },
+    {
+      "slug": "street",
+      "name": "Street",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1236,
+      "lon": -2.7386,
+      "population": 12755
+    },
+    {
+      "slug": "bridgwater",
+      "name": "Bridgwater",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1281,
+      "lon": -2.9933,
+      "population": 41276
+    },
+    {
+      "slug": "burnham-on-sea",
+      "name": "Burnham-on-Sea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2367,
+      "lon": -2.9978,
+      "population": 19576
+    },
+    {
+      "slug": "clevedon",
+      "name": "Clevedon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4378,
+      "lon": -2.8542,
+      "population": 21281
+    },
+    {
+      "slug": "portishead",
+      "name": "Portishead",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4836,
+      "lon": -2.7686,
+      "population": 25000
     }
   ]
 }
