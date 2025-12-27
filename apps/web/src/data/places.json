@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2025-08-23T00:56:59.450Z",
-  "total": 11,
+  "updatedAt": "2025-12-27T00:00:00.000Z",
+  "total": 81,
   "places": [
     {
       "slug": "london",
@@ -12,15 +12,6 @@
       "population": 8900000
     },
     {
-      "slug": "manchester",
-      "name": "Manchester",
-      "type": "city",
-      "region": "England",
-      "lat": 53.4808,
-      "lon": -2.2426,
-      "population": 553000
-    },
-    {
       "slug": "birmingham",
       "name": "Birmingham",
       "type": "city",
@@ -30,6 +21,24 @@
       "population": 1141000
     },
     {
+      "slug": "manchester",
+      "name": "Manchester",
+      "type": "city",
+      "region": "England",
+      "lat": 53.4808,
+      "lon": -2.2426,
+      "population": 553000
+    },
+    {
+      "slug": "glasgow",
+      "name": "Glasgow",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 55.8642,
+      "lon": -4.2518,
+      "population": 635000
+    },
+    {
       "slug": "liverpool",
       "name": "Liverpool",
       "type": "city",
@@ -37,6 +46,42 @@
       "lat": 53.4084,
       "lon": -2.9916,
       "population": 498000
+    },
+    {
+      "slug": "leeds",
+      "name": "Leeds",
+      "type": "city",
+      "region": "England",
+      "lat": 53.8008,
+      "lon": -1.5491,
+      "population": 793000
+    },
+    {
+      "slug": "sheffield",
+      "name": "Sheffield",
+      "type": "city",
+      "region": "England",
+      "lat": 53.3811,
+      "lon": -1.4701,
+      "population": 584000
+    },
+    {
+      "slug": "edinburgh",
+      "name": "Edinburgh",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 55.9533,
+      "lon": -3.1883,
+      "population": 488000
+    },
+    {
+      "slug": "bristol",
+      "name": "Bristol",
+      "type": "city",
+      "region": "England",
+      "lat": 51.4545,
+      "lon": -2.5879,
+      "population": 467000
     },
     {
       "slug": "cardiff",
@@ -57,6 +102,60 @@
       "population": 371000
     },
     {
+      "slug": "leicester",
+      "name": "Leicester",
+      "type": "city",
+      "region": "England",
+      "lat": 52.6369,
+      "lon": -1.1398,
+      "population": 355000
+    },
+    {
+      "slug": "nottingham",
+      "name": "Nottingham",
+      "type": "city",
+      "region": "England",
+      "lat": 52.9548,
+      "lon": -1.1581,
+      "population": 332000
+    },
+    {
+      "slug": "newcastle",
+      "name": "Newcastle upon Tyne",
+      "type": "city",
+      "region": "England",
+      "lat": 54.9783,
+      "lon": -1.6178,
+      "population": 302000
+    },
+    {
+      "slug": "sunderland",
+      "name": "Sunderland",
+      "type": "city",
+      "region": "England",
+      "lat": 54.9069,
+      "lon": -1.3838,
+      "population": 277000
+    },
+    {
+      "slug": "brighton",
+      "name": "Brighton",
+      "type": "city",
+      "region": "England",
+      "lat": 50.8225,
+      "lon": -0.1372,
+      "population": 290000
+    },
+    {
+      "slug": "hull",
+      "name": "Kingston upon Hull",
+      "type": "city",
+      "region": "England",
+      "lat": 53.7676,
+      "lon": -0.3274,
+      "population": 260000
+    },
+    {
       "slug": "stoke-on-trent",
       "name": "Stoke-on-Trent",
       "type": "city",
@@ -66,31 +165,544 @@
       "population": 256000
     },
     {
-      "slug": "glasgow",
-      "name": "Glasgow",
+      "slug": "wolverhampton",
+      "name": "Wolverhampton",
       "type": "city",
-      "region": "Scotland",
-      "lat": 55.8642,
-      "lon": -4.2518,
-      "population": 635000
+      "region": "England",
+      "lat": 52.5869,
+      "lon": -2.1257,
+      "population": 254000
     },
     {
-      "slug": "edinburgh",
-      "name": "Edinburgh",
+      "slug": "plymouth",
+      "name": "Plymouth",
+      "type": "city",
+      "region": "England",
+      "lat": 50.3755,
+      "lon": -4.1427,
+      "population": 264000
+    },
+    {
+      "slug": "southampton",
+      "name": "Southampton",
+      "type": "city",
+      "region": "England",
+      "lat": 50.9097,
+      "lon": -1.4044,
+      "population": 253000
+    },
+    {
+      "slug": "reading",
+      "name": "Reading",
+      "type": "city",
+      "region": "England",
+      "lat": 51.4551,
+      "lon": -0.9787,
+      "population": 232000
+    },
+    {
+      "slug": "derby",
+      "name": "Derby",
+      "type": "city",
+      "region": "England",
+      "lat": 52.9225,
+      "lon": -1.4746,
+      "population": 257000
+    },
+    {
+      "slug": "aberdeen",
+      "name": "Aberdeen",
       "type": "city",
       "region": "Scotland",
-      "lat": 55.9533,
-      "lon": -3.1883,
-      "population": 488000
+      "lat": 57.1497,
+      "lon": -2.0943,
+      "population": 229000
+    },
+    {
+      "slug": "northampton",
+      "name": "Northampton",
+      "type": "city",
+      "region": "England",
+      "lat": 52.2405,
+      "lon": -0.9027,
+      "population": 225000
+    },
+    {
+      "slug": "portsmouth",
+      "name": "Portsmouth",
+      "type": "city",
+      "region": "England",
+      "lat": 50.8198,
+      "lon": -1.0880,
+      "population": 215000
+    },
+    {
+      "slug": "luton",
+      "name": "Luton",
+      "type": "city",
+      "region": "England",
+      "lat": 51.8787,
+      "lon": -0.4200,
+      "population": 213000
+    },
+    {
+      "slug": "preston",
+      "name": "Preston",
+      "type": "city",
+      "region": "England",
+      "lat": 53.7632,
+      "lon": -2.7031,
+      "population": 141000
+    },
+    {
+      "slug": "milton-keynes",
+      "name": "Milton Keynes",
+      "type": "city",
+      "region": "England",
+      "lat": 52.0406,
+      "lon": -0.7594,
+      "population": 230000
+    },
+    {
+      "slug": "norwich",
+      "name": "Norwich",
+      "type": "city",
+      "region": "England",
+      "lat": 52.6309,
+      "lon": 1.2974,
+      "population": 141000
+    },
+    {
+      "slug": "oxford",
+      "name": "Oxford",
+      "type": "city",
+      "region": "England",
+      "lat": 51.7520,
+      "lon": -1.2577,
+      "population": 152000
+    },
+    {
+      "slug": "cambridge",
+      "name": "Cambridge",
+      "type": "city",
+      "region": "England",
+      "lat": 52.2053,
+      "lon": 0.1218,
+      "population": 145000
+    },
+    {
+      "slug": "york",
+      "name": "York",
+      "type": "city",
+      "region": "England",
+      "lat": 53.9591,
+      "lon": -1.0815,
+      "population": 210000
+    },
+    {
+      "slug": "peterborough",
+      "name": "Peterborough",
+      "type": "city",
+      "region": "England",
+      "lat": 52.5695,
+      "lon": -0.2405,
+      "population": 203000
+    },
+    {
+      "slug": "dundee",
+      "name": "Dundee",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 56.4620,
+      "lon": -2.9707,
+      "population": 149000
+    },
+    {
+      "slug": "swansea",
+      "name": "Swansea",
+      "type": "city",
+      "region": "Wales",
+      "lat": 51.6214,
+      "lon": -3.9436,
+      "population": 246000
+    },
+    {
+      "slug": "exeter",
+      "name": "Exeter",
+      "type": "city",
+      "region": "England",
+      "lat": 50.7184,
+      "lon": -3.5339,
+      "population": 131000
+    },
+    {
+      "slug": "ipswich",
+      "name": "Ipswich",
+      "type": "city",
+      "region": "England",
+      "lat": 52.0593,
+      "lon": 1.1557,
+      "population": 137000
+    },
+    {
+      "slug": "gloucester",
+      "name": "Gloucester",
+      "type": "city",
+      "region": "England",
+      "lat": 51.8642,
+      "lon": -2.2382,
+      "population": 129000
+    },
+    {
+      "slug": "lincoln",
+      "name": "Lincoln",
+      "type": "city",
+      "region": "England",
+      "lat": 53.2307,
+      "lon": -0.5406,
+      "population": 100000
+    },
+    {
+      "slug": "worcester",
+      "name": "Worcester",
+      "type": "city",
+      "region": "England",
+      "lat": 52.1920,
+      "lon": -2.2216,
+      "population": 101000
+    },
+    {
+      "slug": "bath",
+      "name": "Bath",
+      "type": "city",
+      "region": "England",
+      "lat": 51.3758,
+      "lon": -2.3599,
+      "population": 89000
+    },
+    {
+      "slug": "chester",
+      "name": "Chester",
+      "type": "city",
+      "region": "England",
+      "lat": 53.1930,
+      "lon": -2.8931,
+      "population": 118000
+    },
+    {
+      "slug": "chelmsford",
+      "name": "Chelmsford",
+      "type": "city",
+      "region": "England",
+      "lat": 51.7356,
+      "lon": 0.4685,
+      "population": 111000
+    },
+    {
+      "slug": "salisbury",
+      "name": "Salisbury",
+      "type": "city",
+      "region": "England",
+      "lat": 51.0688,
+      "lon": -1.7945,
+      "population": 45000
+    },
+    {
+      "slug": "canterbury",
+      "name": "Canterbury",
+      "type": "city",
+      "region": "England",
+      "lat": 51.2802,
+      "lon": 1.0789,
+      "population": 55000
+    },
+    {
+      "slug": "winchester",
+      "name": "Winchester",
+      "type": "city",
+      "region": "England",
+      "lat": 51.0632,
+      "lon": -1.3080,
+      "population": 45000
+    },
+    {
+      "slug": "st-albans",
+      "name": "St Albans",
+      "type": "city",
+      "region": "England",
+      "lat": 51.7551,
+      "lon": -0.3360,
+      "population": 90000
+    },
+    {
+      "slug": "carlisle",
+      "name": "Carlisle",
+      "type": "city",
+      "region": "England",
+      "lat": 54.8951,
+      "lon": -2.9382,
+      "population": 75000
+    },
+    {
+      "slug": "durham",
+      "name": "Durham",
+      "type": "city",
+      "region": "England",
+      "lat": 54.7761,
+      "lon": -1.5733,
+      "population": 48000
+    },
+    {
+      "slug": "lancaster",
+      "name": "Lancaster",
+      "type": "city",
+      "region": "England",
+      "lat": 54.0465,
+      "lon": -2.8007,
+      "population": 52000
+    },
+    {
+      "slug": "wakefield",
+      "name": "Wakefield",
+      "type": "city",
+      "region": "England",
+      "lat": 53.6833,
+      "lon": -1.4977,
+      "population": 99000
+    },
+    {
+      "slug": "hereford",
+      "name": "Hereford",
+      "type": "city",
+      "region": "England",
+      "lat": 52.0567,
+      "lon": -2.7160,
+      "population": 61000
+    },
+    {
+      "slug": "lichfield",
+      "name": "Lichfield",
+      "type": "city",
+      "region": "England",
+      "lat": 52.6833,
+      "lon": -1.8333,
+      "population": 33000
+    },
+    {
+      "slug": "ripon",
+      "name": "Ripon",
+      "type": "city",
+      "region": "England",
+      "lat": 54.1381,
+      "lon": -1.5244,
+      "population": 17000
+    },
+    {
+      "slug": "truro",
+      "name": "Truro",
+      "type": "city",
+      "region": "England",
+      "lat": 50.2632,
+      "lon": -5.0510,
+      "population": 19000
+    },
+    {
+      "slug": "wells",
+      "name": "Wells",
+      "type": "city",
+      "region": "England",
+      "lat": 51.2090,
+      "lon": -2.6478,
+      "population": 12000
+    },
+    {
+      "slug": "chichester",
+      "name": "Chichester",
+      "type": "city",
+      "region": "England",
+      "lat": 50.8365,
+      "lon": -0.7792,
+      "population": 27000
+    },
+    {
+      "slug": "ely",
+      "name": "Ely",
+      "type": "city",
+      "region": "England",
+      "lat": 52.3992,
+      "lon": 0.2622,
+      "population": 20000
     },
     {
       "slug": "inverness",
       "name": "Inverness",
-      "type": "town",
+      "type": "city",
       "region": "Scotland",
       "lat": 57.4778,
       "lon": -4.2247,
       "population": 47000
+    },
+    {
+      "slug": "perth",
+      "name": "Perth",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 56.3950,
+      "lon": -3.4308,
+      "population": 47000
+    },
+    {
+      "slug": "stirling",
+      "name": "Stirling",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 56.1165,
+      "lon": -3.9369,
+      "population": 37000
+    },
+    {
+      "slug": "belfast",
+      "name": "Belfast",
+      "type": "city",
+      "region": "Northern Ireland",
+      "lat": 54.5973,
+      "lon": -5.9301,
+      "population": 343000
+    },
+    {
+      "slug": "derry",
+      "name": "Derry",
+      "type": "city",
+      "region": "Northern Ireland",
+      "lat": 54.9966,
+      "lon": -7.3086,
+      "population": 85000
+    },
+    {
+      "slug": "lisburn",
+      "name": "Lisburn",
+      "type": "city",
+      "region": "Northern Ireland",
+      "lat": 54.5162,
+      "lon": -6.0580,
+      "population": 45000
+    },
+    {
+      "slug": "newry",
+      "name": "Newry",
+      "type": "city",
+      "region": "Northern Ireland",
+      "lat": 54.1751,
+      "lon": -6.3492,
+      "population": 27000
+    },
+    {
+      "slug": "armagh",
+      "name": "Armagh",
+      "type": "city",
+      "region": "Northern Ireland",
+      "lat": 54.3503,
+      "lon": -6.6528,
+      "population": 15000
+    },
+    {
+      "slug": "newport",
+      "name": "Newport",
+      "type": "city",
+      "region": "Wales",
+      "lat": 51.5842,
+      "lon": -2.9977,
+      "population": 151000
+    },
+    {
+      "slug": "bangor",
+      "name": "Bangor",
+      "type": "city",
+      "region": "Wales",
+      "lat": 53.2274,
+      "lon": -4.1293,
+      "population": 19000
+    },
+    {
+      "slug": "st-davids",
+      "name": "St Davids",
+      "type": "city",
+      "region": "Wales",
+      "lat": 51.8812,
+      "lon": -5.2660,
+      "population": 2000
+    },
+    {
+      "slug": "blackpool",
+      "name": "Blackpool",
+      "type": "town",
+      "region": "England",
+      "lat": 53.8175,
+      "lon": -3.0357,
+      "population": 139000
+    },
+    {
+      "slug": "bournemouth",
+      "name": "Bournemouth",
+      "type": "town",
+      "region": "England",
+      "lat": 50.7192,
+      "lon": -1.8808,
+      "population": 183000
+    },
+    {
+      "slug": "middlesbrough",
+      "name": "Middlesbrough",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5742,
+      "lon": -1.2350,
+      "population": 140000
+    },
+    {
+      "slug": "bolton",
+      "name": "Bolton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5783,
+      "lon": -2.4299,
+      "population": 194000
+    },
+    {
+      "slug": "stockport",
+      "name": "Stockport",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4106,
+      "lon": -2.1575,
+      "population": 136000
+    },
+    {
+      "slug": "slough",
+      "name": "Slough",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5105,
+      "lon": -0.5950,
+      "population": 164000
+    },
+    {
+      "slug": "watford",
+      "name": "Watford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6565,
+      "lon": -0.3903,
+      "population": 96000
+    },
+    {
+      "slug": "guildford",
+      "name": "Guildford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2362,
+      "lon": -0.5704,
+      "population": 77000
     },
     {
       "slug": "abingdon",
