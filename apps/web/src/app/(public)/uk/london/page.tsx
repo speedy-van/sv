@@ -6,6 +6,7 @@ import {
   Heading,
   Text,
   SimpleGrid,
+  Grid,
   VStack,
   HStack,
   Icon,
@@ -228,9 +229,10 @@ export default function LondonPage() {
               </Text>
 
               {/* Stats Row */}
-              <SimpleGrid
-                columns={{ base: 2, md: 4 }}
-                spacing={{ base: 4, md: 8 }}
+              <Flex
+                flexWrap="wrap"
+                justify="center"
+                gap={{ base: 3, md: 6 }}
                 mt={6}
                 w="full"
                 maxW="3xl"
@@ -246,17 +248,20 @@ export default function LondonPage() {
                     bg="rgba(255,255,255,0.03)"
                     border="1px solid rgba(255,255,255,0.08)"
                     borderRadius="xl"
-                    p={4}
+                    p={{ base: 3, md: 4 }}
+                    minW={{ base: '140px', md: '150px' }}
+                    flex="1 1 auto"
+                    maxW={{ base: '45%', md: '180px' }}
                     transition="all 0.3s"
                     _hover={{ bg: 'rgba(0,194,255,0.08)', borderColor: 'rgba(0,194,255,0.3)' }}
                   >
-                    <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="800" color="white">
-                      {stat.value}<Text as="span" fontSize="lg" color="cyan.300">{stat.suffix}</Text>
+                    <Text fontSize={{ base: 'xl', md: '3xl' }} fontWeight="800" color="white">
+                      {stat.value}<Text as="span" fontSize={{ base: 'sm', md: 'lg' }} color="cyan.300">{stat.suffix}</Text>
                     </Text>
-                    <Text fontSize="sm" color="whiteAlpha.600">{stat.label}</Text>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="whiteAlpha.600">{stat.label}</Text>
                   </VStack>
                 ))}
-              </SimpleGrid>
+              </Flex>
 
               {/* CTA Buttons */}
               <HStack spacing={4} mt={8} flexWrap="wrap" justify="center">
@@ -326,7 +331,7 @@ export default function LondonPage() {
                 </Text>
               </VStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
+              <Grid templateColumns={{ base: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }} gap={{ base: 3, md: 6 }}>
                 {londonServices.map((service, index) => (
                   <MotionBox
                     key={index}
@@ -339,7 +344,7 @@ export default function LondonPage() {
                       href={service.href}
                       display="block"
                       bg="rgba(255,255,255,0.03)"
-                      p={6}
+                      p={{ base: 4, md: 6 }}
                       borderRadius="2xl"
                       border="1px solid rgba(255,255,255,0.08)"
                       transition="all 0.3s"
@@ -358,11 +363,11 @@ export default function LondonPage() {
                         },
                       }}
                     >
-                      <VStack spacing={4} align="start">
+                      <VStack spacing={{ base: 2, md: 4 }} align="start">
                         <Box
                           className="service-icon"
-                          w={14}
-                          h={14}
+                          w={{ base: 10, md: 14 }}
+                          h={{ base: 10, md: 14 }}
                           borderRadius="xl"
                           display="flex"
                           alignItems="center"
@@ -371,17 +376,17 @@ export default function LondonPage() {
                           transition="transform 0.3s"
                           boxShadow={`0 10px 25px ${service.gradient.includes('#00C2FF') ? 'rgba(0,194,255,0.3)' : service.gradient.includes('#00D18F') ? 'rgba(0,209,143,0.3)' : service.gradient.includes('#FF6B6B') ? 'rgba(255,107,107,0.3)' : 'rgba(168,85,247,0.3)'}`}
                         >
-                          <Icon as={service.icon} boxSize={7} color="white" />
+                          <Icon as={service.icon} boxSize={{ base: 5, md: 7 }} color="white" />
                         </Box>
                         <VStack spacing={1} align="start">
-                          <Heading as="h3" size="md" color="white">
+                          <Heading as="h3" fontSize={{ base: 'sm', md: 'md' }} color="white">
                             {service.title}
                           </Heading>
-                          <Text fontSize="xl" fontWeight="bold" color="cyan.300">
+                          <Text fontSize={{ base: 'md', md: 'xl' }} fontWeight="bold" color="cyan.300">
                             {service.price}
                           </Text>
                         </VStack>
-                        <Text color="whiteAlpha.700" fontSize="sm" lineHeight="1.6">
+                        <Text color="whiteAlpha.700" fontSize={{ base: 'xs', md: 'sm' }} lineHeight="1.6" display={{ base: 'none', md: 'block' }}>
                           {service.description}
                         </Text>
                         <HStack
@@ -390,6 +395,7 @@ export default function LondonPage() {
                           opacity={0}
                           transform="translateX(-10px)"
                           transition="all 0.3s"
+                          display={{ base: 'none', md: 'flex' }}
                         >
                           <Text fontSize="sm" fontWeight="semibold">Book Now</Text>
                           <ArrowRight size={16} />
@@ -398,7 +404,7 @@ export default function LondonPage() {
                     </Box>
                   </MotionBox>
                 ))}
-              </SimpleGrid>
+              </Grid>
             </VStack>
           </MotionBox>
 
@@ -425,13 +431,17 @@ export default function LondonPage() {
                   </Text>
                 </VStack>
 
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8} w="full">
+                <Grid
+                  templateColumns={{ base: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }}
+                  gap={{ base: 3, md: 6 }}
+                  w="full"
+                >
                   {whyChooseLondon.map((item, index) => (
                     <VStack
                       key={index}
-                      spacing={4}
+                      spacing={{ base: 2, md: 4 }}
                       textAlign="center"
-                      p={6}
+                      p={{ base: 3, md: 6 }}
                       bg="rgba(255,255,255,0.03)"
                       borderRadius="2xl"
                       border="1px solid rgba(255,255,255,0.05)"
@@ -442,8 +452,8 @@ export default function LondonPage() {
                       }}
                     >
                       <Box
-                        w={16}
-                        h={16}
+                        w={{ base: 10, md: 16 }}
+                        h={{ base: 10, md: 16 }}
                         borderRadius="2xl"
                         display="flex"
                         alignItems="center"
@@ -451,17 +461,17 @@ export default function LondonPage() {
                         bg="linear-gradient(135deg, rgba(0,194,255,0.2), rgba(0,209,143,0.2))"
                         border="1px solid rgba(0,194,255,0.3)"
                       >
-                        <Icon as={item.icon} boxSize={8} color="cyan.300" />
+                        <Icon as={item.icon} boxSize={{ base: 5, md: 8 }} color="cyan.300" />
                       </Box>
-                      <Heading as="h3" size="md" color="white">
+                      <Heading as="h3" fontSize={{ base: 'xs', md: 'md' }} color="white">
                         {item.title}
                       </Heading>
-                      <Text color="whiteAlpha.700" fontSize="sm">
+                      <Text color="whiteAlpha.700" fontSize={{ base: 'xs', md: 'sm' }} display={{ base: 'none', md: 'block' }}>
                         {item.description}
                       </Text>
                     </VStack>
                   ))}
-                </SimpleGrid>
+                </Grid>
               </VStack>
             </Box>
           </MotionBox>
@@ -533,15 +543,20 @@ export default function LondonPage() {
                 </Heading>
               </VStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w="full" maxW="5xl">
+              <Grid
+                templateColumns={{ base: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
+                gap={{ base: 2, md: 6 }}
+                w="full"
+                maxW="5xl"
+              >
                 {popularRoutes.map((route, index) => (
                   <Box
                     key={index}
                     as={Link}
                     href={ROUTES.SHARED.BOOKING_LUXURY}
                     bg="rgba(255,255,255,0.03)"
-                    p={6}
-                    borderRadius="2xl"
+                    p={{ base: 2, md: 6 }}
+                    borderRadius={{ base: 'xl', md: '2xl' }}
                     border="1px solid rgba(255,255,255,0.08)"
                     transition="all 0.3s"
                     _hover={{
@@ -551,28 +566,22 @@ export default function LondonPage() {
                       boxShadow: '0 15px 35px rgba(0,0,0,0.3)',
                     }}
                   >
-                    <VStack spacing={4}>
-                      <HStack justify="space-between" w="full">
-                        <VStack align="start" spacing={0}>
-                          <Text color="whiteAlpha.600" fontSize="xs">FROM</Text>
-                          <Text color="white" fontWeight="bold">{route.from}</Text>
-                        </VStack>
-                        <Icon as={ArrowRight} color="cyan.400" />
-                        <VStack align="end" spacing={0}>
-                          <Text color="whiteAlpha.600" fontSize="xs">TO</Text>
-                          <Text color="white" fontWeight="bold">{route.to}</Text>
-                        </VStack>
+                    <VStack spacing={{ base: 1, md: 4 }} align="stretch">
+                      <HStack justify="center" spacing={{ base: 1, md: 2 }} flexWrap="nowrap">
+                        <Text color="white" fontWeight="bold" fontSize={{ base: '2xs', md: 'sm' }} noOfLines={1}>{route.from}</Text>
+                        <Icon as={ArrowRight} color="cyan.400" boxSize={{ base: 3, md: 4 }} flexShrink={0} />
+                        <Text color="white" fontWeight="bold" fontSize={{ base: '2xs', md: 'sm' }} noOfLines={1}>{route.to}</Text>
                       </HStack>
                       <HStack justify="space-between" w="full">
-                        <Badge bg="rgba(0,209,143,0.1)" color="green.300" borderRadius="full" px={3}>
+                        <Badge bg="rgba(0,209,143,0.1)" color="green.300" borderRadius="full" px={{ base: 1, md: 3 }} fontSize={{ base: '2xs', md: 'sm' }}>
                           {route.time}
                         </Badge>
-                        <Text color="cyan.300" fontWeight="bold">{route.price}</Text>
+                        <Text color="cyan.300" fontWeight="bold" fontSize={{ base: 'xs', md: 'md' }}>{route.price}</Text>
                       </HStack>
                     </VStack>
                   </Box>
                 ))}
-              </SimpleGrid>
+              </Grid>
             </VStack>
           </MotionBox>
 
@@ -582,7 +591,13 @@ export default function LondonPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 } as const}
           >
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={20} maxW="4xl" mx="auto">
+            <Grid
+              templateColumns="repeat(2, 1fr)"
+              gap={{ base: 3, md: 6 }}
+              mb={20}
+              maxW="4xl"
+              mx="auto"
+            >
               {[
                 { title: 'Congestion Charge Included', desc: 'All London services include congestion charge. No hidden fees for central London moves.', color: 'cyan' },
                 { title: 'Parking Permits Handled', desc: 'We handle parking permits across London boroughs with expert access route knowledge.', color: 'green' },
@@ -593,18 +608,18 @@ export default function LondonPage() {
                   key={i}
                   bg={`rgba(${item.color === 'cyan' ? '0,194,255' : item.color === 'green' ? '0,209,143' : item.color === 'purple' ? '168,85,247' : '251,146,60'},0.08)`}
                   border={`1px solid rgba(${item.color === 'cyan' ? '0,194,255' : item.color === 'green' ? '0,209,143' : item.color === 'purple' ? '168,85,247' : '251,146,60'},0.2)`}
-                  p={6}
+                  p={{ base: 3, md: 6 }}
                   borderRadius="2xl"
                 >
-                  <VStack spacing={3} align="start">
-                    <Heading as="h3" size="md" color={`${item.color}.300`}>
+                  <VStack spacing={{ base: 1, md: 3 }} align="start">
+                    <Heading as="h3" fontSize={{ base: 'xs', md: 'md' }} color={`${item.color}.300`}>
                       {item.title}
                     </Heading>
-                    <Text color="whiteAlpha.800">{item.desc}</Text>
+                    <Text color="whiteAlpha.800" fontSize={{ base: 'xs', md: 'md' }} display={{ base: 'none', md: 'block' }}>{item.desc}</Text>
                   </VStack>
                 </Box>
               ))}
-            </SimpleGrid>
+            </Grid>
           </MotionBox>
 
           {/* Customer Reviews */}
@@ -623,7 +638,7 @@ export default function LondonPage() {
                 </Heading>
               </VStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} maxW="4xl">
+              <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={{ base: 4, md: 6 }} maxW="4xl">
                 {[
                   { review: '"Excellent service for our move from Camden to Greenwich. The team knew London well and avoided all the traffic. Professional and efficient!"', author: 'Sarah M.', location: 'Greenwich' },
                   { review: '"Perfect for our Central London office move. They handled the congestion charge and parking permits. Made our move stress-free!"', author: 'James T.', location: 'Westminster' },
@@ -631,24 +646,24 @@ export default function LondonPage() {
                   <Box
                     key={i}
                     bg="rgba(255,255,255,0.03)"
-                    p={6}
+                    p={{ base: 4, md: 6 }}
                     borderRadius="2xl"
                     border="1px solid rgba(255,255,255,0.08)"
                   >
-                    <VStack spacing={4} align="start">
+                    <VStack spacing={{ base: 3, md: 4 }} align="start">
                       <HStack spacing={1}>
                         {[1, 2, 3, 4, 5].map(star => (
-                          <Icon key={star} as={Star} color="yellow.400" fill="currentColor" boxSize={5} />
+                          <Icon key={star} as={Star} color="yellow.400" fill="currentColor" boxSize={{ base: 4, md: 5 }} />
                         ))}
                       </HStack>
-                      <Text color="whiteAlpha.800" fontStyle="italic">{item.review}</Text>
-                      <Text fontWeight="bold" color="white">
+                      <Text color="whiteAlpha.800" fontStyle="italic" fontSize={{ base: 'sm', md: 'md' }}>{item.review}</Text>
+                      <Text fontWeight="bold" color="white" fontSize={{ base: 'sm', md: 'md' }}>
                         {item.author} <Text as="span" color="whiteAlpha.600" fontWeight="normal">• {item.location}</Text>
                       </Text>
                     </VStack>
                   </Box>
                 ))}
-              </SimpleGrid>
+              </Grid>
             </VStack>
           </MotionBox>
 
@@ -662,7 +677,7 @@ export default function LondonPage() {
               textAlign="center"
               bg="linear-gradient(135deg, rgba(0,194,255,0.15) 0%, rgba(0,209,143,0.1) 100%)"
               border="1px solid rgba(0,194,255,0.2)"
-              p={{ base: 10, md: 16 }}
+              p={{ base: 6, md: 16 }}
               borderRadius="3xl"
               mb={20}
               position="relative"
@@ -677,26 +692,26 @@ export default function LondonPage() {
                 bg="radial-gradient(circle, rgba(0,209,143,0.2) 0%, transparent 70%)"
                 pointerEvents="none"
               />
-              <VStack spacing={6} position="relative">
-                <Heading as="h2" size="xl" color="white">
+              <VStack spacing={{ base: 4, md: 6 }} position="relative">
+                <Heading as="h2" fontSize={{ base: 'xl', md: '2xl' }} color="white">
                   Ready to Move in London?
                 </Heading>
-                <Text fontSize="lg" color="whiteAlpha.800" maxW="2xl">
+                <Text fontSize={{ base: 'sm', md: 'lg' }} color="whiteAlpha.800" maxW="2xl">
                   Join hundreds of satisfied London customers. Professional service across 
                   all 32 boroughs with same day availability.
                 </Text>
-                <HStack spacing={4} flexWrap="wrap" justify="center">
+                <Flex flexWrap="wrap" justify="center" gap={{ base: 2, md: 4 }}>
                   <Button
                     as={Link}
                     href={ROUTES.SHARED.BOOKING_LUXURY}
-                    size="lg"
+                    size={{ base: 'md', md: 'lg' }}
                     bg="linear-gradient(135deg, #00C2FF, #0080FF)"
                     color="white"
-                    px={10}
-                    py={7}
+                    px={{ base: 4, md: 10 }}
+                    py={{ base: 5, md: 7 }}
                     borderRadius="full"
                     fontWeight="bold"
-                    fontSize="lg"
+                    fontSize={{ base: 'sm', md: 'lg' }}
                     _hover={{
                       transform: 'translateY(-3px)',
                       boxShadow: '0 20px 40px rgba(0,194,255,0.4)',
@@ -704,20 +719,20 @@ export default function LondonPage() {
                     transition="all 0.3s"
                     boxShadow="0 10px 30px rgba(0,194,255,0.3)"
                   >
-                    Book London Move — From £25/hr
+                    Book London Move
                   </Button>
                   <Button
                     as={Link}
-                    href="https://wa.me/441202129746"
-                    size="lg"
+                    href="https://wa.me/message/K57JWNNC2K3TA1"
+                    size={{ base: 'md', md: 'lg' }}
                     bg="linear-gradient(135deg, #25D366, #128C7E)"
                     color="white"
-                    px={8}
-                    py={7}
+                    px={{ base: 4, md: 8 }}
+                    py={{ base: 5, md: 7 }}
                     borderRadius="full"
                     fontWeight="bold"
-                    fontSize="lg"
-                    leftIcon={<MessageCircle size={20} />}
+                    fontSize={{ base: 'sm', md: 'lg' }}
+                    leftIcon={<MessageCircle size={18} />}
                     _hover={{
                       transform: 'translateY(-3px)',
                       boxShadow: '0 20px 40px rgba(37,211,102,0.4)',
@@ -727,7 +742,7 @@ export default function LondonPage() {
                   >
                     WhatsApp
                   </Button>
-                </HStack>
+                </Flex>
               </VStack>
             </Box>
           </MotionBox>
@@ -747,7 +762,7 @@ export default function LondonPage() {
                 </Text>
               </VStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} maxW="4xl" mx="auto">
+              <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={{ base: 4, md: 6 }} maxW="4xl" mx="auto">
                 {[
                   { q: 'How much does a man and van cost in London?', a: 'Our man and van service starts from £25/hour in London. The total cost depends on distance, items, and time required. We provide transparent pricing with no hidden fees.' },
                   { q: 'Do you provide same-day service?', a: 'Yes! We offer same-day man and van service across all London boroughs. Book by 2pm for same-day service, subject to availability.' },
@@ -756,20 +771,20 @@ export default function LondonPage() {
                 ].map((faq, i) => (
                   <Box
                     key={i}
-                    p={6}
+                    p={{ base: 4, md: 6 }}
                     bg="rgba(255,255,255,0.03)"
                     border="1px solid rgba(255,255,255,0.08)"
                     borderRadius="2xl"
                   >
-                    <Heading as="h3" size="sm" mb={3} color="cyan.300">
+                    <Heading as="h3" fontSize={{ base: 'sm', md: 'md' }} mb={3} color="cyan.300">
                       {faq.q}
                     </Heading>
-                    <Text color="whiteAlpha.700" fontSize="sm">
+                    <Text color="whiteAlpha.700" fontSize={{ base: 'xs', md: 'sm' }}>
                       {faq.a}
                     </Text>
                   </Box>
                 ))}
-              </SimpleGrid>
+              </Grid>
             </VStack>
           </Box>
 

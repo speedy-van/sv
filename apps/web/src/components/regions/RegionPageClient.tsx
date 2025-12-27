@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Box, Container, Heading, Text, Button, SimpleGrid, VStack, HStack, Icon, Flex, Badge } from '@chakra-ui/react';
+import { Box, Container, Heading, Text, Button, Grid, VStack, HStack, Icon, Flex, Badge } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { FiMapPin, FiTruck, FiCheckCircle, FiClock, FiShield, FiPhone } from 'react-icons/fi';
 
@@ -175,30 +175,29 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
       </Container>
 
       {/* Stats Section */}
-      <Box bg="gray.800" py={16} borderY="2px solid" borderColor="gray.700">
+      <Box bg="gray.800" py={{ base: 10, md: 16 }} borderY="2px solid" borderColor="gray.700">
         <Container maxW="7xl">
-          <VStack spacing={6} align="stretch">
+          <Grid templateColumns="repeat(3, 1fr)" gap={{ base: 2, md: 6 }}>
             {[
               { value: '10,000+', label: 'Happy Customers' },
               { value: '98%', label: 'Satisfaction Rate' },
               { value: '24/7', label: 'Customer Support' }
             ].map((stat, idx) => (
-              <HStack key={idx} spacing={4} justify={{ base: 'start', md: 'center' }} p={{ base: 4, md: 0 }}>
+              <VStack key={idx} spacing={1} textAlign="center">
                 <Text
-                  fontSize={{ base: '3xl', md: '5xl' }}
+                  fontSize={{ base: 'xl', md: '4xl' }}
                   fontWeight="bold"
                   bgGradient="linear(to-r, neon.400, green.400)"
                   bgClip="text"
-                  minW={{ base: '100px', md: 'auto' }}
                 >
                   {stat.value}
                 </Text>
-                <Text color="gray.400" fontSize={{ base: 'md', md: 'lg' }} textAlign="left">
+                <Text color="gray.400" fontSize={{ base: 'xs', md: 'md' }}>
                   {stat.label}
                 </Text>
-              </HStack>
+              </VStack>
             ))}
-          </VStack>
+          </Grid>
         </Container>
       </Box>
 
@@ -221,7 +220,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
             </Text>
           </MotionBox>
 
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+          <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={{ base: 3, md: 6 }}>
             {regionPlaces.map((place: any, idx: number) => (
               <MotionBox
                 key={idx}
@@ -235,7 +234,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
                   href={`/uk/${place.slug}`}
                   display="block"
                   bg="gray.800"
-                  p={6}
+                  p={{ base: 3, md: 6 }}
                   borderRadius="xl"
                   border="1px solid"
                   borderColor="gray.700"
@@ -246,19 +245,19 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
                   }}
                   sx={{ transition: 'all 0.3s' }}
                 >
-                  <HStack spacing={3}>
-                    <Icon as={FiMapPin} color="neon.400" boxSize={5} />
-                    <Heading size="sm" color="white">
+                  <HStack spacing={{ base: 2, md: 3 }}>
+                    <Icon as={FiMapPin} color="neon.400" boxSize={{ base: 4, md: 5 }} />
+                    <Heading fontSize={{ base: 'xs', md: 'sm' }} color="white">
                       {place.name}
                     </Heading>
                   </HStack>
-                  <Text color="gray.500" fontSize="sm" mt={2}>
+                  <Text color="gray.500" fontSize={{ base: '2xs', md: 'sm' }} mt={2} display={{ base: 'none', md: 'block' }}>
                     {place.postcode || 'Full coverage'}
                   </Text>
                 </Box>
               </MotionBox>
             ))}
-          </SimpleGrid>
+          </Grid>
         </Container>
       )}
 
