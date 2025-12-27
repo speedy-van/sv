@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 636,
+  "total": 706,
   "places": [
     {
       "slug": "london",
@@ -5843,6 +5843,627 @@
       "lat": 54.7358,
       "lon": -1.4944,
       "population": 4500
+    },
+    {
+      "slug": "keswick",
+      "name": "Keswick",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6014,
+      "lon": -3.1347,
+      "population": 5243
+    },
+    {
+      "slug": "windermere",
+      "name": "Windermere",
+      "type": "town",
+      "region": "England",
+      "lat": 54.3808,
+      "lon": -2.9069,
+      "population": 8245
+    },
+    {
+      "slug": "ambleside",
+      "name": "Ambleside",
+      "type": "town",
+      "region": "England",
+      "lat": 54.4289,
+      "lon": -2.9625,
+      "population": 2600
+    },
+    {
+      "slug": "cockermouth",
+      "name": "Cockermouth",
+      "type": "town",
+      "region": "England",
+      "lat": 54.6614,
+      "lon": -3.3622,
+      "population": 8761
+    },
+    {
+      "slug": "maryport",
+      "name": "Maryport",
+      "type": "town",
+      "region": "England",
+      "lat": 54.7144,
+      "lon": -3.4939,
+      "population": 11262
+    },
+    {
+      "slug": "wigton",
+      "name": "Wigton",
+      "type": "town",
+      "region": "England",
+      "lat": 54.8264,
+      "lon": -3.1614,
+      "population": 5664
+    },
+    {
+      "slug": "ulverston",
+      "name": "Ulverston",
+      "type": "town",
+      "region": "England",
+      "lat": 54.1933,
+      "lon": -3.0925,
+      "population": 11678
+    },
+    {
+      "slug": "grange-over-sands",
+      "name": "Grange-over-Sands",
+      "type": "town",
+      "region": "England",
+      "lat": 54.1944,
+      "lon": -2.9083,
+      "population": 4114
+    },
+    {
+      "slug": "sedbergh",
+      "name": "Sedbergh",
+      "type": "town",
+      "region": "England",
+      "lat": 54.3228,
+      "lon": -2.5253,
+      "population": 2500
+    },
+    {
+      "slug": "kirkby-lonsdale",
+      "name": "Kirkby Lonsdale",
+      "type": "town",
+      "region": "England",
+      "lat": 54.2036,
+      "lon": -2.5967,
+      "population": 2076
+    },
+    {
+      "slug": "appleby-in-westmorland",
+      "name": "Appleby-in-Westmorland",
+      "type": "town",
+      "region": "England",
+      "lat": 54.5767,
+      "lon": -2.4878,
+      "population": 3048
+    },
+    {
+      "slug": "clitheroe",
+      "name": "Clitheroe",
+      "type": "town",
+      "region": "England",
+      "lat": 53.8717,
+      "lon": -2.3919,
+      "population": 16379
+    },
+    {
+      "slug": "colne",
+      "name": "Colne",
+      "type": "town",
+      "region": "England",
+      "lat": 53.8556,
+      "lon": -2.1753,
+      "population": 20118
+    },
+    {
+      "slug": "nelson",
+      "name": "Nelson",
+      "type": "town",
+      "region": "England",
+      "lat": 53.8350,
+      "lon": -2.2178,
+      "population": 29135
+    },
+    {
+      "slug": "padiham",
+      "name": "Padiham",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7978,
+      "lon": -2.3125,
+      "population": 10098
+    },
+    {
+      "slug": "rawtenstall",
+      "name": "Rawtenstall",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7017,
+      "lon": -2.2903,
+      "population": 22000
+    },
+    {
+      "slug": "bacup",
+      "name": "Bacup",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7025,
+      "lon": -2.1989,
+      "population": 12763
+    },
+    {
+      "slug": "haslingden",
+      "name": "Haslingden",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7042,
+      "lon": -2.3278,
+      "population": 16849
+    },
+    {
+      "slug": "darwen",
+      "name": "Darwen",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6983,
+      "lon": -2.4622,
+      "population": 31563
+    },
+    {
+      "slug": "great-harwood",
+      "name": "Great Harwood",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7861,
+      "lon": -2.4078,
+      "population": 11039
+    },
+    {
+      "slug": "rishton",
+      "name": "Rishton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7658,
+      "lon": -2.4206,
+      "population": 6829
+    },
+    {
+      "slug": "oswaldtwistle",
+      "name": "Oswaldtwistle",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7450,
+      "lon": -2.3922,
+      "population": 11591
+    },
+    {
+      "slug": "batley",
+      "name": "Batley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7172,
+      "lon": -1.6353,
+      "population": 49448
+    },
+    {
+      "slug": "morley",
+      "name": "Morley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7494,
+      "lon": -1.5986,
+      "population": 44440
+    },
+    {
+      "slug": "ossett",
+      "name": "Ossett",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6811,
+      "lon": -1.5794,
+      "population": 21231
+    },
+    {
+      "slug": "horbury",
+      "name": "Horbury",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6617,
+      "lon": -1.5517,
+      "population": 10000
+    },
+    {
+      "slug": "mirfield",
+      "name": "Mirfield",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6703,
+      "lon": -1.6936,
+      "population": 19563
+    },
+    {
+      "slug": "heckmondwike",
+      "name": "Heckmondwike",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7075,
+      "lon": -1.6714,
+      "population": 16986
+    },
+    {
+      "slug": "cleckheaton",
+      "name": "Cleckheaton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7256,
+      "lon": -1.7181,
+      "population": 16610
+    },
+    {
+      "slug": "brighouse",
+      "name": "Brighouse",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7011,
+      "lon": -1.7817,
+      "population": 32360
+    },
+    {
+      "slug": "elland",
+      "name": "Elland",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6828,
+      "lon": -1.8383,
+      "population": 14554
+    },
+    {
+      "slug": "sowerby-bridge",
+      "name": "Sowerby Bridge",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7089,
+      "lon": -1.9072,
+      "population": 11653
+    },
+    {
+      "slug": "hebden-bridge",
+      "name": "Hebden Bridge",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7428,
+      "lon": -2.0117,
+      "population": 4500
+    },
+    {
+      "slug": "todmorden",
+      "name": "Todmorden",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7144,
+      "lon": -2.0972,
+      "population": 15500
+    },
+    {
+      "slug": "ilkley",
+      "name": "Ilkley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.9250,
+      "lon": -1.8222,
+      "population": 14809
+    },
+    {
+      "slug": "otley",
+      "name": "Otley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.9058,
+      "lon": -1.6917,
+      "population": 14070
+    },
+    {
+      "slug": "wetherby",
+      "name": "Wetherby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.9275,
+      "lon": -1.3858,
+      "population": 11955
+    },
+    {
+      "slug": "garforth",
+      "name": "Garforth",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7908,
+      "lon": -1.3839,
+      "population": 23892
+    },
+    {
+      "slug": "rothwell",
+      "name": "Rothwell",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7508,
+      "lon": -1.4778,
+      "population": 25000
+    },
+    {
+      "slug": "normanton",
+      "name": "Normanton",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6989,
+      "lon": -1.4183,
+      "population": 18458
+    },
+    {
+      "slug": "castleford",
+      "name": "Castleford",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7253,
+      "lon": -1.3556,
+      "population": 38458
+    },
+    {
+      "slug": "knottingley",
+      "name": "Knottingley",
+      "type": "town",
+      "region": "England",
+      "lat": 53.7075,
+      "lon": -1.2483,
+      "population": 13553
+    },
+    {
+      "slug": "featherstone",
+      "name": "Featherstone",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6803,
+      "lon": -1.3575,
+      "population": 15244
+    },
+    {
+      "slug": "hemsworth",
+      "name": "Hemsworth",
+      "type": "town",
+      "region": "England",
+      "lat": 53.6128,
+      "lon": -1.3528,
+      "population": 14382
+    },
+    {
+      "slug": "mexborough",
+      "name": "Mexborough",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4950,
+      "lon": -1.2878,
+      "population": 15244
+    },
+    {
+      "slug": "conisbrough",
+      "name": "Conisbrough",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4808,
+      "lon": -1.2297,
+      "population": 15986
+    },
+    {
+      "slug": "wombwell",
+      "name": "Wombwell",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5217,
+      "lon": -1.3983,
+      "population": 15181
+    },
+    {
+      "slug": "hoyland",
+      "name": "Hoyland",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5000,
+      "lon": -1.4436,
+      "population": 15000
+    },
+    {
+      "slug": "chapeltown",
+      "name": "Chapeltown",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4617,
+      "lon": -1.4678,
+      "population": 23000
+    },
+    {
+      "slug": "stocksbridge",
+      "name": "Stocksbridge",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4822,
+      "lon": -1.5911,
+      "population": 13586
+    },
+    {
+      "slug": "penistone",
+      "name": "Penistone",
+      "type": "town",
+      "region": "England",
+      "lat": 53.5250,
+      "lon": -1.6289,
+      "population": 10000
+    },
+    {
+      "slug": "maltby",
+      "name": "Maltby",
+      "type": "town",
+      "region": "England",
+      "lat": 53.4247,
+      "lon": -1.2103,
+      "population": 16688
+    },
+    {
+      "slug": "dinnington",
+      "name": "Dinnington",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3678,
+      "lon": -1.2047,
+      "population": 7500
+    },
+    {
+      "slug": "kiveton-park",
+      "name": "Kiveton Park",
+      "type": "village",
+      "region": "England",
+      "lat": 53.3400,
+      "lon": -1.2500,
+      "population": 7000
+    },
+    {
+      "slug": "market-rasen",
+      "name": "Market Rasen",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3850,
+      "lon": -0.3389,
+      "population": 4768
+    },
+    {
+      "slug": "louth",
+      "name": "Louth",
+      "type": "town",
+      "region": "England",
+      "lat": 53.3678,
+      "lon": -0.0058,
+      "population": 16419
+    },
+    {
+      "slug": "horncastle",
+      "name": "Horncastle",
+      "type": "town",
+      "region": "England",
+      "lat": 53.2075,
+      "lon": -0.1147,
+      "population": 6815
+    },
+    {
+      "slug": "woodhall-spa",
+      "name": "Woodhall Spa",
+      "type": "village",
+      "region": "England",
+      "lat": 53.1525,
+      "lon": -0.2178,
+      "population": 4219
+    },
+    {
+      "slug": "sleaford",
+      "name": "Sleaford",
+      "type": "town",
+      "region": "England",
+      "lat": 52.9964,
+      "lon": -0.4072,
+      "population": 17671
+    },
+    {
+      "slug": "bourne",
+      "name": "Bourne",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7681,
+      "lon": -0.3778,
+      "population": 14845
+    },
+    {
+      "slug": "stamford",
+      "name": "Stamford",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6517,
+      "lon": -0.4800,
+      "population": 21795
+    },
+    {
+      "slug": "market-deeping",
+      "name": "Market Deeping",
+      "type": "town",
+      "region": "England",
+      "lat": 52.6778,
+      "lon": -0.3139,
+      "population": 6929
+    },
+    {
+      "slug": "holbeach",
+      "name": "Holbeach",
+      "type": "town",
+      "region": "England",
+      "lat": 52.8039,
+      "lon": 0.0144,
+      "population": 9607
+    },
+    {
+      "slug": "long-sutton",
+      "name": "Long Sutton",
+      "type": "town",
+      "region": "England",
+      "lat": 52.7836,
+      "lon": 0.1189,
+      "population": 4591
+    },
+    {
+      "slug": "mold",
+      "name": "Mold",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.1667,
+      "lon": -3.1417,
+      "population": 10058
+    },
+    {
+      "slug": "buckley",
+      "name": "Buckley",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.1700,
+      "lon": -3.0833,
+      "population": 18545
+    },
+    {
+      "slug": "flint",
+      "name": "Flint",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.2489,
+      "lon": -3.1353,
+      "population": 12804
+    },
+    {
+      "slug": "holywell",
+      "name": "Holywell",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.2747,
+      "lon": -3.2219,
+      "population": 9793
+    },
+    {
+      "slug": "prestatyn",
+      "name": "Prestatyn",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.3339,
+      "lon": -3.4050,
+      "population": 18849
     }
   ]
 }
