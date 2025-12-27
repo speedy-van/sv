@@ -73,6 +73,9 @@ import {
   FiSettings,
 } from 'react-icons/fi';
 import AdminShell from '@/components/admin/AdminShell';
+import { InteractiveRouteMap } from '@/components/admin/routes/InteractiveRouteMap';
+import { RouteOptimizationDashboard } from '@/components/admin/routes/RouteOptimizationDashboard';
+import { RoutePerformanceMetrics } from '@/components/admin/routes/RoutePerformanceMetrics';
 
 interface Drop {
   id: string;
@@ -88,6 +91,12 @@ interface Drop {
     reference: string;
     customerName: string;
     customerPhone: string;
+    dropoffAddress?: {
+      lat?: number;
+      lng?: number;
+      label?: string;
+      postcode?: string;
+    };
   };
   User: {
     name: string;
@@ -600,10 +609,97 @@ export default function RouteDetailsPage() {
               <Tab>Drops ({route.drops.length})</Tab>
               <Tab>Timeline</Tab>
               <Tab>Notes</Tab>
-              {analytics && <Tab>Analytics</Tab>}
+              <Tab>Performance Metrics</Tab>
             </TabList>
 
             <TabPanels>
+              {/* Map View Tab */}
+              <TabPanel>
+                <VStack spacing={4} align="stretch">
+                  <InteractiveRouteMap
+                    routeId={route.id}
+                    drops={route.drops.map((drop, index) => ({
+                      id: drop.id,
+                      sequenceNumber: index + 1,
+                      lat: drop.Booking?.dropoffAddress?.lat || 0,
+                      lng: drop.Booking?.dropoffAddress?.lng || 0,
+                      address: drop.deliveryAddress || drop.Booking?.dropoffAddress?.label || 'N/A',
+                      customerName: drop.Booking?.customerName || drop.User?.name,
+                      bookingReference: drop.Booking?.reference,
+                      status: drop.status,
+                    }))}
+                    onDropsReorder={async (reorderedDrops) => {
+                      try {
+                        const response = await fetch(`/api/admin/routes/${route.id}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            action: 'reorder_drops',
+                            dropsOrder: reorderedDrops.map(drop => ({
+                              dropId: drop.id,
+                              sequenceNumber: drop.sequenceNumber,
+                            })),
+                          }),
+                        });
+
+                        if (!response.ok) {
+                          throw new Error('Failed to reorder drops');
+                        }
+
+                        // Refresh route data
+                        loadRouteDetails();
+                      } catch (error) {
+                        throw error;
+                      }
+                    }}
+                    onDropRemove={async (dropId) => {
+                      try {
+                        const response = await fetch(`/api/admin/routes/${route.id}`, {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            action: 'remove_drops',
+                            dropIdsToRemove: [dropId],
+                          }),
+                        });
+
+                        if (!response.ok) {
+                          throw new Error('Failed to remove drop');
+                        }
+
+                        // Refresh route data
+                        loadRouteDetails();
+                      } catch (error) {
+                        throw error;
+                      }
+                    }}
+                    editable={route.status !== 'completed'}
+                    showControls={true}
+                    height="600px"
+                  />
+                  <RouteOptimizationDashboard
+                    routeId={route.id}
+                    currentRoute={{
+                      drops: route.drops.map((drop, index) => ({
+                        id: drop.id,
+                        sequenceNumber: index + 1,
+                        lat: drop.Booking?.dropoffAddress?.lat || 0,
+                        lng: drop.Booking?.dropoffAddress?.lng || 0,
+                      })),
+                      optimizedDistanceKm: route.optimizedDistanceKm,
+                      estimatedDuration: route.estimatedDuration,
+                    }}
+                    onOptimize={async (optimizedRoute) => {
+                      await loadRouteDetails();
+                    }}
+                  />
+                </VStack>
+              </TabPanel>
+
               {/* Drops Tab */}
               <TabPanel>
                 <VStack spacing={4} align="stretch">
@@ -719,7 +815,32 @@ export default function RouteDetailsPage() {
               </TabPanel>
 
               {/* Analytics Tab */}
-              {analytics && (
+              <TabPanel>
+                <RoutePerformanceMetrics
+                  routeId={route.id}
+                  route={{
+                    id: route.id,
+                    reference: route.reference,
+                    status: route.status,
+                    startTime: route.startTime,
+                    endTime: route.endTime,
+                    totalDrops: route.totalDrops,
+                    completedDrops: route.completedDrops,
+                    optimizedDistanceKm: route.optimizedDistanceKm,
+                    estimatedDuration: route.estimatedDuration,
+                    totalOutcome: 0,
+                    drops: route.drops.map(drop => ({
+                      id: drop.id,
+                      status: drop.status,
+                      completedAt: drop.completedAt,
+                      estimatedArrival: drop.timeWindowStart,
+                      quotedPrice: drop.quotedPrice,
+                    })),
+                  }}
+                  onRefresh={loadRouteDetails}
+                />
+              </TabPanel>
+              {false && analytics && (
                 <TabPanel>
                   {loadingAnalytics ? (
                     <Box textAlign="center" py={8}>
@@ -734,15 +855,15 @@ export default function RouteDetailsPage() {
                           <Grid templateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={4}>
                             <Stat>
                               <StatLabel>Completion Rate</StatLabel>
-                              <StatNumber>{analytics.performanceMetrics.completionRate}%</StatNumber>
+                              <StatNumber>{analytics?.performanceMetrics?.completionRate}%</StatNumber>
                             </Stat>
                             <Stat>
                               <StatLabel>On-Time Rate</StatLabel>
-                              <StatNumber>{analytics.performanceMetrics.onTimeRate}%</StatNumber>
+                              <StatNumber>{analytics?.performanceMetrics?.onTimeRate}%</StatNumber>
                             </Stat>
                             <Stat>
                               <StatLabel>Average Delay</StatLabel>
-                              <StatNumber>{analytics.performanceMetrics.averageDelay} min</StatNumber>
+                              <StatNumber>{analytics?.performanceMetrics?.averageDelay} min</StatNumber>
                             </Stat>
                           </Grid>
                         </CardBody>
@@ -755,28 +876,28 @@ export default function RouteDetailsPage() {
                           <Grid templateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={4}>
                             <Stat>
                               <StatLabel>Overall</StatLabel>
-                              <StatNumber>{analytics.efficiencyScores.overall}%</StatNumber>
-                              <StatHelpText>{analytics.efficiencyScores.rating}</StatHelpText>
+                              <StatNumber>{analytics?.efficiencyScores?.overall}%</StatNumber>
+                              <StatHelpText>{analytics?.efficiencyScores?.rating}</StatHelpText>
                             </Stat>
                             <Stat>
                               <StatLabel>Distance</StatLabel>
-                              <StatNumber>{analytics.efficiencyScores.distance}%</StatNumber>
+                              <StatNumber>{analytics?.efficiencyScores?.distance}%</StatNumber>
                             </Stat>
                             <Stat>
                               <StatLabel>Time</StatLabel>
-                              <StatNumber>{analytics.efficiencyScores.time}%</StatNumber>
+                              <StatNumber>{analytics?.efficiencyScores?.time}%</StatNumber>
                             </Stat>
                           </Grid>
                         </CardBody>
                       </Card>
 
                       {/* Suggestions */}
-                      {analytics.suggestions.length > 0 && (
+                      {(analytics?.suggestions?.length ?? 0) > 0 && (
                         <Card>
                           <CardBody>
                             <Heading size="md" mb={4}>Optimization Suggestions</Heading>
                             <VStack spacing={3} align="stretch">
-                              {analytics.suggestions.map((suggestion: any, index: number) => (
+                              {analytics?.suggestions?.map((suggestion: any, index: number) => (
                                 <Alert
                                   key={index}
                                   status={suggestion.priority === 'high' ? 'warning' : 'info'}

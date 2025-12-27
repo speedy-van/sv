@@ -69,7 +69,11 @@ async function notifyAdminAboutReturnJourney(bookingData: {
   try {
     console.log('🔄 Notifying admin about return journey opportunity:', bookingData.reference);
 
-    // ✅ CRITICAL: Save complete journey opportunity to database
+    // ⚠️ JourneyOpportunity table doesn't exist - skip database save for now
+    // TODO: Create JourneyOpportunity table or use BookingSegment instead
+    console.log('⚠️ Skipping JourneyOpportunity database save - table not implemented');
+    
+    /* DISABLED until table is created
     const journeyOpportunity = await prisma.journeyOpportunity.create({
       data: {
         type: 'return-journey',
@@ -107,10 +111,12 @@ async function notifyAdminAboutReturnJourney(bookingData: {
       },
     });
 
+    */ // End disabled JourneyOpportunity code
+    
     const returnJourneyNotification = {
       type: 'return-journey-available' as const,
       data: {
-        journeyOpportunityId: journeyOpportunity.id, // ✅ CRITICAL: Send ID for full details access
+        journeyOpportunityId: null, // Table not implemented yet
         bookingId: bookingData.bookingId,
         bookingReference: bookingData.reference,
         originalBookingReference: bookingData.originalBookingReference || bookingData.reference,
@@ -139,7 +145,7 @@ async function notifyAdminAboutReturnJourney(bookingData: {
     // Trigger Pusher notification
     await pusher.trigger('admin-notifications', 'return-journey-available', returnJourneyNotification);
     
-    console.log('✅ Return journey notification sent to admin with ID:', journeyOpportunity.id);
+    console.log('✅ Return journey notification sent to admin for booking:', bookingData.reference);
   } catch (error) {
     console.error('❌ Failed to notify admin about return journey:', error);
     // Don't throw - this is non-critical
@@ -178,7 +184,11 @@ async function notifyAdminAboutNewJourney(bookingData: {
   try {
     console.log('🆕 Notifying admin about new journey:', bookingData.reference);
 
-    // ✅ CRITICAL: Save complete journey opportunity to database
+    // ⚠️ JourneyOpportunity table doesn't exist - skip database save for now
+    // TODO: Create JourneyOpportunity table or use BookingSegment instead
+    console.log('⚠️ Skipping JourneyOpportunity database save - table not implemented');
+    
+    /* DISABLED until table is created
     const journeyOpportunity = await prisma.journeyOpportunity.create({
       data: {
         type: 'new-journey',
@@ -214,10 +224,12 @@ async function notifyAdminAboutNewJourney(bookingData: {
       },
     });
 
+    */ // End disabled JourneyOpportunity code
+    
     const newJourneyNotification = {
       type: 'new-journey-available' as const,
       data: {
-        journeyOpportunityId: journeyOpportunity.id, // ✅ CRITICAL: Send ID for full details access
+        journeyOpportunityId: null, // Table not implemented yet
         bookingId: bookingData.bookingId,
         bookingReference: bookingData.reference,
         customer: {
@@ -1203,10 +1215,21 @@ export async function POST(request: NextRequest) {
           });
           
           // Create the segment
+          // Determine segment type based on sequence and journey pattern
+          let segmentType = 'outbound';
+          if (i === 0) {
+            segmentType = 'outbound';
+          } else if (rawSegments.length === 2 && i === 1) {
+            // If there are exactly 2 segments, second one is likely a return journey
+            segmentType = 'return';
+          } else {
+            segmentType = 'additional';
+          }
+          
           await prisma.bookingSegment.create({
             data: {
               bookingId: booking.id,
-              segmentType: segment.segmentType || (i === 0 ? 'outbound' : 'additional'),
+              segmentType: segment.segmentType || segmentType,
               sequenceNumber: i,
               pickupAddressId: segmentPickupAddress.id,
               dropoffAddressId: segmentDropoffAddress.id,

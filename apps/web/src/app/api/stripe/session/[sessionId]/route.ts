@@ -3,12 +3,13 @@ import { getStripe } from '@/lib/stripe';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    console.log('🔍 Fetching Stripe session:', params.sessionId);
+    const { sessionId } = await params;
+    console.log('🔍 Fetching Stripe session:', sessionId);
 
-    if (!params.sessionId || !params.sessionId.startsWith('cs_')) {
+    if (!sessionId || !sessionId.startsWith('cs_')) {
       return NextResponse.json(
         { error: 'Invalid session ID format' },
         { status: 400 }
@@ -17,7 +18,7 @@ export async function GET(
 
     // Retrieve the session from Stripe
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(params.sessionId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
       return NextResponse.json(

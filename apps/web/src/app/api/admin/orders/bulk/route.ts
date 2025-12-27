@@ -348,6 +348,202 @@ export async function POST(req: NextRequest) {
           errors: errors.length > 0 ? errors : undefined,
         });
 
+      case 'change-status':
+        // Bulk change status
+        const { status: newStatus } = data || {};
+        if (!newStatus) {
+          return NextResponse.json(
+            { error: 'Status is required' },
+            { status: 400 }
+          );
+        }
+
+        for (const orderId of orderIds) {
+          try {
+            const booking = await prisma.booking.findUnique({
+              where: { id: orderId },
+            });
+
+            if (!booking) {
+              errorCount++;
+              errors.push(`Order ${orderId} not found`);
+              continue;
+            }
+
+            await prisma.booking.update({
+              where: { id: orderId },
+              data: { status: newStatus },
+            });
+
+            await logAudit(user.id, 'bulk_change_status', orderId, {
+              targetType: 'booking',
+              before: { status: booking.status },
+              after: { status: newStatus },
+            });
+          } catch (error) {
+            errorCount++;
+            errors.push(`Error changing status for order ${orderId}: ${error}`);
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Status changed for ${orderIds.length - errorCount} orders with ${errorCount} errors`,
+          errors: errors.length > 0 ? errors : undefined,
+        });
+
+      case 'unassign-driver':
+        // Bulk unassign drivers
+        for (const orderId of orderIds) {
+          try {
+            const booking = await prisma.booking.findUnique({
+              where: { id: orderId },
+            });
+
+            if (!booking) {
+              errorCount++;
+              errors.push(`Order ${orderId} not found`);
+              continue;
+            }
+
+            if (!booking.driverId) {
+              errorCount++;
+              errors.push(`Order ${booking.reference} has no driver assigned`);
+              continue;
+            }
+
+            await prisma.booking.update({
+              where: { id: orderId },
+              data: { driverId: null },
+            });
+
+            await logAudit(user.id, 'bulk_unassign_driver', orderId, {
+              targetType: 'booking',
+              before: { driverId: booking.driverId },
+              after: { driverId: null },
+            });
+          } catch (error) {
+            errorCount++;
+            errors.push(`Error unassigning driver for order ${orderId}: ${error}`);
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Drivers unassigned from ${orderIds.length - errorCount} orders with ${errorCount} errors`,
+          errors: errors.length > 0 ? errors : undefined,
+        });
+
+      case 'adjust-price':
+        // Bulk price adjustment
+        const { amount, type, reason: priceReason } = data || {};
+        if (!amount || !priceReason) {
+          return NextResponse.json(
+            { error: 'Amount and reason are required' },
+            { status: 400 }
+          );
+        }
+
+        for (const orderId of orderIds) {
+          try {
+            const booking = await prisma.booking.findUnique({
+              where: { id: orderId },
+            });
+
+            if (!booking) {
+              errorCount++;
+              errors.push(`Order ${orderId} not found`);
+              continue;
+            }
+
+            let newPrice = booking.totalGBP;
+            if (type === 'fixed') {
+              newPrice = booking.totalGBP + Math.round(amount * 100);
+            } else if (type === 'percentage') {
+              newPrice = Math.round(booking.totalGBP * (1 + amount / 100));
+            }
+
+            if (newPrice < 0) {
+              errorCount++;
+              errors.push(`Order ${booking.reference} would have negative price`);
+              continue;
+            }
+
+            await prisma.booking.update({
+              where: { id: orderId },
+              data: {
+                totalGBP: newPrice,
+                notes: booking.notes
+                  ? `${booking.notes}\n[Price adjusted: ${priceReason}]`
+                  : `[Price adjusted: ${priceReason}]`,
+              },
+            });
+
+            await logAudit(user.id, 'bulk_adjust_price', orderId, {
+              targetType: 'booking',
+              before: { totalGBP: booking.totalGBP },
+              after: { totalGBP: newPrice },
+              reason: priceReason,
+            });
+          } catch (error) {
+            errorCount++;
+            errors.push(`Error adjusting price for order ${orderId}: ${error}`);
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Price adjusted for ${orderIds.length - errorCount} orders with ${errorCount} errors`,
+          errors: errors.length > 0 ? errors : undefined,
+        });
+
+      case 'add-notes':
+        // Bulk add notes
+        const { notes } = data || {};
+        if (!notes || !notes.trim()) {
+          return NextResponse.json(
+            { error: 'Notes are required' },
+            { status: 400 }
+          );
+        }
+
+        for (const orderId of orderIds) {
+          try {
+            const booking = await prisma.booking.findUnique({
+              where: { id: orderId },
+            });
+
+            if (!booking) {
+              errorCount++;
+              errors.push(`Order ${orderId} not found`);
+              continue;
+            }
+
+            await prisma.booking.update({
+              where: { id: orderId },
+              data: {
+                notes: booking.notes
+                  ? `${booking.notes}\n[Bulk Note: ${notes}]`
+                  : `[Bulk Note: ${notes}]`,
+              },
+            });
+
+            await logAudit(user.id, 'bulk_add_notes', orderId, {
+              targetType: 'booking',
+              notes,
+            });
+          } catch (error) {
+            errorCount++;
+            errors.push(`Error adding notes to order ${orderId}: ${error}`);
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: `Notes added to ${orderIds.length - errorCount} orders with ${errorCount} errors`,
+          errors: errors.length > 0 ? errors : undefined,
+        });
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }

@@ -878,8 +878,254 @@ const EnhancedAdminRoutesDashboard = ({
         </Alert>
       )}
 
-      {/* Route Generation Status */}
-      {schedulerStats && (
+      {/* Multi-Drop Routes Control Panel - Enhanced Visibility */}
+      <Card 
+        bg="linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" 
+        borderColor={
+          routeGenerationMode === 'automatic' ? 'green.500' :
+          routeGenerationMode === 'semi' ? 'purple.500' : 'blue.500'
+        } 
+        borderWidth="2px"
+        mb={6}
+        boxShadow="0 8px 24px rgba(0, 0, 0, 0.4)"
+      >
+        <CardBody p={6}>
+          <VStack align="stretch" spacing={4}>
+            {/* Header */}
+            <Flex justify="space-between" align="center">
+              <Box>
+                <Flex align="center" gap={3} mb={2}>
+                  <Icon
+                    as={FiZap}
+                    boxSize={6}
+                    color={
+                      routeGenerationMode === 'automatic' ? '#48BB78' :
+                      routeGenerationMode === 'semi' ? '#9F7AEA' : '#3182CE'
+                    }
+                  />
+                  <Heading size="lg" color="white" fontWeight="bold">
+                    Multi-Drop Routes Control Panel
+                  </Heading>
+                  <Badge 
+                    colorScheme={
+                      routeGenerationMode === 'automatic' ? 'green' :
+                      routeGenerationMode === 'semi' ? 'purple' : 'blue'
+                    }
+                    fontSize="md"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                  >
+                    {routeGenerationMode === 'automatic' ? '🟢 AUTOMATIC' :
+                     routeGenerationMode === 'semi' ? '🟣 SEMI-AUTOMATIC' : '🔵 MANUAL'}
+                  </Badge>
+                </Flex>
+                <Text fontSize="md" color="gray.300" fontWeight="medium" mt={2}>
+                  {routeGenerationMode === 'automatic'
+                    ? '✅ System automatically creates routes every 15 minutes from Economy bookings and pending drops'
+                    : routeGenerationMode === 'semi'
+                    ? '⚙️ Admin can manually trigger route creation from pending drops (recommended for control)'
+                    : '🛠️ Only manual route creation is allowed - full admin control'}
+                </Text>
+              </Box>
+            </Flex>
+
+            {/* Mode Control Buttons */}
+            <Box>
+              <Text fontSize="sm" color="gray.400" mb={3} fontWeight="semibold">
+                Route Generation Mode:
+              </Text>
+              <ButtonGroup size="lg" isAttached variant="outline" w="full" display="flex">
+                <Button
+                  leftIcon={<FiSettings />}
+                  flex={1}
+                  colorScheme={routeGenerationMode === 'manual' ? 'blue' : 'gray'}
+                  variant={routeGenerationMode === 'manual' ? 'solid' : 'outline'}
+                  onClick={() => handleModeSwitch('manual')}
+                  bg={routeGenerationMode === 'manual' ? 'blue.600' : 'transparent'}
+                  borderColor={routeGenerationMode === 'manual' ? 'blue.500' : 'gray.600'}
+                  color={routeGenerationMode === 'manual' ? 'white' : 'gray.400'}
+                  _hover={{ 
+                    bg: routeGenerationMode === 'manual' ? 'blue.700' : 'gray.700',
+                    borderColor: routeGenerationMode === 'manual' ? 'blue.400' : 'gray.500'
+                  }}
+                  isDisabled={isSwitchingMode}
+                  isLoading={isSwitchingMode && routeGenerationMode !== 'manual'}
+                  loadingText="Switching..."
+                  fontWeight="semibold"
+                  letterSpacing="0.3px"
+                  fontSize="md"
+                >
+                  Manual Mode
+                </Button>
+                <Button
+                  leftIcon={<FiPlay />}
+                  flex={1}
+                  colorScheme={routeGenerationMode === 'semi' ? 'purple' : 'gray'}
+                  variant={routeGenerationMode === 'semi' ? 'solid' : 'outline'}
+                  onClick={() => handleModeSwitch('semi')}
+                  bg={routeGenerationMode === 'semi' ? 'purple.600' : 'transparent'}
+                  borderColor={routeGenerationMode === 'semi' ? 'purple.500' : 'gray.600'}
+                  color={routeGenerationMode === 'semi' ? 'white' : 'gray.400'}
+                  _hover={{ 
+                    bg: routeGenerationMode === 'semi' ? 'purple.700' : 'gray.700',
+                    borderColor: routeGenerationMode === 'semi' ? 'purple.400' : 'gray.500'
+                  }}
+                  isDisabled={isSwitchingMode}
+                  isLoading={isSwitchingMode && routeGenerationMode !== 'semi'}
+                  loadingText="Switching..."
+                  fontWeight="semibold"
+                  letterSpacing="0.3px"
+                  fontSize="md"
+                >
+                  Semi-Auto Mode
+                </Button>
+                <Button
+                  leftIcon={<FiZap />}
+                  flex={1}
+                  colorScheme={routeGenerationMode === 'automatic' ? 'green' : 'gray'}
+                  variant={routeGenerationMode === 'automatic' ? 'solid' : 'outline'}
+                  onClick={() => handleModeSwitch('automatic')}
+                  bg={routeGenerationMode === 'automatic' ? 'green.600' : 'transparent'}
+                  borderColor={routeGenerationMode === 'automatic' ? 'green.500' : 'gray.600'}
+                  color={routeGenerationMode === 'automatic' ? 'white' : 'gray.400'}
+                  _hover={{ 
+                    bg: routeGenerationMode === 'automatic' ? 'green.700' : 'gray.700',
+                    borderColor: routeGenerationMode === 'automatic' ? 'green.400' : 'gray.500'
+                  }}
+                  isDisabled={isSwitchingMode}
+                  isLoading={isSwitchingMode && routeGenerationMode !== 'automatic'}
+                  loadingText="Switching..."
+                  fontWeight="semibold"
+                  letterSpacing="0.3px"
+                  fontSize="md"
+                >
+                  Auto Mode
+                </Button>
+              </ButtonGroup>
+            </Box>
+
+            {/* Action Buttons */}
+            <HStack spacing={3} mt={2}>
+              {routeGenerationMode === 'semi' && (
+                <Button
+                  leftIcon={<FiZap />}
+                  size="lg"
+                  colorScheme="purple"
+                  bg="purple.600"
+                  _hover={{ bg: 'purple.700' }}
+                  isDisabled={isTriggering}
+                  isLoading={isTriggering}
+                  loadingText="Creating Routes..."
+                  onClick={async () => {
+                    if (isTriggering) return;
+                    setIsTriggering(true);
+                    try {
+                      const response = await fetch('/api/admin/routes/scheduler', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'trigger' })
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        toast({
+                          title: '✅ Routes Created',
+                          description: `Successfully created routes from pending drops`,
+                          status: 'success',
+                          duration: 5000,
+                          isClosable: true,
+                        });
+                        loadData();
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: 'Failed to trigger route creation',
+                        status: 'error',
+                        duration: 5000,
+                      });
+                    } finally {
+                      setIsTriggering(false);
+                    }
+                  }}
+                  fontWeight="semibold"
+                  letterSpacing="0.3px"
+                  fontSize="md"
+                >
+                  Create Routes Now
+                </Button>
+              )}
+              <Button
+                leftIcon={<FiZap />}
+                size="lg"
+                colorScheme="purple"
+                variant="outline"
+                borderColor="purple.500"
+                color="purple.400"
+                _hover={{ bg: 'purple.900', borderColor: 'purple.400' }}
+                onClick={onAutoCreateOpen}
+                fontWeight="semibold"
+                letterSpacing="0.3px"
+                fontSize="md"
+              >
+                Smart Route Generator
+              </Button>
+              <Button
+                leftIcon={<FiPlus />}
+                size="lg"
+                colorScheme="blue"
+                variant="outline"
+                borderColor="blue.500"
+                color="blue.400"
+                _hover={{ bg: 'blue.900', borderColor: 'blue.400' }}
+                onClick={onCreateOpen}
+                fontWeight="semibold"
+                letterSpacing="0.3px"
+                fontSize="md"
+              >
+                Create Manual Route
+              </Button>
+            </HStack>
+
+            {/* Stats Display */}
+            {schedulerStats?.stats && (
+              <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.700">
+                <HStack spacing={6} justify="center">
+                  <VStack spacing={0}>
+                    <Text fontSize="xs" color="gray.500">Total Runs</Text>
+                    <Text fontSize="lg" color="white" fontWeight="bold">
+                      {schedulerStats.stats.totalRuns || 0}
+                    </Text>
+                  </VStack>
+                  <VStack spacing={0}>
+                    <Text fontSize="xs" color="gray.500">Routes Created</Text>
+                    <Text fontSize="lg" color="green.400" fontWeight="bold">
+                      {schedulerStats.stats.routesCreated || 0}
+                    </Text>
+                  </VStack>
+                  <VStack spacing={0}>
+                    <Text fontSize="xs" color="gray.500">Drops Processed</Text>
+                    <Text fontSize="lg" color="blue.400" fontWeight="bold">
+                      {schedulerStats.stats.dropsProcessed || 0}
+                    </Text>
+                  </VStack>
+                  {schedulerStats.stats.lastRun && (
+                    <VStack spacing={0}>
+                      <Text fontSize="xs" color="gray.500">Last Run</Text>
+                      <Text fontSize="lg" color="purple.400" fontWeight="bold">
+                        {new Date(schedulerStats.stats.lastRun).toLocaleTimeString()}
+                      </Text>
+                    </VStack>
+                  )}
+                </HStack>
+              </Box>
+            )}
+          </VStack>
+        </CardBody>
+      </Card>
+
+      {/* Old Route Generation Status - Keep for backward compatibility but make it smaller */}
+      {schedulerStats && false && (
         <Card bg="gray.800" borderColor={
           routeGenerationMode === 'automatic' ? 'green.500' :
           routeGenerationMode === 'semi' ? 'purple.500' : 'blue.500'
@@ -915,6 +1161,82 @@ const EnhancedAdminRoutesDashboard = ({
                     ? 'Admin can manually trigger route creation from pending drops'
                     : 'Only manual route creation is allowed'}
                 </Text>
+
+            {/* Action Buttons */}
+            <HStack spacing={3}>
+              {routeGenerationMode === 'semi' && (
+                <Button
+                  leftIcon={<FiZap />}
+                  size="lg"
+                  colorScheme="purple"
+                  bg="purple.600"
+                  _hover={{ bg: 'purple.700' }}
+                  isDisabled={isTriggering}
+                  isLoading={isTriggering}
+                  loadingText="Creating Routes..."
+                  onClick={async () => {
+                    if (isTriggering) return;
+                    setIsTriggering(true);
+                    try {
+                      const response = await fetch('/api/admin/routes/scheduler', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'trigger' })
+                      });
+                      const data = await response.json();
+                      if (data.success) {
+                        toast({
+                          title: '✅ Routes Created',
+                          description: `Successfully created routes from pending drops`,
+                          status: 'success',
+                          duration: 5000,
+                          isClosable: true,
+                        });
+                        loadData();
+                      }
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: 'Failed to trigger route creation',
+                        status: 'error',
+                        duration: 5000,
+                      });
+                    } finally {
+                      setIsTriggering(false);
+                    }
+                  }}
+                  fontWeight="bold"
+                >
+                  ⚡ Create Routes Now (Semi-Auto)
+                </Button>
+              )}
+              <Button
+                leftIcon={<FiZap />}
+                size="lg"
+                colorScheme="purple"
+                variant="outline"
+                borderColor="purple.500"
+                color="purple.400"
+                _hover={{ bg: 'purple.900', borderColor: 'purple.400' }}
+                onClick={onAutoCreateOpen}
+                fontWeight="bold"
+              >
+                🚀 Smart Route Generator
+              </Button>
+              <Button
+                leftIcon={<FiPlus />}
+                size="lg"
+                colorScheme="blue"
+                variant="outline"
+                borderColor="blue.500"
+                color="blue.400"
+                _hover={{ bg: 'blue.900', borderColor: 'blue.400' }}
+                onClick={onCreateOpen}
+                fontWeight="bold"
+              >
+                ➕ Create Manual Route
+              </Button>
+            </HStack>
                 {schedulerStats.stats && (
                   <HStack spacing={4} mt={2}>
                     <Text fontSize="xs" color="gray.500">

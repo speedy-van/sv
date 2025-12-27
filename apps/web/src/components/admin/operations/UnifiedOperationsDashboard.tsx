@@ -25,9 +25,25 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
-import { FaClipboardList, FaRoute, FaTruck, FaTrash } from 'react-icons/fa';
+import { FaClipboardList, FaRoute, FaTruck, FaTrash, FaExchangeAlt, FaChartBar, FaFileAlt, FaHistory, FaLightbulb, FaTachometerAlt, FaCog, FaPlug } from 'react-icons/fa';
 import SingleOrdersSection from './SingleOrdersSection';
 import MultiDropRoutesSection from './MultiDropRoutesSection';
+import AdditionalJourneysSection from './AdditionalJourneysSection';
+import { OperationsAnalyticsDashboard } from '../analytics/OperationsAnalyticsDashboard';
+import { useKeyboardShortcuts, AdminShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { KeyboardShortcutsModal } from '../KeyboardShortcutsModal';
+import { QuickStatsWidget } from '../QuickStatsWidget';
+import { AdvancedSearch } from '../search/AdvancedSearch';
+import { NotificationsCenter } from '../NotificationsCenter';
+import { QuickFiltersBar } from '../filters/QuickFiltersBar';
+import { OrderTemplatesManager } from '../templates/OrderTemplatesManager';
+import { ActivityLog } from '../activity/ActivityLog';
+import { SmartSuggestionsPanel } from '../suggestions/SmartSuggestionsPanel';
+import { DataVisualizationCharts } from '../charts/DataVisualizationCharts';
+import { PerformanceMonitor } from '../performance/PerformanceMonitor';
+import { WorkflowAutomation } from '../automation/WorkflowAutomation';
+import { IntegrationHub } from '../integrations/IntegrationHub';
+import { MobileOptimizations, useMobileOptimizations } from '../responsive/MobileOptimizations';
 
 // Pulsing animation for declined notifications
 const pulseAnimation = keyframes`
@@ -109,9 +125,11 @@ const playChatNotificationSound = () => {
  * - Multi-Drop Routes: Route creation and optimization
  */
 export default function UnifiedOperationsDashboard() {
+  const mobileOpts = useMobileOptimizations();
   const [activeTab, setActiveTab] = useState(0);
   const [ordersCount, setOrdersCount] = useState(0);
   const [routesCount, setRoutesCount] = useState(0);
+  const [additionalJourneysCount, setAdditionalJourneysCount] = useState(0);
   const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [declinedNotifications, setDeclinedNotifications] = useState<string[]>([]);
   const [acceptedNotifications, setAcceptedNotifications] = useState<string[]>([]);
@@ -119,6 +137,7 @@ export default function UnifiedOperationsDashboard() {
   const [returnJourneyNotifications, setReturnJourneyNotifications] = useState<any[]>([]);
   const [newJourneyNotifications, setNewJourneyNotifications] = useState<any[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isShortcutsOpen, onOpen: onShortcutsOpen, onClose: onShortcutsClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const toast = useToast();
 
@@ -642,6 +661,17 @@ export default function UnifiedOperationsDashboard() {
       };
     }, [toast]);
 
+  // Setup Keyboard Shortcuts
+  const shortcuts = [
+    AdminShortcuts.goToOrders(() => setActiveTab(0)),
+    AdminShortcuts.goToRoutes(() => setActiveTab(1)),
+    AdminShortcuts.goToAdditionalJourneys(() => setActiveTab(2)),
+    AdminShortcuts.goToAnalytics(() => setActiveTab(3)),
+    AdminShortcuts.help(onShortcutsOpen),
+  ];
+
+  useKeyboardShortcuts(shortcuts, { enabled: true });
+
   const handleCleanup = async () => {
     try {
       setIsCleaningUp(true);
@@ -681,15 +711,16 @@ export default function UnifiedOperationsDashboard() {
   return (
     <Box>
       {/* Header */}
-      <HStack justify="space-between" mb={6}>
-        <VStack align="start" spacing={2}>
-          <Heading size="lg" color="white">
-            Operations Management
-          </Heading>
-          <Text color="gray.400" fontSize="sm">
-            Manage single orders and multi-drop routes with full control
-          </Text>
-        </VStack>
+      <VStack align="stretch" spacing={4} mb={6}>
+        <HStack justify="space-between">
+          <VStack align="start" spacing={2}>
+            <Heading size="lg" color="white">
+              Operations Management
+            </Heading>
+            <Text color="gray.400" fontSize="sm">
+              Manage single orders and multi-drop routes with full control
+            </Text>
+          </VStack>
         
         <HStack spacing={3}>
           {/* Declined Notifications Badge */}
@@ -725,8 +756,46 @@ export default function UnifiedOperationsDashboard() {
           >
             Cleanup All
           </Button>
+
+          {/* Notifications Center */}
+          <NotificationsCenter />
+
+          {/* Keyboard Shortcuts Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShortcutsOpen}
+            title="Keyboard Shortcuts (Shift+?)"
+            _hover={{ bg: 'gray.700' }}
+          >
+            ⌨️ Shortcuts
+          </Button>
         </HStack>
       </HStack>
+
+      {/* Quick Stats Widget */}
+      <QuickStatsWidget period="today" compact={false} />
+
+      {/* Advanced Search */}
+      <Box>
+        <AdvancedSearch
+          onSearch={(query) => {
+            // Handle search - can be passed to child components
+            console.log('Search query:', query);
+          }}
+          onSelectResult={(result) => {
+            // Handle result selection
+            if (result.type === 'order') {
+              // Navigate to order or open drawer
+              console.log('Selected order:', result);
+            } else if (result.type === 'route') {
+              // Navigate to route
+              console.log('Selected route:', result);
+            }
+          }}
+        />
+      </Box>
+      </VStack>
 
       {/* Cleanup Confirmation Dialog */}
       <AlertDialog
@@ -788,9 +857,28 @@ export default function UnifiedOperationsDashboard() {
           boxShadow="0 4px 16px rgba(0, 0, 0, 0.4)"
           display="flex"
           gap={2}
+          overflowX="auto"
+          sx={{
+            '&::-webkit-scrollbar': {
+              height: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#1a1a1a',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#333333',
+              borderRadius: '3px',
+              '&:hover': {
+                background: '#444444',
+              },
+            },
+          }}
         >
           <Tab
             flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
             px={6}
             py={4}
             borderRadius="lg"
@@ -836,7 +924,7 @@ export default function UnifiedOperationsDashboard() {
                 boxSize={5}
                 filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
               />
-              <Text fontWeight="semibold" letterSpacing="0.3px">Single Orders</Text>
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Single Orders</Text>
               {ordersCount > 0 && (
                 <Badge 
                   bg="rgba(37, 99, 235, 0.2)"
@@ -861,6 +949,8 @@ export default function UnifiedOperationsDashboard() {
 
           <Tab
             flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
             px={6}
             py={4}
             borderRadius="lg"
@@ -906,7 +996,7 @@ export default function UnifiedOperationsDashboard() {
                 boxSize={5}
                 filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
               />
-              <Text fontWeight="semibold" letterSpacing="0.3px">Multi-Drop Routes</Text>
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Multi-Drop Routes</Text>
               {routesCount > 0 && (
                 <Badge 
                   bg="rgba(16, 185, 129, 0.2)"
@@ -926,6 +1016,457 @@ export default function UnifiedOperationsDashboard() {
                   {routesCount}
                 </Badge>
               )}
+            </HStack>
+          </Tab>
+
+          {/* Additional Journeys Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#06b6d4',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#06b6d4',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(6, 182, 212, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaExchangeAlt} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Additional Journeys</Text>
+              {additionalJourneysCount > 0 && (
+                <Badge 
+                  bg="rgba(6, 182, 212, 0.2)"
+                  color="#FFFFFF"
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  fontWeight="bold"
+                  fontSize="xs"
+                  letterSpacing="0.5px"
+                  border="1px solid"
+                  borderColor="rgba(6, 182, 212, 0.3)"
+                  backdropFilter="blur(10px)"
+                  boxShadow="0 2px 8px rgba(0, 0, 0, 0.2)"
+                  animation={`${pulseAnimation} 2s ease-in-out infinite`}
+                >
+                  {additionalJourneysCount}
+                </Badge>
+              )}
+            </HStack>
+          </Tab>
+
+          {/* Analytics Dashboard Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(147, 51, 234, 0.4), 0 0 20px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#9333ea',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#9333ea',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(147, 51, 234, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaChartBar} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Analytics</Text>
+            </HStack>
+          </Tab>
+
+          {/* Templates Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#f59e0b',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#f59e0b',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaFileAlt} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Templates</Text>
+            </HStack>
+          </Tab>
+
+          {/* Activity Log Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#06b6d4',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#06b6d4',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(6, 182, 212, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaHistory} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Activity Log</Text>
+            </HStack>
+          </Tab>
+
+          {/* Smart Suggestions Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#f59e0b',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#f59e0b',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaLightbulb} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Suggestions</Text>
+            </HStack>
+          </Tab>
+
+          {/* Performance Monitor Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#06b6d4',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#06b6d4',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(6, 182, 212, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaTachometerAlt} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Performance</Text>
+            </HStack>
+          </Tab>
+
+          {/* Workflow Automation Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(147, 51, 234, 0.4), 0 0 20px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#9333ea',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#9333ea',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(147, 51, 234, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaCog} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Automation</Text>
+            </HStack>
+          </Tab>
+
+          {/* Integration Hub Tab */}
+          <Tab
+            flex={1}
+            flexShrink={0}
+            minWidth="fit-content"
+            px={6}
+            py={4}
+            borderRadius="lg"
+            fontWeight="bold"
+            fontSize="md"
+            letterSpacing="0.5px"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            bg="#1a1a1a"
+            color="#9ca3af"
+            borderWidth="2px"
+            borderColor="transparent"
+            position="relative"
+            overflow="hidden"
+            _selected={{
+              bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              transform: 'translateY(-2px)',
+              borderColor: '#10b981',
+              _before: {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '60%',
+                height: '3px',
+                bg: '#10b981',
+                borderRadius: 'full',
+                boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)',
+              },
+            }}
+            _hover={{
+              bg: '#1a1a1a',
+              color: '#FFFFFF',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <HStack spacing={3} position="relative" zIndex={1}>
+              <Icon 
+                as={FaPlug} 
+                boxSize={5}
+                filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))"
+              />
+              <Text fontWeight="semibold" letterSpacing="0.3px" whiteSpace="nowrap">Integrations</Text>
             </HStack>
           </Tab>
         </TabList>
@@ -950,8 +1491,60 @@ export default function UnifiedOperationsDashboard() {
               inProgressNotifications={inProgressNotifications}
             />
           </TabPanel>
+
+          {/* Additional Journeys Tab */}
+          <TabPanel p={0} pt={6}>
+            <AdditionalJourneysSection 
+              onCountChange={setAdditionalJourneysCount}
+              declinedNotifications={declinedNotifications}
+              acceptedNotifications={acceptedNotifications}
+              inProgressNotifications={inProgressNotifications}
+            />
+          </TabPanel>
+
+          {/* Analytics Dashboard Tab */}
+          <TabPanel p={0} pt={6}>
+            <OperationsAnalyticsDashboard />
+          </TabPanel>
+
+          {/* Templates Tab */}
+          <TabPanel p={0} pt={6}>
+            <OrderTemplatesManager />
+          </TabPanel>
+
+          {/* Activity Log Tab */}
+          <TabPanel p={0} pt={6}>
+            <ActivityLog showFilters={true} limit={100} />
+          </TabPanel>
+
+          {/* Smart Suggestions Tab */}
+          <TabPanel p={0} pt={6}>
+            <SmartSuggestionsPanel autoRefresh={true} refreshInterval={60000} />
+          </TabPanel>
+
+          {/* Performance Monitor Tab */}
+          <TabPanel p={0} pt={6}>
+            <PerformanceMonitor />
+          </TabPanel>
+
+          {/* Workflow Automation Tab */}
+          <TabPanel p={0} pt={6}>
+            <WorkflowAutomation />
+          </TabPanel>
+
+          {/* Integration Hub Tab */}
+          <TabPanel p={0} pt={6}>
+            <IntegrationHub />
+          </TabPanel>
         </TabPanels>
       </Tabs>
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={onShortcutsClose}
+        shortcuts={shortcuts}
+      />
     </Box>
   );
 }

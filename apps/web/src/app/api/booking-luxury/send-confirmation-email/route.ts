@@ -68,9 +68,10 @@ export async function POST(request: NextRequest) {
         },
       });
       
-      // If not found by payment intent, try by client_reference_id (booking ID)
+      // If not found by payment intent, try by client_reference_id
       if (!booking && clientReferenceId) {
-        console.log('📧 [CONFIRMATION EMAIL] Trying client_reference_id:', clientReferenceId);
+        console.log('📧 [CONFIRMATION EMAIL] Trying client_reference_id as booking reference:', clientReferenceId);
+        // First try as booking ID
         booking = await prisma.booking.findUnique({
           where: { id: clientReferenceId },
           include: {
@@ -81,6 +82,21 @@ export async function POST(request: NextRequest) {
             BookingItem: true,
           },
         });
+        
+        // If not found, try as booking reference (SV-XXXXXX format)
+        if (!booking) {
+          console.log('📧 [CONFIRMATION EMAIL] Trying as booking reference:', clientReferenceId);
+          booking = await prisma.booking.findUnique({
+            where: { reference: clientReferenceId },
+            include: {
+              pickupAddress: true,
+              dropoffAddress: true,
+              pickupProperty: true,
+              dropoffProperty: true,
+              BookingItem: true,
+            },
+          });
+        }
       }
     }
 

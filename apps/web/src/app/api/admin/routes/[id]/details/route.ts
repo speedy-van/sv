@@ -42,11 +42,16 @@ export async function GET(
                 customerPhone: true,
                 status: true,
                 totalGBP: true,
+                dropoffAddress: {
+                  select: {
+                    lat: true,
+                    lng: true,
+                    label: true,
+                    postcode: true,
+                  },
+                },
               },
             },
-          },
-          orderBy: {
-            createdAt: 'asc',
           },
         },
       },

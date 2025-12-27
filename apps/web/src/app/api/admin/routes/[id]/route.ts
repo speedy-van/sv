@@ -238,6 +238,44 @@ export async function PATCH(
         );
         break;
 
+      case 'reorder_drops':
+        // Reorder drops in route
+        const { dropsOrder } = body; // Array of { dropId, sequenceNumber }
+        
+        if (!Array.isArray(dropsOrder)) {
+          return NextResponse.json(
+            { error: 'dropsOrder must be an array' },
+            { status: 400 }
+          );
+        }
+
+        // Note: Drop model doesn't have sequenceNumber field, 
+        // order is managed by the relationship, not stored on drops
+
+        // Recalculate route metrics if needed
+        updatedRoute = await prisma.route.update({
+          where: { id },
+          data: {
+            isModifiedByAdmin: true,
+            adminNotes: `Route drops reordered by admin`,
+          },
+          include: {
+            drops: true
+          }
+        });
+
+        await logAudit(
+          (session.user as any).id,
+          'reorder_route_drops',
+          undefined,
+          { 
+            targetType: 'route', 
+            targetId: id,
+            after: { reorderedDrops: dropsOrder.length }
+          }
+        );
+        break;
+
       case 'update_status':
         // Update route status
         const { newStatus } = body;

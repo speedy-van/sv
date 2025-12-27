@@ -255,14 +255,13 @@ export default function StripePaymentButton({
         });
       }
 
-      // Ensure amount has at most 2 decimal places
-      const formattedAmount = Math.round(amount * 100) / 100;
-      if (formattedAmount !== amount) {
-        console.error('❌ Amount has more than 2 decimal places:', {
+      // ✅ Fix amount to have at most 2 decimal places (round to nearest penny)
+      const finalAmount = Math.round(amount * 100) / 100;
+      if (finalAmount !== amount) {
+        console.warn('⚠️ Amount rounded to 2 decimal places:', {
           original: amount,
-          formatted: formattedAmount
+          rounded: finalAmount
         });
-        throw new Error('Amount cannot have more than 2 decimal places');
       }
 
       let bookingId = bookingData.bookingId;
@@ -454,7 +453,7 @@ export default function StripePaymentButton({
       }
 
       const requestData = {
-        amount: formattedAmount,
+        amount: finalAmount, // Use rounded amount
         currency: 'gbp',
         customerEmail: bookingData.customer.email,
         customerName: bookingData.customer.name,

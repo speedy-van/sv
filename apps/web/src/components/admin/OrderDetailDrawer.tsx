@@ -46,6 +46,12 @@ import {
   CardBody,
   SimpleGrid,
   IconButton,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Icon,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { differenceInHours, differenceInDays } from 'date-fns';
@@ -73,6 +79,12 @@ import {
 } from 'react-icons/fi';
 import PaymentConfirmationButton from './PaymentConfirmationButton';
 import { UKAddressAutocomplete } from '@/components/address/UKAddressAutocomplete';
+import { OrderTimeline } from './OrderTimeline';
+import { JourneyRelationshipCard } from './JourneyRelationshipCard';
+import { OrderMapPreview } from './OrderMapPreview';
+import { OrderOverviewTab } from './order-details/OrderOverviewTab';
+import { OrderJourneysTab } from './order-details/OrderJourneysTab';
+import { OrderPaymentTab } from './order-details/OrderPaymentTab';
 
 // Flashing animations
 const pulseAnimation = keyframes`
@@ -168,7 +180,7 @@ function calculateDriverEarnings(order: any) {
   };
 }
 
-interface OrderDetail {
+export interface OrderDetail {
   id: string;
   reference: string;
   status: string;
@@ -250,6 +262,43 @@ interface OrderDetail {
     recommendations: string[];
     vansRequired?: number;
   };
+  segments?: Array<{
+    id: string;
+    segmentType: 'outbound' | 'return' | 'additional';
+    sequenceNumber: number;
+    scheduledAt: string;
+    estimatedArrival?: string | null;
+    priceGBP: number;
+    distanceMeters?: number | null;
+    durationSeconds?: number | null;
+    notes?: string | null;
+    items?: any;
+    pickupAddress?: {
+      label: string;
+      postcode: string;
+      lat?: number | null;
+      lng?: number | null;
+    } | null;
+    dropoffAddress?: {
+      label: string;
+      postcode: string;
+      lat?: number | null;
+      lng?: number | null;
+    } | null;
+    pickupProperty?: {
+      propertyType: string;
+      floors: number;
+      accessType: string;
+    } | null;
+    dropoffProperty?: {
+      propertyType: string;
+      floors: number;
+      accessType: string;
+    } | null;
+  }>;
+  hasReturnJourney?: boolean;
+  hasAdditionalJourney?: boolean;
+  totalSegments?: number;
 }
 
 interface OrderDetailDrawerProps {
@@ -258,6 +307,8 @@ interface OrderDetailDrawerProps {
   orderCode?: string;
   variant?: 'standalone' | 'embedded';
   showSummaryCards?: boolean;
+  initialTab?: 'overview' | 'timeline' | 'journeys' | 'payment';
+  initialMode?: 'view' | 'edit';
 }
 
 const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
@@ -266,11 +317,21 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   orderCode,
   variant = 'standalone',
   showSummaryCards = true,
+  initialTab,
+  initialMode = 'view',
 }) => {
+  console.log('📋 OrderDetailDrawer rendered:', {
+    isOpen,
+    orderCode,
+    initialTab,
+    initialMode,
+  });
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  // Initialize isEditing based on initialMode to ensure edit mode is active when drawer opens
+  const [isEditing, setIsEditing] = useState(initialMode === 'edit');
+  const [activeTab, setActiveTab] = useState<number>(0);
   const [editedOrder, setEditedOrder] = useState<Partial<OrderDetail>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -287,6 +348,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   const [isIssuingRefund, setIsIssuingRefund] = useState(false);
   const [isRecalculatingPrice, setIsRecalculatingPrice] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isSendingSMS, setIsSendingSMS] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isRemovingDriver, setIsRemovingDriver] = useState(false);
   const isEmbedded = variant === 'embedded';
@@ -365,8 +427,103 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   useEffect(() => {
     if (isOpen && orderCode) {
       fetchOrderDetails();
+    } else if (!isOpen) {
+      // Reset editing state when drawer closes
+      setIsEditing(false);
+      setEditedOrder({});
+      setNewCalculatedPrice(null);
     }
   }, [isOpen, orderCode]);
+
+  // Update isEditing when initialMode changes
+  useEffect(() => {
+    if (isOpen && initialMode === 'edit' && order) {
+      setIsEditing(true);
+    } else if (isOpen && initialMode === 'view') {
+      setIsEditing(false);
+    }
+  }, [isOpen, initialMode, order?.id]);
+
+  // Handle initial tab when drawer opens (can set before order loads)
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      const tabMap: Record<string, number> = {
+        'overview': 0,
+        'timeline': 1,
+        'journeys': 2,
+        'payment': 3,
+      };
+      const tabIndex = tabMap[initialTab] ?? 0;
+      setActiveTab(tabIndex);
+    }
+  }, [isOpen, initialTab]);
+
+  // Handle initial mode (edit) - must wait for order to load
+  useEffect(() => {
+    console.log('🔍 Edit mode useEffect check:', {
+      isOpen,
+      hasOrder: !!order,
+      initialMode,
+      currentIsEditing: isEditing,
+      orderReference: order?.reference,
+      orderId: order?.id,
+    });
+    
+    // Force edit mode if initialMode is 'edit' and order is loaded
+    if (isOpen && order && initialMode === 'edit') {
+      if (!isEditing) {
+        console.log('✅ Setting edit mode from initialMode prop');
+        setIsEditing(true);
+        setEditedOrder({
+          customerName: order?.customerName || '',
+          customerEmail: order?.customerEmail || '',
+          customerPhone: order?.customerPhone || '',
+          scheduledAt: order?.scheduledAt || '',
+          pickupTimeSlot: order?.pickupTimeSlot || '',
+          notes: order?.notes || '',
+          pickupProperty: order?.pickupProperty ? {
+            ...order.pickupProperty,
+            propertyType: order.pickupProperty.propertyType,
+            floors: order.pickupProperty.floors,
+            accessType: order.pickupProperty.accessType,
+          } : undefined,
+          dropoffProperty: order?.dropoffProperty ? {
+            ...order.dropoffProperty,
+            propertyType: order.dropoffProperty.propertyType,
+            floors: order.dropoffProperty.floors,
+            accessType: order.dropoffProperty.accessType,
+          } : undefined,
+          pickupAddress: order?.pickupAddress ? {
+            label: order.pickupAddress.label || '',
+            postcode: order.pickupAddress.postcode || '',
+            flatNumber: order.pickupAddress.flatNumber || '',
+            lat: order.pickupAddress.lat,
+            lng: order.pickupAddress.lng,
+          } : undefined,
+          dropoffAddress: order?.dropoffAddress ? {
+            label: order.dropoffAddress.label || '',
+            postcode: order.dropoffAddress.postcode || '',
+            flatNumber: order.dropoffAddress.flatNumber || '',
+            lat: order.dropoffAddress.lat,
+            lng: order.dropoffAddress.lng,
+          } : undefined,
+        });
+        console.log('✅ Edit mode activated, isEditing set to true');
+      } else {
+        console.log('ℹ️ Already in edit mode');
+      }
+    } else if (isOpen && order && initialMode !== 'edit' && isEditing) {
+      // If initialMode is not 'edit' but we're editing, keep editing state
+      console.log('ℹ️ Keeping edit mode (initialMode is not edit but isEditing is true)');
+    } else {
+      console.log('❌ Conditions not met for edit mode:', {
+        isOpen,
+        hasOrder: !!order,
+        initialMode,
+        isEditing,
+      });
+    }
+  }, [isOpen, order?.id, initialMode]); // Remove isEditing from dependencies to avoid infinite loop
 
   const fetchOrderDetails = async () => {
     if (!orderCode) return;
@@ -559,10 +716,39 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       scheduledAt: order?.scheduledAt,
       pickupTimeSlot: order?.pickupTimeSlot,
       notes: order?.notes,
-      pickupProperty: order?.pickupProperty,
-      dropoffProperty: order?.dropoffProperty,
-      pickupAddress: order?.pickupAddress,
-      dropoffAddress: order?.dropoffAddress,
+      pickupProperty: order?.pickupProperty ? {
+        ...order.pickupProperty,
+        propertyType: order.pickupProperty.propertyType,
+        floors: order.pickupProperty.floors,
+        accessType: order.pickupProperty.accessType,
+      } : undefined,
+      dropoffProperty: order?.dropoffProperty ? {
+        ...order.dropoffProperty,
+        propertyType: order.dropoffProperty.propertyType,
+        floors: order.dropoffProperty.floors,
+        accessType: order.dropoffProperty.accessType,
+      } : undefined,
+      pickupAddress: order?.pickupAddress ? {
+        label: order.pickupAddress.label || '',
+        postcode: order.pickupAddress.postcode || '',
+        flatNumber: order.pickupAddress.flatNumber || '',
+        lat: order.pickupAddress.lat,
+        lng: order.pickupAddress.lng,
+      } : undefined,
+      dropoffAddress: order?.dropoffAddress ? {
+        label: order.dropoffAddress.label || '',
+        postcode: order.dropoffAddress.postcode || '',
+        flatNumber: order.dropoffAddress.flatNumber || '',
+        lat: order.dropoffAddress.lat,
+        lng: order.dropoffAddress.lng,
+      } : undefined,
+      segments: order?.segments ? order.segments.map(seg => ({
+        ...seg,
+        pickupAddress: seg.pickupAddress ? { ...seg.pickupAddress } : null,
+        dropoffAddress: seg.dropoffAddress ? { ...seg.dropoffAddress } : null,
+        pickupProperty: seg.pickupProperty ? { ...seg.pickupProperty } : null,
+        dropoffProperty: seg.dropoffProperty ? { ...seg.dropoffProperty } : null,
+      })) : undefined,
     });
   };
 
@@ -578,9 +764,23 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
     
     setIsRecalculatingPrice(true);
     try {
-      // Extract address components for API
+      // Extract address components for API (use edited values if available, otherwise use original)
       const pickupLabel = editedOrder.pickupAddress?.label || order.pickupAddress?.label || '';
       const dropoffLabel = editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '';
+      
+      // Use updated coordinates if available (editedOrder takes priority)
+      const pickupLat = (editedOrder.pickupAddress?.lat !== undefined && editedOrder.pickupAddress?.lat !== null)
+        ? editedOrder.pickupAddress.lat
+        : (order.pickupAddress?.lat ?? 51.5074);
+      const pickupLng = (editedOrder.pickupAddress?.lng !== undefined && editedOrder.pickupAddress?.lng !== null)
+        ? editedOrder.pickupAddress.lng
+        : (order.pickupAddress?.lng ?? -0.1278);
+      const dropoffLat = (editedOrder.dropoffAddress?.lat !== undefined && editedOrder.dropoffAddress?.lat !== null)
+        ? editedOrder.dropoffAddress.lat
+        : (order.dropoffAddress?.lat ?? 51.5074);
+      const dropoffLng = (editedOrder.dropoffAddress?.lng !== undefined && editedOrder.dropoffAddress?.lng !== null)
+        ? editedOrder.dropoffAddress.lng
+        : (order.dropoffAddress?.lng ?? -0.1278);
       
       // Parse address to extract street and city
       const parseAddress = (fullAddress: string) => {
@@ -595,21 +795,52 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       const pickupParsed = parseAddress(pickupLabel);
       const dropoffParsed = parseAddress(dropoffLabel);
 
-      // CRITICAL FIX: Use dataset items that exist in UK_Removal_Dataset
-      // The comprehensive API requires items to exist in the dataset
-      // Using known safe items from the dataset instead of order items
-      const itemsForPricing = [
-        {
-          id: 'medium-box',
-          name: 'Medium Box',
-          quantity: 5,
-        },
-        {
-          id: 'wardrobe-double',
-          name: 'Wardrobe (Double)',
-          quantity: 1,
-        }
-      ];
+      // Use ACTUAL items from editedOrder if available, otherwise from order
+      const itemsSource = editedOrder.items || order.items;
+      const itemsForPricing = (itemsSource && itemsSource.length > 0) 
+        ? itemsSource.map((item: any) => ({
+            id: item.id || item.name.toLowerCase().replace(/\s+/g, '-'),
+            name: item.name,
+            quantity: item.quantity || 1,
+          }))
+        : [
+            // Fallback only if no items exist
+            {
+              id: 'medium-box',
+              name: 'Medium Box',
+              quantity: 5,
+            }
+          ];
+
+      // Convert crewSize from 'ONE', 'TWO', etc. to '1', '2', etc. for API
+      // Use editedOrder.crewSize if available, otherwise use order.crewSize
+      const crewSizeMap: Record<string, string> = {
+        'ONE': '1',
+        'TWO': '2',
+        'THREE': '3',
+        'FOUR': '4',
+      };
+      const crewSizeSource = editedOrder.crewSize || order.crewSize;
+      const crewSize = crewSizeSource 
+        ? (crewSizeMap[crewSizeSource] || '2')
+        : '2';
+
+      // Use updated property details if available
+      const pickupPropertyType = (editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED').toLowerCase();
+      const dropoffPropertyType = (editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED').toLowerCase();
+      
+      // Map property types to API format
+      const propertyTypeMap: Record<string, 'house' | 'flat' | 'apartment'> = {
+        'detached': 'house',
+        'semi-detached': 'house',
+        'terraced': 'house',
+        'flat': 'flat',
+        'apartment': 'apartment',
+        'bungalow': 'house',
+      };
+      
+      const apiPickupPropertyType = propertyTypeMap[pickupPropertyType] || 'house';
+      const apiDropoffPropertyType = propertyTypeMap[dropoffPropertyType] || 'house';
 
       // Validate and clean postcodes with proper error handling
       const cleanPostcode = (postcode: string | undefined, addressType: string): string => {
@@ -629,6 +860,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       const pickupPostcode = cleanPostcode(editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode, 'Pickup');
       const dropoffPostcode = cleanPostcode(editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode, 'Dropoff');
 
+      // Use updated scheduled date/time if available
+      const scheduledDate = editedOrder.scheduledAt || order.scheduledAt;
+
       // Prepare pricing data in correct format for comprehensive API
       const pricingData = {
         pickup: {
@@ -639,10 +873,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           street: pickupParsed.street || 'Street',
           number: pickupParsed.number || '1',
           coordinates: {
-            lat: order.pickupAddress?.lat || 51.5074,
-            lng: order.pickupAddress?.lng || -0.1278,
+            lat: pickupLat,
+            lng: pickupLng,
           },
-          propertyType: 'house' as const,
+          propertyType: apiPickupPropertyType,
         },
         dropoffs: [{
           full: dropoffLabel,
@@ -652,14 +886,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           street: dropoffParsed.street || 'Street',
           number: dropoffParsed.number || '1',
           coordinates: {
-            lat: order.dropoffAddress?.lat || 51.5074,
-            lng: order.dropoffAddress?.lng || -0.1278,
+            lat: dropoffLat,
+            lng: dropoffLng,
           },
-          propertyType: 'house' as const,
+          propertyType: apiDropoffPropertyType,
         }],
         items: itemsForPricing,
-        scheduledDate: new Date(editedOrder.scheduledAt || order.scheduledAt).toISOString(),
-        serviceLevel: (order.serviceType || 'standard') as 'economy' | 'standard' | 'premium',
+        scheduledDate: new Date(scheduledDate).toISOString(),
+        serviceLevel: ((editedOrder.serviceType || order.serviceType) || 'standard') as 'economy' | 'standard' | 'premium',
+        // ✅ CRITICAL: Include crewSize for crew surcharge calculation
+        crewSize: crewSize,
       };
 
       // Validate items array before sending
@@ -730,29 +966,71 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
 
     setIsSaving(true);
     try {
-      // Step 1: Detect property/address changes that affect pricing
-      const hasPropertyChanges = 
-        editedOrder.pickupProperty?.floors !== order.pickupProperty?.floors ||
-        editedOrder.dropoffProperty?.floors !== order.dropoffProperty?.floors ||
-        editedOrder.pickupProperty?.accessType !== order.pickupProperty?.accessType ||
-        editedOrder.dropoffProperty?.accessType !== order.dropoffProperty?.accessType ||
-        editedOrder.pickupAddress?.label !== order.pickupAddress?.label ||
-        editedOrder.pickupAddress?.postcode !== order.pickupAddress?.postcode ||
-        editedOrder.dropoffAddress?.label !== order.dropoffAddress?.label ||
-        editedOrder.dropoffAddress?.postcode !== order.dropoffAddress?.postcode;
+      // Step 1: Detect property/address changes in MAIN booking that affect pricing
+      // Helper function to safely compare values (handles null/undefined/empty string)
+      const safeCompare = (val1: any, val2: any) => {
+        const normalized1 = val1 === null || val1 === undefined || val1 === '' ? null : val1;
+        const normalized2 = val2 === null || val2 === undefined || val2 === '' ? null : val2;
+        return normalized1 !== normalized2;
+      };
 
-      // Step 2: Validate price recalculation if property changes detected
+      // Check for ACTUAL changes in main booking properties/addresses
+      // Only require price recalculation if main booking changed, not segments
+      const hasMainPropertyChanges = 
+        safeCompare(editedOrder.pickupProperty?.floors, order.pickupProperty?.floors) ||
+        safeCompare(editedOrder.dropoffProperty?.floors, order.dropoffProperty?.floors) ||
+        safeCompare(editedOrder.pickupProperty?.propertyType, order.pickupProperty?.propertyType) ||
+        safeCompare(editedOrder.dropoffProperty?.propertyType, order.dropoffProperty?.propertyType) ||
+        safeCompare(editedOrder.pickupProperty?.accessType, order.pickupProperty?.accessType) ||
+        safeCompare(editedOrder.dropoffProperty?.accessType, order.dropoffProperty?.accessType) ||
+        safeCompare(editedOrder.pickupAddress?.label, order.pickupAddress?.label) ||
+        safeCompare(editedOrder.pickupAddress?.postcode, order.pickupAddress?.postcode) ||
+        safeCompare(editedOrder.pickupAddress?.flatNumber, order.pickupAddress?.flatNumber) ||
+        safeCompare(editedOrder.dropoffAddress?.label, order.dropoffAddress?.label) ||
+        safeCompare(editedOrder.dropoffAddress?.postcode, order.dropoffAddress?.postcode) ||
+        safeCompare(editedOrder.dropoffAddress?.flatNumber, order.dropoffAddress?.flatNumber) ||
+        safeCompare(editedOrder.scheduledAt, order.scheduledAt) ||
+        safeCompare(editedOrder.crewSize, order.crewSize) ||
+        safeCompare(editedOrder.serviceType, order.serviceType) ||
+        (editedOrder.items && order.items && 
+          JSON.stringify(editedOrder.items.map((i: any) => ({ id: i.id, quantity: i.quantity }))) !== 
+          JSON.stringify(order.items.map((i: any) => ({ id: i.id, quantity: i.quantity }))));
+
+      // Step 1b: Check if segments changed (additional/return journeys)
+      // Note: Segment changes don't require price recalculation as segments have their own prices
+      const hasSegmentChanges = editedOrder.segments && order.segments && 
+        JSON.stringify(editedOrder.segments.map((s: any) => ({
+          id: s.id,
+          pickupAddress: s.pickupAddress,
+          dropoffAddress: s.dropoffAddress,
+          pickupProperty: s.pickupProperty,
+          dropoffProperty: s.dropoffProperty,
+          scheduledAt: s.scheduledAt,
+          notes: s.notes,
+        }))) !== JSON.stringify(order.segments.map((s: any) => ({
+          id: s.id,
+          pickupAddress: s.pickupAddress,
+          dropoffAddress: s.dropoffAddress,
+          pickupProperty: s.pickupProperty,
+          dropoffProperty: s.dropoffProperty,
+          scheduledAt: s.scheduledAt,
+          notes: s.notes,
+        })));
+
+      // Step 2: Validate price recalculation ONLY if MAIN booking property changes detected
+      // Segment changes are allowed without price recalculation
       let updatedPrice = order.totalGBP;
       
-      if (hasPropertyChanges) {
+      // Only require price recalculation for main booking changes, not segment changes
+      if (hasMainPropertyChanges) {
         if (newCalculatedPrice) {
           // Use the already calculated price
           updatedPrice = newCalculatedPrice;
         } else {
-          // CRITICAL: Block save if property changed but no valid price calculated
+          // CRITICAL: Block save if MAIN booking property changed but no valid price calculated
           toast({
             title: '⚠️ Price Recalculation Required',
-            description: 'Property details or addresses have changed. Please click "Recalculate Price" before saving.',
+            description: 'Main booking property details or addresses have changed. Please click "Recalculate Price" before saving.',
             status: 'warning',
             duration: 8000,
             isClosable: true,
@@ -761,6 +1039,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           return;
         }
       }
+      // If only segments changed (and no main property changes), allow save without price recalculation
 
       const priceChanged = updatedPrice !== order.totalGBP;
       const isPaidOrder = (order.amountPaidGBP ?? 0) > 0 || !!order.paidAt;
@@ -879,6 +1158,64 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
       });
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  // Handle sending SMS confirmation
+  const handleSendSMSConfirmation = async () => {
+    if (!order) return;
+
+    // Check if phone number exists
+    const phoneToUse = editedOrder?.customerPhone || order.customerPhone;
+    if (!phoneToUse || phoneToUse.length < 10) {
+      toast({
+        title: 'No Phone Number',
+        description: 'Please provide a valid phone number before sending SMS confirmation.',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsSendingSMS(true);
+    try {
+      const smsMessage = `Your Speedy Van booking ${order.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`;
+
+      const response = await fetch('/api/notifications/sms/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: phoneToUse,
+          message: smsMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send SMS confirmation');
+      }
+
+      toast({
+        title: 'SMS Sent Successfully',
+        description: 'SMS confirmation sent to customer.',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+
+    } catch (error) {
+      toast({
+        title: 'SMS Failed',
+        description: error instanceof Error ? error.message : 'Failed to send SMS confirmation',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsSendingSMS(false);
     }
   };
 
@@ -1307,57 +1644,76 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
         maxW={isEmbedded ? { base: '100%', lg: '520px' } : undefined}
         ml={isEmbedded ? 'auto' : undefined}
       >
-        <DrawerCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+        <DrawerCloseButton 
+          color={textColor} 
+          size="lg"
+          borderRadius="md"
+          _hover={{ bg: '#1a1a1a', transform: 'scale(1.1)' }} 
+          transition="all 0.2s"
+          top={4}
+          right={4}
+        />
         <DrawerHeader 
           borderBottom={`1px solid ${borderColor}`} 
-          pb={3}
-          pt={3}
-          bg={cardBg} 
+          pb={4}
+          pt={4}
+          px={6}
+          bg="linear-gradient(180deg, #111111 0%, #0a0a0a 100%)" 
           color={textColor} 
           position="sticky"
           top={0}
           zIndex={10}
           sx={{ 
-            bg: `${cardBg} !important`,
-            backgroundColor: `${cardBg} !important`,
-            color: `${textColor} !important`,
-            '&': {
-              backgroundColor: '#111111 !important',
-              background: '#111111 !important',
-              color: '#FFFFFF !important',
-            },
+            bg: 'linear-gradient(180deg, #111111 0%, #0a0a0a 100%) !important',
+            backgroundColor: 'linear-gradient(180deg, #111111 0%, #0a0a0a 100%) !important',
+            color: '#FFFFFF !important',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
           }}
         >
-          <HStack justify="space-between" align="center" w="full">
-            <HStack spacing={2} flex={1}>
-              {order && (
-                <Circle
-                  size="12px"
-                  bg={calculatePriority(order.scheduledAt).color}
-                  animation={calculatePriority(order.scheduledAt).animation}
-                />
-              )}
-              {orderCode && (
-                <>
-                  <Badge colorScheme="blue" fontSize="md" px={3} py={1} bg="#2563eb" color="#FFFFFF">
-                    #{orderCode}
-                  </Badge>
-                  <Tooltip label="Copy order code" placement="top">
-                    <IconButton
-                      aria-label="Copy order code"
-                      icon={<FiCopy />}
-                      size="sm"
-                      variant="ghost"
+          <VStack align="stretch" spacing={3} w="full">
+            <HStack justify="space-between" align="center" w="full">
+              <HStack spacing={3} flex={1}>
+                {order && (
+                  <Circle
+                    size="14px"
+                    bg={calculatePriority(order.scheduledAt).color}
+                    animation={calculatePriority(order.scheduledAt).animation}
+                    boxShadow={`0 0 8px ${calculatePriority(order.scheduledAt).color}40`}
+                  />
+                )}
+                {orderCode && (
+                  <>
+                    <Badge 
+                      fontSize="lg" 
+                      px={4} 
+                      py={2} 
+                      bg="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
                       color="#FFFFFF"
-                      _hover={{ bg: '#1a1a1a', color: '#10b981' }}
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        handleCopyOrderCode();
-                      }}
-                    />
-                  </Tooltip>
-                </>
-              )}
+                      borderRadius="md"
+                      fontWeight="bold"
+                      boxShadow="0 2px 4px rgba(37, 99, 235, 0.3)"
+                    >
+                      #{orderCode}
+                    </Badge>
+                    <Tooltip label="Copy order code" placement="top">
+                      <IconButton
+                        aria-label="Copy order code"
+                        icon={<FiCopy />}
+                        size="sm"
+                        variant="ghost"
+                        color="#FFFFFF"
+                        borderRadius="md"
+                        _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                        transition="all 0.2s"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          handleCopyOrderCode();
+                        }}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+              </HStack>
               {order && (
                 <Badge 
                   colorScheme={
@@ -1367,29 +1723,72 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     'green'
                   }
                   fontSize="xs"
-                  px={2}
-                  py={1}
+                  px={3}
+                  py={1.5}
+                  borderRadius="md"
+                  fontWeight="semibold"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
                 >
                   {calculatePriority(order.scheduledAt).label}
                 </Badge>
               )}
             </HStack>
-          </HStack>
+            {order && (
+              <HStack spacing={4} fontSize="sm" color={secondaryTextColor}>
+                <HStack spacing={1.5}>
+                  <Icon as={FiClock} />
+                  <Text>{new Date(order.scheduledAt).toLocaleDateString('en-GB', { 
+                    weekday: 'short', 
+                    day: 'numeric', 
+                    month: 'short',
+                    year: 'numeric'
+                  })}</Text>
+                </HStack>
+                {order.status && (
+                  <Badge 
+                    colorScheme={
+                      order.status === 'COMPLETED' ? 'green' :
+                      order.status === 'CANCELLED' ? 'red' :
+                      order.status === 'PENDING_PAYMENT' ? 'yellow' :
+                      'blue'
+                    }
+                    fontSize="xs"
+                    px={2}
+                    py={1}
+                  >
+                    {order.status.replace('_', ' ')}
+                  </Badge>
+                )}
+              </HStack>
+            )}
+          </VStack>
         </DrawerHeader>
 
         <DrawerBody 
           p={6} 
           bg={bgColor} 
-          color={textColor} 
+          color={textColor}
+          pt={4}
           sx={{ 
             bg: `${bgColor} !important`,
             backgroundColor: `${bgColor} !important`,
             color: `${textColor} !important`,
             '&::-webkit-scrollbar': {
-              display: 'none',
+              width: '8px',
             },
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
+            '&::-webkit-scrollbar-track': {
+              bg: '#0a0a0a',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              bg: '#333333',
+              borderRadius: '4px',
+              '&:hover': {
+                bg: '#404040',
+              },
+            },
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#333333 #0a0a0a',
           }}
         >
           {loading ? (
@@ -1402,6 +1801,252 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Text color={textColor}>{error}</Text>
             </Alert>
           ) : order ? (
+            <Box mt={12}>
+              <Tabs 
+                colorScheme="blue" 
+                variant="enclosed" 
+                isLazy
+                index={activeTab}
+                onChange={setActiveTab}
+              >
+                <TabList 
+                  borderColor={borderColor} 
+                  mb={6}
+                  borderBottom="2px solid"
+                  gap={2}
+                  sx={{
+                  '& button': {
+                    borderBottom: '2px solid transparent',
+                    mb: '-2px',
+                    borderRadius: 'md md 0 0',
+                    fontWeight: 'medium',
+                    transition: 'all 0.2s',
+                    _hover: {
+                      bg: '#1a1a1a',
+                      color: '#60a5fa',
+                    },
+                  },
+                  '& button[aria-selected="true"]': {
+                    borderBottomColor: '#2563eb',
+                    color: '#2563eb',
+                    bg: '#1a1a1a',
+                    borderTopColor: '#2563eb',
+                    borderLeftColor: '#2563eb',
+                    borderRightColor: '#2563eb',
+                    borderTopWidth: '1px',
+                    borderLeftWidth: '1px',
+                    borderRightWidth: '1px',
+                  },
+                }}
+              >
+                <Tab
+                  color={textColor}
+                  _selected={{ color: '#2563eb', borderColor: '#2563eb' }}
+                  borderColor={borderColor}
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FiUser} />
+                    <Text>Overview</Text>
+                  </HStack>
+                </Tab>
+                <Tab
+                  color={textColor}
+                  _selected={{ color: '#2563eb', borderColor: '#2563eb' }}
+                  borderColor={borderColor}
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FiClock} />
+                    <Text>Timeline</Text>
+                  </HStack>
+                </Tab>
+                {order.segments && order.segments.length > 0 && (
+                  <Tab
+                    color={textColor}
+                    _selected={{ color: '#2563eb', borderColor: '#2563eb' }}
+                    borderColor={borderColor}
+                  >
+                    <HStack spacing={2}>
+                      <Icon as={FiNavigation} />
+                      <Text>Journeys</Text>
+                      <Badge 
+                        colorScheme="blue" 
+                        fontSize="xs" 
+                        borderRadius="full"
+                        px={2}
+                        minW="20px"
+                      >
+                        {order.segments.length}
+                      </Badge>
+                    </HStack>
+                  </Tab>
+                )}
+                <Tab
+                  color={textColor}
+                  _selected={{ color: '#2563eb', borderColor: '#2563eb' }}
+                  borderColor={borderColor}
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FiDollarSign} />
+                    <Text>Payment</Text>
+                  </HStack>
+                </Tab>
+              </TabList>
+
+              <TabPanels>
+                {/* Overview Tab */}
+                <TabPanel p={0}>
+                  <OrderOverviewTab
+                    order={order}
+                    bgColor={bgColor}
+                    textColor={textColor}
+                    borderColor={borderColor}
+                    cardBg={cardBg}
+                    secondaryTextColor={secondaryTextColor}
+                    completenessData={completenessData}
+                    showSummaryCards={showSummaryCards}
+                    onRefresh={fetchOrderDetails}
+                    onEdit={handleEditStart}
+                    isEditing={isEditing}
+                    editedOrder={editedOrder}
+                    setEditedOrder={setEditedOrder}
+                    onRecalculatePrice={recalculatePrice}
+                    isRecalculatingPrice={isRecalculatingPrice}
+                    newCalculatedPrice={newCalculatedPrice}
+                  />
+                </TabPanel>
+
+                {/* Timeline Tab */}
+                <TabPanel p={0}>
+                  <VStack spacing={4} align="stretch">
+                    <Text fontWeight="bold" fontSize="lg" color={textColor}>
+                      Order Timeline
+                    </Text>
+                    <Divider borderColor={borderColor} />
+                    <OrderTimeline orderCode={order.reference} />
+                  </VStack>
+                </TabPanel>
+
+                {/* Journeys Tab */}
+                {order.segments && order.segments.length > 0 && (
+                  <TabPanel p={0}>
+                    <OrderJourneysTab
+                      order={order}
+                      bgColor={bgColor}
+                      textColor={textColor}
+                      borderColor={borderColor}
+                      cardBg={cardBg}
+                      secondaryTextColor={secondaryTextColor}
+                      isEditing={isEditing}
+                      editedOrder={editedOrder}
+                      setEditedOrder={setEditedOrder}
+                    />
+                  </TabPanel>
+                )}
+
+                {/* Payment Tab */}
+                <TabPanel p={0}>
+                  <OrderPaymentTab
+                    order={order}
+                    bgColor={bgColor}
+                    textColor={textColor}
+                    borderColor={borderColor}
+                    cardBg={cardBg}
+                    secondaryTextColor={secondaryTextColor}
+                    onRefresh={fetchOrderDetails}
+                  />
+                </TabPanel>
+              </TabPanels>
+              </Tabs>
+              
+              {/* Action Buttons - Save/Cancel when editing */}
+              <Divider borderColor={borderColor} mt={6} />
+              {isEditing ? (
+                  <VStack spacing={3} pt={4} align="stretch">
+                    {newCalculatedPrice && (
+                      <Alert status="warning" bg="rgba(245, 158, 11, 0.15)" borderRadius="md" borderWidth={1} borderColor="#f59e0b">
+                        <AlertIcon color="#f59e0b" />
+                        <VStack align="start" spacing={0} flex={1}>
+                          <Text fontSize="sm" fontWeight="bold" color="#f59e0b">
+                            ⚠️ Price Will Be Updated
+                          </Text>
+                          <Text fontSize="xs" color={secondaryTextColor}>
+                            New price £{(newCalculatedPrice! / 100).toFixed(2)} will replace current £{(order?.totalGBP ? (order!.totalGBP / 100).toFixed(2) : '0.00')}
+                          </Text>
+                        </VStack>
+                      </Alert>
+                    )}
+                    <HStack spacing={3}>
+                      <Button
+                        leftIcon={<FiSave />}
+                        colorScheme="green"
+                        size="sm"
+                        flex={1}
+                        onClick={handleEditSave}
+                        isLoading={isSaving}
+                        loadingText="Saving..."
+                        bg="#10b981"
+                        color="#FFFFFF"
+                        _hover={{ bg: '#059669' }}
+                      >
+                        {newCalculatedPrice ? 'Save & Update Price' : 'Save Changes'}
+                      </Button>
+                      <Button
+                        leftIcon={<FiX />}
+                        variant="outline"
+                        size="sm"
+                        flex={1}
+                        onClick={handleEditCancel}
+                        isDisabled={isSaving}
+                        borderColor={borderColor}
+                        color={textColor}
+                        _hover={{ bg: '#1a1a1a' }}
+                      >
+                        Cancel Edit
+                      </Button>
+                    </HStack>
+                  </VStack>
+                ) : (
+                  <VStack spacing={3} pt={4}>
+                    <HStack spacing={3} w="full">
+                      <Button
+                        leftIcon={<FiEdit />}
+                        colorScheme="blue"
+                        size="sm"
+                        flex={1}
+                        onClick={handleEditStart}
+                        isDisabled={order?.status === 'CANCELLED'}
+                        bg="#2563eb"
+                        color="#FFFFFF"
+                        _hover={{ bg: '#1d4ed8' }}
+                        _disabled={{ bg: '#1a1a1a', color: secondaryTextColor, opacity: 0.5 }}
+                      >
+                        Edit Order
+                      </Button>
+                      <Button
+                        leftIcon={<FiMail />}
+                        colorScheme="green"
+                        variant="outline"
+                        size="sm"
+                        flex={1}
+                        onClick={handleSendConfirmationEmail}
+                        isLoading={isSendingEmail}
+                        loadingText="Sending..."
+                        isDisabled={order?.status === 'CANCELLED'}
+                        borderColor={borderColor}
+                        color="#10b981"
+                        _hover={{ bg: '#1a1a1a' }}
+                        _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
+                      >
+                        Send Confirmation
+                      </Button>
+                    </HStack>
+                  </VStack>
+                )}
+            </Box>
+          ) : null}
+          
+          {/* Keep old content structure for reference - will be removed after testing */}
+          {false && order ? (
             <VStack spacing={6} align="stretch">
               {/* Data Completeness Summary */}
               {showSummaryCards && completenessData && (
@@ -1413,26 +2058,26 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       </Text>
                       <HStack spacing={2}>
                         <Text fontSize="sm" fontWeight="bold" color={
-                          completenessData.completenessScore >= 80 ? '#10b981' :
-                          completenessData.completenessScore >= 60 ? '#f59e0b' : '#ef4444'
+                          (completenessData?.completenessScore ?? 0) >= 80 ? '#10b981' :
+                          (completenessData?.completenessScore ?? 0) >= 60 ? '#f59e0b' : '#ef4444'
                         }>
-                          {completenessData.completenessScore}%
+                          {completenessData?.completenessScore}%
                         </Text>
                         <Progress
-                          value={completenessData.completenessScore}
+                          value={completenessData?.completenessScore ?? 0}
                           size="sm"
                           w="100px"
                           colorScheme={
-                            completenessData.completenessScore >= 80 ? 'green' :
-                            completenessData.completenessScore >= 60 ? 'orange' : 'red'
+                            (completenessData?.completenessScore ?? 0) >= 80 ? 'green' :
+                            (completenessData?.completenessScore ?? 0) >= 60 ? 'orange' : 'red'
                           }
                         />
                       </HStack>
                     </HStack>
                     
-                    {(completenessData.critical.length > 0 || completenessData.warning.length > 0) && (
+                    {completenessData && ((completenessData?.critical?.length ?? 0) > 0 || (completenessData?.warning?.length ?? 0) > 0) && (
                       <VStack spacing={1} align="stretch">
-                        {completenessData.critical.map((issue, index) => (
+                        {completenessData?.critical?.map((issue, index) => (
                           <HStack key={`critical-${index}`} spacing={2}>
                             <FiXCircle color="#ef4444" size={14} />
                             <Text fontSize="xs" color="#ef4444">
@@ -1440,7 +2085,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                             </Text>
                           </HStack>
                         ))}
-                        {completenessData.warning.map((issue, index) => (
+                        {completenessData?.warning?.map((issue, index) => (
                           <HStack key={`warning-${index}`} spacing={2}>
                             <FiAlertTriangle color="#f59e0b" size={14} />
                             <Text fontSize="xs" color="#f59e0b">
@@ -1451,7 +2096,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       </VStack>
                     )}
                     
-                    {completenessData.critical.length === 0 && completenessData.warning.length === 0 && (
+                    {completenessData && (!completenessData?.critical || completenessData?.critical?.length === 0) && (!completenessData?.warning || completenessData?.warning?.length === 0) && (
                       <HStack spacing={2}>
                         <FiCheckCircle color="#10b981" size={14} />
                         <Text fontSize="xs" color="#10b981">
@@ -1470,37 +2115,41 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 <HStack justify="space-between">
                   <Text fontWeight="bold" color={textColor}>Status</Text>
                   <HStack spacing={2}>
-                    <Badge colorScheme={getStatusColor(order.status)} size="lg">
-                      {order.status.replace('_', ' ')}
-                    </Badge>
-                    {order.serviceType && (
-                      <Badge 
-                        colorScheme={
-                          order.serviceType === 'economy' ? 'blue' :
-                          order.serviceType === 'express' ? 'red' :
-                          'green'
-                        }
-                        size="md"
-                      >
-                        {order.serviceType === 'economy' ? 'Economy' :
-                         order.serviceType === 'express' ? 'Express' :
-                         'Standard'}
-                      </Badge>
+                    {order && (
+                      <>
+                        <Badge colorScheme={getStatusColor(order?.status ?? 'pending')} size="lg">
+                          {order?.status?.replace('_', ' ') ?? 'pending'}
+                        </Badge>
+                        {order?.serviceType && (
+                          <Badge 
+                            colorScheme={
+                              order?.serviceType === 'economy' ? 'blue' :
+                              order?.serviceType === 'express' ? 'red' :
+                              'green'
+                            }
+                            size="md"
+                          >
+                            {order?.serviceType === 'economy' ? 'Economy' :
+                             order?.serviceType === 'express' ? 'Express' :
+                             'Standard'}
+                          </Badge>
+                        )}
+                      </>
                     )}
-                    {order.crewSize && (
+                    {order?.crewSize && (
                       <Badge 
                         colorScheme="orange" 
                         size="md"
                         title="Number of helpers"
                       >
-                        👷 {order.crewSize === 'ONE' ? '1 Man' :
-                           order.crewSize === 'TWO' ? '2 Men' :
-                           order.crewSize === 'THREE' ? '3 Men' :
-                           order.crewSize === 'FOUR' ? '4 Men' :
+                        👷 {order?.crewSize === 'ONE' ? '1 Man' :
+                           order?.crewSize === 'TWO' ? '2 Men' :
+                           order?.crewSize === 'THREE' ? '3 Men' :
+                           order?.crewSize === 'FOUR' ? '4 Men' :
                            '2 Men'}
                       </Badge>
                     )}
-                    {order.isMultiDrop || order.orderType === 'multi-drop' ? (
+                    {order?.isMultiDrop || order?.orderType === 'multi-drop' ? (
                       <Badge colorScheme="purple" size="md">
                         Multi-Drop Route
                       </Badge>
@@ -1509,24 +2158,24 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         Single Order
                       </Badge>
                     )}
-                    {order.route && (
+                    {order?.route && (
                       <Badge colorScheme="purple" variant="outline" size="md">
-                        Route: {order.route.reference} ({order.route.totalDrops} drops)
+                        Route: {order?.route?.reference} ({order?.route?.totalDrops} drops)
                       </Badge>
                     )}
                   </HStack>
                 </HStack>
 
                 {/* Payment Confirmation Button - Show if payment is pending */}
-                {order.status === 'PENDING_PAYMENT' && (
+                {order?.status === 'PENDING_PAYMENT' && (
                   <PaymentConfirmationButton
                     booking={{
-                      id: order.id,
-                      reference: order.reference,
-                      status: order.status,
-                      totalGBP: order.totalGBP,
-                      customerName: order.customerName,
-                      paidAt: order.paidAt
+                      id: order?.id ?? '',
+                      reference: order?.reference ?? '',
+                      status: order?.status ?? 'pending',
+                      totalGBP: order?.totalGBP ?? 0,
+                      customerName: order?.customerName ?? '',
+                      paidAt: order?.paidAt ?? undefined
                     }}
                     onSuccess={() => {
                       // Refresh order details after successful confirmation
@@ -1583,31 +2232,69 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         _focus={{ borderColor: '#2563eb', bg: cardBg }}
                       />
                     </FormControl>
+
+                    {/* Confirmation Action Buttons */}
+                    <HStack spacing={2} pt={2}>
+                      <Button
+                        leftIcon={<FiMail />}
+                        colorScheme="green"
+                        variant="outline"
+                        size="sm"
+                        flex={1}
+                        onClick={handleSendConfirmationEmail}
+                        isLoading={isSendingEmail}
+                        loadingText="Sending..."
+                        isDisabled={order?.status === 'CANCELLED' || isSaving}
+                        borderColor="#10b981"
+                        color="#10b981"
+                        _hover={{ bg: '#1a1a1a' }}
+                        _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
+                      >
+                        Send Email Confirmation
+                      </Button>
+                      <Button
+                        leftIcon={<FiPhone />}
+                        colorScheme="blue"
+                        variant="outline"
+                        size="sm"
+                        flex={1}
+                        onClick={handleSendSMSConfirmation}
+                        isLoading={isSendingSMS}
+                        loadingText="Sending..."
+                        isDisabled={order?.status === 'CANCELLED' || isSaving || (!editedOrder?.customerPhone && !order?.customerPhone)}
+                        borderColor="#2563eb"
+                        color="#2563eb"
+                        _hover={{ bg: '#1a1a1a' }}
+                        _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
+                      >
+                        Send SMS Confirmation
+                      </Button>
+                    </HStack>
                   </>
                 ) : (
                   <>
                     <HStack>
                       <FiUser color={textColor} />
-                      <Text color={textColor}>{order.customerName}</Text>
+                      <Text color={textColor}>{order?.customerName ?? ''}</Text>
                     </HStack>
                     <HStack>
                       <FiMail color={secondaryTextColor} />
                       <Text fontSize="sm" color={secondaryTextColor}>
-                        {order.customerEmail}
+                        {order?.customerEmail ?? ''}
                       </Text>
                     </HStack>
                     <HStack>
                       <FiPhone color={secondaryTextColor} />
                       {getStatusIcon(
-                        !!(order.customerPhone && order.customerPhone.length >= 10), 
+                        !!(order?.customerPhone && (order?.customerPhone?.length ?? 0) >= 10), 
                         false
                       )}
                       <Text fontSize="sm" color={
-                        order.customerPhone && order.customerPhone.length >= 10 
+                        order?.customerPhone && (order?.customerPhone?.length ?? 0) >= 10 
                           ? secondaryTextColor 
                           : "#f59e0b"
                       }>
-                        {order.customerPhone || 'NOT PROVIDED'}
+                        {order?.customerPhone || 'NOT PROVIDED'}
                       </Text>
                     </HStack>
                   </>
@@ -1643,17 +2330,17 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 id="edit-pickup-address"
                                 label=""
                                 value={{
-                                  address: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
-                                  postcode: editedOrder.pickupAddress?.postcode || order.pickupAddress?.postcode || '',
+                                  address: editedOrder.pickupAddress?.label || order?.pickupAddress?.label || '',
+                                  postcode: editedOrder.pickupAddress?.postcode || order?.pickupAddress?.postcode || '',
                                   coordinates: {
-                                    lat: editedOrder.pickupAddress?.lat || order.pickupAddress?.lat || 0,
-                                    lng: editedOrder.pickupAddress?.lng || order.pickupAddress?.lng || 0,
+                                    lat: editedOrder.pickupAddress?.lat || order?.pickupAddress?.lat || 0,
+                                    lng: editedOrder.pickupAddress?.lng || order?.pickupAddress?.lng || 0,
                                   },
                                   houseNumber: '',
-                                  flatNumber: editedOrder.pickupAddress?.flatNumber || order.pickupAddress?.flatNumber || '',
+                                  flatNumber: editedOrder.pickupAddress?.flatNumber || order?.pickupAddress?.flatNumber || '',
                                   city: '',
-                                  formatted_address: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
-                                  place_name: editedOrder.pickupAddress?.label || order.pickupAddress?.label || '',
+                                  formatted_address: editedOrder.pickupAddress?.label || order?.pickupAddress?.label || '',
+                                  place_name: editedOrder.pickupAddress?.label || order?.pickupAddress?.label || '',
                                 } as any}
                                 onChange={(address: any) => {
                                   if (address) {
@@ -1684,8 +2371,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                     pickupProperty: {
                                       ...editedOrder.pickupProperty,
                                       floors: value,
-                                      propertyType: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
-                                      accessType: editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType || 'WITHOUT_LIFT',
+                                      propertyType: editedOrder.pickupProperty?.propertyType || order?.pickupProperty?.propertyType || 'DETACHED',
+                                      accessType: editedOrder.pickupProperty?.accessType || order?.pickupProperty?.accessType || 'WITHOUT_LIFT',
                                     }
                                   });
                                 }}
@@ -1704,14 +2391,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                             <FormControl>
                               <FormLabel color={textColor} fontSize="xs">Access Type</FormLabel>
                               <Select
-                                value={editedOrder.pickupProperty?.accessType || order.pickupProperty?.accessType || 'WITHOUT_LIFT'}
+                                value={editedOrder.pickupProperty?.accessType || order?.pickupProperty?.accessType || 'WITHOUT_LIFT'}
                                 onChange={(e) => setEditedOrder({
                                   ...editedOrder,
                                   pickupProperty: {
                                     ...editedOrder.pickupProperty,
                                     accessType: e.target.value,
-                                    propertyType: editedOrder.pickupProperty?.propertyType || order.pickupProperty?.propertyType || 'DETACHED',
-                                    floors: editedOrder.pickupProperty?.floors || order.pickupProperty?.floors || 0,
+                                    propertyType: editedOrder.pickupProperty?.propertyType || order?.pickupProperty?.propertyType || 'DETACHED',
+                                    floors: editedOrder.pickupProperty?.floors || order?.pickupProperty?.floors || 0,
                                   }
                                 })}
                                 bg={cardBg}
@@ -1728,50 +2415,50 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         ) : (
                           <>
                             <Text fontSize="sm" color={textColor}>
-                              {order.pickupAddress?.label || 'Not specified'}
+                              {order?.pickupAddress?.label || 'Not specified'}
                             </Text>
-                            {order.pickupAddress?.postcode && (
+                            {order?.pickupAddress?.postcode && (
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Postcode: {order.pickupAddress.postcode}
+                                Postcode: {order?.pickupAddress?.postcode}
                               </Text>
                             )}
-                            {order.pickupAddress?.flatNumber && (
+                            {order?.pickupAddress?.flatNumber && (
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Flat/Unit: {order.pickupAddress.flatNumber}
+                                Flat/Unit: {order?.pickupAddress?.flatNumber}
                               </Text>
                             )}
-                            {order.pickupProperty && (
+                            {order?.pickupProperty && (
                               <VStack align="start" spacing={0} mt={2}>
                                 <Text fontSize="xs" color={secondaryTextColor}>
-                                  Property: {order.pickupProperty.propertyType}
+                                  Property: {order?.pickupProperty?.propertyType}
                                 </Text>
                                 <HStack spacing={1}>
                                   {getStatusIcon(
-                                    order.pickupProperty.floors > 0, 
+                                    (order?.pickupProperty?.floors ?? 0) > 0, 
                                     true
                                   )}
                                   <Text fontSize="xs" color={
-                                    order.pickupProperty.floors > 0 ? secondaryTextColor : "#ef4444"
+                                    (order?.pickupProperty?.floors ?? 0) > 0 ? secondaryTextColor : "#ef4444"
                                   }>
-                                    Floor: {order.pickupProperty.floors > 0 
-                                      ? order.pickupProperty.floors 
+                                    Floor: {(order?.pickupProperty?.floors ?? 0) > 0 
+                                      ? order?.pickupProperty?.floors 
                                       : 'NOT SPECIFIED'
                                     }
                                   </Text>
                                 </HStack>
                                 <Text fontSize="xs" color={secondaryTextColor}>
-                                  Access: {order.pickupProperty.accessType.replace('_', ' ')}
+                                  Access: {order?.pickupProperty?.accessType?.replace('_', ' ') ?? ''}
                                 </Text>
-                                {order.pickupProperty.propertyType === 'FLAT' && (
+                                {order?.pickupProperty?.propertyType === 'FLAT' && (
                                   <HStack spacing={1}>
                                     {getStatusIcon(
-                                      !!order.pickupAddress?.flatNumber, 
+                                      !!order?.pickupAddress?.flatNumber, 
                                       true
                                     )}
                                     <Text fontSize="xs" color={
-                                      order.pickupAddress?.flatNumber ? secondaryTextColor : "#ef4444"
+                                      order?.pickupAddress?.flatNumber ? secondaryTextColor : "#ef4444"
                                     }>
-                                      Flat/Unit: {order.pickupAddress?.flatNumber || 'NOT SPECIFIED'}
+                                      Flat/Unit: {order?.pickupAddress?.flatNumber || 'NOT SPECIFIED'}
                                     </Text>
                                   </HStack>
                                 )}
@@ -1804,17 +2491,17 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 id="edit-dropoff-address"
                                 label=""
                                 value={{
-                                  address: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
-                                  postcode: editedOrder.dropoffAddress?.postcode || order.dropoffAddress?.postcode || '',
+                                  address: editedOrder.dropoffAddress?.label || order?.dropoffAddress?.label || '',
+                                  postcode: editedOrder.dropoffAddress?.postcode || order?.dropoffAddress?.postcode || '',
                                   coordinates: {
-                                    lat: editedOrder.dropoffAddress?.lat || order.dropoffAddress?.lat || 0,
-                                    lng: editedOrder.dropoffAddress?.lng || order.dropoffAddress?.lng || 0,
+                                    lat: editedOrder.dropoffAddress?.lat || order?.dropoffAddress?.lat || 0,
+                                    lng: editedOrder.dropoffAddress?.lng || order?.dropoffAddress?.lng || 0,
                                   },
                                   houseNumber: '',
-                                  flatNumber: editedOrder.dropoffAddress?.flatNumber || order.dropoffAddress?.flatNumber || '',
+                                  flatNumber: editedOrder.dropoffAddress?.flatNumber || order?.dropoffAddress?.flatNumber || '',
                                   city: '',
-                                  formatted_address: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
-                                  place_name: editedOrder.dropoffAddress?.label || order.dropoffAddress?.label || '',
+                                  formatted_address: editedOrder.dropoffAddress?.label || order?.dropoffAddress?.label || '',
+                                  place_name: editedOrder.dropoffAddress?.label || order?.dropoffAddress?.label || '',
                                 } as any}
                                 onChange={(address: any) => {
                                   if (address) {
@@ -1845,8 +2532,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                     dropoffProperty: {
                                       ...editedOrder.dropoffProperty,
                                       floors: value,
-                                      propertyType: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
-                                      accessType: editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType || 'WITHOUT_LIFT',
+                                      propertyType: editedOrder.dropoffProperty?.propertyType || order?.dropoffProperty?.propertyType || 'DETACHED',
+                                      accessType: editedOrder.dropoffProperty?.accessType || order?.dropoffProperty?.accessType || 'WITHOUT_LIFT',
                                     }
                                   });
                                 }}
@@ -1865,14 +2552,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                             <FormControl>
                               <FormLabel color={textColor} fontSize="xs">Access Type</FormLabel>
                               <Select
-                                value={editedOrder.dropoffProperty?.accessType || order.dropoffProperty?.accessType || 'WITHOUT_LIFT'}
+                                value={editedOrder.dropoffProperty?.accessType || order?.dropoffProperty?.accessType || 'WITHOUT_LIFT'}
                                 onChange={(e) => setEditedOrder({
                                   ...editedOrder,
                                   dropoffProperty: {
                                     ...editedOrder.dropoffProperty,
                                     accessType: e.target.value,
-                                    propertyType: editedOrder.dropoffProperty?.propertyType || order.dropoffProperty?.propertyType || 'DETACHED',
-                                    floors: editedOrder.dropoffProperty?.floors || order.dropoffProperty?.floors || 0,
+                                    propertyType: editedOrder.dropoffProperty?.propertyType || order?.dropoffProperty?.propertyType || 'DETACHED',
+                                    floors: editedOrder.dropoffProperty?.floors || order?.dropoffProperty?.floors || 0,
                                   }
                                 })}
                                 bg={cardBg}
@@ -1889,50 +2576,50 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         ) : (
                           <>
                             <Text fontSize="sm" color={textColor}>
-                              {order.dropoffAddress?.label || 'Not specified'}
+                              {order?.dropoffAddress?.label || 'Not specified'}
                             </Text>
-                            {order.dropoffAddress?.postcode && (
+                            {order?.dropoffAddress?.postcode && (
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Postcode: {order.dropoffAddress.postcode}
+                                Postcode: {order?.dropoffAddress?.postcode}
                               </Text>
                             )}
-                            {order.dropoffAddress?.flatNumber && (
+                            {order?.dropoffAddress?.flatNumber && (
                               <Text fontSize="xs" color={secondaryTextColor}>
-                                Flat/Unit: {order.dropoffAddress.flatNumber}
+                                Flat/Unit: {order?.dropoffAddress?.flatNumber}
                               </Text>
                             )}
-                            {order.dropoffProperty && (
+                            {order?.dropoffProperty && (
                               <VStack align="start" spacing={0} mt={2}>
                                 <Text fontSize="xs" color={secondaryTextColor}>
-                                  Property: {order.dropoffProperty.propertyType}
+                                  Property: {order?.dropoffProperty?.propertyType}
                                 </Text>
                                 <HStack spacing={1}>
                                   {getStatusIcon(
-                                    order.dropoffProperty.floors > 0, 
+                                    (order?.dropoffProperty?.floors ?? 0) > 0, 
                                     true
                                   )}
                                   <Text fontSize="xs" color={
-                                    order.dropoffProperty.floors > 0 ? secondaryTextColor : "#ef4444"
+                                    (order?.dropoffProperty?.floors ?? 0) > 0 ? secondaryTextColor : "#ef4444"
                                   }>
-                                    Floor: {order.dropoffProperty.floors > 0 
-                                      ? order.dropoffProperty.floors 
+                                    Floor: {(order?.dropoffProperty?.floors ?? 0) > 0 
+                                      ? order?.dropoffProperty?.floors 
                                       : 'NOT SPECIFIED'
                                     }
                                   </Text>
                                 </HStack>
                                 <Text fontSize="xs" color={secondaryTextColor}>
-                                  Access: {order.dropoffProperty.accessType.replace('_', ' ')}
+                                  Access: {order?.dropoffProperty?.accessType?.replace('_', ' ') ?? ''}
                                 </Text>
-                                {order.dropoffProperty.propertyType === 'FLAT' && (
+                                {order?.dropoffProperty?.propertyType === 'FLAT' && (
                                   <HStack spacing={1}>
                                     {getStatusIcon(
-                                      !!order.dropoffAddress?.flatNumber, 
+                                      !!order?.dropoffAddress?.flatNumber, 
                                       true
                                     )}
                                     <Text fontSize="xs" color={
-                                      order.dropoffAddress?.flatNumber ? secondaryTextColor : "#ef4444"
+                                      order?.dropoffAddress?.flatNumber ? secondaryTextColor : "#ef4444"
                                     }>
-                                      Flat/Unit: {order.dropoffAddress?.flatNumber || 'NOT SPECIFIED'}
+                                      Flat/Unit: {order?.dropoffAddress?.flatNumber || 'NOT SPECIFIED'}
                                     </Text>
                                   </HStack>
                                 )}
@@ -1946,7 +2633,40 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </VStack>
               </VStack>
 
-              <Divider borderColor={borderColor} />
+              {/* Route Map Preview */}
+              {order?.pickupAddress && order?.dropoffAddress && (
+                <>
+                  <VStack align="stretch" spacing={3}>
+                    <Text fontWeight="bold" fontSize="md" color={textColor}>
+                      Route Map
+                    </Text>
+                    <OrderMapPreview
+                      pickupLocation={
+                        order?.pickupAddress?.lat && order?.pickupAddress?.lng
+                          ? {
+                              lat: order?.pickupAddress?.lat ?? 0,
+                              lng: order?.pickupAddress?.lng ?? 0,
+                              label: order?.pickupAddress?.label ?? '',
+                            }
+                          : null
+                      }
+                      dropoffLocation={
+                        order?.dropoffAddress?.lat && order?.dropoffAddress?.lng
+                          ? {
+                              lat: order?.dropoffAddress?.lat ?? 0,
+                              lng: order?.dropoffAddress?.lng ?? 0,
+                              label: order?.dropoffAddress?.label ?? '',
+                            }
+                          : null
+                      }
+                      height="300px"
+                      bgColor={bgColor}
+                      borderColor={borderColor}
+                    />
+                  </VStack>
+                  <Divider borderColor={borderColor} />
+                </>
+              )}
 
               {/* Driver Information */}
               <VStack align="stretch" spacing={3}>
@@ -1954,7 +2674,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   <Text fontWeight="bold" fontSize="md" color={textColor}>
                     Driver Information
                   </Text>
-                  {order.driver && (
+                  {order?.driver && (
                     <HStack spacing={2}>
                       <Button
                         size="xs"
@@ -1984,22 +2704,22 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   )}
                 </HStack>
                 
-                {order.driver?.user ? (
+                {order?.driver?.user ? (
                   <>
                     <HStack>
                       <FiTruck color={textColor} />
-                      <Text color={textColor}>{order.driver.user.name || 'Unknown Driver'}</Text>
+                      <Text color={textColor}>{order?.driver?.user?.name || 'Unknown Driver'}</Text>
                     </HStack>
                     <HStack>
                       <FiMail color={secondaryTextColor} />
                       <Text fontSize="sm" color={secondaryTextColor}>
-                        {order.driver.user.email || 'N/A'}
+                        {order?.driver?.user?.email || 'N/A'}
                       </Text>
                     </HStack>
                     <HStack>
                       <FiPhone color={secondaryTextColor} />
                       <Text fontSize="sm" color={secondaryTextColor}>
-                        {order.driver.user.phone || 'N/A'}
+                        {order?.driver?.user?.phone || 'N/A'}
                       </Text>
                     </HStack>
                   </>
@@ -2030,14 +2750,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Divider borderColor={borderColor} />
 
               {/* Items */}
-              {order.items && order.items.length > 0 && (
+              {order?.items && (order?.items?.length ?? 0) > 0 && (
                 <>
                   <VStack align="stretch" spacing={3}>
                     <Text fontWeight="bold" fontSize="md" color={textColor}>
-                      Items ({order.items.length})
+                      Items ({order?.items?.length ?? 0})
                     </Text>
                     <VStack align="stretch" spacing={2}>
-                      {order.items.map((item, index) => (
+                      {order?.items?.map((item, index) => (
                         <Box key={item.id || index} p={3} borderWidth={1} borderRadius="md" bg={cardBg} borderColor={borderColor}>
                           <HStack justify="space-between" align="start">
                             <VStack align="start" spacing={1} flex={1}>
@@ -2079,6 +2799,228 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </>
               )}
 
+              {/* Journey Relationship Card */}
+              {order?.segments && (order?.segments?.length ?? 0) > 1 && (
+                <VStack align="stretch" spacing={3}>
+                  <JourneyRelationshipCard
+                    mainBooking={{
+                      reference: order?.reference ?? '',
+                      totalGBP: order?.totalGBP ?? 0,
+                      scheduledAt: order?.scheduledAt ?? '',
+                    }}
+                    segments={order?.segments ?? []}
+                    bgColor={bgColor}
+                    textColor={textColor}
+                    borderColor={borderColor}
+                    cardBg={cardBg}
+                    secondaryTextColor={secondaryTextColor}
+                  />
+                </VStack>
+              )}
+
+              {/* Additional Journeys Section */}
+              {order?.segments && (order?.segments?.length ?? 0) > 1 && (
+                <>
+                  <VStack align="stretch" spacing={3}>
+                    <HStack justify="space-between" align="center">
+                      <Text fontWeight="bold" fontSize="md" color={textColor}>
+                        Additional Journeys Details ({(order?.segments?.length ?? 0) - 1})
+                      </Text>
+                      <HStack spacing={2}>
+                        {order?.hasReturnJourney && (
+                          <Badge colorScheme="green" size="md">
+                            🔄 Return Journey
+                          </Badge>
+                        )}
+                        {order?.hasAdditionalJourney && (
+                          <Badge colorScheme="cyan" size="md">
+                            ➕ Additional Journey
+                          </Badge>
+                        )}
+                      </HStack>
+                    </HStack>
+                    
+                    <VStack align="stretch" spacing={3}>
+                      {order?.segments
+                        ?.filter(segment => segment.segmentType !== 'outbound')
+                        .map((segment, index) => (
+                          <Card 
+                            key={segment.id} 
+                            bg={cardBg} 
+                            borderColor={
+                              segment.segmentType === 'return' ? '#10b981' : '#06b6d4'
+                            }
+                            borderWidth={2}
+                          >
+                            <CardBody>
+                              <VStack align="stretch" spacing={3}>
+                                <HStack justify="space-between" align="start">
+                                  <HStack spacing={2}>
+                                    <Badge 
+                                      colorScheme={
+                                        segment.segmentType === 'return' ? 'green' : 'cyan'
+                                      }
+                                      size="lg"
+                                    >
+                                      {segment.segmentType === 'return' 
+                                        ? '🔄 Return Journey' 
+                                        : '➕ Additional Journey'}
+                                    </Badge>
+                                    <Badge colorScheme="gray" size="sm">
+                                      Sequence #{segment.sequenceNumber + 1}
+                                    </Badge>
+                                  </HStack>
+                                  <Text fontSize="lg" fontWeight="bold" color={
+                                    segment.segmentType === 'return' ? '#10b981' : '#06b6d4'
+                                  }>
+                                    {formatCurrency(segment.priceGBP)}
+                                  </Text>
+                                </HStack>
+
+                                <Divider borderColor={borderColor} />
+
+                                {/* Pickup Address */}
+                                <Box p={2} bg="rgba(16, 185, 129, 0.1)" borderRadius="md" borderWidth={1} borderColor="#10b981">
+                                  <HStack align="start" spacing={2}>
+                                    <FiMapPin color="#10b981" />
+                                    <VStack align="start" spacing={1} flex={1}>
+                                      <Text fontSize="xs" fontWeight="bold" color="#10b981">
+                                        Pickup Location
+                                      </Text>
+                                      <Text fontSize="sm" color={textColor}>
+                                        {segment.pickupAddress?.label || 'N/A'}
+                                      </Text>
+                                      <Text fontSize="xs" color={secondaryTextColor}>
+                                        {segment.pickupAddress?.postcode || ''}
+                                      </Text>
+                                      {segment.pickupProperty && (
+                                        <HStack spacing={2} mt={1}>
+                                          <Badge size="xs" colorScheme="gray">
+                                            {segment.pickupProperty.propertyType}
+                                          </Badge>
+                                          <Badge size="xs" colorScheme="gray">
+                                            Floor: {segment.pickupProperty.floors}
+                                          </Badge>
+                                          <Badge size="xs" colorScheme="gray">
+                                            {segment.pickupProperty.accessType}
+                                          </Badge>
+                                        </HStack>
+                                      )}
+                                    </VStack>
+                                  </HStack>
+                                </Box>
+
+                                {/* Dropoff Address */}
+                                <Box p={2} bg="rgba(239, 68, 68, 0.1)" borderRadius="md" borderWidth={1} borderColor="#ef4444">
+                                  <HStack align="start" spacing={2}>
+                                    <FiMapPin color="#ef4444" />
+                                    <VStack align="start" spacing={1} flex={1}>
+                                      <Text fontSize="xs" fontWeight="bold" color="#ef4444">
+                                        Dropoff Location
+                                      </Text>
+                                      <Text fontSize="sm" color={textColor}>
+                                        {segment.dropoffAddress?.label || 'N/A'}
+                                      </Text>
+                                      <Text fontSize="xs" color={secondaryTextColor}>
+                                        {segment.dropoffAddress?.postcode || ''}
+                                      </Text>
+                                      {segment.dropoffProperty && (
+                                        <HStack spacing={2} mt={1}>
+                                          <Badge size="xs" colorScheme="gray">
+                                            {segment.dropoffProperty.propertyType}
+                                          </Badge>
+                                          <Badge size="xs" colorScheme="gray">
+                                            Floor: {segment.dropoffProperty.floors}
+                                          </Badge>
+                                          <Badge size="xs" colorScheme="gray">
+                                            {segment.dropoffProperty.accessType}
+                                          </Badge>
+                                        </HStack>
+                                      )}
+                                    </VStack>
+                                  </HStack>
+                                </Box>
+
+                                {/* Journey Details */}
+                                <SimpleGrid columns={3} spacing={2}>
+                                  <Box>
+                                    <Text fontSize="xs" color={secondaryTextColor}>Scheduled</Text>
+                                    <Text fontSize="sm" color={textColor} fontWeight="medium">
+                                      {formatDateTime(segment.scheduledAt)}
+                                    </Text>
+                                  </Box>
+                                  {segment.estimatedArrival && (
+                                    <Box>
+                                      <Text fontSize="xs" color={secondaryTextColor}>Est. Arrival</Text>
+                                      <Text fontSize="sm" color={textColor} fontWeight="medium">
+                                        {formatDateTime(segment.estimatedArrival)}
+                                      </Text>
+                                    </Box>
+                                  )}
+                                  {segment.distanceMeters && (
+                                    <Box>
+                                      <Text fontSize="xs" color={secondaryTextColor}>Distance</Text>
+                                      <Text fontSize="sm" color={textColor} fontWeight="medium">
+                                        {formatDistance(segment.distanceMeters)}
+                                      </Text>
+                                    </Box>
+                                  )}
+                                </SimpleGrid>
+
+                                {/* Items in this segment */}
+                                {segment.items && Array.isArray(segment.items) && segment.items.length > 0 && (
+                                  <Box p={2} bg="rgba(59, 130, 246, 0.1)" borderRadius="md" borderWidth={1} borderColor="#3b82f6">
+                                    <Text fontSize="xs" fontWeight="bold" color="#3b82f6" mb={1}>
+                                      Items in this journey ({segment.items.length})
+                                    </Text>
+                                    <VStack align="start" spacing={1}>
+                                      {segment.items.map((item: any, itemIndex: number) => (
+                                        <Text key={itemIndex} fontSize="xs" color={textColor}>
+                                          • {item.name} {item.quantity > 1 ? `(x${item.quantity})` : ''}
+                                        </Text>
+                                      ))}
+                                    </VStack>
+                                  </Box>
+                                )}
+
+                                {/* Notes */}
+                                {segment.notes && (
+                                  <Box p={2} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+                                    <Text fontSize="xs" color={secondaryTextColor} mb={1}>
+                                      Notes:
+                                    </Text>
+                                    <Text fontSize="sm" color={textColor}>
+                                      {segment.notes}
+                                    </Text>
+                                  </Box>
+                                )}
+                              </VStack>
+                            </CardBody>
+                          </Card>
+                        ))}
+                    </VStack>
+                  </VStack>
+                  <Divider borderColor={borderColor} />
+                </>
+              )}
+
+              {/* Timeline Section */}
+              <VStack align="stretch" spacing={3}>
+                <Text fontWeight="bold" fontSize="md" color={textColor}>
+                  Order Timeline
+                </Text>
+                <Box p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+                  <OrderTimeline
+                    orderCode={order?.reference ?? ''}
+                    bgColor={bgColor}
+                    textColor={textColor}
+                    borderColor={borderColor}
+                    cardBg={cardBg}
+                  />
+                </Box>
+              </VStack>
+              <Divider borderColor={borderColor} />
+
               {/* Order Details */}
               <VStack align="stretch" spacing={4}>
                 <Text fontWeight="bold" fontSize="md" color={textColor}>
@@ -2100,14 +3042,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                               <Box flex={1}>
                                 <Text fontSize="xs" color={secondaryTextColor}>Old Price:</Text>
                                 <Text fontSize="lg" fontWeight="bold" color="#ef4444" textDecoration="line-through">
-                                  £{(order.totalGBP / 100).toFixed(2)}
+                                  £{((order?.totalGBP ?? 0) / 100).toFixed(2)}
                                 </Text>
                               </Box>
                               <Text fontSize="2xl" color="#f59e0b">→</Text>
                               <Box flex={1}>
                                 <Text fontSize="xs" color={secondaryTextColor}>New Price:</Text>
                                 <Text fontSize="lg" fontWeight="bold" color="#10b981">
-                                  £{(newCalculatedPrice / 100).toFixed(2)}
+                                  £{((newCalculatedPrice ?? 0) / 100).toFixed(2)}
                                 </Text>
                               </Box>
                             </HStack>
@@ -2123,28 +3065,28 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                             {newCalculatedPrice && isEditing ? 'Current Price' : 'Customer Paid'}
                           </StatLabel>
                           <StatNumber fontSize="2xl" color={newCalculatedPrice && isEditing ? secondaryTextColor : "#10b981"}>
-                            {formatCurrency(order.totalGBP)}
+                            {formatCurrency(order?.totalGBP ?? 0)}
                           </StatNumber>
                           {newCalculatedPrice && isEditing && (
                             <StatHelpText fontSize="sm" color="#f59e0b" fontWeight="bold">
-                              New: {formatCurrency(newCalculatedPrice)}
+                              New: {formatCurrency(newCalculatedPrice ?? 0)}
                             </StatHelpText>
                           )}
                         </Stat>
                         <Stat>
                           <StatLabel fontSize="xs" color={secondaryTextColor}>Scheduled Date</StatLabel>
                           <StatNumber fontSize="lg" color={textColor}>
-                            {new Date(order.scheduledAt).toLocaleString('en-GB', {
+                            {order?.scheduledAt ? new Date(order?.scheduledAt ?? '').toLocaleString('en-GB', {
                               weekday: 'short',
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit',
-                            })}
+                            }) : 'Not scheduled'}
                           </StatNumber>
                           <StatHelpText fontSize="xs" color={secondaryTextColor}>
-                            Reference: {order.reference}
+                            Reference: {order?.reference ?? ''}
                           </StatHelpText>
                         </Stat>
                       </SimpleGrid>
@@ -2153,66 +3095,78 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </Card>
 
                 {/* Capacity Check & Vehicles Required */}
-                {order.capacityCheck && (order.capacityCheck.warnings.length > 0 || order.capacityCheck.vansRequired) && (
+                {order?.capacityCheck && (((order?.capacityCheck?.warnings?.length ?? 0) > 0) || order?.capacityCheck?.vansRequired) && (
                   <Alert 
-                    status={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "error" : "warning"} 
-                    bg={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)"} 
+                    status={(order?.capacityCheck?.vansRequired ?? 0) > 1 ? "error" : "warning"} 
+                    bg={(order?.capacityCheck?.vansRequired ?? 0) > 1 ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)"} 
                     borderRadius="md" 
                     borderWidth={2} 
-                    borderColor={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "#ef4444" : "#f59e0b"}
+                    borderColor={(order?.capacityCheck?.vansRequired ?? 0) > 1 ? "#ef4444" : "#f59e0b"}
                   >
-                    <AlertIcon color={order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 ? "#ef4444" : "#f59e0b"} boxSize={6} />
+                    <AlertIcon color={(order?.capacityCheck?.vansRequired ?? 0) > 1 ? "#ef4444" : "#f59e0b"} boxSize={6} />
                     <VStack align="start" spacing={2} flex={1}>
-                      {order.capacityCheck.vansRequired && order.capacityCheck.vansRequired > 1 && (
+                      {(order?.capacityCheck?.vansRequired ?? 0) > 1 && (
                         <Text fontSize="lg" fontWeight="bold" color="#ef4444">
-                          🚛 REQUIRES {order.capacityCheck.vansRequired} VANS
+                          🚛 REQUIRES {order?.capacityCheck?.vansRequired ?? 0} VANS
                         </Text>
                       )}
-                      <Text fontSize="sm" fontWeight="semibold" color={textColor}>
-                        Capacity Warnings:
-                      </Text>
-                      <VStack align="start" spacing={1} w="full">
-                        {order.capacityCheck.warnings.map((warning, idx) => (
-                          <Text key={idx} fontSize="sm" color={textColor}>• {warning}</Text>
-                        ))}
-                      </VStack>
-                      {order.capacityCheck.recommendations.length > 0 && (
+                      {order?.capacityCheck?.warnings && (order?.capacityCheck?.warnings?.length ?? 0) > 0 && (
+                        <>
+                          <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                            Capacity Warnings:
+                          </Text>
+                          <VStack align="start" spacing={1} w="full">
+                            {order?.capacityCheck?.warnings?.map((warning, idx) => (
+                              <Text key={idx} fontSize="sm" color={textColor}>• {warning}</Text>
+                            ))}
+                          </VStack>
+                        </>
+                      )}
+                      {order?.capacityCheck?.recommendations && (order?.capacityCheck?.recommendations?.length ?? 0) > 0 && (
                         <>
                           <Text fontSize="sm" fontWeight="semibold" color={textColor} mt={2}>
                             Recommendations:
                           </Text>
                           <VStack align="start" spacing={1} w="full">
-                            {order.capacityCheck.recommendations.map((rec, idx) => (
+                            {order?.capacityCheck?.recommendations?.map((rec, idx) => (
                               <Text key={idx} fontSize="sm" color="#10b981">✓ {rec}</Text>
                             ))}
                           </VStack>
                         </>
                       )}
-                      <SimpleGrid columns={3} spacing={3} w="full" mt={2}>
-                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
-                          <Text fontSize="xs" color={secondaryTextColor}>Weight</Text>
-                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.weightUtilization > 100 ? "#ef4444" : "#10b981"}>
-                            {order.capacityCheck.weightUtilization.toFixed(0)}%
-                          </Text>
-                        </Box>
-                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
-                          <Text fontSize="xs" color={secondaryTextColor}>Volume</Text>
-                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.volumeUtilization > 100 ? "#ef4444" : "#10b981"}>
-                            {order.capacityCheck.volumeUtilization.toFixed(0)}%
-                          </Text>
-                        </Box>
-                        <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
-                          <Text fontSize="xs" color={secondaryTextColor}>Items</Text>
-                          <Text fontSize="md" fontWeight="bold" color={order.capacityCheck.itemUtilization > 100 ? "#ef4444" : "#10b981"}>
-                            {order.capacityCheck.itemUtilization.toFixed(0)}%
-                          </Text>
-                        </Box>
-                      </SimpleGrid>
+                      {((order?.capacityCheck?.weightUtilization !== undefined) || (order?.capacityCheck?.volumeUtilization !== undefined) || (order?.capacityCheck?.itemUtilization !== undefined)) && (
+                        <SimpleGrid columns={3} spacing={3} w="full" mt={2}>
+                          {order?.capacityCheck?.weightUtilization !== undefined && (
+                            <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                              <Text fontSize="xs" color={secondaryTextColor}>Weight</Text>
+                              <Text fontSize="md" fontWeight="bold" color={(order?.capacityCheck?.weightUtilization ?? 0) > 100 ? "#ef4444" : "#10b981"}>
+                                {(order?.capacityCheck?.weightUtilization ?? 0).toFixed(0)}%
+                              </Text>
+                            </Box>
+                          )}
+                          {order?.capacityCheck?.volumeUtilization !== undefined && (
+                            <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                              <Text fontSize="xs" color={secondaryTextColor}>Volume</Text>
+                              <Text fontSize="md" fontWeight="bold" color={(order?.capacityCheck?.volumeUtilization ?? 0) > 100 ? "#ef4444" : "#10b981"}>
+                                {(order?.capacityCheck?.volumeUtilization ?? 0).toFixed(0)}%
+                              </Text>
+                            </Box>
+                          )}
+                          {order?.capacityCheck?.itemUtilization !== undefined && (
+                            <Box p={2} bg="rgba(0,0,0,0.3)" borderRadius="md">
+                              <Text fontSize="xs" color={secondaryTextColor}>Items</Text>
+                              <Text fontSize="md" fontWeight="bold" color={(order?.capacityCheck?.itemUtilization ?? 0) > 100 ? "#ef4444" : "#10b981"}>
+                                {(order?.capacityCheck?.itemUtilization ?? 0).toFixed(0)}%
+                              </Text>
+                            </Box>
+                          )}
+                        </SimpleGrid>
+                      )}
                     </VStack>
                   </Alert>
                 )}
 
-                {(amountPaid > 0 || order.paidAt) && (
+                {(amountPaid > 0 || order?.paidAt) && (
                   <Card bg={cardBg} borderColor="#2563eb" borderWidth={1}>
                     <CardBody>
                       <VStack align="stretch" spacing={4}>
@@ -2252,7 +3206,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                 </Circle>
                                 <VStack align="start" spacing={0}>
                                   <Text fontSize="xs" color={secondaryTextColor}>Current Total</Text>
-                                  <Text fontWeight="bold" color={textColor}>{formatCurrency(order.totalGBP)}</Text>
+                                  <Text fontWeight="bold" color={textColor}>{formatCurrency(order?.totalGBP ?? 0)}</Text>
                                 </VStack>
                               </HStack>
                             </CardBody>
@@ -2341,7 +3295,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                               size="sm"
                               color={secondaryTextColor}
                               onClick={() => {
-                                setAdjustedTotalGBP(order.totalGBP);
+                                setAdjustedTotalGBP(order?.totalGBP ?? 0);
                                 setAdjustmentReason('');
                               }}
                             >
@@ -2353,13 +3307,13 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         <VStack align="stretch" spacing={1} fontSize="xs" color={secondaryTextColor}>
                           <Text>{additionalPaymentStatusMeta.description}</Text>
                           <Text>Outstanding Balance: {formatCurrency(outstandingAmount)}</Text>
-                          <Text>Last Payment: {formatDateTime(order.lastPaymentDate || order.paidAt || null)}</Text>
-                          <Text>Last Refund: {formatDateTime(order.lastRefundDate)}</Text>
-                          {order.additionalPaymentRequestedAt && (
-                            <Text>Additional Payment Requested: {formatDateTime(order.additionalPaymentRequestedAt)}</Text>
+                          <Text>Last Payment: {formatDateTime(order?.lastPaymentDate || order?.paidAt || null)}</Text>
+                          <Text>Last Refund: {formatDateTime(order?.lastRefundDate ?? null)}</Text>
+                          {order?.additionalPaymentRequestedAt && (
+                            <Text>Additional Payment Requested: {formatDateTime(order?.additionalPaymentRequestedAt ?? null)}</Text>
                           )}
-                          {order.additionalPaymentPaidAt && (
-                            <Text>Additional Payment Received: {formatDateTime(order.additionalPaymentPaidAt)}</Text>
+                          {order?.additionalPaymentPaidAt && (
+                            <Text>Additional Payment Received: {formatDateTime(order?.additionalPaymentPaidAt ?? null)}</Text>
                           )}
                         </VStack>
                       </VStack>
@@ -2373,16 +3327,16 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     <SimpleGrid columns={2} spacing={4}>
                       <VStack align="start" spacing={1}>
                         <HStack spacing={1}>
-                          {getStatusIcon(!!(order.baseDistanceMiles || order.distanceMeters), true)}
+                          {getStatusIcon(!!(order?.baseDistanceMiles || order?.distanceMeters), true)}
                           <Text fontSize="xs" color={secondaryTextColor}>Distance</Text>
                         </HStack>
                         <Text fontWeight="bold" fontSize="lg" color={
-                          (order.baseDistanceMiles || order.distanceMeters) ? "#2563eb" : "#ef4444"
+                          (order?.baseDistanceMiles || order?.distanceMeters) ? "#2563eb" : "#ef4444"
                         }>
-                          {order.baseDistanceMiles 
-                            ? `${order.baseDistanceMiles.toFixed(1)} mi`
-                            : order.distanceMeters
-                              ? `${(order.distanceMeters / 1609.34).toFixed(1)} mi`
+                          {order?.baseDistanceMiles 
+                            ? `${(order?.baseDistanceMiles ?? 0).toFixed(1)} mi`
+                            : order?.distanceMeters
+                              ? `${((order?.distanceMeters ?? 0) / 1609.34).toFixed(1)} mi`
                               : 'NOT CALCULATED'
                           }
                         </Text>
@@ -2393,7 +3347,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                           <Text fontSize="xs" color={secondaryTextColor}>Duration</Text>
                         </HStack>
                         <Text fontWeight="bold" fontSize="lg" color="#2563eb">
-                          {formatDuration(calculateEstimatedDuration(order))}
+                          {order ? formatDuration(calculateEstimatedDuration(order!)) : 'N/A'}
                         </Text>
                       </VStack>
                     </SimpleGrid>
@@ -2401,7 +3355,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 </Card>
                 
                 {/* Driver Earnings Breakdown */}
-                {(order.distanceMeters || order.baseDistanceMiles) && order.durationSeconds && (
+                {(order?.distanceMeters || order?.baseDistanceMiles) && order?.durationSeconds && (
                   <Card bg={cardBg} borderColor="#a855f7" borderWidth={1}>
                     <CardBody>
                       <VStack align="stretch" spacing={2}>
@@ -2444,7 +3398,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       <FormLabel color={textColor} fontSize="sm">Scheduled Date & Time</FormLabel>
                       <Input
                         type="datetime-local"
-                        value={editedOrder.scheduledAt ? new Date(editedOrder.scheduledAt).toISOString().slice(0, 16) : ''}
+                        value={editedOrder.scheduledAt ? new Date(editedOrder.scheduledAt as string).toISOString().slice(0, 16) : ''}
                         onChange={(e) => setEditedOrder({
                           ...editedOrder,
                           scheduledAt: e.target.value ? new Date(e.target.value).toISOString() : order?.scheduledAt
@@ -2474,13 +3428,13 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       />
                     </FormControl>
                   </>
-                ) : (
+                ) : order ? (
                   <>
                     <HStack justify="space-between">
                       <Text color={textColor}>Scheduled Date</Text>
                       <Text color={textColor}>
-                        {order.scheduledAt
-                          ? new Date(order.scheduledAt).toLocaleDateString('en-GB', {
+                        {order!.scheduledAt
+                          ? new Date(order!.scheduledAt).toLocaleDateString('en-GB', {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric'
@@ -2491,8 +3445,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     <HStack justify="space-between">
                       <Text color={textColor}>Scheduled Time</Text>
                       <Text color={textColor}>
-                        {order.scheduledAt
-                          ? new Date(order.scheduledAt).toLocaleTimeString('en-GB', {
+                        {order!.scheduledAt
+                          ? new Date(order!.scheduledAt).toLocaleTimeString('en-GB', {
                               hour: '2-digit',
                               minute: '2-digit'
                             })
@@ -2501,32 +3455,32 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     </HStack>
                     <HStack justify="space-between">
                       <HStack spacing={1}>
-                        {getStatusIcon(!!order.pickupTimeSlot, false)}
+                        {getStatusIcon(!!order!.pickupTimeSlot, false)}
                         <Text color={textColor}>Time Slot</Text>
                       </HStack>
-                      <Text color={order.pickupTimeSlot ? textColor : "#f59e0b"}>
-                        {order.pickupTimeSlot || 'NOT SPECIFIED'}
+                      <Text color={order!.pickupTimeSlot ? textColor : "#f59e0b"}>
+                        {order!.pickupTimeSlot || 'NOT SPECIFIED'}
                       </Text>
                     </HStack>
                   </>
-                )}
+                ) : null}
                 <HStack justify="space-between">
                   <Text color={textColor}>Created</Text>
                   <Text color={textColor}>
-                    {new Date(order.createdAt).toLocaleDateString('en-GB', {
+                    {order ? new Date(order!.createdAt).toLocaleDateString('en-GB', {
                       day: '2-digit',
                       month: '2-digit',
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
-                    })}
+                    }) : 'N/A'}
                   </Text>
                 </HStack>
-                {order.paidAt && (
+                {order?.paidAt && (
                   <HStack justify="space-between">
                     <Text color={textColor}>Paid At</Text>
                     <Text color={textColor}>
-                      {new Date(order.paidAt).toLocaleDateString('en-GB', {
+                      {new Date(order!.paidAt as string).toLocaleDateString('en-GB', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
@@ -2542,7 +3496,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Divider borderColor={borderColor} />
               <VStack align="stretch" spacing={2}>
                 <HStack spacing={1}>
-                  {getStatusIcon(!!order.notes, false)}
+                  {getStatusIcon(!!order?.notes, false)}
                   <Text fontWeight="bold" fontSize="md" color={textColor}>
                     Customer Notes
                   </Text>
@@ -2568,12 +3522,12 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   <Box 
                     p={3} 
                     borderRadius="md" 
-                    bg={order.notes ? cardBg : cardBg}
+                    bg={order?.notes ? cardBg : cardBg}
                     borderWidth={1}
-                    borderColor={order.notes ? "#2563eb" : borderColor}
+                    borderColor={order?.notes ? "#2563eb" : borderColor}
                   >
-                    <Text fontSize="sm" color={order.notes ? textColor : secondaryTextColor} fontStyle={!order.notes ? "italic" : "normal"}>
-                      {order.notes || 'No customer notes provided'}
+                    <Text fontSize="sm" color={order?.notes ? textColor : secondaryTextColor} fontStyle={!order?.notes ? "italic" : "normal"}>
+                      {order?.notes || 'No customer notes provided'}
                     </Text>
                   </Box>
                 )}
@@ -2591,7 +3545,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                           ⚠️ Price Will Be Updated
                         </Text>
                         <Text fontSize="xs" color={secondaryTextColor}>
-                          New price £{(newCalculatedPrice / 100).toFixed(2)} will replace current £{(order.totalGBP / 100).toFixed(2)}
+                          New price £{(newCalculatedPrice! / 100).toFixed(2)} will replace current £{(order?.totalGBP ? (order!.totalGBP / 100).toFixed(2) : '0.00')}
                         </Text>
                       </VStack>
                     </Alert>
