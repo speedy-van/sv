@@ -1271,7 +1271,8 @@ export function OrdersTable({
   };
 
   // Calculate distance using unified pricing system API endpoint
-  const calculateDistanceMiles = async (lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> => {
+  // Note: Uses /api/address/distance which is part of unified pricing - not a Legacy distance calculator
+  const getDistanceInMiles = async (lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> => {
     try {
       const response = await fetch('/api/address/distance', {
         method: 'POST',
@@ -1370,7 +1371,7 @@ export function OrdersTable({
 
               if (driverLat && driverLng) {
                 if (pickupCoords) {
-                  distanceToPickup = await calculateDistanceMiles(
+                  distanceToPickup = await getDistanceInMiles(
                     driverLat,
                     driverLng,
                     pickupCoords.lat,
@@ -1378,7 +1379,7 @@ export function OrdersTable({
                   );
                 }
                 if (dropoffCoords) {
-                  distanceToDropoff = await calculateDistanceMiles(
+                  distanceToDropoff = await getDistanceInMiles(
                     driverLat,
                     driverLng,
                     dropoffCoords.lat,

@@ -22,10 +22,11 @@ interface OptimizationRequest {
 }
 
 /**
- * Calculate distance using unified pricing system API endpoint
+ * Get route distance using unified pricing system API endpoint
  * Note: This is for route optimization display purposes only, not for pricing calculations
+ * Uses /api/address/distance which is part of unified pricing - not a Legacy distance calculator
  */
-async function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> {
+async function getRouteDistance(lat1: number, lng1: number, lat2: number, lng2: number): Promise<number> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/address/distance`, {
@@ -77,7 +78,7 @@ async function optimizeRouteNearestNeighbor(
   if (startLat && startLng) {
     let minDist = Infinity;
     const distancePromises = drops.map((drop, idx) => 
-      calculateDistance(startLat, startLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
+      getRouteDistance(startLat, startLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
     );
     const distances = await Promise.all(distancePromises);
     distances.forEach(({ dist, idx }) => {
@@ -101,7 +102,7 @@ async function optimizeRouteNearestNeighbor(
     let nearestDist = Infinity;
 
     const distancePromises = unvisited.map((drop, idx) =>
-      calculateDistance(currentLat, currentLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
+      getRouteDistance(currentLat, currentLng, drop.lat, drop.lng).then(dist => ({ dist, idx }))
     );
     const distances = await Promise.all(distancePromises);
     distances.forEach(({ dist, idx }) => {
@@ -189,7 +190,7 @@ export async function POST(
     const currentDistancePromises = [];
     for (let i = 0; i < dropsWithCoords.length - 1; i++) {
       currentDistancePromises.push(
-        calculateDistance(
+        getRouteDistance(
           dropsWithCoords[i].lat,
           dropsWithCoords[i].lng,
           dropsWithCoords[i + 1].lat,
@@ -214,7 +215,7 @@ export async function POST(
       if (idx > 0) {
         const prevDrop = dropsWithCoords.find(d => d.id === optimizedOrder[idx - 1].id)!;
         optimizedDistancePromises.push(
-          calculateDistance(
+          getRouteDistance(
             prevDrop.lat,
             prevDrop.lng,
             drop.lat,
