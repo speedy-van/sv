@@ -1,6 +1,6 @@
 {
   "updatedAt": "2025-12-27T00:00:00.000Z",
-  "total": 426,
+  "total": 496,
   "places": [
     {
       "slug": "london",
@@ -4007,6 +4007,609 @@
       "lat": 51.4836,
       "lon": -2.7686,
       "population": 25000
+    },
+    {
+      "slug": "nailsea",
+      "name": "Nailsea",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4306,
+      "lon": -2.7589,
+      "population": 15630
+    },
+    {
+      "slug": "keynsham",
+      "name": "Keynsham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4139,
+      "lon": -2.4972,
+      "population": 16060
+    },
+    {
+      "slug": "midsomer-norton",
+      "name": "Midsomer Norton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2847,
+      "lon": -2.4819,
+      "population": 13060
+    },
+    {
+      "slug": "radstock",
+      "name": "Radstock",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2928,
+      "lon": -2.4478,
+      "population": 5620
+    },
+    {
+      "slug": "peasedown-st-john",
+      "name": "Peasedown St John",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3142,
+      "lon": -2.4261,
+      "population": 6200
+    },
+    {
+      "slug": "paulton",
+      "name": "Paulton",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3031,
+      "lon": -2.5033,
+      "population": 5460
+    },
+    {
+      "slug": "westbury-on-trym",
+      "name": "Westbury-on-Trym",
+      "type": "village",
+      "region": "England",
+      "lat": 51.4897,
+      "lon": -2.6194,
+      "population": 8500
+    },
+    {
+      "slug": "thornbury",
+      "name": "Thornbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6089,
+      "lon": -2.5239,
+      "population": 12350
+    },
+    {
+      "slug": "yate",
+      "name": "Yate",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5406,
+      "lon": -2.4117,
+      "population": 34000
+    },
+    {
+      "slug": "chipping-sodbury",
+      "name": "Chipping Sodbury",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5394,
+      "lon": -2.3922,
+      "population": 5400
+    },
+    {
+      "slug": "kingswood",
+      "name": "Kingswood",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4583,
+      "lon": -2.5083,
+      "population": 30000
+    },
+    {
+      "slug": "mangotsfield",
+      "name": "Mangotsfield",
+      "type": "village",
+      "region": "England",
+      "lat": 51.4844,
+      "lon": -2.4856,
+      "population": 9200
+    },
+    {
+      "slug": "filton",
+      "name": "Filton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5056,
+      "lon": -2.5708,
+      "population": 14500
+    },
+    {
+      "slug": "patchway",
+      "name": "Patchway",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5231,
+      "lon": -2.5897,
+      "population": 11000
+    },
+    {
+      "slug": "bradley-stoke",
+      "name": "Bradley Stoke",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5372,
+      "lon": -2.5478,
+      "population": 22000
+    },
+    {
+      "slug": "winterbourne",
+      "name": "Winterbourne",
+      "type": "village",
+      "region": "England",
+      "lat": 51.5094,
+      "lon": -2.4817,
+      "population": 8500
+    },
+    {
+      "slug": "frampton-cotterell",
+      "name": "Frampton Cotterell",
+      "type": "village",
+      "region": "England",
+      "lat": 51.5244,
+      "lon": -2.4775,
+      "population": 8600
+    },
+    {
+      "slug": "dursley",
+      "name": "Dursley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6817,
+      "lon": -2.3539,
+      "population": 6700
+    },
+    {
+      "slug": "cam",
+      "name": "Cam",
+      "type": "village",
+      "region": "England",
+      "lat": 51.7000,
+      "lon": -2.3636,
+      "population": 8200
+    },
+    {
+      "slug": "stonehouse",
+      "name": "Stonehouse",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7456,
+      "lon": -2.2783,
+      "population": 8030
+    },
+    {
+      "slug": "stroud",
+      "name": "Stroud",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7456,
+      "lon": -2.2175,
+      "population": 13200
+    },
+    {
+      "slug": "nailsworth",
+      "name": "Nailsworth",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6944,
+      "lon": -2.2194,
+      "population": 6000
+    },
+    {
+      "slug": "painswick",
+      "name": "Painswick",
+      "type": "village",
+      "region": "England",
+      "lat": 51.7872,
+      "lon": -2.1931,
+      "population": 1666
+    },
+    {
+      "slug": "minchinhampton",
+      "name": "Minchinhampton",
+      "type": "village",
+      "region": "England",
+      "lat": 51.7083,
+      "lon": -2.1833,
+      "population": 3500
+    },
+    {
+      "slug": "fairford",
+      "name": "Fairford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7122,
+      "lon": -1.7822,
+      "population": 3500
+    },
+    {
+      "slug": "lechlade",
+      "name": "Lechlade",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6928,
+      "lon": -1.6903,
+      "population": 2800
+    },
+    {
+      "slug": "highworth",
+      "name": "Highworth",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6306,
+      "lon": -1.7097,
+      "population": 8150
+    },
+    {
+      "slug": "faringdon",
+      "name": "Faringdon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6558,
+      "lon": -1.5858,
+      "population": 7121
+    },
+    {
+      "slug": "wantage",
+      "name": "Wantage",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5881,
+      "lon": -1.4269,
+      "population": 11500
+    },
+    {
+      "slug": "grove",
+      "name": "Grove",
+      "type": "village",
+      "region": "England",
+      "lat": 51.6072,
+      "lon": -1.4281,
+      "population": 8200
+    },
+    {
+      "slug": "didcot",
+      "name": "Didcot",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6089,
+      "lon": -1.2428,
+      "population": 27000
+    },
+    {
+      "slug": "wallingford",
+      "name": "Wallingford",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5997,
+      "lon": -1.1244,
+      "population": 8000
+    },
+    {
+      "slug": "thame",
+      "name": "Thame",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7472,
+      "lon": -0.9747,
+      "population": 11561
+    },
+    {
+      "slug": "chinnor",
+      "name": "Chinnor",
+      "type": "village",
+      "region": "England",
+      "lat": 51.7036,
+      "lon": -0.9111,
+      "population": 5800
+    },
+    {
+      "slug": "princes-risborough",
+      "name": "Princes Risborough",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7239,
+      "lon": -0.8386,
+      "population": 8000
+    },
+    {
+      "slug": "wendover",
+      "name": "Wendover",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7658,
+      "lon": -0.7472,
+      "population": 8100
+    },
+    {
+      "slug": "tring",
+      "name": "Tring",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7956,
+      "lon": -0.6592,
+      "population": 12000
+    },
+    {
+      "slug": "berkhamsted",
+      "name": "Berkhamsted",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7631,
+      "lon": -0.5592,
+      "population": 18500
+    },
+    {
+      "slug": "chesham",
+      "name": "Chesham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.7058,
+      "lon": -0.6111,
+      "population": 21483
+    },
+    {
+      "slug": "amersham",
+      "name": "Amersham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6744,
+      "lon": -0.6069,
+      "population": 14500
+    },
+    {
+      "slug": "chalfont-st-peter",
+      "name": "Chalfont St Peter",
+      "type": "village",
+      "region": "England",
+      "lat": 51.6081,
+      "lon": -0.5556,
+      "population": 13000
+    },
+    {
+      "slug": "chalfont-st-giles",
+      "name": "Chalfont St Giles",
+      "type": "village",
+      "region": "England",
+      "lat": 51.6356,
+      "lon": -0.5692,
+      "population": 5800
+    },
+    {
+      "slug": "beaconsfield",
+      "name": "Beaconsfield",
+      "type": "town",
+      "region": "England",
+      "lat": 51.6111,
+      "lon": -0.6436,
+      "population": 13000
+    },
+    {
+      "slug": "gerrards-cross",
+      "name": "Gerrards Cross",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5881,
+      "lon": -0.5553,
+      "population": 7600
+    },
+    {
+      "slug": "marlow",
+      "name": "Marlow",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5694,
+      "lon": -0.7747,
+      "population": 14004
+    },
+    {
+      "slug": "bourne-end",
+      "name": "Bourne End",
+      "type": "village",
+      "region": "England",
+      "lat": 51.5778,
+      "lon": -0.7089,
+      "population": 6000
+    },
+    {
+      "slug": "cookham",
+      "name": "Cookham",
+      "type": "village",
+      "region": "England",
+      "lat": 51.5583,
+      "lon": -0.7083,
+      "population": 5600
+    },
+    {
+      "slug": "henley-on-thames",
+      "name": "Henley-on-Thames",
+      "type": "town",
+      "region": "England",
+      "lat": 51.5356,
+      "lon": -0.9022,
+      "population": 11619
+    },
+    {
+      "slug": "pangbourne",
+      "name": "Pangbourne",
+      "type": "village",
+      "region": "England",
+      "lat": 51.4853,
+      "lon": -1.0858,
+      "population": 3000
+    },
+    {
+      "slug": "goring-on-thames",
+      "name": "Goring-on-Thames",
+      "type": "village",
+      "region": "England",
+      "lat": 51.5222,
+      "lon": -1.1350,
+      "population": 3200
+    },
+    {
+      "slug": "woodley",
+      "name": "Woodley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4536,
+      "lon": -0.9069,
+      "population": 32000
+    },
+    {
+      "slug": "earley",
+      "name": "Earley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4333,
+      "lon": -0.9167,
+      "population": 32000
+    },
+    {
+      "slug": "wokingham",
+      "name": "Wokingham",
+      "type": "town",
+      "region": "England",
+      "lat": 51.4111,
+      "lon": -0.8347,
+      "population": 41000
+    },
+    {
+      "slug": "crowthorne",
+      "name": "Crowthorne",
+      "type": "village",
+      "region": "England",
+      "lat": 51.3697,
+      "lon": -0.7928,
+      "population": 6700
+    },
+    {
+      "slug": "sandhurst",
+      "name": "Sandhurst",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3481,
+      "lon": -0.8006,
+      "population": 22000
+    },
+    {
+      "slug": "yateley",
+      "name": "Yateley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3350,
+      "lon": -0.8356,
+      "population": 21900
+    },
+    {
+      "slug": "camberley",
+      "name": "Camberley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3350,
+      "lon": -0.7453,
+      "population": 51000
+    },
+    {
+      "slug": "frimley",
+      "name": "Frimley",
+      "type": "town",
+      "region": "England",
+      "lat": 51.3139,
+      "lon": -0.7417,
+      "population": 14000
+    },
+    {
+      "slug": "fleet",
+      "name": "Fleet",
+      "type": "town",
+      "region": "England",
+      "lat": 51.2833,
+      "lon": -0.8417,
+      "population": 37000
+    },
+    {
+      "slug": "hook",
+      "name": "Hook",
+      "type": "village",
+      "region": "England",
+      "lat": 51.2778,
+      "lon": -0.9583,
+      "population": 8000
+    },
+    {
+      "slug": "odiham",
+      "name": "Odiham",
+      "type": "village",
+      "region": "England",
+      "lat": 51.2547,
+      "lon": -0.9378,
+      "population": 4300
+    },
+    {
+      "slug": "alton",
+      "name": "Alton",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1500,
+      "lon": -0.9756,
+      "population": 18000
+    },
+    {
+      "slug": "bordon",
+      "name": "Bordon",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1131,
+      "lon": -0.8675,
+      "population": 15000
+    },
+    {
+      "slug": "liphook",
+      "name": "Liphook",
+      "type": "village",
+      "region": "England",
+      "lat": 51.0722,
+      "lon": -0.8028,
+      "population": 8000
+    },
+    {
+      "slug": "haslemere",
+      "name": "Haslemere",
+      "type": "town",
+      "region": "England",
+      "lat": 51.0906,
+      "lon": -0.7097,
+      "population": 16800
+    },
+    {
+      "slug": "godalming",
+      "name": "Godalming",
+      "type": "town",
+      "region": "England",
+      "lat": 51.1861,
+      "lon": -0.6167,
+      "population": 22000
+    },
+    {
+      "slug": "cranleigh",
+      "name": "Cranleigh",
+      "type": "village",
+      "region": "England",
+      "lat": 51.1417,
+      "lon": -0.4833,
+      "population": 11000
     }
   ]
 }
