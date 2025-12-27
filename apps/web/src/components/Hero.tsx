@@ -172,6 +172,7 @@ const Hero: React.FC<HeroProps> = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : -20 }}
             transition="0.8s ease-out 0.2s"
+            mt={{ base: 2, md: 4, lg: 24 }}
           >
             <HStack spacing={4} justify="center" wrap="wrap" mb={4}>
               <Badge

@@ -289,12 +289,10 @@ const MobileHero: React.FC = () => {
       w="100%"
       maxW="100%"
       sx={{
-        minHeight: { base: '100svh', md: '100vh' },
-        height: { base: '100svh', md: '100vh' },
-        '@supports not (height: 100svh)': {
-          minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-          height: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-        },
+        minHeight: { base: 'auto', md: '90vh' },
+        height: { base: 'auto', md: '90vh' },
+        py: { base: '120px', md: '80px' },
+        pt: { base: '140px', md: '100px' },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -397,6 +395,7 @@ const MobileHero: React.FC = () => {
             whileInView="show"
             variants={heroStagger}
             viewport={viewportMotion}
+            mt={{ base: 0, md: 12, lg: 28 }}
           >
             <HStack spacing={3} justify="center" wrap="wrap" mb={4}>
               {[ 
@@ -411,18 +410,45 @@ const MobileHero: React.FC = () => {
                 >
                   <Badge
                     colorScheme="green"
+                    position="relative"
+                    display="inline-flex"
+                    alignItems="center"
+                    gap={2}
                     size="lg"
-                    px={4}
-                    py={2}
+                    px={{ base: 4, md: 5 }}
+                    py={{ base: 2, md: 3 }}
                     borderRadius="full"
                     bg={badge.bg}
                     color={badge.color}
-                    fontWeight="bold"
-                    boxShadow="0 4px 15px rgba(0,0,0,0.25)"
-                    backdropFilter="blur(4px)"
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    fontWeight="extrabold"
+                    border="1px solid rgba(255,255,255,0.24)"
+                    boxShadow="0 12px 32px rgba(0,0,0,0.28), 0 0 22px rgba(0,194,255,0.25)"
+                    backdropFilter="blur(8px)"
+                    sx={{
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: 'full',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02))',
+                        opacity: 0.65,
+                      },
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        inset: '-4px',
+                        borderRadius: 'full',
+                        border: '1px solid rgba(255,255,255,0.18)',
+                        opacity: 0.8,
+                        filter: 'blur(1px)',
+                      },
+                    }}
                   >
-                    <Icon as={badge.icon} mr={2} boxSize={3} />
-                    {badge.label}
+                    <Icon as={badge.icon} mr={2} boxSize={{ base: 3, md: 4 }} zIndex={1} />
+                    <Box as="span" position="relative" zIndex={1}>
+                      {badge.label}
+                    </Box>
                   </Badge>
                 </MotionBox>
               ))}
@@ -439,21 +465,40 @@ const MobileHero: React.FC = () => {
           >
             <Heading
               as="h1"
-              size={{ base: '2xl', md: '3xl' }}
-              color="white"
+              size={{ base: '2xl', md: '4xl' }}
               mb={4}
-              fontWeight="extrabold"
-              lineHeight="shorter"
-              textShadow="0 2px 10px rgba(0,0,0,0.5)"
-              maxW="90%"
+              fontWeight="black"
+              lineHeight={{ base: '1.1', md: '1.05' }}
+              maxW={{ base: '95%', md: '800px' }}
               mx="auto"
+              letterSpacing={{ base: '-0.02em', md: '-0.03em' }}
+              sx={{
+                background: 'linear-gradient(135deg, #FFFFFF 0%, #00E5FF 35%, #00D18F 65%, #FFFFFF 100%)',
+                backgroundSize: '200% 200%',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                animation: prefersReducedMotion ? undefined : 'gradientText 6s ease-in-out infinite',
+                filter: 'drop-shadow(0 4px 20px rgba(0,194,255,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+                '@keyframes gradientText': {
+                  '0%': { backgroundPosition: '0% 50%' },
+                  '50%': { backgroundPosition: '100% 50%' },
+                  '100%': { backgroundPosition: '0% 50%' },
+                },
+              }}
             >
               {heroTitleWords.map((word, index) => (
                 <MotionText
                   key={`${word}-${index}`}
                   display="inline-block"
-                  mr={word.endsWith('.') ? 0 : 1}
-                  variants={createWordFade(prefersReducedMotion, 0.12 + index * 0.03)}
+                  mr={word.endsWith('.') ? 0 : { base: 1.5, md: 2 }}
+                  variants={createWordFade(prefersReducedMotion, 0.12 + index * 0.04)}
+                  sx={{
+                    '&:hover': {
+                      transform: prefersReducedMotion ? undefined : 'scale(1.05) translateY(-2px)',
+                      transition: 'transform 0.3s ease',
+                    },
+                  }}
                 >
                   {word}
                   {index < heroTitleWords.length - 1 ? ' ' : ''}
@@ -469,28 +514,52 @@ const MobileHero: React.FC = () => {
             whileInView="show"
             variants={heroSubheadline}
             viewport={viewportMotion}
-            mt={{ base: 8, md: 0 }}
+            mt={{ base: 4, md: 6 }}
           >
             <Text
-              fontSize={{ base: 'sm', md: 'md' }}
-              color="white"
-              opacity={0.95}
-              maxW={{ base: '90%', md: '600px' }}
-              lineHeight="tall"
+              fontSize={{ base: 'md', md: 'xl' }}
+              maxW={{ base: '95%', md: '700px' }}
+              lineHeight={{ base: '1.7', md: '1.8' }}
               fontWeight="medium"
-              textShadow="0 1px 5px rgba(0,0,0,0.3)"
+              letterSpacing="0.01em"
+              mx="auto"
+              sx={{
+                color: 'rgba(255,255,255,0.95)',
+                textShadow: '0 2px 10px rgba(0,0,0,0.4), 0 0 30px rgba(0,194,255,0.2)',
+                '& strong': {
+                  color: '#00E5FF',
+                  fontWeight: 'bold',
+                },
+              }}
             >
-              {heroSubtitleWords.map((word, index) => (
-                <MotionText
-                  key={`${word}-${index}`}
-                  display="inline-block"
-                  mr={word.endsWith('.') ? 0 : 1}
-                  variants={createWordFade(prefersReducedMotion, 0.18 + index * 0.012)}
-                >
-                  {word}
-                  {index < heroSubtitleWords.length - 1 ? ' ' : ''}
-                </MotionText>
-              ))}
+              {heroSubtitleWords.map((word, index) => {
+                const isHighlighted = ['London,', 'Manchester,', 'Birmingham,', 'Glasgow,', 'Edinburgh,', 'Cardiff,', 'Belfast,', '£25/hour'].includes(word);
+                const isPriceWord = word === '£25/hour';
+                return (
+                  <MotionText
+                    key={`${word}-${index}`}
+                    display="inline-block"
+                    mr={word.endsWith('.') ? 0 : 1}
+                    variants={createWordFade(prefersReducedMotion, 0.2 + index * 0.015)}
+                    sx={{
+                      color: isHighlighted ? '#00E5FF' : 'inherit',
+                      fontWeight: isHighlighted ? 'bold' : 'inherit',
+                      textShadow: isPriceWord 
+                        ? '0 0 20px rgba(0,229,255,0.6), 0 0 40px rgba(0,209,143,0.4)' 
+                        : 'inherit',
+                      background: isPriceWord 
+                        ? 'linear-gradient(135deg, #00E5FF, #00D18F)' 
+                        : 'none',
+                      WebkitBackgroundClip: isPriceWord ? 'text' : 'unset',
+                      WebkitTextFillColor: isPriceWord ? 'transparent' : 'unset',
+                      backgroundClip: isPriceWord ? 'text' : 'unset',
+                    }}
+                  >
+                    {word}
+                    {index < heroSubtitleWords.length - 1 ? ' ' : ''}
+                  </MotionText>
+                );
+              })}
             </Text>
           </MotionBox>
 
