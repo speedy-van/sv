@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import Script from 'next/script';
 
 interface LocalBusinessSchemaProps {
   businessName?: string;
@@ -134,11 +134,12 @@ const LocalBusinessSchema: React.FC<LocalBusinessSchemaProps> = ({
   };
 
   return (
-    <Helmet>
-      <script type="application/ld+json">
-        {JSON.stringify(schema)}
-      </script>
-    </Helmet>
+    <Script
+      id="local-business-schema"
+      type="application/ld+json"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
   );
 };
 

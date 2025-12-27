@@ -11,6 +11,7 @@ import {
   Icon,
   Badge,
   Flex,
+  Button,
 } from '@chakra-ui/react';
 import {
   MapPin,
@@ -23,661 +24,775 @@ import {
   Users,
   Package,
   Home,
+  Shield,
+  CheckCircle,
+  ArrowRight,
+  Building2,
+  Route,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import LocalBusinessSchema from '@/components/Schema/LocalBusinessSchema';
 import ContactPointSchema from '@/components/Schema/ContactPointSchema';
 import FAQSchema from '@/components/Schema/FAQSchema';
 import ReviewSchema from '@/components/Schema/ReviewSchema';
 import ServiceSchema from '@/components/Schema/ServiceSchema';
 import { ROUTES } from '@/lib/routing';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
+
+const MotionBox = motion.create(Box);
 
 const londonServices = [
   {
-    iconName: 'Truck',
+    icon: Truck,
     title: 'Man and Van London',
     price: 'From £25/hour',
     description: 'Professional man and van service across all London boroughs',
-    href: '/uk/london/man-and-van',
+    href: ROUTES.SHARED.BOOKING_LUXURY,
+    gradient: 'linear-gradient(135deg, #00C2FF 0%, #0080FF 100%)',
   },
   {
-    iconName: 'Home',
+    icon: Home,
     title: 'House Removals London',
     price: 'From £150',
     description: 'Complete house removal service for London homes',
-    href: '/uk/london/house-removal',
+    href: ROUTES.SHARED.BOOKING_LUXURY,
+    gradient: 'linear-gradient(135deg, #00D18F 0%, #00A86B 100%)',
   },
   {
-    iconName: 'Package',
+    icon: Package,
     title: 'Furniture Delivery London',
     price: 'From £35/hour',
     description: 'Safe furniture delivery and assembly across London',
-    href: '/uk/london/furniture-delivery',
+    href: ROUTES.SHARED.BOOKING_LUXURY,
+    gradient: 'linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%)',
   },
   {
-    iconName: 'Users',
+    icon: Building2,
     title: 'Office Removals London',
     price: 'From £200',
     description: 'Professional office relocation services in London',
-    href: '/uk/london/office-removals',
+    href: ROUTES.SHARED.BOOKING_LUXURY,
+    gradient: 'linear-gradient(135deg, #A855F7 0%, #9333EA 100%)',
   },
 ];
 
 const londonBoroughs = [
-  'Westminster',
-  'Camden',
-  'Islington',
-  'Hackney',
-  'Tower Hamlets',
-  'Greenwich',
-  'Lewisham',
-  'Southwark',
-  'Lambeth',
-  'Wandsworth',
-  'Hammersmith and Fulham',
-  'Kensington and Chelsea',
-  'Brent',
-  'Ealing',
-  'Hounslow',
-  'Richmond upon Thames',
-  'Kingston upon Thames',
-  'Merton',
-  'Sutton',
-  'Croydon',
-  'Bromley',
-  'Bexley',
-  'Havering',
-  'Barking and Dagenham',
-  'Redbridge',
-  'Newham',
-  'Waltham Forest',
-  'Haringey',
-  'Enfield',
-  'Barnet',
-  'Harrow',
-  'Hillingdon',
+  'Westminster', 'Camden', 'Islington', 'Hackney', 'Tower Hamlets',
+  'Greenwich', 'Lewisham', 'Southwark', 'Lambeth', 'Wandsworth',
+  'Hammersmith', 'Kensington', 'Brent', 'Ealing', 'Hounslow',
+  'Richmond', 'Kingston', 'Merton', 'Sutton', 'Croydon',
+  'Bromley', 'Bexley', 'Havering', 'Barking', 'Redbridge',
+  'Newham', 'Waltham Forest', 'Haringey', 'Enfield', 'Barnet',
+  'Harrow', 'Hillingdon',
 ];
 
 const whyChooseLondon = [
   {
-    iconName: 'MapPin',
+    icon: MapPin,
     title: 'Local Knowledge',
-    description:
-      'Expert knowledge of London streets, parking, and access restrictions',
+    description: 'Expert knowledge of London streets, parking, and access restrictions',
   },
   {
-    iconName: 'Clock',
+    icon: Zap,
     title: 'Same Day Service',
-    description:
-      'Available for urgent moves across London with 2-hour response time',
+    description: 'Available for urgent moves across London with 2-hour response time',
   },
   {
-    iconName: 'Truck',
-    title: 'London Licensed',
-    description:
-      'Fully licensed for London operations with congestion charge included',
+    icon: Shield,
+    title: 'Fully Insured',
+    description: 'Comprehensive insurance and congestion charge included in all quotes',
   },
   {
-    iconName: 'Star',
+    icon: Star,
     title: '500+ London Moves',
     description: 'Completed over 500 successful moves across London boroughs',
   },
 ];
 
 const popularRoutes = [
-  { from: 'Central London', to: 'South London', time: '45 mins' },
-  { from: 'North London', to: 'East London', time: '35 mins' },
-  { from: 'West London', to: 'Central London', time: '30 mins' },
-  { from: 'London', to: 'Surrey', time: '60 mins' },
-  { from: 'London', to: 'Essex', time: '50 mins' },
-  { from: 'London', to: 'Kent', time: '55 mins' },
+  { from: 'Central London', to: 'South London', time: '45 mins', price: '£45' },
+  { from: 'North London', to: 'East London', time: '35 mins', price: '£40' },
+  { from: 'West London', to: 'Central London', time: '30 mins', price: '£35' },
+  { from: 'London', to: 'Surrey', time: '60 mins', price: '£65' },
+  { from: 'London', to: 'Essex', time: '50 mins', price: '£55' },
+  { from: 'London', to: 'Kent', time: '55 mins', price: '£60' },
 ];
 
-const iconMap = {
-  Truck,
-  Home,
-  Package,
-  Users,
-  MapPin,
-  Clock,
-  Star,
-  Calculator,
-  Phone,
-  MessageCircle,
-};
+const trustBadges = [
+  { icon: Shield, label: 'Fully Insured' },
+  { icon: Star, label: '4.8★ Rating' },
+  { icon: Clock, label: '24/7 Support' },
+  { icon: CheckCircle, label: 'No Hidden Fees' },
+];
 
 export default function LondonPage() {
   return (
     <>
+      <Header />
+      <MobileHeader />
       <LocalBusinessSchema />
       <ContactPointSchema contactType="customer service" />
 
-      <Container maxW="7xl" py={16}>
-        {/* Hero Section */}
-        <VStack spacing={8} textAlign="center" mb={16}>
-          <Badge
-            colorScheme="red"
-            variant="solid"
-            borderRadius="full"
-            px={4}
-            py={2}
+      <Box
+        minH="100vh"
+        bg="linear-gradient(180deg, #0A0E17 0%, #0D1321 50%, #0A0E17 100%)"
+        pt={{ base: 20, md: 24 }}
+      >
+        <Container maxW="7xl" py={{ base: 8, md: 16 }}>
+          {/* Hero Section */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 } as const}
           >
-            London's #1 Moving Service
-          </Badge>
-          <Heading as="h1" size="2xl" color="blue.600">
-            Professional Man and Van Service in London
-          </Heading>
-          <Text fontSize="xl" color="gray.600" maxW="4xl">
-            Reliable moving services across all London boroughs. From single
-            item delivery to complete house removals, we provide professional,
-            insured, and affordable moving solutions throughout Greater London.
-          </Text>
-
-          {/* London Stats */}
-          <HStack spacing={8} flexWrap="wrap" justify="center">
-            <VStack spacing={1}>
-              <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                £25/hr
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                London Rates
-              </Text>
-            </VStack>
-            <VStack spacing={1}>
-              <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                32
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                Boroughs Covered
-              </Text>
-            </VStack>
-            <VStack spacing={1}>
-              <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                2hrs
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                Response Time
-              </Text>
-            </VStack>
-            <VStack spacing={1}>
-              <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                4.8★
-              </Text>
-              <Text fontSize="sm" color="gray.600">
-                London Rating
-              </Text>
-            </VStack>
-          </HStack>
-
-          {/* CTA Buttons */}
-          <HStack spacing={4}>
-            <Box
-              as={Link}
-              href={ROUTES.SHARED.BOOKING_LUXURY}
-              bg="blue.600"
-              color="white"
-              px={8}
-              py={4}
-              borderRadius="lg"
-              fontWeight="bold"
-              _hover={{ bg: 'blue.700' }}
-              transition="all 0.2s"
+            <VStack
+              spacing={6}
+              textAlign="center"
+              mb={16}
+              position="relative"
             >
-              <HStack spacing={2}>
-                <Icon as={Calculator} />
-                <Text>Get London Quote</Text>
-              </HStack>
-            </Box>
-            <Box
-              as={Link}
-              href="tel:01202 129746"
-              bg="red.600"
-              color="white"
-              px={8}
-              py={4}
-              borderRadius="lg"
-              fontWeight="bold"
-              _hover={{ bg: 'red.700' }}
-              transition="all 0.2s"
-            >
-              <HStack spacing={2}>
-                <Icon as={Phone} />
-                <Text>Call 01202 129746</Text>
-              </HStack>
-            </Box>
-          </HStack>
-        </VStack>
-
-        {/* London Services */}
-        <VStack spacing={12} align="stretch">
-          <Heading as="h2" size="lg" textAlign="center">
-            Our London Moving Services
-          </Heading>
-
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
-            {londonServices.map((service, index) => (
+              {/* Decorative Glow */}
               <Box
-                key={index}
-                as={Link}
-                href={service.href}
-                bg="white"
-                p={6}
-                borderRadius="xl"
-                shadow="lg"
-                border="1px solid"
-                borderColor="gray.100"
-                transition="all 0.3s"
-                _hover={{
-                  transform: 'translateY(-4px)',
-                  shadow: 'xl',
-                  borderColor: 'blue.200',
-                }}
-              >
-                <VStack spacing={4}>
-                  <Icon as={iconMap[service.iconName as keyof typeof iconMap]} boxSize={12} color="blue.500" />
-                  <VStack spacing={2}>
-                    <Heading
-                      as="h3"
-                      size="md"
-                      color="gray.800"
-                      textAlign="center"
-                    >
-                      {service.title}
-                    </Heading>
-                    <Text fontSize="lg" fontWeight="bold" color="blue.600">
-                      {service.price}
-                    </Text>
-                    <Text color="gray.600" textAlign="center" fontSize="sm">
-                      {service.description}
-                    </Text>
-                  </VStack>
-                </VStack>
-              </Box>
-            ))}
-          </SimpleGrid>
-        </VStack>
-
-        {/* Why Choose Us for London */}
-        <VStack spacing={12} mt={16}>
-          <Heading as="h2" size="lg" textAlign="center">
-            Why Choose Speedy Van for London Moves?
-          </Heading>
-
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
-            {whyChooseLondon.map((item, index) => (
-              <VStack
-                key={index}
-                spacing={4}
-                textAlign="center"
-                p={6}
-                bg="gray.50"
-                borderRadius="lg"
-              >
-                <Icon as={iconMap[item.iconName as keyof typeof iconMap]} boxSize={12} color="blue.500" />
-                <Heading as="h3" size="md" color="gray.800">
-                  {item.title}
-                </Heading>
-                <Text color="gray.600" textAlign="center">
-                  {item.description}
-                </Text>
-              </VStack>
-            ))}
-          </SimpleGrid>
-        </VStack>
-
-        {/* London Boroughs */}
-        <VStack spacing={8} mt={16}>
-          <Heading as="h2" size="lg" textAlign="center">
-            We Cover All London Boroughs
-          </Heading>
-          <Text textAlign="center" color="gray.600" maxW="2xl">
-            Our professional moving service is available across all 32 London
-            boroughs and the City of London. Same day service available in most
-            areas.
-          </Text>
-
-          <Box maxW="6xl">
-            <Flex flexWrap="wrap" justify="center" gap={3}>
-              {londonBoroughs.map((borough, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  colorScheme="blue"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                  fontSize="sm"
-                >
-                  {borough}
-                </Badge>
-              ))}
-            </Flex>
-          </Box>
-        </VStack>
-
-        {/* Popular Routes */}
-        <VStack spacing={8} mt={16}>
-          <Heading as="h2" size="lg" textAlign="center">
-            Popular London Moving Routes
-          </Heading>
-
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
-            spacing={6}
-            w="full"
-            maxW="4xl"
-          >
-            {popularRoutes.map((route, index) => (
-              <Box
-                key={index}
-                bg="white"
-                p={6}
-                borderRadius="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                textAlign="center"
-              >
-                <VStack spacing={3}>
-                  <Text fontWeight="bold" color="gray.800">
-                    {route.from} → {route.to}
-                  </Text>
-                  <Badge colorScheme="green" variant="subtle">
-                    {route.time} average
+                position="absolute"
+                top="-100px"
+                left="50%"
+                transform="translateX(-50%)"
+                w="600px"
+                h="400px"
+                bg="radial-gradient(circle, rgba(0,194,255,0.15) 0%, transparent 70%)"
+                pointerEvents="none"
+              />
+              
+              {/* Trust Badges */}
+              <HStack spacing={4} flexWrap="wrap" justify="center" mb={4}>
+                {trustBadges.map((badge, i) => (
+                  <Badge
+                    key={i}
+                    bg="rgba(0,194,255,0.1)"
+                    color="cyan.300"
+                    border="1px solid rgba(0,194,255,0.3)"
+                    borderRadius="full"
+                    px={4}
+                    py={2}
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
+                    fontSize="sm"
+                  >
+                    <Icon as={badge.icon} boxSize={4} />
+                    {badge.label}
                   </Badge>
-                </VStack>
-              </Box>
-            ))}
-          </SimpleGrid>
-        </VStack>
+                ))}
+              </HStack>
 
-        {/* London Specific Info */}
-        <VStack spacing={8} mt={16}>
-          <Heading as="h2" size="lg" textAlign="center">
-            London Moving Information
-          </Heading>
-
-          <SimpleGrid
-            columns={{ base: 1, md: 2 }}
-            spacing={8}
-            w="full"
-            maxW="4xl"
-          >
-            <Box bg="blue.50" p={6} borderRadius="lg">
-              <VStack spacing={4} align="start">
-                <Heading as="h3" size="md" color="blue.800">
-                  Congestion Charge Included
-                </Heading>
-                <Text color="gray.700">
-                  All our London services include congestion charge costs. No
-                  hidden fees or surprise charges for central London moves.
-                </Text>
-              </VStack>
-            </Box>
-
-            <Box bg="green.50" p={6} borderRadius="lg">
-              <VStack spacing={4} align="start">
-                <Heading as="h3" size="md" color="green.800">
-                  Parking Permits Handled
-                </Heading>
-                <Text color="gray.700">
-                  We handle parking permits and restrictions across London
-                  boroughs. Our team knows the best access routes for efficient
-                  moves.
-                </Text>
-              </VStack>
-            </Box>
-
-            <Box bg="purple.50" p={6} borderRadius="lg">
-              <VStack spacing={4} align="start">
-                <Heading as="h3" size="md" color="purple.800">
-                  Evening & Weekend Service
-                </Heading>
-                <Text color="gray.700">
-                  Flexible scheduling including evenings and weekends to work
-                  around London's busy lifestyle and traffic patterns.
-                </Text>
-              </VStack>
-            </Box>
-
-            <Box bg="orange.50" p={6} borderRadius="lg">
-              <VStack spacing={4} align="start">
-                <Heading as="h3" size="md" color="orange.800">
-                  Storage Solutions
-                </Heading>
-                <Text color="gray.700">
-                  Temporary storage available for London moves with flexible
-                  access. Perfect for chain moves and property renovations.
-                </Text>
-              </VStack>
-            </Box>
-          </SimpleGrid>
-        </VStack>
-
-        {/* Customer Reviews London */}
-        <VStack spacing={8} mt={16}>
-          <Heading as="h2" size="lg" textAlign="center">
-            London Customer Reviews
-          </Heading>
-
-          <SimpleGrid
-            columns={{ base: 1, md: 2 }}
-            spacing={8}
-            w="full"
-            maxW="4xl"
-          >
-            <Box bg="white" p={6} borderRadius="lg" shadow="md">
-              <VStack spacing={4} align="start">
-                <HStack spacing={1}>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Icon
-                      key={star}
-                      as={Star}
-                      color="yellow.400"
-                      fill="yellow.400"
-                    />
-                  ))}
-                </HStack>
-                <Text color="gray.700">
-                  "Excellent service for our move from Camden to Greenwich. The
-                  team knew London well and avoided all the traffic.
-                  Professional and efficient!"
-                </Text>
-                <Text fontWeight="bold" color="gray.800">
-                  - Sarah M., Greenwich
-                </Text>
-              </VStack>
-            </Box>
-
-            <Box bg="white" p={6} borderRadius="lg" shadow="md">
-              <VStack spacing={4} align="start">
-                <HStack spacing={1}>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Icon
-                      key={star}
-                      as={Star}
-                      color="yellow.400"
-                      fill="yellow.400"
-                    />
-                  ))}
-                </HStack>
-                <Text color="gray.700">
-                  "Perfect for our Central London office move. They handled the
-                  congestion charge and parking permits. Made our move
-                  stress-free!"
-                </Text>
-                <Text fontWeight="bold" color="gray.800">
-                  - James T., Westminster
-                </Text>
-              </VStack>
-            </Box>
-          </SimpleGrid>
-        </VStack>
-
-        {/* Final CTA */}
-        <Box mt={16} textAlign="center" bg="red.50" p={12} borderRadius="xl">
-          <VStack spacing={6}>
-            <Heading as="h2" size="lg">
-              Ready to Move in London? Book Your Service Today
-            </Heading>
-            <Text fontSize="lg" color="gray.600" maxW="2xl">
-              Join hundreds of satisfied London customers who trust Speedy Van
-              for their moves. Professional service across all London boroughs
-              with same day availability.
-            </Text>
-            <HStack spacing={4}>
-              <Box
-                as={Link}
-                href={ROUTES.SHARED.BOOKING_LUXURY}
-                bg="blue.600"
+              <Badge
+                bg="linear-gradient(135deg, #DC2626, #B91C1C)"
                 color="white"
-                px={8}
-                py={4}
-                borderRadius="lg"
+                borderRadius="full"
+                px={6}
+                py={2}
+                fontSize="sm"
                 fontWeight="bold"
-                _hover={{ bg: 'blue.700' }}
-                transition="all 0.2s"
+                boxShadow="0 0 30px rgba(220,38,38,0.4)"
               >
-                Book London Move - From £25/hour
-              </Box>
-              <Box
-                as={Link}
-                href="https://wa.me/441202129746"
-                bg="green.600"
-                color="white"
-                px={8}
-                py={4}
-                borderRadius="lg"
-                fontWeight="bold"
-                _hover={{ bg: 'green.700' }}
-                transition="all 0.2s"
+                🏆 London&apos;s #1 Moving Service
+              </Badge>
+              
+              <Heading
+                as="h1"
+                fontSize={{ base: '2.5rem', md: '4rem', lg: '5rem' }}
+                fontWeight="800"
+                lineHeight="1.1"
+                bgGradient="linear(to-r, white, cyan.200, white)"
+                bgClip="text"
+                letterSpacing="-0.02em"
               >
-                <HStack spacing={2}>
-                  <Icon as={MessageCircle} />
-                  <Text>WhatsApp London</Text>
-                </HStack>
-              </Box>
-            </HStack>
-          </VStack>
-        </Box>
-
-        {/* FAQ Section */}
-        <Box py={16}>
-          <VStack spacing={8} align="stretch">
-            <Box textAlign="center">
-              <Heading as="h2" size="xl" mb={4}>
-                Frequently Asked Questions
+                Professional Man & Van
+                <br />
+                <Text as="span" bgGradient="linear(to-r, cyan.400, green.400)" bgClip="text">
+                  Service in London
+                </Text>
               </Heading>
-              <Text fontSize="lg" color="gray.600">
-                Everything you need to know about our London moving services
+              
+              <Text
+                fontSize={{ base: 'lg', md: 'xl' }}
+                color="whiteAlpha.800"
+                maxW="3xl"
+                lineHeight="1.8"
+              >
+                Reliable moving services across all 32 London boroughs. From single item delivery 
+                to complete house removals — professional, insured, and affordable solutions.
               </Text>
+
+              {/* Stats Row */}
+              <SimpleGrid
+                columns={{ base: 2, md: 4 }}
+                spacing={{ base: 4, md: 8 }}
+                mt={6}
+                w="full"
+                maxW="3xl"
+              >
+                {[
+                  { value: '£25', label: 'Per Hour', suffix: '/hr' },
+                  { value: '32', label: 'Boroughs', suffix: '' },
+                  { value: '2', label: 'Hour Response', suffix: 'hrs' },
+                  { value: '4.8', label: 'Star Rating', suffix: '★' },
+                ].map((stat, i) => (
+                  <VStack
+                    key={i}
+                    bg="rgba(255,255,255,0.03)"
+                    border="1px solid rgba(255,255,255,0.08)"
+                    borderRadius="xl"
+                    p={4}
+                    transition="all 0.3s"
+                    _hover={{ bg: 'rgba(0,194,255,0.08)', borderColor: 'rgba(0,194,255,0.3)' }}
+                  >
+                    <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="800" color="white">
+                      {stat.value}<Text as="span" fontSize="lg" color="cyan.300">{stat.suffix}</Text>
+                    </Text>
+                    <Text fontSize="sm" color="whiteAlpha.600">{stat.label}</Text>
+                  </VStack>
+                ))}
+              </SimpleGrid>
+
+              {/* CTA Buttons */}
+              <HStack spacing={4} mt={8} flexWrap="wrap" justify="center">
+                <Button
+                  as={Link}
+                  href={ROUTES.SHARED.BOOKING_LUXURY}
+                  size="lg"
+                  bg="linear-gradient(135deg, #00C2FF, #0080FF)"
+                  color="white"
+                  px={8}
+                  py={7}
+                  borderRadius="full"
+                  fontWeight="bold"
+                  fontSize="lg"
+                  leftIcon={<Calculator size={20} />}
+                  _hover={{
+                    transform: 'translateY(-3px)',
+                    boxShadow: '0 20px 40px rgba(0,194,255,0.4)',
+                  }}
+                  transition="all 0.3s"
+                  boxShadow="0 10px 30px rgba(0,194,255,0.3)"
+                >
+                  Get Instant Quote
+                </Button>
+                <Button
+                  as={Link}
+                  href="tel:+441202129746"
+                  size="lg"
+                  bg="transparent"
+                  color="white"
+                  px={8}
+                  py={7}
+                  borderRadius="full"
+                  fontWeight="bold"
+                  fontSize="lg"
+                  border="2px solid rgba(255,255,255,0.3)"
+                  leftIcon={<Phone size={20} />}
+                  _hover={{
+                    bg: 'rgba(255,255,255,0.1)',
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    transform: 'translateY(-3px)',
+                  }}
+                  transition="all 0.3s"
+                >
+                  Call 01202 129746
+                </Button>
+              </HStack>
+            </VStack>
+          </MotionBox>
+
+          {/* Services Section */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 } as const}
+          >
+            <VStack spacing={12} align="stretch" mb={20}>
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(0,194,255,0.1)" color="cyan.300" px={4} py={1} borderRadius="full">
+                  Our Services
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  London Moving Services
+                </Heading>
+                <Text color="whiteAlpha.700" maxW="2xl">
+                  Professional moving solutions tailored for London&apos;s unique challenges
+                </Text>
+              </VStack>
+
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
+                {londonServices.map((service, index) => (
+                  <MotionBox
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 * index } as const}
+                  >
+                    <Box
+                      as={Link}
+                      href={service.href}
+                      display="block"
+                      bg="rgba(255,255,255,0.03)"
+                      p={6}
+                      borderRadius="2xl"
+                      border="1px solid rgba(255,255,255,0.08)"
+                      transition="all 0.3s"
+                      position="relative"
+                      overflow="hidden"
+                      _hover={{
+                        transform: 'translateY(-8px)',
+                        borderColor: 'rgba(0,194,255,0.4)',
+                        boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
+                        '& .service-icon': {
+                          transform: 'scale(1.1)',
+                        },
+                        '& .service-arrow': {
+                          opacity: 1,
+                          transform: 'translateX(0)',
+                        },
+                      }}
+                    >
+                      <VStack spacing={4} align="start">
+                        <Box
+                          className="service-icon"
+                          w={14}
+                          h={14}
+                          borderRadius="xl"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          bg={service.gradient}
+                          transition="transform 0.3s"
+                          boxShadow={`0 10px 25px ${service.gradient.includes('#00C2FF') ? 'rgba(0,194,255,0.3)' : service.gradient.includes('#00D18F') ? 'rgba(0,209,143,0.3)' : service.gradient.includes('#FF6B6B') ? 'rgba(255,107,107,0.3)' : 'rgba(168,85,247,0.3)'}`}
+                        >
+                          <Icon as={service.icon} boxSize={7} color="white" />
+                        </Box>
+                        <VStack spacing={1} align="start">
+                          <Heading as="h3" size="md" color="white">
+                            {service.title}
+                          </Heading>
+                          <Text fontSize="xl" fontWeight="bold" color="cyan.300">
+                            {service.price}
+                          </Text>
+                        </VStack>
+                        <Text color="whiteAlpha.700" fontSize="sm" lineHeight="1.6">
+                          {service.description}
+                        </Text>
+                        <HStack
+                          className="service-arrow"
+                          color="cyan.400"
+                          opacity={0}
+                          transform="translateX(-10px)"
+                          transition="all 0.3s"
+                        >
+                          <Text fontSize="sm" fontWeight="semibold">Book Now</Text>
+                          <ArrowRight size={16} />
+                        </HStack>
+                      </VStack>
+                    </Box>
+                  </MotionBox>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </MotionBox>
+
+          {/* Why Choose Us */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 } as const}
+          >
+            <Box
+              bg="rgba(0,194,255,0.05)"
+              border="1px solid rgba(0,194,255,0.1)"
+              borderRadius="3xl"
+              p={{ base: 8, md: 12 }}
+              mb={20}
+            >
+              <VStack spacing={10}>
+                <VStack spacing={4} textAlign="center">
+                  <Heading as="h2" size="xl" color="white">
+                    Why Choose Speedy Van for London?
+                  </Heading>
+                  <Text color="whiteAlpha.700" maxW="2xl">
+                    We understand London&apos;s unique moving challenges
+                  </Text>
+                </VStack>
+
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8} w="full">
+                  {whyChooseLondon.map((item, index) => (
+                    <VStack
+                      key={index}
+                      spacing={4}
+                      textAlign="center"
+                      p={6}
+                      bg="rgba(255,255,255,0.03)"
+                      borderRadius="2xl"
+                      border="1px solid rgba(255,255,255,0.05)"
+                      transition="all 0.3s"
+                      _hover={{
+                        bg: 'rgba(255,255,255,0.06)',
+                        transform: 'translateY(-4px)',
+                      }}
+                    >
+                      <Box
+                        w={16}
+                        h={16}
+                        borderRadius="2xl"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        bg="linear-gradient(135deg, rgba(0,194,255,0.2), rgba(0,209,143,0.2))"
+                        border="1px solid rgba(0,194,255,0.3)"
+                      >
+                        <Icon as={item.icon} boxSize={8} color="cyan.300" />
+                      </Box>
+                      <Heading as="h3" size="md" color="white">
+                        {item.title}
+                      </Heading>
+                      <Text color="whiteAlpha.700" fontSize="sm">
+                        {item.description}
+                      </Text>
+                    </VStack>
+                  ))}
+                </SimpleGrid>
+              </VStack>
             </Box>
+          </MotionBox>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-              <Box p={6} borderWidth={1} borderRadius="lg">
-                <Heading as="h3" size="md" mb={3} color="blue.600">
-                  How much does a man and van cost in London?
+          {/* London Boroughs */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 } as const}
+          >
+            <VStack spacing={8} mb={20}>
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(0,209,143,0.1)" color="green.300" px={4} py={1} borderRadius="full">
+                  Full Coverage
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  All 32 London Boroughs Covered
                 </Heading>
-                <Text color="gray.600">
-                  Our man and van service starts from £25/hour in London. The total cost depends on distance, 
-                  items, and time required. We provide transparent pricing with no hidden fees.
+                <Text color="whiteAlpha.700" maxW="2xl">
+                  Same day service available across Greater London
                 </Text>
-              </Box>
+              </VStack>
 
-              <Box p={6} borderWidth={1} borderRadius="lg">
-                <Heading as="h3" size="md" mb={3} color="blue.600">
-                  Do you provide same-day service?
-                </Heading>
-                <Text color="gray.600">
-                  Yes! We offer same-day man and van service across all London boroughs. 
-                  Book by 2pm for same-day service, subject to availability.
-                </Text>
-              </Box>
+              <Flex flexWrap="wrap" justify="center" gap={3} maxW="5xl">
+                {londonBoroughs.map((borough, index) => (
+                  <Badge
+                    key={index}
+                    as={Link}
+                    href={ROUTES.SHARED.BOOKING_LUXURY}
+                    bg="rgba(255,255,255,0.05)"
+                    color="whiteAlpha.800"
+                    border="1px solid rgba(255,255,255,0.1)"
+                    px={4}
+                    py={2}
+                    borderRadius="full"
+                    fontSize="sm"
+                    transition="all 0.2s"
+                    cursor="pointer"
+                    _hover={{
+                      bg: 'rgba(0,194,255,0.15)',
+                      borderColor: 'rgba(0,194,255,0.4)',
+                      color: 'cyan.200',
+                      transform: 'translateY(-2px)',
+                    }}
+                  >
+                    {borough}
+                  </Badge>
+                ))}
+              </Flex>
+            </VStack>
+          </MotionBox>
 
-              <Box p={6} borderWidth={1} borderRadius="lg">
-                <Heading as="h3" size="md" mb={3} color="blue.600">
-                  Are your drivers insured and experienced?
+          {/* Popular Routes */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 } as const}
+          >
+            <VStack spacing={8} mb={20}>
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(168,85,247,0.1)" color="purple.300" px={4} py={1} borderRadius="full">
+                  <HStack spacing={1}>
+                    <Route size={14} />
+                    <Text>Popular Routes</Text>
+                  </HStack>
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  Popular London Moving Routes
                 </Heading>
-                <Text color="gray.600">
-                  All our drivers are fully insured, experienced professionals with extensive 
-                  knowledge of London's roads and parking regulations.
-                </Text>
-              </Box>
+              </VStack>
 
-              <Box p={6} borderWidth={1} borderRadius="lg">
-                <Heading as="h3" size="md" mb={3} color="blue.600">
-                  What areas of the UK do you cover?
-                </Heading>
-                <Text color="gray.600">
-                  We cover the entire UK including England, Scotland, Wales, and Northern Ireland. 
-                  From major cities like London, Manchester, Glasgow, and Cardiff to smaller towns and villages.
-                </Text>
-              </Box>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} w="full" maxW="5xl">
+                {popularRoutes.map((route, index) => (
+                  <Box
+                    key={index}
+                    as={Link}
+                    href={ROUTES.SHARED.BOOKING_LUXURY}
+                    bg="rgba(255,255,255,0.03)"
+                    p={6}
+                    borderRadius="2xl"
+                    border="1px solid rgba(255,255,255,0.08)"
+                    transition="all 0.3s"
+                    _hover={{
+                      bg: 'rgba(255,255,255,0.06)',
+                      borderColor: 'rgba(168,85,247,0.4)',
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 15px 35px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    <VStack spacing={4}>
+                      <HStack justify="space-between" w="full">
+                        <VStack align="start" spacing={0}>
+                          <Text color="whiteAlpha.600" fontSize="xs">FROM</Text>
+                          <Text color="white" fontWeight="bold">{route.from}</Text>
+                        </VStack>
+                        <Icon as={ArrowRight} color="cyan.400" />
+                        <VStack align="end" spacing={0}>
+                          <Text color="whiteAlpha.600" fontSize="xs">TO</Text>
+                          <Text color="white" fontWeight="bold">{route.to}</Text>
+                        </VStack>
+                      </HStack>
+                      <HStack justify="space-between" w="full">
+                        <Badge bg="rgba(0,209,143,0.1)" color="green.300" borderRadius="full" px={3}>
+                          {route.time}
+                        </Badge>
+                        <Text color="cyan.300" fontWeight="bold">{route.price}</Text>
+                      </HStack>
+                    </VStack>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </MotionBox>
+
+          {/* London Info Cards */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 } as const}
+          >
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={20} maxW="4xl" mx="auto">
+              {[
+                { title: 'Congestion Charge Included', desc: 'All London services include congestion charge. No hidden fees for central London moves.', color: 'cyan' },
+                { title: 'Parking Permits Handled', desc: 'We handle parking permits across London boroughs with expert access route knowledge.', color: 'green' },
+                { title: 'Evening & Weekend Service', desc: 'Flexible scheduling around London\'s busy lifestyle and traffic patterns.', color: 'purple' },
+                { title: 'Storage Solutions', desc: 'Temporary storage available for chain moves and property renovations.', color: 'orange' },
+              ].map((item, i) => (
+                <Box
+                  key={i}
+                  bg={`rgba(${item.color === 'cyan' ? '0,194,255' : item.color === 'green' ? '0,209,143' : item.color === 'purple' ? '168,85,247' : '251,146,60'},0.08)`}
+                  border={`1px solid rgba(${item.color === 'cyan' ? '0,194,255' : item.color === 'green' ? '0,209,143' : item.color === 'purple' ? '168,85,247' : '251,146,60'},0.2)`}
+                  p={6}
+                  borderRadius="2xl"
+                >
+                  <VStack spacing={3} align="start">
+                    <Heading as="h3" size="md" color={`${item.color}.300`}>
+                      {item.title}
+                    </Heading>
+                    <Text color="whiteAlpha.800">{item.desc}</Text>
+                  </VStack>
+                </Box>
+              ))}
             </SimpleGrid>
-          </VStack>
-        </Box>
+          </MotionBox>
 
-        {/* Enhanced Schema Markup */}
-        <FAQSchema faqs={[
-          {
-            question: "How much does a man and van cost in London?",
-            answer: "Our man and van service starts from £25/hour in London. The total cost depends on distance, items, and time required. We provide transparent pricing with no hidden fees."
-          },
-          {
-            question: "Do you provide same-day service?",
-            answer: "Yes! We offer same-day man and van service across all London boroughs. Book by 2pm for same-day service, subject to availability."
-          },
-          {
-            question: "Are your drivers insured and experienced?",
-            answer: "All our drivers are fully insured, experienced professionals with extensive knowledge of London's roads and parking regulations."
-          },
-          {
-            question: "What areas of the UK do you cover?",
-            answer: "We cover the entire UK including England, Scotland, Wales, and Northern Ireland. From major cities like London, Manchester, Glasgow, and Cardiff to smaller towns and villages."
-          }
-        ]} />
+          {/* Customer Reviews */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.7 } as const}
+          >
+            <VStack spacing={8} mb={20}>
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(251,191,36,0.1)" color="yellow.300" px={4} py={1} borderRadius="full">
+                  ⭐ Customer Reviews
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  What London Customers Say
+                </Heading>
+              </VStack>
 
-        <ReviewSchema reviews={[
-          {
-            author: "Sarah Johnson",
-            rating: 5,
-            reviewBody: "Excellent service! The driver was professional and careful with our furniture. Highly recommend Speedy Van for London moves.",
-            datePublished: "2025-01-15"
-          },
-          {
-            author: "Michael Chen",
-            rating: 5,
-            reviewBody: "Fast, reliable, and affordable. Perfect for our flat move in Camden. Will definitely use again.",
-            datePublished: "2025-01-10"
-          },
-          {
-            author: "Emma Williams",
-            rating: 5,
-            reviewBody: "Great value for money and excellent customer service. Made our house removal stress-free.",
-            datePublished: "2025-01-08"
-          }
-        ]} />
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} maxW="4xl">
+                {[
+                  { review: '"Excellent service for our move from Camden to Greenwich. The team knew London well and avoided all the traffic. Professional and efficient!"', author: 'Sarah M.', location: 'Greenwich' },
+                  { review: '"Perfect for our Central London office move. They handled the congestion charge and parking permits. Made our move stress-free!"', author: 'James T.', location: 'Westminster' },
+                ].map((item, i) => (
+                  <Box
+                    key={i}
+                    bg="rgba(255,255,255,0.03)"
+                    p={6}
+                    borderRadius="2xl"
+                    border="1px solid rgba(255,255,255,0.08)"
+                  >
+                    <VStack spacing={4} align="start">
+                      <HStack spacing={1}>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Icon key={star} as={Star} color="yellow.400" fill="currentColor" boxSize={5} />
+                        ))}
+                      </HStack>
+                      <Text color="whiteAlpha.800" fontStyle="italic">{item.review}</Text>
+                      <Text fontWeight="bold" color="white">
+                        {item.author} <Text as="span" color="whiteAlpha.600" fontWeight="normal">• {item.location}</Text>
+                      </Text>
+                    </VStack>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </MotionBox>
 
-        <ServiceSchema services={[
-          {
-            name: "Man and Van Service",
-            description: "Professional man and van service for small to medium moves across the UK",
-            price: "From £25/hour",
-            areaServed: ["England", "Scotland", "Wales", "Northern Ireland"]
-          },
-          {
-            name: "House Removals",
-            description: "Complete house removal service with packing and unpacking options",
-            price: "From £150",
-            areaServed: ["England", "Scotland", "Wales", "Northern Ireland"]
-          },
-          {
-            name: "Furniture Delivery",
-            description: "Safe and secure furniture delivery service for new purchases",
-            price: "From £30",
-            areaServed: ["England", "Scotland", "Wales", "Northern Ireland"]
-          }
-        ]} />
-      </Container>
+          {/* Final CTA */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 } as const}
+          >
+            <Box
+              textAlign="center"
+              bg="linear-gradient(135deg, rgba(0,194,255,0.15) 0%, rgba(0,209,143,0.1) 100%)"
+              border="1px solid rgba(0,194,255,0.2)"
+              p={{ base: 10, md: 16 }}
+              borderRadius="3xl"
+              mb={20}
+              position="relative"
+              overflow="hidden"
+            >
+              <Box
+                position="absolute"
+                top="0"
+                right="0"
+                w="300px"
+                h="300px"
+                bg="radial-gradient(circle, rgba(0,209,143,0.2) 0%, transparent 70%)"
+                pointerEvents="none"
+              />
+              <VStack spacing={6} position="relative">
+                <Heading as="h2" size="xl" color="white">
+                  Ready to Move in London?
+                </Heading>
+                <Text fontSize="lg" color="whiteAlpha.800" maxW="2xl">
+                  Join hundreds of satisfied London customers. Professional service across 
+                  all 32 boroughs with same day availability.
+                </Text>
+                <HStack spacing={4} flexWrap="wrap" justify="center">
+                  <Button
+                    as={Link}
+                    href={ROUTES.SHARED.BOOKING_LUXURY}
+                    size="lg"
+                    bg="linear-gradient(135deg, #00C2FF, #0080FF)"
+                    color="white"
+                    px={10}
+                    py={7}
+                    borderRadius="full"
+                    fontWeight="bold"
+                    fontSize="lg"
+                    _hover={{
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 20px 40px rgba(0,194,255,0.4)',
+                    }}
+                    transition="all 0.3s"
+                    boxShadow="0 10px 30px rgba(0,194,255,0.3)"
+                  >
+                    Book London Move — From £25/hr
+                  </Button>
+                  <Button
+                    as={Link}
+                    href="https://wa.me/441202129746"
+                    size="lg"
+                    bg="linear-gradient(135deg, #25D366, #128C7E)"
+                    color="white"
+                    px={8}
+                    py={7}
+                    borderRadius="full"
+                    fontWeight="bold"
+                    fontSize="lg"
+                    leftIcon={<MessageCircle size={20} />}
+                    _hover={{
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 20px 40px rgba(37,211,102,0.4)',
+                    }}
+                    transition="all 0.3s"
+                    boxShadow="0 10px 30px rgba(37,211,102,0.3)"
+                  >
+                    WhatsApp
+                  </Button>
+                </HStack>
+              </VStack>
+            </Box>
+          </MotionBox>
+
+          {/* FAQ Section */}
+          <Box py={8}>
+            <VStack spacing={8} align="stretch">
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(255,255,255,0.05)" color="whiteAlpha.800" px={4} py={1} borderRadius="full">
+                  FAQ
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  Frequently Asked Questions
+                </Heading>
+                <Text color="whiteAlpha.700">
+                  Everything you need to know about our London moving services
+                </Text>
+              </VStack>
+
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} maxW="4xl" mx="auto">
+                {[
+                  { q: 'How much does a man and van cost in London?', a: 'Our man and van service starts from £25/hour in London. The total cost depends on distance, items, and time required. We provide transparent pricing with no hidden fees.' },
+                  { q: 'Do you provide same-day service?', a: 'Yes! We offer same-day man and van service across all London boroughs. Book by 2pm for same-day service, subject to availability.' },
+                  { q: 'Are your drivers insured and experienced?', a: 'All our drivers are fully insured, experienced professionals with extensive knowledge of London\'s roads and parking regulations.' },
+                  { q: 'Is the congestion charge included?', a: 'Yes, all congestion charges are included in our London quotes. No hidden fees or surprise charges for central London moves.' },
+                ].map((faq, i) => (
+                  <Box
+                    key={i}
+                    p={6}
+                    bg="rgba(255,255,255,0.03)"
+                    border="1px solid rgba(255,255,255,0.08)"
+                    borderRadius="2xl"
+                  >
+                    <Heading as="h3" size="sm" mb={3} color="cyan.300">
+                      {faq.q}
+                    </Heading>
+                    <Text color="whiteAlpha.700" fontSize="sm">
+                      {faq.a}
+                    </Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            </VStack>
+          </Box>
+
+          {/* Schema Markup */}
+          <FAQSchema faqs={[
+            { question: "How much does a man and van cost in London?", answer: "Our man and van service starts from £25/hour in London. The total cost depends on distance, items, and time required. We provide transparent pricing with no hidden fees." },
+            { question: "Do you provide same-day service?", answer: "Yes! We offer same-day man and van service across all London boroughs. Book by 2pm for same-day service, subject to availability." },
+            { question: "Are your drivers insured and experienced?", answer: "All our drivers are fully insured, experienced professionals with extensive knowledge of London's roads and parking regulations." },
+            { question: "Is the congestion charge included?", answer: "Yes, all congestion charges are included in our London quotes. No hidden fees or surprise charges for central London moves." }
+          ]} />
+
+          <ReviewSchema reviews={[
+            { author: "Sarah M.", rating: 5, reviewBody: "Excellent service for our move from Camden to Greenwich. Professional and efficient!", datePublished: "2025-01-15" },
+            { author: "James T.", rating: 5, reviewBody: "Perfect for our Central London office move. Made our move stress-free!", datePublished: "2025-01-10" },
+          ]} />
+
+          <ServiceSchema services={[
+            { name: "Man and Van London", description: "Professional man and van service across all London boroughs", price: "From £25/hour", areaServed: ["London", "Greater London"] },
+            { name: "House Removals London", description: "Complete house removal service for London homes", price: "From £150", areaServed: ["London", "Greater London"] },
+            { name: "Furniture Delivery London", description: "Safe furniture delivery and assembly across London", price: "From £35/hour", areaServed: ["London", "Greater London"] },
+          ]} />
+        </Container>
+      </Box>
     </>
   );
 }
