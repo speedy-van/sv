@@ -5,7 +5,6 @@ import {
   Box,
   Flex,
   HStack,
-  IconButton,
   useDisclosure,
   Drawer,
   DrawerBody,
@@ -18,8 +17,9 @@ import {
   Text,
   Button,
 } from '@chakra-ui/react';
-import { FiMenu, FiX, FiUser, FiLogIn, FiUserPlus, FiMapPin, FiFileText, FiShield } from 'react-icons/fi';
-import { FaPhone, FaTruck, FaStar, FaQuestionCircle } from 'react-icons/fa';
+import { FiMenu, FiX, FiUser, FiLogIn, FiUserPlus, FiMapPin, FiFileText, FiShield, FiMessageCircle } from 'react-icons/fi';
+import { FaPhone, FaTruck, FaStar, FaQuestionCircle, FaWhatsapp } from 'react-icons/fa';
+import { WhatsAppIconLink, openWhatsAppLink } from '@/components/shared/WhatsAppEntryPoint';
 
 export default function MobileHeader() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -106,70 +106,118 @@ export default function MobileHeader() {
             </Box>
           </Link>
 
-          {/* Right side - Clean buttons only */}
-          <HStack spacing={3}>
-            {/* Call Now Button - Enhanced */}
-            <Button
-              as="a"
-              href="tel:+441202129746"
-              
-              size="lg"
-              h="60px"
-              px={8}
-              bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
-              color="white"
-              fontWeight="bold"
-              fontSize="17px"
-              boxShadow="0 4px 20px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2)"
-              leftIcon={<FaPhone style={{ fontSize: '19px' }} />}
-              borderRadius="full"
-              position="relative"
-              overflow="hidden"
-              border="2px solid rgba(255, 255, 255, 0.3)"
-              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              _before={{
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-                transition: 'left 0.5s',
+          {/* Right side - Clean icon buttons */}
+          <HStack
+            spacing={2}
+            flexShrink={0}
+          >
+            {/* Live Chat Button - Icon Only */}
+            <Box
+              as="button"
+              aria-label="Live chat"
+              onClick={() => {
+                if (typeof window === 'undefined') return;
+                // Redirect to booking-luxury with openChat parameter
+                window.location.href = '/booking-luxury?openChat=1';
               }}
+              w="42px"
+              h="42px"
+              minW="42px"
+              borderRadius="full"
+              bg="linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)"
+              color="white"
+              boxShadow="0 3px 10px rgba(37, 99, 235, 0.35)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              transition="all 0.2s ease"
               _hover={{
-                bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                transform: 'translateY(-2px) scale(1.02)',
-                boxShadow: '0 8px 30px rgba(16, 185, 129, 0.6), 0 0 0 2px rgba(16, 185, 129, 0.3)',
-                textDecoration: 'none',
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                _before: {
-                  left: '100%',
-                }
+                bg: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                transform: 'scale(1.05)',
               }}
               _active={{
-                transform: 'scale(0.97)',
-                boxShadow: '0 2px 10px rgba(16, 185, 129, 0.4)',
+                transform: 'scale(0.95)',
               }}
+              suppressHydrationWarning
             >
-              Call Now
-            </Button>
+              <FiMessageCircle size={20} />
+            </Box>
+            
+            {/* WhatsApp Button - Icon Only */}
+            <Box
+              as="button"
+              aria-label="WhatsApp"
+              onClick={() => openWhatsAppLink('mobile_header')}
+              w="42px"
+              h="42px"
+              minW="42px"
+              borderRadius="full"
+              bg="linear-gradient(135deg, #25D366, #128C7E)"
+              color="white"
+              boxShadow="0 3px 10px rgba(37, 211, 102, 0.35)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              transition="all 0.2s ease"
+              _hover={{
+                bg: 'linear-gradient(135deg, #128C7E, #0C6C5A)',
+                transform: 'scale(1.05)',
+              }}
+              _active={{
+                transform: 'scale(0.95)',
+              }}
+              suppressHydrationWarning
+            >
+              <FaWhatsapp size={20} />
+            </Box>
+            
+            {/* Call Now Button - Icon Only */}
+            <Box
+              as="a"
+              href="tel:+441202129746"
+              aria-label="Call now"
+              w="42px"
+              h="42px"
+              minW="42px"
+              bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
+              color="white"
+              boxShadow="0 3px 10px rgba(16, 185, 129, 0.35)"
+              borderRadius="full"
+              transition="all 0.2s ease"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              _hover={{
+                bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                transform: 'scale(1.05)',
+              }}
+              _active={{
+                transform: 'scale(0.95)',
+              }}
+              suppressHydrationWarning
+            >
+              <FaPhone size={18} />
+            </Box>
 
             {/* Menu Icon Button */}
-            <IconButton
+            <Box
+              as="button"
               aria-label="Open menu"
-              icon={<FiMenu />}
-              variant="solid"
               bg="rgba(31, 41, 55, 0.95)"
               color="white"
-              size="md"
-              w="48px"
-              h="48px"
-              minW="48px"
-              fontSize="24px"
-              borderRadius="lg"
+              w="42px"
+              h="42px"
+              minW="42px"
+              borderRadius="full"
               boxShadow="0 2px 8px rgba(0, 0, 0, 0.15)"
-              border="1px solid rgba(255, 255, 255, 0.1)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              transition="all 0.2s"
               _hover={{ 
                 bg: 'rgba(17, 24, 39, 1)',
                 transform: 'translateY(-1px)',
@@ -180,7 +228,12 @@ export default function MobileHeader() {
                 transform: 'scale(0.95)'
               }}
               onClick={onOpen}
-            />
+              suppressHydrationWarning
+            >
+              <Box as="span" display="flex" alignItems="center" justifyContent="center" suppressHydrationWarning>
+                <FiMenu size={24} />
+              </Box>
+            </Box>
           </HStack>
         </Flex>
       </Box>

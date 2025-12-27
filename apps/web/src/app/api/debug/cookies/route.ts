@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   
   // Get request headers
   const headers: Record<string, string> = {};
-  request.headers.forEach((value, key) => {
+  request.headers.forEach((value: string, key: string) => {
     headers[key] = value;
   });
 

@@ -42,9 +42,11 @@ import {
   FiHome,
   FiTruck,
 } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import { WhatsAppFloatingButton, openWhatsAppLink } from '@/components/shared/WhatsAppEntryPoint';
 
 const SUPPORT_PHONE_DISPLAY = '01202 129746';
 const SUPPORT_PHONE_TEL = '01202129746';
@@ -52,6 +54,20 @@ const SUPPORT_PHONE_URI = `tel:${SUPPORT_PHONE_TEL}`;
 const SUPPORT_EMAIL = 'support@speedy-van.co.uk';
 const SUPPORT_EMAIL_URI = `mailto:${SUPPORT_EMAIL}`;
 const CONTACT_FORM_CONVERSION_CONFIGURED = false; // TODO: configure a dedicated Google Ads conversion before re-enabling manual tracking
+
+const openLiveChatWidget = () => {
+  if (typeof window === 'undefined') return;
+  const api = (window as any).Tawk_API || (window as any).LiveChatWidget;
+  if (api?.maximize) {
+    api.maximize();
+    return;
+  }
+  if (api?.call) {
+    api.call('maximize');
+    return;
+  }
+  console.warn('Live chat widget is not available on this page.');
+};
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -73,6 +89,15 @@ const contactMethods = [
     action: () => window.open(SUPPORT_PHONE_URI)
   },
   {
+    title: 'WhatsApp Chat & Booking',
+    description: 'Instant support or quick booking via WhatsApp',
+    icon: FaWhatsapp,
+    color: 'green',
+    contact: 'Chat on WhatsApp',
+    availability: 'Fast replies, 7 days a week',
+    action: () => openWhatsAppLink('contact_card'),
+  },
+  {
     title: 'Email Support',
     description: 'Send us a detailed message',
     icon: FiMail,
@@ -88,7 +113,7 @@ const contactMethods = [
     color: 'purple',
     contact: 'Available now',
     availability: 'Mon-Fri 8AM-8PM',
-    action: () => {/* Live chat implementation */}
+    action: () => openLiveChatWidget()
   },
   {
     title: 'Visit Our Office',
@@ -1144,6 +1169,7 @@ export default function ContactPage() {
         </VStack>
       </Container>
     </Box>
+    <WhatsAppFloatingButton context="contact_page" />
     </>
   );
 }

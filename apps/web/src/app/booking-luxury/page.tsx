@@ -137,6 +137,26 @@ export default function BookingLuxuryPage() {
       bodyEl.classList.remove('booking-luxury-no-smooth');
     };
   }, []);
+
+  // Auto-open chat when requested via header CTA
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const shouldOpen = params.get('openChat') === '1' || window.localStorage.getItem('sv_open_chat') === '1';
+
+    if (shouldOpen) {
+      onChatOpen();
+      window.localStorage.removeItem('sv_open_chat');
+
+      if (params.has('openChat')) {
+        params.delete('openChat');
+        const newQuery = params.toString();
+        const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [onChatOpen]);
   
 
   /**

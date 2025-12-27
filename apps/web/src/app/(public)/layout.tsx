@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@chakra-ui/react';
 import Header from '@/components/site/Header';
 import SkipLink from '@/components/site/SkipLink';
+import { WhatsAppFloatingGuard } from '@/components/shared/WhatsAppFloatingGuard';
 
 export default function PublicLayout({
   children,
@@ -32,6 +33,7 @@ export default function PublicLayout({
           {children}
         </Box>
       </Box>
+      <WhatsAppFloatingGuard />
     </>
   );
 }

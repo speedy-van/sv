@@ -23,6 +23,7 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
+  Tooltip,
 } from '@chakra-ui/react';
 import { 
   FiMenu, 
@@ -45,6 +46,7 @@ import {
 import { m, isValidMotionProp } from 'framer-motion';
 import { chakra, shouldForwardProp } from '@chakra-ui/react';
 import HeaderButton from '@/components/common/HeaderButton';
+import { WhatsAppIconLink } from '@/components/shared/WhatsAppEntryPoint';
 
 const Header: React.FC = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
@@ -447,21 +449,87 @@ const Header: React.FC = memo(() => {
 
           {/* Enhanced Desktop CTA Buttons */}
           <HStack
-            spacing={4}
+            spacing={0}
             display="flex"
             ml={{ base: 0, md: 'auto' }}
             flexShrink={0}
+            sx={{
+              '& > * + *': {
+                marginLeft: '12px',
+              },
+            }}
           >
-            <HeaderButton
-              variant="neon"
-              size="lg"
-              onClick={() => window.open('tel:+441202129746')}
-              leftIcon={<FiPhone />}
-              animate={true}
-              minW={{ base: '100px', lg: '120px' }}
-            >
-              Call Now
-            </HeaderButton>
+            <Tooltip label="Chat" hasArrow placement="bottom">
+              <Button
+                leftIcon={<FiMessageCircle size={18} />}
+                aria-label="Open chat"
+                onClick={() => {
+                  if (typeof window === 'undefined') return;
+                  // Redirect to booking-luxury with openChat parameter
+                  window.location.href = '/booking-luxury?openChat=1';
+                }}
+                h="40px"
+                px={3}
+                borderRadius="full"
+                bgGradient="linear(to-r, #2563EB, #1D4ED8)"
+                color="white"
+                fontWeight="semibold"
+                display={{ base: 'none', md: 'inline-flex' }}
+                alignItems="center"
+                justifyContent="center"
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{
+                  bgGradient: 'linear(to-r, #1D4ED8, #1E40AF)',
+                  transform: 'translateY(-2px)',
+                  textDecoration: 'none',
+                }}
+                _active={{
+                  transform: 'translateY(-1px)',
+                }}
+                suppressHydrationWarning
+              >
+                Chat
+              </Button>
+            </Tooltip>
+            <WhatsAppIconLink
+              size="md"
+              variant="solid"
+              tooltip="Chat / Book on WhatsApp"
+              context="header_cta"
+              showLabel
+              display={{ base: 'none', md: 'inline-flex' }}
+            />
+            <Tooltip label="Call Now" hasArrow placement="bottom">
+              <Button
+                as="a"
+                href="tel:+441202129746"
+                leftIcon={<FiPhone size={18} />}
+                aria-label="Call now"
+                h="40px"
+                px={3}
+                borderRadius="full"
+                bgGradient="linear(to-r, #10B981, #059669)"
+                color="white"
+                fontWeight="semibold"
+                display={{ base: 'none', md: 'inline-flex' }}
+                alignItems="center"
+                justifyContent="center"
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{
+                  bgGradient: 'linear(to-r, #059669, #047857)',
+                  transform: 'translateY(-2px)',
+                  textDecoration: 'none',
+                }}
+                _active={{
+                  transform: 'translateY(-1px)',
+                }}
+                suppressHydrationWarning
+              >
+                Call
+              </Button>
+            </Tooltip>
               
             <Menu>
               <MenuButton

@@ -13,9 +13,9 @@ import {
   Badge,
   Tooltip,
   Icon,
-  useDisclosure,
 } from '@chakra-ui/react';
-import { FaRobot, FaShoppingCart, FaCommentDots } from 'react-icons/fa';
+import { FaRobot, FaShoppingCart, FaCommentDots, FaWhatsapp } from 'react-icons/fa';
+import { openWhatsAppLink } from '@/components/shared/WhatsAppEntryPoint';
 
 interface FloatingActionButtonsProps {
   // Selected Items
@@ -31,6 +31,11 @@ interface FloatingActionButtonsProps {
   onChatClick?: () => void;
   showChatButton?: boolean;
   chatUnreadCount?: number;
+
+  // WhatsApp
+  showWhatsAppButton?: boolean;
+  onWhatsAppClick?: () => void;
+  whatsappLabel?: string;
 }
 
 export default function FloatingActionButtons({
@@ -42,6 +47,9 @@ export default function FloatingActionButtons({
   onChatClick,
   showChatButton = true,
   chatUnreadCount = 0,
+  showWhatsAppButton = true,
+  onWhatsAppClick = () => openWhatsAppLink('booking_floating'),
+  whatsappLabel = 'Chat / Book on WhatsApp',
 }: FloatingActionButtonsProps) {
   
   return (
@@ -53,6 +61,39 @@ export default function FloatingActionButtons({
       pointerEvents="none"
     >
       <VStack spacing={3} align="flex-end">
+        {/* WhatsApp Button - Placed above Selected Items */}
+        {showWhatsAppButton && (
+          <Tooltip
+            label={whatsappLabel}
+            placement="left"
+            hasArrow
+          >
+            <Box pointerEvents="auto">
+              <IconButton
+                aria-label={whatsappLabel}
+                icon={<Icon as={FaWhatsapp} boxSize={6} />}
+                onClick={onWhatsAppClick}
+                size="lg"
+                w="60px"
+                h="60px"
+                borderRadius="full"
+                bgGradient="linear(to-br, #25D366, #128C7E)"
+                color="white"
+                boxShadow="0 6px 20px rgba(18, 140, 126, 0.35)"
+                _hover={{
+                  bgGradient: 'linear(to-br, #128C7E, #0C6C5A)',
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 8px 24px rgba(18, 140, 126, 0.45)',
+                }}
+                _active={{
+                  transform: 'scale(0.95)',
+                }}
+                transition="all 0.2s"
+              />
+            </Box>
+          </Tooltip>
+        )}
+
         {/* Selected Items Button - Cart Icon with Badge */}
         {showItemsButton && itemCount > 0 && (
           <Tooltip 

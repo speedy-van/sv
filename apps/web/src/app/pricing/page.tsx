@@ -51,6 +51,7 @@ import {
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import { WhatsAppFloatingButton } from '@/components/shared/WhatsAppEntryPoint';
 
 const MotionBox = chakra(motion.div, {
   shouldForwardProp: (prop) => {
@@ -1040,6 +1041,7 @@ export default function PricingPage() {
         </VStack>
       </Container>
     </Box>
+    <WhatsAppFloatingButton context="pricing_page" />
     </>
   );
 }

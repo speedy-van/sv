@@ -150,7 +150,7 @@ export class ErrorCollectionMiddleware {
 
     // Add headers (excluding sensitive ones)
     const headers: Record<string, string> = {};
-    request.headers.forEach((value, key) => {
+    request.headers.forEach((value: string, key: string) => {
       if (!this.config.sensitiveHeaders.includes(key.toLowerCase())) {
         headers[key] = value;
       }
