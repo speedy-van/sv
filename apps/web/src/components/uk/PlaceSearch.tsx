@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import places from '@/data/places.json';
 
 interface Place {
   name: string;
@@ -16,28 +15,43 @@ export default function PlaceSearch() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
+  const [totalPlaces, setTotalPlaces] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const filteredPlaces = useMemo(() => {
-    if (!query || query.length < 2) return [];
-    
-    const lowerQuery = query.toLowerCase();
-    return (places.places as unknown as Place[])
-      .filter(place => 
-        place.name.toLowerCase().includes(lowerQuery) ||
-        place.region.toLowerCase().includes(lowerQuery)
-      )
-      .sort((a, b) => {
-        // Prioritize exact matches at the start
-        const aStartsWith = a.name.toLowerCase().startsWith(lowerQuery);
-        const bStartsWith = b.name.toLowerCase().startsWith(lowerQuery);
-        if (aStartsWith && !bStartsWith) return -1;
-        if (!aStartsWith && bStartsWith) return 1;
-        
-        // Then by population
-        return (b.population || 0) - (a.population || 0);
-      })
-      .slice(0, 10);
+  // Search places via API
+  useEffect(() => {
+    if (!query || query.length < 2) {
+      setFilteredPlaces([]);
+      return;
+    }
+
+    const searchPlaces = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/places/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setFilteredPlaces(data.places || []);
+        setTotalPlaces(data.total || 0);
+      } catch (error) {
+        console.error('Search error:', error);
+        setFilteredPlaces([]);
+      }
+      setIsLoading(false);
+    };
+
+    // Debounce search
+    const timer = setTimeout(searchPlaces, 150);
+    return () => clearTimeout(timer);
   }, [query]);
+
+  // Get total on mount
+  useEffect(() => {
+    fetch('/api/places/search?q=')
+      .then(res => res.json())
+      .then(data => setTotalPlaces(data.total || 0))
+      .catch(() => {});
+  }, []);
 
   const handleSelect = useCallback((slug: string) => {
     setQuery('');
@@ -110,15 +124,21 @@ export default function PlaceSearch() {
           </ul>
         )}
 
-        {isOpen && query.length >= 2 && filteredPlaces.length === 0 && (
+        {isOpen && query.length >= 2 && filteredPlaces.length === 0 && !isLoading && (
           <div className="uk-search-no-results">
             No locations found for "{query}"
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="uk-search-no-results">
+            Searching...
           </div>
         )}
       </div>
 
       <p className="uk-search-stats">
-        🇬🇧 Covering {places.places.length.toLocaleString()} locations across the UK
+        🇬🇧 Covering {totalPlaces.toLocaleString()} locations across the UK
       </p>
     </div>
   );
