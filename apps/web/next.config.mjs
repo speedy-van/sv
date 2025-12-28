@@ -104,8 +104,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://*.pusher.com https://widget.trustpilot.com https://*.trustpilot.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://*.pusher.com https://widget.trustpilot.com https://*.trustpilot.com https://api.mapbox.com https://*.mapbox.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://*.mapbox.com",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://api.stripe.com https://api.mapbox.com https://*.mapbox.com https://www.google-analytics.com https://*.pusher.com wss://*.pusher.com https://res.cloudinary.com https://api.cloudinary.com https://*.sentry.io https://*.trustpilot.com",
