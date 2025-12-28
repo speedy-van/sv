@@ -174,6 +174,87 @@ const statusLabels = {
   requires_additional_info: 'Requires Info',
 };
 
+// Document Image Component with error handling
+const DocumentImage = ({ 
+  src, 
+  alt, 
+  fallbackIcon,
+  maxH = "200px"
+}: { 
+  src: string | null | undefined; 
+  alt: string;
+  fallbackIcon?: React.ElementType;
+  maxH?: string;
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const FallbackIcon = fallbackIcon || FaIdCard;
+
+  // Get proper URL for images
+  const getImageUrl = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/uploads/')) return `/api${url}`;
+    return url;
+  };
+
+  const imageUrl = getImageUrl(src);
+
+  if (!imageUrl || hasError) {
+    return (
+      <Box
+        p={8}
+        bg="rgba(255,255,255,0.05)"
+        borderRadius="lg"
+        textAlign="center"
+        h={maxH}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Icon as={FallbackIcon} boxSize={8} color="gray.600" />
+        <Text fontSize="xs" color="gray.500" mt={2}>
+          {hasError ? 'Failed to load image' : 'Image not available'}
+        </Text>
+      </Box>
+    );
+  }
+
+  return (
+    <Box position="relative">
+      {isLoading && (
+        <Box
+          position="absolute"
+          inset={0}
+          bg="rgba(255,255,255,0.05)"
+          borderRadius="lg"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Spinner size="sm" color="gray.500" />
+        </Box>
+      )}
+      <Image
+        src={imageUrl}
+        alt={alt}
+        borderRadius="lg"
+        maxH={maxH}
+        w="100%"
+        objectFit="cover"
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setHasError(true);
+          setIsLoading(false);
+        }}
+        opacity={isLoading ? 0 : 1}
+        transition="opacity 0.2s"
+      />
+    </Box>
+  );
+};
+
 // Stat Card Component
 const StatCard = ({ 
   icon, 
@@ -451,20 +532,6 @@ export default function DriverApplicationsPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  // Helper to get proper image URL (handles local paths that may not exist)
-  const getImageUrl = (url: string | null | undefined): string | null => {
-    if (!url) return null;
-    // If it's already a full URL (Cloudinary, S3, etc.), use it directly
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    // For local paths, convert to API endpoint
-    if (url.startsWith('/uploads/')) {
-      return `/api${url}`;
-    }
-    return url;
   };
 
   const fetchApplications = async () => {
@@ -1474,32 +1541,20 @@ export default function DriverApplicationsPage() {
                                 {selectedApplication.drivingLicenseFrontImage ? (
                                   <Box
                                     position="relative"
-                                    borderRadius="lg"
-                                    overflow="hidden"
                                     cursor="pointer"
-                                    onClick={() => window.open(getImageUrl(selectedApplication.drivingLicenseFrontImage) || '', '_blank')}
+                                    onClick={() => {
+                                      const url = selectedApplication.drivingLicenseFrontImage;
+                                      if (url) {
+                                        const apiUrl = url.startsWith('/uploads/') ? `/api${url}` : url;
+                                        window.open(apiUrl, '_blank');
+                                      }
+                                    }}
                                     _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                                   >
-                                    <Image
-                                      src={getImageUrl(selectedApplication.drivingLicenseFrontImage) || ''}
+                                    <DocumentImage 
+                                      src={selectedApplication.drivingLicenseFrontImage} 
                                       alt="Driving License Front"
-                                      borderRadius="lg"
-                                      maxH="200px"
-                                      w="100%"
-                                      objectFit="cover"
-                                      fallback={
-                                        <Box
-                                          p={8}
-                                          bg="rgba(255,255,255,0.05)"
-                                          borderRadius="lg"
-                                          textAlign="center"
-                                        >
-                                          <Icon as={FaIdCard} boxSize={8} color="gray.600" />
-                                          <Text fontSize="xs" color="gray.500" mt={2}>
-                                            Image not available
-                                          </Text>
-                                        </Box>
-                                      }
+                                      fallbackIcon={FaIdCard}
                                     />
                                     <Box
                                       position="absolute"
@@ -1532,32 +1587,20 @@ export default function DriverApplicationsPage() {
                                 {selectedApplication.drivingLicenseBackImage ? (
                                   <Box
                                     position="relative"
-                                    borderRadius="lg"
-                                    overflow="hidden"
                                     cursor="pointer"
-                                    onClick={() => window.open(getImageUrl(selectedApplication.drivingLicenseBackImage) || '', '_blank')}
+                                    onClick={() => {
+                                      const url = selectedApplication.drivingLicenseBackImage;
+                                      if (url) {
+                                        const apiUrl = url.startsWith('/uploads/') ? `/api${url}` : url;
+                                        window.open(apiUrl, '_blank');
+                                      }
+                                    }}
                                     _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                                   >
-                                    <Image
-                                      src={getImageUrl(selectedApplication.drivingLicenseBackImage) || ''}
+                                    <DocumentImage 
+                                      src={selectedApplication.drivingLicenseBackImage} 
                                       alt="Driving License Back"
-                                      borderRadius="lg"
-                                      maxH="200px"
-                                      w="100%"
-                                      objectFit="cover"
-                                      fallback={
-                                        <Box
-                                          p={8}
-                                          bg="rgba(255,255,255,0.05)"
-                                          borderRadius="lg"
-                                          textAlign="center"
-                                        >
-                                          <Icon as={FaIdCard} boxSize={8} color="gray.600" />
-                                          <Text fontSize="xs" color="gray.500" mt={2}>
-                                            Image not available
-                                          </Text>
-                                        </Box>
-                                      }
+                                      fallbackIcon={FaIdCard}
                                     />
                                     <Box
                                       position="absolute"
@@ -1705,44 +1748,11 @@ export default function DriverApplicationsPage() {
                               <Box>
                                 <Text color="gray.500" fontSize="xs" mb={2}>Document</Text>
                                 {selectedApplication.rightToWorkDocument ? (
-                                  <Box
-                                    position="relative"
-                                    borderRadius="lg"
-                                    overflow="hidden"
-                                    cursor="pointer"
-                                    onClick={() => window.open(getImageUrl(selectedApplication.rightToWorkDocument) || '', '_blank')}
-                                    _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
-                                  >
-                                    <Image
-                                      src={getImageUrl(selectedApplication.rightToWorkDocument) || ''}
-                                      alt="Right to Work"
-                                      borderRadius="lg"
-                                      maxH="150px"
-                                      w="100%"
-                                      objectFit="cover"
-                                      fallback={
-                                        <HStack 
-                                          p={4} 
-                                          bg="rgba(59, 130, 246, 0.1)" 
-                                          borderRadius="lg"
-                                          justify="center"
-                                        >
-                                          <Icon as={FiFileText} color="blue.400" />
-                                          <Text color="blue.400" fontSize="sm">View Document</Text>
-                                        </HStack>
-                                      }
-                                    />
-                                    <Box
-                                      position="absolute"
-                                      top={2}
-                                      right={2}
-                                      p={2}
-                                      bg="blackAlpha.700"
-                                      borderRadius="md"
-                                    >
-                                      <Icon as={FiExternalLink} color="white" boxSize={4} />
-                                    </Box>
-                                  </Box>
+                                  <DocumentImage
+                                    src={selectedApplication.rightToWorkDocument}
+                                    alt="Right to Work"
+                                    maxH="150px"
+                                  />
                                 ) : (
                                   <Box
                                     p={4}
@@ -1835,44 +1845,12 @@ export default function DriverApplicationsPage() {
                           >
                             <Text color="gray.300" fontWeight="600" mb={4}>Insurance Document</Text>
                             {selectedApplication.insuranceDocument ? (
-                              <Box
-                                position="relative"
-                                borderRadius="lg"
-                                overflow="hidden"
-                                cursor="pointer"
-                                maxW="400px"
-                                onClick={() => window.open(getImageUrl(selectedApplication.insuranceDocument) || '', '_blank')}
-                                _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
-                              >
-                                <Image
-                                  src={getImageUrl(selectedApplication.insuranceDocument) || ''}
+                              <Box maxW="400px">
+                                <DocumentImage
+                                  src={selectedApplication.insuranceDocument}
                                   alt="Insurance Document"
-                                  borderRadius="lg"
                                   maxH="250px"
-                                  w="100%"
-                                  objectFit="cover"
-                                  fallback={
-                                    <HStack 
-                                      p={6} 
-                                      bg="rgba(59, 130, 246, 0.1)" 
-                                      borderRadius="lg"
-                                      justify="center"
-                                    >
-                                      <Icon as={FiFileText} color="blue.400" boxSize={6} />
-                                      <Text color="blue.400">View Insurance Document</Text>
-                                    </HStack>
-                                  }
                                 />
-                                <Box
-                                  position="absolute"
-                                  top={2}
-                                  right={2}
-                                  p={2}
-                                  bg="blackAlpha.700"
-                                  borderRadius="md"
-                                >
-                                  <Icon as={FiExternalLink} color="white" boxSize={4} />
-                                </Box>
                               </Box>
                             ) : (
                               <Box
