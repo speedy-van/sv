@@ -176,7 +176,7 @@ const testimonials = [
     quote:
       'Speedy Van moved my entire flat in under 3 hours! Professional and careful with my furniture.',
     rating: 5,
-    avatar: '/What Our Customers Say/Sarah Mitchell.jpeg',
+    avatar: '/What Our Customers Say/Sarah Mitchell.webp',
     service: 'Flat Removal',
   },
   {
@@ -185,7 +185,7 @@ const testimonials = [
     quote:
       'Best moving experience ever. They handled my electronics with care, and the price was exactly as quoted.',
     rating: 5,
-    avatar: '/What Our Customers Say/James Thompson.jpeg',
+    avatar: '/What Our Customers Say/James Thompson.webp',
     service: 'Electronics Move',
   },
   {
@@ -194,7 +194,7 @@ const testimonials = [
     quote:
       'From booking to delivery, everything was seamless. Punctual drivers and perfect condition delivery.',
     rating: 5,
-    avatar: '/What Our Customers Say/Emma Davies.jpeg',
+    avatar: '/What Our Customers Say/Emma Davies.webp',
     service: 'Home Removal',
   },
 ];
@@ -208,16 +208,17 @@ const stats = [
 
 const viewportMotion = { once: true, amount: 0.25 };
 
-const createFadeInUp = (reduceMotion: boolean, delay = 0, distance = 18) => ({
+// Simplified animations to reduce CLS and improve performance
+const createFadeInUp = (reduceMotion: boolean, delay = 0, distance = 10) => ({
   hidden: { opacity: 0, y: reduceMotion ? 0 : distance },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: 'easeOut' as const, delay },
+    transition: { duration: 0.4, ease: 'easeOut' as const, delay },
   },
 });
 
-const createStaggerContainer = (reduceMotion: boolean, delayChildren = 0.12, staggerChildren = 0.08) => ({
+const createStaggerContainer = (reduceMotion: boolean, delayChildren = 0.08, staggerChildren = 0.05) => ({
   hidden: {},
   show: {
     transition: reduceMotion
@@ -233,10 +234,10 @@ const hoverLift = (reduceMotion: boolean) =>
   reduceMotion
     ? undefined
     : {
-        y: -8,
-        scale: 1.01,
-        boxShadow: '0 0 35px rgba(0,194,255,0.35)',
-        transition: { type: 'spring' as const, stiffness: 180, damping: 16 },
+        y: -4,
+        scale: 1.005,
+        boxShadow: '0 0 25px rgba(0,194,255,0.25)',
+        transition: { type: 'spring' as const, stiffness: 200, damping: 20 },
       };
 
 const floatPulse = (reduceMotion: boolean) =>
@@ -317,7 +318,7 @@ const MobileHero: React.FC = () => {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           poster="/android-chrome-512x512.png"
           aria-hidden
           tabIndex={-1}
@@ -350,7 +351,7 @@ const MobileHero: React.FC = () => {
             // Video started playing - production ready
           }}
         >
-          <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/background-original.mp4`} type="video/mp4" />
+          {/* Use smaller optimized video first (2.67MB vs 56MB) */}
           <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/background.mp4`} type="video/mp4" />
         </video>
       )}
@@ -1208,6 +1209,9 @@ const MobileTestimonials: React.FC = () => {
                         size="sm"
                         name={testimonial.name}
                         src={testimonial.avatar}
+                        loading="lazy"
+                        w="32px"
+                        h="32px"
                       />
                       <VStack spacing={0} align="start" flex={1}>
                         <Text
