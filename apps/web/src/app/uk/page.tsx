@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import places from '@/data/places.json';
+import PlaceSearch from '@/components/uk/PlaceSearch';
 import '@/styles/uk-place-pages.css';
 
 // ✅ Force Node runtime for ISR
@@ -31,9 +32,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function UkIndex() {
-  // ❌ Do not call cookies(), headers(), or any request-bound APIs.
-  // ❌ No runtime = "edge" here.
-  // ✅ Render pure server components + fetch() with default cache.
+  // Group places by region for browsing
+  const regions = ['England', 'Scotland', 'Wales', 'Northern Ireland'];
+  const topCitiesByRegion = regions.map(region => ({
+    region,
+    places: (places.places as any[])
+      .filter(p => p.region === region)
+      .sort((a, b) => (b.population || 0) - (a.population || 0))
+      .slice(0, 6)
+  }));
 
   return (
     <main className="uk-index-container">
@@ -46,33 +53,37 @@ export default function UkIndex() {
       </section>
 
       <section className="uk-index-search-section">
-        <div className="uk-index-search-container">
-          <div className="uk-index-search-placeholder">
-            <p>Search for your city, town, or village above to get started</p>
-            <p>Or browse popular areas below:</p>
-          </div>
-        </div>
+        <PlaceSearch />
       </section>
 
       <section className="uk-index-popular-areas">
-        <h2>Popular Areas</h2>
-        <div className="uk-index-areas-grid">
-          {places.places.slice(0, 12).map((place: any) => (
-            <Link
-              key={place.slug}
-              href={`/uk/${place.slug}`}
-              className="uk-index-area-card"
-            >
-              <h3>{place.name}</h3>
-              <p className="uk-index-place-type">{place.type}</p>
-              {place.population && (
-                <p className="uk-index-population">
-                  {place.population.toLocaleString()} people
-                </p>
-              )}
-            </Link>
-          ))}
-        </div>
+        <h2>Browse by Region</h2>
+        {topCitiesByRegion.filter(r => r.places.length > 0).map(({ region, places: regionPlaces }) => (
+          <div key={region} className="uk-region-section">
+            <h3 className="uk-region-title">
+              <Link href={`/uk/regions/${region.toLowerCase().replace(' ', '-')}`}>
+                {region} →
+              </Link>
+            </h3>
+            <div className="uk-index-areas-grid">
+              {regionPlaces.map((place: any) => (
+                <Link
+                  key={place.slug}
+                  href={`/uk/${place.slug}`}
+                  className="uk-index-area-card"
+                >
+                  <h4>{place.name}</h4>
+                  <p className="uk-index-place-type">{place.type}</p>
+                  {place.population && (
+                    <p className="uk-index-population">
+                      {place.population.toLocaleString()} people
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
     </main>
   );

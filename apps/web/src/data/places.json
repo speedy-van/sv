@@ -6464,6 +6464,627 @@
       "lat": 53.3339,
       "lon": -3.4050,
       "population": 18849
+    },
+    {
+      "slug": "rhyl",
+      "name": "Rhyl",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.3192,
+      "lon": -3.4917,
+      "population": 25149
+    },
+    {
+      "slug": "denbigh",
+      "name": "Denbigh",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.1844,
+      "lon": -3.4147,
+      "population": 8515
+    },
+    {
+      "slug": "ruthin",
+      "name": "Ruthin",
+      "type": "town",
+      "region": "Wales",
+      "lat": 53.1142,
+      "lon": -3.3111,
+      "population": 5218
+    },
+    {
+      "slug": "llangollen",
+      "name": "Llangollen",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.9694,
+      "lon": -3.1681,
+      "population": 3682
+    },
+    {
+      "slug": "corwen",
+      "name": "Corwen",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.9822,
+      "lon": -3.3772,
+      "population": 2398
+    },
+    {
+      "slug": "bala",
+      "name": "Bala",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.9117,
+      "lon": -3.5936,
+      "population": 1974
+    },
+    {
+      "slug": "dolgellau",
+      "name": "Dolgellau",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.7422,
+      "lon": -3.8847,
+      "population": 2688
+    },
+    {
+      "slug": "barmouth",
+      "name": "Barmouth",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.7228,
+      "lon": -4.0567,
+      "population": 2620
+    },
+    {
+      "slug": "tywyn",
+      "name": "Tywyn",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.5864,
+      "lon": -4.0894,
+      "population": 3218
+    },
+    {
+      "slug": "machynlleth",
+      "name": "Machynlleth",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.5928,
+      "lon": -3.8544,
+      "population": 2235
+    },
+    {
+      "slug": "welshpool",
+      "name": "Welshpool",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.6586,
+      "lon": -3.1456,
+      "population": 6269
+    },
+    {
+      "slug": "newtown-powys",
+      "name": "Newtown",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.5128,
+      "lon": -3.3133,
+      "population": 11357
+    },
+    {
+      "slug": "llanidloes",
+      "name": "Llanidloes",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.4478,
+      "lon": -3.5406,
+      "population": 2929
+    },
+    {
+      "slug": "builth-wells",
+      "name": "Builth Wells",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.1494,
+      "lon": -3.4053,
+      "population": 2829
+    },
+    {
+      "slug": "llandrindod-wells",
+      "name": "Llandrindod Wells",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.2422,
+      "lon": -3.3794,
+      "population": 5309
+    },
+    {
+      "slug": "knighton",
+      "name": "Knighton",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.3444,
+      "lon": -3.0433,
+      "population": 3043
+    },
+    {
+      "slug": "brecon",
+      "name": "Brecon",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.9456,
+      "lon": -3.3956,
+      "population": 8250
+    },
+    {
+      "slug": "hay-on-wye",
+      "name": "Hay-on-Wye",
+      "type": "town",
+      "region": "Wales",
+      "lat": 52.0744,
+      "lon": -3.1242,
+      "population": 1846
+    },
+    {
+      "slug": "crickhowell",
+      "name": "Crickhowell",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.8594,
+      "lon": -3.1375,
+      "population": 2063
+    },
+    {
+      "slug": "abergavenny",
+      "name": "Abergavenny",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.8242,
+      "lon": -3.0167,
+      "population": 14655
+    },
+    {
+      "slug": "monmouth",
+      "name": "Monmouth",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.8119,
+      "lon": -2.7164,
+      "population": 10508
+    },
+    {
+      "slug": "usk",
+      "name": "Usk",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7028,
+      "lon": -2.9022,
+      "population": 2834
+    },
+    {
+      "slug": "chepstow",
+      "name": "Chepstow",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6417,
+      "lon": -2.6756,
+      "population": 12350
+    },
+    {
+      "slug": "caldicot",
+      "name": "Caldicot",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.5911,
+      "lon": -2.7575,
+      "population": 12918
+    },
+    {
+      "slug": "aberdare",
+      "name": "Aberdare",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7147,
+      "lon": -3.4431,
+      "population": 29748
+    },
+    {
+      "slug": "mountain-ash",
+      "name": "Mountain Ash",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6808,
+      "lon": -3.3758,
+      "population": 7500
+    },
+    {
+      "slug": "treorchy",
+      "name": "Treorchy",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6597,
+      "lon": -3.5053,
+      "population": 7580
+    },
+    {
+      "slug": "tonypandy",
+      "name": "Tonypandy",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6194,
+      "lon": -3.4489,
+      "population": 8192
+    },
+    {
+      "slug": "porth",
+      "name": "Porth",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6117,
+      "lon": -3.4086,
+      "population": 5986
+    },
+    {
+      "slug": "ebbw-vale",
+      "name": "Ebbw Vale",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7778,
+      "lon": -3.2064,
+      "population": 18558
+    },
+    {
+      "slug": "tredegar",
+      "name": "Tredegar",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7717,
+      "lon": -3.2439,
+      "population": 14892
+    },
+    {
+      "slug": "brynmawr",
+      "name": "Brynmawr",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7986,
+      "lon": -3.1836,
+      "population": 5656
+    },
+    {
+      "slug": "bargoed",
+      "name": "Bargoed",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6922,
+      "lon": -3.2319,
+      "population": 11860
+    },
+    {
+      "slug": "newbridge",
+      "name": "Newbridge",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6683,
+      "lon": -3.1456,
+      "population": 5057
+    },
+    {
+      "slug": "risca",
+      "name": "Risca",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6089,
+      "lon": -3.0897,
+      "population": 11693
+    },
+    {
+      "slug": "cwmbran",
+      "name": "Cwmbran",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.6533,
+      "lon": -3.0194,
+      "population": 48535
+    },
+    {
+      "slug": "pontypool",
+      "name": "Pontypool",
+      "type": "town",
+      "region": "Wales",
+      "lat": 51.7017,
+      "lon": -3.0406,
+      "population": 36485
+    },
+    {
+      "slug": "dunfermline",
+      "name": "Dunfermline",
+      "type": "city",
+      "region": "Scotland",
+      "lat": 56.0719,
+      "lon": -3.4522,
+      "population": 58380
+    },
+    {
+      "slug": "kirkcaldy",
+      "name": "Kirkcaldy",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1125,
+      "lon": -3.1600,
+      "population": 49709
+    },
+    {
+      "slug": "glenrothes",
+      "name": "Glenrothes",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1975,
+      "lon": -3.1772,
+      "population": 38920
+    },
+    {
+      "slug": "cupar",
+      "name": "Cupar",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.3197,
+      "lon": -3.0097,
+      "population": 9340
+    },
+    {
+      "slug": "st-andrews",
+      "name": "St Andrews",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.3398,
+      "lon": -2.7967,
+      "population": 16800
+    },
+    {
+      "slug": "anstruther",
+      "name": "Anstruther",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.2228,
+      "lon": -2.6986,
+      "population": 3442
+    },
+    {
+      "slug": "arbroath",
+      "name": "Arbroath",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.5589,
+      "lon": -2.5858,
+      "population": 23903
+    },
+    {
+      "slug": "montrose",
+      "name": "Montrose",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.7078,
+      "lon": -2.4658,
+      "population": 12047
+    },
+    {
+      "slug": "brechin",
+      "name": "Brechin",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.7308,
+      "lon": -2.6569,
+      "population": 7199
+    },
+    {
+      "slug": "forfar",
+      "name": "Forfar",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.6433,
+      "lon": -2.8878,
+      "population": 14048
+    },
+    {
+      "slug": "kirriemuir",
+      "name": "Kirriemuir",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.6733,
+      "lon": -3.0039,
+      "population": 6040
+    },
+    {
+      "slug": "blairgowrie",
+      "name": "Blairgowrie",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.5892,
+      "lon": -3.3381,
+      "population": 8454
+    },
+    {
+      "slug": "pitlochry",
+      "name": "Pitlochry",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.7050,
+      "lon": -3.7328,
+      "population": 2776
+    },
+    {
+      "slug": "aberfeldy",
+      "name": "Aberfeldy",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.6208,
+      "lon": -3.8678,
+      "population": 1895
+    },
+    {
+      "slug": "crieff",
+      "name": "Crieff",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.3722,
+      "lon": -3.8394,
+      "population": 7614
+    },
+    {
+      "slug": "auchterarder",
+      "name": "Auchterarder",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.2958,
+      "lon": -3.7058,
+      "population": 4206
+    },
+    {
+      "slug": "callander",
+      "name": "Callander",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.2436,
+      "lon": -4.2150,
+      "population": 3090
+    },
+    {
+      "slug": "dunblane",
+      "name": "Dunblane",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1889,
+      "lon": -3.9622,
+      "population": 9103
+    },
+    {
+      "slug": "bridge-of-allan",
+      "name": "Bridge of Allan",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1556,
+      "lon": -3.9528,
+      "population": 5306
+    },
+    {
+      "slug": "alloa",
+      "name": "Alloa",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1150,
+      "lon": -3.7906,
+      "population": 19506
+    },
+    {
+      "slug": "tillicoultry",
+      "name": "Tillicoultry",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1533,
+      "lon": -3.7417,
+      "population": 5900
+    },
+    {
+      "slug": "dollar",
+      "name": "Dollar",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.1628,
+      "lon": -3.6728,
+      "population": 2800
+    },
+    {
+      "slug": "grangemouth",
+      "name": "Grangemouth",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.0131,
+      "lon": -3.7167,
+      "population": 17906
+    },
+    {
+      "slug": "bo-ness",
+      "name": "Bo'ness",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 56.0147,
+      "lon": -3.6081,
+      "population": 14490
+    },
+    {
+      "slug": "linlithgow",
+      "name": "Linlithgow",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9772,
+      "lon": -3.6039,
+      "population": 13370
+    },
+    {
+      "slug": "bathgate",
+      "name": "Bathgate",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9017,
+      "lon": -3.6433,
+      "population": 20363
+    },
+    {
+      "slug": "armadale",
+      "name": "Armadale",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8897,
+      "lon": -3.6950,
+      "population": 13290
+    },
+    {
+      "slug": "whitburn",
+      "name": "Whitburn",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8647,
+      "lon": -3.6869,
+      "population": 10933
+    },
+    {
+      "slug": "livingston",
+      "name": "Livingston",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.8833,
+      "lon": -3.5167,
+      "population": 56269
+    },
+    {
+      "slug": "broxburn",
+      "name": "Broxburn",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9347,
+      "lon": -3.4706,
+      "population": 16000
+    },
+    {
+      "slug": "south-queensferry",
+      "name": "South Queensferry",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9900,
+      "lon": -3.3975,
+      "population": 12000
+    },
+    {
+      "slug": "musselburgh",
+      "name": "Musselburgh",
+      "type": "town",
+      "region": "Scotland",
+      "lat": 55.9417,
+      "lon": -3.0556,
+      "population": 21900
     }
   ]
 }
