@@ -73,7 +73,7 @@ export default function PlaceSearch() {
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 250)}
           placeholder="Search for your city, town or village..."
           className="uk-search-input"
           aria-label="Search UK locations"
@@ -88,34 +88,34 @@ export default function PlaceSearch() {
             ✕
           </button>
         )}
+        
+        {isOpen && filteredPlaces.length > 0 && (
+          <ul className="uk-search-results" role="listbox">
+            {filteredPlaces.map((place) => (
+              <li 
+                key={place.slug}
+                role="option"
+                tabIndex={0}
+                onClick={() => handleSelect(place.slug)}
+                onKeyDown={(e) => handleKeyDown(e, place.slug)}
+                className="uk-search-result-item"
+              >
+                <div className="uk-search-result-main">
+                  <span className="uk-search-result-name">{place.name}</span>
+                  <span className="uk-search-result-type">{place.type || 'place'}</span>
+                </div>
+                <span className="uk-search-result-region">{place.region}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {isOpen && query.length >= 2 && filteredPlaces.length === 0 && (
+          <div className="uk-search-no-results">
+            No locations found for "{query}"
+          </div>
+        )}
       </div>
-
-      {isOpen && filteredPlaces.length > 0 && (
-        <ul className="uk-search-results" role="listbox">
-          {filteredPlaces.map((place) => (
-            <li 
-              key={place.slug}
-              role="option"
-              tabIndex={0}
-              onClick={() => handleSelect(place.slug)}
-              onKeyDown={(e) => handleKeyDown(e, place.slug)}
-              className="uk-search-result-item"
-            >
-              <div className="uk-search-result-main">
-                <span className="uk-search-result-name">{place.name}</span>
-                <span className="uk-search-result-type">{place.type}</span>
-              </div>
-              <span className="uk-search-result-region">{place.region}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {isOpen && query.length >= 2 && filteredPlaces.length === 0 && (
-        <div className="uk-search-no-results">
-          No locations found for "{query}"
-        </div>
-      )}
 
       <p className="uk-search-stats">
         🇬🇧 Covering {places.places.length.toLocaleString()} locations across the UK

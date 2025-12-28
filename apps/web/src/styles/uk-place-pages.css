@@ -110,6 +110,7 @@
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
+  position: relative;
 }
 
 .uk-search-input-container {
