@@ -324,11 +324,19 @@ class AutoRouteScheduler {
   }
 }
 
-// Export singleton
+// CRITICAL: Build-time detection to prevent side-effects during `next build`
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.argv.some(arg => arg.includes('next') || arg.includes('build'));
+
+// Export singleton - only create at runtime, not during build
 export const autoRouteScheduler = new AutoRouteScheduler();
 
 // Auto-start disabled for debugging - will be controlled via API only
-console.log('🔧 Auto Route Scheduler loaded (manual control only)');
+// CRITICAL: Only log at runtime, not during build
+if (!isBuildTime) {
+  console.log('🔧 Auto Route Scheduler loaded (manual control only)');
+}
 
 
 

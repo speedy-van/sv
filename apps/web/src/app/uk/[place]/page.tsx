@@ -13,18 +13,24 @@ import { FaTruck, FaShieldAlt, FaClock, FaStar, FaMapMarkerAlt, FaRoute, FaCheck
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
 
-// ✅ Force Node runtime for SSG/ISR
+// ✅ Force Node runtime for dynamic rendering
 export const runtime = 'nodejs';
-export const revalidate = 86400; // 24h ISR
 
-// Allow dynamic params to handle places not in generateStaticParams
+// CRITICAL: Use ISR with on-demand generation instead of pre-rendering all 700+ pages
+// This prevents Render build timeouts by only generating pages when first requested
+export const revalidate = 86400; // 24h ISR - pages are cached after first request
+
+// CRITICAL: Allow ALL params to be handled dynamically
+// Do NOT pre-render any pages at build time to avoid Render timeout
 export const dynamicParams = true;
 
+// CRITICAL FIX: Return EMPTY array to prevent pre-rendering 700+ pages at build time
+// Pages will be generated on-demand (ISR) when first requested
+// This is the key fix for Render deployment timeouts
 export async function generateStaticParams() {
-  const places = await getAllPlaces();
-  return places.map((place) => ({
-    place: place.slug,
-  }));
+  // Return empty array - all pages will be generated on-demand via ISR
+  // This prevents the build from trying to generate 700+ static pages
+  return [];
 }
 
 export async function generateMetadata({

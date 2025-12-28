@@ -3,18 +3,18 @@ import type { Metadata } from 'next';
 import places from '@/data/places.json';
 import '@/styles/uk-place-pages.css';
 
-// ✅ Force Node runtime for SSG/ISR
+// ✅ Force Node runtime for ISR
 export const runtime = 'nodejs';
-export const dynamic = 'force-static';
+
+// CRITICAL: This is the UK INDEX page (single page) - can be static
+// Only the /uk page itself, not the 700+ place pages
 export const revalidate = 86400; // 24h ISR
 
-// If we pre-generate specific slugs, set dynamicParams=false
+// This page is the index, no dynamic params needed
 export const dynamicParams = false;
 
-export async function generateStaticParams() {
-  // Expect places = [{ slug: "london" }, { slug: "manchester" }, ...]
-  return places.places.map((p: any) => ({ slug: p.slug }));
-}
+// NOTE: This page does NOT need generateStaticParams since it's a single page (/uk)
+// The /uk/[place] and /uk/[...slug] routes handle individual places
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

@@ -2,18 +2,20 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import places from '@/data/places.json';
 
-// ✅ Force Node runtime for SSG/ISR
+// ✅ Force Node runtime for dynamic rendering
 export const runtime = 'nodejs';
-export const revalidate = 86400; // 24h ISR
 
-// Allow dynamic params for catch-all routes
+// CRITICAL: Use ISR with on-demand generation instead of pre-rendering all 700+ pages
+export const revalidate = 86400; // 24h ISR - pages are cached after first request
+
+// CRITICAL: Allow ALL params to be handled dynamically
 export const dynamicParams = true;
 
+// CRITICAL FIX: Return EMPTY array to prevent pre-rendering 700+ pages at build time
+// Pages will be generated on-demand (ISR) when first requested
 export async function generateStaticParams() {
-  // Generate params for all places to ensure they're pre-built
-  return places.places.map((p: any) => ({
-    slug: [p.slug],
-  }));
+  // Return empty array - all pages will be generated on-demand via ISR
+  return [];
 }
 
 export async function generateMetadata({

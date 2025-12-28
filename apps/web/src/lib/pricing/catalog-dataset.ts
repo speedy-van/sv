@@ -119,8 +119,14 @@ function convertToCatalogItem(item: UKDatasetItem): CatalogItem {
 // In a real implementation, this would be loaded from the JSON file at build time or runtime
 export let COMPREHENSIVE_CATALOG: CatalogItem[] = [];
 
+// CRITICAL: Build-time detection to prevent side-effects during `next build`
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  (typeof process !== 'undefined' && process.argv?.some(arg => arg.includes('next') || arg.includes('build')));
+
 // ✅ Initialize catalog on server-side only (fs not available in browser)
-if (typeof window === 'undefined') {
+// ✅ CRITICAL: Do NOT load during build to avoid slowing down deployments
+if (typeof window === 'undefined' && !isBuildTime) {
   try {
     COMPREHENSIVE_CATALOG = loadUKDataset().map(convertToCatalogItem);
     console.log('✅ Catalog loaded on server:', COMPREHENSIVE_CATALOG.length, 'items');

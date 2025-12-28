@@ -15,18 +15,19 @@ const globalForPrisma = globalThis as unknown as {
 // This allows different databases for development and production
 const DATABASE_URL = process.env.DATABASE_URL;
 
-// During build time (Next.js build phase), allow missing DATABASE_URL
-// It will be validated at runtime when actually used
-const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                    process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && 
-                    typeof process.env.NEXT_PUBLIC_BASE_URL === 'undefined';
+// CRITICAL: Robust build-time detection to prevent runtime side-effects during build
+// This prevents DB connections, console.log, and any initialization during `next build`
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.argv.some(arg => arg.includes('next') || arg.includes('build')) ||
+  (typeof process.env.NEXT_RUNTIME === 'undefined' && !DATABASE_URL);
 
-// Only throw error if not in build time
+// Only throw error if not in build time and DB is actually needed
 if (!DATABASE_URL && !isBuildTime) {
-  // Check if we're in a build context (Next.js build phase)
+  // Additional check for build context
   const isNextBuild = process.env.NEXT_PHASE === 'phase-production-build' || 
                       process.argv.includes('build') ||
-                      process.argv.includes('next') && process.argv.includes('build');
+                      (process.argv.includes('next') && process.argv.includes('build'));
   
   if (!isNextBuild) {
     throw new Error('DATABASE_URL is not set in environment variables. Please check your .env.local file.');
@@ -40,7 +41,9 @@ const effectiveDatabaseUrl = DATABASE_URL || 'postgresql://placeholder:placehold
 const isProductionDB = DATABASE_URL?.includes('ep-dry-glitter-aftvvy9d') ?? false;
 const isDevelopmentDB = DATABASE_URL?.includes('ep-round-morning') ?? false;
 
-if (DATABASE_URL) {
+// CRITICAL: Only log database info at RUNTIME, never during build
+// This prevents "Using database: PRODUCTION" from appearing in build logs
+if (!isBuildTime && DATABASE_URL) {
   if (isProductionDB) {
     console.log('🔗 Using database: PRODUCTION (ep-dry-glitter-aftvvy9d)');
     console.log('⚠️  WARNING: Connected to PRODUCTION database. All changes will affect live data!');
@@ -49,10 +52,8 @@ if (DATABASE_URL) {
   } else {
     console.log('🔗 Using database: UNKNOWN (custom configuration)');
   }
-} else if (isBuildTime) {
-  // Silent during build - this is expected
-  // console.log('⚠️  DATABASE_URL not set during build - using placeholder');
 }
+// Silent during build - no logging needed
 
 // Suppress "connection closed" errors from Prisma console output
 // Prisma logs errors directly to stderr even when logging is disabled

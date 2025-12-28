@@ -506,13 +506,22 @@ export class MemorySystem {
   }
 }
 
+// CRITICAL: Build-time detection to prevent side-effects during `next build`
+const isBuildTime = 
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  (typeof process !== 'undefined' && process.argv?.some(arg => arg.includes('next') || arg.includes('build')));
+
 // Singleton instance
 export const memorySystem = new MemorySystem();
 
-// Initialize learning patterns on startup
-memorySystem.initializeLearningPatterns();
+// CRITICAL: Only initialize at RUNTIME, not during build
+// This prevents DB queries and logging during `next build`
+if (!isBuildTime) {
+  // Initialize learning patterns on startup
+  memorySystem.initializeLearningPatterns();
 
-// Cleanup expired sessions every 5 minutes
-setInterval(() => {
-  memorySystem.cleanupExpiredSessions();
-}, 5 * 60 * 1000);
+  // Cleanup expired sessions every 5 minutes
+  setInterval(() => {
+    memorySystem.cleanupExpiredSessions();
+  }, 5 * 60 * 1000);
+}
