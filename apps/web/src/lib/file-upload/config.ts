@@ -34,6 +34,7 @@ export const UPLOAD_DIRS = {
   DOCUMENTS: '/uploads/documents',
   IMAGES: '/uploads/images',
   AVATARS: '/uploads/avatars',
+  DRIVER_APPLICATIONS: '/uploads/driver-applications',
 } as const;
 
 export function validateFile(

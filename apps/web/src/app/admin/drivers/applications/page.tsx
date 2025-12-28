@@ -453,6 +453,20 @@ export default function DriverApplicationsPage() {
     }
   };
 
+  // Helper to get proper image URL (handles local paths that may not exist)
+  const getImageUrl = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    // If it's already a full URL (Cloudinary, S3, etc.), use it directly
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // For local paths, convert to API endpoint
+    if (url.startsWith('/uploads/')) {
+      return `/api${url}`;
+    }
+    return url;
+  };
+
   const fetchApplications = async () => {
     try {
       setLoading(true);
@@ -1463,11 +1477,11 @@ export default function DriverApplicationsPage() {
                                     borderRadius="lg"
                                     overflow="hidden"
                                     cursor="pointer"
-                                    onClick={() => window.open(selectedApplication.drivingLicenseFrontImage, '_blank')}
+                                    onClick={() => window.open(getImageUrl(selectedApplication.drivingLicenseFrontImage) || '', '_blank')}
                                     _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                                   >
                                     <Image
-                                      src={selectedApplication.drivingLicenseFrontImage}
+                                      src={getImageUrl(selectedApplication.drivingLicenseFrontImage) || ''}
                                       alt="Driving License Front"
                                       borderRadius="lg"
                                       maxH="200px"
@@ -1521,11 +1535,11 @@ export default function DriverApplicationsPage() {
                                     borderRadius="lg"
                                     overflow="hidden"
                                     cursor="pointer"
-                                    onClick={() => window.open(selectedApplication.drivingLicenseBackImage, '_blank')}
+                                    onClick={() => window.open(getImageUrl(selectedApplication.drivingLicenseBackImage) || '', '_blank')}
                                     _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                                   >
                                     <Image
-                                      src={selectedApplication.drivingLicenseBackImage}
+                                      src={getImageUrl(selectedApplication.drivingLicenseBackImage) || ''}
                                       alt="Driving License Back"
                                       borderRadius="lg"
                                       maxH="200px"
@@ -1696,11 +1710,11 @@ export default function DriverApplicationsPage() {
                                     borderRadius="lg"
                                     overflow="hidden"
                                     cursor="pointer"
-                                    onClick={() => window.open(selectedApplication.rightToWorkDocument, '_blank')}
+                                    onClick={() => window.open(getImageUrl(selectedApplication.rightToWorkDocument) || '', '_blank')}
                                     _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                                   >
                                     <Image
-                                      src={selectedApplication.rightToWorkDocument}
+                                      src={getImageUrl(selectedApplication.rightToWorkDocument) || ''}
                                       alt="Right to Work"
                                       borderRadius="lg"
                                       maxH="150px"
@@ -1827,11 +1841,11 @@ export default function DriverApplicationsPage() {
                                 overflow="hidden"
                                 cursor="pointer"
                                 maxW="400px"
-                                onClick={() => window.open(selectedApplication.insuranceDocument, '_blank')}
+                                onClick={() => window.open(getImageUrl(selectedApplication.insuranceDocument) || '', '_blank')}
                                 _hover={{ transform: 'scale(1.02)', transition: 'all 0.2s' }}
                               >
                                 <Image
-                                  src={selectedApplication.insuranceDocument}
+                                  src={getImageUrl(selectedApplication.insuranceDocument) || ''}
                                   alt="Insurance Document"
                                   borderRadius="lg"
                                   maxH="250px"
