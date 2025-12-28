@@ -17,11 +17,64 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  Badge,
+  Flex,
 } from '@chakra-ui/react';
-import { FaPlus, FaMinus, FaChevronRight } from 'react-icons/fa';
+import { 
+  FaPlus, 
+  FaMinus, 
+  FaChevronRight,
+  FaCouch,
+  FaBox,
+  FaBed,
+  FaTv,
+  FaTshirt,
+  FaChair,
+  FaWheelchair,
+  FaBlender,
+  FaPaintBrush,
+  FaBookOpen,
+  FaPencilAlt,
+  FaTable,
+  FaDoorOpen,
+} from 'react-icons/fa';
 import { useState, useMemo } from 'react';
 import { POPULAR_CATEGORIES } from '@/lib/popular-items-data';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
+
+// Map category IDs to icons for better visual representation
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  'sofas': FaCouch,
+  'wardrobes': FaDoorOpen,
+  'boxes': FaBox,
+  'beds': FaBed,
+  'tables': FaTable,
+  'televisions': FaTv,
+  'clothing': FaTshirt,
+  'chairs': FaChair,
+  'power-chairs': FaWheelchair,
+  'appliances': FaBlender,
+  'decorations': FaPaintBrush,
+  'books': FaBookOpen,
+  'custom': FaPencilAlt,
+};
+
+// Category color schemes for visual distinction
+const CATEGORY_COLORS: Record<string, { bg: string; border: string; iconColor: string; hoverBg: string }> = {
+  'sofas': { bg: 'purple.50', border: 'purple.200', iconColor: 'purple.500', hoverBg: 'purple.100' },
+  'wardrobes': { bg: 'blue.50', border: 'blue.200', iconColor: 'blue.500', hoverBg: 'blue.100' },
+  'boxes': { bg: 'orange.50', border: 'orange.200', iconColor: 'orange.500', hoverBg: 'orange.100' },
+  'beds': { bg: 'teal.50', border: 'teal.200', iconColor: 'teal.500', hoverBg: 'teal.100' },
+  'tables': { bg: 'yellow.50', border: 'yellow.200', iconColor: 'yellow.600', hoverBg: 'yellow.100' },
+  'televisions': { bg: 'cyan.50', border: 'cyan.200', iconColor: 'cyan.600', hoverBg: 'cyan.100' },
+  'clothing': { bg: 'pink.50', border: 'pink.200', iconColor: 'pink.500', hoverBg: 'pink.100' },
+  'chairs': { bg: 'green.50', border: 'green.200', iconColor: 'green.500', hoverBg: 'green.100' },
+  'power-chairs': { bg: 'red.50', border: 'red.200', iconColor: 'red.500', hoverBg: 'red.100' },
+  'appliances': { bg: 'gray.50', border: 'gray.300', iconColor: 'gray.600', hoverBg: 'gray.100' },
+  'decorations': { bg: 'rose.50', border: 'rose.200', iconColor: 'rose.500', hoverBg: 'rose.100' },
+  'books': { bg: 'amber.50', border: 'amber.200', iconColor: 'amber.600', hoverBg: 'amber.100' },
+  'custom': { bg: 'indigo.50', border: 'indigo.200', iconColor: 'indigo.500', hoverBg: 'indigo.100' },
+};
 
 interface CommonItemsGridProps {
   onAddItem?: (item: { id: string; name: string; category: string; weight: number }, quantity: number) => void;
@@ -35,6 +88,18 @@ export const CommonItemsGrid = ({ onAddItem, selectedItems = [] }: CommonItemsGr
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
   const textColor = useColorModeValue('gray.700', 'gray.200');
   const cardBg = useColorModeValue('white', 'gray.800');
+  const isDark = useColorModeValue(false, true);
+
+  // Count total items selected per category
+  const getCategorySelectedCount = (categoryId: string): number => {
+    const category = POPULAR_CATEGORIES.find(cat => cat.id === categoryId);
+    if (!category) return 0;
+    
+    return category.items.reduce((total, itemId) => {
+      const selectedItem = selectedItems.find(i => i.id === itemId);
+      return total + (selectedItem?.quantity || 0);
+    }, 0);
+  };
 
   // Get quantity for an item
   const getItemQuantity = (itemId: string): number => {
@@ -115,92 +180,130 @@ export const CommonItemsGrid = ({ onAddItem, selectedItems = [] }: CommonItemsGr
 
   return (
     <>
-      {/* Category Cards Grid - Pure CSS Grid to avoid Chakra conflicts */}
-      <div
-        style={{
+      {/* Category Cards Grid - Mobile-First Responsive Grid */}
+      <Box
+        as="div"
+        sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '0.5rem',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '8px',
           width: '100%',
+          '@media (min-width: 480px)': {
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gap: '12px',
+          },
+          '@media (min-width: 768px)': {
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+          },
         }}
-        className="common-items-grid-container"
       >
-        {POPULAR_CATEGORIES.map((category) => (
-          <div
-            key={category.id}
-            className="category-card-pure-html"
-            onClick={() => handleCategoryClick(category.id)}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              padding: '0.75rem',
-              borderRadius: '0.5rem',
-              border: '2px solid',
-              borderColor: borderColor,
-              backgroundColor: cardBg,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              minHeight: '120px',
-              minWidth: '0',
-              overflow: 'hidden',
-            }}
-          >
-            {category.imagePath ? (
-              <img 
-                src={category.imagePath} 
-                alt={category.name}
-                style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  objectFit: 'contain',
-                  marginBottom: '0.5rem'
-                }}
-                onError={(e) => {
-                  // Fallback to emoji if image fails to load
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.style.fontSize = '2rem';
-                  fallback.style.marginBottom = '0.5rem';
-                  fallback.textContent = category.icon;
-                  (e.target as HTMLImageElement).parentElement?.insertBefore(fallback, e.target as HTMLImageElement);
-                }}
-              />
-            ) : (
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{category.icon}</div>
-            )}
-            <div
-              className="category-name-pure-text"
-              style={{
-                fontWeight: 'bold',
-                fontSize: '0.75rem',
-                color: textColor,
-                textAlign: 'center',
-                width: '100%',
-                minWidth: '60px',
-                writingMode: 'horizontal-tb',
-                WebkitWritingMode: 'horizontal-tb',
-                textOrientation: 'mixed',
-                WebkitTextOrientation: 'mixed',
-                whiteSpace: 'normal',
-                wordBreak: 'normal',
-                overflowWrap: 'normal',
-                lineHeight: '1.4',
-                direction: 'ltr',
-                hyphens: 'none',
-                WebkitHyphens: 'none',
+        {POPULAR_CATEGORIES.map((category) => {
+          const CategoryIcon = CATEGORY_ICONS[category.id] || FaBox;
+          const colors = CATEGORY_COLORS[category.id] || CATEGORY_COLORS['boxes'];
+          const selectedCount = getCategorySelectedCount(category.id);
+          
+          return (
+            <Box
+              key={category.id}
+              onClick={() => handleCategoryClick(category.id)}
+              position="relative"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              p={2}
+              borderRadius="lg"
+              border="2px solid"
+              borderColor={selectedCount > 0 ? 'green.400' : isDark ? 'gray.600' : colors.border}
+              bg={selectedCount > 0 ? 'green.50' : isDark ? 'gray.800' : colors.bg}
+              cursor="pointer"
+              transition="all 0.2s ease-in-out"
+              minH="80px"
+              maxW="100%"
+              overflow="hidden"
+              boxShadow={selectedCount > 0 ? 'md' : 'sm'}
+              _hover={{
+                transform: 'translateY(-2px)',
+                boxShadow: 'lg',
+                borderColor: selectedCount > 0 ? 'green.500' : 'purple.400',
+                bg: selectedCount > 0 ? 'green.100' : isDark ? 'gray.700' : colors.hoverBg,
+              }}
+              _active={{
+                transform: 'translateY(0)',
               }}
             >
-              {category.name}
-            </div>
-            {category.id !== 'custom' && (
-              <Icon as={FaChevronRight} boxSize={3} color="gray.400" mt={1} />
-            )}
-          </div>
-        ))}
-      </div>
+              {/* Selected Badge */}
+              {selectedCount > 0 && (
+                <Badge
+                  position="absolute"
+                  top="-4px"
+                  right="-4px"
+                  colorScheme="green"
+                  borderRadius="full"
+                  fontSize="9px"
+                  fontWeight="bold"
+                  minW="18px"
+                  h="18px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  boxShadow="sm"
+                >
+                  {selectedCount}
+                </Badge>
+              )}
+              
+              {/* Icon */}
+              <Flex
+                w="32px"
+                h="32px"
+                borderRadius="md"
+                bg={selectedCount > 0 ? 'green.100' : isDark ? 'gray.700' : 'white'}
+                align="center"
+                justify="center"
+                mb={1}
+                boxShadow="sm"
+                flexShrink={0}
+              >
+                <Icon
+                  as={CategoryIcon}
+                  boxSize={4}
+                  color={selectedCount > 0 ? 'green.600' : isDark ? 'gray.300' : colors.iconColor}
+                />
+              </Flex>
+              
+              {/* Category Name */}
+              <Text
+                fontWeight="semibold"
+                fontSize="10px"
+                color={selectedCount > 0 ? 'green.700' : isDark ? 'gray.200' : textColor}
+                lineHeight="1.2"
+                noOfLines={2}
+                textAlign="center"
+                w="100%"
+                sx={{
+                  writingMode: 'horizontal-tb',
+                  textOrientation: 'mixed',
+                  wordBreak: 'keep-all',
+                  whiteSpace: 'normal',
+                }}
+              >
+                {category.name}
+              </Text>
+              
+              {/* Chevron indicator - hidden on mobile for space */}
+              <Icon 
+                as={FaChevronRight} 
+                boxSize={2} 
+                color={selectedCount > 0 ? 'green.400' : 'gray.400'} 
+                mt={0.5}
+                display={{ base: 'none', sm: 'block' }}
+              />
+            </Box>
+          );
+        })}
+      </Box>
 
       {/* Category Items Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">

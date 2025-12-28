@@ -31,6 +31,10 @@ import {
   FormLabel,
   FormErrorMessage,
   Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  IconButton,
   Select,
   SimpleGrid,
   Heading,
@@ -44,7 +48,7 @@ import {
   TabPanel,
   Divider,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash, FaTruck, FaRedo, FaCheck, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash, FaTruck, FaRedo, FaCheck, FaMapMarkerAlt, FaSearch } from 'react-icons/fa';
 import NextImage from 'next/image';
 
 import type { FormData } from '../hooks/useBookingForm';
@@ -902,108 +906,327 @@ export default function WhereAndWhatStepHierarchical({
             </CardBody>
           </Card>
         ) : (
-          /* Search Box for Quick Item Search */
-          <Box>
-            <Input
-              size="lg"
-              placeholder="🔍 Search for any item... (sofa, bed, boxes, etc.)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              bg="whiteAlpha.100"
-              border="2px solid"
-              borderColor="purple.400"
-              borderRadius="xl"
-              color="white"
-              fontSize="md"
-              py={6}
-              _placeholder={{ color: 'whiteAlpha.600' }}
-              _hover={{ borderColor: 'purple.300', bg: 'whiteAlpha.150' }}
-              _focus={{ 
-                borderColor: 'purple.300', 
-                boxShadow: '0 0 0 3px rgba(168, 85, 247, 0.3)',
-                bg: 'whiteAlpha.200'
-              }}
-            />
+          <>
+          {/* Enhanced Search Box for Quick Item Search */}
+          <Card
+            bg="white"
+            borderRadius="2xl"
+            boxShadow="lg"
+            border="1px solid"
+            borderColor="purple.100"
+            overflow="hidden"
+          >
+            {/* Search Header with gradient */}
+            <Box
+              bgGradient="linear(to-r, blue.500, purple.500)"
+              px={4}
+              py={3}
+            >
+              <HStack spacing={2} align="center">
+                <Box
+                  bg="whiteAlpha.200"
+                  borderRadius="lg"
+                  p={2}
+                >
+                  <Icon as={FaSearch} color="white" boxSize={4} />
+                </Box>
+                <VStack spacing={0} align="start">
+                  <Text fontSize="md" color="white" fontWeight="bold">
+                    Search Items
+                  </Text>
+                  <Text fontSize="xs" color="whiteAlpha.800">
+                    Find any furniture or appliance quickly
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
             
-            {/* Search Results */}
-            {searchQuery.trim() && (
-              <Card mt={3} bg="whiteAlpha.100" borderRadius="xl" border="1px solid" borderColor="purple.400">
-                <CardBody p={4}>
-                  <VStack spacing={3} align="stretch">
-                    <Text fontSize="sm" color="whiteAlpha.700" fontWeight="600">
-                      Search results for "{searchQuery}"
-                    </Text>
-                    <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
-                      {ALL_REMOVAL_ITEMS
-                        .filter(item => 
-                          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.category.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                        .slice(0, 12)
-                        .map(item => {
-                          const existingItem = selectedItemsWithRooms.find(i => i.id === item.id);
-                          const quantity = existingItem?.quantity || 0;
-                          return (
-                            <Box
-                              key={item.id}
-                              bg={quantity > 0 ? 'purple.600' : 'whiteAlpha.100'}
-                              borderRadius="lg"
-                              p={3}
-                              border="1px solid"
-                              borderColor={quantity > 0 ? 'purple.400' : 'whiteAlpha.200'}
-                              cursor="pointer"
-                              transition="all 0.2s"
-                              _hover={{ 
-                                bg: quantity > 0 ? 'purple.500' : 'whiteAlpha.200',
-                                transform: 'translateY(-2px)'
-                              }}
-                              onClick={() => {
-                                handleAddItem(item as any, 'Search', 1);
-                                setSearchQuery('');
-                              }}
-                            >
-                              <VStack spacing={1}>
-                                <Text fontSize="sm" fontWeight="600" color="white" textAlign="center" noOfLines={2}>
-                                  {item.name}
-                                </Text>
-                                {quantity > 0 && (
-                                  <Badge colorScheme="green" borderRadius="full">
-                                    {quantity} added
-                                  </Badge>
-                                )}
-                                <Icon as={FaPlus} color="whiteAlpha.600" boxSize={4} />
-                              </VStack>
-                            </Box>
-                          );
-                        })}
-                    </SimpleGrid>
-                    {ALL_REMOVAL_ITEMS.filter(item => 
-                      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      item.category.toLowerCase().includes(searchQuery.toLowerCase())
-                    ).length === 0 && (
-                      <Text fontSize="sm" color="whiteAlpha.500" textAlign="center" py={4}>
-                        No items found. Try a different search term.
-                      </Text>
+            <CardBody p={4}>
+              <VStack spacing={3}>
+                {/* Search Input with Blue Neon Border Animation */}
+                <Box
+                  position="relative"
+                  w="100%"
+                  sx={{
+                    '@keyframes borderTravel': {
+                      '0%': { 
+                        clipPath: 'inset(0 100% 100% 0)',
+                      },
+                      '25%': { 
+                        clipPath: 'inset(0 0 100% 0)',
+                      },
+                      '50%': { 
+                        clipPath: 'inset(0 0 0 100%)',
+                      },
+                      '75%': { 
+                        clipPath: 'inset(100% 0 0 0)',
+                      },
+                      '100%': { 
+                        clipPath: 'inset(0 100% 0 0)',
+                      },
+                    },
+                  }}
+                >
+                  {/* Animated neon border - travels around the edges */}
+                  <Box
+                    position="absolute"
+                    top="-2px"
+                    left="-2px"
+                    right="-2px"
+                    bottom="-2px"
+                    borderRadius="xl"
+                    border="3px solid"
+                    borderColor="#3b82f6"
+                    boxShadow="0 0 10px #3b82f6, 0 0 20px #3b82f6, 0 0 30px #3b82f6"
+                    sx={{
+                      animation: 'borderTravel 2s linear infinite',
+                    }}
+                    pointerEvents="none"
+                  />
+                  {/* Static subtle border underneath */}
+                  <Box
+                    position="absolute"
+                    top="-2px"
+                    left="-2px"
+                    right="-2px"
+                    bottom="-2px"
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor="blue.200"
+                    opacity={0.3}
+                    pointerEvents="none"
+                  />
+                  <InputGroup size="lg">
+                    <Input
+                      placeholder="Type to search... (sofa, bed, boxes)"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      bg="white"
+                      border="2px solid"
+                      borderColor="transparent"
+                      borderRadius="xl"
+                      color="gray.800"
+                      fontSize="md"
+                      fontWeight="medium"
+                      h="56px"
+                      _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
+                      _hover={{ bg: 'gray.50' }}
+                      _focus={{ 
+                        bg: 'white',
+                        borderColor: 'transparent',
+                        boxShadow: 'none',
+                      }}
+                    />
+                    {searchQuery && (
+                      <InputRightElement h="full" pr={2}>
+                        <IconButton
+                          aria-label="Clear search"
+                          icon={<Icon as={FaTimes} />}
+                          size="sm"
+                          variant="ghost"
+                          colorScheme="gray"
+                          onClick={() => setSearchQuery('')}
+                          borderRadius="full"
+                        />
+                      </InputRightElement>
                     )}
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
-          </Box>
+                  </InputGroup>
+                </Box>
+                
+                {/* Quick suggestion chips */}
+                {!searchQuery.trim() && (
+                  <HStack spacing={2} flexWrap="wrap" justify="center">
+                    {['Sofa', 'Bed', 'Boxes', 'Table', 'Wardrobe'].map((suggestion) => (
+                      <Badge
+                        key={suggestion}
+                        px={3}
+                        py={1.5}
+                        borderRadius="full"
+                        bg="purple.50"
+                        color="purple.600"
+                        fontWeight="medium"
+                        fontSize="xs"
+                        cursor="pointer"
+                        transition="all 0.2s"
+                        _hover={{ bg: 'purple.100', transform: 'scale(1.05)' }}
+                        onClick={() => setSearchQuery(suggestion)}
+                      >
+                        {suggestion}
+                      </Badge>
+                    ))}
+                  </HStack>
+                )}
+                
+                {/* Search Results - Inside the same card */}
+                {searchQuery.trim() && (
+                  <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.200">
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between" align="center">
+                        <HStack spacing={2}>
+                          <Icon as={FaSearch} color="purple.500" boxSize={4} />
+                          <Text fontSize="sm" color="gray.600" fontWeight="600">
+                            Results for "<Text as="span" color="purple.600">{searchQuery}</Text>"
+                          </Text>
+                        </HStack>
+                        <Badge colorScheme="purple" borderRadius="full" px={2}>
+                          {ALL_REMOVAL_ITEMS.filter(item => 
+                            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                          ).length} found
+                        </Badge>
+                      </HStack>
+                      <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
+                        {ALL_REMOVAL_ITEMS
+                          .filter(item => 
+                            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                          )
+                          .slice(0, 12)
+                          .map(item => {
+                            const existingItem = selectedItemsWithRooms.find(i => i.id === item.id);
+                            const quantity = existingItem?.quantity || 0;
+                            return (
+                              <Box
+                                key={item.id}
+                                bg={quantity > 0 ? 'green.50' : 'gray.50'}
+                                borderRadius="lg"
+                                p={3}
+                                border="2px solid"
+                                borderColor={quantity > 0 ? 'green.400' : 'gray.200'}
+                                cursor="pointer"
+                                transition="all 0.2s"
+                                _hover={{ 
+                                  bg: quantity > 0 ? 'green.100' : 'purple.50',
+                                  borderColor: quantity > 0 ? 'green.500' : 'purple.300',
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: 'md'
+                                }}
+                                onClick={() => {
+                                  handleAddItem(item as any, 'Search', 1);
+                                  setSearchQuery('');
+                                }}
+                              >
+                                <VStack spacing={1}>
+                                  <Text fontSize="xs" fontWeight="600" color="gray.700" textAlign="center" noOfLines={2}>
+                                    {item.name}
+                                  </Text>
+                                  {quantity > 0 ? (
+                                    <Badge colorScheme="green" borderRadius="full" fontSize="2xs">
+                                      {quantity} added
+                                    </Badge>
+                                  ) : (
+                                    <HStack spacing={1}>
+                                      <Icon as={FaPlus} color="purple.500" boxSize={3} />
+                                      <Text fontSize="2xs" color="purple.500" fontWeight="medium">Add</Text>
+                                    </HStack>
+                                  )}
+                                </VStack>
+                              </Box>
+                            );
+                          })}
+                      </SimpleGrid>
+                      {ALL_REMOVAL_ITEMS.filter(item => 
+                        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).length === 0 && (
+                        <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
+                          No items found. Try a different search term.
+                        </Text>
+                      )}
+                    </VStack>
+                  </Box>
+                )}
+              </VStack>
+            </CardBody>
+          </Card>
+          </>
         )}
 
         {/* Common Items Grid - Always visible at the top */}
-        <Card>
-          <CardBody>
+        <Card 
+          bg="white" 
+          borderRadius="2xl" 
+          boxShadow="lg" 
+          border="1px solid" 
+          borderColor="purple.100"
+          overflow="hidden"
+        >
+          {/* Header with gradient */}
+          <Box
+            bgGradient="linear(to-r, purple.500, purple.600)"
+            px={4}
+            py={3}
+          >
+            <HStack spacing={2} align="center">
+              <Box
+                bg="whiteAlpha.200"
+                borderRadius="lg"
+                p={2}
+              >
+                <Text fontSize="xl">⚡</Text>
+              </Box>
+              <VStack spacing={0} align="start">
+                <Heading size="md" color="white" fontWeight="bold">
+                  Quick Add Items
+                </Heading>
+                <Text fontSize="xs" color="whiteAlpha.800">
+                  Most popular furniture & appliances
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+          
+          <CardBody pt={3} pb={4}>
             <VStack spacing={4} align="stretch">
-              <Heading size="md" color="purple.600">
-                ⚡ Quick Add - Most Popular Items
-              </Heading>
-              <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                💡 Tap <Text as="span" fontWeight="bold" color="green.600">+</Text> to instantly add items | 
-                Use <Text as="span" fontWeight="bold" color="red.600">-</Text> to remove | 
-                Or explore full categories below ⬇️
-              </Text>
+              {/* Instructions */}
+              <HStack 
+                spacing={3} 
+                bg="gray.50" 
+                p={3} 
+                borderRadius="lg"
+                flexWrap="wrap"
+                justify="center"
+              >
+                <HStack spacing={1}>
+                  <Box 
+                    bg="green.500" 
+                    color="white" 
+                    borderRadius="md" 
+                    w={6} 
+                    h={6} 
+                    display="flex" 
+                    alignItems="center" 
+                    justifyContent="center"
+                    fontSize="xs"
+                    fontWeight="bold"
+                  >
+                    +
+                  </Box>
+                  <Text fontSize="xs" color="gray.600">Add</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Box 
+                    bg="red.500" 
+                    color="white" 
+                    borderRadius="md" 
+                    w={6} 
+                    h={6} 
+                    display="flex" 
+                    alignItems="center" 
+                    justifyContent="center"
+                    fontSize="xs"
+                    fontWeight="bold"
+                  >
+                    −
+                  </Box>
+                  <Text fontSize="xs" color="gray.600">Remove</Text>
+                </HStack>
+                <Text fontSize="xs" color="gray.500">|</Text>
+                <Text fontSize="xs" color="gray.600" fontWeight="medium">
+                  Tap category to browse ⬇️
+                </Text>
+              </HStack>
+              
               <CommonItemsGrid 
                 selectedItems={selectedItemsWithRooms.map(i => ({
                   id: i.id,

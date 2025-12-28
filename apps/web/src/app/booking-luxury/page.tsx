@@ -119,6 +119,9 @@ export default function BookingLuxuryPage() {
     onOpen: onItemsOpen, 
     onClose: onItemsClose 
   } = useDisclosure();
+  
+  // Error card highlighting state - for red neon animation
+  const [errorCardId, setErrorCardId] = useState<string | null>(null);
 
   // Ensure the booking flow uses immediate scroll behavior to avoid jump-to-top glitches
   useEffect(() => {
@@ -1326,11 +1329,19 @@ export default function BookingLuxuryPage() {
         : formData.step1.items.length > 0;
         
       if (!hasItems) {
+        // Scroll to items card and show red neon animation
+        setErrorCardId('items-card');
+        const itemsCard = document.getElementById('items-card');
+        if (itemsCard) {
+          itemsCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         toast({
           title: 'Please select at least one item',
           status: 'error',
           duration: 3000,
         });
+        // Clear error state after 3 seconds
+        setTimeout(() => setErrorCardId(null), 3000);
         return;
       }
       
@@ -1340,11 +1351,19 @@ export default function BookingLuxuryPage() {
         : formData.step1.pickupDate;
         
       if (!hasDate) {
+        // Scroll to date card and show red neon animation
+        setErrorCardId('datetime-card');
+        const dateCard = document.getElementById('datetime-card');
+        if (dateCard) {
+          dateCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         toast({
           title: 'Please select a pickup date',
           status: 'error',
           duration: 3000,
         });
+        // Clear error state after 3 seconds
+        setTimeout(() => setErrorCardId(null), 3000);
         return;
       }
       
@@ -1928,27 +1947,66 @@ export default function BookingLuxuryPage() {
               <Box key="step2-items" w="full" data-booking-step="2">
                 <VStack spacing={6} align="stretch">
                   {/* Date & Time Selection - Right Under Progress Bar */}
-                  <Card 
-                    bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-                    backdropFilter="blur(20px)"
-                    borderRadius="2xl"
-                    border="3px solid"
-                    borderColor="rgba(168, 85, 247, 0.5)"
-                    boxShadow="0 10px 40px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
+                  <Box
+                    id="datetime-card"
                     position="relative"
-                    overflow="visible"
-                    _before={{
-                      content: '""',
-                      position: 'absolute',
-                      inset: '-4px',
-                      borderRadius: '2xl',
-                      padding: '4px',
-                      background: 'linear-gradient(135deg, #a855f7, #9333ea, #7e22ce)',
-                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude',
-                      opacity: 0.4,
-                    }}
+                    sx={errorCardId === 'datetime-card' ? {
+                      '@keyframes redNeonTravel': {
+                        '0%': { clipPath: 'inset(0 100% 100% 0)' },
+                        '25%': { clipPath: 'inset(0 0 100% 0)' },
+                        '50%': { clipPath: 'inset(0 0 0 100%)' },
+                        '75%': { clipPath: 'inset(100% 0 0 0)' },
+                        '100%': { clipPath: 'inset(0 100% 0 0)' },
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-3px',
+                        left: '-3px',
+                        right: '-3px',
+                        bottom: '-3px',
+                        borderRadius: '2xl',
+                        border: '3px solid #ef4444',
+                        boxShadow: '0 0 15px #ef4444, 0 0 30px #ef4444, 0 0 45px #ef4444',
+                        animation: 'redNeonTravel 1.5s linear infinite',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                      },
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-3px',
+                        left: '-3px',
+                        right: '-3px',
+                        bottom: '-3px',
+                        borderRadius: '2xl',
+                        border: '2px solid rgba(239, 68, 68, 0.3)',
+                        pointerEvents: 'none',
+                        zIndex: 9,
+                      },
+                    } : {}}
+                  >
+                    <Card 
+                      bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+                      backdropFilter="blur(20px)"
+                      borderRadius="2xl"
+                      border="3px solid"
+                      borderColor={errorCardId === 'datetime-card' ? 'transparent' : 'rgba(168, 85, 247, 0.5)'}
+                      boxShadow="0 10px 40px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
+                      position="relative"
+                      overflow="visible"
+                      _before={{
+                        content: '""',
+                        position: 'absolute',
+                        inset: '-4px',
+                        borderRadius: '2xl',
+                        padding: '4px',
+                        background: 'linear-gradient(135deg, #a855f7, #9333ea, #7e22ce)',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                        opacity: errorCardId === 'datetime-card' ? 0 : 0.4,
+                      }}
                   >
                     <CardBody p={{ base: 5, md: 7 }}>
                       <VStack spacing={{ base: 5, md: 7 }} align="stretch">
@@ -2191,16 +2249,57 @@ export default function BookingLuxuryPage() {
                       </VStack>
                     </CardBody>
                   </Card>
+                  </Box>
 
 
-
-                  <WhereAndWhatStepHierarchical
-                    formData={formData}
-                    updateFormData={updateFormData}
-                    updateSegment={updateSegment}
-                    errors={errors}
-                    calculatePricing={calculateComprehensivePricing}
-                  />
+                  {/* Items Selection Card with Red Neon Error Animation */}
+                  <Box
+                    id="items-card"
+                    position="relative"
+                    sx={errorCardId === 'items-card' ? {
+                      '@keyframes redNeonTravel': {
+                        '0%': { clipPath: 'inset(0 100% 100% 0)' },
+                        '25%': { clipPath: 'inset(0 0 100% 0)' },
+                        '50%': { clipPath: 'inset(0 0 0 100%)' },
+                        '75%': { clipPath: 'inset(100% 0 0 0)' },
+                        '100%': { clipPath: 'inset(0 100% 0 0)' },
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-3px',
+                        left: '-3px',
+                        right: '-3px',
+                        bottom: '-3px',
+                        borderRadius: '2xl',
+                        border: '3px solid #ef4444',
+                        boxShadow: '0 0 15px #ef4444, 0 0 30px #ef4444, 0 0 45px #ef4444',
+                        animation: 'redNeonTravel 1.5s linear infinite',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                      },
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-3px',
+                        left: '-3px',
+                        right: '-3px',
+                        bottom: '-3px',
+                        borderRadius: '2xl',
+                        border: '2px solid rgba(239, 68, 68, 0.3)',
+                        pointerEvents: 'none',
+                        zIndex: 9,
+                      },
+                    } : {}}
+                  >
+                    <WhereAndWhatStepHierarchical
+                      formData={formData}
+                      updateFormData={updateFormData}
+                      updateSegment={updateSegment}
+                      errors={errors}
+                      calculatePricing={calculateComprehensivePricing}
+                    />
+                  </Box>
 
                   {/* SINGLE Navigation Section - Bottom of Step 2 */}
                   <Card

@@ -47,7 +47,6 @@ import { m, isValidMotionProp } from 'framer-motion';
 import { chakra, shouldForwardProp } from '@chakra-ui/react';
 import HeaderButton from '@/components/common/HeaderButton';
 import { WhatsAppIconLink } from '@/components/shared/WhatsAppEntryPoint';
-import GlobalSearch from '@/components/shared/GlobalSearch';
 
 const Header: React.FC = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
@@ -481,9 +480,7 @@ const Header: React.FC = memo(() => {
               </Button>
             </Tooltip>
             
-            {/* Global Location Search */}
-            <GlobalSearch variant="header" />
-            
+
             <WhatsAppIconLink
               size="md"
               variant="solid"
@@ -710,11 +707,6 @@ const Header: React.FC = memo(() => {
           
           <DrawerBody pt={0} bg="rgba(15, 17, 20, 0.95)">
             <VStack spacing={1} align="stretch">
-              {/* Mobile Search */}
-              <Box mb={4} px={2}>
-                <GlobalSearch variant="inline" placeholder="Search UK locations..." />
-              </Box>
-              
               {mobileNavItems.map((item, index) => (
                 <MotionBox
                   key={item.label}
