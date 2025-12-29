@@ -21,6 +21,10 @@ import {
   CardBody,
   Divider,
   Badge,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
   useToast,
   FormControl,
   FormLabel,
@@ -46,7 +50,6 @@ import type { BookingSegment } from '../types/segment';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
-import { SelectableCard } from '@/components/shared/SelectableCard';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
 import SelectedItemsManager from './SelectedItemsManager';
 
@@ -81,7 +84,7 @@ export default function WhoAndPaymentStepSimple({
   applyPromotionCode,
   removePromotionCode,
 }: WhoAndPaymentStepProps) {
-  const [selectedService, setSelectedService] = useState<'economy' | 'standard' | 'express'>('standard');
+  const [selectedDayKey, setSelectedDayKey] = useState<string | undefined>(undefined);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [promotionCode, setPromotionCode] = useState('');
@@ -129,7 +132,7 @@ export default function WhoAndPaymentStepSimple({
           amount: currentPrice,
           customerEmail: formData.step2.customerDetails.email || undefined,
           pickupPostcode: formData.step1.pickupAddress?.postcode || '',
-          serviceType: selectedService,
+            serviceType,
         }),
       });
 
@@ -261,6 +264,23 @@ export default function WhoAndPaymentStepSimple({
   };
 
   const segments = (formData.step1.segments || []) as BookingSegment[];
+
+  // Detect when address data is incomplete (e.g., missing postcodes) so we can warn
+  const hasBasePostcodes =
+    Boolean(formData.step1.pickupAddress?.postcode) &&
+    Boolean(formData.step1.dropoffAddress?.postcode);
+
+  const segmentsMissingPostcodes = segments.length > 0
+    ? segments.some((segment) => {
+        const pickup = segment?.pickupAddress?.postcode;
+        const dropoff = segment?.dropoffAddress?.postcode;
+        return !pickup || !dropoff;
+      })
+    : false;
+
+  const addressIncomplete = segments.length > 0
+    ? segmentsMissingPostcodes
+    : !hasBasePostcodes;
   const segmentTotal = useMemo(() => {
     return segments.reduce((sum, segment) => {
       const value = segment?.pricing?.total;
@@ -290,70 +310,196 @@ export default function WhoAndPaymentStepSimple({
   // For multi-leg without segment pricing, use standardPrice (which now has fallback)
   const standardBase = hasMultiLegPrice ? segmentTotal : safeStandardPrice;
 
-  // ✅ CRITICAL FIX: For multi-leg, ALWAYS calculate economy/express from standardBase
-  // The props from parent contain BASE price (same for all tiers in multi-leg)
-  // We must apply multipliers here to get correct tiered pricing
-  let safeEconomyPrice: number;
-  if (hasMultiLegPrice || isMultiLegWithoutPricing) {
-    // Multi-leg: always calculate from standardBase
-    safeEconomyPrice = parseFloat((standardBase * 0.85).toFixed(2));
-  } else {
-    // Single-leg: use props (which already have multipliers from pricingTiers)
-    const fromProps = sanitizePrice(economyPrice);
-    safeEconomyPrice = fromProps !== undefined ? fromProps : parseFloat((standardBase * 0.85).toFixed(2));
-  }
+  // Calendar-based pricing (2-3 weeks forward)
+  const normalizeDate = (value: string | Date | undefined) => {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) {
+      const fallback = new Date();
+      fallback.setHours(0, 0, 0, 0);
+      return fallback;
+    }
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
 
-  let safeExpressPrice: number;
-  if (hasMultiLegPrice || isMultiLegWithoutPricing) {
-    // Multi-leg: always calculate from standardBase
-    safeExpressPrice = parseFloat((standardBase * 1.5).toFixed(2));
-  } else {
-    // Single-leg: use props (which already have multipliers from pricingTiers)
-    const fromProps = sanitizePrice(priorityPrice);
-    safeExpressPrice = fromProps !== undefined ? fromProps : parseFloat((standardBase * 1.5).toFixed(2));
-  }
+  const startDate = normalizeDate(formData.step1.pickupDate);
 
-  const isMultiLeg = segments.length > 1;
+  const buildPriceCalendar = useCallback(
+    (basePrice: number, days: number, anchor: Date) => {
+      const results: {
+        date: Date;
+        iso: string;
+        key: string;
+        label: string;
+        weekday: string;
+        price: number;
+        factor: number;
+      }[] = [];
 
-  // Calculate base price based on selected service
-  // ✅ FIXED: For multi-leg, use segmentTotal as base and apply multipliers ONCE
-  // The props (economyPrice, priorityPrice) already have multipliers applied for single-leg
-  // But for multi-leg, we need to apply them to segmentTotal (which is sum of standard prices)
-  const selectedBase = selectedService === 'economy'
-    ? safeEconomyPrice
-    : selectedService === 'express'
-    ? safeExpressPrice
-    : standardBase;
+      const clampedBase = basePrice > 0 ? basePrice : 0;
 
-  // ✅ CRITICAL FIX: Use selectedBase which already has correct multipliers applied
-  // - For single-leg: selectedBase comes from props (economy/standard/express price from pricingTiers)
-  // - For multi-leg: selectedBase = segmentTotal when standard, or props for economy/express
-  // DO NOT apply multipliers again - they're already in the props!
-  const actualPrice = hasMultiLegPrice 
-    ? (selectedService === 'economy'
-        ? segmentTotal * 0.85  // Apply 15% discount to segment total
-        : selectedService === 'express'
-        ? segmentTotal * 1.5   // Apply 50% premium to segment total  
-        : segmentTotal)         // Standard: segment total as-is
-    : selectedBase;  // Single-leg: use props which already have multipliers
+      for (let i = 0; i < days; i++) {
+        const d = new Date(anchor);
+        d.setDate(d.getDate() + i);
+        const weekday = d.toLocaleDateString('en-GB', { weekday: 'short' });
+        const day = d.getDate();
+        const month = d.toLocaleDateString('en-GB', { month: 'short' });
+
+        const daysAway = i;
+        let factor = 1;
+
+        // Lead-time based adjustments
+        if (daysAway === 0) {
+          factor = 1.25; // same-day premium
+        } else if (daysAway <= 1) {
+          factor = 1.15;
+        } else if (daysAway <= 3) {
+          factor = 1.08;
+        } else if (daysAway <= 6) {
+          factor = 1.02;
+        } else if (daysAway <= 10) {
+          factor = 0.96;
+        } else if (daysAway <= 14) {
+          factor = 0.92;
+        } else {
+          factor = 0.9;
+        }
+
+        // Weekend slight premium
+        const dayOfWeek = d.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          factor += 0.05;
+        }
+
+        const price = parseFloat((clampedBase * factor).toFixed(2));
+
+        const iso = d.toISOString();
+        results.push({
+          date: d,
+          iso,
+          key: iso.split('T')[0], // date-only key to avoid tz drift
+          label: `${weekday} ${day} ${month}`,
+          weekday,
+          price,
+          factor,
+        });
+      }
+
+      return results;
+    },
+    []
+  );
+
+  const priceCalendar = useMemo(() => {
+    return buildPriceCalendar(standardBase, 21, startDate);
+  }, [buildPriceCalendar, standardBase, startDate]);
+
+  const isSameDay = (a: Date, b: Date) => {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+  };
+
+  useEffect(() => {
+    // If user already chose a day, keep it; otherwise pick matching startDate or first entry
+    if (selectedDayKey) return;
+    const match = priceCalendar.find((entry) => isSameDay(entry.date, startDate));
+    if (match) {
+      setSelectedDayKey(match.key);
+    } else if (priceCalendar.length > 0) {
+      setSelectedDayKey(priceCalendar[0].key);
+    }
+  }, [priceCalendar, startDate, selectedDayKey]);
+
+  const handleSelectDay = useCallback((index: number) => {
+    const target = priceCalendar[index];
+    if (!target) return;
+    // Avoid unnecessary updates if already selected
+    if (selectedDayKey === target.key) return;
+    setSelectedDayKey(target.key);
+    updateFormData('step1', {
+      pickupDate: target.key, // store date-only to avoid tz drift
+    });
+  }, [priceCalendar, selectedDayKey, updateFormData]);
+
+  const selectedPriceOption = useMemo(() => {
+    if (selectedDayKey) {
+      return priceCalendar.find((p) => p.key === selectedDayKey) || priceCalendar[0];
+    }
+    return priceCalendar[0];
+  }, [priceCalendar, selectedDayKey]);
+
+  const actualPrice = selectedPriceOption?.price ?? standardBase ?? 0;
+  const selectedPriceLabel = selectedPriceOption ? selectedPriceOption.label : 'Selected date';
+  const serviceType = 'standard';
+
+  const priceIsValid = Number.isFinite(actualPrice) && actualPrice > 0;
+  const priceReady = !addressIncomplete && priceIsValid;
+  const displayPriceText = priceReady ? `£${actualPrice.toFixed(2)}` : 'Add full address';
+
+  const priceStats = useMemo(() => {
+    if (!priceCalendar.length) {
+      return { cheap: 0, expensive: 0, min: 0, max: 0 };
+    }
+    const prices = priceCalendar.map((p) => p.price);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const span = max - min || 1;
+    const cheap = min + span * 0.33;
+    const expensive = min + span * 0.66;
+    return { cheap, expensive, min, max };
+  }, [priceCalendar]);
+
+  const getPriceLevel = (price: number) => {
+    if (!priceCalendar.length) return 'mid' as const;
+    if (price <= priceStats.cheap) return 'cheap' as const;
+    if (price >= priceStats.expensive) return 'expensive' as const;
+    return 'mid' as const;
+  };
+
+  const cheapestIndex = useMemo(() => {
+    if (!priceCalendar.length) return 0;
+    let minIdx = 0;
+    let min = priceCalendar[0].price;
+    priceCalendar.forEach((p, idx) => {
+      if (p.price < min) {
+        min = p.price;
+        minIdx = idx;
+      }
+    });
+    return minIdx;
+  }, [priceCalendar]);
+
+  const selectCheapest = () => handleSelectDay(cheapestIndex);
+  const selectEarliest = () => handleSelectDay(0);
+
+  // Show a concise window (up to 10 days) while keeping the selected day visible
+  const visiblePriceCalendar = useMemo(() => {
+    if (!priceCalendar.length) return [];
+    const maxDays = Math.min(priceCalendar.length, 10);
+    const base = priceCalendar.slice(0, maxDays);
+    if (selectedDayKey) {
+      const sel = priceCalendar.find((p) => p.key === selectedDayKey);
+      if (sel && !base.find((p) => p.iso === sel.iso)) {
+        return [sel, ...base].slice(0, maxDays);
+      }
+    }
+    return base;
+  }, [priceCalendar, selectedDayKey]);
 
   // Debug logging only in development mode to reduce console noise
   if (process.env.NODE_ENV === 'development') {
     console.log('💰 Step 3 Pricing Sanity Check:', {
-      economyFromProps: economyPrice,
-      standardFromProps: standardPrice,
-      expressFromProps: priorityPrice,
-      safeEconomyPrice,
       safeStandardPrice,
-      safeExpressPrice,
-      selectedService,
-      isMultiLeg,
+      isMultiLeg: segments.length > 1,
       isMultiLegWithoutPricing,
       hasMultiLegPrice,
       segmentCount: segments.length,
       segmentTotal,
       standardBase,
       totalSegmentsPrice: hasMultiLegPrice ? segmentTotal : 'N/A (using standardBase fallback)',
+      selectedDayKey,
+      selectedPriceOption,
       actualPrice
     });
   }
@@ -671,263 +817,290 @@ export default function WhoAndPaymentStepSimple({
     }
   }, [formData.step2.customerDetails, updateFormData]);
   
-  // Handle service selection change - just update selected service (no price recalculation)
-  const handleServiceChange = useCallback((serviceId: 'economy' | 'standard' | 'express') => {
-    // Save scroll position before update (mobile only)
-    const isMobile = window.innerWidth < 768;
-    const scrollY = isMobile ? window.scrollY : undefined;
-    
-    setSelectedService(serviceId);
-    
-    // Get price for selected service (from Step 2 calculation)
-    const newTotal = serviceId === 'economy'
-      ? safeEconomyPrice
-      : serviceId === 'express'
-      ? safeExpressPrice
-      : standardBase;
-    
-    // Debug logging only in development mode
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 Service changed to ${serviceId} - price: £${newTotal.toFixed(2)} (from Step 2)`);
-    }
-    
-    // Restore scroll position after update (mobile only)
-    if (isMobile && scrollY !== undefined) {
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
-    }
-  }, [safeEconomyPrice, safeExpressPrice, standardBase]);
-
-  // CRITICAL: Use calculated prices (not static props)
-  const services = [
-    {
-      id: 'economy' as const,
-      name: 'Economy',
-      price: safeEconomyPrice,
-      description: 'Shared route, 7 days delivery',
-      icon: '🚐',
-      discount: '15% off',
-    },
-    {
-      id: 'standard' as const,
-      name: 'Standard',
-      price: standardBase,
-      description: 'Direct service, flexible scheduling',
-      icon: '🚚',
-      popular: true,
-    },
-    {
-      id: 'express' as const,
-      name: 'Express',
-      price: safeExpressPrice,
-      description: 'Same-day or next-day delivery',
-      icon: '⚡',
-      premium: '50% premium',
-    },
-  ];
-
   return (
     <Box w="full">
       <VStack spacing={6} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* CARD 1: Service Selection - Simplified Tabs */}
+        {/* CARD 1: Date-based pricing list - Enhanced Design */}
         <Card
-          bg="rgba(26, 26, 26, 0.6)"
+          bg="rgba(17, 24, 39, 0.95)"
           border="1px solid"
-          borderColor="rgba(59, 130, 246, 0.2)"
+          borderColor="rgba(59, 130, 246, 0.3)"
           borderRadius="2xl"
-          backdropFilter="blur(10px)"
+          backdropFilter="blur(20px)"
+          overflow="hidden"
+          position="relative"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            bgGradient: 'linear(to-r, blue.400, cyan.400, green.400)',
+          }}
         >
-          <CardBody p={{ base: 6, md: 8 }}>
+          <CardBody p={{ base: 5, md: 8 }}>
             <VStack spacing={6} align="stretch">
-              <Text fontSize="lg" fontWeight="600" color="white">
-                Choose Your Service
-              </Text>
+              {/* Header Section */}
+              <VStack align="stretch" spacing={4}>
+                <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="700" color="white">
+                      📅 Choose Your Moving Date
+                    </Text>
+                    <Text fontSize="sm" color="gray.400">
+                      Select the best date for your budget
+                    </Text>
+                  </VStack>
+                  <HStack spacing={2} flexWrap="wrap">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={selectEarliest}
+                      borderColor="gray.600"
+                      color="gray.300"
+                      _hover={{ bg: 'gray.700', borderColor: 'gray.500' }}
+                    >
+                      ⏰ Earliest
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      bg="green.500"
+                      color="white"
+                      onClick={selectCheapest}
+                      _hover={{ bg: 'green.400' }}
+                      leftIcon={<Text>💰</Text>}
+                    >
+                      Best Price
+                    </Button>
+                  </HStack>
+                </HStack>
 
-              <Box
-                className="service-options-grid"
-                w="100%"
+                {/* Price Legend - Simplified */}
+                <HStack 
+                  spacing={4} 
+                  flexWrap="wrap" 
+                  p={3} 
+                  bg="rgba(0,0,0,0.3)" 
+                  borderRadius="lg"
+                >
+                  <HStack spacing={2}>
+                    <Box w="14px" h="14px" borderRadius="full" bg="green.400" boxShadow="0 0 10px rgba(16,185,129,0.5)" />
+                    <Text fontSize="xs" color="green.300" fontWeight="600">Best Value</Text>
+                  </HStack>
+                  <HStack spacing={2}>
+                    <Box w="14px" h="14px" borderRadius="full" bg="orange.400" boxShadow="0 0 10px rgba(251,146,60,0.5)" />
+                    <Text fontSize="xs" color="orange.300" fontWeight="600">Standard</Text>
+                  </HStack>
+                  <HStack spacing={2}>
+                    <Box w="14px" h="14px" borderRadius="full" bg="red.400" boxShadow="0 0 10px rgba(248,113,113,0.5)" />
+                    <Text fontSize="xs" color="red.300" fontWeight="600">Peak Time</Text>
+                  </HStack>
+                </HStack>
+              </VStack>
+
+              {/* Price Cards - Enhanced */}
+              <Flex
+                gap={4}
+                overflowX="auto"
+                pb={2}
+                w="full"
+                flexWrap="nowrap"
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { base: '1fr', md: 'repeat(3, 1fr)' },
-                  gap: { base: '12px', md: '16px' },
-                  '@media screen and (max-width: 768px)': {
-                    gridTemplateColumns: '1fr !important',
-                    display: 'grid !important',
-                  },
+                  scrollSnapType: 'x mandatory',
+                  '& > *': { scrollSnapAlign: 'start' },
+                  '&::-webkit-scrollbar': { height: '8px' },
+                  '&::-webkit-scrollbar-track': { background: 'rgba(0,0,0,0.2)', borderRadius: '999px' },
+                  '&::-webkit-scrollbar-thumb': { background: 'rgba(59,130,246,0.5)', borderRadius: '999px' },
                 }}
               >
-                {services.map((service) => {
-                  const isSelected = selectedService === service.id;
+                {visiblePriceCalendar.map((option, idx) => {
+                  const level = getPriceLevel(option.price);
+                  const cardIndex = priceCalendar.findIndex((p) => p.iso === option.iso);
+                  const isSelected = selectedDayKey
+                    ? option.key === selectedDayKey
+                    : cardIndex === 0;
+                  const isCheapest = cardIndex === cheapestIndex;
+                  
+                  // Enhanced color scheme
+                  const colorScheme = {
+                    cheap: {
+                      bg: isSelected 
+                        ? 'linear-gradient(135deg, rgba(16,185,129,0.4), rgba(16,185,129,0.2))'
+                        : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
+                      border: isSelected ? 'green.400' : 'rgba(16,185,129,0.4)',
+                      glow: '0 0 30px rgba(16,185,129,0.3)',
+                      icon: '🟢',
+                      textColor: 'green.300',
+                    },
+                    mid: {
+                      bg: isSelected 
+                        ? 'linear-gradient(135deg, rgba(251,146,60,0.4), rgba(251,146,60,0.2))'
+                        : 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(251,146,60,0.05))',
+                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.4)',
+                      glow: '0 0 30px rgba(251,146,60,0.3)',
+                      icon: '🟠',
+                      textColor: 'orange.300',
+                    },
+                    expensive: {
+                      bg: isSelected 
+                        ? 'linear-gradient(135deg, rgba(248,113,113,0.4), rgba(248,113,113,0.2))'
+                        : 'linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.05))',
+                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.4)',
+                      glow: '0 0 30px rgba(248,113,113,0.3)',
+                      icon: '🔴',
+                      textColor: 'red.300',
+                    },
+                  };
+                  
+                  const scheme = colorScheme[level];
 
                   return (
-                    <React.Fragment key={service.id}>
-                      <SelectableCard
-                        className={`price-card price-card-${service.id}`}
-                        isSelected={isSelected}
-                        onClick={() => handleServiceChange(service.id)}
-                        w="full"
-                        p={{ base: 4, md: 5 }}
-                        sx={{
-                          gridColumn: { base: '1', md: 'auto' }
-                        }}
-                      >
-                        <VStack spacing={{ base: 3, md: 4 }} align="stretch" w="full">
-                          <HStack justify="space-between" align="center">
-                            <Box
-                              p={{ base: 2, md: 3 }}
-                              borderRadius="xl"
-                              bg={isSelected ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)'}
-                              transition="all 0.3s"
-                              boxShadow={isSelected ? '0 0 15px rgba(59, 130, 246, 0.45)' : 'none'}
-                            >
-                              <Text fontSize={{ base: '2xl', md: '3xl' }} role="img" aria-hidden="true">
-                                {service.icon}
-                              </Text>
-                            </Box>
-                            <Text
-                              fontSize={{ base: 'xl', md: '2xl' }}
-                              fontWeight="extrabold"
-                              color="white"
-                            >
-                              £{service.price.toFixed(2)}
-                            </Text>
-                          </HStack>
-
-                          <Box>
-                            <Text
-                              fontSize={{ base: 'md', md: 'lg' }}
-                              fontWeight="bold"
-                              color="white"
-                              noOfLines={1}
-                            >
-                              {service.name}
-                            </Text>
-                            <Text
-                              fontSize={{ base: 'xs', md: 'sm' }}
-                              color="whiteAlpha.700"
-                              noOfLines={2}
-                              lineHeight="1.4"
-                            >
-                              {service.description}
-                            </Text>
-                          </Box>
-
-                          {(service.popular || service.discount || service.premium) && (
-                            <HStack spacing={2} flexWrap="wrap">
-                              {service.popular && (
-                                <Badge
-                                  colorScheme="purple"
-                                  variant={isSelected ? 'solid' : 'subtle'}
-                                  fontSize="2xs"
-                                  fontWeight="700"
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                >
-                                  Popular
-                                </Badge>
-                              )}
-                              {service.discount && (
-                                <Badge
-                                  colorScheme="green"
-                                  variant={isSelected ? 'solid' : 'subtle'}
-                                  fontSize="2xs"
-                                  fontWeight="700"
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                >
-                                  {service.discount}
-                                </Badge>
-                              )}
-                              {service.premium && (
-                                <Badge
-                                  colorScheme="orange"
-                                  variant={isSelected ? 'solid' : 'subtle'}
-                                  fontSize="2xs"
-                                  fontWeight="700"
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                >
-                                  {service.premium}
-                                </Badge>
-                              )}
-                            </HStack>
-                          )}
-                        </VStack>
-                      </SelectableCard>
-                      
-                      {/* Economy Service Warning - Shows directly below Economy card when selected */}
-                      {service.id === 'economy' && isSelected && (
+                    <Box
+                      key={option.iso}
+                      minW={{ base: '160px', md: '180px' }}
+                      p={{ base: 4, md: 5 }}
+                      borderRadius="2xl"
+                      borderWidth="2px"
+                      borderColor={scheme.border}
+                      bg={scheme.bg}
+                      boxShadow={isSelected ? scheme.glow : 'none'}
+                      cursor="pointer"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      transform={isSelected ? 'scale(1.02)' : 'scale(1)'}
+                      _hover={{ 
+                        transform: 'scale(1.02)', 
+                        boxShadow: scheme.glow,
+                      }}
+                      onClick={() => handleSelectDay(cardIndex)}
+                      position="relative"
+                      overflow="hidden"
+                    >
+                      {/* Best Deal Ribbon */}
+                      {isCheapest && (
                         <Box
-                          sx={{
-                            gridColumn: { base: '1', md: '1 / -1' },
-                          }}
-                          mt={{ base: 2, md: 0 }}
-                          p={{ base: 3, md: 4 }}
-                          bg="rgba(251, 191, 36, 0.15)"
-                          border="2px solid"
-                          borderColor="rgba(251, 191, 36, 0.5)"
-                          borderRadius="xl"
-                          boxShadow="0 0 20px rgba(251, 191, 36, 0.2)"
+                          position="absolute"
+                          top="-1px"
+                          right="-1px"
+                          bg="green.500"
+                          color="white"
+                          fontSize="xs"
+                          fontWeight="bold"
+                          px={3}
+                          py={1}
+                          borderBottomLeftRadius="lg"
                         >
-                          <VStack spacing={3} align="stretch">
-                            <HStack spacing={2}>
-                              <Text fontSize={{ base: "2xl", md: "xl" }} role="img" aria-label="Warning">⚠️</Text>
-                              <Text 
-                                color="yellow.300" 
-                                fontWeight="bold" 
-                                fontSize={{ base: "md", md: "sm" }}
-                                lineHeight="1.4"
-                              >
-                                Economy Service - Flexible Delivery
-                              </Text>
-                            </HStack>
-                            
-                            <VStack align="start" spacing={2} pl={{ base: 0, md: 8 }}>
-                              <Text 
-                                color="yellow.100" 
-                                fontSize={{ base: "sm", md: "xs" }} 
-                                fontWeight="600"
-                                lineHeight="1.6"
-                              >
-                                📦 <Text as="span" color="white" fontWeight="bold">Delivery Timeline: 7-10 Days</Text>
-                              </Text>
-                              
-                              <Text 
-                                color="whiteAlpha.900" 
-                                fontSize={{ base: "xs", md: "xs" }} 
-                                lineHeight="1.7"
-                              >
-                                Your items will be delivered via our <Text as="span" fontWeight="bold">shared route service</Text>. 
-                                The exact delivery date depends on <Text as="span" color="yellow.200" fontWeight="bold">driver availability</Text> and 
-                                <Text as="span" color="yellow.200" fontWeight="bold"> route optimization</Text>.
-                              </Text>
-                              
-                              {formData.step1.pickupDate && (
-                                <Text 
-                                  color="green.300" 
-                                  fontSize={{ base: "xs", md: "xs" }} 
-                                  fontWeight="600"
-                                  lineHeight="1.6"
-                                  pt={1}
-                                >
-                                  ✅ Your selected date ({new Date(formData.step1.pickupDate).toLocaleDateString('en-GB', { 
-                                    weekday: 'short', 
-                                    day: 'numeric', 
-                                    month: 'short' 
-                                  })}) will be the <Text as="span" textDecoration="underline">earliest possible</Text> pickup date.
-                                </Text>
-                              )}
-                            </VStack>
-                          </VStack>
+                          💰 BEST
                         </Box>
                       )}
-                    </React.Fragment>
+                      
+                      {/* Selected Indicator */}
+                      {isSelected && (
+                        <Box
+                          position="absolute"
+                          top={2}
+                          left={2}
+                          w="24px"
+                          h="24px"
+                          borderRadius="full"
+                          bg="blue.500"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <Text fontSize="sm">✓</Text>
+                        </Box>
+                      )}
+                      
+                      <VStack align="stretch" spacing={3} pt={isSelected ? 4 : 0}>
+                        {/* Date */}
+                        <VStack align="start" spacing={0}>
+                          <Text color="white" fontWeight="800" fontSize={{ base: 'md', md: 'lg' }}>
+                            {option.label}
+                          </Text>
+                          <Text color="gray.400" fontSize="sm" fontWeight="500">
+                            {option.weekday}
+                          </Text>
+                        </VStack>
+                        
+                        {/* Price - Prominent */}
+                        <Box 
+                          py={2} 
+                          px={3} 
+                          bg="rgba(0,0,0,0.3)" 
+                          borderRadius="lg"
+                          textAlign="center"
+                        >
+                          <Text 
+                            fontSize={{ base: '2xl', md: '3xl' }} 
+                            fontWeight="900" 
+                            color="white"
+                            lineHeight="1"
+                          >
+                            £{option.price.toFixed(0)}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">.{(option.price % 1).toFixed(2).slice(2)}</Text>
+                        </Box>
+                        
+                        {/* Badge */}
+                        <Badge 
+                          colorScheme={level === 'cheap' ? 'green' : level === 'expensive' ? 'red' : 'orange'}
+                          borderRadius="full"
+                          px={3}
+                          py={1}
+                          fontSize="xs"
+                          fontWeight="700"
+                          textAlign="center"
+                          textTransform="uppercase"
+                        >
+                          {level === 'cheap' ? '✨ Best Value' : level === 'expensive' ? '📈 Peak' : '⚡ Standard'}
+                        </Badge>
+                      </VStack>
+                    </Box>
                   );
                 })}
-              </Box>
+              </Flex>
+              
+              {/* Selection Confirmation */}
+              {selectedPriceOption && (
+                <Box 
+                  p={4} 
+                  bg="rgba(59, 130, 246, 0.15)" 
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                >
+                  <HStack justify="space-between" align="center" flexWrap="wrap" gap={2}>
+                    <HStack spacing={3}>
+                      <Box 
+                        w="40px" 
+                        h="40px" 
+                        borderRadius="full" 
+                        bg="blue.500" 
+                        display="flex" 
+                        alignItems="center" 
+                        justifyContent="center"
+                      >
+                        <Text fontSize="lg">📅</Text>
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text color="gray.400" fontSize="xs">Your selected date</Text>
+                        <Text color="white" fontWeight="700" fontSize="md">
+                          {selectedPriceOption.label} ({selectedPriceOption.weekday})
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <VStack align="end" spacing={0}>
+                      <Text color="gray.400" fontSize="xs">Total Price</Text>
+                      <Text color="green.400" fontWeight="800" fontSize="xl">
+                        £{selectedPriceOption.price.toFixed(2)}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+              )}
             </VStack>
           </CardBody>
         </Card>
@@ -1084,11 +1257,32 @@ export default function WhoAndPaymentStepSimple({
                   fontSize="xl"
                   fontWeight="bold"
                 >
-                  £{actualPrice.toFixed(2)}
+                  {displayPriceText}
                 </Badge>
               </HStack>
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
+
+              {addressIncomplete && (
+                <Alert
+                  status="warning"
+                  variant="subtle"
+                  bg="rgba(250, 204, 21, 0.08)"
+                  border="1px solid"
+                  borderColor="yellow.400"
+                  borderRadius="lg"
+                >
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle color="yellow.100" fontSize="sm">
+                      Address needed for pricing
+                    </AlertTitle>
+                    <AlertDescription color="yellow.50" fontSize="sm">
+                      Please provide your full pickup and drop-off address with postcode. City or town alone will not generate a price.
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
 
               {/* Booking Summary */}
               {(() => {
@@ -1167,9 +1361,9 @@ export default function WhoAndPaymentStepSimple({
                       })}
                       <Divider borderColor="rgba(59, 130, 246, 0.2)" />
                       <HStack justify="space-between">
-                        <Text color="gray.400" fontSize="sm">Service</Text>
-                        <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
-                          {selectedService}
+                        <Text color="gray.400" fontSize="sm">Selected date</Text>
+                        <Text color="white" fontSize="sm" fontWeight="500">
+                          {selectedPriceLabel}
                         </Text>
                       </HStack>
                     </VStack>
@@ -1198,9 +1392,9 @@ export default function WhoAndPaymentStepSimple({
                       </Text>
                     </HStack>
                     <HStack justify="space-between">
-                      <Text color="gray.400" fontSize="sm">Service</Text>
-                      <Text color="white" fontSize="sm" fontWeight="500" textTransform="capitalize">
-                        {selectedService}
+                      <Text color="gray.400" fontSize="sm">Selected date</Text>
+                      <Text color="white" fontSize="sm" fontWeight="500">
+                        {selectedPriceLabel}
                       </Text>
                     </HStack>
                   </VStack>
@@ -1422,13 +1616,13 @@ export default function WhoAndPaymentStepSimple({
                   } as any,
                   promotionCode: formData.step2.promotionCode,
                   promotionDetails: formData.step2.promotionDetails,
-                  serviceType: selectedService,
+                  serviceType,
                   // Crew size (number of helpers)
                   crewSize: formData.step1.crewSize || '2',
                   // Pass tier prices for correct calculation in StripePaymentButton
-                  economyPrice: safeEconomyPrice,
-                  standardPrice: standardBase,
-                  priorityPrice: safeExpressPrice,
+                  economyPrice: actualPrice,
+                  standardPrice: actualPrice,
+                  priorityPrice: actualPrice,
                   scheduledDate: formData.step1.pickupDate || new Date().toISOString().split('T')[0],
                   scheduledTime: formData.step1.pickupTimeSlot,
                   pickupDetails: formData.step1.pickupProperty as any,
@@ -1437,8 +1631,10 @@ export default function WhoAndPaymentStepSimple({
                   // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
                   segments: segments.length > 1 ? segments : undefined,
                 }}
-                amount={formData.step2.promotionDetails?.finalAmount || actualPrice}
+                amount={priceReady ? (formData.step2.promotionDetails?.finalAmount || actualPrice) : undefined}
                 disabled={
+                  addressIncomplete ||
+                  !priceReady ||
                   !formData.step2.customerDetails.firstName ||
                   !formData.step2.customerDetails.lastName ||
                   !formData.step2.customerDetails.email ||

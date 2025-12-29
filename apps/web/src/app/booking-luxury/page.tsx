@@ -782,9 +782,32 @@ export default function BookingLuxuryPage() {
               lng: dropNorm?.coordinates?.lng || 0
             }
           }],
-          scheduledDate: (formData.step1.pickupDate
-            ? new Date(`${formData.step1.pickupDate}T09:00:00.000Z`).toISOString()
-            : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
+          scheduledDate: (() => {
+            const fallback = () => {
+              const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
+              d.setUTCHours(9, 0, 0, 0);
+              return d.toISOString();
+            };
+
+            const raw = formData.step1.pickupDate;
+            if (!raw) return fallback();
+
+            // Try direct parse first
+            const direct = new Date(raw);
+            if (!Number.isNaN(direct.getTime())) {
+              direct.setUTCHours(9, 0, 0, 0);
+              return direct.toISOString();
+            }
+
+            // Try appending a time component
+            const withTime = new Date(`${raw}T09:00:00.000Z`);
+            if (!Number.isNaN(withTime.getTime())) {
+              return withTime.toISOString();
+            }
+
+            // Last resort
+            return fallback();
+          })(),
           serviceLevel: 'standard',
           // ✅ CRITICAL: Include crewSize for crew surcharge calculation
           // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
