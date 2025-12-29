@@ -139,21 +139,6 @@ html, body {
     flex-basis: auto !important;
   }
   
-  /* Force block-level display on main content containers to prevent Safari scroll snapping */
-  .chakra-box[style*="display: block"],
-  .chakra-box,
-  [data-chakra-component="Box"][style*="display: block"],
-  [data-chakra-component="Box"] {
-    display: block !important;
-  }
-  
-  /* Prevent Safari from converting VStack to scroll snapping container */
-  /* Exception: Selected Items Cart must remain flex for proper text layout */
-  [data-chakra-component="VStack"]:not(.selected-items-cart):not(.selected-item-text):not(.selected-item-content) {
-    display: block !important;
-    flex-direction: unset !important;
-  }
-  
   /* Additional Safari 17+ fixes for flex containers */
   .flex-container,
   [style*="display: flex"],
@@ -1368,6 +1353,55 @@ textarea:focus-visible {
 @media (max-width: 767px) {
   .home-footer-bottom {
     flex-direction: column !important;
+  }
+}
+
+/* Driver Application: keep download card horizontal on desktop / Safari */
+.download-driver-card {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.download-driver-card__content {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+}
+
+.download-driver-card__cta {
+  display: inline-flex !important;
+  align-self: stretch;
+}
+
+@media (min-width: 768px) {
+  .download-driver-card {
+    grid-template-columns: 1fr auto !important;
+    gap: 1.5rem !important;
+    grid-auto-flow: column !important;
+  }
+
+  .download-driver-card__content {
+    grid-template-columns: auto 1fr !important;
+    text-align: left !important;
+    justify-items: start !important;
+    grid-auto-flow: column !important;
+  }
+
+  .download-driver-card__cta {
+    justify-self: end !important;
+    width: auto !important;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (min-width: 768px) {
+    .download-driver-card,
+    .download-driver-card__content {
+      grid-auto-flow: column !important;
+      align-items: center !important;
+    }
   }
 }
 

@@ -58,7 +58,11 @@ import {
   FiCheckCircle,
   FiArrowRight,
   FiArrowLeft,
+  FiSmartphone,
+  FiDownload,
+  FiStar,
 } from 'react-icons/fi';
+import { FaApple } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
 const MotionBox = chakra(motion.div, {
@@ -132,9 +136,28 @@ export default function DriverApplicationPage() {
   const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
 
   // Force dark theme colors
-  const bgColor = '#111827';
-  const cardBg = '#1F2937';
-  const borderColor = '#374151';
+  const bgColor = '#0A0F1A';
+  const cardBg = '#111827';
+  const borderColor = '#1F2937';
+  const inputBg = '#1A202C';
+
+  // Common input styles for white text
+  const inputStyles = {
+    color: 'white',
+    bg: inputBg,
+    borderColor: borderColor,
+    borderWidth: '2px',
+    borderRadius: 'xl',
+    _placeholder: { color: 'gray.500' },
+    _focus: {
+      borderColor: 'neon.400',
+      boxShadow: '0 0 0 1px rgba(0,194,255,0.3)',
+      bg: '#1E2533',
+    },
+    _hover: {
+      borderColor: 'gray.500',
+    },
+  };
 
   const [formData, setFormData] = useState<DriverApplication>({
     firstName: '',
@@ -424,7 +447,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   First Name
                 </FormLabel>
@@ -438,18 +461,7 @@ export default function DriverApplicationPage() {
                   }
                   placeholder="Enter your first name"
                   size="lg"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="border.primary"
-                  bg="bg.surface"
-                  _focus={{
-                    borderColor: 'neon.400',
-                    boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                  }}
-                  _hover={{
-                    borderColor: 'neon.300',
-                  }}
-                  transition="all 0.2s"
+                  {...inputStyles}
                 />
               </FormControl>
 
@@ -457,7 +469,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   Last Name
                 </FormLabel>
@@ -468,18 +480,7 @@ export default function DriverApplicationPage() {
                   }
                   placeholder="Enter your last name"
                   size="lg"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="border.primary"
-                  bg="bg.surface"
-                  _focus={{
-                    borderColor: 'neon.400',
-                    boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                  }}
-                  _hover={{
-                    borderColor: 'neon.300',
-                  }}
-                  transition="all 0.2s"
+                  {...inputStyles}
                 />
               </FormControl>
             </Grid>
@@ -488,7 +489,7 @@ export default function DriverApplicationPage() {
               <FormLabel
                 fontSize="md"
                 fontWeight="semibold"
-                color="text.primary"
+                color="white"
               >
                 Email Address
               </FormLabel>
@@ -500,18 +501,7 @@ export default function DriverApplicationPage() {
                 }
                 placeholder="Enter your email address"
                 size="lg"
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor="border.primary"
-                bg="bg.surface"
-                _focus={{
-                  borderColor: 'neon.400',
-                  boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                }}
-                _hover={{
-                  borderColor: 'neon.300',
-                }}
-                transition="all 0.2s"
+                {...inputStyles}
               />
             </FormControl>
 
@@ -520,7 +510,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   Password
                 </FormLabel>
@@ -536,20 +526,9 @@ export default function DriverApplicationPage() {
                     }
                     placeholder="Create a password"
                     size="lg"
-                    borderRadius="xl"
-                    borderWidth="2px"
-                    borderColor="border.primary"
-                    bg="bg.surface"
-                    _focus={{
-                      borderColor: 'neon.400',
-                      boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                    }}
-                    _hover={{
-                      borderColor: 'neon.300',
-                    }}
-                    transition="all 0.2s"
+                    {...inputStyles}
                   />
-                  <InputRightElement>
+                  <InputRightElement h="full">
                     <IconButton
                       aria-label={
                         showPassword ? 'Hide password' : 'Show password'
@@ -569,7 +548,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   Confirm Password
                 </FormLabel>
@@ -585,18 +564,7 @@ export default function DriverApplicationPage() {
                     }
                     placeholder="Confirm your password"
                     size="lg"
-                    borderRadius="xl"
-                    borderWidth="2px"
-                    borderColor="border.primary"
-                    bg="bg.surface"
-                    _focus={{
-                      borderColor: 'neon.400',
-                      boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                    }}
-                    _hover={{
-                      borderColor: 'neon.300',
-                    }}
-                    transition="all 0.2s"
+                    {...inputStyles}
                   />
                   <InputRightElement>
                     <IconButton
@@ -624,7 +592,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   Phone Number
                 </FormLabel>
@@ -636,18 +604,7 @@ export default function DriverApplicationPage() {
                   }
                   placeholder="Enter your phone number"
                   size="lg"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="border.primary"
-                  bg="bg.surface"
-                  _focus={{
-                    borderColor: 'neon.400',
-                    boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
-                  }}
-                  _hover={{
-                    borderColor: 'neon.300',
-                  }}
-                  transition="all 0.2s"
+                  {...inputStyles}
                 />
               </FormControl>
 
@@ -655,7 +612,7 @@ export default function DriverApplicationPage() {
                 <FormLabel
                   fontSize="md"
                   fontWeight="semibold"
-                  color="text.primary"
+                  color="white"
                 >
                   Date of Birth
                 </FormLabel>
@@ -669,18 +626,12 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   size="lg"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="border.primary"
-                  bg="bg.surface"
-                  _focus={{
-                    borderColor: 'neon.400',
-                    boxShadow: '0 0 0 1px rgba(0,194,255,0.2)',
+                  {...inputStyles}
+                  sx={{
+                    '&::-webkit-calendar-picker-indicator': {
+                      filter: 'invert(1)',
+                    },
                   }}
-                  _hover={{
-                    borderColor: 'neon.300',
-                  }}
-                  transition="all 0.2s"
                 />
               </FormControl>
             </Grid>
@@ -690,12 +641,15 @@ export default function DriverApplicationPage() {
       case 2:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Address & Identity
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiMapPin} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Address & Identity
+              </Heading>
+            </HStack>
 
             <FormControl isRequired>
-              <FormLabel>National Insurance Number</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">National Insurance Number</FormLabel>
               <Input
                 value={formData.nationalInsuranceNumber}
                 onChange={e =>
@@ -706,14 +660,16 @@ export default function DriverApplicationPage() {
                 }
                 placeholder="e.g., AB123456C"
                 maxLength={9}
+                size="lg"
+                {...inputStyles}
               />
-              <FormHelperText>
+              <FormHelperText color="gray.500">
                 Format: 2 letters, 6 numbers, 1 letter (e.g., AB123456C)
               </FormHelperText>
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Postcode</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Postcode</FormLabel>
               <Input
                 value={formData.postcode}
                 onChange={e => {
@@ -724,6 +680,8 @@ export default function DriverApplicationPage() {
                 onBlur={() =>
                   setTimeout(() => setShowAddressSuggestions(false), 200)
                 }
+                size="lg"
+                {...inputStyles}
               />
               {showAddressSuggestions && (
                 <Box position="relative">
@@ -735,8 +693,8 @@ export default function DriverApplicationPage() {
                     bg="#1F2937"
                     border="1px solid"
                     borderColor="#374151"
-                    borderRadius="md"
-                    boxShadow="lg"
+                    borderRadius="xl"
+                    boxShadow="0 10px 40px rgba(0,0,0,0.5)"
                     zIndex={10}
                     maxH="200px"
                     overflowY="auto"
@@ -745,9 +703,10 @@ export default function DriverApplicationPage() {
                       <Box
                         key={index}
                         px={4}
-                        py={2}
+                        py={3}
                         cursor="pointer"
-                        _hover={{ bg: 'gray.100' }}
+                        color="white"
+                        _hover={{ bg: 'rgba(0,194,255,0.1)' }}
                         onClick={() => handleAddressSelect(suggestion)}
                       >
                         {suggestion}
@@ -759,7 +718,7 @@ export default function DriverApplicationPage() {
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Address Line 1</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Address Line 1</FormLabel>
               <Input
                 value={formData.addressLine1}
                 onChange={e =>
@@ -769,11 +728,13 @@ export default function DriverApplicationPage() {
                   }))
                 }
                 placeholder="House number and street name"
+                size="lg"
+                {...inputStyles}
               />
             </FormControl>
 
             <FormControl>
-              <FormLabel>Address Line 2</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Address Line 2</FormLabel>
               <Input
                 value={formData.addressLine2}
                 onChange={e =>
@@ -783,29 +744,35 @@ export default function DriverApplicationPage() {
                   }))
                 }
                 placeholder="Flat, suite, etc. (optional)"
+                size="lg"
+                {...inputStyles}
               />
             </FormControl>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>City</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">City</FormLabel>
                 <Input
                   value={formData.city}
                   onChange={e =>
                     setFormData(prev => ({ ...prev, city: e.target.value }))
                   }
                   placeholder="Enter your city"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>County</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">County</FormLabel>
                 <Input
                   value={formData.county}
                   onChange={e =>
                     setFormData(prev => ({ ...prev, county: e.target.value }))
                   }
                   placeholder="Enter your county"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
             </Grid>
@@ -815,13 +782,16 @@ export default function DriverApplicationPage() {
       case 3:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Driving License
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiTruck} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Driving License
+              </Heading>
+            </HStack>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Driving License Number</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Driving License Number</FormLabel>
                 <Input
                   value={formData.drivingLicenseNumber}
                   onChange={e =>
@@ -831,11 +801,13 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Enter your driving license number"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Expiry Date</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Expiry Date</FormLabel>
                 <Input
                   type="date"
                   value={formData.drivingLicenseExpiry}
@@ -845,20 +817,30 @@ export default function DriverApplicationPage() {
                       drivingLicenseExpiry: e.target.value,
                     }))
                   }
+                  size="lg"
+                  {...inputStyles}
+                  sx={{
+                    '&::-webkit-calendar-picker-indicator': {
+                      filter: 'invert(1)',
+                    },
+                  }}
                 />
               </FormControl>
             </Grid>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Driving License Front</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Driving License Front</FormLabel>
                 <Box
                   border="2px dashed"
-                  borderColor="gray.300"
-                  borderRadius="md"
-                  p={4}
+                  borderColor="neon.400"
+                  borderRadius="xl"
+                  p={6}
                   textAlign="center"
                   position="relative"
+                  bg="rgba(0,194,255,0.05)"
+                  _hover={{ borderColor: 'neon.300', bg: 'rgba(0,194,255,0.1)' }}
+                  transition="all 0.2s"
                 >
                   <Input
                     type="file"
@@ -875,32 +857,38 @@ export default function DriverApplicationPage() {
                     opacity={0}
                     cursor="pointer"
                   />
-                  <VStack spacing={2}>
-                    <Icon as={FiCamera} boxSize={6} color="gray.400" />
-                    <Text fontSize="sm" color="gray.500">
+                  <VStack spacing={3}>
+                    <Icon as={FiCamera} boxSize={8} color="neon.400" />
+                    <Text fontSize="sm" color="gray.300">
                       Click to upload front of driving license
                     </Text>
-                    <Text fontSize="xs" color="gray.400">
+                    <Text fontSize="xs" color="gray.500">
                       JPEG, PNG, or PDF (max 5MB)
                     </Text>
                   </VStack>
                 </Box>
                 {formData.drivingLicenseFront && (
-                  <Text fontSize="sm" color="green.500" mt={2}>
-                    ✓ {formData.drivingLicenseFront.name}
-                  </Text>
+                  <HStack mt={3} p={2} bg="rgba(0,209,143,0.1)" borderRadius="lg">
+                    <Icon as={FiCheckCircle} color="green.400" />
+                    <Text fontSize="sm" color="green.400">
+                      {formData.drivingLicenseFront.name}
+                    </Text>
+                  </HStack>
                 )}
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Driving License Back</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Driving License Back</FormLabel>
                 <Box
                   border="2px dashed"
-                  borderColor="gray.300"
-                  borderRadius="md"
-                  p={4}
+                  borderColor="neon.400"
+                  borderRadius="xl"
+                  p={6}
                   textAlign="center"
                   position="relative"
+                  bg="rgba(0,194,255,0.05)"
+                  _hover={{ borderColor: 'neon.300', bg: 'rgba(0,194,255,0.1)' }}
+                  transition="all 0.2s"
                 >
                   <Input
                     type="file"
@@ -917,20 +905,23 @@ export default function DriverApplicationPage() {
                     opacity={0}
                     cursor="pointer"
                   />
-                  <VStack spacing={2}>
-                    <Icon as={FiCamera} boxSize={6} color="gray.400" />
-                    <Text fontSize="sm" color="gray.500">
+                  <VStack spacing={3}>
+                    <Icon as={FiCamera} boxSize={8} color="neon.400" />
+                    <Text fontSize="sm" color="gray.300">
                       Click to upload back of driving license
                     </Text>
-                    <Text fontSize="xs" color="gray.400">
+                    <Text fontSize="xs" color="gray.500">
                       JPEG, PNG, or PDF (max 5MB)
                     </Text>
                   </VStack>
                 </Box>
                 {formData.drivingLicenseBack && (
-                  <Text fontSize="sm" color="green.500" mt={2}>
-                    ✓ {formData.drivingLicenseBack.name}
-                  </Text>
+                  <HStack mt={3} p={2} bg="rgba(0,209,143,0.1)" borderRadius="lg">
+                    <Icon as={FiCheckCircle} color="green.400" />
+                    <Text fontSize="sm" color="green.400">
+                      {formData.drivingLicenseBack.name}
+                    </Text>
+                  </HStack>
                 )}
               </FormControl>
             </Grid>
@@ -940,13 +931,16 @@ export default function DriverApplicationPage() {
       case 4:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Insurance & Banking
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiCreditCard} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Insurance & Banking
+              </Heading>
+            </HStack>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Insurance Provider</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Insurance Provider</FormLabel>
                 <Input
                   value={formData.insuranceProvider}
                   onChange={e =>
@@ -956,11 +950,13 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Enter insurance provider name"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Policy Number</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Policy Number</FormLabel>
                 <Input
                   value={formData.insurancePolicyNumber}
                   onChange={e =>
@@ -970,13 +966,15 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Enter policy number"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
             </Grid>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Insurance Expiry Date</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Insurance Expiry Date</FormLabel>
                 <Input
                   type="date"
                   value={formData.insuranceExpiry}
@@ -986,18 +984,28 @@ export default function DriverApplicationPage() {
                       insuranceExpiry: e.target.value,
                     }))
                   }
+                  size="lg"
+                  {...inputStyles}
+                  sx={{
+                    '&::-webkit-calendar-picker-indicator': {
+                      filter: 'invert(1)',
+                    },
+                  }}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Insurance Document</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Insurance Document</FormLabel>
                 <Box
                   border="2px dashed"
-                  borderColor="gray.300"
-                  borderRadius="md"
-                  p={4}
+                  borderColor="neon.400"
+                  borderRadius="xl"
+                  p={6}
                   textAlign="center"
                   position="relative"
+                  bg="rgba(0,194,255,0.05)"
+                  _hover={{ borderColor: 'neon.300', bg: 'rgba(0,194,255,0.1)' }}
+                  transition="all 0.2s"
                 >
                   <Input
                     type="file"
@@ -1014,44 +1022,52 @@ export default function DriverApplicationPage() {
                     opacity={0}
                     cursor="pointer"
                   />
-                  <VStack spacing={2}>
-                    <Icon as={FiFileText} boxSize={6} color="gray.400" />
-                    <Text fontSize="sm" color="gray.500">
+                  <VStack spacing={3}>
+                    <Icon as={FiFileText} boxSize={8} color="neon.400" />
+                    <Text fontSize="sm" color="gray.300">
                       Upload insurance certificate
                     </Text>
-                    <Text fontSize="xs" color="gray.400">
+                    <Text fontSize="xs" color="gray.500">
                       JPEG, PNG, or PDF (max 5MB)
                     </Text>
                   </VStack>
                 </Box>
                 {formData.insuranceDocument && (
-                  <Text fontSize="sm" color="green.500" mt={2}>
-                    ✓ {formData.insuranceDocument.name}
-                  </Text>
+                  <HStack mt={3} p={2} bg="rgba(0,209,143,0.1)" borderRadius="lg">
+                    <Icon as={FiCheckCircle} color="green.400" />
+                    <Text fontSize="sm" color="green.400">
+                      {formData.insuranceDocument.name}
+                    </Text>
+                  </HStack>
                 )}
               </FormControl>
             </Grid>
 
-            <Divider />
+            <Divider borderColor="gray.700" />
 
-            <Heading size="sm" color="blue.600">
-              Banking Information
-            </Heading>
+            <HStack spacing={3}>
+              <Icon as={FiCreditCard} color="neon.400" boxSize={5} />
+              <Heading size="md" color="white">
+                Banking Information
+              </Heading>
+            </HStack>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Bank Name</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Bank Name</FormLabel>
                 <Input
                   value={formData.bankName}
                   onChange={e =>
                     setFormData(prev => ({ ...prev, bankName: e.target.value }))
                   }
                   placeholder="Enter your bank name"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Account Holder Name</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Account Holder Name</FormLabel>
                 <Input
                   value={formData.accountHolderName}
                   onChange={e =>
@@ -1061,13 +1077,15 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Name on bank account"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
             </Grid>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Sort Code</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Sort Code</FormLabel>
                 <Input
                   value={formData.sortCode}
                   onChange={e =>
@@ -1075,12 +1093,14 @@ export default function DriverApplicationPage() {
                   }
                   placeholder="e.g., 12-34-56"
                   maxLength={8}
+                  size="lg"
+                  {...inputStyles}
                 />
-                <FormHelperText>Format: XX-XX-XX</FormHelperText>
+                <FormHelperText color="gray.500">Format: XX-XX-XX</FormHelperText>
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Account Number</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Account Number</FormLabel>
                 <Input
                   value={formData.accountNumber}
                   onChange={e =>
@@ -1091,6 +1111,8 @@ export default function DriverApplicationPage() {
                   }
                   placeholder="8-digit account number"
                   maxLength={8}
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
             </Grid>
@@ -1100,15 +1122,23 @@ export default function DriverApplicationPage() {
       case 5:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Right to Work
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiShield} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Right to Work
+              </Heading>
+            </HStack>
 
-            <Alert status="info">
-              <AlertIcon />
+            <Alert 
+              status="info" 
+              bg="rgba(59, 130, 246, 0.1)" 
+              borderRadius="xl"
+              border="1px solid rgba(59, 130, 246, 0.3)"
+            >
+              <AlertIcon color="blue.400" />
               <Box>
-                <Text fontWeight="bold">UK Right to Work Verification</Text>
-                <Text fontSize="sm">
+                <Text fontWeight="bold" color="white">UK Right to Work Verification</Text>
+                <Text fontSize="sm" color="gray.400">
                   You must provide proof of your right to work in the UK. This
                   can be done through a share code from the UK government.
                 </Text>
@@ -1116,7 +1146,7 @@ export default function DriverApplicationPage() {
             </Alert>
 
             <FormControl isRequired>
-              <FormLabel>Right to Work Share Code</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Right to Work Share Code</FormLabel>
               <Input
                 value={formData.rightToWorkShareCode}
                 onChange={e =>
@@ -1127,13 +1157,16 @@ export default function DriverApplicationPage() {
                 }
                 placeholder="Enter your 9-character share code"
                 maxLength={9}
+                size="lg"
+                {...inputStyles}
               />
-              <FormHelperText>
+              <FormHelperText color="gray.500">
                 Get your share code from{' '}
                 <Link
                   href="https://www.gov.uk/prove-right-to-work"
                   isExternal
-                  color="blue.500"
+                  color="neon.400"
+                  _hover={{ color: 'neon.300' }}
                 >
                   gov.uk/prove-right-to-work
                 </Link>
@@ -1141,14 +1174,17 @@ export default function DriverApplicationPage() {
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Right to Work Document</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Right to Work Document</FormLabel>
               <Box
                 border="2px dashed"
-                borderColor="gray.300"
-                borderRadius="md"
-                p={4}
+                borderColor="neon.400"
+                borderRadius="xl"
+                p={6}
                 textAlign="center"
                 position="relative"
+                bg="rgba(0,194,255,0.05)"
+                _hover={{ borderColor: 'neon.300', bg: 'rgba(0,194,255,0.1)' }}
+                transition="all 0.2s"
               >
                 <Input
                   type="file"
@@ -1165,20 +1201,23 @@ export default function DriverApplicationPage() {
                   opacity={0}
                   cursor="pointer"
                 />
-                <VStack spacing={2}>
-                  <Icon as={FiShield} boxSize={6} color="gray.400" />
-                  <Text fontSize="sm" color="gray.500">
+                <VStack spacing={3}>
+                  <Icon as={FiShield} boxSize={8} color="neon.400" />
+                  <Text fontSize="sm" color="gray.300">
                     Upload right to work document
                   </Text>
-                  <Text fontSize="xs" color="gray.400">
+                  <Text fontSize="xs" color="gray.500">
                     Passport, BRP, or other valid document (max 5MB)
                   </Text>
                 </VStack>
               </Box>
               {formData.rightToWorkDocument && (
-                <Text fontSize="sm" color="green.500" mt={2}>
-                  ✓ {formData.rightToWorkDocument.name}
-                </Text>
+                <HStack mt={3} p={2} bg="rgba(0,209,143,0.1)" borderRadius="lg">
+                  <Icon as={FiCheckCircle} color="green.400" />
+                  <Text fontSize="sm" color="green.400">
+                    {formData.rightToWorkDocument.name}
+                  </Text>
+                </HStack>
               )}
             </FormControl>
           </VStack>
@@ -1187,12 +1226,15 @@ export default function DriverApplicationPage() {
       case 6:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Emergency Contact
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiPhone} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Emergency Contact
+              </Heading>
+            </HStack>
 
             <FormControl isRequired>
-              <FormLabel>Emergency Contact Name</FormLabel>
+              <FormLabel color="white" fontWeight="semibold">Emergency Contact Name</FormLabel>
               <Input
                 value={formData.emergencyContactName}
                 onChange={e =>
@@ -1202,12 +1244,14 @@ export default function DriverApplicationPage() {
                   }))
                 }
                 placeholder="Full name of emergency contact"
+                size="lg"
+                {...inputStyles}
               />
             </FormControl>
 
-            <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+            <Grid templateColumns="repeat(2, 1fr)" gap={6}>
               <FormControl isRequired>
-                <FormLabel>Emergency Contact Phone</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Emergency Contact Phone</FormLabel>
                 <Input
                   type="tel"
                   value={formData.emergencyContactPhone}
@@ -1218,11 +1262,13 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Phone number"
+                  size="lg"
+                  {...inputStyles}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Relationship</FormLabel>
+                <FormLabel color="white" fontWeight="semibold">Relationship</FormLabel>
                 <Select
                   value={formData.emergencyContactRelationship}
                   onChange={e =>
@@ -1232,6 +1278,20 @@ export default function DriverApplicationPage() {
                     }))
                   }
                   placeholder="Select relationship"
+                  size="lg"
+                  color="white"
+                  bg={inputBg}
+                  borderColor={borderColor}
+                  borderWidth="2px"
+                  borderRadius="xl"
+                  _focus={{
+                    borderColor: 'neon.400',
+                    boxShadow: '0 0 0 1px rgba(0,194,255,0.3)',
+                  }}
+                  _hover={{ borderColor: 'gray.500' }}
+                  sx={{
+                    option: { bg: '#1A202C', color: 'white' },
+                  }}
                 >
                   <option value="spouse">Spouse/Partner</option>
                   <option value="parent">Parent</option>
@@ -1247,45 +1307,54 @@ export default function DriverApplicationPage() {
       case 7:
         return (
           <VStack spacing={6} align="stretch">
-            <Heading size="md" color="blue.600">
-              Terms & Conditions
-            </Heading>
+            <HStack spacing={3} mb={4}>
+              <Icon as={FiCheckCircle} color="neon.500" boxSize={6} />
+              <Heading size="lg" color="neon.500">
+                Terms & Conditions
+              </Heading>
+            </HStack>
 
-            <Alert status="warning">
-              <AlertIcon />
-              <Text>
+            <Alert 
+              status="warning" 
+              bg="rgba(245, 158, 11, 0.1)" 
+              borderRadius="xl"
+              border="1px solid rgba(245, 158, 11, 0.3)"
+            >
+              <AlertIcon color="yellow.400" />
+              <Text color="gray.300">
                 Please review all information before submitting. You will not be
                 able to edit your application after submission.
               </Text>
             </Alert>
 
             <Box
-              p={4}
+              p={6}
+              bg="rgba(255,255,255,0.02)"
               border="1px solid"
-              borderColor="gray.200"
-              borderRadius="md"
+              borderColor="gray.700"
+              borderRadius="xl"
               maxH="300px"
               overflowY="auto"
             >
-              <Text fontSize="sm" lineHeight="tall">
-                <strong>Application Summary:</strong>
+              <Text fontSize="sm" lineHeight="tall" color="gray.300">
+                <Text as="span" fontWeight="bold" color="white">Application Summary:</Text>
+                <br /><br />
+                <Text as="span" color="gray.500">Name:</Text> {formData.firstName} {formData.lastName}
                 <br />
-                Name: {formData.firstName} {formData.lastName}
+                <Text as="span" color="gray.500">Email:</Text> {formData.email}
                 <br />
-                Email: {formData.email}
+                <Text as="span" color="gray.500">Phone:</Text> {formData.phone}
                 <br />
-                Phone: {formData.phone}
-                <br />
-                Address: {formData.addressLine1}, {formData.city},{' '}
+                <Text as="span" color="gray.500">Address:</Text> {formData.addressLine1}, {formData.city},{' '}
                 {formData.postcode}
                 <br />
-                Driving License: {formData.drivingLicenseNumber}
+                <Text as="span" color="gray.500">Driving License:</Text> {formData.drivingLicenseNumber}
                 <br />
-                Insurance: {formData.insuranceProvider}
+                <Text as="span" color="gray.500">Insurance:</Text> {formData.insuranceProvider}
                 <br />
-                Bank: {formData.bankName}
+                <Text as="span" color="gray.500">Bank:</Text> {formData.bankName}
                 <br />
-                Emergency Contact: {formData.emergencyContactName} (
+                <Text as="span" color="gray.500">Emergency Contact:</Text> {formData.emergencyContactName} (
                 {formData.emergencyContactRelationship})
               </Text>
             </Box>
@@ -1299,11 +1368,15 @@ export default function DriverApplicationPage() {
                     agreeToTerms: e.target.checked,
                   }))
                 }
+                colorScheme="neon"
+                size="lg"
               >
-                I agree to the{' '}
-                <Link href="/terms" isExternal color="blue.500">
-                  Terms and Conditions
-                </Link>
+                <Text color="gray.300">
+                  I agree to the{' '}
+                  <Link href="/terms" isExternal color="neon.400" _hover={{ color: 'neon.300' }}>
+                    Terms and Conditions
+                  </Link>
+                </Text>
               </Checkbox>
 
               <Checkbox
@@ -1314,9 +1387,13 @@ export default function DriverApplicationPage() {
                     agreeToDataProcessing: e.target.checked,
                   }))
                 }
+                colorScheme="neon"
+                size="lg"
               >
-                I consent to the processing of my personal data for employment
-                purposes
+                <Text color="gray.300">
+                  I consent to the processing of my personal data for employment
+                  purposes
+                </Text>
               </Checkbox>
 
               <Checkbox
@@ -1327,15 +1404,24 @@ export default function DriverApplicationPage() {
                     agreeToBackgroundCheck: e.target.checked,
                   }))
                 }
+                colorScheme="neon"
+                size="lg"
               >
-                I authorize Speedy Van to conduct background checks and verify
-                all provided information
+                <Text color="gray.300">
+                  I authorize Speedy Van to conduct background checks and verify
+                  all provided information
+                </Text>
               </Checkbox>
             </VStack>
 
-            <Alert status="info">
-              <AlertIcon />
-              <Text fontSize="sm">
+            <Alert 
+              status="info" 
+              bg="rgba(59, 130, 246, 0.1)" 
+              borderRadius="xl"
+              border="1px solid rgba(59, 130, 246, 0.3)"
+            >
+              <AlertIcon color="blue.400" />
+              <Text fontSize="sm" color="gray.300">
                 After submission, your application will be reviewed by our team.
                 You will receive an email confirmation and updates on your
                 application status.
@@ -1352,7 +1438,7 @@ export default function DriverApplicationPage() {
   return (
     <Box
       minH="100vh"
-      bg="#111827"
+      bg="#0A0F1A"
       py={{ base: 8, md: 12 }}
       position="relative"
       overflow="hidden"
@@ -1364,8 +1450,8 @@ export default function DriverApplicationPage() {
         left={0}
         width="100%"
         height="100%"
-        opacity={0.02}
-        background="radial-gradient(circle at 20% 80%, rgba(0,194,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0,209,143,0.1) 0%, transparent 50%)"
+        opacity={0.03}
+        background="radial-gradient(circle at 20% 80%, rgba(0,194,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0,209,143,0.15) 0%, transparent 50%)"
         pointerEvents="none"
       />
 
@@ -1378,37 +1464,188 @@ export default function DriverApplicationPage() {
         >
           <VStack spacing={{ base: 8, md: 12 }} align="stretch">
             {/* Header */}
-            <Box textAlign="center" py={{ base: 4, md: 6 }}>
-              <VStack spacing={6}>
+            <Box textAlign="center" py={{ base: 6, md: 10 }}>
+              <VStack spacing={8}>
                 <Box
-                  p={6}
-                  borderRadius="2xl"
-                  bg="linear-gradient(135deg, rgba(0,194,255,0.1), rgba(0,209,143,0.1))"
+                  p={8}
+                  borderRadius="3xl"
+                  bg="linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,209,143,0.1))"
                   borderWidth="2px"
                   borderColor="neon.400"
                   display="inline-block"
+                  position="relative"
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    inset: '-2px',
+                    borderRadius: '3xl',
+                    background: 'linear-gradient(135deg, rgba(0,194,255,0.3), rgba(0,209,143,0.2))',
+                    filter: 'blur(20px)',
+                    zIndex: -1,
+                  }}
                 >
-                  <Icon as={FiTruck} color="neon.500" boxSize={12} />
+                  <Icon as={FiTruck} color="neon.500" boxSize={14} />
                 </Box>
-                <Heading
-                  size={{ base: 'xl', md: '2xl' }}
-                  color="neon.500"
-                  fontWeight="extrabold"
+                <VStack spacing={4}>
+                  <Heading
+                    size={{ base: '2xl', md: '3xl' }}
+                    bgGradient="linear(to-r, neon.400, #00D18F)"
+                    bgClip="text"
+                    fontWeight="extrabold"
+                    letterSpacing="tight"
+                  >
+                    Become a Speedy Van Driver
+                  </Heading>
+                  <Text
+                    color="gray.400"
+                    fontSize={{ base: 'lg', md: 'xl' }}
+                    maxW="2xl"
+                    mx="auto"
+                    lineHeight="1.8"
+                  >
+                    Join our elite team of professional drivers and unlock unlimited earning potential with the UK&apos;s fastest-growing delivery platform.
+                  </Text>
+                </VStack>
+
+                {/* Stats Row */}
+                <HStack
+                  spacing={{ base: 4, md: 8 }}
+                  flexWrap="wrap"
+                  justify="center"
+                  pt={4}
                 >
-                  🚚 Driver Application
-                </Heading>
-                <Text
-                  color="text.secondary"
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  maxW="3xl"
-                  mx="auto"
-                  lineHeight="1.6"
-                >
-                  Join our team of professional drivers and start earning with
-                  Speedy Van. Complete your application below to begin your
-                  journey.
-                </Text>
+                  {[
+                    { value: '£1,500+', label: 'Weekly Earnings' },
+                    { value: '24/7', label: 'Flexible Hours' },
+                    { value: '5,000+', label: 'Active Drivers' },
+                  ].map((stat, idx) => (
+                    <Box
+                      key={idx}
+                      px={6}
+                      py={4}
+                      bg="rgba(255,255,255,0.03)"
+                      borderRadius="2xl"
+                      borderWidth="1px"
+                      borderColor="rgba(255,255,255,0.08)"
+                    >
+                      <Text
+                        fontSize={{ base: 'xl', md: '2xl' }}
+                        fontWeight="bold"
+                        color="neon.400"
+                      >
+                        {stat.value}
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
+                        {stat.label}
+                      </Text>
+                    </Box>
+                  ))}
+                </HStack>
               </VStack>
+            </Box>
+
+            {/* Download Driver App Section */}
+            <Box
+              p={{ base: 5, md: 8 }}
+              bg="linear-gradient(135deg, rgba(0,194,255,0.08), rgba(0,0,0,0.4))"
+              borderRadius="3xl"
+              borderWidth="2px"
+              borderColor="neon.400"
+              position="relative"
+              overflow="hidden"
+            >
+              <Grid
+                className="download-driver-card"
+                templateColumns={{ base: '1fr', md: '1fr auto' }}
+                gap={{ base: 5, md: 6 }}
+                alignItems="center"
+              >
+                {/* Left Content */}
+                <Grid
+                  className="download-driver-card__content"
+                  templateColumns={{ base: '1fr', md: 'auto 1fr' }}
+                  gap={4}
+                  alignItems="center"
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  <Box
+                    p={4}
+                    bg="linear-gradient(135deg, #00C2FF, #00D18F)"
+                    borderRadius="2xl"
+                    boxShadow="0 8px 32px rgba(0,194,255,0.3)"
+                    justifySelf={{ base: 'center', md: 'start' }}
+                  >
+                    <Icon as={FiSmartphone} boxSize={{ base: 8, md: 10 }} color="white" />
+                  </Box>
+                  <Box>
+                    <HStack spacing={2} justify={{ base: 'center', md: 'start' }} mb={2}>
+                      <Badge
+                        colorScheme="green"
+                        variant="solid"
+                        px={3}
+                        py={1}
+                        borderRadius="full"
+                        fontSize="xs"
+                        fontWeight="bold"
+                      >
+                        NEW
+                      </Badge>
+                      <Text color="gray.400" fontSize="sm">iOS App Available</Text>
+                    </HStack>
+                    <Heading size={{ base: 'md', md: 'lg' }} color="white" mb={2}>
+                      Download Speedy Van Driver
+                    </Heading>
+                    <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }} maxW="md" mb={2}>
+                      Get the official driver app to manage jobs, track earnings, and communicate with customers.
+                    </Text>
+                    <HStack spacing={1} justify={{ base: 'center', md: 'start' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Icon key={star} as={FiStar} color="yellow.400" boxSize={{ base: 3, md: 4 }} fill="yellow.400" />
+                      ))}
+                      <Text color="gray.500" fontSize={{ base: 'xs', md: 'sm' }} ml={2}>4.9 Rating</Text>
+                    </HStack>
+                  </Box>
+                </Grid>
+
+                {/* App Store Button */}
+                <Link
+                  className="download-driver-card__cta"
+                  href="https://apps.apple.com/gb/app/speedy-van-driver/id6753916830"
+                  isExternal
+                  _hover={{ textDecoration: 'none' }}
+                  width={{ base: '100%', md: 'auto' }}
+                >
+                  <Button
+                    size="lg"
+                    bg="black"
+                    color="white"
+                    leftIcon={<FaApple size={24} />}
+                    px={8}
+                    py={7}
+                    width={{ base: '100%', md: 'auto' }}
+                    borderRadius="xl"
+                    fontWeight="semibold"
+                    fontSize="lg"
+                    _hover={{
+                      bg: '#1a1a1a',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+                    }}
+                    _active={{ bg: '#333' }}
+                    transition="all 0.3s ease"
+                    boxShadow="0 8px 32px rgba(0,0,0,0.3)"
+                  >
+                    <VStack spacing={0} align="start">
+                      <Text fontSize="xs" fontWeight="normal" opacity={0.9}>
+                        Download on the
+                      </Text>
+                      <Text fontSize="xl" fontWeight="bold">
+                        App Store
+                      </Text>
+                    </VStack>
+                  </Button>
+                </Link>
+              </Grid>
             </Box>
 
             {/* Progress Bar */}
