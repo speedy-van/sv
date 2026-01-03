@@ -1423,10 +1423,8 @@ export default function MobileHomePageContent() {
           },
         }}
       />
-      {/* Mobile Header with scroll behavior */}
-      <Box position="relative" zIndex={1}>
-        <MobileHeader />
-      </Box>
+      {/* Mobile Header - no wrapper needed since MobileHeader is position:fixed with high z-index */}
+      <MobileHeader />
       
       {/* Mobile Hero */}
       <Box position="relative" zIndex={1}>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import places from '@/data/places.json';
 
 // ✅ Force Node runtime for dynamic rendering
@@ -58,15 +59,7 @@ export default async function CatchAllUkPage({
   const place = places.places.find((p: any) => p.slug === slug);
 
   if (!place) {
-    return (
-      <div className="error-container">
-        <h1>Page Not Found</h1>
-        <p>The page you're looking for doesn't exist.</p>
-        <Link href="/uk" className="btn btn-primary">
-          Back to UK areas
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   // ❌ Do not call cookies(), headers(), or any request-bound APIs.

@@ -36,13 +36,13 @@ export default function MobileHeader() {
         left="0"
         right="0"
         w="100%"
-        bg="rgba(255, 255, 255, 0.95)"
+        bg="rgba(13, 13, 13, 0.97)"
         backdropFilter="blur(10px)"
-        borderBottom="1px solid rgba(229, 231, 235, 0.8)"
+        borderBottom="1px solid rgba(55, 65, 81, 0.8)"
         px={3}
         py={2}
         zIndex={1000}
-        boxShadow="0 2px 8px rgba(0,0,0,0.1)"
+        boxShadow="0 2px 12px rgba(0,0,0,0.4)"
         suppressHydrationWarning
         display={{ base: 'block', md: 'none' }}
         visibility="visible"

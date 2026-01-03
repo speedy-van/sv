@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import {
   getPlaceBySlug,
   getNearbyPlaces,
@@ -277,15 +278,7 @@ export default async function PlacePage({
   const { place: placeSlug } = await params;
   const place = await getPlaceBySlug(placeSlug);
   if (!place) {
-    return (
-      <div className="error-container">
-        <h1>Place Not Found</h1>
-        <p>The place you're looking for doesn't exist.</p>
-        <Link href="/uk" className="btn btn-primary">
-          Back to UK areas
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   const nearby = await getNearbyPlaces(place, 12);

@@ -27,7 +27,7 @@
   left: 0 !important;
   right: 0 !important;
   z-index: 1000 !important;
-  background: rgba(15, 17, 20, 0.98) !important;
+  background: rgba(13, 13, 13, 0.97) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   /* iPhone 15/16/17 fix - force GPU acceleration */
