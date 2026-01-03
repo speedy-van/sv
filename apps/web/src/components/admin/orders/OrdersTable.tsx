@@ -57,6 +57,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Tag,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import ClientInput from '@/components/admin/ClientInput';
@@ -5384,130 +5385,360 @@ export function OrdersTable({
         </ModalContent>
       </Modal>
 
-      {/* Draft quick-view modal */}
-      <Modal isOpen={isDraftModalOpen} onClose={() => setIsDraftModalOpen(false)} size="lg" isCentered>
-        <ModalOverlay />
-        <ModalContent bg="#0f172a" borderColor="#334155" borderWidth="1px">
-          <ModalHeader color="#fff">
-            Draft Booking - {draftResult?.reference || 'Unknown'}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody color="#e2e8f0">
-            <VStack align="stretch" spacing={3}>
-              <HStack justify="space-between">
-                <Text>Status:</Text>
-                <Badge colorScheme="blue">{draftResult?.status || 'DRAFT'}</Badge>
-              </HStack>
-              <HStack justify="space-between">
-                <Text>Created:</Text>
-                <Text>{draftResult?.createdAt ? new Date(draftResult.createdAt).toLocaleString() : '—'}</Text>
-              </HStack>
-              <HStack justify="space-between">
-                <Text>Updated:</Text>
-                <Text>{draftResult?.updatedAt ? new Date(draftResult.updatedAt).toLocaleString() : '—'}</Text>
-              </HStack>
-              <Divider borderColor="#334155" />
-              <Text fontWeight="bold">Addresses</Text>
-              <VStack align="stretch" spacing={1}>
-              <Text fontSize="sm">
-                Pickup: {draftResult?.pickupAddress?.address || draftResult?.pickupAddress?.label || '—'} ({draftResult?.pickupAddress?.postcode || '—'})
-              </Text>
-              <Text fontSize="sm">
-                Dropoff: {draftResult?.dropoffAddress?.address || draftResult?.dropoffAddress?.label || '—'} ({draftResult?.dropoffAddress?.postcode || '—'})
-              </Text>
+      {/* Draft quick-view modal - Premium XL Design */}
+      <Modal isOpen={isDraftModalOpen} onClose={() => setIsDraftModalOpen(false)} size="xl" isCentered scrollBehavior="inside">
+        <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(8px)" />
+        <ModalContent
+          bg="linear-gradient(180deg, #0f172a 0%, #0a0f1a 100%)"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderWidth="1px"
+          borderRadius="2xl"
+          overflow="hidden"
+          maxW="840px"
+          boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.1)"
+        >
+          {/* Premium Header Block */}
+          <Box
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)"
+            borderBottom="1px solid rgba(59, 130, 246, 0.2)"
+            px={6}
+            py={5}
+          >
+            <HStack justify="space-between" align="flex-start">
+              <VStack align="start" spacing={2}>
+                <HStack spacing={3}>
+                  <Text fontSize="xl" fontWeight="bold" color="#fff" letterSpacing="-0.02em">
+                    {draftResult?.reference || 'Draft Booking'}
+                  </Text>
+                  <Badge
+                    bg="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                    color="white"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    textTransform="uppercase"
+                    letterSpacing="0.05em"
+                  >
+                    {draftResult?.status || 'DRAFT'}
+                  </Badge>
+                </HStack>
+                <HStack spacing={4} fontSize="xs" color="#94a3b8">
+                  <HStack spacing={1}>
+                    <Icon as={FaClock} boxSize={3} />
+                    <Text>Created: {draftResult?.createdAt ? format(new Date(draftResult.createdAt), 'dd MMM yyyy, HH:mm') : '—'}</Text>
+                  </HStack>
+                  <Box w="1px" h="12px" bg="#334155" />
+                  <HStack spacing={1}>
+                    <Icon as={FaEdit} boxSize={3} />
+                    <Text>Updated: {draftResult?.updatedAt ? format(new Date(draftResult.updatedAt), 'dd MMM yyyy, HH:mm') : '—'}</Text>
+                  </HStack>
+                </HStack>
               </VStack>
-              <Divider borderColor="#334155" />
-              <Text fontWeight="bold">Items</Text>
-              <Text fontSize="sm">{draftResult?.items?.length || 0} item(s)</Text>
-            {draftResult?.items && draftResult.items.length > 0 && (
-              <Box maxH="160px" overflowY="auto" border="1px solid #1f2937" borderRadius="md" p={2} bg="#0b1220">
-                {draftResult.items.slice(0, 5).map((item: any, idx: number) => (
-                  <Text key={idx} fontSize="sm" color="#cbd5e1">
-                    • {item.name || item.id || 'Item'} x{item.quantity || 1}
-                  </Text>
-                ))}
-                {draftResult.items.length > 5 && (
-                  <Text fontSize="xs" color="#94a3b8" mt={1}>
-                    + {draftResult.items.length - 5} more
-                  </Text>
-                )}
-              </Box>
-            )}
-              <Divider borderColor="#334155" />
-              <Text fontWeight="bold">Pricing</Text>
-              <Text fontSize="sm">
-                Total: £{draftResult?.pricing?.total?.toFixed ? draftResult.pricing.total.toFixed(2) : (draftResult?.pricing?.total || 0)}
-              </Text>
-              {draftResult?.pricing && (
-                <VStack align="stretch" spacing={1} fontSize="sm" color="#cbd5e1">
-                  {draftResult.pricing.baseFee !== undefined && <Text>Base: £{draftResult.pricing.baseFee?.toFixed?.(2) || draftResult.pricing.baseFee}</Text>}
-                  {draftResult.pricing.distanceFee !== undefined && <Text>Distance: £{draftResult.pricing.distanceFee?.toFixed?.(2) || draftResult.pricing.distanceFee}</Text>}
-                  {draftResult.pricing.volumeFee !== undefined && <Text>Volume: £{draftResult.pricing.volumeFee?.toFixed?.(2) || draftResult.pricing.volumeFee}</Text>}
-                  {draftResult.pricing.serviceFee !== undefined && <Text>Service: £{draftResult.pricing.serviceFee?.toFixed?.(2) || draftResult.pricing.serviceFee}</Text>}
-                  {draftResult.pricing.urgencyFee !== undefined && <Text>Urgency: £{draftResult.pricing.urgencyFee?.toFixed?.(2) || draftResult.pricing.urgencyFee}</Text>}
-                  {draftResult.pricing.vat !== undefined && <Text>VAT: £{draftResult.pricing.vat?.toFixed?.(2) || draftResult.pricing.vat}</Text>}
+              <IconButton
+                aria-label="Close"
+                icon={<FaTimes />}
+                variant="ghost"
+                color="#94a3b8"
+                size="sm"
+                borderRadius="full"
+                _hover={{ bg: 'rgba(255,255,255,0.1)', color: '#fff' }}
+                onClick={() => setIsDraftModalOpen(false)}
+              />
+            </HStack>
+          </Box>
+
+          <ModalBody px={6} py={5}>
+            <VStack align="stretch" spacing={5}>
+              {/* Addresses Card */}
+              <Box
+                bg="rgba(15, 23, 42, 0.6)"
+                border="1px solid rgba(51, 65, 85, 0.5)"
+                borderRadius="xl"
+                overflow="hidden"
+              >
+                <HStack
+                  justify="space-between"
+                  align="center"
+                  px={4}
+                  py={3}
+                  bg="rgba(30, 41, 59, 0.5)"
+                  borderBottom="1px solid rgba(51, 65, 85, 0.3)"
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FaMapMarkerAlt} color="#3b82f6" boxSize={4} />
+                    <Text fontWeight="semibold" color="#fff" fontSize="sm">Addresses</Text>
+                  </HStack>
+                  <Badge
+                    bg="rgba(51, 65, 85, 0.6)"
+                    color="#94a3b8"
+                    px={2}
+                    py={0.5}
+                    borderRadius="md"
+                    fontSize="xs"
+                    fontFamily="mono"
+                  >
+                    {draftResult?.pickupAddress?.postcode || '—'} → {draftResult?.dropoffAddress?.postcode || '—'}
+                  </Badge>
+                </HStack>
+                <VStack align="stretch" spacing={0} p={4}>
+                  <HStack spacing={3} py={2}>
+                    <Box w="6px" h="6px" borderRadius="full" bg="#22c55e" flexShrink={0} />
+                    <VStack align="start" spacing={0} flex={1}>
+                      <Text fontSize="xs" color="#64748b" fontWeight="medium">PICKUP</Text>
+                      <Text fontSize="sm" color="#e2e8f0">
+                        {draftResult?.pickupAddress?.address || draftResult?.pickupAddress?.label || '—'}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                  <Box ml={1} pl={2} borderLeft="2px dashed rgba(51, 65, 85, 0.5)" h="16px" />
+                  <HStack spacing={3} py={2}>
+                    <Box w="6px" h="6px" borderRadius="full" bg="#ef4444" flexShrink={0} />
+                    <VStack align="start" spacing={0} flex={1}>
+                      <Text fontSize="xs" color="#64748b" fontWeight="medium">DROPOFF</Text>
+                      <Text fontSize="sm" color="#e2e8f0">
+                        {draftResult?.dropoffAddress?.address || draftResult?.dropoffAddress?.label || '—'}
+                      </Text>
+                    </VStack>
+                  </HStack>
                 </VStack>
-              )}
-              {draftResult?.items && draftResult.items.length > 0 && (
-                <Text fontSize="sm" color="#94a3b8">
-                  Weight/Volume (if provided) derived from items
-                </Text>
-              )}
+              </Box>
+
+              {/* Items Card */}
+              <Box
+                bg="rgba(15, 23, 42, 0.6)"
+                border="1px solid rgba(51, 65, 85, 0.5)"
+                borderRadius="xl"
+                overflow="hidden"
+              >
+                <HStack
+                  justify="space-between"
+                  align="center"
+                  px={4}
+                  py={3}
+                  bg="rgba(30, 41, 59, 0.5)"
+                  borderBottom="1px solid rgba(51, 65, 85, 0.3)"
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FaTruck} color="#8b5cf6" boxSize={4} />
+                    <Text fontWeight="semibold" color="#fff" fontSize="sm">Items</Text>
+                  </HStack>
+                  <Badge
+                    bg="rgba(139, 92, 246, 0.2)"
+                    color="#a78bfa"
+                    px={2}
+                    py={0.5}
+                    borderRadius="md"
+                    fontSize="xs"
+                  >
+                    {draftResult?.items?.length || 0} item{(draftResult?.items?.length || 0) !== 1 ? 's' : ''}
+                  </Badge>
+                </HStack>
+                <Box p={4}>
+                  {draftResult?.items && draftResult.items.length > 0 ? (
+                    <VStack align="stretch" spacing={2} maxH="140px" overflowY="auto" pr={1}>
+                      {draftResult.items.slice(0, 6).map((item: any, idx: number) => (
+                        <HStack
+                          key={idx}
+                          justify="space-between"
+                          py={1.5}
+                          px={2}
+                          bg="rgba(30, 41, 59, 0.4)"
+                          borderRadius="md"
+                          _hover={{ bg: 'rgba(30, 41, 59, 0.6)' }}
+                          transition="background 0.15s"
+                        >
+                          <Text fontSize="sm" color="#e2e8f0">{item.name || item.id || 'Item'}</Text>
+                          <Badge bg="rgba(51, 65, 85, 0.5)" color="#94a3b8" fontSize="xs">×{item.quantity || 1}</Badge>
+                        </HStack>
+                      ))}
+                      {draftResult.items.length > 6 && (
+                        <Text fontSize="xs" color="#64748b" textAlign="center" pt={1}>
+                          + {draftResult.items.length - 6} more items
+                        </Text>
+                      )}
+                    </VStack>
+                  ) : (
+                    <Text fontSize="sm" color="#64748b" textAlign="center" py={2}>No items captured.</Text>
+                  )}
+                </Box>
+              </Box>
+
+              {/* Pricing Card */}
+              <Box
+                bg="rgba(15, 23, 42, 0.6)"
+                border="1px solid rgba(51, 65, 85, 0.5)"
+                borderRadius="xl"
+                overflow="hidden"
+              >
+                <HStack
+                  justify="space-between"
+                  align="center"
+                  px={4}
+                  py={3}
+                  bg="rgba(30, 41, 59, 0.5)"
+                  borderBottom="1px solid rgba(51, 65, 85, 0.3)"
+                >
+                  <HStack spacing={2}>
+                    <Icon as={FaPoundSign} color="#22c55e" boxSize={4} />
+                    <Text fontWeight="semibold" color="#fff" fontSize="sm">Pricing</Text>
+                  </HStack>
+                  <Badge
+                    bg="linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)"
+                    color="#4ade80"
+                    px={3}
+                    py={1}
+                    borderRadius="md"
+                    fontSize="sm"
+                    fontWeight="bold"
+                  >
+                    £{draftResult?.pricing?.total?.toFixed ? draftResult.pricing.total.toFixed(2) : (draftResult?.pricing?.total || '0.00')}
+                  </Badge>
+                </HStack>
+                <Box p={4}>
+                  {draftResult?.pricing ? (
+                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                      {draftResult.pricing.baseFee !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">Base Fee</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.baseFee?.toFixed?.(2) || draftResult.pricing.baseFee}</Text>
+                        </HStack>
+                      )}
+                      {draftResult.pricing.distanceFee !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">Distance</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.distanceFee?.toFixed?.(2) || draftResult.pricing.distanceFee}</Text>
+                        </HStack>
+                      )}
+                      {draftResult.pricing.volumeFee !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">Volume</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.volumeFee?.toFixed?.(2) || draftResult.pricing.volumeFee}</Text>
+                        </HStack>
+                      )}
+                      {draftResult.pricing.serviceFee !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">Service</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.serviceFee?.toFixed?.(2) || draftResult.pricing.serviceFee}</Text>
+                        </HStack>
+                      )}
+                      {draftResult.pricing.urgencyFee !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">Urgency</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.urgencyFee?.toFixed?.(2) || draftResult.pricing.urgencyFee}</Text>
+                        </HStack>
+                      )}
+                      {draftResult.pricing.vat !== undefined && (
+                        <HStack justify="space-between" py={1}>
+                          <Text fontSize="sm" color="#94a3b8">VAT</Text>
+                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.vat?.toFixed?.(2) || draftResult.pricing.vat}</Text>
+                        </HStack>
+                      )}
+                    </Grid>
+                  ) : (
+                    <Text fontSize="sm" color="#64748b" textAlign="center" py={2}>No pricing details available.</Text>
+                  )}
+                </Box>
+              </Box>
             </VStack>
           </ModalBody>
-          <ModalFooter>
-            <HStack spacing={2} flex="1" flexWrap="wrap">
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!draftResult?.reference) return;
-                  navigator.clipboard?.writeText(draftResult.reference);
-                  toast({
-                    title: 'Reference copied',
-                    description: draftResult.reference,
-                    status: 'success',
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
-              >
-                Copy Ref
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!draftResult) return;
-                  navigator.clipboard?.writeText(JSON.stringify(draftResult, null, 2));
-                  toast({
-                    title: 'Draft JSON copied',
-                    status: 'success',
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
-              >
-                Copy JSON
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!draftResult) return;
-                  const blob = new Blob([JSON.stringify(draftResult, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${draftResult.reference || 'draft'}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                Download JSON
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (!draftResult) return;
-                  const summary = `
+
+          {/* Quick Actions Footer */}
+          <Box
+            borderTop="1px solid rgba(51, 65, 85, 0.5)"
+            bg="rgba(15, 23, 42, 0.8)"
+            px={6}
+            py={5}
+          >
+            <VStack spacing={4} align="stretch">
+              <Text fontSize="xs" color="#64748b" fontWeight="semibold" textTransform="uppercase" letterSpacing="0.1em">
+                Quick Actions
+              </Text>
+              <Grid templateColumns="repeat(3, 1fr)" gap={3}>
+                <Button
+                  size="sm"
+                  bg="rgba(30, 41, 59, 0.6)"
+                  color="#e2e8f0"
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  h="40px"
+                  _hover={{ bg: 'rgba(51, 65, 85, 0.8)', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.15s"
+                  onClick={() => {
+                    if (!draftResult?.reference) return;
+                    navigator.clipboard?.writeText(draftResult.reference);
+                    toast({
+                      title: 'Reference copied',
+                      description: draftResult.reference,
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    });
+                  }}
+                >
+                  Copy Ref
+                </Button>
+                <Button
+                  size="sm"
+                  bg="rgba(30, 41, 59, 0.6)"
+                  color="#e2e8f0"
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  h="40px"
+                  _hover={{ bg: 'rgba(51, 65, 85, 0.8)', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.15s"
+                  onClick={() => {
+                    if (!draftResult) return;
+                    navigator.clipboard?.writeText(JSON.stringify(draftResult, null, 2));
+                    toast({
+                      title: 'Draft JSON copied',
+                      status: 'success',
+                      duration: 2000,
+                      isClosable: true,
+                    });
+                  }}
+                >
+                  Copy JSON
+                </Button>
+                <Button
+                  size="sm"
+                  bg="rgba(30, 41, 59, 0.6)"
+                  color="#e2e8f0"
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  h="40px"
+                  _hover={{ bg: 'rgba(51, 65, 85, 0.8)', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.15s"
+                  onClick={() => {
+                    if (!draftResult) return;
+                    const blob = new Blob([JSON.stringify(draftResult, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${draftResult.reference || 'draft'}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Download JSON
+                </Button>
+                <Button
+                  size="sm"
+                  bg="rgba(30, 41, 59, 0.6)"
+                  color="#e2e8f0"
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  h="40px"
+                  _hover={{ bg: 'rgba(51, 65, 85, 0.8)', transform: 'translateY(-1px)' }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.15s"
+                  onClick={() => {
+                    if (!draftResult) return;
+                    const summary = `
 Reference: ${draftResult.reference}
 Status: ${draftResult.status}
 Pickup: ${draftResult?.pickupAddress?.postcode || ''}
@@ -5515,222 +5746,406 @@ Dropoff: ${draftResult?.dropoffAddress?.postcode || ''}
 Items: ${draftResult?.items?.length || 0}
 Total: £${draftResult?.pricing?.total || 0}
 `;
-                  const blob = new Blob([summary], { type: 'application/pdf' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${draftResult.reference || 'draft'}.pdf`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                Export PDF
-              </Button>
-              <Button
-                size="sm"
-                colorScheme="green"
-                onClick={async () => {
-                  if (!draftResult?.reference) return;
-                  const res = await fetch(`/api/admin/booking-luxury/draft/${encodeURIComponent(draftResult.reference)}/convert`, {
-                    method: 'POST',
-                  });
-                  const json = await res.json();
-                  if (!res.ok || !json?.success) {
-                    toast({
-                      title: 'Convert failed',
-                      description: json?.error || 'Unable to convert draft',
-                      status: 'error',
-                      duration: 3000,
-                      isClosable: true,
-                    });
-                    return;
-                  }
-                  toast({
-                    title: 'Draft converted',
-                    description: `Booking ${json?.booking?.reference || 'created'}`,
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                  setIsDraftModalOpen(false);
-                  await loadOrders(true);
-                }}
-              >
-                Convert to Booking
-              </Button>
-            </HStack>
-            <Button variant="ghost" ml={3} onClick={() => setIsDraftModalOpen(false)}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      {/* Drafts list modal */}
-      <Modal isOpen={isDraftsListOpen} onClose={() => setIsDraftsListOpen(false)} size="4xl" isCentered scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent bg="#0f172a" borderColor="#334155" borderWidth="1px" maxH="80vh">
-          <ModalHeader color="#fff">Draft Bookings</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack align="stretch" spacing={3}>
-              <Text fontSize="sm" color="#94a3b8">
-                Showing {draftsList.length} draft(s). Use the main search box + View Drafts to filter by reference/postcode.
-              </Text>
-              <Wrap spacing={3}>
-                <WrapItem flex="1" minW="160px">
-                  <Select
-                    size="sm"
-                    placeholder="Status"
-                    value={draftStatusFilter}
-                    onChange={(e) => setDraftStatusFilter(e.target.value)}
-                    bg="#111827"
-                    borderColor="#1f2937"
-                    color="#e2e8f0"
-                    w="100%"
-                  >
-                    <option value="DRAFT">DRAFT</option>
-                    <option value="COMPLETED">COMPLETED</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
-                  </Select>
-                </WrapItem>
-                <WrapItem flex="1" minW="160px">
-                  <ClientInput
-                    type="date"
-                    size="sm"
-                    bg="#111827"
-                    borderColor="#1f2937"
-                    color="#e2e8f0"
-                    value={draftFromDate}
-                    onChange={(e: any) => setDraftFromDate(e.target.value)}
-                    w="100%"
-                  />
-                </WrapItem>
-                <WrapItem flex="1" minW="160px">
-                  <ClientInput
-                    type="date"
-                    size="sm"
-                    bg="#111827"
-                    borderColor="#1f2937"
-                    color="#e2e8f0"
-                    value={draftToDate}
-                    onChange={(e: any) => setDraftToDate(e.target.value)}
-                    w="100%"
-                  />
-                </WrapItem>
-                <WrapItem minW="140px">
-                  <Button size="sm" onClick={handleLoadDraftsList} isLoading={isDraftsListLoading} w="100%">
-                    Apply Filters
-                  </Button>
-                </WrapItem>
-                <WrapItem minW="140px">
+                    const blob = new Blob([summary], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${draftResult.reference || 'draft'}.txt`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Export Summary
+                </Button>
+                <GridItem colSpan={2}>
                   <Button
                     size="sm"
-                    colorScheme="red"
-                    variant="outline"
+                    w="100%"
+                    bg="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+                    color="white"
+                    borderRadius="lg"
+                    fontWeight="semibold"
+                    h="40px"
+                    _hover={{ bg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', transform: 'translateY(-1px)', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}
+                    _active={{ transform: 'translateY(0)' }}
+                    transition="all 0.15s"
                     onClick={async () => {
-                      try {
-                        const res = await fetch('/api/admin/booking-luxury/drafts/archive', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ days: 30 }),
-                        });
-                        const json = await res.json();
-                        if (!res.ok || !json?.success) {
-                          toast({
-                            title: 'Archive failed',
-                            description: json?.error || 'Unable to archive drafts',
-                            status: 'error',
-                            duration: 3000,
-                            isClosable: true,
-                          });
-                          return;
-                        }
+                      if (!draftResult?.reference) return;
+                      const res = await fetch(`/api/admin/booking-luxury/draft/${encodeURIComponent(draftResult.reference)}/convert`, {
+                        method: 'POST',
+                      });
+                      const json = await res.json();
+                      if (!res.ok || !json?.success) {
                         toast({
-                          title: 'Drafts archived',
-                          description: `Archived ${json.archived} draft(s) older than ${json.days} days`,
-                          status: 'success',
-                          duration: 3000,
-                          isClosable: true,
-                        });
-                        handleLoadDraftsList();
-                        setDraftCount(Math.max(0, draftCount - (json.archived || 0)));
-                      } catch (err) {
-                        toast({
-                          title: 'Archive failed',
-                          description: 'Please try again.',
+                          title: 'Convert failed',
+                          description: json?.error || 'Unable to convert draft',
                           status: 'error',
                           duration: 3000,
                           isClosable: true,
                         });
+                        return;
                       }
+                      toast({
+                        title: 'Draft converted',
+                        description: `Booking ${json?.booking?.reference || 'created'}`,
+                        status: 'success',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                      setIsDraftModalOpen(false);
+                      await loadOrders(true);
                     }}
-                    isLoading={isDraftsListLoading}
-                    w="100%"
                   >
-                    Archive &gt;30d
+                    Convert to Booking
                   </Button>
-                </WrapItem>
-              </Wrap>
-              <Box border="1px solid #1f2937" borderRadius="md" overflow="hidden">
-                <Box
-                  display="grid"
-                  gridTemplateColumns="repeat(6, minmax(0, 1fr))"
-                  bg="#111827"
-                  color="#cbd5e1"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  borderBottom="1px solid #1f2937"
-                  p={2}
+                </GridItem>
+              </Grid>
+              <Divider borderColor="rgba(51, 65, 85, 0.4)" />
+              <Button
+                size="sm"
+                variant="ghost"
+                color="#94a3b8"
+                borderRadius="lg"
+                h="36px"
+                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                onClick={() => setIsDraftModalOpen(false)}
+              >
+                Close
+              </Button>
+            </VStack>
+          </Box>
+        </ModalContent>
+      </Modal>
+
+      {/* Drafts list modal - Premium Design */}
+      <Modal isOpen={isDraftsListOpen} onClose={() => setIsDraftsListOpen(false)} size="5xl" isCentered scrollBehavior="inside">
+        <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(8px)" />
+        <ModalContent
+          bg="linear-gradient(180deg, #0f172a 0%, #0a0f1a 100%)"
+          borderColor="rgba(59, 130, 246, 0.2)"
+          borderWidth="1px"
+          borderRadius="2xl"
+          maxH="85vh"
+          boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.1)"
+        >
+          {/* Premium Header */}
+          <Box
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)"
+            borderBottom="1px solid rgba(59, 130, 246, 0.2)"
+            px={6}
+            py={4}
+          >
+            <HStack justify="space-between" align="center">
+              <HStack spacing={4}>
+                <Text fontSize="lg" fontWeight="bold" color="#fff" letterSpacing="-0.02em">
+                  Draft Bookings
+                </Text>
+                <HStack spacing={2}>
+                  <Badge
+                    bg="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                    color="white"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                  >
+                    {draftsList.length} Shown
+                  </Badge>
+                  <Badge
+                    bg="rgba(139, 92, 246, 0.2)"
+                    color="#a78bfa"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                  >
+                    {draftCount} Total
+                  </Badge>
+                  {searchQuery && (
+                    <Badge
+                      bg="rgba(6, 182, 212, 0.2)"
+                      color="#22d3ee"
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="xs"
+                    >
+                      Query: {searchQuery}
+                    </Badge>
+                  )}
+                </HStack>
+              </HStack>
+              <IconButton
+                aria-label="Close"
+                icon={<FaTimes />}
+                variant="ghost"
+                color="#94a3b8"
+                size="sm"
+                borderRadius="full"
+                _hover={{ bg: 'rgba(255,255,255,0.1)', color: '#fff' }}
+                onClick={() => setIsDraftsListOpen(false)}
+              />
+            </HStack>
+          </Box>
+
+          <ModalBody px={6} py={5}>
+            <VStack align="stretch" spacing={4}>
+              {/* Info Banner */}
+              <Box
+                bg="rgba(59, 130, 246, 0.08)"
+                border="1px solid rgba(59, 130, 246, 0.2)"
+                borderRadius="xl"
+                px={4}
+                py={3}
+              >
+                <Text fontSize="sm" color="#94a3b8">
+                  Use the main search bar to filter by reference or postcode, then hit &quot;View Drafts&quot;. Apply the filters below to narrow results.
+                </Text>
+              </Box>
+
+              {/* Filters Section */}
+              <Box
+                bg="rgba(15, 23, 42, 0.6)"
+                border="1px solid rgba(51, 65, 85, 0.5)"
+                borderRadius="xl"
+                p={4}
+              >
+                <Text fontSize="xs" color="#64748b" fontWeight="semibold" textTransform="uppercase" letterSpacing="0.1em" mb={3}>
+                  Filters
+                </Text>
+                <Grid templateColumns={{ base: '1fr', md: 'repeat(5, 1fr)' }} gap={3} alignItems="end">
+                  <VStack align="stretch" spacing={1}>
+                    <Text fontSize="xs" color="#94a3b8" fontWeight="medium">Status</Text>
+                    <Select
+                      size="sm"
+                      placeholder="All Statuses"
+                      value={draftStatusFilter}
+                      onChange={(e) => setDraftStatusFilter(e.target.value)}
+                      bg="rgba(17, 24, 39, 0.8)"
+                      borderColor="rgba(51, 65, 85, 0.5)"
+                      color="#e2e8f0"
+                      borderRadius="lg"
+                      _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                      _focus={{ borderColor: '#3b82f6', boxShadow: '0 0 0 1px #3b82f6' }}
+                    >
+                      <option value="DRAFT" style={{ background: '#1e293b' }}>DRAFT</option>
+                      <option value="COMPLETED" style={{ background: '#1e293b' }}>COMPLETED</option>
+                      <option value="ARCHIVED" style={{ background: '#1e293b' }}>ARCHIVED</option>
+                    </Select>
+                  </VStack>
+                  <VStack align="stretch" spacing={1}>
+                    <Text fontSize="xs" color="#94a3b8" fontWeight="medium">From Date</Text>
+                    <ClientInput
+                      type="date"
+                      size="sm"
+                      bg="rgba(17, 24, 39, 0.8)"
+                      borderColor="rgba(51, 65, 85, 0.5)"
+                      color="#e2e8f0"
+                      borderRadius="lg"
+                      value={draftFromDate}
+                      onChange={(e: any) => setDraftFromDate(e.target.value)}
+                    />
+                  </VStack>
+                  <VStack align="stretch" spacing={1}>
+                    <Text fontSize="xs" color="#94a3b8" fontWeight="medium">To Date</Text>
+                    <ClientInput
+                      type="date"
+                      size="sm"
+                      bg="rgba(17, 24, 39, 0.8)"
+                      borderColor="rgba(51, 65, 85, 0.5)"
+                      color="#e2e8f0"
+                      borderRadius="lg"
+                      value={draftToDate}
+                      onChange={(e: any) => setDraftToDate(e.target.value)}
+                    />
+                  </VStack>
+                  <Button
+                    size="sm"
+                    bg="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                    color="white"
+                    borderRadius="lg"
+                    fontWeight="medium"
+                    h="32px"
+                    onClick={handleLoadDraftsList}
+                    isLoading={isDraftsListLoading}
+                    _hover={{ bg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', transform: 'translateY(-1px)' }}
+                    _active={{ transform: 'translateY(0)' }}
+                    transition="all 0.15s"
+                  >
+                    Apply Filters
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    color="#94a3b8"
+                    borderRadius="lg"
+                    h="32px"
+                    onClick={() => {
+                      setDraftStatusFilter('');
+                      setDraftFromDate('');
+                      setDraftToDate('');
+                      handleLoadDraftsList();
+                    }}
+                    _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                  >
+                    Reset
+                  </Button>
+                </Grid>
+              </Box>
+
+              {/* Archive Action */}
+              <HStack justify="flex-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="red"
+                  borderRadius="lg"
+                  fontWeight="medium"
+                  leftIcon={<FaTrash />}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/admin/booking-luxury/drafts/archive', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ days: 30 }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok || !json?.success) {
+                        toast({
+                          title: 'Archive failed',
+                          description: json?.error || 'Unable to archive drafts',
+                          status: 'error',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                        return;
+                      }
+                      toast({
+                        title: 'Drafts archived',
+                        description: `Archived ${json.archived} draft(s) older than ${json.days} days`,
+                        status: 'success',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                      handleLoadDraftsList();
+                      setDraftCount(Math.max(0, draftCount - (json.archived || 0)));
+                    } catch (err) {
+                      toast({
+                        title: 'Archive failed',
+                        description: 'Please try again.',
+                        status: 'error',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  }}
+                  isLoading={isDraftsListLoading}
+                  _hover={{ bg: 'rgba(239, 68, 68, 0.1)' }}
+                >
+                  Archive Drafts &gt;30 Days
+                </Button>
+              </HStack>
+
+              {/* Drafts Table */}
+              <Box
+                border="1px solid rgba(51, 65, 85, 0.5)"
+                borderRadius="xl"
+                overflow="hidden"
+              >
+                {/* Table Header */}
+                <Grid
+                  templateColumns="1.2fr 0.8fr 1fr 1fr 0.6fr 0.8fr"
+                  bg="rgba(30, 41, 59, 0.6)"
+                  color="#94a3b8"
+                  fontWeight="semibold"
+                  fontSize="xs"
+                  textTransform="uppercase"
+                  letterSpacing="0.05em"
+                  borderBottom="1px solid rgba(51, 65, 85, 0.5)"
+                  px={4}
+                  py={3}
                 >
                   <Text>Reference</Text>
                   <Text>Status</Text>
                   <Text>Pickup</Text>
                   <Text>Dropoff</Text>
-                  <Text textAlign="right">Items</Text>
+                  <Text textAlign="center">Items</Text>
                   <Text textAlign="right">Total</Text>
-                </Box>
-                <Box maxH="50vh" overflowY="auto">
+                </Grid>
+
+                {/* Table Body */}
+                <Box maxH="45vh" overflowY="auto">
                   {draftsList.length === 0 && (
-                    <Text color="#94a3b8" p={3} textAlign="center">
-                      No drafts found. Try another reference or clear filters.
-                    </Text>
+                    <Box py={8} textAlign="center">
+                      <Text color="#64748b" fontSize="sm">No drafts found. Try another reference or clear filters.</Text>
+                    </Box>
                   )}
-                  {draftsList.map((draft: any) => (
-                    <Box
+                  {draftsList.map((draft: any, idx: number) => (
+                    <Grid
                       key={draft.id}
-                      display="grid"
-                      gridTemplateColumns="repeat(6, minmax(0, 1fr))"
+                      templateColumns="1.2fr 0.8fr 1fr 1fr 0.6fr 0.8fr"
                       alignItems="center"
                       color="#e2e8f0"
-                      borderBottom="1px solid #1f2937"
-                      p={2}
-                      _hover={{ bg: '#111827' }}
+                      borderBottom={idx < draftsList.length - 1 ? '1px solid rgba(51, 65, 85, 0.3)' : 'none'}
+                      px={4}
+                      py={3}
+                      bg="transparent"
                       cursor="pointer"
+                      transition="all 0.15s"
+                      _hover={{ bg: 'rgba(59, 130, 246, 0.08)' }}
+                      _active={{ bg: 'rgba(59, 130, 246, 0.12)' }}
                       onClick={() => {
                         setDraftResult(draft);
                         setIsDraftModalOpen(true);
                       }}
                     >
-                      <Text fontWeight="semibold">{draft.reference}</Text>
-                      <Badge colorScheme="blue" w="fit-content">{draft.status || 'DRAFT'}</Badge>
-                      <Text fontSize="sm">{draft?.pickupAddress?.postcode || '—'}</Text>
-                      <Text fontSize="sm">{draft?.dropoffAddress?.postcode || '—'}</Text>
-                      <Text fontSize="sm" textAlign="right">{draft?.items?.length || 0}</Text>
-                      <Text fontSize="sm" textAlign="right">
-                        £{draft?.pricing?.total?.toFixed ? draft.pricing.total.toFixed(2) : (draft?.pricing?.total || 0)}
+                      <Text fontWeight="semibold" fontSize="sm" color="#fff">{draft.reference}</Text>
+                      <Badge
+                        bg={draft.status === 'DRAFT' ? 'rgba(59, 130, 246, 0.2)' : draft.status === 'COMPLETED' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(100, 116, 139, 0.2)'}
+                        color={draft.status === 'DRAFT' ? '#60a5fa' : draft.status === 'COMPLETED' ? '#4ade80' : '#94a3b8'}
+                        px={2}
+                        py={0.5}
+                        borderRadius="md"
+                        fontSize="xs"
+                        fontWeight="medium"
+                        w="fit-content"
+                      >
+                        {draft.status || 'DRAFT'}
+                      </Badge>
+                      <Text fontSize="sm" color="#cbd5e1" isTruncated>{draft?.pickupAddress?.postcode || '—'}</Text>
+                      <Text fontSize="sm" color="#cbd5e1" isTruncated>{draft?.dropoffAddress?.postcode || '—'}</Text>
+                      <Text fontSize="sm" color="#94a3b8" textAlign="center">{draft?.items?.length || 0}</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="#4ade80" textAlign="right">
+                        £{draft?.pricing?.total?.toFixed ? draft.pricing.total.toFixed(2) : (draft?.pricing?.total || '0.00')}
                       </Text>
-                    </Box>
+                    </Grid>
                   ))}
                 </Box>
               </Box>
             </VStack>
           </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={() => setIsDraftsListOpen(false)}>
-              Close
-            </Button>
-          </ModalFooter>
+
+          {/* Footer */}
+          <Box
+            borderTop="1px solid rgba(51, 65, 85, 0.5)"
+            bg="rgba(15, 23, 42, 0.8)"
+            px={6}
+            py={4}
+          >
+            <HStack justify="flex-end">
+              <Button
+                variant="ghost"
+                color="#94a3b8"
+                borderRadius="lg"
+                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                onClick={() => setIsDraftsListOpen(false)}
+              >
+                Close
+              </Button>
+            </HStack>
+          </Box>
         </ModalContent>
       </Modal>
 
