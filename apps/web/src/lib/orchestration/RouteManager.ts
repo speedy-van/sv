@@ -836,13 +836,6 @@ export class RouteManager {
               dropoffAddress: true,
             }
           },
-          drops: true,
-          driver: {
-            select: {
-              name: true,
-              email: true,
-            }
-          }
         }
       });
 
@@ -867,6 +860,9 @@ export class RouteManager {
       const driverPhone = driver.DriverProfile?.phone;
       const driverName = driver.User?.name || 'Driver';
 
+      const firstPickupAddress =
+        (route as any).Booking?.[0]?.pickupAddress;
+
       // Prepare notification data
       const notificationData = {
         routeId: route.id,
@@ -875,7 +871,7 @@ export class RouteManager {
         estimatedDuration: route.estimatedDuration,
         totalValue: route.totalOutcome.toString(),
         status: route.status,
-        firstPickup: (route as any).Booking?.[0]?.pickupAddress?.label || 'N/A',
+        firstPickup: firstPickupAddress?.label || 'N/A',
       };
 
       // 1. Pusher Real-time Notification

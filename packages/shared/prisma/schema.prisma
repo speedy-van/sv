@@ -8,22 +8,21 @@ datasource db {
 }
 
 model AILearningPattern {
-  id          String   @id
+  id          String   @id @default(cuid())
   pattern     String
   action      String
   successRate Float    @default(0)
   occurrences Int      @default(1)
   lastSeen    DateTime @default(now())
   createdAt   DateTime @default(now())
-  updatedAt   DateTime
-
+  updatedAt   DateTime @updatedAt
   @@unique([pattern, action])
   @@index([lastSeen])
   @@index([successRate])
 }
 
 model AccountDeletionRequest {
-  id           String    @id
+  id           String    @id @default(cuid())
   userId       String
   driverId     String
   reason       String?
@@ -41,7 +40,7 @@ model AccountDeletionRequest {
 }
 
 model Address {
-  id                  String   @id
+  id                  String   @id @default(cuid())
   userId              String
   label               String
   line1               String
@@ -54,7 +53,7 @@ model Address {
   notes               String?
   isDefault           Boolean  @default(false)
   createdAt           DateTime @default(now())
-  updatedAt           DateTime
+  updatedAt   DateTime @updatedAt
   hasCongestionCharge Boolean  @default(false)
   isLEZ               Boolean  @default(false)
   isULEZ              Boolean  @default(false)
@@ -68,7 +67,7 @@ model Address {
 }
 
 model AdminApproval {
-  id            String   @id
+  id            String   @id @default(cuid())
   entityType    String
   entityId      String
   type          String
@@ -87,7 +86,7 @@ model AdminApproval {
 }
 
 model AdminNotification {
-  id        String    @id
+  id        String    @id @default(cuid())
   type      String
   title     String
   message   String
@@ -97,7 +96,7 @@ model AdminNotification {
   isRead    Boolean   @default(false)
   readAt    DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime
+  updatedAt   DateTime @updatedAt
   actorId   String?
   actorRole String?
 
@@ -109,14 +108,14 @@ model AdminNotification {
 }
 
 model Assignment {
-  id             String           @id
+  id             String           @id @default(cuid())
   bookingId      String
   driverId       String
   round          Int              @default(1)
   score          Int?
   expiresAt      DateTime?
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt   DateTime @updatedAt
   claimedAt      DateTime?
   status         AssignmentStatus @default(invited)
   Booking        Booking          @relation(fields: [bookingId], references: [id])
@@ -133,7 +132,7 @@ model Assignment {
 }
 
 model AuditLog {
-  id         String   @id
+  id         String   @id @default(cuid())
   actorId    String
   actorRole  String
   action     String
@@ -154,7 +153,7 @@ model AuditLog {
 }
 
 model BonusRequest {
-  id                   String           @id
+  id                   String           @id @default(cuid())
   driverId             String
   assignmentId         String
   reason               String
@@ -176,12 +175,12 @@ model BonusRequest {
 }
 
 model Booking {
-  id                                                         String                  @id
+  id                                                         String                  @id @default(cuid())
   customerId                                                 String?
   paidAt                                                     DateTime?
   amountPaidGBP                                              Int                     @default(0)
   createdAt                                                  DateTime                @default(now())
-  updatedAt                                                  DateTime
+  updatedAt   DateTime @updatedAt
   driverId                                                   String?
   customerName                                               String
   customerPhone                                              String
@@ -278,8 +277,29 @@ model Booking {
   @@index([status, createdAt], map: "idx_booking_status_created")
 }
 
+model BookingDraft {
+  id             String   @id @default(cuid())
+  reference      String   @unique
+  status         String   @default("DRAFT")
+  formStep1      Json?
+  formStep2      Json?
+  pickupAddress  Json?
+  dropoffAddress Json?
+  items          Json?
+  pricing        Json?
+  capacityCheck  Json?
+  serviceType    String?
+  crewSize       String?
+  scheduledDate  String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([reference, status])
+}
+
 model BookingAddress {
-  id                                                        String           @id
+  id                                                        String           @id @default(cuid())
   label                                                     String
   postcode                                                  String
   lat                                                       Float
@@ -291,7 +311,7 @@ model BookingAddress {
 }
 
 model BookingCancellation {
-  id              String   @id
+  id              String   @id @default(cuid())
   bookingId       String
   cancelledBy     String
   reason          String
@@ -300,7 +320,7 @@ model BookingCancellation {
   createdAt       DateTime @default(now())
   cancelledByRole String
   refundProcessed Boolean  @default(false)
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   Booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -309,7 +329,7 @@ model BookingCancellation {
 }
 
 model BookingItem {
-  id              String  @id
+  id              String  @id @default(cuid())
   bookingId       String
   name            String
   quantity        Int     @default(1)
@@ -323,7 +343,7 @@ model BookingItem {
 }
 
 model BookingProgress {
-  id          String      @id
+  id          String      @id @default(cuid())
   bookingId   String
   step        BookingStep
   status      String      @default("pending")
@@ -332,7 +352,7 @@ model BookingProgress {
   data        Json?
   notes       String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   Booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@unique([bookingId, step])
@@ -370,7 +390,7 @@ model BookingSegment {
 }
 
 model BusinessMetric {
-  id          String   @id
+  id          String   @id @default(cuid())
   name        String
   value       Float
   category    String
@@ -387,7 +407,7 @@ model BusinessMetric {
 }
 
 model CareerApplication {
-  id              String            @id
+  id              String            @id @default(cuid())
   fullName        String
   email           String
   phone           String
@@ -401,15 +421,14 @@ model CareerApplication {
   contractSent    Boolean           @default(false)
   contractSentAt  DateTime?
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([createdAt])
   @@index([email])
   @@index([status])
 }
 
 model ChatParticipant {
-  id          String              @id
+  id          String              @id @default(cuid())
   sessionId   String
   userId      String?
   guestName   String?
@@ -429,13 +448,13 @@ model ChatParticipant {
 }
 
 model ChatSession {
-  id                               String            @id
+  id                               String            @id @default(cuid())
   type                             ChatSessionType
   title                            String?
   bookingId                        String?
   isActive                         Boolean           @default(true)
   createdAt                        DateTime          @default(now())
-  updatedAt                        DateTime
+  updatedAt   DateTime @updatedAt
   closedAt                         DateTime?
   closedBy                         String?
   createdBy                        String?
@@ -452,7 +471,7 @@ model ChatSession {
 }
 
 model CommunicationLog {
-  id           String              @id
+  id           String              @id @default(cuid())
   bookingId    String
   channel      String
   recipient    String
@@ -471,7 +490,7 @@ model CommunicationLog {
 }
 
 model CompanyTaxSettings {
-  id                       String              @id
+  id                       String              @id @default(cuid())
   companyName              String
   companyNumber            String?             @unique
   vatRegistrationNumber    String?             @unique
@@ -496,7 +515,7 @@ model CompanyTaxSettings {
   isActive                 Boolean             @default(true)
   metadata                 Json                @default("{}")
   createdAt                DateTime            @default(now())
-  updatedAt                DateTime
+  updatedAt   DateTime @updatedAt
   createdBy                String
   updatedBy                String?
 
@@ -506,7 +525,7 @@ model CompanyTaxSettings {
 }
 
 model ConsentLog {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String?
   country   String?
   ipHash    String?
@@ -519,7 +538,7 @@ model ConsentLog {
 }
 
 model Contact {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   label     String
   name      String
@@ -528,7 +547,7 @@ model Contact {
   notes     String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt   DateTime @updatedAt
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -536,7 +555,7 @@ model Contact {
 }
 
 model ContentAuditLog {
-  id        String   @id
+  id        String   @id @default(cuid())
   type      String
   entityId  String?
   action    String
@@ -552,7 +571,7 @@ model ContentAuditLog {
 }
 
 model ContentVersion {
-  id          String    @id
+  id          String    @id @default(cuid())
   type        String
   entityId    String?
   version     Int
@@ -572,7 +591,7 @@ model ContentVersion {
 }
 
 model CustomerNotificationPreferences {
-  id                       String   @id
+  id                       String   @id @default(cuid())
   userId                   String   @unique
   emailBookingConfirmation Boolean  @default(true)
   emailBookingUpdates      Boolean  @default(true)
@@ -587,17 +606,17 @@ model CustomerNotificationPreferences {
   pushDriverUpdates        Boolean  @default(true)
   pushServiceAlerts        Boolean  @default(true)
   createdAt                DateTime @default(now())
-  updatedAt                DateTime
+  updatedAt   DateTime @updatedAt
   User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CustomerProfile {
-  id            String       @id
+  id            String       @id @default(cuid())
   userId        String       @unique
   totalSpent    Decimal      @default(0)
   loyaltyPoints Int          @default(0)
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime
+  updatedAt   DateTime @updatedAt
   lastOrderDate DateTime?
   preferredTier ServiceTier  @default(standard)
   totalOrders   Int          @default(0)
@@ -610,7 +629,7 @@ model CustomerProfile {
 }
 
 model DispatchSettings {
-  id                  String   @id
+  id                  String   @id @default(cuid())
   mode                String   @default("manual")
   isActive            Boolean  @default(true)
   autoAssignRadius    Int      @default(5000)
@@ -618,7 +637,7 @@ model DispatchSettings {
   maxDriverJobs       Int      @default(3)
   requireOnlineStatus Boolean  @default(true)
   updatedBy           String
-  updatedAt           DateTime
+  updatedAt   DateTime @updatedAt
   createdAt           DateTime @default(now())
 
   @@index([isActive])
@@ -626,7 +645,7 @@ model DispatchSettings {
 }
 
 model Document {
-  id         String           @id
+  id         String           @id @default(cuid())
   driverId   String
   category   DocumentCategory
   fileUrl    String
@@ -644,7 +663,7 @@ model Document {
 }
 
 model Driver {
-  id                            String                         @id
+  id                            String                         @id @default(cuid())
   userId                        String                         @unique
   status                        String                         @default("active")
   onboardingStatus              DriverStatus                   @default(applied)
@@ -653,7 +672,7 @@ model Driver {
   rightToWorkType               String?
   approvedAt                    DateTime?
   createdAt                     DateTime                       @default(now())
-  updatedAt                     DateTime
+  updatedAt   DateTime @updatedAt
   rating                        Float?                         @default(0)
   strikes                       Int                            @default(0)
   bankAccountName               String?
@@ -687,7 +706,7 @@ model Driver {
 }
 
 model DriverApplication {
-  id                           String                  @id
+  id                           String                  @id @default(cuid())
   email                        String                  @unique
   firstName                    String
   lastName                     String
@@ -736,14 +755,14 @@ model DriverApplication {
 }
 
 model DriverAvailability {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   driverId              String    @unique
   status                String    @default("offline")
   lastSeenAt            DateTime  @default(now())
   lastLat               Float?
   lastLng               Float?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   locationConsent       Boolean   @default(false)
   maxConcurrentDrops    Int       @default(5)
   multiDropCapable      Boolean   @default(true)
@@ -760,7 +779,7 @@ model DriverAvailability {
 }
 
 model DriverChecks {
-  id                String     @id
+  id                String     @id @default(cuid())
   driverId          String     @unique
   rtwMethod         RtwMethod?
   rtwResultRef      String?
@@ -782,12 +801,12 @@ model DriverChecks {
   policyEnd         DateTime?
   fileIds           String[]
   createdAt         DateTime   @default(now())
-  updatedAt         DateTime
+  updatedAt   DateTime @updatedAt
   Driver            Driver     @relation(fields: [driverId], references: [id])
 }
 
 model DriverEarnings {
-  id                       String             @id
+  id                       String             @id @default(cuid())
   driverId                 String
   assignmentId             String
   baseAmountPence          Int                @default(0)
@@ -800,7 +819,7 @@ model DriverEarnings {
   paidOut                  Boolean            @default(false)
   payoutId                 String?
   createdAt                DateTime           @default(now())
-  updatedAt                DateTime
+  updatedAt   DateTime @updatedAt
   adminAdjustedAmountPence Int?
   adminAdjustedAt          DateTime?
   adminAdjustedBy          String?
@@ -825,7 +844,7 @@ model DriverEarnings {
 }
 
 model DriverIncident {
-  id             String           @id
+  id             String           @id @default(cuid())
   driverId       String
   assignmentId   String?
   type           IncidentType
@@ -846,7 +865,7 @@ model DriverIncident {
   propertyDamage Boolean          @default(false)
   injuryInvolved Boolean          @default(false)
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt   DateTime @updatedAt
   Assignment     Assignment?      @relation(fields: [assignmentId], references: [id])
   Driver         Driver           @relation(fields: [driverId], references: [id])
 
@@ -858,7 +877,7 @@ model DriverIncident {
 }
 
 model DriverNotification {
-  id        String           @id
+  id        String           @id @default(cuid())
   driverId  String
   type      NotificationType
   title     String
@@ -876,7 +895,7 @@ model DriverNotification {
 }
 
 model DriverNotificationPreferences {
-  id                   String   @id
+  id                   String   @id @default(cuid())
   driverId             String   @unique
   pushJobOffers        Boolean  @default(true)
   pushJobUpdates       Boolean  @default(true)
@@ -896,13 +915,13 @@ model DriverNotificationPreferences {
   smsPayoutEvents      Boolean  @default(false)
   smsSystemAlerts      Boolean  @default(false)
   createdAt            DateTime @default(now())
-  updatedAt            DateTime
+  updatedAt   DateTime @updatedAt
   emailMessages        Boolean  @default(false)
   Driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
 
 model DriverPaySnapshot {
-  id                    String         @id
+  id                    String         @id @default(cuid())
   driverEarningsId      String         @unique
   driverId              String
   adminApprovalId       String?
@@ -929,7 +948,7 @@ model DriverPaySnapshot {
 }
 
 model DriverPayout {
-  id               String           @id
+  id               String           @id @default(cuid())
   driverId         String
   totalAmountPence Int
   currency         String           @default("gbp")
@@ -940,7 +959,7 @@ model DriverPayout {
   stripeTransferId String?
   bankAccountId    String?
   createdAt        DateTime         @default(now())
-  updatedAt        DateTime
+  updatedAt   DateTime @updatedAt
   DriverEarnings   DriverEarnings[]
   Driver           Driver           @relation(fields: [driverId], references: [id])
 
@@ -949,7 +968,7 @@ model DriverPayout {
 }
 
 model DriverPayoutSettings {
-  id                   String    @id
+  id                   String    @id @default(cuid())
   driverId             String    @unique
   accountName          String?
   accountNumber        String?
@@ -960,12 +979,12 @@ model DriverPayoutSettings {
   verified             Boolean   @default(false)
   verifiedAt           DateTime?
   createdAt            DateTime  @default(now())
-  updatedAt            DateTime
+  updatedAt   DateTime @updatedAt
   Driver               Driver    @relation(fields: [driverId], references: [id])
 }
 
 model DriverPerformance {
-  id                    String   @id
+  id                    String   @id @default(cuid())
   driverId              String   @unique
   averageRating         Float    @default(0)
   totalRatings          Int      @default(0)
@@ -982,25 +1001,25 @@ model DriverPerformance {
   monthlyCompletionRate Float    @default(0)
   monthlyOnTimeRate     Float    @default(0)
   createdAt             DateTime @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   Driver                Driver   @relation(fields: [driverId], references: [id])
 }
 
 model DriverProfile {
-  id        String    @id
+  id        String    @id @default(cuid())
   driverId  String    @unique
   phone     String?
   address   String?
   dob       DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime
+  updatedAt   DateTime @updatedAt
   Driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
 }
 
 model DriverRating {
-  id              String         @id
+  id              String         @id @default(cuid())
   driverId        String
   assignmentId    String
   rating          Int
@@ -1012,7 +1031,7 @@ model DriverRating {
   moderatedBy     String?
   moderationNotes String?
   createdAt       DateTime       @default(now())
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   Assignment      Assignment     @relation(fields: [assignmentId], references: [id])
   Driver          Driver         @relation(fields: [driverId], references: [id])
 
@@ -1023,7 +1042,7 @@ model DriverRating {
 }
 
 model DriverShift {
-  id            String       @id
+  id            String       @id @default(cuid())
   driverId      String
   startTime     DateTime
   endTime       DateTime
@@ -1031,7 +1050,7 @@ model DriverShift {
   recurringDays String[]
   isActive      Boolean      @default(true)
   createdAt     DateTime     @default(now())
-  updatedAt     DateTime
+  updatedAt   DateTime @updatedAt
   vehicleId     String?
   Driver        Driver       @relation(fields: [driverId], references: [id])
   VehicleSpec   VehicleSpec? @relation(fields: [vehicleId], references: [id])
@@ -1041,7 +1060,7 @@ model DriverShift {
 }
 
 model DriverTip {
-  id           String     @id
+  id           String     @id @default(cuid())
   driverId     String
   assignmentId String
   amountPence  Int
@@ -1053,7 +1072,7 @@ model DriverTip {
   reconciledBy String?
   notes        String?
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime
+  updatedAt   DateTime @updatedAt
   Assignment   Assignment @relation(fields: [assignmentId], references: [id])
   Driver       Driver     @relation(fields: [driverId], references: [id])
 
@@ -1063,7 +1082,7 @@ model DriverTip {
 }
 
 model DriverVehicle {
-  id          String    @id
+  id          String    @id @default(cuid())
   driverId    String
   make        String?
   model       String?
@@ -1072,7 +1091,7 @@ model DriverVehicle {
   motExpiry   DateTime?
   photos      Json?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   Driver      Driver    @relation(fields: [driverId], references: [id])
 
   @@index([driverId])
@@ -1080,7 +1099,7 @@ model DriverVehicle {
 }
 
 model Drop {
-  id                  String      @id
+  id                  String      @id @default(cuid())
   bookingId           String?
   customerId          String
   quoteId             String?
@@ -1115,7 +1134,7 @@ model Drop {
 }
 
 model EmailChangeRequest {
-  id          String    @id
+  id          String    @id @default(cuid())
   userId      String
   oldEmail    String
   newEmail    String
@@ -1134,7 +1153,7 @@ model EmailChangeRequest {
 }
 
 model EmailTemplate {
-  id        String   @id
+  id        String   @id @default(cuid())
   name      String   @unique
   subject   String
   body      String
@@ -1144,8 +1163,7 @@ model EmailTemplate {
   version   Int      @default(1)
   createdBy String
   createdAt DateTime @default(now())
-  updatedAt DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([category])
   @@index([createdAt])
   @@index([name])
@@ -1153,7 +1171,7 @@ model EmailTemplate {
 }
 
 model ErrorReport {
-  id              String   @id
+  id              String   @id @default(cuid())
   title           String
   summary         String
   generatedAt     DateTime @default(now())
@@ -1165,15 +1183,14 @@ model ErrorReport {
   assignee        String?
   status          String   @default("draft")
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([assignee])
   @@index([generatedAt])
   @@index([status])
 }
 
 model Invoice {
-  id                    String        @id
+  id                    String        @id @default(cuid())
   invoiceNumber         String        @unique
   bookingId             String
   customerName          String
@@ -1190,7 +1207,7 @@ model Invoice {
   stripePaymentIntentId String?
   notes                 String?
   createdAt             DateTime      @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   Booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -1200,7 +1217,7 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String      @id
+  id          String      @id @default(cuid())
   invoiceId   String
   description String
   quantity    Decimal     @db.Decimal(10, 3)
@@ -1211,14 +1228,14 @@ model InvoiceItem {
   vatRate     Decimal     @db.Decimal(5, 4)
   vatRateType VatRateType @default(standard)
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   TaxInvoice  TaxInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
 }
 
 model InvoicePayment {
-  id                    String        @id
+  id                    String        @id @default(cuid())
   invoiceId             String
   paymentMethod         PaymentMethod @default(stripe)
   paymentReference      String?
@@ -1230,7 +1247,7 @@ model InvoicePayment {
   notes                 String?
   metadata              Json          @default("{}")
   createdAt             DateTime      @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   TaxInvoice            TaxInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
@@ -1239,7 +1256,7 @@ model InvoicePayment {
 }
 
 model JobEvent {
-  id           String     @id
+  id           String     @id @default(cuid())
   assignmentId String
   step         JobStep
   payload      Json?
@@ -1255,7 +1272,7 @@ model JobEvent {
 }
 
 model Message {
-  id          String        @id
+  id          String        @id @default(cuid())
   senderId    String
   content     String
   createdAt   DateTime      @default(now())
@@ -1263,7 +1280,7 @@ model Message {
   sessionId   String
   status      MessageStatus @default(sent)
   type        MessageType   @default(text)
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   readAt      DateTime?
   deliveredAt DateTime?
   User        User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
@@ -1292,7 +1309,7 @@ model ContactInquiry {
 }
 
 model PageView {
-  id             String         @id
+  id             String         @id @default(cuid())
   sessionId      String
   page           String
   referrer       String?
@@ -1305,7 +1322,7 @@ model PageView {
 }
 
 model Payment {
-  id        String        @id
+  id        String        @id @default(cuid())
   bookingId String
   provider  String
   intentId  String?
@@ -1314,7 +1331,7 @@ model Payment {
   status    PaymentStatus @default(unpaid)
   metadata  Json?
   createdAt DateTime      @default(now())
-  updatedAt DateTime
+  updatedAt   DateTime @updatedAt
   Booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   Refund    Refund[]
 
@@ -1325,7 +1342,7 @@ model Payment {
 }
 
 model PayoutLedger {
-  id              String          @id
+  id              String          @id @default(cuid())
   routeId         String
   userId          String
   transactionType TransactionType
@@ -1345,7 +1362,7 @@ model PayoutLedger {
 }
 
 model PerformanceMetric {
-  id          String   @id
+  id          String   @id @default(cuid())
   name        String
   value       Float
   unit        String?
@@ -1361,7 +1378,7 @@ model PerformanceMetric {
 }
 
 model PerformanceMetrics {
-  id                String   @id
+  id                String   @id @default(cuid())
   driverId          String
   routeId           String
   performanceScore  Float?
@@ -1378,7 +1395,7 @@ model PerformanceMetrics {
 }
 
 model PricingConfig {
-  id              String    @id
+  id              String    @id @default(cuid())
   version         Int
   activeFrom      DateTime
   activeTo        DateTime?
@@ -1401,7 +1418,7 @@ model PricingConfig {
 }
 
 model PricingSettings {
-  id                                   String   @id
+  id                                   String   @id @default(cuid())
   customerPriceAdjustment              Decimal  @default(0) @db.Decimal(5, 4)
   driverRateMultiplier                 Decimal  @default(1) @db.Decimal(5, 4)
   baseFarePerJobPence                  Int      @default(2500)
@@ -1433,7 +1450,7 @@ model PricingSettings {
   advancedConfig                       Json?
   isActive                             Boolean  @default(true)
   createdAt                            DateTime @default(now())
-  updatedAt                            DateTime
+  updatedAt   DateTime @updatedAt
   createdBy                            String
   updatedBy                            String?
   User_PricingSettings_createdByToUser User     @relation("PricingSettings_createdByToUser", fields: [createdBy], references: [id])
@@ -1444,7 +1461,7 @@ model PricingSettings {
 }
 
 model PricingSnapshot {
-  id               String    @id
+  id               String    @id @default(cuid())
   requestId        String    @unique
   calculatedAt     DateTime  @default(now())
   capacity         Json
@@ -1462,7 +1479,7 @@ model PricingSnapshot {
 }
 
 model ProductionError {
-  id            String   @id
+  id            String   @id @default(cuid())
   timestamp     DateTime @default(now())
   level         String
   category      String
@@ -1474,8 +1491,7 @@ model ProductionError {
   impact        Json
   relatedErrors String[]
   createdAt     DateTime @default(now())
-  updatedAt     DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([category])
   @@index([level])
   @@index([source])
@@ -1485,7 +1501,7 @@ model ProductionError {
 }
 
 model Promotion {
-  id              String   @id
+  id              String   @id @default(cuid())
   code            String   @unique
   name            String
   description     String?
@@ -1503,8 +1519,7 @@ model Promotion {
   firstTimeOnly   Boolean  @default(false)
   createdBy       String
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([code])
   @@index([createdAt])
   @@index([status])
@@ -1512,7 +1527,7 @@ model Promotion {
 }
 
 model PropertyDetails {
-  id                                                 String           @id
+  id                                                 String           @id @default(cuid())
   propertyType                                       PropertyType
   accessType                                         AccessType
   floors                                             Int              @default(0)
@@ -1523,7 +1538,7 @@ model PropertyDetails {
 }
 
 model PushSubscription {
-  id         String   @id
+  id         String   @id @default(cuid())
   driverId   String
   endpoint   String   @unique
   p256dh     String?
@@ -1532,7 +1547,7 @@ model PushSubscription {
   deviceInfo Json?
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime
+  updatedAt   DateTime @updatedAt
   Driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
@@ -1541,12 +1556,12 @@ model PushSubscription {
 }
 
 model Quote {
-  id              String       @id
+  id              String       @id @default(cuid())
   customerId      String
   validUntil      DateTime
   isAccepted      Boolean      @default(false)
   createdAt       DateTime     @default(now())
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   acceptedTier    ServiceTier?
   deliveryAddress String
   distance        Float?
@@ -1566,7 +1581,7 @@ model Quote {
 }
 
 model QuoteSnapshot {
-  id             String    @id
+  id             String    @id @default(cuid())
   bookingId      String?
   pricingVersion Int
   zoneKey        String
@@ -1585,17 +1600,16 @@ model QuoteSnapshot {
 }
 
 model ReferenceSequence {
-  id         String   @id
+  id         String   @id @default(cuid())
   type       String
   lastNumber Int      @default(0)
   prefix     String   @default("SV")
-  updatedAt  DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([type])
 }
 
 model Refund {
-  id          String       @id
+  id          String       @id @default(cuid())
   paymentId   String
   amount      Int
   reason      String
@@ -1603,7 +1617,7 @@ model Refund {
   processedAt DateTime?
   metadata    Json?
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
   notes       String?
   Payment     Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
@@ -1613,7 +1627,7 @@ model Refund {
 }
 
 model Route {
-  id                         String           @id
+  id                         String           @id @default(cuid())
   reference                  String?          @unique
   driverId                   String?
   vehicleId                  String?
@@ -1637,7 +1651,7 @@ model Route {
   adminNotes                 String?
   isModifiedByAdmin          Boolean          @default(false)
   createdAt                  DateTime         @default(now())
-  updatedAt                  DateTime
+  updatedAt   DateTime @updatedAt
   status                     RouteStatus      @default(planned)
   completedDrops             Int              @default(0)
   maxCapacityVolume          Float?
@@ -1679,7 +1693,7 @@ model Route {
 }
 
 model RouteApproval {
-  id                String    @id
+  id                String    @id @default(cuid())
   routeId           String    @unique
   status            String    @default("pending")
   submittedBy       String
@@ -1700,7 +1714,7 @@ model RouteApproval {
 }
 
 model RouteCandidate {
-  id                    String   @id
+  id                    String   @id @default(cuid())
   routeId               String
   createdAt             DateTime @default(now())
   confidence            Float
@@ -1713,7 +1727,7 @@ model RouteCandidate {
 }
 
 model ServiceArea {
-  id              String   @id
+  id              String   @id @default(cuid())
   name            String
   description     String?
   postcodes       String[]
@@ -1724,14 +1738,13 @@ model ServiceArea {
   surgeMultiplier Decimal  @default(1.0000) @db.Decimal(5, 4)
   createdBy       String
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
-
+  updatedAt   DateTime @updatedAt
   @@index([createdAt])
   @@index([status])
 }
 
 model Staff {
-  id              String            @id
+  id              String            @id @default(cuid())
   userId          String            @unique
   employeeId      String            @unique
   department      String?
@@ -1742,7 +1755,7 @@ model Staff {
   hireDate        DateTime?
   terminationDate DateTime?
   createdAt       DateTime          @default(now())
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   StaffAttendance StaffAttendance[]
   StaffLeave      StaffLeave[]
@@ -1755,7 +1768,7 @@ model Staff {
 }
 
 model StaffAttendance {
-  id                String           @id
+  id                String           @id @default(cuid())
   staffId           String
   date              DateTime         @db.Date
   checkIn           DateTime?
@@ -1769,7 +1782,7 @@ model StaffAttendance {
   approvedBy        String?
   approvedAt        DateTime?
   createdAt         DateTime         @default(now())
-  updatedAt         DateTime
+  updatedAt   DateTime @updatedAt
   Staff             Staff            @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, date])
@@ -1780,7 +1793,7 @@ model StaffAttendance {
 }
 
 model StaffLeave {
-  id              String      @id
+  id              String      @id @default(cuid())
   staffId         String
   type            LeaveType
   status          LeaveStatus @default(pending)
@@ -1794,7 +1807,7 @@ model StaffLeave {
   rejectedAt      DateTime?
   rejectionReason String?
   createdAt       DateTime    @default(now())
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   Staff           Staff       @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@index([staffId])
@@ -1804,7 +1817,7 @@ model StaffLeave {
 }
 
 model SupportTicket {
-  id                    String                  @id
+  id                    String                  @id @default(cuid())
   customerId            String
   category              String
   orderRef              String?
@@ -1815,7 +1828,7 @@ model SupportTicket {
   priority              String                  @default("NORMAL")
   attachments           String[]
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   User                  User                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   SupportTicketResponse SupportTicketResponse[]
 
@@ -1826,7 +1839,7 @@ model SupportTicket {
 }
 
 model SupportTicketResponse {
-  id            String        @id
+  id            String        @id @default(cuid())
   ticketId      String
   message       String
   isFromSupport Boolean       @default(false)
@@ -1839,7 +1852,7 @@ model SupportTicketResponse {
 }
 
 model SystemAuditLog {
-  id           String   @id
+  id           String   @id @default(cuid())
   eventType    String
   severity     String   @default("info")
   actor        String
@@ -1863,7 +1876,7 @@ model SystemAuditLog {
 }
 
 model SystemSettings {
-  id                     String    @id
+  id                     String    @id @default(cuid())
   routingMode            String    @default("manual")
   autoRoutingEnabled     Boolean   @default(false)
   autoRoutingIntervalMin Int       @default(15)
@@ -1876,7 +1889,7 @@ model SystemSettings {
   autoRoutingStatus      String    @default("idle")
   lastError              String?
   updatedBy              String
-  updatedAt              DateTime
+  updatedAt   DateTime @updatedAt
   createdAt              DateTime  @default(now())
 
   @@index([autoRoutingEnabled])
@@ -1885,7 +1898,7 @@ model SystemSettings {
 }
 
 model TaxComplianceLog {
-  id              String              @id
+  id              String              @id @default(cuid())
   checkType       ComplianceCheckType
   checkDate       DateTime            @default(now())
   isCompliant     Boolean
@@ -1903,7 +1916,7 @@ model TaxComplianceLog {
 }
 
 model TaxDeadline {
-  id             String          @id
+  id             String          @id @default(cuid())
   deadlineType   TaxDeadlineType
   title          String
   description    String?
@@ -1919,7 +1932,7 @@ model TaxDeadline {
   notes          String?
   metadata       Json            @default("{}")
   createdAt      DateTime        @default(now())
-  updatedAt      DateTime
+  updatedAt   DateTime @updatedAt
   createdBy      String
   updatedBy      String?
 
@@ -1930,7 +1943,7 @@ model TaxDeadline {
 }
 
 model TaxExpense {
-  id                String            @id
+  id                String            @id @default(cuid())
   taxRecordId       String?
   description       String
   category          ExpenseCategory
@@ -1954,7 +1967,7 @@ model TaxExpense {
   notes             String?
   metadata          Json              @default("{}")
   createdAt         DateTime          @default(now())
-  updatedAt         DateTime
+  updatedAt   DateTime @updatedAt
   createdBy         String
   updatedBy         String?
   TaxRecord         TaxRecord?        @relation(fields: [taxRecordId], references: [id])
@@ -1967,7 +1980,7 @@ model TaxExpense {
 }
 
 model TaxInvoice {
-  id                    String           @id
+  id                    String           @id @default(cuid())
   invoiceNumber         String           @unique
   customerId            String?
   bookingId             String?
@@ -1989,7 +2002,7 @@ model TaxInvoice {
   notes                 String?
   metadata              Json             @default("{}")
   createdAt             DateTime         @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   createdBy             String
   updatedBy             String?
   InvoiceItem           InvoiceItem[]
@@ -2007,7 +2020,7 @@ model TaxInvoice {
 }
 
 model TaxRecord {
-  id                    String        @id
+  id                    String        @id @default(cuid())
   taxYear               Int
   taxPeriod             String
   periodStart           DateTime
@@ -2037,7 +2050,7 @@ model TaxRecord {
   notes                 String?
   metadata              Json          @default("{}")
   createdAt             DateTime      @default(now())
-  updatedAt             DateTime
+  updatedAt   DateTime @updatedAt
   createdBy             String
   updatedBy             String?
   TaxExpense            TaxExpense[]
@@ -2051,7 +2064,7 @@ model TaxRecord {
 }
 
 model TelemetryEvent {
-  id          String   @id
+  id          String   @id @default(cuid())
   event       String
   properties  Json?
   userId      String?
@@ -2069,7 +2082,7 @@ model TelemetryEvent {
 }
 
 model TrackingPing {
-  id        String   @id
+  id        String   @id @default(cuid())
   bookingId String
   driverId  String
   lat       Float
@@ -2080,7 +2093,7 @@ model TrackingPing {
 }
 
 model User {
-  id                                              String                           @id
+  id                                              String                           @id @default(cuid())
   email                                           String                           @unique
   name                                            String?
   phone                                           String?
@@ -2130,14 +2143,14 @@ model User {
 }
 
 model Vehicle {
-  id              String    @id
+  id              String    @id @default(cuid())
   licensePlate    String    @unique
   make            String
   model           String
   year            Int
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime
+  updatedAt   DateTime @updatedAt
   capacity        Float
   fuelType        FuelType
   lastMaintenance DateTime?
@@ -2150,14 +2163,14 @@ model Vehicle {
 }
 
 model VehicleSpec {
-  id           String        @id
+  id           String        @id @default(cuid())
   registration String        @unique
   maxWeightKg  Float
   maxVolumeM3  Float
   crewSize     Int           @default(2)
   isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
-  updatedAt    DateTime
+  updatedAt   DateTime @updatedAt
   make         String?
   model        String?
   year         Int?
@@ -2170,7 +2183,7 @@ model VehicleSpec {
 }
 
 model VisitorAction {
-  id             String         @id
+  id             String         @id @default(cuid())
   sessionId      String
   action         String
   actionData     Json           @default("{}")
@@ -2183,7 +2196,7 @@ model VisitorAction {
 }
 
 model VisitorSession {
-  id               String          @id
+  id               String          @id @default(cuid())
   sessionId        String          @unique
   visitorId        String?
   ipAddress        String
@@ -2206,7 +2219,7 @@ model VisitorSession {
   exitTime         DateTime?
   lastSeenAt       DateTime        @default(now())
   createdAt        DateTime        @default(now())
-  updatedAt        DateTime
+  updatedAt   DateTime @updatedAt
   PageView         PageView[]
   VisitorAction    VisitorAction[]
 
@@ -2218,7 +2231,7 @@ model VisitorSession {
 }
 
 model admin_stories {
-  id           String         @id
+  id           String         @id @default(cuid())
   title        String
   content      String
   type         StoryType
@@ -2226,14 +2239,14 @@ model admin_stories {
   isActive     Boolean        @default(false)
   publishedAt  DateTime?
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime
+  updatedAt   DateTime @updatedAt
   story_likes  story_likes[]
   story_shares story_shares[]
   story_views  story_views[]
 }
 
 model story_likes {
-  id            String        @id
+  id            String        @id @default(cuid())
   storyId       String
   userId        String
   userType      String
@@ -2247,7 +2260,7 @@ model story_likes {
 }
 
 model story_shares {
-  id            String        @id
+  id            String        @id @default(cuid())
   storyId       String
   userId        String
   userType      String
@@ -2260,7 +2273,7 @@ model story_shares {
 }
 
 model story_views {
-  id            String        @id
+  id            String        @id @default(cuid())
   storyId       String
   userId        String
   userType      String

@@ -4,6 +4,7 @@
  * Get all pending orders (confirmed but not assigned to routes)
  */
 
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 

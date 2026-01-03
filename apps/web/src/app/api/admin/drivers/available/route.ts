@@ -77,14 +77,10 @@ export async function GET(request: NextRequest) {
       }))
     });
 
-    // Get active drivers who are available for new assignments
+    // Get ALL drivers - no filtering to ensure we can see all drivers
+    // Admin should see all drivers regardless of status
     const availableDrivers = await prisma.driver.findMany({
-      where: {
-        status: 'active',
-        onboardingStatus: 'approved',
-        // Removed strict availability requirements - include all approved active drivers
-        // The availability status will be checked in the response data
-      },
+      // Return all drivers so admins can still assign even if the driver app is offline
       include: {
         User: {
           select: {
@@ -115,9 +111,9 @@ export async function GET(request: NextRequest) {
                 pickupAddress: {
                   select: {
                     label: true,
-                    postcode: true
-                  }
-                }
+                    postcode: true,
+                  },
+                },
               }
             }
           }
@@ -144,9 +140,14 @@ export async function GET(request: NextRequest) {
         ? new Date(driver.DriverAvailability.lastSeenAt).getTime() > Date.now() - (24 * 60 * 60 * 1000) // Within 24 hours
         : false;
 
+      const isApprovedActive = driver.status === 'active' && driver.onboardingStatus === 'approved';
+      const isSuspended = driver.status === 'suspended';
+
       // Driver is available if:
-      // 1. No active jobs AND (online OR recently active OR no availability record yet)
-      const isAvailableForAssignment = hasNoActiveJobs && (isOnline || isRecentlyActive || !hasAvailabilityRecord);
+      // 1. Approved & active in the platform
+      // 2. Not suspended
+      // 3. No active jobs (even if offline, allow manual assignment)
+      const isAvailableForAssignment = isApprovedActive && !isSuspended && hasNoActiveJobs;
 
       return {
         id: driver.id,
@@ -179,7 +180,15 @@ export async function GET(request: NextRequest) {
         totalActiveJobs: activeJobs.length,
         availabilityReason: isAvailableForAssignment 
           ? (isOnline ? 'Online' : isRecentlyActive ? 'Recently Active' : 'Ready for Assignment')
-          : activeJobs.length > 0 ? `${activeJobs.length} Active Job${activeJobs.length > 1 ? 's' : ''}` : 'Offline',
+          : activeJobs.length > 0 
+            ? `${activeJobs.length} Active Job${activeJobs.length > 1 ? 's' : ''}` 
+            : driver.status === 'suspended'
+              ? 'Suspended'
+              : driver.status === 'inactive'
+                ? 'Inactive'
+                : driver.onboardingStatus !== 'approved'
+                  ? 'Not approved'
+                  : 'Offline',
       };
     });
 

@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
         name: true,
         email: true,
         role: true,
+        adminRole: true,
       },
     });
 
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
           name: true,
           email: true,
           role: true,
+          adminRole: true,
         },
       });
       
@@ -73,10 +75,22 @@ export async function GET(request: NextRequest) {
     }
 
     if (!adminUser) {
-      console.log('❌ Admin user not found in database');
+      console.log('❌ Admin user not found in database, falling back to session user');
+      const fallbackAdmin = {
+        id: sessionUser.id || 'session-only',
+        name: sessionUser.name || 'Admin',
+        email: sessionUser.email || '',
+        role: sessionUser.role || 'admin',
+        adminRole: (sessionUser as any).adminRole || null,
+      };
       return NextResponse.json(
-        { error: 'Admin user not found' },
-        { status: 404 }
+        {
+          success: true,
+          admin: fallbackAdmin,
+          fallback: true,
+          message: 'Admin user not found in database; using session data',
+        },
+        { status: 200 }
       );
     }
 
@@ -88,6 +102,7 @@ export async function GET(request: NextRequest) {
         name: adminUser.name || 'Admin',
         email: adminUser.email || '',
         role: adminUser.role || 'admin',
+        adminRole: adminUser.adminRole || (sessionUser as any).adminRole || null,
       },
     };
     

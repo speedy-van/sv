@@ -284,7 +284,7 @@ const Header: React.FC = memo(() => {
             >
               <Box
                 as="video"
-                src="/logo/sv logo.mp4"
+                src="/logo/sv-logo.mp4"
                 autoPlay
                 loop
                 muted

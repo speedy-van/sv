@@ -97,6 +97,8 @@ interface BookingData {
   dropoffDetails: PropertyDetails;
   notes?: string;
   bookingId?: string;
+  bookingDraftId?: string;
+  bookingReference?: string;
   // Three-tier pricing support
   economyPrice?: number;
   standardPrice?: number;
@@ -214,6 +216,7 @@ interface StripePaymentButtonProps {
   onSuccess: (sessionId: string, paymentIntentId?: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
+  onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
 }
 
 export default function StripePaymentButton({
@@ -222,6 +225,7 @@ export default function StripePaymentButton({
   onSuccess,
   onError,
   disabled = false,
+  onBookingCreated,
 }: StripePaymentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
@@ -265,6 +269,8 @@ export default function StripePaymentButton({
       }
 
       let bookingId = bookingData.bookingId;
+      let bookingDraftId = bookingData.bookingDraftId;
+      let bookingReference = bookingData.bookingReference;
 
       // Create booking if it doesn't exist yet
       if (!bookingId) {
@@ -280,6 +286,8 @@ export default function StripePaymentButton({
             email: bookingData.customer.email || '',
             phone: bookingData.customer.phone || '',
           },
+          bookingDraftId,
+          bookingReference,
           pickupAddress: {
             // Extract street from multiple possible sources
             street: bookingData.pickupAddress.street || 
@@ -450,6 +458,19 @@ export default function StripePaymentButton({
 
         const bookingResponseData = await bookingResponse.json();
         bookingId = bookingResponseData.booking.id;
+        bookingReference = bookingResponseData.booking.reference;
+
+        if (onBookingCreated && bookingId && bookingReference) {
+          onBookingCreated({ bookingId, reference: bookingReference });
+        }
+
+        toast({
+          title: 'Booking saved (pending payment)',
+          description: `Reference: ${bookingReference || 'pending'}`,
+          status: 'info',
+          duration: 5000,
+          isClosable: true,
+        });
       }
 
       const requestData = {
@@ -460,6 +481,8 @@ export default function StripePaymentButton({
         bookingData: {
           ...bookingData,
           bookingId: bookingId, // Use the booking ID
+          bookingDraftId,
+          bookingReference,
         },
         successUrl: `${window.location.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/booking-luxury?step=1&payment=cancelled`,

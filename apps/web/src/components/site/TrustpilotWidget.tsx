@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Container, VStack, Text, HStack, Link } from '@chakra-ui/react';
+import { Box, Container, VStack, Text, HStack, Link, Icon, Badge, Button } from '@chakra-ui/react';
+import { FaStar } from 'react-icons/fa';
 import {
   getTrustpilotConfig,
   loadTrustpilotWidget
@@ -129,21 +130,66 @@ export default function TrustpilotWidget({
 
   return (
     <Box
-      as="footer"
-      bg={{ base: 'transparent', md: 'rgba(26, 26, 26, 0.8)' }}
-      borderTop={{ base: 'none', md: '1px solid rgba(255, 255, 255, 0.1)' }}
-      py={{ base: 6, md: 8 }}
-      mt={{ base: 8, md: 12 }}
+      as="section"
+      bg="transparent"
+      borderTop="1px solid rgba(255, 255, 255, 0.06)"
+      py={{ base: 8, md: 10 }}
+      mt={{ base: 10, md: 14 }}
     >
       <Container maxW="container.xl">
         <VStack spacing={{ base: 6, md: 8 }}>
           <Box
             textAlign="center"
             w="full"
-            maxW={{ base: '100%', md: '400px' }}
+            maxW={{ base: '100%', md: '1200px' }}
             mx="auto"
             px={{ base: 4, md: 0 }}
+            bg="rgba(0,0,0,0.9)"
+            border="1px solid #1f2937"
+            borderRadius="xl"
+            boxShadow="0 10px 35px rgba(0,0,0,0.6)"
+            py={{ base: 8, md: 12 }}
           >
+            <VStack spacing={3} mb={2} align="stretch">
+              <HStack justify="space-between" align="center" flexWrap="wrap" rowGap={2}>
+                <Badge
+                  colorScheme="green"
+                  variant="subtle"
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontWeight="bold"
+                  fontSize="xs"
+                >
+                  Rated Excellent on Trustpilot
+                </Badge>
+                <Button
+                  size="sm"
+                  colorScheme="green"
+                  variant="outline"
+                  leftIcon={<Icon as={FaStar} />}
+                  onClick={() => window.open('https://www.trustpilot.com/review/speedy-van.co.uk', '_blank', 'noopener,noreferrer')}
+                >
+                  View Our Reviews
+                </Button>
+              </HStack>
+              <HStack spacing={1} justify="center">
+                {[...Array(5)].map((_, i) => (
+                  <Icon
+                    key={i}
+                    as={FaStar}
+                    color={i === 4 ? 'green.300' : 'green.400'}
+                    boxSize={4}
+                  />
+                ))}
+                <Text color="green.200" fontWeight="semibold" fontSize="sm">
+                  4.8/5
+                </Text>
+              </HStack>
+              <Text color="whiteAlpha.800" fontSize="sm">
+                Join thousands of happy customers.
+              </Text>
+            </VStack>
             {/* Enhanced Trustpilot TrustBox Widget */}
             <Box
               position="relative"
@@ -153,18 +199,11 @@ export default function TrustpilotWidget({
               display="block"
               visibility="visible"
               opacity={1}
-              bg="linear-gradient(135deg, rgba(0, 194, 255, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%)"
+              bg="transparent"
               borderRadius="xl"
               p={6}
-              border="1px solid"
-              borderColor="rgba(0, 194, 255, 0.2)"
-              boxShadow="0 4px 20px rgba(0, 194, 255, 0.1)"
-              transition="all 0.3s ease"
-              _hover={{
-                transform: 'translateY(-2px)',
-                boxShadow: '0 8px 30px rgba(0, 194, 255, 0.2)',
-                borderColor: 'rgba(0, 194, 255, 0.4)',
-              }}
+              border="none"
+              boxShadow="none"
             >
               {/* Trustpilot Widget - Official TrustBox snippet structure */}
               <Box

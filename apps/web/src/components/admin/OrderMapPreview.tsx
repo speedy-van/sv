@@ -59,13 +59,17 @@ export function OrderMapPreview({
         map.current.remove();
         map.current = null;
       }
+      if (mapContainer.current) {
+        // Ensure container is clean to avoid Mapbox util.js warnings on re-init
+        mapContainer.current.innerHTML = '';
+      }
     };
   }, []);
 
   const initializeMap = () => {
     if (!mapContainer.current) return;
 
-    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     
     if (!mapboxToken) {
       setError('Mapbox token not configured');
@@ -78,6 +82,8 @@ export function OrderMapPreview({
       mapboxgl.accessToken = mapboxToken;
 
       // Initialize map
+      // Ensure container is empty before instantiating the Mapbox map to avoid DOM leftovers triggering util.js warning
+      mapContainer.current.innerHTML = '';
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/dark-v11',

@@ -21,6 +21,7 @@ import {
   Text,
   Card,
   CardBody,
+  CardHeader,
   Badge,
   Alert,
   AlertIcon,
@@ -40,6 +41,7 @@ import {
   Heading,
   Icon,
   useDisclosure,
+  Switch,
   Collapse,
   Tabs,
   TabList,
@@ -47,8 +49,9 @@ import {
   Tab,
   TabPanel,
   Divider,
+  Circle,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash, FaTruck, FaRedo, FaCheck, FaMapMarkerAlt, FaSearch } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash, FaTruck, FaRedo, FaCheck, FaMapMarkerAlt, FaSearch, FaShieldAlt } from 'react-icons/fa';
 import NextImage from 'next/image';
 
 import type { FormData } from '../hooks/useBookingForm';
@@ -99,6 +102,7 @@ export default function WhereAndWhatStepHierarchical({
   const [selectedSegmentIndex, setSelectedSegmentIndex] = useState(0);
   const prevSegmentsLengthRef = useRef(segments.length);
   const isNewSegmentAddedRef = useRef(false);
+  const addOnsRef = useRef<HTMLDivElement | null>(null);
   
   // Track segment count changes - but DON'T auto-switch to new segment
   // This was causing items to be added to the wrong segment (additional journey instead of main)
@@ -114,6 +118,61 @@ export default function WhereAndWhatStepHierarchical({
   }, [segments.length, selectedSegmentIndex]);
   
   const { step1 } = formData;
+  const addOns = step1.addOns || {
+    packing: false,
+    packingVolume: undefined,
+    furnitureProtection: false,
+    insurance: undefined,
+    assembly: false,
+    disassembly: [],
+    reassembly: [],
+  };
+  const itemsForAddOns = isMultiLeg
+    ? (segments[selectedSegmentIndex]?.items || step1.items || [])
+    : (step1.items || []);
+  const estimatedPackingVolume = itemsForAddOns.reduce((sum, item) => {
+    const volume = (item as any).volume || 0;
+    const quantity = (item as any).quantity || 1;
+    return sum + volume * quantity;
+  }, 0);
+  const resolveAssemblyItems = () => {
+    const fromState = Array.isArray(addOns.disassembly) && addOns.disassembly.length > 0
+      ? addOns.disassembly
+      : [];
+    const fromItems = itemsForAddOns.map(item => (item as any).name || (item as any).id).filter(Boolean);
+    return fromItems.length > 0 ? fromItems : fromState;
+  };
+  const handleAddOnToggle = (key: 'packing' | 'furnitureProtection' | 'assembly', value: boolean) => {
+    const assemblyItems = resolveAssemblyItems();
+    const nextAddOns = {
+      ...addOns,
+      packing: key === 'packing' ? value : addOns.packing,
+      packingVolume: key === 'packing'
+        ? (value ? (addOns.packingVolume ?? Math.max(Math.round(estimatedPackingVolume * 10) / 10, 1)) : undefined)
+        : addOns.packingVolume,
+      furnitureProtection: key === 'furnitureProtection' ? value : addOns.furnitureProtection,
+      insurance: key === 'furnitureProtection'
+        ? (value ? (addOns.insurance || 'premium') : undefined)
+        : addOns.insurance,
+      assembly: key === 'assembly' ? value : addOns.assembly,
+      disassembly: key === 'assembly'
+        ? (value ? (addOns.disassembly && addOns.disassembly.length > 0 ? addOns.disassembly : assemblyItems) : [])
+        : addOns.disassembly,
+      reassembly: key === 'assembly'
+        ? (value ? (addOns.reassembly && addOns.reassembly.length > 0 ? addOns.reassembly : assemblyItems) : [])
+        : addOns.reassembly,
+    };
+    updateFormData('step1', { addOns: nextAddOns });
+    if (calculatePricing) {
+      setTimeout(() => calculatePricing(), 400);
+    }
+  };
+
+  const scrollToAddOns = useCallback(() => {
+    if (addOnsRef.current) {
+      addOnsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
 
   // Transform selected items to include room information
   interface SelectedItemWithRoom {
@@ -1142,6 +1201,25 @@ export default function WhereAndWhatStepHierarchical({
           </>
         )}
 
+        {/* Quick access to Add-on Services */}
+        <Card
+          mt={4}
+          bg="rgba(79, 70, 229, 0.08)"
+          border="1px solid"
+          borderColor="purple.200"
+          borderRadius="xl"
+        >
+          <CardBody display="flex" justifyContent="space-between" alignItems="center" gap={3} flexWrap="wrap">
+            <VStack align="flex-start" spacing={0}>
+              <Text fontWeight="bold" color="purple.800">Add-on Services</Text>
+              <Text fontSize="sm" color="purple.700">Packing, protection, and assembly for premium moves.</Text>
+            </VStack>
+            <Button colorScheme="purple" variant="solid" onClick={scrollToAddOns}>
+              Jump to Add-ons
+            </Button>
+          </CardBody>
+        </Card>
+
         {/* Common Items Grid - Always visible at the top */}
         <Card 
           bg="white" 
@@ -1338,6 +1416,119 @@ export default function WhereAndWhatStepHierarchical({
                 }}
               />
             </VStack>
+          </CardBody>
+        </Card>
+
+        {/* Add-on Services - keep pricing in sync with luxury promise */}
+        <Card
+          ref={addOnsRef}
+          bg="linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(49, 46, 129, 0.9))"
+          borderRadius="2xl"
+          boxShadow="0 20px 60px rgba(79, 70, 229, 0.15)"
+          border="1px solid"
+          borderColor="rgba(129, 140, 248, 0.35)"
+        >
+          <CardHeader borderBottom="1px solid" borderColor="rgba(255,255,255,0.08)" pb={4}>
+            <VStack align="flex-start" spacing={1}>
+              <HStack spacing={2}>
+                <Circle size="38px" bg="whiteAlpha.200">
+                  <Icon as={FaShieldAlt} color="purple.200" />
+                </Circle>
+                <VStack align="flex-start" spacing={0}>
+                  <Heading size="md" color="white">
+                    Add-on Services
+                  </Heading>
+                  <Text color="whiteAlpha.700" fontSize="sm">
+                    Match the premium promise with optional packing, protection, and assembly.
+                  </Text>
+                </VStack>
+              </HStack>
+            </VStack>
+          </CardHeader>
+          <CardBody>
+            <SimpleGrid
+              minChildWidth="260px"
+              spacing={4}
+              w="full"
+            >
+              <Box
+                p={4}
+                borderRadius="lg"
+                bg="whiteAlpha.50"
+                border="1px solid"
+                borderColor="purple.200"
+              >
+                <HStack justify="space-between" align="center" mb={2}>
+                  <Text fontWeight="bold" color="white">
+                    Professional Packing
+                  </Text>
+                  <Switch
+                    colorScheme="purple"
+                    isChecked={Boolean(addOns.packing)}
+                    onChange={(e) => handleAddOnToggle('packing', e.target.checked)}
+                  />
+                </HStack>
+                <Text fontSize="sm" color="whiteAlpha.800">
+                  White-glove packing with premium materials to protect your belongings.
+                </Text>
+                <Text fontSize="xs" color="purple.200" mt={2}>
+                  Estimated volume: {Math.max(estimatedPackingVolume, 0).toFixed(1)} m3
+                </Text>
+              </Box>
+
+              <Box
+                p={4}
+                borderRadius="lg"
+                bg="whiteAlpha.50"
+                border="1px solid"
+                borderColor="blue.200"
+              >
+                <HStack justify="space-between" align="center" mb={2}>
+                  <Text fontWeight="bold" color="white">
+                    Furniture Protection
+                  </Text>
+                  <Switch
+                    colorScheme="blue"
+                    isChecked={Boolean(addOns.furnitureProtection)}
+                    onChange={(e) => handleAddOnToggle('furnitureProtection', e.target.checked)}
+                  />
+                </HStack>
+                <Text fontSize="sm" color="whiteAlpha.800">
+                  Enhanced insurance and padding for high-value and delicate pieces.
+                </Text>
+                <Text fontSize="xs" color="blue.200" mt={2}>
+                  Uses premium cover for luxury moves
+                </Text>
+              </Box>
+
+              <Box
+                p={4}
+                borderRadius="lg"
+                bg="whiteAlpha.50"
+                border="1px solid"
+                borderColor="teal.200"
+              >
+                <HStack justify="space-between" align="center" mb={2}>
+                  <Text fontWeight="bold" color="white">
+                    Assembly / Disassembly
+                  </Text>
+                  <Switch
+                    colorScheme="teal"
+                    isChecked={Boolean(addOns.assembly)}
+                    onChange={(e) => handleAddOnToggle('assembly', e.target.checked)}
+                  />
+                </HStack>
+                <Text fontSize="sm" color="whiteAlpha.800">
+                  Skilled team dismantles and reassembles furniture on-site.
+                </Text>
+                <Text fontSize="xs" color="teal.200" mt={2}>
+                  Auto-applied to current item list for accurate pricing
+                </Text>
+              </Box>
+            </SimpleGrid>
+            <Text mt={3} fontSize="xs" color="whiteAlpha.700">
+              Pricing updates instantly when you toggle any add-on.
+            </Text>
           </CardBody>
         </Card>
 

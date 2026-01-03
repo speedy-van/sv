@@ -42,30 +42,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Define the correct include relations based on Prisma schema
+    const bookingInclude = {
+      BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+      BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+      PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: true,
+      PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: true,
+      BookingItem: true,
+    };
+
     // Find booking by ID, payment intent, or client reference
     let booking;
     if (bookingId) {
       booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: {
-          pickupAddress: true,
-          dropoffAddress: true,
-          pickupProperty: true,
-          dropoffProperty: true,
-          BookingItem: true,
-        },
+        include: bookingInclude,
       });
     } else if (stripePaymentIntentId) {
       // Find booking by Stripe payment intent ID
       booking = await prisma.booking.findUnique({
         where: { stripePaymentIntentId },
-        include: {
-          pickupAddress: true,
-          dropoffAddress: true,
-          pickupProperty: true,
-          dropoffProperty: true,
-          BookingItem: true,
-        },
+        include: bookingInclude,
       });
       
       // If not found by payment intent, try by client_reference_id
@@ -74,13 +71,7 @@ export async function POST(request: NextRequest) {
         // First try as booking ID
         booking = await prisma.booking.findUnique({
           where: { id: clientReferenceId },
-          include: {
-            pickupAddress: true,
-            dropoffAddress: true,
-            pickupProperty: true,
-            dropoffProperty: true,
-            BookingItem: true,
-          },
+          include: bookingInclude,
         });
         
         // If not found, try as booking reference (SV-XXXXXX format)
@@ -88,13 +79,7 @@ export async function POST(request: NextRequest) {
           console.log('📧 [CONFIRMATION EMAIL] Trying as booking reference:', clientReferenceId);
           booking = await prisma.booking.findUnique({
             where: { reference: clientReferenceId },
-            include: {
-              pickupAddress: true,
-              dropoffAddress: true,
-              pickupProperty: true,
-              dropoffProperty: true,
-              BookingItem: true,
-            },
+            include: bookingInclude,
           });
         }
       }
@@ -127,14 +112,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare email data
+    // Prepare email data - use the correct relation names
+    const pickupAddress = (booking as any).BookingAddress_Booking_pickupAddressIdToBookingAddress;
+    const dropoffAddress = (booking as any).BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+    
     const confirmedTotalInPounds = booking.totalGBP / 100;
     const emailData: OrderConfirmationData = {
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
       orderNumber: booking.reference,
-      pickupAddress: booking.pickupAddress?.label || 'Address not specified',
-      dropoffAddress: booking.dropoffAddress?.label || 'Address not specified',
+      pickupAddress: pickupAddress?.label || 'Address not specified',
+      dropoffAddress: dropoffAddress?.label || 'Address not specified',
       scheduledDate: booking.scheduledAt.toLocaleDateString('en-GB', {
         weekday: 'long',
         day: 'numeric',
@@ -162,7 +150,7 @@ export async function POST(request: NextRequest) {
         customer: {
           name: booking.customerName,
           email: booking.customerEmail,
-          address: booking.pickupAddress?.label || 'Address not specified',
+          address: pickupAddress?.label || 'Address not specified',
         },
         items: [{
           description: 'Moving Service',

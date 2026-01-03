@@ -687,7 +687,7 @@ const MobileStats: React.FC = () => {
   const statsStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.12, 0.1), [prefersReducedMotion]);
 
   return (
-    <Box className="mobile-stats" py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box className="mobile-stats" py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -731,18 +731,18 @@ const MobileStats: React.FC = () => {
                   <Box
                     p={{ base: 3, sm: 4, md: 6 }}
                     borderRadius="xl"
-                    borderWidth="2px"
-                    borderColor="#00C2FF"
-                    bg="bg.card"
+                    borderWidth="1px"
+                    borderColor="#1f2937"
+                    bg="rgba(0,0,0,0.9)"
                     textAlign="center"
                     position="relative"
                     overflow="visible"
-                    boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                    boxShadow="0 10px 35px rgba(0,0,0,0.6)"
                     className="stat-card-neon"
                     minW="0"
                     _hover={{
                       borderColor: `${stat.color}.400`,
-                      boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                      boxShadow: '0 0 30px rgba(0,194,255,0.4)',
                     }}
                     _before={{
                       content: '""',
@@ -819,7 +819,7 @@ const MobileFeatures: React.FC = () => {
   const featuresStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.14, 0.1), [prefersReducedMotion]);
 
   return (
-    <Box className="mobile-features" py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box className="mobile-features" py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -860,16 +860,16 @@ const MobileFeatures: React.FC = () => {
                   whileHover={hoverLift(prefersReducedMotion)}
                   p={{ base: 6, md: 8 }}
                   borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="#00C2FF"
-                  bg="bg.card"
+                  borderWidth="1px"
+                  borderColor="#1f2937"
+                  bg="rgba(0,0,0,0.9)"
                   position="relative"
                   overflow="visible"
-                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  boxShadow="0 10px 35px rgba(0,0,0,0.6)"
                   className="stat-card-neon"
                   _hover={{
                     borderColor: `${feature.color}.400`,
-                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.4)',
                     transform: 'translateY(-4px)',
                   }}
                   cursor="pointer"
@@ -943,7 +943,7 @@ const MobileServices: React.FC = () => {
   const servicesStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.14, 0.1), [prefersReducedMotion]);
 
   return (
-    <Box className="mobile-services" py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box className="mobile-services" py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -960,7 +960,7 @@ const MobileServices: React.FC = () => {
             >
               Our Premium Services
             </Heading>
-            <Text color="text.secondary" fontSize={{ base: 'md', md: 'lg' }}>
+            <Text color="whiteAlpha.700" fontSize={{ base: 'md', md: 'lg' }}>
               Professional moving solutions for every need
             </Text>
           </MotionBox>
@@ -984,16 +984,16 @@ const MobileServices: React.FC = () => {
                   whileHover={hoverLift(prefersReducedMotion)}
                   p={{ base: 6, md: 8 }}
                   borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="#00C2FF"
-                  bg="dark.800"
+                  borderWidth="1px"
+                  borderColor="#1f2937"
+                  bg="rgba(0,0,0,0.9)"
                   position="relative"
                   overflow="visible"
-                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  boxShadow="0 10px 35px rgba(0,0,0,0.6)"
                   className="stat-card-neon"
                   _hover={{
                     borderColor: 'neon.400',
-                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.4)',
                     transform: 'translateY(-4px)',
                   }}
                   cursor="pointer"
@@ -1099,7 +1099,7 @@ const MobileTestimonials: React.FC = () => {
   );
 
   return (
-    <Box className="mobile-testimonials" py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box className="mobile-testimonials" py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <MotionBox
@@ -1116,7 +1116,7 @@ const MobileTestimonials: React.FC = () => {
             >
               What Our Customers Say
             </Heading>
-            <Text color="text.secondary" fontSize={{ base: 'md', md: 'lg' }}>
+            <Text color="whiteAlpha.700" fontSize={{ base: 'md', md: 'lg' }}>
               Real reviews from real customers
             </Text>
           </MotionBox>
@@ -1140,16 +1140,16 @@ const MobileTestimonials: React.FC = () => {
                   whileHover={hoverLift(prefersReducedMotion)}
                   p={{ base: 6, md: 8 }}
                   borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="#00C2FF"
-                  bg="bg.card"
+                  borderWidth="1px"
+                  borderColor="#1f2937"
+                  bg="rgba(0,0,0,0.9)"
                   position="relative"
                   overflow="visible"
-                  boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                  boxShadow="0 10px 35px rgba(0,0,0,0.6)"
                   className="stat-card-neon"
                   _hover={{
                     borderColor: 'neon.400',
-                    boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                    boxShadow: '0 0 30px rgba(0,194,255,0.4)',
                   }}
                   sx={{
                     '&::before': {
@@ -1243,7 +1243,7 @@ const MobileCTA: React.FC = () => {
   const ctaFade = useMemo(() => createFadeInUp(prefersReducedMotion, 0.1, 18), [prefersReducedMotion]);
 
   return (
-    <Box className="mobile-cta" py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box className="mobile-cta" py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <MotionBox
           initial="hidden"
@@ -1252,13 +1252,13 @@ const MobileCTA: React.FC = () => {
           viewport={viewportMotion}
           p={{ base: 8, md: 12 }}
           borderRadius="2xl"
-          bg="bg.card"
-          borderWidth="2px"
-          borderColor="#00C2FF"
+          bg="rgba(0,0,0,0.9)"
+          borderWidth="1px"
+          borderColor="#1f2937"
           textAlign="center"
           position="relative"
           overflow="visible"
-          boxShadow="0 0 20px rgba(0,194,255,0.3)"
+          boxShadow="0 10px 35px rgba(0,0,0,0.6)"
           className="stat-card-neon"
           sx={{
             '&::before': {
@@ -1300,7 +1300,7 @@ const MobileCTA: React.FC = () => {
             </Heading>
 
             <Text
-              color="text.secondary"
+              color="whiteAlpha.700"
               fontSize={{ base: 'lg', md: 'xl' }}
               maxW="600px"
               lineHeight="tall"
@@ -1390,45 +1390,93 @@ export default function MobileHomePageContent() {
     <Box 
       id="main-content"
       as="main"
-      bg="bg.canvas" 
+      position="relative"
+      bg="#000000" 
       minH="100vh" 
       w="100%" 
       maxW="100%" 
       overflowX="hidden" 
+      overflowY="hidden"
+      color="white"
       suppressHydrationWarning
     >
+      {/* Snow overlay for homepage */}
+      <Box
+        aria-hidden
+        position="fixed"
+        inset={0}
+        pointerEvents="none"
+        zIndex={0}
+        backgroundImage={
+          'radial-gradient(rgba(255,255,255,0.55) 1.2px, transparent 1.2px),' +
+          'radial-gradient(rgba(255,255,255,0.35) 1px, transparent 1px)'
+        }
+        backgroundSize="140px 140px, 90px 90px"
+        backgroundPosition="0 0, 60px 60px"
+        opacity={0.85}
+        mixBlendMode="screen"
+        sx={{
+          animation: 'snowMoveHome 18s linear infinite',
+          '@keyframes snowMoveHome': {
+            '0%': { backgroundPosition: '0 0, 60px 60px' },
+            '100%': { backgroundPosition: '0 320px, 60px 380px' },
+          },
+        }}
+      />
       {/* Mobile Header with scroll behavior */}
-      <MobileHeader />
+      <Box position="relative" zIndex={1}>
+        <MobileHeader />
+      </Box>
       
       {/* Mobile Hero */}
-      <MobileHero />
+      <Box position="relative" zIndex={1}>
+        <MobileHero />
+      </Box>
 
       {/* Mobile Stats */}
-      <MobileStats />
+      <Box position="relative" zIndex={1}>
+        <MobileStats />
+      </Box>
 
       {/* Mobile Features */}
-      <MobileFeatures />
+      <Box position="relative" zIndex={1}>
+        <MobileFeatures />
+      </Box>
 
       {/* Mobile Services */}
-      <MobileServices />
+      <Box position="relative" zIndex={1}>
+        <MobileServices />
+      </Box>
 
       {/* Interactive Service Map */}
-      <ServiceMapSection />
+      <Box position="relative" zIndex={1}>
+        <ServiceMapSection />
+      </Box>
 
       {/* Mobile Testimonials */}
-      <MobileTestimonials />
+      <Box position="relative" zIndex={1}>
+        <MobileTestimonials />
+      </Box>
 
       {/* Mobile CTA */}
-      <MobileCTA />
+      <Box position="relative" zIndex={1}>
+        <MobileCTA />
+      </Box>
 
       {/* Home Footer */}
-      <HomeFooter />
+      {/* Trustpilot Widget Section - moved above footer */}
+      <Box position="relative" zIndex={1}>
+        <TrustpilotWidget />
+      </Box>
 
-      {/* Trustpilot Widget Section */}
-      <TrustpilotWidget />
+      <Box position="relative" zIndex={1}>
+        <HomeFooter />
+      </Box>
 
       {/* Speedy AI Bot */}
-      <SpeedyAIBotWrapper />
+      <Box position="relative" zIndex={1}>
+        <SpeedyAIBotWrapper />
+      </Box>
     </Box>
   );
 }

@@ -44,7 +44,7 @@ const RemovalItemSchema = z.object({
   load_priority: z.enum(['First-in', 'Last-in', 'Mid-load', 'Flexible']).optional(),
   fragility_level: z.enum(['Low', 'Medium', 'High', 'Extreme']).optional(),
   stackability: z.enum(['Yes', 'No', 'Limited']).optional(),
-  unload_difficulty: z.enum(['Easy', 'Medium', 'Hard', 'Very Hard']).optional(),
+  unload_difficulty: z.enum(['Easy', 'Moderate', 'Difficult']).optional(),
   
   // Allow additional fields without strict validation
 }).passthrough();

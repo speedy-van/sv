@@ -165,39 +165,46 @@ export async function GET(
     const pickupFlatNumber = customerPreferences?.pickupAddressMeta?.flatNumber || null;
     const dropoffFlatNumber = customerPreferences?.dropoffAddressMeta?.flatNumber || null;
 
+    // Extract relations with correct Prisma names
+    const pickupAddress = order.pickupAddress;
+    const dropoffAddress = order.dropoffAddress;
+    const pickupProperty = order.pickupProperty;
+    const dropoffProperty = order.dropoffProperty;
+    const route = order.route;
+
     // Transform the response to match the frontend interface
     const transformedOrder = {
       id: order.id,
       reference: order.reference,
       status: order.status,
-      scheduledAt: order.scheduledAt.toISOString(),
+      scheduledAt: order.scheduledAt ? order.scheduledAt.toISOString() : null,
       totalGBP: order.totalGBP,
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       customerPhone: order.customerPhone,
-      pickupAddress: order.pickupAddress ? {
-        label: order.pickupAddress.label,
-        postcode: order.pickupAddress.postcode,
-        lat: order.pickupAddress.lat,
-        lng: order.pickupAddress.lng,
+      pickupAddress: pickupAddress ? {
+        label: pickupAddress.label,
+        postcode: pickupAddress.postcode,
+        lat: pickupAddress.lat,
+        lng: pickupAddress.lng,
         flatNumber: pickupFlatNumber,
       } : null,
-      dropoffAddress: order.dropoffAddress ? {
-        label: order.dropoffAddress.label,
-        postcode: order.dropoffAddress.postcode,
-        lat: order.dropoffAddress.lat,
-        lng: order.dropoffAddress.lng,
+      dropoffAddress: dropoffAddress ? {
+        label: dropoffAddress.label,
+        postcode: dropoffAddress.postcode,
+        lat: dropoffAddress.lat,
+        lng: dropoffAddress.lng,
         flatNumber: dropoffFlatNumber,
       } : null,
-      pickupProperty: order.pickupProperty ? {
-        propertyType: order.pickupProperty.propertyType,
-        floors: order.pickupProperty.floors,
-        accessType: order.pickupProperty.accessType,
+      pickupProperty: pickupProperty ? {
+        propertyType: pickupProperty.propertyType,
+        floors: pickupProperty.floors,
+        accessType: pickupProperty.accessType,
       } : null,
-      dropoffProperty: order.dropoffProperty ? {
-        propertyType: order.dropoffProperty.propertyType,
-        floors: order.dropoffProperty.floors,
-        accessType: order.dropoffProperty.accessType,
+      dropoffProperty: dropoffProperty ? {
+        propertyType: dropoffProperty.propertyType,
+        floors: dropoffProperty.floors,
+        accessType: dropoffProperty.accessType,
       } : null,
       serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
       crewSize: order.crewSize || 'TWO', // Number of helpers (ONE, TWO, THREE, FOUR)
@@ -205,16 +212,16 @@ export async function GET(
       isMultiDrop: order.isMultiDrop || false,
       routeId: order.routeId,
       capacityCheck: (order.customerPreferences as any)?.capacityCheck || null, // Extract capacity check
-      route: order.route ? {
-        id: order.route.id,
-        reference: order.route.reference,
-        status: order.route.status,
-        totalDrops: order.route.totalDrops,
+      route: route ? {
+        id: route.id,
+        reference: route.reference,
+        status: route.status,
+        totalDrops: route.totalDrops,
       } : null,
-      driver: order.driver ? {
+      driver: order.driver && order.driver.User ? {
         User: {
-          name: order.driver.User.name,
-          email: order.driver.User.email,
+          name: order.driver.User.name || '',
+          email: order.driver.User.email || '',
         },
       } : null,
       createdAt: order.createdAt.toISOString(),
@@ -248,7 +255,7 @@ export async function GET(
         id: segment.id,
         segmentType: segment.segmentType,
         sequenceNumber: segment.sequenceNumber,
-        scheduledAt: segment.scheduledAt.toISOString(),
+        scheduledAt: segment.scheduledAt ? segment.scheduledAt.toISOString() : null,
         estimatedArrival: segment.estimatedArrival?.toISOString(),
         priceGBP: segment.priceGBP,
         distanceMeters: segment.distanceMeters,

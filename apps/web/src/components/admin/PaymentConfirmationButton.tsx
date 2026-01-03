@@ -72,7 +72,13 @@ export default function PaymentConfirmationButton({
         onSuccess?.();
         onOpen(); // Show details modal
       } else {
-        throw new Error(result.error || 'Failed to confirm payment');
+        const errorMessage =
+          result?.error ||
+          result?.message ||
+          result?.details ||
+          response.statusText ||
+          'Failed to confirm payment';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error confirming payment:', error);

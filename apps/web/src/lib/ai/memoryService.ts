@@ -188,9 +188,6 @@ export class MemoryService {
         where: {
           createdAt: { gte: sevenDaysAgo },
         },
-        include: {
-          driver: true,
-        },
       });
 
       // Pattern 1: Detect peak times

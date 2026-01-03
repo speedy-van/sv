@@ -54,6 +54,23 @@ const itemSchema = z.object({
 // Service type schema - Luxury service levels
 const serviceTypeSchema = z.enum(['signature', 'premium', 'white-glove', 'standard'] as const);
 
+// Add-on services schema - aligns with unified pricing engine
+const addOnsSchema = z.object({
+  packing: z.boolean().default(false),
+  packingVolume: z.number().min(0).optional(),
+  furnitureProtection: z.boolean().default(false),
+  insurance: z.enum(['basic', 'standard', 'premium']).optional(),
+  assembly: z.boolean().default(false),
+  disassembly: z.array(z.string()).optional().default([]),
+  reassembly: z.array(z.string()).optional().default([]),
+}).default({
+  packing: false,
+  furnitureProtection: false,
+  assembly: false,
+  disassembly: [],
+  reassembly: [],
+});
+
 // Customer details schema
 const customerDetailsSchema = z.object({
   firstName: z.string()
@@ -191,6 +208,7 @@ const step1Schema = z.object({
   distance: z.number().min(0),
   estimatedDuration: z.number().min(0),
   pricing: pricingBreakdownSchema,
+  addOns: addOnsSchema,
   
   // Multi-leg booking support
   isMultiLeg: z.boolean().default(false),
@@ -205,6 +223,8 @@ const step2Schema = z.object({
   marketingOptIn: z.boolean().optional(),
   specialInstructions: z.string().optional(),
   bookingId: z.string().optional(),
+  bookingDraftId: z.string().optional(),
+  bookingReference: z.string().optional(),
   promotionCode: z.string().optional(),
   promotionDetails: z.object({
     id: z.string().optional(),
@@ -229,6 +249,7 @@ export type Address = z.infer<typeof frontendAddressSchema>;
 export type PropertyDetails = z.infer<typeof frontendPropertyDetailsSchema>;
 export type Item = z.infer<typeof itemSchema>;
 export type ServiceType = z.infer<typeof serviceTypeSchema>;
+export type AddOns = z.infer<typeof addOnsSchema>;
 export type CustomerDetails = z.infer<typeof customerDetailsSchema>;
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
 export type PricingBreakdown = z.infer<typeof pricingBreakdownSchema>;
@@ -290,6 +311,15 @@ const initialFormData: FormData = {
       total: 0,
       distance: 0,
     },
+    addOns: {
+      packing: false,
+      packingVolume: undefined,
+      furnitureProtection: false,
+      insurance: undefined,
+      assembly: false,
+      disassembly: [],
+      reassembly: [],
+    },
     isMultiLeg: false,
     segments: [],
   },
@@ -313,6 +343,8 @@ const initialFormData: FormData = {
     marketingOptIn: false,
     specialInstructions: '',
     bookingId: '',
+    bookingDraftId: '',
+    bookingReference: '',
     promotionCode: '',
     promotionDetails: undefined,
   },
@@ -763,6 +795,36 @@ export function useBookingForm() {
       );
     };
 
+    const deriveAddOnsPayload = (itemsForAddOns: Item[] = []) => {
+      const addOns = step1.addOns || {};
+
+      const totalVolume = itemsForAddOns.reduce((sum, item) => {
+        const volume = item.volume || 0;
+        const qty = item.quantity || 1;
+        return sum + volume * qty;
+      }, 0);
+
+      const baseItems = itemsForAddOns.map(item => item.name || item.id).filter(Boolean);
+      const disassemblyList = addOns.assembly
+        ? (addOns.disassembly && addOns.disassembly.length > 0 ? addOns.disassembly : baseItems)
+        : [];
+      const reassemblyList = addOns.assembly
+        ? (addOns.reassembly && addOns.reassembly.length > 0 ? addOns.reassembly : baseItems)
+        : [];
+
+      const packingVolume = addOns.packing
+        ? (addOns.packingVolume ?? Math.max(Math.round(totalVolume * 10) / 10, 1))
+        : undefined;
+
+      return {
+        packing: Boolean(addOns.packing),
+        packingVolume,
+        disassembly: addOns.assembly ? disassemblyList : undefined,
+        reassembly: addOns.assembly ? reassemblyList : undefined,
+        insurance: (addOns.furnitureProtection || addOns.insurance) ? (addOns.insurance || 'premium') : undefined,
+      };
+    };
+
     const updatedSegments = segments.map(segment => ({ ...segment }));
     let aggregatedBase = 0;
     let aggregatedDistanceFee = 0;
@@ -914,12 +976,7 @@ export function useBookingForm() {
             timeSlot: segment.datetime 
               ? extractTimeSlotFromDatetime(segment.datetime)
               : mapTimeSlotToAPI(step1.pickupTimeSlot) || 'flexible',
-            addOns: {
-              packingService: false,
-              insuranceCoverage: false,
-              storageRequired: false,
-              dismantlingRequired: segmentItems.some(item => item.dismantling_required === 'Yes'),
-            },
+            addOns: deriveAddOnsPayload(segmentItems),
             preferences: {
               vehicleType: 'van',
               urgency: mapUrgencyToAPI(step1.urgency),
@@ -1049,12 +1106,7 @@ export function useBookingForm() {
           ? new Date(step1.pickupDate + 'T10:00:00').toISOString()
           : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         timeSlot: mapTimeSlotToAPI(step1.pickupTimeSlot) || 'flexible',
-        addOns: {
-          packingService: false,
-          insuranceCoverage: false,
-          storageRequired: false,
-          dismantlingRequired: items.some(item => item.dismantling_required === 'Yes'),
-        },
+        addOns: deriveAddOnsPayload(items),
         preferences: {
           vehicleType: 'van',
           urgency: mapUrgencyToAPI(step1.urgency),

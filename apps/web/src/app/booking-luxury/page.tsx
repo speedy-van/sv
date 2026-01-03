@@ -202,11 +202,14 @@ export default function BookingLuxuryPage() {
   // Enterprise Engine: Automatic availability & pricing with full addresses
   const [availabilityData, setAvailabilityData] = useState<any>(null);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+  const [capacityCheck, setCapacityCheck] = useState<any>(null);
+  const [routeSummary, setRouteSummary] = useState<any>(null);
   const [pricingTiers, setPricingTiers] = useState<{
     economy: any;
     standard: any;
     express: any;
   } | null>(null);
+  const [isLoadingReference, setIsLoadingReference] = useState(false);
 
   // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
@@ -479,6 +482,101 @@ export default function BookingLuxuryPage() {
     }
   }, [formData.step1.segments, formData.step1.items, formData.step1.crewSize, formData.step1.serviceType, formData.step1.urgency, formData.step1.pickupTimeSlot, normalizeAddressForPricing]);
 
+  const handleBookingCreated = useCallback(({ bookingId, reference }: { bookingId: string; reference: string }) => {
+    updateFormData('step2', { bookingId, bookingReference: reference });
+    toast({
+      title: 'Booking reference created',
+      description: `Reference: ${reference}`,
+      status: 'info',
+      duration: 5000,
+      isClosable: true,
+    });
+  }, [toast, updateFormData]);
+
+  // Fetch and persist a booking reference + draft as soon as the page loads
+  useEffect(() => {
+    if (!isClient) return;
+    if (formData.step2.bookingDraftId || isLoadingReference) return;
+
+    const createDraft = async () => {
+      setIsLoadingReference(true);
+      try {
+        const draftRes = await fetch('/api/booking-luxury/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+
+        if (!draftRes.ok) {
+          const errorText = await draftRes.text().catch(() => '');
+          throw new Error(`Draft creation failed (${draftRes.status}): ${errorText || draftRes.statusText}`);
+        }
+
+        const draftJson = await draftRes.json();
+        const draftId = draftJson?.draft?.id;
+        const draftReference = draftJson?.draft?.reference;
+
+        if (draftJson?.success && draftId && draftReference) {
+          updateFormData('step2', {
+            bookingDraftId: draftId,
+            bookingReference: draftReference,
+          });
+        } else {
+          throw new Error(`Invalid draft payload: ${JSON.stringify(draftJson)}`);
+        }
+      } catch (error) {
+        console.error('Failed to initialize booking draft/reference', error);
+        toast({
+          title: 'Could not create booking draft',
+          description: 'Please retry in a moment or contact support@speedy-van.co.uk / 01202 129746 if it continues.',
+          status: 'error',
+          duration: 7000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoadingReference(false);
+      }
+    };
+
+    createDraft();
+  }, [isClient, formData.step2.bookingDraftId, isLoadingReference, updateFormData, toast]);
+
+  // Sync draft with latest step1 + step2 data for admin visibility (debounced)
+  useEffect(() => {
+    if (!formData.step2.bookingDraftId) return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      fetch(`/api/booking-luxury/draft/${formData.step2.bookingDraftId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          formStep1: formData.step1,
+          formStep2: formData.step2,
+          pickupAddress: formData.step1.pickupAddress,
+          dropoffAddress: formData.step1.dropoffAddress,
+          items: formData.step1.items,
+          pricing: formData.step1.pricing,
+          serviceType: formData.step1.serviceType,
+          crewSize: formData.step1.crewSize,
+          scheduledDate: formData.step1.pickupDate,
+          capacityCheck,
+          notes: formData.step2.specialInstructions,
+          status: 'DRAFT',
+        }),
+      }).catch((error: unknown) => {
+        // Ignore AbortError - this is expected when component unmounts
+        if (error instanceof Error && error.name === 'AbortError') return;
+        console.error('Failed to sync booking draft', error);
+      });
+    }, 800);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [formData.step1, formData.step2, capacityCheck]);
+
   // Calculate all segments pricing in multi-leg
   // ✅ CRITICAL FIX: Apply all segment pricing updates atomically to avoid stale closure bugs
   const calculateAllSegmentsPricing = useCallback(async () => {
@@ -700,6 +798,44 @@ export default function BookingLuxuryPage() {
     // Normalize addresses to consistent schema
     const pickupNorm = normalizeAddressForPricing(formData.step1.pickupAddress);
     const dropNorm = normalizeAddressForPricing(formData.step1.dropoffAddress);
+    const segmentDropoffs = (formData.step1.segments || [])
+      .map((segment: any) => ({
+        norm: normalizeAddressForPricing(segment.dropoffAddress),
+        property: segment.dropoffProperty || formData.step1.dropoffProperty
+      }))
+      .filter(({ norm }) => norm && norm.postcode);
+
+    const buildDropoffPayload = (norm: any, property?: any) => ({
+      full: norm?.full || 'Dropoff Address',
+      line1: norm?.line1 || '1 Main Street',
+      city: norm?.city || 'London',
+      postcode: norm?.postcode || 'SW1A 1AA',
+      propertyType: property?.type || 'house',
+      street: norm?.street || 'Main Street',
+      number: norm?.number || '1',
+      coordinates: {
+        lat: norm?.coordinates?.lat || 0,
+        lng: norm?.coordinates?.lng || 0
+      }
+    });
+
+    const dropoffsPayload: any[] = [];
+
+    if (dropNorm) {
+      dropoffsPayload.push(buildDropoffPayload(dropNorm, formData.step1.dropoffProperty));
+    }
+
+    segmentDropoffs.forEach(({ norm, property }) => {
+      const key = `${norm?.line1 || ''}|${norm?.postcode || ''}`.toLowerCase();
+      const exists = dropoffsPayload.some((d) => `${d.line1}|${d.postcode}`.toLowerCase() === key);
+      if (!exists) {
+        dropoffsPayload.push(buildDropoffPayload(norm, property));
+      }
+    });
+
+    if (dropoffsPayload.length === 0) {
+      dropoffsPayload.push(buildDropoffPayload(dropNorm || {}, formData.step1.dropoffProperty));
+    }
 
     // Validate addresses exist
     if (!pickupNorm || !dropNorm) {
@@ -769,19 +905,7 @@ export default function BookingLuxuryPage() {
               lng: pickupNorm?.coordinates?.lng || 0
             }
           },
-          dropoffs: [{
-            full: dropNorm?.full || 'Dropoff Address',
-            line1: dropNorm?.line1 || '1 Main Street',
-            city: dropNorm?.city || 'London',
-            postcode: dropNorm?.postcode || 'SW1A 1AA',
-            propertyType: 'house' as const,
-            street: dropNorm?.street || 'Main Street',
-            number: dropNorm?.number || '1',
-            coordinates: {
-              lat: dropNorm?.coordinates?.lat || 0,
-              lng: dropNorm?.coordinates?.lng || 0
-            }
-          }],
+          dropoffs: dropoffsPayload,
           scheduledDate: (() => {
             const fallback = () => {
               const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -868,6 +992,8 @@ export default function BookingLuxuryPage() {
         };
 
         setPricingTiers(calculatedTiers);
+        setCapacityCheck(data.data.route?.capacityCheck || null);
+        setRouteSummary(data.data.route || null);
 
         // ✅ CRITICAL FIX: Also update formData.step1.pricing so addReturnSegment can copy it
         updateFormData('step1', {
@@ -1486,7 +1612,7 @@ export default function BookingLuxuryPage() {
 
   // Success page is now handled by dedicated /booking/success route
 
-  const bgColor = 'gray.900'; // Dark theme background
+  const bgColor = '#000000'; // Black background
   const cardBg = 'gray.800'; // Dark theme card background
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -1510,6 +1636,8 @@ export default function BookingLuxuryPage() {
       display="block" 
       w="100%" 
       bg={bgColor} 
+      position="relative"
+      overflow="hidden"
       py={{ base: 0, md: 8 }} 
       pb={{ base: "80px", md: 8 }}
       suppressHydrationWarning
@@ -1524,10 +1652,36 @@ export default function BookingLuxuryPage() {
         overflowAnchor: 'none',
       }}
     >
+      {/* Snow overlay - subtle animated dots */}
+      <Box
+        aria-hidden
+        position="fixed"
+        inset={0}
+        pointerEvents="none"
+        zIndex={0}
+        backgroundImage={
+          'radial-gradient(rgba(255,255,255,0.55) 1.2px, transparent 1.2px),' +
+          'radial-gradient(rgba(255,255,255,0.35) 1px, transparent 1px)'
+        }
+        backgroundSize="140px 140px, 90px 90px"
+        backgroundPosition="0 0, 60px 60px"
+        opacity={0.85}
+        mixBlendMode="screen"
+        sx={{
+          animation: 'snowMove 18s linear infinite',
+          '@keyframes snowMove': {
+            '0%': { backgroundPosition: '0 0, 80px 80px' },
+            '100%': { backgroundPosition: '0 320px, 60px 380px' },
+          },
+        }}
+      />
+
       <Container 
         maxW={{ base: "full", md: "6xl" }} 
         px={{ base: 2, md: 6 }}
         pt={{ base: 2, md: 0 }}
+        position="relative"
+        zIndex={1}
       >
         <Box 
           display="block" 
@@ -1539,10 +1693,11 @@ export default function BookingLuxuryPage() {
             position="sticky"
             top={0}
             zIndex={100}
-            bg="rgba(13, 13, 13, 0.98)"
-            backdropFilter="blur(10px)"
+            bg="linear-gradient(120deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.9))"
+            backdropFilter="blur(12px)"
             borderBottom="1px solid"
-            borderColor="rgba(59, 130, 246, 0.2)"
+            borderColor="rgba(59, 130, 246, 0.25)"
+            boxShadow="0 8px 30px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(255,255,255,0.04)"
             py={{ base: 2, md: 3 }}
             mb={{ base: 3, md: 6 }}
             mx={{ base: -2, md: 0 }}
@@ -1902,7 +2057,43 @@ export default function BookingLuxuryPage() {
             </VStack>
           </Box>
 
-
+          {/* Booking reference banner - visible from step 1 */}
+          {formData.step2.bookingReference && (
+            <Alert
+              status="info"
+              variant="subtle"
+              bg="rgba(59, 130, 246, 0.12)"
+              border="1px solid"
+              borderColor="blue.400"
+              color="white"
+              mb={{ base: 4, md: 6 }}
+              borderRadius="lg"
+            >
+              <AlertIcon />
+              <Box>
+                <AlertTitle 
+                  fontSize="md" 
+                  fontWeight="800" 
+                  color="white"
+                  letterSpacing="wide"
+                >
+                  Your booking reference
+                </AlertTitle>
+                <AlertDescription fontSize="sm" color="whiteAlpha.900" mt={1}>
+                  <Text 
+                    as="span" 
+                    fontFamily="mono" 
+                    fontWeight="700" 
+                    color="blue.100"
+                    mr={2}
+                  >
+                    {formData.step2.bookingReference}
+                  </Text>
+                  Share this with support or admin for any changes.
+                </AlertDescription>
+              </Box>
+            </Alert>
+          )}
 
           {/* Step Title - Enhanced Typography & Design */}
           <Box 
@@ -2452,6 +2643,8 @@ export default function BookingLuxuryPage() {
                   updateFormData={updateFormData}
                   errors={errors}
                   paymentSuccess={false}
+                  capacityCheck={capacityCheck}
+                  routeSummary={routeSummary}
                   isCalculatingPricing={isCalculatingPricing}
                   economyPrice={calculateEconomyPrice()}
                   standardPrice={calculateStandardPrice()}
@@ -2462,6 +2655,7 @@ export default function BookingLuxuryPage() {
                   applyPromotionCode={applyPromotionCode}
                   removePromotionCode={removePromotionCode}
                   getTotalSegmentsPrice={getTotalSegmentsPrice}
+                  onBookingCreated={handleBookingCreated}
                 />
               </Box>
             )}

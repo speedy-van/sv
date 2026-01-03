@@ -296,9 +296,6 @@ export class RecurringTasksBots {
           lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
         },
       },
-      include: {
-        customer: true,
-      },
       take: 50,
     });
 

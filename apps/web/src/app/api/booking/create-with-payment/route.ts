@@ -273,6 +273,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create pickup and delivery addresses
     const pickupAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: `Pickup - ${requestData.pickupAddress.address}`,
         postcode: requestData.pickupAddress.postcode || '',
         lat: requestData.pickupAddress.latitude,
@@ -282,6 +283,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const dropoffAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: `Dropoff - ${requestData.dropoffAddress.address}`,
         postcode: requestData.dropoffAddress.postcode || '',
         lat: requestData.dropoffAddress.latitude,
@@ -292,6 +294,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create property details
     const pickupProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: (requestData.pickupProperty?.type as any) || 'DETACHED',
         accessType: (requestData.pickupProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT') as any,
         floors: requestData.pickupProperty?.floors || 0,
@@ -300,6 +303,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const dropoffProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: (requestData.dropoffProperty?.type as any) || 'DETACHED',
         accessType: (requestData.dropoffProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT') as any,
         floors: requestData.dropoffProperty?.floors || 0,
@@ -326,6 +330,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Create the main booking record
     const booking = await prisma.booking.create({
       data: {
+        id: crypto.randomUUID(),
         customerId: requestData.customer.customerId || null,
         customerName: requestData.customer.name,
         customerPhone: requestData.customer.phone || '',
@@ -346,7 +351,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         itemsSurchargeGBP: 0,
         weatherSurchargeGBP: 0,
         status: 'PENDING_PAYMENT',
-        crewSize: requestData.serviceType === 'white-glove' ? 'FOUR' : 'TWO'
+        crewSize: requestData.serviceType === 'white-glove' ? 'FOUR' : 'TWO',
+        updatedAt: new Date()
       }
     });
 

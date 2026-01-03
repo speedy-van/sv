@@ -525,6 +525,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const bookingDraftId = typeof rawData.bookingDraftId === 'string' ? rawData.bookingDraftId : undefined;
+
     console.log('📝 Creating new booking with validated data:', {
       customer: bookingData.customer,
       pickupAddress: bookingData.pickupAddress,
@@ -535,14 +537,49 @@ export async function POST(request: NextRequest) {
       authenticatedUser: customerId ? 'Yes' : 'No',
     });
 
-    // Generate unique booking reference
-    const reference = await createUniqueReference('booking');
+    // Generate or accept provided booking reference
+    // Support both 'reference' and 'bookingReference' field names from frontend
+    const providedReference = typeof rawData.reference === 'string' 
+      ? rawData.reference.trim() 
+      : (typeof rawData.bookingReference === 'string' ? rawData.bookingReference.trim() : '');
+    let reference = providedReference || await createUniqueReference('booking');
+
+    // Check if booking already exists with this reference
+    const existingBooking = await prisma.booking.findUnique({ where: { reference } });
+    if (existingBooking) {
+      // If booking exists and is pending payment, return it (idempotent behavior)
+      if (existingBooking.status === 'PENDING_PAYMENT' || existingBooking.status === 'DRAFT') {
+        console.log('✅ Returning existing pending booking:', existingBooking.reference);
+        return NextResponse.json({
+          success: true,
+          booking: {
+            id: existingBooking.id,
+            reference: existingBooking.reference,
+            status: existingBooking.status,
+            totalGBP: existingBooking.totalGBP,
+          },
+          message: 'Existing booking returned',
+        });
+      }
+      // If booking is confirmed or in another state, reject duplicate
+      return NextResponse.json(
+        {
+          error: 'Booking reference conflict',
+          details: 'This booking has already been processed.',
+        },
+        { status: 409 }
+      );
+    }
+
+    // Note: We DON'T generate new reference if draft exists - the draft IS this booking
+    // The draft was created at step 1, now we're converting it to a real booking
 
     // Create pickup address - support both 'address' and 'line1' formats
     // Use the raw data to get coordinates that might not be in the schema
     const rawPickupAddress = rawData.pickupAddress as any;
     const pickupAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: bookingData.pickupAddress.street || rawPickupAddress.address || 'Pickup Address',
         postcode: bookingData.pickupAddress.postcode || '',
         lat: rawPickupAddress.coordinates?.lat || 0,
@@ -554,6 +591,7 @@ export async function POST(request: NextRequest) {
     const rawDropoffAddress = rawData.dropoffAddress as any;
     const dropoffAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: bookingData.dropoffAddress.street || rawDropoffAddress.address || 'Dropoff Address',
         postcode: bookingData.dropoffAddress.postcode || '',
         lat: rawDropoffAddress.coordinates?.lat || 0,
@@ -572,6 +610,7 @@ export async function POST(request: NextRequest) {
 
     const pickupProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: pickupPropertyType as any,
         floors: bookingData.pickupDetails?.floors || 0,
         accessType: bookingData.pickupDetails?.hasLift
@@ -591,6 +630,7 @@ export async function POST(request: NextRequest) {
 
     const dropoffProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: dropoffPropertyType as any,
         floors: bookingData.dropoffDetails?.floors || 0,
         accessType: bookingData.dropoffDetails?.hasLift
@@ -961,7 +1001,7 @@ export async function POST(request: NextRequest) {
     const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
     
     // Apply crew multiplier to the total price
-    const baseTotal = pricingResult.totalPrice;
+    const baseTotal = Number.isFinite(pricingResult.totalPrice) ? pricingResult.totalPrice : 0;
     const crewSurcharge = baseTotal * (crewMultiplierPercent / 100);
     const calculatedTotal = baseTotal + crewSurcharge;
     
@@ -993,14 +1033,21 @@ export async function POST(request: NextRequest) {
     };
 
     // Convert pricing amounts to pence for database storage
+    const accessSurchargeBase = Array.isArray(pricingResult.surcharges)
+      ? pricingResult.surcharges
+          .filter((s: any) => s && s.category === 'access')
+          .reduce((sum: number, s: any) => sum + (Number.isFinite(s?.amount) ? s.amount : 0), 0)
+      : 0;
+
+    const itemsSurchargeBase = Number.isFinite(pricingResult.itemsPrice) ? pricingResult.itemsPrice : 0;
+    const normalizedTotal = Number.isFinite(calculatedTotal) ? calculatedTotal : baseTotal;
+
     const amountsInPence = {
-      totalGBP: poundsToPence(calculatedTotal),
+      totalGBP: poundsToPence(normalizedTotal),
       distanceCostGBP: 0, // No longer calculated
-      accessSurchargeGBP: poundsToPence(
-        pricingResult.surcharges?.filter((s: any) => s.category === 'access').reduce((sum: number, s: any) => sum + s.amount, 0) || 0
-      ),
+      accessSurchargeGBP: poundsToPence(accessSurchargeBase),
       weatherSurchargeGBP: 0, // Not implemented in new pricing engine
-      itemsSurchargeGBP: poundsToPence(pricingResult.itemsPrice),
+      itemsSurchargeGBP: poundsToPence(itemsSurchargeBase),
     };
 
     // Calculate distance and duration from coordinates
@@ -1090,16 +1137,28 @@ export async function POST(request: NextRequest) {
       isMultiLeg,
     });
 
+    const safeEstimatedDurationMinutes = Number.isFinite(pricingResult.estimatedDuration)
+      ? Math.max(1, Math.round(pricingResult.estimatedDuration))
+      : Math.max(
+          1,
+          Math.round(
+            durationSeconds > 0
+              ? durationSeconds / 60
+              : (distanceMeters / 13.4 + 15 * 60) / 60
+          )
+        );
+
     // Create the main booking with unified step tracking and multi-leg support
     const booking = await prisma.booking.create({
       data: {
+        id: crypto.randomUUID(),
         reference,
         status: 'PENDING_PAYMENT',
         scheduledAt: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
                      bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
         pickupTimeSlot: bookingData.pickupTimeSlot || null,
         urgency: bookingData.urgency || 'scheduled',
-        estimatedDurationMinutes: Math.round(pricingResult.estimatedDuration), // From pricing engine
+        estimatedDurationMinutes: safeEstimatedDurationMinutes, // From pricing engine with fallback
         crewSize: mappedCrewSize, // From frontend selection
         baseDistanceMiles: distanceMeters > 0 ? Math.round((distanceMeters / 1609.34) * 10) / 10 : 0,
         distanceMeters: distanceMeters, // ✅ NOW SAVED!
@@ -1143,11 +1202,19 @@ export async function POST(request: NextRequest) {
         pickupPropertyId: pickupProperty.id,
         dropoffPropertyId: dropoffProperty.id,
 
-        // ✅ Customer special instructions
-        notes: bookingData.notes || null,
-
         customerPreferences: {
           serviceType: serviceType.toLowerCase(),
+          // Preserve any customer-provided notes inside preferences JSON since Booking.notes column is unavailable in some environments
+          specialInstructions: bookingData.notes ?? null,
+          addOns: {
+            packing: bookingData.addOns?.packing || false,
+            packingVolume: bookingData.addOns?.packingVolume,
+            furnitureProtection: bookingData.addOns?.furnitureProtection || false,
+            insurance: bookingData.addOns?.insurance,
+            assembly: bookingData.addOns?.assembly || false,
+            disassembly: bookingData.addOns?.disassembly || [],
+            reassembly: bookingData.addOns?.reassembly || [],
+          },
           pickupAddressMeta: {
             flatNumber: resolveFlatNumber(bookingData.pickupAddress),
             floorNumber: resolveFloorNumber(bookingData.pickupAddress),
@@ -1165,6 +1232,8 @@ export async function POST(request: NextRequest) {
         additionalPaymentStatus: AdditionalPaymentStatus.NONE,
         additionalPaymentAmountGBP: 0,
 
+        // Required timestamps
+        updatedAt: new Date(),
       },
     });
 
@@ -1181,6 +1250,7 @@ export async function POST(request: NextRequest) {
           // Create segment addresses
           const segmentPickupAddress = await prisma.bookingAddress.create({
             data: {
+              id: crypto.randomUUID(),
               label: segment.pickupAddress?.street || segment.pickupAddress?.postcode || 'Segment Pickup',
               postcode: segment.pickupAddress?.postcode || '',
               lat: segment.pickupAddress?.coordinates?.lat || 0,
@@ -1190,6 +1260,7 @@ export async function POST(request: NextRequest) {
           
           const segmentDropoffAddress = await prisma.bookingAddress.create({
             data: {
+              id: crypto.randomUUID(),
               label: segment.dropoffAddress?.street || segment.dropoffAddress?.postcode || 'Segment Dropoff',
               postcode: segment.dropoffAddress?.postcode || '',
               lat: segment.dropoffAddress?.coordinates?.lat || 0,
@@ -1200,6 +1271,7 @@ export async function POST(request: NextRequest) {
           // Create segment properties
           const segmentPickupProperty = await prisma.propertyDetails.create({
             data: {
+              id: crypto.randomUUID(),
               propertyType: mapPropertyTypeToPrisma(segment.pickupProperty?.type || 'house') as any,
               floors: segment.pickupProperty?.floors || 0,
               accessType: segment.pickupProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',
@@ -1208,6 +1280,7 @@ export async function POST(request: NextRequest) {
           
           const segmentDropoffProperty = await prisma.propertyDetails.create({
             data: {
+              id: crypto.randomUUID(),
               propertyType: mapPropertyTypeToPrisma(segment.dropoffProperty?.type || 'house') as any,
               floors: segment.dropoffProperty?.floors || 0,
               accessType: segment.dropoffProperty?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',
@@ -1253,17 +1326,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking items if any
+    // Create booking items if any (with defensive casting to avoid Prisma validation errors)
     if (bookingData.items && bookingData.items.length > 0) {
       for (const item of bookingData.items) {
+        const safeQuantity = Number.isFinite(item.quantity) ? item.quantity : Number(item.quantity ?? 1) || 1;
+        const safeVolume = Number.isFinite(item.volumeFactor) ? item.volumeFactor : Number(item.volumeFactor ?? item.volume ?? 0) || 0;
+
         await prisma.bookingItem.create({
           data: {
             bookingId: booking.id,
-            name: item.name,
-            quantity: item.quantity || 1,
-            volumeM3: item.volumeFactor || 0,
+            name: item.name || 'Item',
+            quantity: Math.max(1, safeQuantity),
+            volumeM3: safeVolume,
             category: item.category || 'general',
-            estimatedVolume: item.volumeFactor || 0,
+            estimatedVolume: safeVolume,
             estimatedWeight: 0,
           },
         });
@@ -1628,6 +1704,21 @@ export async function POST(request: NextRequest) {
         linkedToAccount: customerId ? true : false,
       },
     });
+
+    // Mark draft as completed when booking is created
+    if (bookingDraftId) {
+      try {
+        await prisma.bookingDraft.update({
+          where: { id: bookingDraftId },
+          data: {
+            status: 'COMPLETED',
+            formStep2: rawData.step2 ?? null,
+          },
+        });
+      } catch (draftError) {
+        console.warn('⚠️ Failed to update booking draft status:', draftError);
+      }
+    }
   } catch (error) {
     console.error('❌ Error creating booking:', error);
     

@@ -1905,6 +1905,36 @@ select option {
   font-weight: 600 !important;
 }
 
+/* Booking Luxury: keep disabled inputs legible on dark cards */
+html.booking-luxury-no-smooth .chakra-input[disabled],
+body.booking-luxury-no-smooth .chakra-input[disabled],
+html.booking-luxury-no-smooth input[disabled],
+body.booking-luxury-no-smooth input[disabled] {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  opacity: 1 !important;
+  background-color: rgba(26, 26, 26, 0.85) !important;
+  border-color: rgba(139, 92, 246, 0.6) !important;
+}
+
+/* Booking Luxury: force input text to white on dark cards */
+html.booking-luxury-no-smooth .chakra-input,
+body.booking-luxury-no-smooth .chakra-input,
+html.booking-luxury-no-smooth input,
+body.booking-luxury-no-smooth input,
+html.booking-luxury-no-smooth .chakra-textarea,
+body.booking-luxury-no-smooth .chakra-textarea,
+html.booking-luxury-no-smooth textarea,
+body.booking-luxury-no-smooth textarea {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+html.booking-luxury-no-smooth ::placeholder,
+body.booking-luxury-no-smooth ::placeholder {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
 /* Ensure proper z-index hierarchy for form controls */
 .chakra-form-control {
   position: relative !important;
@@ -1976,9 +2006,9 @@ select option {
   padding-right: 40px !important;
   font-size: 16px !important;
   border-radius: 12px !important;
-  border: 2px solid rgba(59, 130, 246, 0.5) !important;
-  background-color: white !important;
-  color: #1f2937 !important;
+  border: 2px solid rgba(139, 92, 246, 0.6) !important;
+  background-color: rgba(26, 26, 26, 0.9) !important;
+  color: white !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   outline: none !important;
@@ -1988,18 +2018,18 @@ select option {
 }
 
 .booking-time-select:hover {
-  border-color: rgba(59, 130, 246, 0.7) !important;
+  border-color: rgba(139, 92, 246, 0.8) !important;
 }
 
 .booking-time-select:focus {
-  border-color: rgba(59, 130, 246, 1) !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(139, 92, 246, 1) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
   z-index: 100 !important;
 }
 
 .booking-time-select option {
-  background-color: white !important;
-  color: #1f2937 !important;
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  color: white !important;
   padding: 14px !important;
   font-size: 15px !important;
   font-weight: 600 !important;
@@ -2007,11 +2037,11 @@ select option {
 }
 
 .booking-time-select option:hover {
-  background-color: #f3f4f6 !important;
+  background-color: rgba(79, 70, 229, 0.4) !important;
 }
 
 .booking-time-select option:checked {
-  background-color: #3b82f6 !important;
+  background-color: #8b5cf6 !important;
   color: white !important;
 }
 

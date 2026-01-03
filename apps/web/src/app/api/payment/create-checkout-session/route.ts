@@ -236,21 +236,25 @@ export async function POST(request: NextRequest) {
     let existingBooking = null;
     let bookingReference = '';
     
+    // First, check if a reference was provided from the frontend (from draft)
+    const providedReference = (bookingData as any).bookingReference;
+    if (providedReference && typeof providedReference === 'string' && providedReference.trim()) {
+      bookingReference = providedReference.trim();
+      console.log('✅ Using provided booking reference from frontend:', bookingReference);
+    }
+    
     if (bookingData.bookingId) {
       // This is for an existing booking - fetch it instead of creating a new one
       try {
         existingBooking = await prisma.booking.findUnique({
           where: { id: bookingData.bookingId },
-          include: {
-            pickupAddress: true,
-            dropoffAddress: true,
-            pickupProperty: true,
-            dropoffProperty: true,
-          }
         });
         
         if (existingBooking) {
-          bookingReference = existingBooking.reference;
+          // Only use existing booking reference if no reference was provided from frontend
+          if (!bookingReference) {
+            bookingReference = existingBooking.reference;
+          }
           console.log('✅ Using existing booking reference:', bookingReference);
         } else {
           throw new Error('Existing booking not found');
@@ -262,8 +266,8 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    if (!existingBooking) {
-      // Create new booking reference
+    if (!existingBooking && !bookingReference) {
+      // Create new booking reference only if not provided
       try {
         bookingReference = await createUniqueReference('booking');
         console.log('✅ Generated new booking reference:', bookingReference);
@@ -286,6 +290,20 @@ export async function POST(request: NextRequest) {
 
     // Handle booking creation or update
     let booking;
+    
+    // First check if booking already exists by reference (created by /api/booking-luxury)
+    if (!existingBooking && bookingReference) {
+      try {
+        existingBooking = await prisma.booking.findUnique({
+          where: { reference: bookingReference },
+        });
+        if (existingBooking) {
+          console.log('✅ Found existing booking by reference:', bookingReference);
+        }
+      } catch (err) {
+        console.warn('⚠️ Could not check for existing booking by reference:', err);
+      }
+    }
     
     if (existingBooking) {
       // Update existing booking status to PENDING_PAYMENT
@@ -311,6 +329,7 @@ export async function POST(request: NextRequest) {
         // Create pickup address
         const pickupAddress = await tx.bookingAddress.create({
           data: {
+            id: crypto.randomUUID(),
             label: bookingData.pickupAddress.address || 
                    bookingData.pickupAddress.street || 
                    'Pickup Address',
@@ -323,6 +342,7 @@ export async function POST(request: NextRequest) {
         // Create dropoff address
         const dropoffAddress = await tx.bookingAddress.create({
           data: {
+            id: crypto.randomUUID(),
             label: bookingData.dropoffAddress.address || 
                    bookingData.dropoffAddress.street || 
                    'Dropoff Address',
@@ -335,6 +355,7 @@ export async function POST(request: NextRequest) {
         // Create pickup property details
         const pickupProperty = await tx.propertyDetails.create({
           data: {
+            id: crypto.randomUUID(),
             propertyType: mapPropertyTypeToPrisma(bookingData.pickupDetails?.type || 'house'),
             floors: bookingData.pickupDetails?.floors || 0,
             accessType: bookingData.pickupDetails?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',
@@ -344,6 +365,7 @@ export async function POST(request: NextRequest) {
         // Create dropoff property details
         const dropoffProperty = await tx.propertyDetails.create({
           data: {
+            id: crypto.randomUUID(),
             propertyType: mapPropertyTypeToPrisma(bookingData.dropoffDetails?.type || 'house'),
             floors: bookingData.dropoffDetails?.floors || 0,
             accessType: bookingData.dropoffDetails?.hasLift ? 'WITH_LIFT' : 'WITHOUT_LIFT',

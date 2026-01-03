@@ -57,7 +57,7 @@ async function getDashboardData() {
       },
     },
     include: {
-      driver: {
+      Driver: {
         include: {
           User: {
             select: {
@@ -132,26 +132,34 @@ async function getDashboardData() {
   const stripeHealth = 'healthy';
 
   // Serialize data to ensure it can be passed to client components
-  const serializedJobsInProgress = jobsInProgress.map(job => ({
-    ...job,
-    createdAt: job.createdAt.toISOString(),
-    updatedAt: job.updatedAt.toISOString(),
-    scheduledAt: job.scheduledAt.toISOString(),
-    paidAt: job.paidAt?.toISOString(),
-    driver: job.driver ? {
-      ...job.driver,
-      createdAt: job.driver.createdAt.toISOString(),
-      updatedAt: job.driver.updatedAt.toISOString(),
-      approvedAt: job.driver.approvedAt?.toISOString(),
-      user: {
-        ...job.driver.User,
-        createdAt: job.driver.User.createdAt.toISOString(),
-        lastLogin: job.driver.User.lastLogin?.toISOString(),
-        resetTokenExpiry: job.driver.User.resetTokenExpiry?.toISOString(),
-        emailVerificationExpiry: job.driver.User.emailVerificationExpiry?.toISOString(),
-      },
-    } : null,
-  }));
+  const serializedJobsInProgress = jobsInProgress.map(job => {
+    const { Driver, ...rest } = job;
+
+    return {
+      ...rest,
+      createdAt: job.createdAt.toISOString(),
+      updatedAt: job.updatedAt.toISOString(),
+      scheduledAt: job.scheduledAt.toISOString(),
+      paidAt: job.paidAt?.toISOString(),
+      driver: Driver
+        ? {
+            ...Driver,
+            createdAt: Driver.createdAt.toISOString(),
+            updatedAt: Driver.updatedAt.toISOString(),
+            approvedAt: Driver.approvedAt?.toISOString(),
+            user: Driver.User
+              ? {
+                  ...Driver.User,
+                  createdAt: Driver.User.createdAt.toISOString(),
+                  lastLogin: Driver.User.lastLogin?.toISOString(),
+                  resetTokenExpiry: Driver.User.resetTokenExpiry?.toISOString(),
+                  emailVerificationExpiry: Driver.User.emailVerificationExpiry?.toISOString(),
+                }
+              : null,
+          }
+        : null,
+    };
+  });
 
   const serializedRecentDriverApplications = recentDriverApplications.map(notification => ({
     ...notification,

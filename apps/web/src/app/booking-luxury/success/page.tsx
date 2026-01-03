@@ -429,17 +429,26 @@ export default function BookingSuccessPage() {
               <Text 
                 fontSize={{ base: "3xl", md: "5xl" }} 
                 fontWeight="900" 
-                bgGradient="linear(to-r, green.300, emerald.400)"
-                bgClip="text"
                 letterSpacing="tight"
+                color="white"
+                textShadow="0 8px 30px rgba(16,185,129,0.45), 0 2px 10px rgba(0,0,0,0.35)"
+                bgGradient="linear(to-r, #34d399, #10b981, #22d3ee)"
+                bgClip="text"
               >
-                Booking Confirmed!
+                Booking Confirmed
               </Text>
               <Text 
                 fontSize={{ base: "md", md: "xl" }} 
-                color="whiteAlpha.800"
+                color="white"
                 maxW="2xl"
                 lineHeight="tall"
+                px={{ base: 4, md: 6 }}
+                py={{ base: 3, md: 4 }}
+                bg="rgba(15,23,42,0.55)"
+                border="1px solid"
+                borderColor="rgba(34,197,94,0.35)"
+                borderRadius="xl"
+                boxShadow="0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(34,197,94,0.15)"
               >
                 🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.
               </Text>

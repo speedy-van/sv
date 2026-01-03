@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
     // Create pickup address
     const pickupAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: validated.pickupAddress.full,
         postcode: validated.pickupAddress.postcode,
         lat: validated.pickupAddress.coordinates.lat,
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
     // Create dropoff address
     const dropoffAddress = await prisma.bookingAddress.create({
       data: {
+        id: crypto.randomUUID(),
         label: validated.dropoffAddress.full,
         postcode: validated.dropoffAddress.postcode,
         lat: validated.dropoffAddress.coordinates.lat,
@@ -185,6 +187,7 @@ export async function POST(request: NextRequest) {
     // Create pickup property details
     const pickupProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: 'HOUSE',
         accessType: 'GROUND_FLOOR',
         floors: 1,
@@ -194,6 +197,7 @@ export async function POST(request: NextRequest) {
     // Create dropoff property details
     const dropoffProperty = await prisma.propertyDetails.create({
       data: {
+        id: crypto.randomUUID(),
         propertyType: 'HOUSE',
         accessType: 'GROUND_FLOOR',
         floors: 1,
@@ -203,6 +207,7 @@ export async function POST(request: NextRequest) {
     // Create booking in database
     const booking = await prisma.booking.create({
       data: {
+        id: crypto.randomUUID(),
         reference,
         
         // Customer
@@ -251,6 +256,9 @@ export async function POST(request: NextRequest) {
         // Metadata
         orderType: 'ai-booking',
         eligibleForMultiDrop: false,
+        
+        // Required timestamps
+        updatedAt: new Date(),
       },
     });
     

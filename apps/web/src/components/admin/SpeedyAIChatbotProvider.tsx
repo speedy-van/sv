@@ -16,6 +16,14 @@ export default function SpeedyAIChatbotProvider() {
   useEffect(() => {
     // Fetch admin info with improved retry logic
     const fetchAdminInfo = async (retryCount = 0) => {
+      const safeParseJson = async (response: Response) => {
+        try {
+          return await response.json();
+        } catch {
+          return null;
+        }
+      };
+
       try {
         const response = await fetch('/api/admin/me', {
           method: 'GET',
@@ -55,14 +63,23 @@ export default function SpeedyAIChatbotProvider() {
             setLoading(false);
             return; // Auth error - no need to retry
           } else if (response.status === 404) {
+            const errorBody = await safeParseJson(response);
+            const errorMessage =
+              (errorBody as { error?: string } | null)?.error || 'Admin user not found';
             // 404 means route doesn't exist - only retry once after a short delay
             if (retryCount < 1) {
-              console.log(`Route not found, retrying once (attempt ${retryCount + 1})...`);
+              console.log(
+                `Admin info endpoint returned 404 (${errorMessage}), retrying once (attempt ${
+                  retryCount + 1
+                })...`
+              );
               setTimeout(() => fetchAdminInfo(retryCount + 1), 1500);
               return;
             } else {
               // After 1 retry, give up and use defaults
-              console.warn('API route /api/admin/me not found - using default admin info');
+              console.warn(
+                `Admin info endpoint still 404 (${errorMessage}) - using default admin info`
+              );
               setAdminInfo({
                 name: 'Admin',
                 email: '',
@@ -71,7 +88,15 @@ export default function SpeedyAIChatbotProvider() {
               return;
             }
           } else {
-            console.error('Failed to fetch admin info:', response.status, response.statusText);
+            const errorBody = await safeParseJson(response);
+            const errorMessage =
+              (errorBody as { error?: string } | null)?.error || response.statusText;
+            console.error(
+              'Failed to fetch admin info:',
+              response.status,
+              response.statusText,
+              errorMessage
+            );
             setAdminInfo({
               name: 'Admin',
               email: '',

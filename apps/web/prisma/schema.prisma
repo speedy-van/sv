@@ -267,6 +267,27 @@ model Booking {
   @@index([shouldBeMultiDrop])
 }
 
+model BookingDraft {
+  id             String   @id @default(cuid())
+  reference      String   @unique
+  status         String   @default("DRAFT")
+  formStep1      Json?
+  formStep2      Json?
+  pickupAddress  Json?
+  dropoffAddress Json?
+  items          Json?
+  pricing        Json?
+  capacityCheck  Json?
+  serviceType    String?
+  crewSize       String?
+  scheduledDate  String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([reference, status])
+}
+
 model BookingAddress {
   id                                               String    @id @default(cuid())
   label                                            String

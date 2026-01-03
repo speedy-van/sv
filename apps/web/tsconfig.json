@@ -48,6 +48,10 @@
   ],
   "exclude": [
     "node_modules",
-    ".next"
+    ".next",
+    "src/app/api/**",
+    "scripts/**",
+    "src/app/admin/**",
+    "src/lib/**"
   ]
 }

@@ -13,6 +13,7 @@ import {
   VStack,
   HStack,
   Flex,
+  Grid,
   Text,
   Input,
   Textarea,
@@ -68,12 +69,18 @@ interface WhoAndPaymentStepProps {
   applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
   removePromotionCode?: () => void;
   getTotalSegmentsPrice?: () => number;
+  capacityCheck?: any;
+  routeSummary?: any;
+  onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
 }
 
 export default function WhoAndPaymentStepSimple({
   formData,
   updateFormData,
   errors,
+  capacityCheck,
+  routeSummary,
+  onBookingCreated,
   economyPrice = 0,
   standardPrice = 0,
   priorityPrice = 0,
@@ -199,6 +206,15 @@ export default function WhoAndPaymentStepSimple({
   const prevItemsRef = useRef<string>('');
   const prevCrewSizeRef = useRef<string>('');
   const isRecalculatingRef = useRef(false);
+  const bookingReference = formData.step2.bookingReference;
+
+  const handleBookingCreated = useCallback(({ bookingId, reference }: { bookingId: string; reference: string }) => {
+    updateFormData('step2', { bookingId, bookingReference: reference });
+    if (onBookingCreated) {
+      onBookingCreated({ bookingId, reference });
+    }
+    // Toast removed to prevent duplicate notifications; the inline alert handles visibility.
+  }, [onBookingCreated, updateFormData]);
   
   // Track items and crewSize changes for automatic price recalculation
   useEffect(() => {
@@ -311,6 +327,8 @@ export default function WhoAndPaymentStepSimple({
   const standardBase = hasMultiLegPrice ? segmentTotal : safeStandardPrice;
 
   // Calendar-based pricing (2-3 weeks forward)
+  // CRITICAL: Use today as anchor, NOT the selected pickupDate
+  // This prevents infinite loop when user selects a date
   const normalizeDate = (value: string | Date | undefined) => {
     const date = value ? new Date(value) : new Date();
     if (Number.isNaN(date.getTime())) {
@@ -322,7 +340,15 @@ export default function WhoAndPaymentStepSimple({
     return date;
   };
 
-  const startDate = normalizeDate(formData.step1.pickupDate);
+  // Fixed anchor date = today (doesn't change when user selects a date)
+  const todayAnchor = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }, []);
+
+  // User's selected date (for initial selection only)
+  const initialPickupDate = normalizeDate(formData.step1.pickupDate);
 
   const buildPriceCalendar = useCallback(
     (basePrice: number, days: number, anchor: Date) => {
@@ -391,8 +417,10 @@ export default function WhoAndPaymentStepSimple({
   );
 
   const priceCalendar = useMemo(() => {
-    return buildPriceCalendar(standardBase, 21, startDate);
-  }, [buildPriceCalendar, standardBase, startDate]);
+    // CRITICAL: Use todayAnchor (fixed) instead of pickupDate (changes)
+    // This prevents infinite loop when user selects a date
+    return buildPriceCalendar(standardBase, 21, todayAnchor);
+  }, [buildPriceCalendar, standardBase, todayAnchor]);
 
   const isSameDay = (a: Date, b: Date) => {
     return a.getFullYear() === b.getFullYear() &&
@@ -400,16 +428,21 @@ export default function WhoAndPaymentStepSimple({
       a.getDate() === b.getDate();
   };
 
+  // Initialize selectedDayKey only once on mount, based on existing pickupDate or first available
   useEffect(() => {
-    // If user already chose a day, keep it; otherwise pick matching startDate or first entry
+    // If user already chose a day, keep it
     if (selectedDayKey) return;
-    const match = priceCalendar.find((entry) => isSameDay(entry.date, startDate));
+    
+    // Try to match with initialPickupDate (from formData)
+    const match = priceCalendar.find((entry) => isSameDay(entry.date, initialPickupDate));
     if (match) {
       setSelectedDayKey(match.key);
     } else if (priceCalendar.length > 0) {
+      // Default to first day (today)
       setSelectedDayKey(priceCalendar[0].key);
     }
-  }, [priceCalendar, startDate, selectedDayKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const handleSelectDay = useCallback((index: number) => {
     const target = priceCalendar[index];
@@ -476,7 +509,7 @@ export default function WhoAndPaymentStepSimple({
   // Show a concise window (up to 10 days) while keeping the selected day visible
   const visiblePriceCalendar = useMemo(() => {
     if (!priceCalendar.length) return [];
-    const maxDays = Math.min(priceCalendar.length, 10);
+    const maxDays = Math.min(priceCalendar.length, 21);
     const base = priceCalendar.slice(0, maxDays);
     if (selectedDayKey) {
       const sel = priceCalendar.find((p) => p.key === selectedDayKey);
@@ -901,107 +934,88 @@ export default function WhoAndPaymentStepSimple({
                 </HStack>
               </VStack>
 
-              {/* Price Cards - Enhanced */}
-              <Flex
-                gap={4}
-                overflowX="auto"
-                pb={2}
-                w="full"
-                flexWrap="nowrap"
-                sx={{
-                  scrollSnapType: 'x mandatory',
-                  '& > *': { scrollSnapAlign: 'start' },
-                  '&::-webkit-scrollbar': { height: '8px' },
-                  '&::-webkit-scrollbar-track': { background: 'rgba(0,0,0,0.2)', borderRadius: '999px' },
-                  '&::-webkit-scrollbar-thumb': { background: 'rgba(59,130,246,0.5)', borderRadius: '999px' },
+              {/* Price Grid - Calendar/Table layout for mobile-first clarity */}
+              <Grid
+                templateColumns={{
+                  base: 'repeat(auto-fit, minmax(140px, 1fr))',
+                  sm: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  md: 'repeat(auto-fit, minmax(170px, 1fr))',
                 }}
+                gap={{ base: 3, md: 4 }}
+                w="full"
               >
-                {visiblePriceCalendar.map((option, idx) => {
+                {visiblePriceCalendar.map((option) => {
                   const level = getPriceLevel(option.price);
                   const cardIndex = priceCalendar.findIndex((p) => p.iso === option.iso);
                   const isSelected = selectedDayKey
                     ? option.key === selectedDayKey
                     : cardIndex === 0;
                   const isCheapest = cardIndex === cheapestIndex;
-                  
-                  // Enhanced color scheme
+
                   const colorScheme = {
                     cheap: {
-                      bg: isSelected 
-                        ? 'linear-gradient(135deg, rgba(16,185,129,0.4), rgba(16,185,129,0.2))'
-                        : 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))',
-                      border: isSelected ? 'green.400' : 'rgba(16,185,129,0.4)',
-                      glow: '0 0 30px rgba(16,185,129,0.3)',
-                      icon: '🟢',
+                      bg: 'linear-gradient(180deg, rgba(16,185,129,0.18), rgba(16,185,129,0.08))',
+                      border: isSelected ? 'green.400' : 'rgba(16,185,129,0.35)',
+                      glow: '0 0 16px rgba(16,185,129,0.35)',
                       textColor: 'green.300',
                     },
                     mid: {
-                      bg: isSelected 
-                        ? 'linear-gradient(135deg, rgba(251,146,60,0.4), rgba(251,146,60,0.2))'
-                        : 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(251,146,60,0.05))',
-                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.4)',
-                      glow: '0 0 30px rgba(251,146,60,0.3)',
-                      icon: '🟠',
+                      bg: 'linear-gradient(180deg, rgba(251,146,60,0.18), rgba(251,146,60,0.08))',
+                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.35)',
+                      glow: '0 0 16px rgba(251,146,60,0.35)',
                       textColor: 'orange.300',
                     },
                     expensive: {
-                      bg: isSelected 
-                        ? 'linear-gradient(135deg, rgba(248,113,113,0.4), rgba(248,113,113,0.2))'
-                        : 'linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.05))',
-                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.4)',
-                      glow: '0 0 30px rgba(248,113,113,0.3)',
-                      icon: '🔴',
+                      bg: 'linear-gradient(180deg, rgba(248,113,113,0.18), rgba(248,113,113,0.08))',
+                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.35)',
+                      glow: '0 0 16px rgba(248,113,113,0.35)',
                       textColor: 'red.300',
                     },
                   };
-                  
+
                   const scheme = colorScheme[level];
 
                   return (
                     <Box
+                      as="button"
+                      type="button"
                       key={option.iso}
-                      minW={{ base: '160px', md: '180px' }}
+                      w="100%"
+                      textAlign="left"
                       p={{ base: 4, md: 5 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
+                      borderRadius="xl"
+                      borderWidth="1px"
                       borderColor={scheme.border}
                       bg={scheme.bg}
-                      boxShadow={isSelected ? scheme.glow : 'none'}
-                      cursor="pointer"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      transform={isSelected ? 'scale(1.02)' : 'scale(1)'}
-                      _hover={{ 
-                        transform: 'scale(1.02)', 
-                        boxShadow: scheme.glow,
-                      }}
+                      boxShadow={isSelected ? scheme.glow : '0 6px 18px rgba(0,0,0,0.35)'}
+                      transition="all 0.2s ease"
                       onClick={() => handleSelectDay(cardIndex)}
                       position="relative"
-                      overflow="hidden"
+                      minH="140px"
+                      _focusVisible={{ outline: '2px solid #3b82f6', outlineOffset: '2px' }}
+                      _active={{ transform: 'translateY(1px)' }}
                     >
-                      {/* Best Deal Ribbon */}
                       {isCheapest && (
-                        <Box
+                        <Badge
                           position="absolute"
-                          top="-1px"
-                          right="-1px"
-                          bg="green.500"
-                          color="white"
-                          fontSize="xs"
-                          fontWeight="bold"
+                          top="10px"
+                          right="10px"
+                          colorScheme="green"
+                          borderRadius="full"
                           px={3}
                           py={1}
-                          borderBottomLeftRadius="lg"
+                          fontSize="xs"
+                          fontWeight="800"
                         >
-                          💰 BEST
-                        </Box>
+                          Best
+                        </Badge>
                       )}
-                      
-                      {/* Selected Indicator */}
+
                       {isSelected && (
                         <Box
                           position="absolute"
-                          top={2}
-                          left={2}
+                          top="10px"
+                          left="10px"
                           w="24px"
                           h="24px"
                           borderRadius="full"
@@ -1009,59 +1023,40 @@ export default function WhoAndPaymentStepSimple({
                           display="flex"
                           alignItems="center"
                           justifyContent="center"
+                          boxShadow="0 0 0 6px rgba(59,130,246,0.25)"
                         >
                           <Text fontSize="sm">✓</Text>
                         </Box>
                       )}
-                      
-                      <VStack align="stretch" spacing={3} pt={isSelected ? 4 : 0}>
-                        {/* Date */}
-                        <VStack align="start" spacing={0}>
-                          <Text color="white" fontWeight="800" fontSize={{ base: 'md', md: 'lg' }}>
+
+                      <VStack align="stretch" spacing={2}>
+                        <VStack align="stretch" spacing={0}>
+                          <Text color="white" fontWeight="800" fontSize={{ base: 'md', md: 'lg' }} noOfLines={2}>
                             {option.label}
                           </Text>
-                          <Text color="gray.400" fontSize="sm" fontWeight="500">
+                          <Text color="gray.400" fontSize="xs" fontWeight="600">
                             {option.weekday}
                           </Text>
                         </VStack>
-                        
-                        {/* Price - Prominent */}
-                        <Box 
-                          py={2} 
-                          px={3} 
-                          bg="rgba(0,0,0,0.3)" 
-                          borderRadius="lg"
-                          textAlign="center"
-                        >
+
+                        <Box pt={1}>
                           <Text 
-                            fontSize={{ base: '2xl', md: '3xl' }} 
+                            fontSize={{ base: '2xl', md: '28px' }} 
                             fontWeight="900" 
                             color="white"
-                            lineHeight="1"
+                            lineHeight="1.1"
                           >
-                            £{option.price.toFixed(0)}
+                            £{option.price.toFixed(2)}
                           </Text>
-                          <Text fontSize="xs" color="gray.500">.{(option.price % 1).toFixed(2).slice(2)}</Text>
+                          <Text fontSize="xs" color={scheme.textColor} fontWeight="700">
+                            {level === 'cheap' ? 'Best value' : level === 'expensive' ? 'Peak' : 'Standard'}
+                          </Text>
                         </Box>
-                        
-                        {/* Badge */}
-                        <Badge 
-                          colorScheme={level === 'cheap' ? 'green' : level === 'expensive' ? 'red' : 'orange'}
-                          borderRadius="full"
-                          px={3}
-                          py={1}
-                          fontSize="xs"
-                          fontWeight="700"
-                          textAlign="center"
-                          textTransform="uppercase"
-                        >
-                          {level === 'cheap' ? '✨ Best Value' : level === 'expensive' ? '📈 Peak' : '⚡ Standard'}
-                        </Badge>
                       </VStack>
                     </Box>
                   );
                 })}
-              </Flex>
+              </Grid>
               
               {/* Selection Confirmation */}
               {selectedPriceOption && (
@@ -1263,6 +1258,27 @@ export default function WhoAndPaymentStepSimple({
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
+              {bookingReference ? (
+                <Alert
+                  status="info"
+                  variant="subtle"
+                  bg="rgba(59, 130, 246, 0.12)"
+                  border="1px solid"
+                  borderColor="blue.400"
+                  borderRadius="lg"
+                >
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle color="white" fontSize="sm">
+                      Booking reference (pending payment)
+                    </AlertTitle>
+                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
+                      {bookingReference} — share this with admin to view or modify before payment.
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              ) : null}
+
               {addressIncomplete && (
                 <Alert
                   status="warning"
@@ -1279,6 +1295,46 @@ export default function WhoAndPaymentStepSimple({
                     </AlertTitle>
                     <AlertDescription color="yellow.50" fontSize="sm">
                       Please provide your full pickup and drop-off address with postcode. City or town alone will not generate a price.
+                    </AlertDescription>
+                  </Box>
+                </Alert>
+              )}
+
+              {capacityCheck && (
+                <Alert
+                  status={(capacityCheck.vansRequired || 1) > 1 ? "error" : "warning"}
+                  variant="subtle"
+                  bg={(capacityCheck.vansRequired || 1) > 1 ? "rgba(239, 68, 68, 0.12)" : "rgba(251, 191, 36, 0.12)"}
+                  border="1px solid"
+                  borderColor={(capacityCheck.vansRequired || 1) > 1 ? "red.400" : "yellow.400"}
+                  borderRadius="lg"
+                >
+                  <AlertIcon />
+                  <Box>
+                    <AlertTitle color="white" fontSize="sm">
+                      Capacity check {(routeSummary?.stops?.length || 0) > 1 ? `(multi-drop: ${(routeSummary?.stops?.length || 1) - 1} drop${(routeSummary?.stops?.length || 1) - 1 === 1 ? '' : 's'})` : ''}
+                    </AlertTitle>
+                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
+                      <Text>
+                        Weight {capacityCheck.weightUtilization?.toFixed?.(0) ?? capacityCheck.weightUtilization ?? 0}% · Volume {capacityCheck.volumeUtilization?.toFixed?.(0) ?? capacityCheck.volumeUtilization ?? 0}% · Items {capacityCheck.itemUtilization?.toFixed?.(0) ?? capacityCheck.itemUtilization ?? 0}%
+                      </Text>
+                      {capacityCheck.vansRequired ? (
+                        <Text mt={1} fontWeight="bold" color={(capacityCheck.vansRequired || 1) > 1 ? "red.200" : "yellow.100"}>
+                          Requires {capacityCheck.vansRequired} van{capacityCheck.vansRequired === 1 ? '' : 's'}
+                        </Text>
+                      ) : null}
+                      {capacityCheck.warnings && capacityCheck.warnings.length > 0 && (
+                        <Text mt={1} color="yellow.100">
+                          {capacityCheck.warnings.slice(0, 2).join(' • ')}
+                          {capacityCheck.warnings.length > 2 ? ' …' : ''}
+                        </Text>
+                      )}
+                      {capacityCheck.recommendations && capacityCheck.recommendations.length > 0 && (
+                        <Text mt={1} color="blue.100">
+                          {capacityCheck.recommendations.slice(0, 2).join(' • ')}
+                          {capacityCheck.recommendations.length > 2 ? ' …' : ''}
+                        </Text>
+                      )}
                     </AlertDescription>
                   </Box>
                 </Alert>
@@ -1601,6 +1657,7 @@ export default function WhoAndPaymentStepSimple({
                     email: formData.step2.customerDetails.email,
                     phone: formData.step2.customerDetails.phone,
                   },
+                  bookingDraftId: formData.step2.bookingDraftId || undefined,
                   pickupAddress: formData.step1.pickupAddress as any,
                   dropoffAddress: formData.step1.dropoffAddress as any,
                   // ✅ CRITICAL FIX: For multi-leg, use items from segments (selectedItems already handles this)
@@ -1630,8 +1687,9 @@ export default function WhoAndPaymentStepSimple({
                   notes: formData.step2.specialInstructions,
                   // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
                   segments: segments.length > 1 ? segments : undefined,
+                  bookingReference: formData.step2.bookingReference || undefined,
                 }}
-                amount={priceReady ? (formData.step2.promotionDetails?.finalAmount || actualPrice) : undefined}
+                amount={priceReady ? (formData.step2.promotionDetails?.finalAmount || actualPrice) : 0}
                 disabled={
                   addressIncomplete ||
                   !priceReady ||
@@ -1640,6 +1698,7 @@ export default function WhoAndPaymentStepSimple({
                   !formData.step2.customerDetails.email ||
                   !formData.step2.customerDetails.phone
                 }
+                onBookingCreated={handleBookingCreated}
                 onSuccess={(sessionId) => {
                   console.log('✅ Payment successful:', sessionId);
                   window.location.href = `/booking-luxury/success?session_id=${sessionId}`;

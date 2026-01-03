@@ -305,6 +305,9 @@ export class GenerateInvoiceTool extends BaseTool {
       p.status === PaymentStatus.paid
     );
 
+    const pickupAddress = order.pickupAddress;
+    const dropoffAddress = order.dropoffAddress;
+
     const invoiceData = {
       invoiceNumber: `INV-${order.reference}`,
       orderId: order.id,
@@ -316,7 +319,7 @@ export class GenerateInvoiceTool extends BaseTool {
       },
       lineItems: [
         {
-          description: `Delivery from ${order.pickupAddress?.label ?? order.pickupAddress?.postcode} to ${order.dropoffAddress?.label ?? order.dropoffAddress?.postcode}`,
+          description: `Delivery from ${pickupAddress?.label ?? pickupAddress?.postcode} to ${dropoffAddress?.label ?? dropoffAddress?.postcode}`,
           quantity: 1,
           unitPrice: order.totalGBP,
           total: order.totalGBP,

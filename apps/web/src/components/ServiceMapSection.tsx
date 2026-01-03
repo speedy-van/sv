@@ -15,7 +15,7 @@ const ServiceMapSection = () => {
   }, {} as Record<string, UKCity[]>);
 
   return (
-    <Box py={{ base: 12, md: 16 }} bg="bg.surface">
+    <Box py={{ base: 12, md: 16 }} bg="transparent">
       <Container maxW="container.xl">
         <VStack spacing={8}>
           <Box 
@@ -24,10 +24,10 @@ const ServiceMapSection = () => {
             mx="auto"
             p={{ base: 6, md: 8 }}
             borderRadius="2xl"
-            borderWidth="2px"
-            borderColor="neon.500"
-            bg="rgba(0,194,255,0.05)"
-            boxShadow="0 0 30px rgba(0,194,255,0.2), inset 0 0 20px rgba(0,194,255,0.1)"
+            borderWidth="1px"
+            borderColor="#1f2937"
+            bg="rgba(0,0,0,0.9)"
+            boxShadow="0 10px 35px rgba(0,0,0,0.6)"
             position="relative"
             _before={{
               content: '""',
@@ -38,7 +38,7 @@ const ServiceMapSection = () => {
               bottom: 0,
               borderRadius: '2xl',
               padding: '2px',
-              background: 'linear-gradient(135deg, rgba(0,194,255,0.5), rgba(0,209,143,0.5))',
+              background: 'linear-gradient(135deg, rgba(0,194,255,0.25), rgba(0,209,143,0.25))',
               WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               WebkitMaskComposite: 'xor',
               maskComposite: 'exclude',
@@ -54,7 +54,7 @@ const ServiceMapSection = () => {
               🇬🇧 UK Service Coverage
             </Heading>
             <Text 
-              color="neon.300" 
+              color="whiteAlpha.700" 
               fontSize={{ base: 'md', md: 'lg' }}
               fontWeight="medium"
             >
@@ -69,17 +69,17 @@ const ServiceMapSection = () => {
                 key={country}
                 p={6}
                 borderRadius="xl"
-                borderWidth="2px"
-                borderColor="#00C2FF"
-                bg="rgba(0,194,255,0.03)"
-                boxShadow="0 0 20px rgba(0,194,255,0.3)"
+                borderWidth="1px"
+                borderColor="#1f2937"
+                bg="rgba(0,0,0,0.9)"
+                boxShadow="0 10px 35px rgba(0,0,0,0.6)"
                 position="relative"
                 overflow="visible"
                 className="stat-card-neon"
                 transition="all 0.3s ease"
                 _hover={{
                   borderColor: 'neon.400',
-                  boxShadow: '0 0 30px rgba(0,194,255,0.5)',
+                  boxShadow: '0 0 30px rgba(0,194,255,0.4)',
                   transform: 'translateY(-4px)',
                 }}
                 sx={{

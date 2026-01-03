@@ -3,10 +3,6 @@ import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-04-10',
-});
-
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -63,11 +59,17 @@ export async function POST(
       });
     }
 
+    // Lazily initialise Stripe to avoid hard failures when key is missing
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const stripe = stripeSecretKey
+      ? new Stripe(stripeSecretKey, { apiVersion: '2024-04-10' })
+      : null;
+
     // Check if booking has a Stripe Payment Intent
     let stripePaymentStatus = null;
     let stripePaymentIntent = null;
 
-    if (booking.stripePaymentIntentId) {
+    if (booking.stripePaymentIntentId && stripe) {
       try {
         console.log('💳 Checking Stripe payment intent:', booking.stripePaymentIntentId);
         stripePaymentIntent = await stripe.paymentIntents.retrieve(booking.stripePaymentIntentId);
@@ -82,6 +84,8 @@ export async function POST(
       } catch (stripeError) {
         console.error('❌ Error fetching Stripe payment intent:', stripeError);
       }
+    } else if (booking.stripePaymentIntentId && !stripe) {
+      console.warn('⚠️ STRIPE_SECRET_KEY is missing; skipping payment intent verification');
     }
 
     // Determine if we should confirm the booking
@@ -98,6 +102,11 @@ export async function POST(
         }
       });
     }
+
+    // Verify admin user exists to avoid FK violations in audit logs
+    const adminUserRecord = user?.id
+      ? await prisma.user.findUnique({ where: { id: user.id }, select: { id: true, email: true } })
+      : null;
 
     // Manually confirm the booking
     const confirmedBooking = await prisma.$transaction(async (tx) => {
@@ -119,7 +128,7 @@ export async function POST(
           action: 'booking_manually_confirmed',
           targetType: 'booking',
           targetId: booking.id,
-          userId: user.id,
+          userId: adminUserRecord?.id || null,
           details: {
             reference: booking.reference,
             previousStatus: booking.status,
@@ -145,16 +154,25 @@ export async function POST(
 
     // Try to notify available drivers
     try {
-      const notifyResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/admin/notify-drivers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: booking.id }),
-      });
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
 
-      if (notifyResponse.ok) {
-        console.log('✅ Drivers notified about confirmed booking');
+      if (!baseUrl) {
+        console.warn('⚠️ Missing base URL; skipping driver notifications');
       } else {
-        console.error('⚠️ Failed to notify drivers');
+        const notifyResponse = await fetch(`${baseUrl}/api/admin/notify-drivers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: booking.id }),
+        });
+
+        if (notifyResponse.ok) {
+          console.log('✅ Drivers notified about confirmed booking');
+        } else {
+          console.error('⚠️ Failed to notify drivers', {
+            status: notifyResponse.status,
+            statusText: notifyResponse.statusText
+          });
+        }
       }
     } catch (notifyError) {
       console.error('⚠️ Error notifying drivers:', notifyError);

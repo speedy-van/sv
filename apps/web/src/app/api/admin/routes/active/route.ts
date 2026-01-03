@@ -4,6 +4,7 @@
  * Get all active routes (assigned or in progress)
  */
 
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 

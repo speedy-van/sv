@@ -209,7 +209,7 @@ export async function GET(req: NextRequest) {
     ...paymentFilter,
     ...(driver
       ? {
-          driver: {
+          Driver: {
             User: {
               name: { contains: driver, mode: 'insensitive' },
             },
@@ -220,12 +220,12 @@ export async function GET(req: NextRequest) {
       ? {
           OR: [
             {
-              pickupAddress: {
+              BookingAddress_Booking_pickupAddressIdToBookingAddress: {
                 label: { contains: area, mode: 'insensitive' as any },
               },
             },
             {
-              dropoffAddress: {
+              BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
                 label: { contains: area, mode: 'insensitive' as any },
               },
             },
@@ -237,10 +237,10 @@ export async function GET(req: NextRequest) {
           OR: [
             { reference: { contains: q, mode: 'insensitive' as any } },
             {
-              pickupAddress: { label: { contains: q, mode: 'insensitive' as any } },
+              BookingAddress_Booking_pickupAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' as any } },
             },
             {
-              dropoffAddress: { label: { contains: q, mode: 'insensitive' as any } },
+              BookingAddress_Booking_dropoffAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' as any } },
             },
             { customerName: { contains: q, mode: 'insensitive' as any } },
             { customerEmail: { contains: q, mode: 'insensitive' as any } },
@@ -428,14 +428,23 @@ export async function GET(req: NextRequest) {
     },
   });
 
+  // Transform segment data (no transformation needed - already using correct names)
+  const transformedSegments = bookingSegments;
+
   // Create map of booking ID to segments
   const segmentMap = new Map<string, any[]>();
-  bookingSegments.forEach(segment => {
+  transformedSegments.forEach(segment => {
     if (!segmentMap.has(segment.bookingId)) {
       segmentMap.set(segment.bookingId, []);
     }
     segmentMap.get(segment.bookingId)!.push(segment);
   });
+
+  // Transform orders to use short relation names  
+  const transformedOrdersData = orders.map(order => ({
+    ...order,
+    // Relations already use correct names from Prisma include
+  }));
 
   // ✅ FIX: Detect return journeys by checking if this booking's addresses match another booking's reversed addresses
   // This handles cases where return journeys are created as separate bookings (SV-000080, SV-000079, etc.)
@@ -452,7 +461,7 @@ export async function GET(req: NextRequest) {
     // Check 3: Check if this booking's pickup/dropoff match another booking's dropoff/pickup (reversed)
     // This means it's a return journey
     if (order.pickupAddress?.id && order.dropoffAddress?.id) {
-      const matchingParentBooking = orders.find((otherOrder: any) => {
+      const matchingParentBooking = transformedOrdersData.find((otherOrder: any) => {
         // Skip same booking
         if (otherOrder.id === order.id) return false;
         
@@ -485,7 +494,7 @@ export async function GET(req: NextRequest) {
   };
 
   // Process all orders and detect return journeys
-  const ordersWithMeta = await Promise.all(orders.map(async (order) => {
+  const ordersWithMeta = await Promise.all(transformedOrdersData.map(async (order) => {
     const segments = segmentMap.get(order.id) || [];
     const hasMultipleSegments = segments.length > 1;
     const returnSegments = segments.filter((s: any) => s.segmentType?.toLowerCase().includes('return'));

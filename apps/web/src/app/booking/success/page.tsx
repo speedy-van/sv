@@ -87,11 +87,27 @@ function BookingSuccessContent() {
           >
             <Icon as={FaCheckCircle} color="green.500" boxSize={16} />
           </Box>
-          <Heading size="2xl" color="green.600">
-            Booking Confirmed!
+          <Heading 
+            size="2xl" 
+            color="white"
+            textShadow="0 10px 30px rgba(34,197,94,0.45), 0 3px 12px rgba(0,0,0,0.4)"
+            bgGradient="linear(to-r, #34d399, #10b981, #22d3ee)"
+            bgClip="text"
+          >
+            Booking Confirmed
           </Heading>
-          <Text fontSize="lg" color="gray.600">
-            Your booking has been successfully created and payment confirmed.
+          <Text 
+            fontSize="lg" 
+            color="white"
+            bg="rgba(15,23,42,0.6)"
+            border="1px solid"
+            borderColor="rgba(34,197,94,0.25)"
+            borderRadius="lg"
+            px={4}
+            py={3}
+            boxShadow="0 10px 30px rgba(0,0,0,0.3), 0 0 24px rgba(34,197,94,0.18)"
+          >
+            🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.
           </Text>
         </VStack>
         

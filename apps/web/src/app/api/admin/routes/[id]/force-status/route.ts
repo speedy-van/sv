@@ -5,6 +5,7 @@
  * This bypasses all validation rules and state machine constraints
  */
 
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';

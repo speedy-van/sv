@@ -892,6 +892,7 @@ export class ComprehensivePricingEngine {
     const weightUtilization = (totalWeight / config.vanSpecs.maxWeightKg) * 100;
     const volumeUtilization = (totalVolume / config.vanSpecs.maxVolumeM3) * 100;
     const itemUtilization = (totalItems / config.vanSpecs.maxItems) * 100;
+    const clampUtilization = (value: number) => Math.min(300, Math.round(value * 100) / 100); // prevent schema rejection
 
     // Calculate required number of vans based on utilization
     const vansNeededByWeight = Math.ceil(weightUtilization / 100);
@@ -912,9 +913,10 @@ export class ComprehensivePricingEngine {
 
     return {
       isValid,
-      weightUtilization: Math.round(weightUtilization * 100) / 100,
-      volumeUtilization: Math.round(volumeUtilization * 100) / 100,
-      itemUtilization: Math.round(itemUtilization * 100) / 100,
+      // Clamp to 300% to align with CapacityCheckSchema (supports up to 3 vans)
+      weightUtilization: clampUtilization(weightUtilization),
+      volumeUtilization: clampUtilization(volumeUtilization),
+      itemUtilization: clampUtilization(itemUtilization),
       warnings,
       recommendations,
       overCapacityItems: overCapacityItems.length > 0 ? overCapacityItems : undefined,

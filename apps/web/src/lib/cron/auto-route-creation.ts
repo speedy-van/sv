@@ -6,10 +6,19 @@
  */
 
 import cron, { ScheduledTask } from 'node-cron';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getPusherServer } from '@/lib/pusher';
 import { multiDropEligibilityEngine } from '@/lib/services/multi-drop-eligibility-engine';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
+
+type BookingWithAddresses = Prisma.BookingGetPayload<{
+  include: {
+    BookingItem: true;
+    pickupAddress: true;
+    dropoffAddress: true;
+  };
+}>;
 
 /**
  * Get or create a system driver for unassigned routes
@@ -104,19 +113,12 @@ async function createRoutesAutomatically() {
         BookingItem: true,
         pickupAddress: true,
         dropoffAddress: true,
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
       orderBy: [
         { priority: 'desc' },
         { scheduledAt: 'asc' },
       ],
-    });
+    }) as BookingWithAddresses[];
 
     if (pendingBookings.length === 0) {
       console.log('✅ No pending bookings to process');
@@ -137,22 +139,30 @@ async function createRoutesAutomatically() {
         }
 
         // Analyze eligibility
+      const pickupAddress = booking.pickupAddress;
+      const dropoffAddress = booking.dropoffAddress;
+
+      if (!pickupAddress || !dropoffAddress) {
+        console.warn(`Skipping booking ${booking.id} due to missing address relations`);
+        continue;
+      }
+
       const bookingRequest = {
           id: booking.id,
         pickup: {
-          address: booking.pickupAddress.label,
-          postcode: booking.pickupAddress.postcode,
+          address: pickupAddress.label,
+          postcode: pickupAddress.postcode,
           coordinates: {
-            lat: booking.pickupAddress.lat || 0,
-            lng: booking.pickupAddress.lng || 0,
+            lat: pickupAddress.lat || 0,
+            lng: pickupAddress.lng || 0,
           },
         },
         dropoff: {
-          address: booking.dropoffAddress.label,
-          postcode: booking.dropoffAddress.postcode,
+          address: dropoffAddress.label,
+          postcode: dropoffAddress.postcode,
           coordinates: {
-            lat: booking.dropoffAddress.lat || 0,
-            lng: booking.dropoffAddress.lng || 0,
+            lat: dropoffAddress.lat || 0,
+            lng: dropoffAddress.lng || 0,
           },
         },
           items: booking.BookingItem.map(item => ({

@@ -29,8 +29,11 @@ export function useKeyboardShortcuts(
       if (!enabled) return;
 
       const matchingShortcut = shortcuts.find((shortcut) => {
+        // Guard against undefined key values
+        if (!shortcut.key || !event.key) return false;
+        
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase() ||
-          event.code.toLowerCase() === shortcut.key.toLowerCase();
+          event.code?.toLowerCase() === shortcut.key.toLowerCase();
 
         const ctrlMatch = shortcut.ctrl ? event.ctrlKey : !event.ctrlKey;
         const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;

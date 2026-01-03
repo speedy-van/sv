@@ -6,14 +6,14 @@ module.exports = {
     'prettier'
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'react'],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
     ecmaFeatures: {
       jsx: true
     },
-    project: './tsconfig.json'
+    project: './tsconfig.eslint.json'
   },
   env: {
     browser: true,

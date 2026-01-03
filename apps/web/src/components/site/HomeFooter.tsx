@@ -80,10 +80,12 @@ const HomeFooter: React.FC = () => {
   return (
     <Box
       as="footer"
-      bg="gray.900"
+      bg="#000000"
       color="white"
       width="100%"
       mt={16}
+      position="relative"
+      overflow="hidden"
       sx={{
         '& *': {
           boxSizing: 'border-box',
@@ -93,8 +95,9 @@ const HomeFooter: React.FC = () => {
       {/* Trust Indicators Section */}
       <Box
         borderTop="1px solid"
-        borderColor="whiteAlpha.200"
+        borderColor="rgba(255,255,255,0.08)"
         py={{ base: 12, md: 16 }}
+        bg="transparent"
       >
         <Container maxW="container.xl">
           <Flex
@@ -109,12 +112,11 @@ const HomeFooter: React.FC = () => {
                 px={4}
                 py={2}
                 borderRadius="xl"
-                bg="whiteAlpha.100"
-                backdropFilter="blur(10px)"
-                border="1px solid"
-                borderColor="whiteAlpha.200"
+                bg="rgba(0,0,0,0.9)"
+                backdropFilter="blur(8px)"
+                border="1px solid #1f2937"
                 _hover={{
-                  bg: 'whiteAlpha.200',
+                  bg: 'rgba(0,0,0,0.95)',
                   transform: 'translateY(-2px)',
                   borderColor: item.color,
                 }}
@@ -139,6 +141,7 @@ const HomeFooter: React.FC = () => {
         py={{ base: 12, md: 16 }} 
         w="100%"
         className="home-footer-main"
+        bg="transparent"
       >
         <Container maxW="1400px" px={{ base: 4, md: 8 }}>
           <Box

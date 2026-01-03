@@ -38,9 +38,11 @@ export class GetUnassignedOrdersTool extends BaseTool {
     });
 
     const normalizedOrders = orders.map(order => {
-      const { BookingItem, ...rest } = order;
+      const { BookingItem, pickupAddress, dropoffAddress, ...rest } = order;
       return {
         ...rest,
+        pickupAddress,
+        dropoffAddress,
         items: BookingItem,
       };
     });
@@ -166,6 +168,7 @@ export class FindBestDriverForOrderTool extends BaseTool {
       where: { id: input.orderId },
       include: {
         pickupAddress: true,
+        dropoffAddress: true,
         BookingItem: true,
       },
     });
@@ -358,9 +361,18 @@ export class GetOrderDetailsTool extends BaseTool {
       };
     }
 
-    const { BookingItem, ...orderRest } = order;
+    const {
+      BookingItem,
+      pickupAddress,
+      dropoffAddress,
+      driver,
+      ...orderRest
+    } = order;
     const normalizedOrder = {
       ...orderRest,
+      pickupAddress,
+      dropoffAddress,
+      driver,
       items: BookingItem,
     };
 

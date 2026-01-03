@@ -18,7 +18,7 @@ export async function POST(
 
     const { code } = await params;
 
-    // Fetch booking with property details
+    // Fetch booking with property details using current Prisma relation names
     const booking = await prisma.booking.findUnique({
       where: { reference: code },
       include: {
@@ -34,11 +34,15 @@ export async function POST(
       );
     }
 
+    // Property details
+    const pickupProperty = booking.pickupProperty;
+    const dropoffProperty = booking.dropoffProperty;
+
     // Check if order needs floor warning
     // Only warn if floors is explicitly 0, null, or undefined
     // If floors > 0, customer provided floor number, so no warning needed
-    const pickupFloors = (booking as any).pickupProperty?.floors;
-    const dropoffFloors = (booking as any).dropoffProperty?.floors;
+    const pickupFloors = pickupProperty?.floors;
+    const dropoffFloors = dropoffProperty?.floors;
     let hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
     let hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
 
@@ -90,8 +94,8 @@ export async function POST(
       reference: booking.reference,
       customerEmail: booking.customerEmail,
       customerName: booking.customerName,
-      pickupProperty: (booking as any).pickupProperty || undefined,
-      dropoffProperty: (booking as any).dropoffProperty || undefined,
+      pickupProperty: pickupProperty || undefined,
+      dropoffProperty: dropoffProperty || undefined,
       pickupAddressMeta: pickupMeta,
       dropoffAddressMeta: dropoffMeta,
     });

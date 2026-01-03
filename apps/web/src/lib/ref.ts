@@ -33,6 +33,7 @@ export async function generateReference(type: 'booking' | 'route' | 'driver' | '
             type: 'unified',
             lastNumber: 0,
             prefix: 'SV',
+            updatedAt: new Date(),
           }
         });
       }

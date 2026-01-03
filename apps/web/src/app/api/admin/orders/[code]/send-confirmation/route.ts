@@ -18,8 +18,9 @@ export async function POST(
     const user = authResult;
 
     const { code } = await params;
+    const hasEmailProvider = Boolean(process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
 
-    // Fetch booking with all related data
+    // Fetch booking with the canonical relation names from the current Prisma schema
     const booking = await prisma.booking.findUnique({
       where: { reference: code },
       include: {
@@ -38,6 +39,12 @@ export async function POST(
       );
     }
 
+    // Related data with clear aliases
+    const pickupAddress = booking.pickupAddress;
+    const dropoffAddress = booking.dropoffAddress;
+    const pickupProperty = booking.pickupProperty;
+    const dropoffProperty = booking.dropoffProperty;
+
     // Check if order is in a valid state for confirmation email
     if (booking.status === 'CANCELLED') {
       return NextResponse.json(
@@ -49,10 +56,23 @@ export async function POST(
     // Check for floor number issues
     // Only warn if floors is explicitly 0, null, or undefined
     // If floors > 0, customer provided floor number, so no warning needed
-    const pickupFloors = booking.pickupProperty?.floors;
-    const dropoffFloors = booking.dropoffProperty?.floors;
+    const pickupFloors = pickupProperty?.floors;
+    const dropoffFloors = dropoffProperty?.floors;
     const hasPickupFloorIssue = pickupFloors === null || pickupFloors === undefined || pickupFloors === 0;
     const hasDropoffFloorIssue = dropoffFloors === null || dropoffFloors === undefined || dropoffFloors === 0;
+    const hasFloorWarnings = hasPickupFloorIssue || hasDropoffFloorIssue;
+
+    // In environments without configured email provider, skip sending but respond success to avoid blocking admins
+    if (!hasEmailProvider) {
+      console.warn('⚠️ Email provider not configured (RESEND_API_KEY or SENDGRID_API_KEY missing). Skipping confirmation email.');
+      await logAudit(user.id, 'send_confirmation_email_skipped', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, skipped: true, reason: 'Email provider not configured', sentBy: user.email } });
+      return NextResponse.json({
+        success: true,
+        message: 'Email sending is disabled in this environment (no provider configured).',
+        emailSent: false,
+        hasFloorWarnings,
+      });
+    }
 
     // Prepare email data
     const confirmedTotalInPounds = booking.totalGBP / 100;
@@ -60,8 +80,8 @@ export async function POST(
       customerEmail: booking.customerEmail,
       orderNumber: booking.reference,
       customerName: booking.customerName,
-      pickupAddress: booking.pickupAddress?.label || 'Address not specified',
-      dropoffAddress: booking.dropoffAddress?.label || 'Address not specified',
+      pickupAddress: pickupAddress?.label || 'Address not specified',
+      dropoffAddress: dropoffAddress?.label || 'Address not specified',
       scheduledDate: booking.scheduledAt.toLocaleDateString('en-GB', {
         weekday: 'long',
         day: 'numeric',
@@ -89,7 +109,7 @@ export async function POST(
         customer: {
           name: booking.customerName,
           email: booking.customerEmail,
-          address: booking.pickupAddress?.label || 'Address not specified',
+          address: pickupAddress?.label || 'Address not specified',
         },
         items: [{
           description: 'Moving Service',
@@ -144,7 +164,7 @@ export async function POST(
     }
 
     // Log audit trail
-    await logAudit(user.id, 'send_confirmation_email', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue, sentBy: user.email } });
+    await logAudit(user.id, 'send_confirmation_email', booking.id, { targetType: 'booking', before: null, after: { recipient: booking.customerEmail, hasFloorWarnings, sentBy: user.email } });
 
     console.log('✅ Manual confirmation email sent successfully:', {
       orderRef: booking.reference,
@@ -157,7 +177,7 @@ export async function POST(
       success: true,
       message: 'Confirmation email sent successfully',
       emailSent: true,
-      hasFloorWarnings: hasPickupFloorIssue || hasDropoffFloorIssue,
+      hasFloorWarnings,
     });
 
   } catch (error) {

@@ -155,12 +155,13 @@ export default function UnifiedOperationsDashboard() {
       return;
     }
 
-    const PUSHER_KEY = '407cb06c423e6c032e9c';
-    const PUSHER_CLUSTER = 'eu';
+    const PUSHER_KEY = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    const PUSHER_CLUSTER = process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu';
 
-    console.log('✅ Pusher found! Initializing...');
-    console.log('🔑 Pusher Key:', PUSHER_KEY);
-    console.log('🌍 Pusher Cluster:', PUSHER_CLUSTER);
+    if (!PUSHER_KEY) {
+      console.warn('⚠️ Pusher key missing; skipping real-time subscriptions.');
+      return;
+    }
 
     const pusher = new (window as any).Pusher(PUSHER_KEY, {
       cluster: PUSHER_CLUSTER,
@@ -171,7 +172,7 @@ export default function UnifiedOperationsDashboard() {
     });
 
     pusher.connection.bind('error', (err: any) => {
-      console.error('❌ Pusher connection error:', err);
+      console.warn('⚠️ Pusher connection issue (check key/cluster/network):', err?.message || err);
     });
 
     const notificationsChannel = pusher.subscribe('admin-notifications');

@@ -49,6 +49,8 @@ import {
   ModalFooter,
   Textarea,
   Circle,
+  Wrap,
+  WrapItem,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -316,6 +318,16 @@ export function OrdersTable({
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [draftResult, setDraftResult] = useState<any | null>(null);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [isDraftLoading, setIsDraftLoading] = useState(false);
+  const [draftsList, setDraftsList] = useState<any[]>([]);
+  const [isDraftsListOpen, setIsDraftsListOpen] = useState(false);
+  const [isDraftsListLoading, setIsDraftsListLoading] = useState(false);
+  const [draftCount, setDraftCount] = useState<number>(0);
+  const [draftStatusFilter, setDraftStatusFilter] = useState<string>('');
+  const [draftFromDate, setDraftFromDate] = useState<string>('');
+  const [draftToDate, setDraftToDate] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   const [dateRange, setDateRange] = useState('');
@@ -635,9 +647,9 @@ export function OrdersTable({
         duration: 5000,
         isClosable: true,
       });
-      // Reload orders to get updated assignment status
+      // Reload orders to get updated assignment status - use true to replace data and avoid duplicates
       if (!isLoadingRef.current) {
-        loadOrders(false);
+        loadOrders(true);
       }
     });
 
@@ -651,9 +663,9 @@ export function OrdersTable({
         duration: 5000,
         isClosable: true,
       });
-      // Reload orders to get updated assignment status
+      // Reload orders to get updated assignment status - use true to replace data and avoid duplicates
       if (!isLoadingRef.current) {
-        loadOrders(false);
+        loadOrders(true);
       }
     });
 
@@ -661,9 +673,9 @@ export function OrdersTable({
     const notificationsChannel = pusher.subscribe('admin-notifications');
     notificationsChannel.bind('driver-declined-job', (data: any) => {
       console.log('⚠️ Driver declined job via Pusher:', data);
-      // Reload orders to get updated assignment status
+      // Reload orders to get updated assignment status - use true to replace data and avoid duplicates
       if (!isLoadingRef.current) {
-        loadOrders(false);
+        loadOrders(true);
       }
     });
 
@@ -737,7 +749,14 @@ export function OrdersTable({
     // Removed excessive logging to prevent console spam
     if (!orders.length) return { filteredOrders: [], unpaidOrdersCount: 0, newOrdersCountFromFiltered: 0 };
 
-    let filtered = orders;
+    // Remove duplicates based on order.id first
+    const uniqueOrdersMap = new Map<string, Order>();
+    orders.forEach(order => {
+      if (!uniqueOrdersMap.has(order.id)) {
+        uniqueOrdersMap.set(order.id, order);
+      }
+    });
+    let filtered = Array.from(uniqueOrdersMap.values());
     let unpaidCount = 0;
 
     // Count unpaid orders first
@@ -922,6 +941,105 @@ export function OrdersTable({
       setNewOrdersCount(newOrdersCountFromFiltered);
     }
   }, [newOrdersCountFromFiltered]);
+
+  // Quick search by reference: try draft first, otherwise fall back to orders list
+  const handleQuickReferenceSearch = useCallback(async () => {
+    const ref = searchQuery.trim();
+    if (!ref) return;
+    setIsDraftLoading(true);
+    try {
+      const draftRes = await fetch(`/api/admin/booking-luxury/draft/${encodeURIComponent(ref)}`);
+      if (draftRes.ok) {
+        const draftJson = await draftRes.json();
+        if (draftJson?.success && draftJson?.draft) {
+          setDraftResult(draftJson.draft);
+          setIsDraftModalOpen(true);
+          toast({
+            title: 'Draft found',
+            description: `Reference ${ref}`,
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          });
+          return;
+        }
+      }
+
+      await loadOrders(true);
+      toast({
+        title: 'Order search executed',
+        description: `No draft found for ${ref}. Showing orders with this reference/search.`,
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('❌ Quick reference search failed', error);
+      toast({
+        title: 'Search failed',
+        description: 'Unable to search by reference. Please try again.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsDraftLoading(false);
+    }
+  }, [searchQuery, loadOrders, toast]);
+
+  // Load drafts list for admin view
+  const handleLoadDraftsList = useCallback(async () => {
+    setIsDraftsListLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery.trim());
+      if (draftStatusFilter) params.set('status', draftStatusFilter);
+      if (draftFromDate) params.set('from', draftFromDate);
+      if (draftToDate) params.set('to', draftToDate);
+      const res = await fetch(`/api/admin/booking-luxury/drafts?${params.toString()}`);
+      const json = await res.json();
+      if (json?.success) {
+        setDraftsList(json.drafts || []);
+        setDraftCount(json.pagination?.total || (json.drafts?.length || 0));
+        setIsDraftsListOpen(true);
+      } else {
+        toast({
+          title: 'Failed to load drafts',
+          description: json?.error || 'Unknown error',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('❌ Failed to load drafts list', error);
+      toast({
+        title: 'Failed to load drafts',
+        description: 'Please try again.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsDraftsListLoading(false);
+    }
+  }, [searchQuery, toast]);
+
+  // Fetch draft count badge
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await fetch('/api/admin/booking-luxury/drafts?take=1');
+        const json = await res.json();
+        if (json?.success) {
+          setDraftCount(json.pagination?.total || 0);
+        }
+      } catch (err) {
+        console.warn('⚠️ Unable to fetch draft count', err);
+      }
+    };
+    fetchCount();
+  }, []);
 
   // Export to CSV function
   const handleExportToCSV = useCallback((ordersToExport: Order[] = filteredOrders) => {
@@ -1346,7 +1464,42 @@ export function OrdersTable({
       
       // API returns data in data.data.drivers structure
       if (data.success && data.data && data.data.drivers) {
-        const drivers = data.data.drivers;
+        let drivers = data.data.drivers as any[];
+
+        // Fallback: if no drivers returned, pull active drivers list and adapt shape
+        if (drivers.length === 0) {
+          console.warn('⚠️ No drivers from available endpoint, attempting fallback to active driver list');
+          try {
+            const fallbackResponse = await fetch('/api/admin/drivers?status=active&limit=200');
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json();
+              const fallbackDrivers = fallbackData?.drivers || [];
+              if (fallbackDrivers.length > 0) {
+                drivers = fallbackDrivers.map((driver: any) => ({
+                  id: driver.id,
+                  name: driver.name,
+                  email: driver.email,
+                  status: driver.status,
+                  onboardingStatus: driver.onboardingStatus,
+                  DriverAvailability: driver.DriverAvailability || {
+                    status: driver.status === 'suspended' ? 'suspended' : 'unknown',
+                    lastSeenAt: null,
+                    lastLat: null,
+                    lastLng: null,
+                  },
+                  activeJobs: [],
+                  isAvailable: driver.status === 'active' && driver.onboardingStatus === 'approved',
+                  totalActiveJobs: 0,
+                  availabilityReason: driver.status === 'suspended' ? 'Suspended' : 'Fallback active driver',
+                }));
+                console.log(`✅ Fallback loaded ${drivers.length} active drivers`);
+              }
+            }
+          } catch (fallbackError) {
+            console.error('❌ Fallback driver fetch failed:', fallbackError);
+          }
+        }
+
         setAvailableDrivers(drivers);
         console.log(`📋 Loaded ${drivers.length} available drivers`);
         
@@ -1673,14 +1826,20 @@ export function OrdersTable({
       const data = await response.json();
 
       if (response.ok && data.success) {
+        const desc = data.emailSent === false
+          ? 'Email sending is disabled in this environment; no email sent.'
+          : `Confirmation email sent to ${order.customerEmail || 'customer'}`;
+
         toast({
           title: 'Confirmation Sent',
-          description: `Confirmation email sent to ${order.customerEmail || 'customer'}`,
-          status: 'success',
-          duration: 4000,
+          description: desc,
+          status: data.emailSent === false ? 'warning' : 'success',
+          duration: 5000,
+          isClosable: true,
         });
       } else {
-        throw new Error(data.error || 'Failed to send confirmation');
+        const message = data?.error || data?.details || 'Failed to send confirmation';
+        throw new Error(message);
       }
     } catch (error) {
       console.error('Error sending confirmation:', error);
@@ -1688,7 +1847,8 @@ export function OrdersTable({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to send confirmation email',
         status: 'error',
-        duration: 5000,
+        duration: 6000,
+        isClosable: true,
       });
     }
   };
@@ -3407,6 +3567,42 @@ export function OrdersTable({
                     )}
                   </Box>
 
+                  {(() => {
+                    const addOns = (order as any)?.customerPreferences?.addOns || {};
+                    const chips: Array<{ label: string; color: string }> = [];
+                    if (addOns.packing) chips.push({ label: 'Packing', color: '#a855f7' });
+                    if (addOns.furnitureProtection || addOns.insurance) {
+                      const tier = addOns.insurance ? ` (${String(addOns.insurance).toUpperCase()})` : '';
+                      chips.push({ label: `Protection${tier}`, color: '#3b82f6' });
+                    }
+                    const hasAssembly =
+                      addOns.assembly ||
+                      (Array.isArray(addOns.disassembly) && addOns.disassembly.length > 0) ||
+                      (Array.isArray(addOns.reassembly) && addOns.reassembly.length > 0);
+                    if (hasAssembly) chips.push({ label: 'Assembly', color: '#14b8a6' });
+
+                    if (chips.length === 0) return null;
+
+                    return (
+                      <HStack spacing={2} flexWrap="wrap">
+                        {chips.map(chip => (
+                          <Badge
+                            key={chip.label}
+                            bg={chip.color}
+                            color="white"
+                            px={2.5}
+                            py={1}
+                            borderRadius="full"
+                            fontSize="xs"
+                            fontWeight="bold"
+                          >
+                            {chip.label}
+                          </Badge>
+                        ))}
+                      </HStack>
+                    );
+                  })()}
+
                   <VStack align="start" spacing={2}>
                     <HStack spacing={2}>
                       <Icon as={FaMapMarkerAlt} color="#10b981" boxSize={4} />
@@ -4409,6 +4605,11 @@ export function OrdersTable({
                           placeholder="Search orders..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleQuickReferenceSearch();
+                        }
+                      }}
                           bg="#000000"
                           color="#FFFFFF"
                           borderColor="#333333"
@@ -4418,6 +4619,30 @@ export function OrdersTable({
                         />
                       </InputGroup>
                     </Box>
+
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      onClick={handleQuickReferenceSearch}
+                      isLoading={isDraftLoading}
+                      loadingText="Searching"
+                    >
+                      Quick Find (Ref)
+                    </Button>
+
+                    <Badge colorScheme="purple" fontSize="0.9em">
+                      Drafts: {draftCount}
+                    </Badge>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleLoadDraftsList}
+                      isLoading={isDraftsListLoading}
+                      loadingText="Loading drafts"
+                    >
+                      View Drafts
+                    </Button>
 
                     {/* Compact Dropdowns */}
                     <Select
@@ -5154,6 +5379,356 @@ export function OrdersTable({
               onClick={handleRemoveOrder}
             >
               {removalType === 'all' ? 'Remove All Orders' : 'Remove Order'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Draft quick-view modal */}
+      <Modal isOpen={isDraftModalOpen} onClose={() => setIsDraftModalOpen(false)} size="lg" isCentered>
+        <ModalOverlay />
+        <ModalContent bg="#0f172a" borderColor="#334155" borderWidth="1px">
+          <ModalHeader color="#fff">
+            Draft Booking - {draftResult?.reference || 'Unknown'}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody color="#e2e8f0">
+            <VStack align="stretch" spacing={3}>
+              <HStack justify="space-between">
+                <Text>Status:</Text>
+                <Badge colorScheme="blue">{draftResult?.status || 'DRAFT'}</Badge>
+              </HStack>
+              <HStack justify="space-between">
+                <Text>Created:</Text>
+                <Text>{draftResult?.createdAt ? new Date(draftResult.createdAt).toLocaleString() : '—'}</Text>
+              </HStack>
+              <HStack justify="space-between">
+                <Text>Updated:</Text>
+                <Text>{draftResult?.updatedAt ? new Date(draftResult.updatedAt).toLocaleString() : '—'}</Text>
+              </HStack>
+              <Divider borderColor="#334155" />
+              <Text fontWeight="bold">Addresses</Text>
+              <VStack align="stretch" spacing={1}>
+              <Text fontSize="sm">
+                Pickup: {draftResult?.pickupAddress?.address || draftResult?.pickupAddress?.label || '—'} ({draftResult?.pickupAddress?.postcode || '—'})
+              </Text>
+              <Text fontSize="sm">
+                Dropoff: {draftResult?.dropoffAddress?.address || draftResult?.dropoffAddress?.label || '—'} ({draftResult?.dropoffAddress?.postcode || '—'})
+              </Text>
+              </VStack>
+              <Divider borderColor="#334155" />
+              <Text fontWeight="bold">Items</Text>
+              <Text fontSize="sm">{draftResult?.items?.length || 0} item(s)</Text>
+            {draftResult?.items && draftResult.items.length > 0 && (
+              <Box maxH="160px" overflowY="auto" border="1px solid #1f2937" borderRadius="md" p={2} bg="#0b1220">
+                {draftResult.items.slice(0, 5).map((item: any, idx: number) => (
+                  <Text key={idx} fontSize="sm" color="#cbd5e1">
+                    • {item.name || item.id || 'Item'} x{item.quantity || 1}
+                  </Text>
+                ))}
+                {draftResult.items.length > 5 && (
+                  <Text fontSize="xs" color="#94a3b8" mt={1}>
+                    + {draftResult.items.length - 5} more
+                  </Text>
+                )}
+              </Box>
+            )}
+              <Divider borderColor="#334155" />
+              <Text fontWeight="bold">Pricing</Text>
+              <Text fontSize="sm">
+                Total: £{draftResult?.pricing?.total?.toFixed ? draftResult.pricing.total.toFixed(2) : (draftResult?.pricing?.total || 0)}
+              </Text>
+              {draftResult?.pricing && (
+                <VStack align="stretch" spacing={1} fontSize="sm" color="#cbd5e1">
+                  {draftResult.pricing.baseFee !== undefined && <Text>Base: £{draftResult.pricing.baseFee?.toFixed?.(2) || draftResult.pricing.baseFee}</Text>}
+                  {draftResult.pricing.distanceFee !== undefined && <Text>Distance: £{draftResult.pricing.distanceFee?.toFixed?.(2) || draftResult.pricing.distanceFee}</Text>}
+                  {draftResult.pricing.volumeFee !== undefined && <Text>Volume: £{draftResult.pricing.volumeFee?.toFixed?.(2) || draftResult.pricing.volumeFee}</Text>}
+                  {draftResult.pricing.serviceFee !== undefined && <Text>Service: £{draftResult.pricing.serviceFee?.toFixed?.(2) || draftResult.pricing.serviceFee}</Text>}
+                  {draftResult.pricing.urgencyFee !== undefined && <Text>Urgency: £{draftResult.pricing.urgencyFee?.toFixed?.(2) || draftResult.pricing.urgencyFee}</Text>}
+                  {draftResult.pricing.vat !== undefined && <Text>VAT: £{draftResult.pricing.vat?.toFixed?.(2) || draftResult.pricing.vat}</Text>}
+                </VStack>
+              )}
+              {draftResult?.items && draftResult.items.length > 0 && (
+                <Text fontSize="sm" color="#94a3b8">
+                  Weight/Volume (if provided) derived from items
+                </Text>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={2} flex="1" flexWrap="wrap">
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!draftResult?.reference) return;
+                  navigator.clipboard?.writeText(draftResult.reference);
+                  toast({
+                    title: 'Reference copied',
+                    description: draftResult.reference,
+                    status: 'success',
+                    duration: 2000,
+                    isClosable: true,
+                  });
+                }}
+              >
+                Copy Ref
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!draftResult) return;
+                  navigator.clipboard?.writeText(JSON.stringify(draftResult, null, 2));
+                  toast({
+                    title: 'Draft JSON copied',
+                    status: 'success',
+                    duration: 2000,
+                    isClosable: true,
+                  });
+                }}
+              >
+                Copy JSON
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!draftResult) return;
+                  const blob = new Blob([JSON.stringify(draftResult, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${draftResult.reference || 'draft'}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Download JSON
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!draftResult) return;
+                  const summary = `
+Reference: ${draftResult.reference}
+Status: ${draftResult.status}
+Pickup: ${draftResult?.pickupAddress?.postcode || ''}
+Dropoff: ${draftResult?.dropoffAddress?.postcode || ''}
+Items: ${draftResult?.items?.length || 0}
+Total: £${draftResult?.pricing?.total || 0}
+`;
+                  const blob = new Blob([summary], { type: 'application/pdf' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${draftResult.reference || 'draft'}.pdf`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export PDF
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="green"
+                onClick={async () => {
+                  if (!draftResult?.reference) return;
+                  const res = await fetch(`/api/admin/booking-luxury/draft/${encodeURIComponent(draftResult.reference)}/convert`, {
+                    method: 'POST',
+                  });
+                  const json = await res.json();
+                  if (!res.ok || !json?.success) {
+                    toast({
+                      title: 'Convert failed',
+                      description: json?.error || 'Unable to convert draft',
+                      status: 'error',
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                    return;
+                  }
+                  toast({
+                    title: 'Draft converted',
+                    description: `Booking ${json?.booking?.reference || 'created'}`,
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                  setIsDraftModalOpen(false);
+                  await loadOrders(true);
+                }}
+              >
+                Convert to Booking
+              </Button>
+            </HStack>
+            <Button variant="ghost" ml={3} onClick={() => setIsDraftModalOpen(false)}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Drafts list modal */}
+      <Modal isOpen={isDraftsListOpen} onClose={() => setIsDraftsListOpen(false)} size="4xl" isCentered scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent bg="#0f172a" borderColor="#334155" borderWidth="1px" maxH="80vh">
+          <ModalHeader color="#fff">Draft Bookings</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack align="stretch" spacing={3}>
+              <Text fontSize="sm" color="#94a3b8">
+                Showing {draftsList.length} draft(s). Use the main search box + View Drafts to filter by reference/postcode.
+              </Text>
+              <Wrap spacing={3}>
+                <WrapItem flex="1" minW="160px">
+                  <Select
+                    size="sm"
+                    placeholder="Status"
+                    value={draftStatusFilter}
+                    onChange={(e) => setDraftStatusFilter(e.target.value)}
+                    bg="#111827"
+                    borderColor="#1f2937"
+                    color="#e2e8f0"
+                    w="100%"
+                  >
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
+                  </Select>
+                </WrapItem>
+                <WrapItem flex="1" minW="160px">
+                  <ClientInput
+                    type="date"
+                    size="sm"
+                    bg="#111827"
+                    borderColor="#1f2937"
+                    color="#e2e8f0"
+                    value={draftFromDate}
+                    onChange={(e: any) => setDraftFromDate(e.target.value)}
+                    w="100%"
+                  />
+                </WrapItem>
+                <WrapItem flex="1" minW="160px">
+                  <ClientInput
+                    type="date"
+                    size="sm"
+                    bg="#111827"
+                    borderColor="#1f2937"
+                    color="#e2e8f0"
+                    value={draftToDate}
+                    onChange={(e: any) => setDraftToDate(e.target.value)}
+                    w="100%"
+                  />
+                </WrapItem>
+                <WrapItem minW="140px">
+                  <Button size="sm" onClick={handleLoadDraftsList} isLoading={isDraftsListLoading} w="100%">
+                    Apply Filters
+                  </Button>
+                </WrapItem>
+                <WrapItem minW="140px">
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/admin/booking-luxury/drafts/archive', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ days: 30 }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok || !json?.success) {
+                          toast({
+                            title: 'Archive failed',
+                            description: json?.error || 'Unable to archive drafts',
+                            status: 'error',
+                            duration: 3000,
+                            isClosable: true,
+                          });
+                          return;
+                        }
+                        toast({
+                          title: 'Drafts archived',
+                          description: `Archived ${json.archived} draft(s) older than ${json.days} days`,
+                          status: 'success',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                        handleLoadDraftsList();
+                        setDraftCount(Math.max(0, draftCount - (json.archived || 0)));
+                      } catch (err) {
+                        toast({
+                          title: 'Archive failed',
+                          description: 'Please try again.',
+                          status: 'error',
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      }
+                    }}
+                    isLoading={isDraftsListLoading}
+                    w="100%"
+                  >
+                    Archive &gt;30d
+                  </Button>
+                </WrapItem>
+              </Wrap>
+              <Box border="1px solid #1f2937" borderRadius="md" overflow="hidden">
+                <Box
+                  display="grid"
+                  gridTemplateColumns="repeat(6, minmax(0, 1fr))"
+                  bg="#111827"
+                  color="#cbd5e1"
+                  fontWeight="bold"
+                  fontSize="sm"
+                  borderBottom="1px solid #1f2937"
+                  p={2}
+                >
+                  <Text>Reference</Text>
+                  <Text>Status</Text>
+                  <Text>Pickup</Text>
+                  <Text>Dropoff</Text>
+                  <Text textAlign="right">Items</Text>
+                  <Text textAlign="right">Total</Text>
+                </Box>
+                <Box maxH="50vh" overflowY="auto">
+                  {draftsList.length === 0 && (
+                    <Text color="#94a3b8" p={3} textAlign="center">
+                      No drafts found. Try another reference or clear filters.
+                    </Text>
+                  )}
+                  {draftsList.map((draft: any) => (
+                    <Box
+                      key={draft.id}
+                      display="grid"
+                      gridTemplateColumns="repeat(6, minmax(0, 1fr))"
+                      alignItems="center"
+                      color="#e2e8f0"
+                      borderBottom="1px solid #1f2937"
+                      p={2}
+                      _hover={{ bg: '#111827' }}
+                      cursor="pointer"
+                      onClick={() => {
+                        setDraftResult(draft);
+                        setIsDraftModalOpen(true);
+                      }}
+                    >
+                      <Text fontWeight="semibold">{draft.reference}</Text>
+                      <Badge colorScheme="blue" w="fit-content">{draft.status || 'DRAFT'}</Badge>
+                      <Text fontSize="sm">{draft?.pickupAddress?.postcode || '—'}</Text>
+                      <Text fontSize="sm">{draft?.dropoffAddress?.postcode || '—'}</Text>
+                      <Text fontSize="sm" textAlign="right">{draft?.items?.length || 0}</Text>
+                      <Text fontSize="sm" textAlign="right">
+                        £{draft?.pricing?.total?.toFixed ? draft.pricing.total.toFixed(2) : (draft?.pricing?.total || 0)}
+                      </Text>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => setIsDraftsListOpen(false)}>
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>
