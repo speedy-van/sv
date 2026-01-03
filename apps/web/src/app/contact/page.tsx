@@ -47,6 +47,7 @@ import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import { WhatsAppFloatingButton, openWhatsAppLink } from '@/components/shared/WhatsAppEntryPoint';
+import CallMeBackFloating from '@/components/shared/CallMeBackFloating';
 
 const SUPPORT_PHONE_DISPLAY = '01202 129746';
 const SUPPORT_PHONE_TEL = '01202129746';
@@ -1169,6 +1170,7 @@ export default function ContactPage() {
         </VStack>
       </Container>
     </Box>
+    <CallMeBackFloating />
     <WhatsAppFloatingButton context="contact_page" />
     </>
   );

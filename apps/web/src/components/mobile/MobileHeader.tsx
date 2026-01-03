@@ -23,6 +23,55 @@ import { WhatsAppIconLink, openWhatsAppLink } from '@/components/shared/WhatsApp
 
 export default function MobileHeader() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [canPlayLogo, setCanPlayLogo] = useState(false);
+
+  const logoVideoSrc = '/logo/sv-logo.mp4';
+  const logoFallbackSrc = '/logo/speedy-van-icon.svg';
+
+  const logoMedia = (
+    <React.Fragment>
+      <Box
+        as="video"
+        src={logoVideoSrc}
+        autoPlay
+        loop
+        muted
+        playsInline
+        w="100%"
+        h="100%"
+        objectFit="cover"
+        border="2px solid"
+        borderColor="#00C2FF"
+        boxShadow="0 0 15px rgba(0,194,255,0.5)"
+        transition="all 0.3s ease"
+        sx={{
+          borderRadius: 'full',
+        }}
+        hidden={!canPlayLogo}
+        onLoadedMetadata={(event: React.SyntheticEvent<HTMLVideoElement>) => {
+          event.currentTarget.playbackRate = 0.5;
+        }}
+        onCanPlay={() => setCanPlayLogo(true)}
+        onError={() => setCanPlayLogo(false)}
+      />
+      <Box
+        as="img"
+        src={logoFallbackSrc}
+        alt="Speedy Van logo"
+        w="100%"
+        h="100%"
+        objectFit="cover"
+        border="2px solid"
+        borderColor="#00C2FF"
+        boxShadow="0 0 15px rgba(0,194,255,0.5)"
+        transition="all 0.3s ease"
+        sx={{
+          borderRadius: 'full',
+        }}
+        hidden={canPlayLogo}
+      />
+    </React.Fragment>
+  );
 
   // CRITICAL: Always render, always visible - no scroll hiding on mobile
   // CSS handles responsive display (mobile vs desktop)
@@ -82,27 +131,7 @@ export default function MobileHeader() {
                 zIndex: -1,
               }}
             >
-              <Box
-                as="video"
-                src="/logo/sv-logo.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                w="100%"
-                h="100%"
-                objectFit="cover"
-                border="2px solid"
-                borderColor="#00C2FF"
-                boxShadow="0 0 15px rgba(0,194,255,0.5)"
-                transition="all 0.3s ease"
-                sx={{
-                  borderRadius: 'full',
-                }}
-                onLoadedMetadata={(e: any) => {
-                  e.target.playbackRate = 0.5;
-                }}
-              />
+              {logoMedia}
             </Box>
           </Link>
 

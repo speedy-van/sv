@@ -3,6 +3,7 @@ import { Box } from '@chakra-ui/react';
 import Header from '@/components/site/Header';
 import SkipLink from '@/components/site/SkipLink';
 import { WhatsAppFloatingGuard } from '@/components/shared/WhatsAppFloatingGuard';
+import CallMeBackFloating from '@/components/shared/CallMeBackFloating';
 
 export default function PublicLayout({
   children,
@@ -34,6 +35,7 @@ export default function PublicLayout({
         </Box>
       </Box>
       <WhatsAppFloatingGuard />
+      <CallMeBackFloating />
     </>
   );
 }

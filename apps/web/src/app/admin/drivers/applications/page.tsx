@@ -293,7 +293,7 @@ const StatCard = ({
       h="full"
       bg={`${color}.400`}
     />
-    <HStack spacing={3}>
+    <HStack spacing={3} align="flex-start" flexWrap="wrap" rowGap={2}>
       <Flex
         w="40px"
         h="40px"
@@ -306,7 +306,7 @@ const StatCard = ({
       >
         <Icon as={icon} color="white" boxSize={5} />
       </Flex>
-      <Box flex={1}>
+      <Box flex={1} minW="140px">
         <Text fontSize="2xl" fontWeight="bold" color="white" lineHeight={1}>
           {value}
         </Text>
@@ -321,6 +321,7 @@ const StatCard = ({
           variant="subtle" 
           borderRadius="full"
           fontSize="xs"
+          whiteSpace="nowrap"
         >
           {trend.value}
         </Badge>
@@ -778,7 +779,11 @@ export default function DriverApplicationsPage() {
           </Box>
 
           {/* Enhanced Stats Row */}
-          <SimpleGrid columns={{ base: 2, md: 3, lg: 6 }} spacing={4}>
+          <SimpleGrid
+            columns={{ base: 1, sm: 2, md: 3, xl: 6 }}
+            minChildWidth="200px"
+            spacing={4}
+          >
             <StatCard 
               icon={FiUsers} 
               label="Total Applications" 

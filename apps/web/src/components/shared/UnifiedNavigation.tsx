@@ -11,6 +11,7 @@ import { ROUTES, type UserRole } from '@/lib/routing';
 import { FiMenu, FiRefreshCw } from 'react-icons/fi';
 import { usePathname, useRouter } from 'next/navigation';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
+import { FaPhone } from 'react-icons/fa';
 
 interface NavigationItem {
   label: string;
@@ -363,6 +364,15 @@ export function UnifiedNavigation({
                       _hover={{ bg: 'gray.700' }}
                     >
                       Contact Inquiries
+                    </MenuItem>
+                    <MenuItem
+                      as={Link}
+                      href="/admin/callbacks"
+                      bg="gray.800"
+                      _hover={{ bg: 'gray.700' }}
+                      icon={<FaPhone />}
+                    >
+                      Callbacks
                     </MenuItem>
                     <MenuItem
                       as={Link}

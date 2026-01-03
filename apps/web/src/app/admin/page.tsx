@@ -57,7 +57,7 @@ async function getDashboardData() {
       },
     },
     include: {
-      Driver: {
+      driver: {
         include: {
           User: {
             select: {
@@ -133,7 +133,7 @@ async function getDashboardData() {
 
   // Serialize data to ensure it can be passed to client components
   const serializedJobsInProgress = jobsInProgress.map(job => {
-    const { Driver, ...rest } = job;
+    const { driver, ...rest } = job;
 
     return {
       ...rest,
@@ -141,19 +141,19 @@ async function getDashboardData() {
       updatedAt: job.updatedAt.toISOString(),
       scheduledAt: job.scheduledAt.toISOString(),
       paidAt: job.paidAt?.toISOString(),
-      driver: Driver
+      driver: driver
         ? {
-            ...Driver,
-            createdAt: Driver.createdAt.toISOString(),
-            updatedAt: Driver.updatedAt.toISOString(),
-            approvedAt: Driver.approvedAt?.toISOString(),
-            user: Driver.User
+            ...driver,
+            createdAt: driver.createdAt.toISOString(),
+            updatedAt: driver.updatedAt.toISOString(),
+            approvedAt: driver.approvedAt?.toISOString(),
+            user: driver.User
               ? {
-                  ...Driver.User,
-                  createdAt: Driver.User.createdAt.toISOString(),
-                  lastLogin: Driver.User.lastLogin?.toISOString(),
-                  resetTokenExpiry: Driver.User.resetTokenExpiry?.toISOString(),
-                  emailVerificationExpiry: Driver.User.emailVerificationExpiry?.toISOString(),
+                  ...driver.User,
+                  createdAt: driver.User.createdAt.toISOString(),
+                  lastLogin: driver.User.lastLogin?.toISOString(),
+                  resetTokenExpiry: driver.User.resetTokenExpiry?.toISOString(),
+                  emailVerificationExpiry: driver.User.emailVerificationExpiry?.toISOString(),
                 }
               : null,
           }
