@@ -15,6 +15,12 @@ export const stripe = new Stripe(stripeKey, {
   apiVersion: '2024-04-10',
 });
 
+export const CHECKOUT_PAYMENT_METHOD_TYPES: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = [
+  'card',
+  'klarna',
+  'afterpay_clearpay',
+];
+
 export function getStripe(): Stripe {
   return stripe;
 }
@@ -38,7 +44,7 @@ export async function createCheckoutSession(
   metadata?: Record<string, string>
 ): Promise<Stripe.Checkout.Session> {
   return await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
+    payment_method_types: CHECKOUT_PAYMENT_METHOD_TYPES,
     line_items: lineItems,
     mode: 'payment',
     success_url: successUrl,

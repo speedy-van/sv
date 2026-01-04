@@ -36,6 +36,7 @@ import {
   FaPhone,
   FaEnvelope,
 } from 'react-icons/fa';
+import { SiAfterpay, SiKlarna } from 'react-icons/si';
 import Hero from '../../components/Hero';
 import HeroMessage from '../../components/HeroMessage';
 import ServiceMapSection from '../../components/ServiceMapSection';
@@ -364,6 +365,46 @@ export default function HomePageContent() {
                   We provide comprehensive moving solutions tailored to your
                   needs
                 </Text>
+                <HStack
+                  spacing={2}
+                  mt={2}
+                  justify="center"
+                  flexWrap="wrap"
+                  color={textColor}
+                >
+                  <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
+                    Book now, pay later
+                  </Badge>
+                  <HStack spacing={2} flexWrap="wrap">
+                    <HStack
+                      spacing={1}
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      bg={useColorModeValue('gray.100', 'whiteAlpha.200')}
+                      borderWidth="1px"
+                      borderColor={useColorModeValue('gray.200', 'whiteAlpha.300')}
+                    >
+                      <Icon as={SiKlarna} boxSize={4} />
+                      <Text fontSize="xs">Klarna</Text>
+                    </HStack>
+                    <HStack
+                      spacing={1}
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      bg={useColorModeValue('gray.100', 'whiteAlpha.200')}
+                      borderWidth="1px"
+                      borderColor={useColorModeValue('gray.200', 'whiteAlpha.300')}
+                    >
+                      <Icon as={SiAfterpay} boxSize={4} />
+                      <Text fontSize="xs">Clearpay</Text>
+                    </HStack>
+                  </HStack>
+                  <Text fontSize="xs" color={textColor}>
+                    Appears at checkout when eligible.
+                  </Text>
+                </HStack>
               </MotionBox>
 
               <SimpleGrid

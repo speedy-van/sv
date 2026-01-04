@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { AdditionalPaymentStatus } from '@prisma/client';
 import { logAudit } from '@/lib/audit';
 import { stripe } from '@/lib/stripe/client';
+import { CHECKOUT_PAYMENT_METHOD_TYPES } from '@/lib/stripe';
 import { unifiedEmailService } from '@/lib/email/UnifiedEmailService';
 import { z } from 'zod';
 
@@ -70,7 +71,7 @@ export async function POST(
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['card'],
+      payment_method_types: CHECKOUT_PAYMENT_METHOD_TYPES,
       customer_email: booking.customerEmail,
       line_items: [
         {

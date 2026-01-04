@@ -2629,6 +2629,19 @@ export default function BookingLuxuryPage() {
                           >
                             Continue
                           </Button>
+                        <HStack
+                          spacing={2}
+                          mt={2}
+                          justify={{ base: 'center', md: 'flex-start' }}
+                          flexWrap="wrap"
+                        >
+                          <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
+                            Klarna & Clearpay
+                          </Badge>
+                          <Text fontSize="xs" color="whiteAlpha.800">
+                            Book now, pay later appears at checkout when eligible.
+                          </Text>
+                        </HStack>
                         </HStack>
                       </VStack>
                     </CardBody>

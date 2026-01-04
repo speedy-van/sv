@@ -28,6 +28,7 @@ import type { FormData } from '../hooks/useBookingForm';
 import type { BookingSegment } from '../types/segment';
 import PricePreview from './PricePreview';
 import SegmentManager from './SegmentManager';
+import RouteMapPreview from './RouteMapPreview';
 
 
 interface AddressesStepProps {
@@ -61,6 +62,36 @@ export default function AddressesStep({
 
   const currentPickupProperty = useMemo(() => formData.step1.pickupProperty ?? {}, [formData.step1.pickupProperty]);
   const currentDropoffProperty = useMemo(() => formData.step1.dropoffProperty ?? {}, [formData.step1.dropoffProperty]);
+
+  const pickupLocation = useMemo(() => {
+    const coords = formData.step1.pickupAddress?.coordinates;
+    if (!coords?.lat || !coords?.lng) return null;
+    return {
+      lat: coords.lat,
+      lng: coords.lng,
+      label:
+        formData.step1.pickupAddress?.formatted_address ||
+        formData.step1.pickupAddress?.place_name ||
+        formData.step1.pickupAddress?.address ||
+        formData.step1.pickupAddress?.city ||
+        'Pickup location',
+    };
+  }, [formData.step1.pickupAddress]);
+
+  const dropoffLocation = useMemo(() => {
+    const coords = formData.step1.dropoffAddress?.coordinates;
+    if (!coords?.lat || !coords?.lng) return null;
+    return {
+      lat: coords.lat,
+      lng: coords.lng,
+      label:
+        formData.step1.dropoffAddress?.formatted_address ||
+        formData.step1.dropoffAddress?.place_name ||
+        formData.step1.dropoffAddress?.address ||
+        formData.step1.dropoffAddress?.city ||
+        'Drop-off location',
+    };
+  }, [formData.step1.dropoffAddress]);
 
   const parseFloorNumber = (value?: string | number | null): number => {
     if (value === null || value === undefined) {
@@ -373,6 +404,18 @@ export default function AddressesStep({
             </CardBody>
           </Card>
         </SimpleGrid>
+
+        <VStack spacing={4} align="stretch">
+          <HStack justify="space-between" align="center">
+            <Text color="white" fontSize="lg" fontWeight="700">
+              Live route preview
+            </Text>
+            <Text color="whiteAlpha.700" fontSize="sm">
+              Visualise your pickup and drop-off before continuing
+            </Text>
+          </HStack>
+          <RouteMapPreview pickup={pickupLocation} dropoff={dropoffLocation} />
+        </VStack>
 
         {/* Multi-Leg Segment Manager */}
         {canProceed && addReturnSegment && addAdditionalSegment && updateSegment && removeSegment && validateSegments && (

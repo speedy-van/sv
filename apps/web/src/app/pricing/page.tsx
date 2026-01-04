@@ -439,9 +439,14 @@ export default function PricingPage() {
                             {service.description}
                           </Text>
                           <VStack spacing={2}>
-                            <Text fontSize="2xl" fontWeight="bold" color={`${service.color}.500`}>
-                              {service.basePrice}
-                            </Text>
+                            <HStack justify="center" spacing={2} flexWrap="wrap">
+                              <Text fontSize="2xl" fontWeight="bold" color={`${service.color}.500`}>
+                                {service.basePrice}
+                              </Text>
+                              <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
+                                BNPL: Klarna & Clearpay
+                              </Badge>
+                            </HStack>
                             <Text fontSize="sm" color="text.secondary">
                               {service.hourlyRate}
                             </Text>
@@ -500,9 +505,14 @@ export default function PricingPage() {
                             <Heading size="lg" color="text.primary">
                               {size.size}
                             </Heading>
-                            <Text fontSize="3xl" fontWeight="bold" color="neon.500">
-                              {size.price}
-                            </Text>
+                            <HStack justify="center" spacing={2} flexWrap="wrap">
+                              <Text fontSize="3xl" fontWeight="bold" color="neon.500">
+                                {size.price}
+                              </Text>
+                              <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
+                                Klarna & Clearpay
+                              </Badge>
+                            </HStack>
                           </VStack>
 
                           <VStack spacing={3} align="start" w="full">

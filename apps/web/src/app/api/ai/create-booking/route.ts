@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
+import { CHECKOUT_PAYMENT_METHOD_TYPES } from '@/lib/stripe';
 
 const prisma = new PrismaClient();
 
@@ -278,7 +279,7 @@ export async function POST(request: NextRequest) {
     
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: CHECKOUT_PAYMENT_METHOD_TYPES,
       line_items: [
         {
           price_data: {

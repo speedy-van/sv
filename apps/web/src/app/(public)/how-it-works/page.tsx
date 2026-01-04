@@ -38,9 +38,10 @@ interface StepProps {
     href: string;
   };
   delay?: number;
+  note?: string;
 }
 
-function Step({ n, title, description, icon, features, cta, delay = 0 }: StepProps) {
+function Step({ n, title, description, icon, features, cta, delay = 0, note }: StepProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   
@@ -147,6 +148,16 @@ function Step({ n, title, description, icon, features, cta, delay = 0 }: StepPro
             <Text fontSize="sm" opacity={0.8} lineHeight="tall">
               {description}
             </Text>
+            {note ? (
+              <HStack mt={3} spacing={2} flexWrap="wrap" align="center">
+                <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
+                  Book now, pay later
+                </Badge>
+                <Text fontSize="xs" opacity={0.8}>
+                  {note}
+                </Text>
+              </HStack>
+            ) : null}
           </Box>
 
           <Divider />
@@ -368,7 +379,7 @@ export default function HowItWorksPage() {
       </Box>
 
       {/* Steps Section */}
-      <Container maxW="6xl" py={{ base: 16, md: 24 }} px={{ base: 4, md: 6 }}>
+        <Container maxW="6xl" py={{ base: 16, md: 24 }} px={{ base: 4, md: 6 }}>
         <SimpleGrid 
           columns={{ base: 1, md: 2, lg: 3 }} 
           gap={{ base: 6, md: 8, lg: 10 }}
@@ -418,6 +429,7 @@ export default function HowItWorksPage() {
             title="Payment & Confirmation"
             description="Pay securely with Stripe. Get instant confirmation via email and SMS with your booking reference (e.g., SV-000001)."
             icon={FaCreditCard}
+            note="Klarna & Clearpay available on eligible bookings at checkout."
             features={[
               'Secure Stripe payment processing',
               'Email & SMS instant confirmation',
@@ -653,6 +665,25 @@ export default function HowItWorksPage() {
                 </SimpleGrid>
               </VStack>
             </Box>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* FAQ (concise) */}
+      <Box bg={useColorModeValue('white', 'gray.900')} py={{ base: 12, md: 16 }}>
+        <Container maxW="5xl" px={{ base: 4, md: 6 }}>
+          <VStack spacing={4} align="stretch">
+            <HStack spacing={3} align="center" flexWrap="wrap">
+              <Badge colorScheme="purple" borderRadius="full" px={3} py={1} fontSize="xs">
+                FAQ
+              </Badge>
+              <Text fontWeight="bold" fontSize={{ base: 'md', md: 'lg' }}>
+                Can I use Klarna or Clearpay at checkout?
+              </Text>
+            </HStack>
+            <Text fontSize={{ base: 'sm', md: 'md' }} color={useColorModeValue('gray.700', 'gray.200')} lineHeight="1.6">
+              Yes—if your booking meets Stripe’s eligibility (GBP, UK customer, supported amount and service date), Klarna and Clearpay appear automatically during checkout. Cards, Apple Pay, and Google Pay remain available.
+            </Text>
           </VStack>
         </Container>
       </Box>

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 import { createUniqueReference } from '@/lib/ref';
 import { prisma } from '@/lib/prisma';
+import { CHECKOUT_PAYMENT_METHOD_TYPES } from '@/lib/stripe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { 
@@ -452,7 +453,7 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     const stripeSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: CHECKOUT_PAYMENT_METHOD_TYPES,
       line_items: [
         {
           price_data: {

@@ -36,6 +36,9 @@ import {
   useDisclosure,
   Heading,
   Button,
+  Wrap,
+  WrapItem,
+  Tag,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
@@ -47,6 +50,14 @@ import {
   FaMinus,
   FaTrash,
 } from 'react-icons/fa';
+import {
+  SiApplepay,
+  SiGooglepay,
+  SiAfterpay,
+  SiKlarna,
+  SiVisa,
+  SiMastercard,
+} from 'react-icons/si';
 import type { BookingSegment } from '../types/segment';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
@@ -1255,6 +1266,126 @@ export default function WhoAndPaymentStepSimple({
                   {displayPriceText}
                 </Badge>
               </HStack>
+
+              <Box
+                bg="linear-gradient(135deg, rgba(59,130,246,0.18), rgba(16,185,129,0.18))"
+                border="1px solid"
+                borderColor="rgba(59, 130, 246, 0.35)"
+                borderRadius="xl"
+                p={{ base: 3, sm: 4 }}
+                w="full"
+              >
+                <Flex
+                  direction={{ base: 'column', sm: 'row' }}
+                  align={{ base: 'center', sm: 'center' }}
+                  justify="space-between"
+                  gap={{ base: 3, sm: 4 }}
+                  textAlign={{ base: 'center', sm: 'left' }}
+                >
+                  <HStack
+                    align={{ base: 'center', sm: 'flex-start' }}
+                    spacing={3}
+                    w="full"
+                    justify={{ base: 'center', sm: 'flex-start' }}
+                  >
+                    <Box
+                      bg="rgba(255,255,255,0.08)"
+                      borderRadius="full"
+                      p={3}
+                      border="1px solid rgba(59,130,246,0.4)"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Icon as={FaCreditCard} color="white" boxSize={5} />
+                    </Box>
+                    <VStack align={{ base: 'center', sm: 'flex-start' }} spacing={1}>
+                      <Text color="white" fontWeight="bold" fontSize="md" whiteSpace="nowrap">
+                        Book now, pay later
+                      </Text>
+                      <Text color="blue.100" fontSize="sm" lineHeight="1.4">
+                        Klarna & Clearpay available at checkout when your booking qualifies.
+                      </Text>
+                    </VStack>
+                  </HStack>
+                  <Flex
+                    gap={2}
+                    flexWrap="wrap"
+                    justify={{ base: 'center', sm: 'flex-end' }}
+                    w="full"
+                  >
+                    <Badge
+                      colorScheme="pink"
+                      variant="solid"
+                      borderRadius="full"
+                      px={3}
+                      py={1}
+                      fontSize="sm"
+                    >
+                      Klarna
+                    </Badge>
+                    <Badge
+                      colorScheme="teal"
+                      variant="solid"
+                      borderRadius="full"
+                      px={3}
+                      py={1}
+                      fontSize="sm"
+                    >
+                      Clearpay
+                    </Badge>
+                  </Flex>
+                </Flex>
+                <Text mt={2} color="blue.100" fontSize="xs">
+                  Availability may depend on booking value and service date; Stripe shows Klarna & Clearpay automatically when eligible.
+                </Text>
+              </Box>
+
+            <Box
+              bg="rgba(15, 23, 42, 0.55)"
+              border="1px solid rgba(59, 130, 246, 0.25)"
+              borderRadius="xl"
+              p={{ base: 3, sm: 4 }}
+              w="full"
+            >
+              <HStack justify="space-between" align="center" mb={3} gap={2}>
+                <Text color="white" fontWeight="700" fontSize="sm">
+                  Accepted payments
+                </Text>
+                <Text color="blue.100" fontSize="xs">
+                  Optimized for mobile & desktop checkout
+                </Text>
+              </HStack>
+              <Wrap spacing={2} rowGap={2}>
+                {[
+                  { label: 'Apple Pay', bg: 'black', color: 'white', icon: SiApplepay },
+                  { label: 'Google Pay', bg: 'gray.800', color: 'white', icon: SiGooglepay },
+                  { label: 'Clearpay', bg: 'teal.500', color: 'white', icon: SiAfterpay },
+                  { label: 'Klarna', bg: 'pink.400', color: 'black', icon: SiKlarna },
+                  { label: 'Visa', bg: 'blue.600', color: 'white', icon: SiVisa },
+                  { label: 'Mastercard', bg: 'orange.500', color: 'white', icon: SiMastercard },
+                ].map((method) => (
+                  <WrapItem key={method.label}>
+                    <Tag
+                      size="lg"
+                      borderRadius="full"
+                      px={4}
+                      py={2}
+                      bg={method.bg}
+                      color={method.color}
+                      fontWeight="700"
+                      boxShadow="0 8px 24px rgba(0,0,0,0.15)"
+                      display="inline-flex"
+                      alignItems="center"
+                      gap={2}
+                    >
+                      {method.icon ? <Icon as={method.icon} boxSize={5} /> : null}
+                      {method.label}
+                    </Tag>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            </Box>
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
