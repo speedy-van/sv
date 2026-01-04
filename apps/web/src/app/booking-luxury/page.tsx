@@ -1497,7 +1497,7 @@ export default function BookingLuxuryPage() {
       // Check if date exists (either in segments or global)
       const hasDate = isMultiLeg
         ? segments.every(s => s.datetime)
-        : formData.step1.pickupDate;
+        : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
         
       if (!hasDate) {
         // Scroll to date card and show red neon animation
@@ -2241,8 +2241,35 @@ export default function BookingLuxuryPage() {
                           >
                             Select your preferred date and time
                           </Text>
+                          <HStack spacing={3} justify="center" flexWrap="wrap">
+                            <Button
+                              variant={formData.step1.pickupDateChoice === 'known' ? 'solid' : 'outline'}
+                              colorScheme="purple"
+                              onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
+                              size="sm"
+                              borderRadius="full"
+                            >
+                              Option 1: Select estimated time
+                            </Button>
+                            <Button
+                              variant={formData.step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
+                              colorScheme="gray"
+                              onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
+                              size="sm"
+                              borderRadius="full"
+                            >
+                              Option 2: I’m flexible
+                            </Button>
+                          </HStack>
                         </VStack>
 
+                        {formData.step1.pickupDateChoice === 'unknown' ? (
+                          <Box textAlign="center">
+                            <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
+                              You’re flexible — you can confirm date and time later and continue now.
+                            </Text>
+                          </Box>
+                        ) : (
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
                           <Box position="relative" style={{ zIndex: 10 }}>
                             <Text 
@@ -2357,6 +2384,7 @@ export default function BookingLuxuryPage() {
                             )}
                           </Box>
                         </SimpleGrid>
+                        )}
 
                         {/* Crew Size Selection */}
                         <Box mt={4}>
@@ -2535,7 +2563,7 @@ export default function BookingLuxuryPage() {
                             : formData.step1.items.length > 0;
                           const hasDate = isMultiLeg
                             ? segments.every(s => s.datetime)
-                            : formData.step1.pickupDate;
+                            : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
                           const totalItems = isMultiLeg
                             ? segments.reduce((total, s) => total + (s.items?.length || 0), 0)
                             : formData.step1.items.length;
@@ -2592,7 +2620,7 @@ export default function BookingLuxuryPage() {
                                 : formData.step1.items.length > 0;
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
-                                : formData.step1.pickupDate;
+                                : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
                               return !hasItems || !hasDate;
                             })()}
                             boxShadow={(() => {
@@ -2603,7 +2631,7 @@ export default function BookingLuxuryPage() {
                                 : formData.step1.items.length > 0;
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
-                                : formData.step1.pickupDate;
+                                : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
                               return hasItems && hasDate ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none";
                             })()}
                             _hover={(() => {
@@ -2614,7 +2642,7 @@ export default function BookingLuxuryPage() {
                                 : formData.step1.items.length > 0;
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
-                                : formData.step1.pickupDate;
+                                : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
                               return hasItems && hasDate ? {
                                 bg: "blue.600",
                                 transform: 'translateY(-2px)',
@@ -2627,21 +2655,8 @@ export default function BookingLuxuryPage() {
                               bg: "gray.600"
                             }}
                           >
-                            Continue
+                            Get your price
                           </Button>
-                        <HStack
-                          spacing={2}
-                          mt={2}
-                          justify={{ base: 'center', md: 'flex-start' }}
-                          flexWrap="wrap"
-                        >
-                          <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
-                            Klarna & Clearpay
-                          </Badge>
-                          <Text fontSize="xs" color="whiteAlpha.800">
-                            Book now, pay later appears at checkout when eligible.
-                          </Text>
-                        </HStack>
                         </HStack>
                       </VStack>
                     </CardBody>

@@ -194,14 +194,8 @@ const step1Schema = z.object({
   items: z.array(itemSchema).min(1, 'Please select at least one item'),
   serviceType: serviceTypeSchema,
   crewSize: crewSizeSchema, // Number of helpers/workers (1-4)
-  pickupDate: z.string()
-    .min(1, 'Please select a pickup date')
-    .refine((date) => {
-      const selectedDate = new Date(date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return !isNaN(selectedDate.getTime()) && selectedDate >= today;
-    }, 'Please select a valid future date'),
+  pickupDateChoice: z.enum(['known', 'unknown']).default('known'),
+  pickupDate: z.string().optional(),
   pickupTimeSlot: z.string().optional(),
   urgency: z.enum(['same-day', 'next-day', 'scheduled'])
     .default('scheduled'),
@@ -213,6 +207,28 @@ const step1Schema = z.object({
   // Multi-leg booking support
   isMultiLeg: z.boolean().default(false),
   segments: z.array(bookingSegmentSchema).optional().default([]), // Properly validated BookingSegment
+}).superRefine((data, ctx) => {
+  if (data.pickupDateChoice === 'known') {
+    if (!data.pickupDate || data.pickupDate.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pickupDate'],
+        message: 'Please select a pickup date',
+      });
+      return;
+    }
+
+    const selectedDate = new Date(data.pickupDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(selectedDate.getTime()) || selectedDate < today) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pickupDate'],
+        message: 'Please select a valid future date',
+      });
+    }
+  }
 });
 
 const step2Schema = z.object({
@@ -296,6 +312,7 @@ const initialFormData: FormData = {
     items: [],
     serviceType: 'standard',
     crewSize: '1', // Default to 1 man (driver only) - base price
+    pickupDateChoice: 'known',
     pickupDate: '',
     pickupTimeSlot: undefined,
     urgency: 'scheduled',

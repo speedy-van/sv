@@ -39,6 +39,7 @@ import {
   Wrap,
   WrapItem,
   Tag,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
@@ -110,6 +111,9 @@ export default function WhoAndPaymentStepSimple({
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const toast = useToast();
   const isIOSDevice = useIsIOSDevice();
+  const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [mobilePriceCardLimit, setMobilePriceCardLimit] = useState(6);
 
   // Handle promotion code application
   const handleApplyPromotionCode = async () => {
@@ -433,6 +437,16 @@ export default function WhoAndPaymentStepSimple({
     return buildPriceCalendar(standardBase, 21, todayAnchor);
   }, [buildPriceCalendar, standardBase, todayAnchor]);
 
+  // Fallback media detection to ensure mobile UI toggles even if breakpoint hook fails
+  useEffect(() => {
+    const compute = () => setIsMobileView(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+
+  const effectiveIsMobile = isMobile || isMobileView;
+
   const isSameDay = (a: Date, b: Date) => {
     return a.getFullYear() === b.getFullYear() &&
       a.getMonth() === b.getMonth() &&
@@ -530,6 +544,22 @@ export default function WhoAndPaymentStepSimple({
     }
     return base;
   }, [priceCalendar, selectedDayKey]);
+
+  // Limit visible price cards on mobile and allow incremental loading
+  useEffect(() => {
+    const total = priceCalendar.length || 0;
+    if (!effectiveIsMobile) {
+      setMobilePriceCardLimit(total);
+      return;
+    }
+    // On mobile, always start with first 6 (or fewer if not available)
+    setMobilePriceCardLimit(Math.min(6, total));
+  }, [effectiveIsMobile, priceCalendar.length]);
+
+  const displayedPriceCalendar = useMemo(() => {
+    if (!effectiveIsMobile) return visiblePriceCalendar;
+    return visiblePriceCalendar.slice(0, mobilePriceCardLimit);
+  }, [effectiveIsMobile, mobilePriceCardLimit, visiblePriceCalendar]);
 
   // Debug logging only in development mode to reduce console noise
   if (process.env.NODE_ENV === 'development') {
@@ -955,7 +985,7 @@ export default function WhoAndPaymentStepSimple({
                 gap={{ base: 3, md: 4 }}
                 w="full"
               >
-                {visiblePriceCalendar.map((option) => {
+                {displayedPriceCalendar.map((option) => {
                   const level = getPriceLevel(option.price);
                   const cardIndex = priceCalendar.findIndex((p) => p.iso === option.iso);
                   const isSelected = selectedDayKey
@@ -1068,6 +1098,25 @@ export default function WhoAndPaymentStepSimple({
                   );
                 })}
               </Grid>
+
+              {effectiveIsMobile && displayedPriceCalendar.length < visiblePriceCalendar.length && (
+                <Box w="full" display="flex" justifyContent="center" mt={3}>
+                  <Button
+                    colorScheme="purple"
+                    size="lg"
+                    borderRadius="full"
+                    boxShadow="0 12px 28px rgba(124, 58, 237, 0.45)"
+                    onClick={() =>
+                      setMobilePriceCardLimit((prev) =>
+                        Math.min(prev + 6, visiblePriceCalendar.length)
+                      )
+                    }
+                    w="100%"
+                  >
+                    Load more dates
+                  </Button>
+                </Box>
+              )}
               
               {/* Selection Confirmation */}
               {selectedPriceOption && (

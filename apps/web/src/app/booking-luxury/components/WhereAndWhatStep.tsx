@@ -651,17 +651,38 @@ export default function WhereAndWhatStep({
                   📅 When do you need the move?
                 </Heading>
                 <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
-                  Select your preferred date and time
+                  Pick an estimated time or stay flexible and confirm later (pricing stays the same)
                 </Text>
               </VStack>
 
+              <HStack spacing={3} justify="center" flexWrap="wrap">
+                <Button
+                  variant={step1.pickupDateChoice === 'known' ? 'solid' : 'outline'}
+                  colorScheme="purple"
+                  onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
+                  size="sm"
+                  borderRadius="full"
+                >
+                  Option 1: Select estimated time
+                </Button>
+                <Button
+                  variant={step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
+                  colorScheme="gray"
+                  onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
+                  size="sm"
+                  borderRadius="full"
+                >
+                  Option 2: I’m flexible
+                </Button>
+              </HStack>
+
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
                 {/* Date */}
-                <FormControl isInvalid={!!errors['step1.pickupDate']}>
+                <FormControl isInvalid={step1.pickupDateChoice === 'known' && !!errors['step1.pickupDate']} isDisabled={step1.pickupDateChoice === 'unknown'}>
                   <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>📅 Select Date</FormLabel>
                   <Input
                     type="date"
-                    value={step1.pickupDate || ''}
+                    value={step1.pickupDateChoice === 'known' ? (step1.pickupDate || '') : ''}
                     onChange={(e) => updateFormData('step1', { pickupDate: e.target.value })}
                     min={(() => {
                       const tomorrow = new Date();
@@ -710,17 +731,22 @@ export default function WhereAndWhatStep({
                       },
                     }}
                   />
-                  {errors['step1.pickupDate'] && (
+                  {step1.pickupDateChoice === 'known' && errors['step1.pickupDate'] && (
                     <FormErrorMessage>{errors['step1.pickupDate']}</FormErrorMessage>
+                  )}
+                  {step1.pickupDateChoice === 'unknown' && (
+                    <Text color="gray.400" fontSize="xs" mt={2}>
+                      You can confirm your date later — we’ll hold today’s pricing.
+                    </Text>
                   )}
                 </FormControl>
 
                 {/* Time */}
-                <FormControl isInvalid={!!errors['step1.pickupTime']}>
-                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>⏰ Select Time</FormLabel>
+                <FormControl isInvalid={!!errors['step1.pickupTime']} isDisabled={step1.pickupDateChoice === 'unknown'}>
+                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>⏰ Select estimated time</FormLabel>
                   <Select
                     mb={4}
-                    value={step1.pickupTimeSlot || ''}
+                    value={step1.pickupDateChoice === 'known' ? (step1.pickupTimeSlot || '') : ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
                     bg="white"
                     borderColor="rgba(59, 130, 246, 0.4)"
@@ -730,7 +756,7 @@ export default function WhereAndWhatStep({
                     borderWidth="2px"
                     fontWeight="600"
                     cursor="pointer"
-                    placeholder="Choose a time"
+                    placeholder="Choose an estimated time"
                     _placeholder={{
                       color: 'gray.500',
                       fontWeight: '500',
@@ -771,6 +797,11 @@ export default function WhereAndWhatStep({
                   </Select>
                   {errors['step1.pickupTime'] && (
                     <FormErrorMessage>{errors['step1.pickupTime']}</FormErrorMessage>
+                  )}
+                  {step1.pickupDateChoice === 'unknown' && (
+                    <Text color="gray.400" fontSize="xs" mt={2}>
+                      Time optional — choose later without affecting your quote.
+                    </Text>
                   )}
                 </FormControl>
               </SimpleGrid>
