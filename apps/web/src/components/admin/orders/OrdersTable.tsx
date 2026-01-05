@@ -206,6 +206,32 @@ function calculatePriority(scheduledAt: string): {
   };
 }
 
+function formatBookingDurationLabel(totalMinutes: number): string {
+  if (totalMinutes < 1) return '<1 min';
+  if (totalMinutes < 60) return `${Math.round(totalMinutes)} min`;
+  const hours = totalMinutes / 60;
+  if (hours < 24) return `${hours.toFixed(1)} h`;
+  const days = hours / 24;
+  if (days < 7) return `${days.toFixed(1)} d`;
+  const weeks = days / 7;
+  return `${weeks.toFixed(1)} w`;
+}
+
+function computeBookingDuration(order: Partial<Order>): { label: string; start?: string; end?: string } | null {
+  if (!order?.createdAt) return null;
+  const start = new Date(order.createdAt);
+  const endRaw = order.completedAt || order.paidAt || (order as any).submittedAt || (order as any).checkoutCompletedAt || order.updatedAt;
+  if (!endRaw) return null;
+  const end = new Date(endRaw);
+  const minutes = differenceInMinutes(end, start);
+  if (Number.isNaN(minutes) || minutes < 0) return null;
+  return {
+    label: formatBookingDurationLabel(minutes),
+    start: order.createdAt,
+    end: endRaw as string,
+  };
+}
+
 interface Order {
   id: string;
   reference: string;
@@ -258,6 +284,10 @@ interface Order {
   routeId?: string | null;
   createdAt: string;
   paidAt?: string;
+  completedAt?: string;
+  submittedAt?: string;
+  checkoutCompletedAt?: string;
+  updatedAt?: string;
   durationSeconds?: number;
   assignment?: {
     status: string;
@@ -329,6 +359,12 @@ export function OrdersTable({
   const [draftStatusFilter, setDraftStatusFilter] = useState<string>('');
   const [draftFromDate, setDraftFromDate] = useState<string>('');
   const [draftToDate, setDraftToDate] = useState<string>('');
+  const draftDurationLabel = useMemo(() => {
+    if (!draftResult?.createdAt || !draftResult?.updatedAt) return null;
+    const minutes = differenceInMinutes(new Date(draftResult.updatedAt), new Date(draftResult.createdAt));
+    if (Number.isNaN(minutes) || minutes < 0) return null;
+    return formatBookingDurationLabel(minutes);
+  }, [draftResult?.createdAt, draftResult?.updatedAt]);
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   const [dateRange, setDateRange] = useState('');
@@ -2447,7 +2483,7 @@ export function OrdersTable({
                       />
                     </Td>
                     <Td py={3}>
-                      <HStack spacing={3}>
+                      <HStack spacing={3} align="center" flexWrap="wrap">
                         <Circle
                           size="14px"
                           bg={
@@ -2482,6 +2518,19 @@ export function OrdersTable({
                         >
                           #{order.reference || 'N/A'}
                         </Text>
+                        {computeBookingDuration(order) && (
+                          <Badge
+                            colorScheme="orange"
+                            variant="subtle"
+                            borderRadius="full"
+                            px={2.5}
+                            py={1}
+                            fontSize="xs"
+                            fontWeight="semibold"
+                          >
+                            ⏱️ {computeBookingDuration(order)?.label}
+                          </Badge>
+                        )}
                       </HStack>
                     </Td>
                     <Td py={3}>
@@ -2708,6 +2757,11 @@ export function OrdersTable({
                             ? formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })
                             : ''}
                         </Text>
+                        {computeBookingDuration(order) && (
+                          <Text fontSize="xs" color="orange.200" fontWeight="semibold">
+                            ⏱️ Booking time: {computeBookingDuration(order)?.label}
+                          </Text>
+                        )}
                       </VStack>
                     </Td>
                     <Td>
@@ -5434,6 +5488,15 @@ export function OrdersTable({
                     <Icon as={FaEdit} boxSize={3} />
                     <Text>Updated: {draftResult?.updatedAt ? format(new Date(draftResult.updatedAt), 'dd MMM yyyy, HH:mm') : '—'}</Text>
                   </HStack>
+                  {draftDurationLabel && (
+                    <>
+                      <Box w="1px" h="12px" bg="#334155" />
+                      <HStack spacing={1}>
+                        <Icon as={FaClock} boxSize={3} />
+                        <Text>Elapsed: {draftDurationLabel}</Text>
+                      </HStack>
+                    </>
+                  )}
                 </HStack>
               </VStack>
               <IconButton

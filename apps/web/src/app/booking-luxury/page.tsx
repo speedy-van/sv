@@ -32,8 +32,9 @@ import {
   Spinner,
   SimpleGrid,
   IconButton,
+  useClipboard,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash, FaCopy } from 'react-icons/fa';
 import { Image } from '@chakra-ui/react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -86,10 +87,31 @@ const STEPS = [
   },
 ];
 
+const normalizeUkPostcode = (postcode?: string | null) => {
+  if (!postcode) return '';
+  const cleaned = postcode.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cleaned.length < 5) return cleaned;
+  const front = cleaned.slice(0, cleaned.length - 3);
+  const end = cleaned.slice(-3);
+  return `${front} ${end}`.trim();
+};
+
+const isValidUkPostcode = (postcode?: string | null) => {
+  if (!postcode) return false;
+  const pc = postcode.trim().toUpperCase();
+  return /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/.test(pc);
+};
+
 export default function BookingLuxuryPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isClient, setIsClient] = useState<boolean>(false);
   const router = useRouter();
+  const handleClearBookingProgress = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    safeLocalStorageRemoveItem('sv_booking_luxury_last_step');
+    setResumeStep(null);
+    router.replace('/booking-luxury');
+  }, [router]);
   
   // Wave effects for step headers
   const [addressWaveActive, setAddressWaveActive] = useState(false);
@@ -141,6 +163,18 @@ export default function BookingLuxuryPage() {
     };
   }, []);
 
+  // Track last step visited to decide when to show resume banner
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem('sv_booking_luxury_last_step');
+    if (stored) {
+      const num = parseInt(stored, 10);
+      if (!Number.isNaN(num)) {
+        setResumeStep(num);
+      }
+    }
+  }, []);
+
   // Auto-open chat when requested via header CTA
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -160,6 +194,15 @@ export default function BookingLuxuryPage() {
       }
     }
   }, [onChatOpen]);
+
+  // Persist current step so user can resume if they navigate away
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('sv_booking_luxury_last_step', String(currentStep));
+    if (formData.step2.bookingReference) {
+      window.localStorage.setItem('sv_booking_luxury_reference', formData.step2.bookingReference);
+    }
+  }, [currentStep]);
   
 
   /**
@@ -210,6 +253,10 @@ export default function BookingLuxuryPage() {
     express: any;
   } | null>(null);
   const [isLoadingReference, setIsLoadingReference] = useState(false);
+  const [resumeStep, setResumeStep] = useState<number | null>(null);
+  const bookingReference = formData.step2.bookingReference;
+  const isReferenceLoading = isLoadingReference && !bookingReference;
+  const { hasCopied: hasCopiedReference, onCopy: copyBookingReference } = useClipboard(bookingReference || '');
 
   // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
@@ -404,7 +451,7 @@ export default function BookingLuxuryPage() {
             full: pickupNorm?.full || 'Pickup Address',
             line1: pickupNorm?.line1 || '1 Main Street',
             city: pickupNorm?.city || 'London',
-            postcode: pickupNorm?.postcode || 'SW1A 1AA',
+            postcode: pickupPostcode || 'SW1A 1AA',
             propertyType: 'house' as const,
             street: pickupNorm?.street || 'Main Street',
             number: pickupNorm?.number || '1',
@@ -796,8 +843,10 @@ export default function BookingLuxuryPage() {
     const itemsToUse = hasSegmentItems ? segments[0].items : formData.step1.items;
 
     // Normalize addresses to consistent schema
-    const pickupNorm = normalizeAddressForPricing(formData.step1.pickupAddress);
-    const dropNorm = normalizeAddressForPricing(formData.step1.dropoffAddress);
+    const pickupNormRaw = normalizeAddressForPricing(formData.step1.pickupAddress);
+    const dropNormRaw = normalizeAddressForPricing(formData.step1.dropoffAddress);
+    const pickupNorm = pickupNormRaw ? { ...pickupNormRaw, postcode: normalizeUkPostcode(pickupNormRaw.postcode) } : null;
+    const dropNorm = dropNormRaw ? { ...dropNormRaw, postcode: normalizeUkPostcode(dropNormRaw.postcode) } : null;
     const segmentDropoffs = (formData.step1.segments || [])
       .map((segment: any) => ({
         norm: normalizeAddressForPricing(segment.dropoffAddress),
@@ -805,19 +854,22 @@ export default function BookingLuxuryPage() {
       }))
       .filter(({ norm }) => norm && norm.postcode);
 
-    const buildDropoffPayload = (norm: any, property?: any) => ({
-      full: norm?.full || 'Dropoff Address',
-      line1: norm?.line1 || '1 Main Street',
-      city: norm?.city || 'London',
-      postcode: norm?.postcode || 'SW1A 1AA',
-      propertyType: property?.type || 'house',
-      street: norm?.street || 'Main Street',
-      number: norm?.number || '1',
-      coordinates: {
-        lat: norm?.coordinates?.lat || 0,
-        lng: norm?.coordinates?.lng || 0
-      }
-    });
+    const buildDropoffPayload = (norm: any, property?: any) => {
+      const postcode = normalizeUkPostcode(norm?.postcode || '');
+      return {
+        full: norm?.full || 'Dropoff Address',
+        line1: norm?.line1 || '1 Main Street',
+        city: norm?.city || 'London',
+        postcode: postcode || 'SW1A 1AA',
+        propertyType: property?.type || 'house',
+        street: norm?.street || 'Main Street',
+        number: norm?.number || '1',
+        coordinates: {
+          lat: norm?.coordinates?.lat || 0,
+          lng: norm?.coordinates?.lng || 0
+        }
+      };
+    };
 
     const dropoffsPayload: any[] = [];
 
@@ -840,6 +892,23 @@ export default function BookingLuxuryPage() {
     // Validate addresses exist
     if (!pickupNorm || !dropNorm) {
       console.warn('Missing address data - cannot calculate pricing');
+      return;
+    }
+
+    // Validate UK postcodes
+    const pickupPostcode = normalizeUkPostcode(pickupNorm.postcode);
+    const dropPostcode = normalizeUkPostcode(dropNorm.postcode);
+
+    if (!isValidUkPostcode(pickupPostcode) || !isValidUkPostcode(dropPostcode)) {
+      console.warn('Invalid UK postcode format; skipping pricing', { pickupPostcode, dropPostcode });
+      toast({
+        title: 'Postcode needed',
+        description: 'Please enter valid UK postcodes (e.g., SW1A 1AA, M1 1AE).',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsLoadingAvailability(false);
       return;
     }
 
@@ -1635,6 +1704,7 @@ export default function BookingLuxuryPage() {
     <Box 
       display="block" 
       w="100%" 
+      minW="0"
       bg={bgColor} 
       position="relative"
       overflow="hidden"
@@ -1682,10 +1752,12 @@ export default function BookingLuxuryPage() {
         pt={{ base: 2, md: 0 }}
         position="relative"
         zIndex={1}
+        minW="0"
       >
         <Box 
           display="block" 
           w="100%" 
+          minW="0"
           py={{ base: 2, md: 8 }}
         >
           {/* SIMPLIFIED STICKY HEADER - Modern & Clean - MOBILE SAFARI FIX */}
@@ -1726,6 +1798,70 @@ export default function BookingLuxuryPage() {
                     alignItems: 'center !important',
                   }}
                 >
+                  <VStack spacing={0} align="flex-start">
+                    <Text 
+                      fontSize={{ base: 'lg', md: '2xl' }}
+                      fontWeight="900"
+                      letterSpacing="tight"
+                      bgGradient="linear(to-r, blue.300, cyan.300, purple.400)"
+                      bgClip="text"
+                      lineHeight="1.2"
+                      fontFamily="'Inter', sans-serif"
+                      animation="gradientShift 4s ease infinite, textGlow 2s ease-in-out infinite"
+                      sx={{
+                        '@keyframes gradientShift': {
+                          '0%, 100%': {
+                            backgroundPosition: '0% 50%',
+                            backgroundSize: '200% 200%',
+                          },
+                          '50%': {
+                            backgroundPosition: '100% 50%',
+                            backgroundSize: '200% 200%',
+                          },
+                        },
+                        '@keyframes textGlow': {
+                          '0%, 100%': {
+                            filter: 'drop-shadow(0 0 2px rgba(59, 130, 246, 0.4))',
+                            transform: 'scale(1)',
+                          },
+                          '50%': {
+                            filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 12px rgba(139, 92, 246, 0.6))',
+                            transform: 'scale(1.02)',
+                          },
+                        },
+                      }}
+                      transition="all 0.3s"
+                      _hover={{
+                        transform: 'scale(1.05)',
+                        filter: 'drop-shadow(0 0 12px rgba(34, 211, 238, 1))',
+                      }}
+                    >
+                      Speedy Van
+                    </Text>
+                    <Text
+                      fontSize={{ base: '2xs', md: 'xs' }}
+                      color="whiteAlpha.700"
+                      fontWeight="600"
+                      letterSpacing="wide"
+                      animation="fadeInOut 3s ease-in-out infinite"
+                      sx={{
+                        '@keyframes fadeInOut': {
+                          '0%, 100%': {
+                            opacity: 0.7,
+                          },
+                          '50%': {
+                            opacity: 1,
+                          },
+                        },
+                      }}
+                    >
+                      Professional Moving
+                    </Text>
+                  </VStack>
+                </HStack>
+
+                {/* Right: Truck + Premium Call Icon Button */}
+                <Flex align="center" gap={{ base: 2, md: 3 }}>
                   <Box
                     position="relative"
                     w={{ base: '45px', md: '55px' }}
@@ -1807,103 +1943,41 @@ export default function BookingLuxuryPage() {
                       }}
                     />
                   </Box>
-                  <VStack spacing={0} align="flex-start">
-                    <Text 
-                      fontSize={{ base: 'lg', md: '2xl' }}
-                      fontWeight="900"
-                      letterSpacing="tight"
-                      bgGradient="linear(to-r, blue.300, cyan.300, purple.400)"
-                      bgClip="text"
-                      lineHeight="1.2"
-                      fontFamily="'Inter', sans-serif"
-                      animation="gradientShift 4s ease infinite, textGlow 2s ease-in-out infinite"
-                      sx={{
-                        '@keyframes gradientShift': {
-                          '0%, 100%': {
-                            backgroundPosition: '0% 50%',
-                            backgroundSize: '200% 200%',
-                          },
-                          '50%': {
-                            backgroundPosition: '100% 50%',
-                            backgroundSize: '200% 200%',
-                          },
-                        },
-                        '@keyframes textGlow': {
-                          '0%, 100%': {
-                            filter: 'drop-shadow(0 0 2px rgba(59, 130, 246, 0.4))',
-                            transform: 'scale(1)',
-                          },
-                          '50%': {
-                            filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) drop-shadow(0 0 12px rgba(139, 92, 246, 0.6))',
-                            transform: 'scale(1.02)',
-                          },
-                        },
-                      }}
-                      transition="all 0.3s"
-                      _hover={{
-                        transform: 'scale(1.05)',
-                        filter: 'drop-shadow(0 0 12px rgba(34, 211, 238, 1))',
-                      }}
-                    >
-                      Speedy Van
-                    </Text>
-                    <Text
-                      fontSize={{ base: '2xs', md: 'xs' }}
-                      color="whiteAlpha.700"
-                      fontWeight="600"
-                      letterSpacing="wide"
-                      animation="fadeInOut 3s ease-in-out infinite"
-                      sx={{
-                        '@keyframes fadeInOut': {
-                          '0%, 100%': {
-                            opacity: 0.7,
-                          },
-                          '50%': {
-                            opacity: 1,
-                          },
-                        },
-                      }}
-                    >
-                      Professional Moving
-                    </Text>
-                  </VStack>
-                </HStack>
+                  <IconButton
+                    as="a"
+                    href="tel:+441202129746"
+                    aria-label="Call Speedy Van"
+                    icon={<Icon as={FaPhone} boxSize={{ base: 5, md: 6 }} />}
 
-                {/* Right: Premium Call Icon Button */}
-                <IconButton
-                  as="a"
-                  href="tel:+441202129746"
-                  aria-label="Call Speedy Van"
-                  icon={<Icon as={FaPhone} boxSize={{ base: 5, md: 6 }} />}
-
-                  size={{ base: 'lg', md: 'xl' }}
-                  bgGradient="linear(to-br, #10b981, #059669)"
-                  color="white"
-                  borderRadius="full"
-                  border="3px solid"
-                  borderColor="white"
-                  boxShadow="0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)"
-                  position="relative"
-                  overflow="hidden"
-                  transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                  sx={{
-                    '@keyframes phonePulse': {
-                      '0%, 100%': { boxShadow: '0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3)' },
-                      '50%': { boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5)' },
-                    },
-                    animation: 'phonePulse 2s ease-in-out infinite',
-                  }}
-                  _hover={{
-                    transform: 'scale(1.15) rotate(-5deg)',
-                    bgGradient: "linear(to-br, #059669, #047857)",
-                    boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)',
-                    borderWidth: '4px'
-                  }}
-                  _active={{
-                    transform: 'scale(1.05) rotate(0deg)',
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(0,0,0,0.2)'
-                  }}
-                />
+                    size={{ base: 'lg', md: 'xl' }}
+                    bgGradient="linear(to-br, #10b981, #059669)"
+                    color="white"
+                    borderRadius="full"
+                    border="3px solid"
+                    borderColor="white"
+                    boxShadow="0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.3)"
+                    position="relative"
+                    overflow="hidden"
+                    transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                    sx={{
+                      '@keyframes phonePulse': {
+                        '0%, 100%': { boxShadow: '0 8px 24px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3)' },
+                        '50%': { boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5)' },
+                      },
+                      animation: 'phonePulse 2s ease-in-out infinite',
+                    }}
+                    _hover={{
+                      transform: 'scale(1.15) rotate(-5deg)',
+                      bgGradient: "linear(to-br, #059669, #047857)",
+                      boxShadow: '0 12px 32px rgba(16, 185, 129, 0.7), 0 0 30px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.4)',
+                      borderWidth: '4px'
+                    }}
+                    _active={{
+                      transform: 'scale(1.05) rotate(0deg)',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(0,0,0,0.2)'
+                    }}
+                  />
+                </Flex>
               </Flex>
 
               {/* Bottom: Progress Steps - Enhanced Design with Labels */}
@@ -2057,44 +2131,6 @@ export default function BookingLuxuryPage() {
             </VStack>
           </Box>
 
-          {/* Booking reference banner - visible from step 1 */}
-          {formData.step2.bookingReference && (
-            <Alert
-              status="info"
-              variant="subtle"
-              bg="rgba(59, 130, 246, 0.12)"
-              border="1px solid"
-              borderColor="blue.400"
-              color="white"
-              mb={{ base: 4, md: 6 }}
-              borderRadius="lg"
-            >
-              <AlertIcon />
-              <Box>
-                <AlertTitle 
-                  fontSize="md" 
-                  fontWeight="800" 
-                  color="white"
-                  letterSpacing="wide"
-                >
-                  Your booking reference
-                </AlertTitle>
-                <AlertDescription fontSize="sm" color="whiteAlpha.900" mt={1}>
-                  <Text 
-                    as="span" 
-                    fontFamily="mono" 
-                    fontWeight="700" 
-                    color="blue.100"
-                    mr={2}
-                  >
-                    {formData.step2.bookingReference}
-                  </Text>
-                  Share this with support or admin for any changes.
-                </AlertDescription>
-              </Box>
-            </Alert>
-          )}
-
           {/* Step Title - Enhanced Typography & Design */}
           <Box 
             mb={{ base: 4, md: 8 }} 
@@ -2127,6 +2163,46 @@ export default function BookingLuxuryPage() {
               {STEPS[currentStep - 1]?.description}
             </Text>
           </Box>
+
+          {(bookingReference || isReferenceLoading) && (
+            <Box mb={{ base: 4, md: 6 }}>
+              <Alert
+                status="info"
+                variant="subtle"
+                bg="rgba(59, 130, 246, 0.12)"
+                border="1px solid"
+                borderColor="blue.400"
+                borderRadius="lg"
+                px={{ base: 3, md: 4 }}
+                py={{ base: 3, md: 4 }}
+              >
+                <AlertIcon />
+                <Flex w="full" align="center" justify="space-between" gap={3} flexWrap="wrap">
+                  <Box>
+                    <AlertTitle color="white" fontSize="sm">
+                      Booking reference
+                    </AlertTitle>
+                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
+                      {bookingReference || 'Generating your reference...'}
+                    </AlertDescription>
+                  </Box>
+                  {bookingReference ? (
+                    <Button
+                      size="sm"
+                      leftIcon={<FaCopy />}
+                      onClick={copyBookingReference}
+                      colorScheme={hasCopiedReference ? 'green' : 'blue'}
+                      variant="solid"
+                    >
+                      {hasCopiedReference ? 'Copied' : 'Copy'}
+                    </Button>
+                  ) : (
+                    <Spinner size="sm" color="white" />
+                  )}
+                </Flex>
+              </Alert>
+            </Box>
+          )}
 
           {/* Main Content - NO ANIMATIONS, STABLE KEYS to prevent scroll jumps */}
           <Box 

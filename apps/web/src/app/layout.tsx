@@ -25,6 +25,7 @@ import { StructuredData } from '@/components/StructuredData';
 import { FloatingCallButton } from '@/components/mobile/FloatingCallButton';
 import { IOSDeviceClassManager } from '@/components/mobile/IOSDeviceClassManager';
 import { IOSViewportFix } from '@/components/mobile/IOSViewportFix';
+import BookingInProgressPopup from '@/components/booking/BookingInProgressPopup';
 import {
   APP_BASE_URL,
   BRAND_NAME,
@@ -203,6 +204,7 @@ export default async function RootLayout({
                 }}
               />
               <IOSViewportFix />
+              <BookingInProgressPopup />
               {children}
               <FloatingCallButton />
             </ConsentProvider>
