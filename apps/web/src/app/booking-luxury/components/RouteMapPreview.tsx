@@ -378,6 +378,28 @@ export default function RouteMapPreview({
         const mapboxgl = (window as any).mapboxgl;
         mapboxgl.accessToken = token;
 
+        // Suppress CacheStorage errors in development (caused by localhost not supporting CacheStorage)
+        // This is a known Mapbox issue on HTTP localhost
+        if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+          // Handle unhandled promise rejections from Mapbox workers
+          const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+            const message = event.reason?.message || event.reason?.toString?.() || '';
+            if (message.includes('CacheStorage') || message.includes('security policy')) {
+              event.preventDefault(); // Suppress the error
+              return;
+            }
+          };
+          window.addEventListener('unhandledrejection', handleUnhandledRejection);
+          
+          // Clean up listener when component unmounts
+          const originalCleanup = () => {
+            window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+          };
+          
+          // Store cleanup for later
+          (window as any).__mapboxCacheErrorCleanup = originalCleanup;
+        }
+
         mapContainerRef.current.innerHTML = '';
         mapRef.current = new mapboxgl.Map({
           container: mapContainerRef.current,
@@ -389,6 +411,15 @@ export default function RouteMapPreview({
               ? [dropoff.lng, dropoff.lat]
               : [-3.435973, 55.378051],
           zoom: 10,
+          // Disable tile caching to prevent CacheStorage SecurityError in development
+          localIdeographFontFamily: "'Noto Sans', 'Noto Sans CJK SC', sans-serif",
+          transformRequest: (url: string, resourceType: string) => {
+            return {
+              url,
+              // Disable caching in development to avoid CacheStorage errors
+              credentials: 'same-origin' as const,
+            };
+          },
         });
 
         mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -429,6 +460,12 @@ export default function RouteMapPreview({
       }
       clearMarkers();
       stopVanAnimation();
+      
+      // Clean up CacheStorage error handler
+      if ((window as any).__mapboxCacheErrorCleanup) {
+        (window as any).__mapboxCacheErrorCleanup();
+        delete (window as any).__mapboxCacheErrorCleanup;
+      }
     };
   }, [addMarkersAndRoute, clearMarkers, dropoff, ensureMapboxLoaded, pickup, stopVanAnimation]);
 

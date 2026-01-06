@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
@@ -44,6 +44,7 @@ import {
   DrawerHeader,
   DrawerBody,
   DrawerCloseButton,
+  Collapse,
 } from '@chakra-ui/react';
 
 import {
@@ -75,8 +76,11 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaEye,
+  FaInfoCircle,
 } from 'react-icons/fa';
 import { MdElevator, MdKitchen, MdLocalLaundryService, MdTv } from 'react-icons/md';
+
+import CategoryFlipCard, { CATEGORY_CONFIGS, CategoryConfig } from '@/components/ui/CategoryFlipCard';
 
 import type { FormData } from '../hooks/useBookingForm';
 import { 
@@ -123,7 +127,28 @@ export default function WhereAndWhatStep({
   // State for item selection mode
   const [itemSelectionMode, setItemSelectionMode] = useState<'smart' | 'choose' | 'packages'>('choose');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Bedroom');
+  
+  // ✅ NEW: Auto-add items toggle (manual vs automatic)
+  const [autoAddItems, setAutoAddItems] = useState(true);
+  const [selectedMoveType, setSelectedMoveType] = useState<'house' | 'flat' | 'office' | 'storage' | 'single' | null>(null);
+  const [selectedPropertySize, setSelectedPropertySize] = useState<string | null>(null);
+  
+  // ✅ Handle initial category from URL (when user clicks category card)
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    // Check URL params for initial category
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const categoryParam = urlParams.get('category');
+      if (categoryParam) {
+        const matchedCategory = getAllCategories().find(
+          (c) => c.toLowerCase().includes(categoryParam.toLowerCase().split(' ')[0]) ||
+                 categoryParam.toLowerCase().includes(c.toLowerCase().split(' ')[0])
+        );
+        return matchedCategory || 'Bedroom';
+      }
+    }
+    return 'Bedroom';
+  });
   
   // ✅ NEW: Advanced filtering and sorting
   const [selectedSubcategory, setSelectedSubcategory] = useState('All');
@@ -633,53 +658,211 @@ export default function WhereAndWhatStep({
           </Card>
         )}
 
-        {/* Date & Time Selection */}
+        {/* Date & Time Selection - Enhanced Design */}
         <Card 
-          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+          bg="linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(31, 41, 55, 0.95) 100%)"
           backdropFilter="blur(20px)"
-          borderRadius="xl"
-          border="2px solid"
-          borderColor="rgba(168, 85, 247, 0.4)"
-          boxShadow="0 8px 32px rgba(168, 85, 247, 0.3)"
+          borderRadius="2xl"
+          border="1px solid"
+          borderColor="rgba(168, 85, 247, 0.3)"
+          boxShadow="0 20px 50px rgba(168, 85, 247, 0.2)"
+          overflow="hidden"
+          position="relative"
         >
-          <CardBody p={{ base: 4, md: 6 }}>
-            <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+          {/* Decorative gradient top border */}
+          <Box 
+            h="4px" 
+            bgGradient="linear(to-r, purple.400, pink.400, blue.400)" 
+          />
+          
+          {/* Floating decorative element */}
+          <Box
+            position="absolute"
+            top="-50px"
+            right="-50px"
+            w="150px"
+            h="150px"
+            borderRadius="full"
+            bg="radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%)"
+            pointerEvents="none"
+          />
+          
+          <CardBody p={{ base: 5, md: 8 }}>
+            <VStack spacing={{ base: 5, md: 7 }} align="stretch">
               
-              {/* Header */}
-              <VStack spacing={2} textAlign="center">
-                <Heading size={{ base: "md", md: "lg" }} color="white">
-                  📅 When do you need the move?
-                </Heading>
-                <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
-                  Pick an estimated time or stay flexible and confirm later (pricing stays the same)
+              {/* Enhanced Header */}
+              <VStack spacing={3} textAlign="center">
+                <HStack spacing={3} justify="center">
+                  <Box
+                    p={3}
+                    borderRadius="xl"
+                    bg="linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)"
+                    border="1px solid"
+                    borderColor="rgba(168, 85, 247, 0.3)"
+                  >
+                    <Icon as={FaCalendarAlt} boxSize={6} color="purple.400" />
+                  </Box>
+                  <Heading 
+                    size={{ base: "lg", md: "xl" }} 
+                    bgGradient="linear(to-r, purple.300, pink.300)"
+                    bgClip="text"
+                    fontWeight="800"
+                    letterSpacing="tight"
+                  >
+                    When do you need the move?
+                  </Heading>
+                </HStack>
+                <Text color="gray.400" fontSize={{ base: "sm", md: "md" }} maxW="500px">
+                  Pick your preferred schedule or stay flexible — pricing stays the same either way
                 </Text>
               </VStack>
 
-              <HStack spacing={3} justify="center" flexWrap="wrap">
-                <Button
-                  variant={step1.pickupDateChoice === 'known' ? 'solid' : 'outline'}
-                  colorScheme="purple"
+              {/* Enhanced Date Choice Buttons */}
+              <SimpleGrid columns={2} spacing={{ base: 3, md: 4 }} w="full" maxW="650px" mx="auto">
+                {/* Option 1: I Know My Date */}
+                <Box
+                  as="button"
                   onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
-                  size="sm"
-                  borderRadius="full"
+                  p={{ base: 4, md: 6 }}
+                  borderRadius="2xl"
+                  border="2px solid"
+                  borderColor={step1.pickupDateChoice === 'known' ? 'green.400' : 'rgba(75, 85, 99, 0.5)'}
+                  bg={step1.pickupDateChoice === 'known' 
+                    ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%)' 
+                    : 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)'}
+                  boxShadow={step1.pickupDateChoice === 'known' 
+                    ? '0 0 30px rgba(34, 197, 94, 0.25), inset 0 0 20px rgba(34, 197, 94, 0.05)' 
+                    : '0 4px 15px rgba(0, 0, 0, 0.2)'}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{ 
+                    borderColor: step1.pickupDateChoice === 'known' ? 'green.300' : 'purple.400', 
+                    transform: 'translateY(-4px)', 
+                    boxShadow: step1.pickupDateChoice === 'known' 
+                      ? '0 15px 40px rgba(34, 197, 94, 0.3)' 
+                      : '0 15px 40px rgba(168, 85, 247, 0.25)' 
+                  }}
+                  position="relative"
+                  overflow="hidden"
                 >
-                  Option 1: Select estimated time
-                </Button>
-                <Button
-                  variant={step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
-                  colorScheme="gray"
+                  {step1.pickupDateChoice === 'known' && (
+                    <Circle 
+                      size="28px" 
+                      bg="green.500" 
+                      position="absolute" 
+                      top={3} 
+                      right={3}
+                      boxShadow="0 0 15px rgba(34, 197, 94, 0.5)"
+                    >
+                      <Icon as={FaCheck} color="white" boxSize={3.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={3}>
+                    <Box
+                      p={3}
+                      borderRadius="xl"
+                      bg={step1.pickupDateChoice === 'known' 
+                        ? 'rgba(34, 197, 94, 0.2)' 
+                        : 'rgba(168, 85, 247, 0.15)'}
+                      transition="all 0.3s"
+                    >
+                      <Icon 
+                        as={FaCalendarAlt} 
+                        boxSize={{ base: 6, md: 8 }} 
+                        color={step1.pickupDateChoice === 'known' ? 'green.400' : 'purple.400'} 
+                      />
+                    </Box>
+                    <VStack spacing={1}>
+                      <Text color="white" fontWeight="700" fontSize={{ base: "sm", md: "lg" }}>
+                        I Know My Date
+                      </Text>
+                      <Text color="gray.400" fontSize={{ base: "xs", md: "sm" }} textAlign="center" lineHeight="short">
+                        Select specific date & time
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </Box>
+                {/* Option 2: I Am Flexible */}
+                <Box
+                  as="button"
                   onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
-                  size="sm"
-                  borderRadius="full"
+                  p={{ base: 4, md: 6 }}
+                  borderRadius="2xl"
+                  border="2px solid"
+                  borderColor={step1.pickupDateChoice === 'unknown' ? 'blue.400' : 'rgba(75, 85, 99, 0.5)'}
+                  bg={step1.pickupDateChoice === 'unknown' 
+                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%)' 
+                    : 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%)'}
+                  boxShadow={step1.pickupDateChoice === 'unknown' 
+                    ? '0 0 30px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(59, 130, 246, 0.05)' 
+                    : '0 4px 15px rgba(0, 0, 0, 0.2)'}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _hover={{ 
+                    borderColor: step1.pickupDateChoice === 'unknown' ? 'blue.300' : 'purple.400', 
+                    transform: 'translateY(-4px)', 
+                    boxShadow: step1.pickupDateChoice === 'unknown' 
+                      ? '0 15px 40px rgba(59, 130, 246, 0.3)' 
+                      : '0 15px 40px rgba(168, 85, 247, 0.25)' 
+                  }}
+                  position="relative"
+                  overflow="hidden"
                 >
-                  Option 2: I’m flexible
-                </Button>
-              </HStack>
+                  {step1.pickupDateChoice === 'unknown' && (
+                    <Circle 
+                      size="28px" 
+                      bg="blue.500" 
+                      position="absolute" 
+                      top={3} 
+                      right={3}
+                      boxShadow="0 0 15px rgba(59, 130, 246, 0.5)"
+                    >
+                      <Icon as={FaCheck} color="white" boxSize={3.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={3}>
+                    <Box
+                      p={3}
+                      borderRadius="xl"
+                      bg={step1.pickupDateChoice === 'unknown' 
+                        ? 'rgba(59, 130, 246, 0.2)' 
+                        : 'rgba(168, 85, 247, 0.15)'}
+                      transition="all 0.3s"
+                    >
+                      <Icon 
+                        as={FaClock} 
+                        boxSize={{ base: 6, md: 8 }} 
+                        color={step1.pickupDateChoice === 'unknown' ? 'blue.400' : 'purple.400'} 
+                      />
+                    </Box>
+                    <VStack spacing={1}>
+                      <Text color="white" fontWeight="700" fontSize={{ base: "sm", md: "lg" }}>
+                        I'm Flexible
+                      </Text>
+                      <Text color="gray.400" fontSize={{ base: "xs", md: "sm" }} textAlign="center" lineHeight="short">
+                        We'll contact you to arrange
+                      </Text>
+                    </VStack>
+                  </VStack>
+                </Box>
+              </SimpleGrid>
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
+              {/* Date & Time Inputs with Collapse Animation */}
+              <Collapse in={step1.pickupDateChoice === 'known'} animateOpacity>
+                <Box
+                  p={{ base: 4, md: 5 }}
+                  bg="rgba(17, 24, 39, 0.6)"
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="rgba(75, 85, 99, 0.3)"
+                >
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 4, md: 5 }}>
                 {/* Date */}
-                <FormControl isInvalid={step1.pickupDateChoice === 'known' && !!errors['step1.pickupDate']} isDisabled={step1.pickupDateChoice === 'unknown'}>
-                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>📅 Select Date</FormLabel>
+                <FormControl isInvalid={step1.pickupDateChoice === 'known' && !!errors['step1.pickupDate']}>
+                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }} fontWeight="600">
+                    <HStack spacing={2}>
+                      <Icon as={FaCalendarAlt} color="purple.400" boxSize={4} />
+                      <Text>Select Date</Text>
+                    </HStack>
+                  </FormLabel>
                   <Input
                     type="date"
                     value={step1.pickupDateChoice === 'known' ? (step1.pickupDate || '') : ''}
@@ -689,27 +872,30 @@ export default function WhereAndWhatStep({
                       tomorrow.setDate(tomorrow.getDate() + 1);
                       return tomorrow.toISOString().split('T')[0];
                     })()}
-                    bg="rgba(26, 26, 26, 0.8)"
-                    borderColor="rgba(59, 130, 246, 0.3)"
+                    bg="rgba(30, 41, 59, 0.8)"
+                    borderColor="rgba(168, 85, 247, 0.3)"
                     color="white"
                     size="lg"
                     borderRadius="xl"
-                    borderWidth="1px"
+                    borderWidth="2px"
                     fontWeight="500"
+                    h="54px"
                     _hover={{
-                      borderColor: "rgba(59, 130, 246, 0.5)",
-                      bg: "rgba(26, 26, 26, 0.9)",
+                      borderColor: "rgba(168, 85, 247, 0.5)",
+                      bg: "rgba(30, 41, 59, 0.9)",
                     }}
                     _focus={{
-                      borderColor: "blue.500",
-                      boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.3)",
-                      bg: "rgba(26, 26, 26, 0.95)",
+                      borderColor: "purple.400",
+                      boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)",
+                      bg: "rgba(30, 41, 59, 0.95)",
                     }}
                     sx={{
                       colorScheme: 'dark',
                       '&::-webkit-calendar-picker-indicator': {
                         filter: 'invert(1)',
                         cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '8px',
                       },
                       '&::-webkit-datetime-edit': {
                         color: 'white',
@@ -742,32 +928,37 @@ export default function WhereAndWhatStep({
                 </FormControl>
 
                 {/* Time */}
-                <FormControl isInvalid={!!errors['step1.pickupTime']} isDisabled={step1.pickupDateChoice === 'unknown'}>
-                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }}>⏰ Select estimated time</FormLabel>
+                <FormControl isInvalid={!!errors['step1.pickupTime']}>
+                  <FormLabel color="white" fontSize={{ base: "sm", md: "md" }} fontWeight="600">
+                    <HStack spacing={2}>
+                      <Icon as={FaClock} color="blue.400" boxSize={4} />
+                      <Text>Select Time Slot</Text>
+                    </HStack>
+                  </FormLabel>
                   <Select
-                    mb={4}
                     value={step1.pickupDateChoice === 'known' ? (step1.pickupTimeSlot || '') : ''}
                     onChange={(e) => updateFormData('step1', { pickupTimeSlot: e.target.value })}
                     bg="white"
-                    borderColor="rgba(59, 130, 246, 0.4)"
+                    borderColor="rgba(168, 85, 247, 0.4)"
                     color="gray.900"
                     size="lg"
                     borderRadius="xl"
                     borderWidth="2px"
                     fontWeight="600"
                     cursor="pointer"
-                    placeholder="Choose an estimated time"
+                    h="54px"
+                    placeholder="Choose time slot"
                     _placeholder={{
                       color: 'gray.500',
                       fontWeight: '500',
                     }}
                     _hover={{
-                      borderColor: "rgba(59, 130, 246, 0.7)",
-                      boxShadow: "0 4px 12px rgba(59, 130, 246, 0.15)"
+                      borderColor: "rgba(168, 85, 247, 0.7)",
+                      boxShadow: "0 4px 15px rgba(168, 85, 247, 0.15)"
                     }}
                     _focus={{
-                      borderColor: "blue.500",
-                      boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.25)",
+                      borderColor: "purple.500",
+                      boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.2)",
                       outline: "none",
                     }}
                     transition="all 0.2s ease"
@@ -785,26 +976,352 @@ export default function WhereAndWhatStep({
                         backgroundColor: '#f3f4f6',
                       },
                       '& option:checked': {
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: '#a855f7',
                         color: 'white',
                       },
                     }}
                   >
-                    <option value="08:00-12:00">8 AM - 12 PM 🌅</option>
-                    <option value="12:00-16:00">12 PM - 4 PM ☀️</option>
-                    <option value="16:00-18:00">4 PM - 6 PM 🌆</option>
-                    <option value="flexible">Flexible ⏰</option>
+                    <option value="08:00-12:00">🌅 Morning (8 AM - 12 PM)</option>
+                    <option value="12:00-16:00">☀️ Afternoon (12 PM - 4 PM)</option>
+                    <option value="16:00-18:00">🌆 Evening (4 PM - 6 PM)</option>
+                    <option value="flexible">⏰ Any time works</option>
                   </Select>
                   {errors['step1.pickupTime'] && (
                     <FormErrorMessage>{errors['step1.pickupTime']}</FormErrorMessage>
                   )}
-                  {step1.pickupDateChoice === 'unknown' && (
-                    <Text color="gray.400" fontSize="xs" mt={2}>
-                      Time optional — choose later without affecting your quote.
-                    </Text>
-                  )}
                 </FormControl>
+                  </SimpleGrid>
+                </Box>
+              </Collapse>
+
+              {/* Flexible choice info */}
+              <Collapse in={step1.pickupDateChoice === 'unknown'} animateOpacity>
+                <Box
+                  p={4}
+                  bg="linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)"
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="rgba(59, 130, 246, 0.3)"
+                >
+                  <HStack spacing={3} align="start">
+                    <Icon as={FaInfoCircle} color="blue.400" boxSize={5} mt={0.5} />
+                    <VStack spacing={1} align="start">
+                      <Text color="white" fontWeight="600" fontSize="sm">
+                        No problem! We've got you covered
+                      </Text>
+                      <Text color="gray.400" fontSize="sm">
+                        Our team will reach out within 24 hours to schedule your move at a time that works best for you. Your quoted price is locked in!
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+              </Collapse>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        {/* ✅ NEW: What Type of Move Card */}
+        <Card 
+          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+          backdropFilter="blur(20px)"
+          borderRadius="xl"
+          border="2px solid"
+          borderColor="rgba(245, 158, 11, 0.4)"
+          boxShadow="0 8px 32px rgba(245, 158, 11, 0.3)"
+        >
+          <CardBody p={{ base: 4, md: 6 }}>
+            <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+              
+              {/* Header */}
+              <VStack spacing={2} textAlign="center">
+                <Heading 
+                  size={{ base: "md", md: "lg" }} 
+                  color="white"
+                  bgGradient="linear(to-r, #f59e0b, #d97706, #b45309)"
+                  bgClip="text"
+                >
+                  🏠 What Type of Move Do You Need?
+                </Heading>
+                <HStack 
+                  spacing={2} 
+                  bg="rgba(245, 158, 11, 0.1)" 
+                  p={3} 
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="rgba(245, 158, 11, 0.3)"
+                >
+                  <Icon as={FaBolt} color="orange.400" boxSize={5} />
+                  <Text color="gray.300" fontSize={{ base: "sm", md: "md" }} textAlign="left">
+                    <Text as="span" color="orange.400" fontWeight="bold">Save Time!</Text> Select your property type below and we'll automatically suggest the most common items for your move — no need to add items one by one!
+                  </Text>
+                </HStack>
+              </VStack>
+
+              {/* Toggle: Auto vs Manual */}
+              <HStack 
+                justify="center" 
+                spacing={4} 
+                bg="rgba(30, 41, 59, 0.8)" 
+                p={4} 
+                borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(255, 255, 255, 0.1)"
+              >
+                <Text color={!autoAddItems ? 'white' : 'gray.500'} fontWeight={!autoAddItems ? 'bold' : 'normal'} fontSize={{ base: "sm", md: "md" }}>
+                  🔧 Manual
+                </Text>
+                <Switch 
+                  size="lg"
+                  colorScheme="orange"
+                  isChecked={autoAddItems}
+                  onChange={(e) => setAutoAddItems(e.target.checked)}
+                />
+                <Text color={autoAddItems ? 'white' : 'gray.500'} fontWeight={autoAddItems ? 'bold' : 'normal'} fontSize={{ base: "sm", md: "md" }}>
+                  ⚡ Auto-Add Items
+                </Text>
+              </HStack>
+
+              {autoAddItems && (
+                <Text color="green.400" fontSize="sm" textAlign="center">
+                  ✅ When you select a property type, common items will be added automatically!
+                </Text>
+              )}
+
+              {/* Property Type Selection */}
+              <SimpleGrid columns={{ base: 2, sm: 3, md: 5 }} spacing={3}>
+                {/* House */}
+                <Box
+                  as="button"
+                  onClick={() => {
+                    setSelectedMoveType('house');
+                    setSelectedPropertySize(null);
+                  }}
+                  p={4}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedMoveType === 'house' ? 'orange.400' : 'gray.600'}
+                  bg={selectedMoveType === 'house' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(30, 41, 59, 0.8)'}
+                  boxShadow={selectedMoveType === 'house' ? '0 0 20px rgba(245, 158, 11, 0.3)' : 'none'}
+                  transition="all 0.3s ease"
+                  _hover={{ borderColor: 'orange.400', transform: 'translateY(-2px)' }}
+                  position="relative"
+                >
+                  {selectedMoveType === 'house' && (
+                    <Circle size="20px" bg="orange.500" position="absolute" top={1} right={1}>
+                      <Icon as={FaCheck} color="white" boxSize={2.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={2}>
+                    <Icon as={FaHome} boxSize={8} color={selectedMoveType === 'house' ? 'orange.400' : 'gray.400'} />
+                    <Text color="white" fontWeight="bold" fontSize="sm">House</Text>
+                  </VStack>
+                </Box>
+
+                {/* Flat/Apartment */}
+                <Box
+                  as="button"
+                  onClick={() => {
+                    setSelectedMoveType('flat');
+                    setSelectedPropertySize(null);
+                  }}
+                  p={4}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedMoveType === 'flat' ? 'blue.400' : 'gray.600'}
+                  bg={selectedMoveType === 'flat' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(30, 41, 59, 0.8)'}
+                  boxShadow={selectedMoveType === 'flat' ? '0 0 20px rgba(59, 130, 246, 0.3)' : 'none'}
+                  transition="all 0.3s ease"
+                  _hover={{ borderColor: 'blue.400', transform: 'translateY(-2px)' }}
+                  position="relative"
+                >
+                  {selectedMoveType === 'flat' && (
+                    <Circle size="20px" bg="blue.500" position="absolute" top={1} right={1}>
+                      <Icon as={FaCheck} color="white" boxSize={2.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={2}>
+                    <Icon as={FaBuilding} boxSize={8} color={selectedMoveType === 'flat' ? 'blue.400' : 'gray.400'} />
+                    <Text color="white" fontWeight="bold" fontSize="sm">Flat</Text>
+                  </VStack>
+                </Box>
+
+                {/* Office */}
+                <Box
+                  as="button"
+                  onClick={() => {
+                    setSelectedMoveType('office');
+                    setSelectedPropertySize(null);
+                  }}
+                  p={4}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedMoveType === 'office' ? 'purple.400' : 'gray.600'}
+                  bg={selectedMoveType === 'office' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(30, 41, 59, 0.8)'}
+                  boxShadow={selectedMoveType === 'office' ? '0 0 20px rgba(168, 85, 247, 0.3)' : 'none'}
+                  transition="all 0.3s ease"
+                  _hover={{ borderColor: 'purple.400', transform: 'translateY(-2px)' }}
+                  position="relative"
+                >
+                  {selectedMoveType === 'office' && (
+                    <Circle size="20px" bg="purple.500" position="absolute" top={1} right={1}>
+                      <Icon as={FaCheck} color="white" boxSize={2.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={2}>
+                    <Icon as={FaBuilding} boxSize={8} color={selectedMoveType === 'office' ? 'purple.400' : 'gray.400'} />
+                    <Text color="white" fontWeight="bold" fontSize="sm">Office</Text>
+                  </VStack>
+                </Box>
+
+                {/* Storage */}
+                <Box
+                  as="button"
+                  onClick={() => {
+                    setSelectedMoveType('storage');
+                    setSelectedPropertySize(null);
+                  }}
+                  p={4}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedMoveType === 'storage' ? 'green.400' : 'gray.600'}
+                  bg={selectedMoveType === 'storage' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(30, 41, 59, 0.8)'}
+                  boxShadow={selectedMoveType === 'storage' ? '0 0 20px rgba(16, 185, 129, 0.3)' : 'none'}
+                  transition="all 0.3s ease"
+                  _hover={{ borderColor: 'green.400', transform: 'translateY(-2px)' }}
+                  position="relative"
+                >
+                  {selectedMoveType === 'storage' && (
+                    <Circle size="20px" bg="green.500" position="absolute" top={1} right={1}>
+                      <Icon as={FaCheck} color="white" boxSize={2.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={2}>
+                    <Icon as={FaBoxOpen} boxSize={8} color={selectedMoveType === 'storage' ? 'green.400' : 'gray.400'} />
+                    <Text color="white" fontWeight="bold" fontSize="sm">Storage</Text>
+                  </VStack>
+                </Box>
+
+                {/* Single Items */}
+                <Box
+                  as="button"
+                  onClick={() => {
+                    setSelectedMoveType('single');
+                    setSelectedPropertySize(null);
+                  }}
+                  p={4}
+                  borderRadius="xl"
+                  border="2px solid"
+                  borderColor={selectedMoveType === 'single' ? 'pink.400' : 'gray.600'}
+                  bg={selectedMoveType === 'single' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(30, 41, 59, 0.8)'}
+                  boxShadow={selectedMoveType === 'single' ? '0 0 20px rgba(236, 72, 153, 0.3)' : 'none'}
+                  transition="all 0.3s ease"
+                  _hover={{ borderColor: 'pink.400', transform: 'translateY(-2px)' }}
+                  position="relative"
+                >
+                  {selectedMoveType === 'single' && (
+                    <Circle size="20px" bg="pink.500" position="absolute" top={1} right={1}>
+                      <Icon as={FaCheck} color="white" boxSize={2.5} />
+                    </Circle>
+                  )}
+                  <VStack spacing={2}>
+                    <Icon as={FaCouch} boxSize={8} color={selectedMoveType === 'single' ? 'pink.400' : 'gray.400'} />
+                    <Text color="white" fontWeight="bold" fontSize="sm">Single Items</Text>
+                  </VStack>
+                </Box>
               </SimpleGrid>
+
+              {/* Property Size Selection (shows when house/flat selected) */}
+              {(selectedMoveType === 'house' || selectedMoveType === 'flat') && (
+                <VStack spacing={3} w="full">
+                  <Text color="white" fontWeight="bold" fontSize="md">
+                    How many bedrooms?
+                  </Text>
+                  <SimpleGrid columns={{ base: 3, sm: 4, md: 6 }} spacing={2} w="full">
+                    {['Studio', '1 Bed', '2 Bed', '3 Bed', '4 Bed', '5+ Bed'].map((size) => (
+                      <Button
+                        key={size}
+                        size="sm"
+                        variant={selectedPropertySize === size ? 'solid' : 'outline'}
+                        colorScheme={selectedPropertySize === size ? 'orange' : 'gray'}
+                        onClick={() => {
+                          setSelectedPropertySize(size);
+                          if (autoAddItems) {
+                            // Auto-add items based on property size
+                            toast({
+                              title: `${size} ${selectedMoveType === 'house' ? 'House' : 'Flat'} Selected`,
+                              description: 'Common items for this property size have been added to your list!',
+                              status: 'success',
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                          }
+                        }}
+                        borderRadius="lg"
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </VStack>
+              )}
+
+              {/* Office Size Selection */}
+              {selectedMoveType === 'office' && (
+                <VStack spacing={3} w="full">
+                  <Text color="white" fontWeight="bold" fontSize="md">
+                    Office Size
+                  </Text>
+                  <SimpleGrid columns={{ base: 2, sm: 4 }} spacing={2} w="full">
+                    {['Small (1-5 desks)', 'Medium (6-15 desks)', 'Large (16-30 desks)', 'Enterprise (30+)'].map((size) => (
+                      <Button
+                        key={size}
+                        size="sm"
+                        variant={selectedPropertySize === size ? 'solid' : 'outline'}
+                        colorScheme={selectedPropertySize === size ? 'purple' : 'gray'}
+                        onClick={() => {
+                          setSelectedPropertySize(size);
+                          if (autoAddItems) {
+                            toast({
+                              title: `${size} Office Selected`,
+                              description: 'Common office items have been added to your list!',
+                              status: 'success',
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                          }
+                        }}
+                        borderRadius="lg"
+                        fontSize="xs"
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </VStack>
+              )}
+
+              {/* Selected Summary */}
+              {selectedMoveType && selectedPropertySize && (
+                <Box
+                  bg="rgba(16, 185, 129, 0.1)"
+                  border="1px solid"
+                  borderColor="green.400"
+                  borderRadius="xl"
+                  p={4}
+                >
+                  <HStack spacing={3}>
+                    <Icon as={FaCheck} color="green.400" boxSize={5} />
+                    <VStack align="start" spacing={0}>
+                      <Text color="white" fontWeight="bold">
+                        {selectedPropertySize} {selectedMoveType === 'house' ? 'House' : selectedMoveType === 'flat' ? 'Flat' : 'Office'} Move
+                      </Text>
+                      <Text color="gray.400" fontSize="sm">
+                        {autoAddItems ? 'Common items added automatically • Edit below if needed' : 'Select items manually below'}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+              )}
             </VStack>
           </CardBody>
         </Card>
@@ -1232,12 +1749,62 @@ export default function WhereAndWhatStep({
 
               {/* Individual Items Mode - All 666 Items with Category Filter */}
               {itemSelectionMode === 'choose' && (
-                <VStack spacing={4} w="full">
+                <VStack spacing={6} w="full">
+                  
+                  {/* Premium Category Cards */}
+                  <VStack spacing={4} w="full">
+                    <VStack spacing={1} textAlign="center">
+                      <Text fontSize={{ base: "lg", md: "xl" }} color="white" fontWeight="bold">
+                        🏠 Select a Category
+                      </Text>
+                      <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+                        Tap any category to browse items
+                      </Text>
+                    </VStack>
+                    
+                    {/* Using inline styles to prevent hydration override */}
+                    <Box 
+                      sx={{
+                        display: 'grid !important',
+                        gridTemplateColumns: 'repeat(3, 1fr) !important',
+                        gap: { base: '8px', sm: '12px', md: '16px' },
+                        width: '100%',
+                        maxWidth: '500px',
+                        margin: '0 auto',
+                      }}
+                    >
+                      {CATEGORY_CONFIGS.slice(0, 6).map((cat) => (
+                        <CategoryFlipCard
+                          key={cat.id}
+                          category={cat}
+                          size="sm"
+                          navigateOnClick={false}
+                          onClick={(category) => {
+                            // Map the category config name to the actual category in the data
+                            const matchedCategory = categories.find(
+                              (c) => c.toLowerCase().includes(category.name.toLowerCase().split(' ')[0]) ||
+                                     category.name.toLowerCase().includes(c.toLowerCase().split(' ')[0])
+                            );
+                            if (matchedCategory) {
+                              setSelectedCategory(matchedCategory);
+                              setSelectedSubcategory('All');
+                            } else {
+                              // Fallback to 'All' if no match found
+                              setSelectedCategory('All');
+                            }
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </VStack>
+                  
+                  {/* Divider */}
+                  <Divider borderColor="rgba(59, 130, 246, 0.2)" />
                   
                   {/* Category Filter */}
                   <HStack spacing={3} w="full" justify="space-between" flexWrap="wrap">
                     <Text fontSize={{ base: "md", md: "lg" }} color="white" fontWeight="semibold">
-                      Browse by Category
+                      Or use dropdown
                     </Text>
                     <Select
                       mb={4}

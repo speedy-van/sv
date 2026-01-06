@@ -29,6 +29,7 @@ import type { BookingSegment } from '../types/segment';
 import PricePreview from './PricePreview';
 import SegmentManager from './SegmentManager';
 import RouteMapPreview from './RouteMapPreview';
+import MarketplacePickupOptions from './MarketplacePickupOptions';
 
 
 interface AddressesStepProps {
@@ -416,6 +417,12 @@ export default function AddressesStep({
           </HStack>
           <RouteMapPreview pickup={pickupLocation} dropoff={dropoffLocation} />
         </VStack>
+
+        {/* Collection Source & Marketplace Options */}
+        <MarketplacePickupOptions
+          formData={formData}
+          updateFormData={updateFormData}
+        />
 
         {/* Multi-Leg Segment Manager */}
         {canProceed && addReturnSegment && addAdditionalSegment && updateSegment && removeSegment && validateSegments && (

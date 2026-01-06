@@ -15,14 +15,19 @@ import {
   Icon,
   Box,
   useDisclosure,
+  Progress,
+  Circle,
+  Flex,
 } from '@chakra-ui/react';
+import { keyframes } from '@emotion/react';
 import { usePathname, useRouter } from 'next/navigation';
-import { FaShoppingCart, FaTimes, FaArrowRight } from 'react-icons/fa';
+import { FaShoppingCart, FaTimes, FaArrowRight, FaClock, FaCheck } from 'react-icons/fa';
 import { safeLocalStorageGetItem, safeLocalStorageRemoveItem } from '@/lib/safe-storage';
 
 const STEP_KEY = 'sv_booking_luxury_last_step';
 const REF_KEY = 'sv_booking_luxury_reference';
-const DISMISSED_KEY = 'sv_booking_popup_dismissed';
+const REMIND_LATER_KEY = 'sv_booking_popup_remind_at';
+const REMIND_DELAY_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export default function BookingInProgressPopup() {
   const router = useRouter();
@@ -30,26 +35,68 @@ export default function BookingInProgressPopup() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [bookingRef, setBookingRef] = useState<string | null>(null);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
 
-  const checkBookingState = useCallback(() => {
+  const checkBookingState = useCallback(async () => {
     if (typeof window === 'undefined') return;
+    if (isChecking) return; // Prevent duplicate checks
     
     const ref = safeLocalStorageGetItem(REF_KEY);
     const stepRaw = safeLocalStorageGetItem(STEP_KEY);
-    const dismissed = safeLocalStorageGetItem(DISMISSED_KEY);
+    const remindAtStr = sessionStorage.getItem(REMIND_LATER_KEY);
     
-    // Don't show if already dismissed in this session
-    if (dismissed === 'true') return;
+    // Check if "Remind Later" was clicked and 5 minutes haven't passed yet
+    if (remindAtStr) {
+      const remindAt = parseInt(remindAtStr, 10);
+      if (!isNaN(remindAt) && Date.now() < remindAt) {
+        // Schedule to check again when the remind time is reached
+        const timeUntilRemind = remindAt - Date.now();
+        setTimeout(() => checkBookingState(), timeUntilRemind + 100);
+        return;
+      } else {
+        // Time has passed, clear the reminder
+        sessionStorage.removeItem(REMIND_LATER_KEY);
+      }
+    }
     
     if (ref && stepRaw) {
       const step = parseInt(stepRaw, 10);
       if (!Number.isNaN(step)) {
-        setBookingRef(ref);
-        setResumeStep(step);
-        onOpen();
+        setIsChecking(true);
+        
+        try {
+          // Check if booking is already completed/confirmed
+          const response = await fetch(`/api/booking/status?reference=${encodeURIComponent(ref)}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            // If booking is completed/confirmed, clear the storage and don't show popup
+            if (data.isComplete || data.status === 'CONFIRMED' || data.status === 'COMPLETED') {
+              // Clear storage since booking is complete
+              safeLocalStorageRemoveItem(STEP_KEY);
+              safeLocalStorageRemoveItem(REF_KEY);
+              setIsChecking(false);
+              return;
+            }
+          }
+          
+          // Booking is still pending/incomplete - show the popup
+          setBookingRef(ref);
+          setResumeStep(step);
+          onOpen();
+        } catch (error) {
+          // On error, still show popup (fail-safe)
+          console.warn('Could not verify booking status:', error);
+          setBookingRef(ref);
+          setResumeStep(step);
+          onOpen();
+        } finally {
+          setIsChecking(false);
+        }
       }
     }
-  }, [onOpen]);
+  }, [onOpen, isChecking]);
 
   // Check on mount and when pathname changes
   useEffect(() => {
@@ -77,124 +124,244 @@ export default function BookingInProgressPopup() {
     onClose();
   };
 
-  const handleDismiss = () => {
-    // Mark as dismissed for this session only
+  const handleRemindLater = () => {
+    // Set a timestamp for when to remind (5 minutes from now)
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem(DISMISSED_KEY, 'true');
+      const remindAt = Date.now() + REMIND_DELAY_MS;
+      sessionStorage.setItem(REMIND_LATER_KEY, remindAt.toString());
+      
+      // Schedule the popup to reappear after 5 minutes
+      setTimeout(() => {
+        sessionStorage.removeItem(REMIND_LATER_KEY);
+        checkBookingState();
+      }, REMIND_DELAY_MS);
     }
     onClose();
   };
 
   if (!bookingRef || resumeStep === null) return null;
 
+  // Keyframes for animations
+  const pulseGlow = keyframes`
+    0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1); }
+    50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2); }
+  `;
+
+  const floatAnimation = keyframes`
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  `;
+
+  const progressPercent = resumeStep ? Math.round((resumeStep / 3) * 100) : 33;
+
+  const stepLabels = ['Addresses', 'Items & Time', 'Payment'];
+
   return (
     <Modal 
       isOpen={isOpen} 
-      onClose={handleDismiss}
+      onClose={handleRemindLater}
       isCentered
       size={{ base: 'sm', md: 'md' }}
       motionPreset="slideInBottom"
     >
       <ModalOverlay 
-        bg="blackAlpha.700"
-        backdropFilter="blur(8px)"
+        bg="blackAlpha.800"
+        backdropFilter="blur(12px)"
       />
       <ModalContent
-        bg="gray.900"
+        bg="linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)"
         border="1px solid"
-        borderColor="blue.500"
-        borderRadius="xl"
-        mx={{ base: 4, md: 0 }}
+        borderColor="blue.400"
+        borderRadius="2xl"
+        mx={{ base: 3, md: 0 }}
         overflow="hidden"
+        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.15)"
+        animation={`${pulseGlow} 3s ease-in-out infinite`}
       >
-        {/* Header with gradient */}
+        {/* Decorative top gradient line */}
+        <Box 
+          h="3px" 
+          bgGradient="linear(to-r, blue.400, purple.500, pink.400)" 
+        />
+
+        {/* Header */}
         <ModalHeader 
-          bg="linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)"
-          borderBottom="1px solid"
-          borderColor="whiteAlpha.100"
-          py={4}
-          px={{ base: 4, md: 6 }}
+          bg="transparent"
+          pt={6}
+          pb={4}
+          px={{ base: 5, md: 6 }}
         >
-          <HStack spacing={3}>
+          <VStack spacing={4} align="center">
+            {/* Animated Icon */}
             <Box
-              p={2}
-              bg="blue.500"
-              borderRadius="lg"
+              p={4}
+              bg="linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)"
+              borderRadius="full"
+              border="2px solid"
+              borderColor="blue.400"
+              animation={`${floatAnimation} 3s ease-in-out infinite`}
             >
-              <Icon as={FaShoppingCart} color="white" boxSize={5} />
+              <Icon as={FaShoppingCart} color="blue.300" boxSize={7} />
             </Box>
-            <VStack align="start" spacing={0}>
+            
+            <VStack spacing={1}>
               <Text 
-                fontSize={{ base: 'md', md: 'lg' }} 
-                fontWeight="700" 
-                color="white"
+                fontSize={{ base: 'lg', md: 'xl' }} 
+                fontWeight="800" 
+                bgGradient="linear(to-r, blue.300, purple.300)"
+                bgClip="text"
+                textAlign="center"
               >
-                Booking In Progress
+                Continue Your Booking?
               </Text>
               <Text 
                 fontSize={{ base: 'xs', md: 'sm' }} 
-                color="whiteAlpha.700"
+                color="whiteAlpha.600"
+                textAlign="center"
               >
-                You have an unfinished booking
+                You&apos;re almost there! Don&apos;t lose your progress.
               </Text>
             </VStack>
-          </HStack>
+          </VStack>
         </ModalHeader>
 
-        <ModalBody py={{ base: 4, md: 6 }} px={{ base: 4, md: 6 }}>
-          <VStack spacing={4} align="stretch">
-            {/* Booking Reference */}
+        <ModalBody py={4} px={{ base: 5, md: 6 }}>
+          <VStack spacing={5} align="stretch">
+            {/* Booking Reference Card */}
             <Box
               bg="whiteAlpha.50"
               border="1px solid"
               borderColor="whiteAlpha.100"
-              borderRadius="lg"
+              borderRadius="xl"
               p={4}
+              position="relative"
+              overflow="hidden"
             >
-              <Text fontSize="xs" color="whiteAlpha.600" mb={1}>
-                Booking Reference
-              </Text>
-              <Text 
-                fontSize={{ base: 'lg', md: 'xl' }}
-                fontWeight="700" 
-                fontFamily="mono"
-                color="blue.300"
-                letterSpacing="wide"
-              >
-                {bookingRef}
-              </Text>
-              <Text fontSize="xs" color="whiteAlpha.500" mt={2}>
-                Step {resumeStep} of 3
-              </Text>
+              {/* Subtle shimmer effect */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                bgGradient="linear(135deg, transparent 0%, whiteAlpha.50 50%, transparent 100%)"
+                opacity={0.5}
+              />
+              
+              <HStack justify="space-between" align="start">
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="xs" color="whiteAlpha.500" textTransform="uppercase" letterSpacing="wider">
+                    Booking Reference
+                  </Text>
+                  <Text 
+                    fontSize={{ base: 'xl', md: '2xl' }}
+                    fontWeight="800" 
+                    fontFamily="mono"
+                    bgGradient="linear(to-r, blue.300, cyan.300)"
+                    bgClip="text"
+                    letterSpacing="wider"
+                  >
+                    {bookingRef}
+                  </Text>
+                </VStack>
+                <Box
+                  px={3}
+                  py={1}
+                  bg="blue.500"
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="600"
+                  color="white"
+                >
+                  Step {resumeStep}/3
+                </Box>
+              </HStack>
             </Box>
 
-            {/* Info text */}
-            <Text 
-              fontSize={{ base: 'sm', md: 'md' }} 
-              color="whiteAlpha.800"
-              lineHeight="1.6"
-            >
-              Would you like to continue where you left off, or start a new booking?
-            </Text>
+            {/* Progress Indicator */}
+            <VStack spacing={3} align="stretch">
+              <HStack justify="space-between" px={1}>
+                <Text fontSize="xs" color="whiteAlpha.600">Progress</Text>
+                <Text fontSize="xs" color="blue.300" fontWeight="600">{progressPercent}% Complete</Text>
+              </HStack>
+              
+              <Progress 
+                value={progressPercent} 
+                size="sm" 
+                borderRadius="full"
+                bg="whiteAlpha.100"
+                sx={{
+                  '& > div': {
+                    bgGradient: 'linear(to-r, blue.400, purple.500)',
+                  }
+                }}
+              />
+
+              {/* Step indicators */}
+              <Flex justify="space-between" mt={2}>
+                {stepLabels.map((label, index) => {
+                  const stepNum = index + 1;
+                  const isCompleted = resumeStep ? stepNum < resumeStep : false;
+                  const isCurrent = stepNum === resumeStep;
+                  
+                  return (
+                    <VStack key={label} spacing={1} flex={1}>
+                      <Circle
+                        size="28px"
+                        bg={isCompleted ? 'green.500' : isCurrent ? 'blue.500' : 'whiteAlpha.200'}
+                        border="2px solid"
+                        borderColor={isCompleted ? 'green.400' : isCurrent ? 'blue.400' : 'whiteAlpha.300'}
+                      >
+                        {isCompleted ? (
+                          <Icon as={FaCheck} boxSize={3} color="white" />
+                        ) : (
+                          <Text fontSize="xs" fontWeight="700" color="white">{stepNum}</Text>
+                        )}
+                      </Circle>
+                      <Text 
+                        fontSize="2xs" 
+                        color={isCurrent ? 'blue.300' : isCompleted ? 'green.300' : 'whiteAlpha.500'}
+                        fontWeight={isCurrent ? '600' : '400'}
+                        textAlign="center"
+                      >
+                        {label}
+                      </Text>
+                    </VStack>
+                  );
+                })}
+              </Flex>
+            </VStack>
           </VStack>
         </ModalBody>
 
         <ModalFooter 
-          bg="whiteAlpha.50"
+          bg="whiteAlpha.30"
           borderTop="1px solid"
           borderColor="whiteAlpha.100"
-          py={4}
-          px={{ base: 4, md: 6 }}
+          py={5}
+          px={{ base: 5, md: 6 }}
         >
           <VStack spacing={3} w="100%">
             {/* Primary action - Continue */}
             <Button
               w="100%"
               size="lg"
-              colorScheme="blue"
+              bgGradient="linear(to-r, blue.500, purple.500)"
+              color="white"
               rightIcon={<FaArrowRight />}
               onClick={handleContinue}
-              fontWeight="600"
+              fontWeight="700"
+              borderRadius="xl"
+              py={7}
+              _hover={{
+                bgGradient: 'linear(to-r, blue.400, purple.400)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)',
+              }}
+              _active={{
+                transform: 'translateY(0)',
+              }}
+              transition="all 0.2s"
             >
               Continue Booking
             </Button>
@@ -205,24 +372,29 @@ export default function BookingInProgressPopup() {
                 flex={1}
                 size="md"
                 variant="outline"
-                colorScheme="red"
                 leftIcon={<FaTimes />}
                 onClick={handleClearBooking}
                 borderColor="red.400"
                 color="red.300"
-                _hover={{ bg: 'red.900', borderColor: 'red.300' }}
+                borderRadius="lg"
+                _hover={{ bg: 'red.900', borderColor: 'red.300', transform: 'translateY(-1px)' }}
+                transition="all 0.2s"
               >
-                Clear & Start New
+                Start New
               </Button>
               <Button
                 flex={1}
                 size="md"
-                variant="ghost"
-                color="whiteAlpha.600"
-                onClick={handleDismiss}
-                _hover={{ bg: 'whiteAlpha.100', color: 'white' }}
+                variant="outline"
+                leftIcon={<FaClock />}
+                color="whiteAlpha.700"
+                borderColor="whiteAlpha.300"
+                borderRadius="lg"
+                onClick={handleRemindLater}
+                _hover={{ bg: 'whiteAlpha.100', color: 'white', borderColor: 'whiteAlpha.500' }}
+                transition="all 0.2s"
               >
-                Remind Later
+                In 5 mins
               </Button>
             </HStack>
           </VStack>

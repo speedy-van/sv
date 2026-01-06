@@ -13,6 +13,7 @@ import {
   Flex,
   Badge,
   Spinner,
+  SimpleGrid,
   chakra,
   shouldForwardProp,
 } from '@chakra-ui/react';
@@ -30,6 +31,7 @@ import {
   FaStar,
   FaPhone,
 } from 'react-icons/fa';
+import CategoryFlipCard, { CATEGORY_CONFIGS } from '@/components/ui/CategoryFlipCard';
 
 interface HeroProps {
   title?: string;
@@ -413,6 +415,52 @@ const Hero: React.FC<HeroProps> = ({
                 </Text>
               </VStack>
             </HStack>
+          </MotionBox>
+
+          {/* Premium Category Cards Section */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 30 }}
+            transition="0.8s ease-out 1.2s"
+            w="full"
+            mt={8}
+          >
+            <VStack spacing={4}>
+              <Text
+                fontSize={{ base: 'lg', md: 'xl' }}
+                fontWeight="bold"
+                color="white"
+                textShadow="0 2px 10px rgba(0,0,0,0.3)"
+              >
+                What are you moving?
+              </Text>
+              <SimpleGrid
+                columns={{ base: 3, md: 6 }}
+                spacing={{ base: 2, md: 4 }}
+                maxW="100%"
+                px={{ base: 2, md: 4 }}
+                justifyItems="center"
+              >
+                {CATEGORY_CONFIGS.slice(0, 6).map((category, index) => (
+                  <MotionBox
+                    key={category.id}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ 
+                      opacity: isInView ? 1 : 0, 
+                      scale: isInView ? 1 : 0.8 
+                    }}
+                    transition={`0.5s ease-out ${1.4 + index * 0.1}s`}
+                  >
+                    <CategoryFlipCard
+                      category={category}
+                      size="sm"
+                      navigateOnClick={true}
+                      bookingPath="/booking-luxury"
+                    />
+                  </MotionBox>
+                ))}
+              </SimpleGrid>
+            </VStack>
           </MotionBox>
         </VStack>
       </Container>

@@ -1868,6 +1868,9 @@ export default function WhoAndPaymentStepSimple({
                   // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
                   segments: segments.length > 1 ? segments : undefined,
                   bookingReference: formData.step2.bookingReference || undefined,
+                  // Collection Source & Marketplace Pickup Details
+                  collectionSource: formData.step1.collectionSource || 'private-address',
+                  marketplacePickup: formData.step1.marketplacePickup || null,
                 }}
                 amount={priceReady ? (formData.step2.promotionDetails?.finalAmount || actualPrice) : 0}
                 disabled={

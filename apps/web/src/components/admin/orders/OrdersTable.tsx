@@ -282,6 +282,13 @@ interface Order {
   orderType?: string;
   isMultiDrop?: boolean;
   routeId?: string | null;
+  collectionSource?: string;
+  marketplacePickup?: {
+    sellerHelpsLoading?: boolean;
+    sellerContactName?: string;
+    sellerPhone?: string;
+    platformSource?: string;
+  };
   createdAt: string;
   paidAt?: string;
   completedAt?: string;
@@ -2582,6 +2589,31 @@ export function OrdersTable({
                       >
                         {order.isMultiDrop || order.orderType === 'multi-drop' ? 'Multi-Drop' : 'Single'}
                       </Badge>
+                      {/* Collection Source Badge */}
+                      {order.collectionSource && order.collectionSource !== 'private-address' && (
+                        <Badge 
+                          colorScheme={
+                            order.collectionSource === 'marketplace' ? 'blue' :
+                            order.collectionSource === 'retail-store' ? 'orange' :
+                            order.collectionSource === 'storage-unit' ? 'purple' :
+                            'gray'
+                          }
+                          size="sm"
+                          px={2}
+                          py={0.5}
+                          borderRadius="md"
+                          fontSize="2xs"
+                          fontWeight="medium"
+                          ml={1}
+                          title={`Collection from: ${order.collectionSource}`}
+                        >
+                          {order.collectionSource === 'marketplace' ? '📦 MKT' :
+                           order.collectionSource === 'retail-store' ? '🏪 Store' :
+                           order.collectionSource === 'storage-unit' ? '📦 Storage' :
+                           order.collectionSource === 'auction' ? '🔨 Auction' :
+                           '📍'}
+                        </Badge>
+                      )}
                     </Td>
                     <Td>
                       <VStack align="start" spacing={1}>

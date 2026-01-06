@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   safeLocalStorageGetItem,
   safeLocalStorageRemoveItem,
+  safeLocalStorageSetItem,
 } from '@/lib/safe-storage';
 import {
   Box,
@@ -34,7 +35,7 @@ import {
   IconButton,
   useClipboard,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash, FaCopy } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash, FaCopy, FaCalendarAlt } from 'react-icons/fa';
 import { Image } from '@chakra-ui/react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -166,7 +167,7 @@ export default function BookingLuxuryPage() {
   // Track last step visited to decide when to show resume banner
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem('sv_booking_luxury_last_step');
+    const stored = safeLocalStorageGetItem('sv_booking_luxury_last_step');
     if (stored) {
       const num = parseInt(stored, 10);
       if (!Number.isNaN(num)) {
@@ -180,11 +181,11 @@ export default function BookingLuxuryPage() {
     if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams(window.location.search);
-    const shouldOpen = params.get('openChat') === '1' || window.localStorage.getItem('sv_open_chat') === '1';
+    const shouldOpen = params.get('openChat') === '1' || safeLocalStorageGetItem('sv_open_chat') === '1';
 
     if (shouldOpen) {
       onChatOpen();
-      window.localStorage.removeItem('sv_open_chat');
+      safeLocalStorageRemoveItem('sv_open_chat');
 
       if (params.has('openChat')) {
         params.delete('openChat');
@@ -198,9 +199,9 @@ export default function BookingLuxuryPage() {
   // Persist current step so user can resume if they navigate away
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    window.localStorage.setItem('sv_booking_luxury_last_step', String(currentStep));
+    safeLocalStorageSetItem('sv_booking_luxury_last_step', String(currentStep));
     if (formData.step2.bookingReference) {
-      window.localStorage.setItem('sv_booking_luxury_reference', formData.step2.bookingReference);
+      safeLocalStorageSetItem('sv_booking_luxury_reference', formData.step2.bookingReference);
     }
   }, [currentStep]);
   
@@ -1489,7 +1490,16 @@ export default function BookingLuxuryPage() {
         setCurrentStep(stepNumber);
       }
     }
-  }, [searchParams, toast, isClient]);
+
+    // Handle category parameter - navigate to step 2 if category is provided
+    const category = searchParams?.get('category');
+    if (category) {
+      // Move to step 2 to show items (WhereAndWhatStep will read category from URL)
+      if (currentStep === 1) {
+        setCurrentStep(2);
+      }
+    }
+  }, [searchParams, toast, isClient, currentStep]);
 
 
   // Success page is now handled by dedicated /booking/success route
@@ -1855,7 +1865,7 @@ export default function BookingLuxuryPage() {
                         },
                       }}
                     >
-                      Professional Moving
+                      Move Anything, Anywhere
                     </Text>
                   </VStack>
                 </HStack>
@@ -1979,6 +1989,105 @@ export default function BookingLuxuryPage() {
                   />
                 </Flex>
               </Flex>
+
+              {/* Services Hero Banner - Scrolling Tags */}
+              <Box 
+                w="full" 
+                overflow="hidden" 
+                py={3}
+                position="relative"
+                bg="linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(59, 130, 246, 0.1) 100%)"
+                borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(59, 130, 246, 0.2)"
+                mx={{ base: 0, md: 2 }}
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '60px',
+                  background: 'linear-gradient(90deg, rgba(0,0,0,0.95), transparent)',
+                  zIndex: 10,
+                  pointerEvents: 'none',
+                }}
+                _after={{
+                  content: '""',
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '60px',
+                  background: 'linear-gradient(-90deg, rgba(0,0,0,0.95), transparent)',
+                  zIndex: 10,
+                  pointerEvents: 'none',
+                }}
+              >
+                <style>
+                  {`
+                    @keyframes scrollServicesAnim {
+                      0% { transform: translateX(0); }
+                      100% { transform: translateX(-50%); }
+                    }
+                  `}
+                </style>
+                <Box
+                  display="flex"
+                  gap={4}
+                  w="max-content"
+                  px={4}
+                  style={{
+                    animation: 'scrollServicesAnim 20s linear infinite',
+                  }}
+                >
+                  {[
+                    { icon: '🏠', text: 'House Removals', color: 'blue' },
+                    { icon: '🏢', text: 'Office Moves', color: 'purple' },
+                    { icon: '🛋️', text: 'Furniture Delivery', color: 'teal' },
+                    { icon: '📦', text: 'Single Items', color: 'orange' },
+                    { icon: '🛒', text: 'IKEA & Store', color: 'yellow' },
+                    { icon: '📱', text: 'Facebook Marketplace', color: 'blue' },
+                    { icon: '🏷️', text: 'Gumtree & eBay', color: 'green' },
+                    { icon: '🎓', text: 'Student Moves', color: 'pink' },
+                    { icon: '⚡', text: 'Same Day', color: 'red' },
+                    { icon: '🚚', text: 'Man & Van', color: 'cyan' },
+                    // Duplicate for seamless loop
+                    { icon: '🏠', text: 'House Removals', color: 'blue' },
+                    { icon: '🏢', text: 'Office Moves', color: 'purple' },
+                    { icon: '🛋️', text: 'Furniture Delivery', color: 'teal' },
+                    { icon: '📦', text: 'Single Items', color: 'orange' },
+                    { icon: '🛒', text: 'IKEA & Store', color: 'yellow' },
+                    { icon: '📱', text: 'Facebook Marketplace', color: 'blue' },
+                    { icon: '🏷️', text: 'Gumtree & eBay', color: 'green' },
+                    { icon: '🎓', text: 'Student Moves', color: 'pink' },
+                    { icon: '⚡', text: 'Same Day', color: 'red' },
+                    { icon: '🚚', text: 'Man & Van', color: 'cyan' },
+                  ].map((service, idx) => (
+                    <Box
+                      key={idx}
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      bg={`${service.color}.500`}
+                      color="white"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      fontWeight="700"
+                      whiteSpace="nowrap"
+                      display="flex"
+                      alignItems="center"
+                      gap={2}
+                      flexShrink={0}
+                      boxShadow={`0 4px 15px rgba(0,0,0,0.3)`}
+                      _hover={{ transform: 'scale(1.05)' }}
+                      transition="all 0.2s"
+                    >
+                      <Text as="span" fontSize={{ base: 'sm', md: 'md' }}>{service.icon}</Text>
+                      <Text as="span">{service.text}</Text>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
 
               {/* Bottom: Progress Steps - Enhanced Design with Labels */}
               <VStack spacing={2} w="full">
@@ -2299,8 +2408,20 @@ export default function BookingLuxuryPage() {
                       }}
                   >
                     <CardBody p={{ base: 5, md: 7 }}>
-                      <VStack spacing={{ base: 5, md: 7 }} align="stretch">
+                      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
                         <VStack spacing={3} textAlign="center">
+                          <Badge
+                            colorScheme="purple"
+                            variant="subtle"
+                            px={3}
+                            py={1}
+                            borderRadius="full"
+                            textTransform="none"
+                            fontWeight="semibold"
+                            fontSize="sm"
+                          >
+                            Step 2 · Schedule
+                          </Badge>
                           <Heading 
                             size={{ base: "lg", md: "xl" }} 
                             bgGradient="linear(to-r, #a855f7, #ec4899)"
@@ -2311,32 +2432,141 @@ export default function BookingLuxuryPage() {
                             📅 When do you need the move?
                           </Heading>
                           <Text 
-                            color="gray.400" 
+                            color="gray.300" 
                             fontSize={{ base: "md", md: "lg" }}
                             fontWeight="medium"
                           >
                             Select your preferred date and time
                           </Text>
-                          <HStack spacing={3} justify="center" flexWrap="wrap">
-                            <Button
-                              variant={formData.step1.pickupDateChoice === 'known' ? 'solid' : 'outline'}
-                              colorScheme="purple"
-                              onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
-                              size="sm"
-                              borderRadius="full"
-                            >
-                              Option 1: Select estimated time
-                            </Button>
-                            <Button
-                              variant={formData.step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
-                              colorScheme="gray"
-                              onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
-                              size="sm"
-                              borderRadius="full"
-                            >
-                              Option 2: I’m flexible
-                            </Button>
+                          <HStack spacing={3} flexWrap="wrap" justify="center">
+                            <Badge colorScheme="green" px={3} py={1} borderRadius="full" variant="outline">
+                              Priority scheduling
+                            </Badge>
+                            <Badge colorScheme="pink" px={3} py={1} borderRadius="full" variant="outline">
+                              Concierge follow-up
+                            </Badge>
+                            <Badge colorScheme="blue" px={3} py={1} borderRadius="full" variant="outline">
+                              Same-day alerts
+                            </Badge>
                           </HStack>
+                          <Stack
+                            direction={{ base: 'column', lg: 'row' }}
+                            spacing={4}
+                            w="full"
+                            maxW={{ base: '100%', lg: '720px' }}
+                            mx="auto"
+                            align="stretch"
+                          >
+                            {/* Option 1: Select Date & Time */}
+                            <Box
+                              as="button"
+                              onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
+                              p={{ base: 4, md: 5 }}
+                              borderRadius="2xl"
+                              border="3px solid"
+                              borderColor={formData.step1.pickupDateChoice === 'known' ? 'green.300' : 'rgba(255,255,255,0.08)'}
+                              bgGradient={formData.step1.pickupDateChoice === 'known' 
+                                ? 'linear(to-br, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))' 
+                                : 'linear(to-br, rgba(30, 41, 59, 0.75), rgba(17, 24, 39, 0.85))'}
+                              boxShadow={formData.step1.pickupDateChoice === 'known' ? '0 15px 40px rgba(34, 197, 94, 0.25)' : '0 10px 30px rgba(15, 23, 42, 0.45)'}
+                              transition="all 0.28s ease"
+                              _hover={{ borderColor: 'green.200', transform: 'translateY(-4px)' }}
+                              position="relative"
+                              textAlign="left"
+                              w="full"
+                            >
+                              {formData.step1.pickupDateChoice === 'known' && (
+                                <Box position="absolute" top={3} right={3}>
+                                  <Icon as={FaCheck} color="green.300" boxSize={5} />
+                                </Box>
+                              )}
+                              <VStack align="stretch" spacing={3}>
+                                <HStack spacing={3} align="center">
+                                  <Circle size="48px" bg="rgba(34, 197, 94, 0.12)" border="1px solid rgba(34, 197, 94, 0.25)">
+                                    <Icon as={FaCalendarAlt} boxSize={6} color="green.300" />
+                                  </Circle>
+                                  <VStack align="flex-start" spacing={1}>
+                                    <Text fontWeight="extrabold" color="white" fontSize={{ base: "lg", md: "xl" }}>
+                                      I Know My Date
+                                    </Text>
+                                    <Badge colorScheme="green" variant="solid" borderRadius="full" px={2}>
+                                      Recommended
+                                    </Badge>
+                                  </VStack>
+                                </HStack>
+                                <Text fontSize="sm" color="gray.200" lineHeight="tall">
+                                  Lock in the exact date and time that fits your schedule.
+                                </Text>
+                                <Divider borderColor="rgba(255,255,255,0.08)" />
+                                <HStack spacing={3} color="gray.100" fontSize="sm" flexWrap="wrap">
+                                  <Badge colorScheme="green" variant="outline" borderRadius="full" px={2}>
+                                    Fastest confirmation
+                                  </Badge>
+                                  <Badge colorScheme="teal" variant="outline" borderRadius="full" px={2}>
+                                    Guaranteed slot
+                                  </Badge>
+                                  <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
+                                    Crew pre-arranged
+                                  </Badge>
+                                </HStack>
+                              </VStack>
+                            </Box>
+                            
+                            {/* Option 2: Flexible */}
+                            <Box
+                              as="button"
+                              onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
+                              p={{ base: 4, md: 5 }}
+                              borderRadius="2xl"
+                              border="3px solid"
+                              borderColor={formData.step1.pickupDateChoice === 'unknown' ? 'purple.300' : 'rgba(255,255,255,0.08)'}
+                              bgGradient={formData.step1.pickupDateChoice === 'unknown' 
+                                ? 'linear(to-br, rgba(139, 92, 246, 0.22), rgba(99, 102, 241, 0.22))' 
+                                : 'linear(to-br, rgba(30, 41, 59, 0.75), rgba(17, 24, 39, 0.85))'}
+                              boxShadow={formData.step1.pickupDateChoice === 'unknown' ? '0 15px 40px rgba(139, 92, 246, 0.25)' : '0 10px 30px rgba(15, 23, 42, 0.45)'}
+                              transition="all 0.28s ease"
+                              _hover={{ borderColor: 'purple.200', transform: 'translateY(-4px)' }}
+                              position="relative"
+                              textAlign="left"
+                              w="full"
+                            >
+                              {formData.step1.pickupDateChoice === 'unknown' && (
+                                <Box position="absolute" top={3} right={3}>
+                                  <Icon as={FaCheck} color="purple.300" boxSize={5} />
+                                </Box>
+                              )}
+                              <VStack align="stretch" spacing={3}>
+                                <HStack spacing={3} align="center">
+                                  <Circle size="48px" bg="rgba(139, 92, 246, 0.12)" border="1px solid rgba(139, 92, 246, 0.25)">
+                                    <Icon as={FaClock} boxSize={6} color="purple.300" />
+                                  </Circle>
+                                  <VStack align="flex-start" spacing={1}>
+                                    <Text fontWeight="extrabold" color="white" fontSize={{ base: "lg", md: "xl" }}>
+                                      I'm Flexible
+                                    </Text>
+                                    <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
+                                      We’ll handle timing
+                                    </Badge>
+                                  </VStack>
+                                </HStack>
+                                <Text fontSize="sm" color="gray.200" lineHeight="tall">
+                                  Tell us your window and our team will coordinate the best slot.
+                                </Text>
+                                <Divider borderColor="rgba(255,255,255,0.08)" />
+                                <HStack spacing={3} color="gray.100" fontSize="sm" flexWrap="wrap">
+                                  <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
+                                    Concierge callback
+                                  </Badge>
+                                  <Badge colorScheme="pink" variant="outline" borderRadius="full" px={2}>
+                                    We propose times
+                                  </Badge>
+                                  <Badge colorScheme="blue" variant="outline" borderRadius="full" px={2}>
+                                    Reschedule-friendly
+                                  </Badge>
+                                </HStack>
+                              </VStack>
+                            </Box>
+                          </Stack>
                         </VStack>
 
                         {formData.step1.pickupDateChoice === 'unknown' ? (

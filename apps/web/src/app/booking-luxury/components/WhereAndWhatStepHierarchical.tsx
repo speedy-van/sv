@@ -63,6 +63,7 @@ import { getPrePopulatedItems, filterByPriority } from '@/lib/pre-populated-inve
 import { ALL_REMOVAL_ITEMS, type RemovalItem } from '@/lib/uk-removal-items-data';
 import { CommonItemsGrid } from '@/components/booking/CommonItemsGrid';
 import SelectedItemsManager from './SelectedItemsManager';
+import CategoryFlipCard, { CATEGORY_CONFIGS } from '@/components/ui/CategoryFlipCard';
 
 interface WhereAndWhatStepHierarchicalProps {
   formData: FormData;
@@ -103,6 +104,9 @@ export default function WhereAndWhatStepHierarchical({
   const prevSegmentsLengthRef = useRef(segments.length);
   const isNewSegmentAddedRef = useRef(false);
   const addOnsRef = useRef<HTMLDivElement | null>(null);
+  
+  // Collapsible Add-on Services state
+  const [isAddOnsExpanded, setIsAddOnsExpanded] = useState(false);
   
   // Track segment count changes - but DON'T auto-switch to new segment
   // This was causing items to be added to the wrong segment (additional journey instead of main)
@@ -1115,6 +1119,44 @@ export default function WhereAndWhatStepHierarchical({
                     ))}
                   </HStack>
                 )}
+
+                {/* Premium Category Cards */}
+                {!searchQuery.trim() && (
+                  <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.100">
+                    <VStack spacing={4}>
+                      <HStack spacing={2} justify="center">
+                        <Icon as={FaShoppingBag} color="purple.500" boxSize={4} />
+                        <Text fontSize="sm" color="gray.600" fontWeight="600">
+                          Browse by Category
+                        </Text>
+                      </HStack>
+                      {/* CSS Grid with !important to prevent hydration override */}
+                      <Box
+                        sx={{
+                          display: 'grid !important',
+                          gridTemplateColumns: 'repeat(3, 1fr) !important',
+                          gap: { base: '8px', md: '12px' },
+                          width: '100%',
+                          maxWidth: '400px',
+                          margin: '0 auto',
+                        }}
+                      >
+                        {CATEGORY_CONFIGS.slice(0, 6).map((cat) => (
+                          <CategoryFlipCard
+                            key={cat.id}
+                            category={cat}
+                            size="sm"
+                            navigateOnClick={false}
+                            onClick={(category) => {
+                              // Set search query to category name to filter items
+                              setSearchQuery(category.displayName);
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    </VStack>
+                  </Box>
+                )}
                 
                 {/* Search Results - Inside the same card */}
                 {searchQuery.trim() && (
@@ -1211,7 +1253,7 @@ export default function WhereAndWhatStepHierarchical({
         >
           <CardBody display="flex" justifyContent="space-between" alignItems="center" gap={3} flexWrap="wrap">
             <VStack align="flex-start" spacing={0}>
-              <Text fontWeight="bold" color="purple.800">Add-on Services</Text>
+              <Text fontWeight="bold" color="white">Add-on Services</Text>
               <Text fontSize="sm" color="purple.700">Packing, protection, and assembly for premium moves.</Text>
             </VStack>
             <Button colorScheme="purple" variant="solid" onClick={scrollToAddOns}>
@@ -1419,118 +1461,288 @@ export default function WhereAndWhatStepHierarchical({
           </CardBody>
         </Card>
 
-        {/* Add-on Services - keep pricing in sync with luxury promise */}
-        <Card
-          ref={addOnsRef}
-          bg="linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(49, 46, 129, 0.9))"
-          borderRadius="2xl"
-          boxShadow="0 20px 60px rgba(79, 70, 229, 0.15)"
-          border="1px solid"
-          borderColor="rgba(129, 140, 248, 0.35)"
-        >
-          <CardHeader borderBottom="1px solid" borderColor="rgba(255,255,255,0.08)" pb={4}>
-            <VStack align="flex-start" spacing={1}>
-              <HStack spacing={2}>
-                <Circle size="38px" bg="whiteAlpha.200">
-                  <Icon as={FaShieldAlt} color="purple.200" />
-                </Circle>
-                <VStack align="flex-start" spacing={0}>
-                  <Heading size="md" color="white">
+        {/* Add-on Services - Collapsible Premium Section */}
+        {!isAddOnsExpanded ? (
+          // Collapsed Button View
+          <Button
+            onClick={() => setIsAddOnsExpanded(true)}
+            w="full"
+            h="auto"
+            py={4}
+            px={5}
+            bg="linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)"
+            border="1px solid"
+            borderColor="rgba(139, 92, 246, 0.4)"
+            borderRadius="xl"
+            _hover={{ 
+              borderColor: 'purple.400', 
+              bg: 'linear-gradient(135deg, rgba(79, 70, 229, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 10px 30px rgba(139, 92, 246, 0.25)',
+            }}
+            transition="all 0.3s"
+          >
+            <HStack spacing={4} w="full" justify="space-between">
+              <HStack spacing={3}>
+                <Box
+                  p={2.5}
+                  borderRadius="lg"
+                  bgGradient="linear(to-br, purple.500, indigo.600)"
+                  boxShadow="0 4px 15px rgba(139, 92, 246, 0.4)"
+                >
+                  <Icon as={FaShieldAlt} color="white" boxSize={4} />
+                </Box>
+                <VStack spacing={0} align="start">
+                  <Text fontWeight="700" color="white" fontSize="sm">
                     Add-on Services
-                  </Heading>
-                  <Text color="whiteAlpha.700" fontSize="sm">
-                    Match the premium promise with optional packing, protection, and assembly.
+                  </Text>
+                  <Text fontSize="xs" color="whiteAlpha.600">
+                    Packing, protection & assembly options
                   </Text>
                 </VStack>
               </HStack>
-            </VStack>
-          </CardHeader>
-          <CardBody>
-            <SimpleGrid
-              minChildWidth="260px"
-              spacing={4}
-              w="full"
-            >
-              <Box
-                p={4}
-                borderRadius="lg"
-                bg="whiteAlpha.50"
-                border="1px solid"
-                borderColor="purple.200"
-              >
-                <HStack justify="space-between" align="center" mb={2}>
-                  <Text fontWeight="bold" color="white">
-                    Professional Packing
-                  </Text>
-                  <Switch
-                    colorScheme="purple"
-                    isChecked={Boolean(addOns.packing)}
-                    onChange={(e) => handleAddOnToggle('packing', e.target.checked)}
-                  />
+              <HStack spacing={2}>
+                {(addOns.packing || addOns.furnitureProtection || addOns.assembly) && (
+                  <Badge 
+                    colorScheme="green" 
+                    variant="solid" 
+                    borderRadius="full" 
+                    fontSize="2xs"
+                    px={2}
+                  >
+                    {[addOns.packing, addOns.furnitureProtection, addOns.assembly].filter(Boolean).length} Active
+                  </Badge>
+                )}
+                <Badge colorScheme="purple" variant="subtle" borderRadius="full" fontSize="2xs">
+                  Optional
+                </Badge>
+              </HStack>
+            </HStack>
+          </Button>
+        ) : (
+          // Expanded Card View
+          <Card
+            ref={addOnsRef}
+            bg="linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(49, 46, 129, 0.95) 100%)"
+            borderRadius="2xl"
+            boxShadow="0 25px 60px rgba(79, 70, 229, 0.25)"
+            border="1px solid"
+            borderColor="rgba(139, 92, 246, 0.4)"
+            overflow="hidden"
+            position="relative"
+          >
+            {/* Gradient top border */}
+            <Box h="4px" bgGradient="linear(to-r, purple.400, indigo.500, violet.400)" />
+            
+            {/* Decorative glow */}
+            <Box
+              position="absolute"
+              top="-80px"
+              right="-80px"
+              w="200px"
+              h="200px"
+              borderRadius="full"
+              bg="radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)"
+              pointerEvents="none"
+            />
+            
+            <CardHeader pb={3} pt={5}>
+              <HStack justify="space-between" align="start">
+                <HStack spacing={3}>
+                  <Box
+                    p={3}
+                    borderRadius="xl"
+                    bgGradient="linear(to-br, purple.500, indigo.600)"
+                    boxShadow="0 8px 25px rgba(139, 92, 246, 0.4)"
+                  >
+                    <Icon as={FaShieldAlt} color="white" boxSize={5} />
+                  </Box>
+                  <VStack align="flex-start" spacing={0}>
+                    <Heading 
+                      size="md" 
+                      bgGradient="linear(to-r, purple.200, indigo.200)"
+                      bgClip="text"
+                      fontWeight="800"
+                    >
+                      Add-on Services
+                    </Heading>
+                    <Text color="whiteAlpha.700" fontSize="sm">
+                      Enhance your move with premium protection
+                    </Text>
+                  </VStack>
                 </HStack>
-                <Text fontSize="sm" color="whiteAlpha.800">
-                  White-glove packing with premium materials to protect your belongings.
-                </Text>
-                <Text fontSize="xs" color="purple.200" mt={2}>
-                  Estimated volume: {Math.max(estimatedPackingVolume, 0).toFixed(1)} m3
-                </Text>
-              </Box>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  color="whiteAlpha.600"
+                  onClick={() => setIsAddOnsExpanded(false)}
+                  _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+                  borderRadius="full"
+                  p={2}
+                >
+                  <Icon as={FaChevronUp} />
+                </Button>
+              </HStack>
+            </CardHeader>
+            
+            <CardBody pt={2}>
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
+                {/* Professional Packing */}
+                <Box
+                  p={5}
+                  borderRadius="xl"
+                  bg={addOns.packing 
+                    ? "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.1) 100%)"
+                    : "rgba(17, 24, 39, 0.6)"}
+                  border="2px solid"
+                  borderColor={addOns.packing ? "purple.400" : "rgba(139, 92, 246, 0.2)"}
+                  boxShadow={addOns.packing ? "0 0 25px rgba(139, 92, 246, 0.2)" : "none"}
+                  transition="all 0.3s"
+                  _hover={{ borderColor: 'purple.400', transform: 'translateY(-2px)' }}
+                  cursor="pointer"
+                  onClick={() => handleAddOnToggle('packing', !addOns.packing)}
+                  position="relative"
+                >
+                  {addOns.packing && (
+                    <Circle 
+                      size="24px" 
+                      bg="purple.500" 
+                      position="absolute" 
+                      top={3} 
+                      right={3}
+                      boxShadow="0 0 10px rgba(139, 92, 246, 0.5)"
+                    >
+                      <Icon as={FaCheck} color="white" boxSize={3} />
+                    </Circle>
+                  )}
+                  <HStack spacing={3} align="start">
+                    <Box p={2.5} borderRadius="lg" bg="purple.500/20" flexShrink={0}>
+                      <Text fontSize="xl">📦</Text>
+                    </Box>
+                    <VStack align="start" spacing={2} flex={1}>
+                      <Text fontWeight="700" color="white" fontSize="md">
+                        Professional Packing
+                      </Text>
+                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                        White-glove packing with premium materials.
+                      </Text>
+                      <Badge colorScheme="purple" variant="subtle" fontSize="xs">
+                        Volume: {Math.max(estimatedPackingVolume, 0).toFixed(1)} m³
+                      </Badge>
+                    </VStack>
+                  </HStack>
+                </Box>
 
-              <Box
-                p={4}
-                borderRadius="lg"
-                bg="whiteAlpha.50"
-                border="1px solid"
-                borderColor="blue.200"
-              >
-                <HStack justify="space-between" align="center" mb={2}>
-                  <Text fontWeight="bold" color="white">
-                    Furniture Protection
-                  </Text>
-                  <Switch
-                    colorScheme="blue"
-                    isChecked={Boolean(addOns.furnitureProtection)}
-                    onChange={(e) => handleAddOnToggle('furnitureProtection', e.target.checked)}
-                  />
-                </HStack>
-                <Text fontSize="sm" color="whiteAlpha.800">
-                  Enhanced insurance and padding for high-value and delicate pieces.
-                </Text>
-                <Text fontSize="xs" color="blue.200" mt={2}>
-                  Uses premium cover for luxury moves
-                </Text>
-              </Box>
+                {/* Furniture Protection */}
+                <Box
+                  p={5}
+                  borderRadius="xl"
+                  bg={addOns.furnitureProtection 
+                    ? "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)"
+                    : "rgba(17, 24, 39, 0.6)"}
+                  border="2px solid"
+                  borderColor={addOns.furnitureProtection ? "blue.400" : "rgba(59, 130, 246, 0.2)"}
+                  boxShadow={addOns.furnitureProtection ? "0 0 25px rgba(59, 130, 246, 0.2)" : "none"}
+                  transition="all 0.3s"
+                  _hover={{ borderColor: 'blue.400', transform: 'translateY(-2px)' }}
+                  cursor="pointer"
+                  onClick={() => handleAddOnToggle('furnitureProtection', !addOns.furnitureProtection)}
+                  position="relative"
+                >
+                  {addOns.furnitureProtection && (
+                    <Circle 
+                      size="24px" 
+                      bg="blue.500" 
+                      position="absolute" 
+                      top={3} 
+                      right={3}
+                      boxShadow="0 0 10px rgba(59, 130, 246, 0.5)"
+                    >
+                      <Icon as={FaCheck} color="white" boxSize={3} />
+                    </Circle>
+                  )}
+                  <HStack spacing={3} align="start">
+                    <Box p={2.5} borderRadius="lg" bg="blue.500/20" flexShrink={0}>
+                      <Text fontSize="xl">🛡️</Text>
+                    </Box>
+                    <VStack align="start" spacing={2} flex={1}>
+                      <Text fontWeight="700" color="white" fontSize="md">
+                        Furniture Protection
+                      </Text>
+                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                        Enhanced insurance and premium padding.
+                      </Text>
+                      <Badge colorScheme="blue" variant="subtle" fontSize="xs">
+                        Premium coverage
+                      </Badge>
+                    </VStack>
+                  </HStack>
+                </Box>
 
-              <Box
-                p={4}
+                {/* Assembly / Disassembly */}
+                <Box
+                  p={5}
+                  borderRadius="xl"
+                  bg={addOns.assembly 
+                    ? "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.1) 100%)"
+                    : "rgba(17, 24, 39, 0.6)"}
+                  border="2px solid"
+                  borderColor={addOns.assembly ? "teal.400" : "rgba(20, 184, 166, 0.2)"}
+                  boxShadow={addOns.assembly ? "0 0 25px rgba(20, 184, 166, 0.2)" : "none"}
+                  transition="all 0.3s"
+                  _hover={{ borderColor: 'teal.400', transform: 'translateY(-2px)' }}
+                  cursor="pointer"
+                  onClick={() => handleAddOnToggle('assembly', !addOns.assembly)}
+                  position="relative"
+                >
+                  {addOns.assembly && (
+                    <Circle 
+                      size="24px" 
+                      bg="teal.500" 
+                      position="absolute" 
+                      top={3} 
+                      right={3}
+                      boxShadow="0 0 10px rgba(20, 184, 166, 0.5)"
+                    >
+                      <Icon as={FaCheck} color="white" boxSize={3} />
+                    </Circle>
+                  )}
+                  <HStack spacing={3} align="start">
+                    <Box p={2.5} borderRadius="lg" bg="teal.500/20" flexShrink={0}>
+                      <Text fontSize="xl">🔧</Text>
+                    </Box>
+                    <VStack align="start" spacing={2} flex={1}>
+                      <Text fontWeight="700" color="white" fontSize="md">
+                        Assembly / Disassembly
+                      </Text>
+                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                        Dismantles and reassembles furniture on-site.
+                      </Text>
+                      <Badge colorScheme="teal" variant="subtle" fontSize="xs">
+                        Auto-priced
+                      </Badge>
+                    </VStack>
+                  </HStack>
+                </Box>
+              </SimpleGrid>
+              
+              {/* Footer info */}
+              <HStack 
+                mt={4} 
+                p={3} 
+                bg="whiteAlpha.50" 
                 borderRadius="lg"
-                bg="whiteAlpha.50"
-                border="1px solid"
-                borderColor="teal.200"
+                justify="center"
+                spacing={2}
               >
-                <HStack justify="space-between" align="center" mb={2}>
-                  <Text fontWeight="bold" color="white">
-                    Assembly / Disassembly
-                  </Text>
-                  <Switch
-                    colorScheme="teal"
-                    isChecked={Boolean(addOns.assembly)}
-                    onChange={(e) => handleAddOnToggle('assembly', e.target.checked)}
-                  />
-                </HStack>
-                <Text fontSize="sm" color="whiteAlpha.800">
-                  Skilled team dismantles and reassembles furniture on-site.
+                <Icon as={FaCheck} color="green.400" boxSize={3} />
+                <Text fontSize="xs" color="whiteAlpha.700">
+                  Pricing updates instantly when you toggle any add-on
                 </Text>
-                <Text fontSize="xs" color="teal.200" mt={2}>
-                  Auto-applied to current item list for accurate pricing
-                </Text>
-              </Box>
-            </SimpleGrid>
-            <Text mt={3} fontSize="xs" color="whiteAlpha.700">
-              Pricing updates instantly when you toggle any add-on.
-            </Text>
-          </CardBody>
-        </Card>
+              </HStack>
+            </CardBody>
+          </Card>
+        )}
 
         {/* AI Assistant - Controlled by parent via FloatingActionButtons */}
 

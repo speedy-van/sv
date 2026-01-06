@@ -1204,6 +1204,10 @@ export async function POST(request: NextRequest) {
 
         customerPreferences: {
           serviceType: serviceType.toLowerCase(),
+          // Collection source (where items are being collected from)
+          collectionSource: bookingData.collectionSource || 'private-address',
+          // Marketplace-specific details
+          marketplacePickup: bookingData.marketplacePickup || null,
           // Preserve any customer-provided notes inside preferences JSON since Booking.notes column is unavailable in some environments
           specialInstructions: bookingData.notes ?? null,
           addOns: {

@@ -1,0 +1,20 @@
+﻿ 'solid' : 'outline'}
+                  colorScheme="purple"
+                  onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
+                  size="sm"
+                  borderRadius="full"
+                >
+                  Option 1: Select estimated time
+                </Button>
+                <Button
+                  variant={step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
+                  colorScheme="gray"
+                  onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
+                  size="sm"
+                  borderRadius="full"
+                >
+                  Option 2: Iâ€™m flexible
+                </Button>
+              </HStack>
+
+           

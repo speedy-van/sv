@@ -5,253 +5,42 @@
  * Target keywords: "moving tips", "moving advice", "how to move house"
  */
 
-export const metadata = {
-  title: 'Expert Moving Tips & Advice | Speedy Van',
-  description: 'Get expert moving tips and advice from professional movers. Learn how to pack, organize, and move efficiently. Free moving checklist included.',
-  keywords: 'moving tips, moving advice, packing tips, moving house tips, relocation tips',
-  openGraph: {
-    title: 'Expert Moving Tips & Advice | Speedy Van',
-    description: 'Professional moving tips to make your move stress-free',
-    type: 'article',
-  },
-};
+'use client';
+
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Icon,
+  Card,
+  CardBody,
+  List,
+  ListItem,
+  ListIcon,
+  Button,
+  Divider,
+  Badge,
+  Flex,
+  Alert,
+  AlertIcon,
+  Grid,
+  GridItem,
+} from '@chakra-ui/react';
+import {
+  FiCheckCircle,
+  FiTruck,
+  FiPhone,
+  FiBox,
+  FiDownload,
+  FiArrowRight,
+} from 'react-icons/fi';
+import Link from 'next/link';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 import { ROUTES } from '@/lib/routing';
-
-export default function MovingTipsPage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Expert Moving Tips & Advice
-          </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl">
-            Professional tips from experienced movers to make your relocation smooth and stress-free
-          </p>
-        </div>
-      </section>
-
-      {/* Quick Tips Grid */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">Quick Moving Tips</h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {quickTips.map((tip, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
-                <div className="text-4xl mb-4">{tip.icon}</div>
-                <h3 className="text-xl font-bold mb-3">{tip.title}</h3>
-                <p className="text-gray-600">{tip.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Detailed Tips Sections */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <h2 className="text-3xl font-bold mb-12">Complete Moving Guide</h2>
-
-          {/* Before Moving */}
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 flex items-center">
-              <span className="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">1</span>
-              Before Moving Day
-            </h3>
-            
-            <div className="space-y-4 ml-14">
-              <div className="border-l-4 border-blue-600 pl-4">
-                <h4 className="font-bold mb-2">Start Early (8 Weeks Before)</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Create a moving timeline and checklist</li>
-                  <li>Research and book your moving company</li>
-                  <li>Start decluttering - donate or sell unwanted items</li>
-                  <li>Notify your landlord if renting</li>
-                  <li>Begin collecting packing materials</li>
-                </ul>
-              </div>
-
-              <div className="border-l-4 border-blue-600 pl-4">
-                <h4 className="font-bold mb-2">6 Weeks Before</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Update your address with banks, utilities, and subscriptions</li>
-                  <li>Arrange school transfers for children</li>
-                  <li>Book time off work for moving day</li>
-                  <li>Order packing supplies</li>
-                  <li>Start packing non-essential items</li>
-                </ul>
-              </div>
-
-              <div className="border-l-4 border-blue-600 pl-4">
-                <h4 className="font-bold mb-2">2 Weeks Before</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Confirm moving company booking</li>
-                  <li>Arrange utilities connection at new home</li>
-                  <li>Pack most rooms except essentials</li>
-                  <li>Use up frozen food</li>
-                  <li>Arrange pet care for moving day</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Packing Tips */}
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 flex items-center">
-              <span className="bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">2</span>
-              Packing Like a Pro
-            </h3>
-            
-            <div className="space-y-4 ml-14">
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h4 className="font-bold mb-2">Essential Packing Supplies</h4>
-                <ul className="list-disc list-inside text-gray-700 space-y-1">
-                  <li>Sturdy cardboard boxes (various sizes)</li>
-                  <li>Bubble wrap and packing paper</li>
-                  <li>Strong packing tape</li>
-                  <li>Permanent markers for labeling</li>
-                  <li>Furniture blankets and covers</li>
-                  <li>Plastic bags for small items</li>
-                </ul>
-              </div>
-
-              <div className="border-l-4 border-green-600 pl-4">
-                <h4 className="font-bold mb-2">Room-by-Room Packing Strategy</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li><strong>Kitchen:</strong> Pack dishes vertically, wrap fragile items individually</li>
-                  <li><strong>Bedroom:</strong> Use wardrobe boxes for hanging clothes</li>
-                  <li><strong>Bathroom:</strong> Seal liquids with plastic wrap under caps</li>
-                  <li><strong>Living Room:</strong> Disassemble furniture, keep screws in labeled bags</li>
-                  <li><strong>Office:</strong> Back up computer data, pack electronics separately</li>
-                </ul>
-              </div>
-
-              <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
-                <h4 className="font-bold mb-2">⚠️ Pro Tip: The "First Night" Box</h4>
-                <p className="text-gray-700">
-                  Pack a separate box with essentials you'll need immediately: toiletries, change of clothes, 
-                  phone chargers, basic kitchen items, important documents, and medications. Label it clearly 
-                  and load it last so it's first off the van.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Moving Day */}
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 flex items-center">
-              <span className="bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">3</span>
-              Moving Day
-            </h3>
-            
-            <div className="space-y-4 ml-14">
-              <div className="border-l-4 border-orange-600 pl-4">
-                <h4 className="font-bold mb-2">Morning Checklist</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Do a final walkthrough of your old home</li>
-                  <li>Check all cupboards, drawers, and storage spaces</li>
-                  <li>Take meter readings (gas, electric, water)</li>
-                  <li>Have cash ready for tipping movers</li>
-                  <li>Keep important documents with you</li>
-                </ul>
-              </div>
-
-              <div className="border-l-4 border-orange-600 pl-4">
-                <h4 className="font-bold mb-2">During the Move</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Stay available to answer questions</li>
-                  <li>Direct movers on furniture placement</li>
-                  <li>Check items as they're loaded/unloaded</li>
-                  <li>Keep pets and children in a safe area</li>
-                  <li>Take photos of valuable items before moving</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* After Moving */}
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 flex items-center">
-              <span className="bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center mr-4">4</span>
-              Settling Into Your New Home
-            </h3>
-            
-            <div className="space-y-4 ml-14">
-              <div className="border-l-4 border-purple-600 pl-4">
-                <h4 className="font-bold mb-2">First Day Priorities</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Check all utilities are working</li>
-                  <li>Test smoke alarms and carbon monoxide detectors</li>
-                  <li>Locate the stopcock and fuse box</li>
-                  <li>Unpack essential items first</li>
-                  <li>Make beds and set up bathroom</li>
-                </ul>
-              </div>
-
-              <div className="border-l-4 border-purple-600 pl-4">
-                <h4 className="font-bold mb-2">First Week Tasks</h4>
-                <ul className="list-disc list-inside text-gray-600 space-y-1">
-                  <li>Register with local GP and dentist</li>
-                  <li>Update your driving license address</li>
-                  <li>Register to vote at new address</li>
-                  <li>Introduce yourself to neighbors</li>
-                  <li>Explore your new neighborhood</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Money-Saving Tips */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <h2 className="text-3xl font-bold mb-8">Money-Saving Moving Tips</h2>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            {moneySavingTips.map((tip, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md">
-                <div className="flex items-start">
-                  <span className="text-2xl mr-4">💰</span>
-                  <div>
-                    <h3 className="font-bold mb-2">{tip.title}</h3>
-                    <p className="text-gray-600 text-sm">{tip.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Move?</h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Get an instant quote and book your move in minutes
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href={ROUTES.SHARED.BOOKING_LUXURY} 
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold hover:bg-blue-50 transition"
-            >
-              Get Instant Quote
-            </a>
-            <a 
-              href="/checklist" 
-              className="bg-blue-700 text-white px-8 py-4 rounded-lg font-bold hover:bg-blue-800 transition border-2 border-white"
-            >
-              Download Free Checklist
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
 
 const quickTips = [
   {
@@ -312,4 +101,398 @@ const moneySavingTips = [
     description: 'Less to move means lower costs. Sell items to offset moving expenses.',
   },
 ];
+
+export default function MovingTipsPage() {
+  return (
+    <>
+      <Header />
+      <MobileHeader />
+      <Box pt={{ base: 20, md: 24 }} bg="gray.900" minH="100vh">
+        {/* Hero Section */}
+        <Box bgGradient="linear(to-br, blue.900, blue.800, gray.900)" py={{ base: 16, md: 24 }}>
+          <Container maxW="container.xl">
+            <VStack spacing={8} textAlign="center">
+              <Badge colorScheme="blue" fontSize="md" px={4} py={2} borderRadius="full">
+                <HStack spacing={2}>
+                  <Icon as={FiBox} />
+                  <Text>Expert Moving Guide</Text>
+                </HStack>
+              </Badge>
+
+              <Heading as="h1" size={{ base: 'xl', md: '3xl' }} color="white" maxW="900px" lineHeight="shorter">
+                Expert Moving Tips & Advice
+                <Text as="span" display="block" color="blue.300">
+                  From Professional Movers
+                </Text>
+              </Heading>
+
+              <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.300" maxW="700px">
+                Professional tips from experienced movers to make your relocation smooth and stress-free
+              </Text>
+
+              <HStack spacing={4} pt={4} flexWrap="wrap" justify="center">
+                <Button
+                  as={Link}
+                  href={ROUTES.SHARED.BOOKING_LUXURY}
+                  size="lg"
+                  colorScheme="blue"
+                  rightIcon={<FiTruck />}
+                >
+                  Get Moving Quote
+                </Button>
+                <Button
+                  as="a"
+                  href="tel:+441202129746"
+                  size="lg"
+                  variant="outline"
+                  color="white"
+                  borderColor="white"
+                  leftIcon={<FiPhone />}
+                  _hover={{ bg: 'whiteAlpha.200' }}
+                >
+                  01202 129746
+                </Button>
+              </HStack>
+            </VStack>
+          </Container>
+        </Box>
+
+        {/* Quick Tips Grid */}
+        <Container maxW="container.xl" py={16}>
+          <VStack spacing={12}>
+            <Heading as="h2" size="xl" color="white" textAlign="center">
+              Quick Moving Tips
+            </Heading>
+
+            <Flex wrap="wrap" gap={6} w="full" justify="center">
+              {quickTips.map((tip, index) => (
+                <Box
+                  key={index}
+                  flex={{ base: '1 1 100%', md: '1 1 calc(33.333% - 16px)' }}
+                  maxW={{ base: '100%', md: 'calc(33.333% - 16px)' }}
+                  minW={{ base: '280px', md: '280px' }}
+                >
+                  <Card bg="gray.800" borderColor="gray.700" borderWidth="1px" h="full" _hover={{ borderColor: 'blue.500', transform: 'translateY(-4px)', transition: 'all 0.3s' }}>
+                    <CardBody>
+                      <VStack spacing={4} align="start">
+                        <Text fontSize="4xl">{tip.icon}</Text>
+                        <Heading size="md" color="white">{tip.title}</Heading>
+                        <Text color="gray.400">{tip.description}</Text>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                </Box>
+              ))}
+            </Flex>
+          </VStack>
+        </Container>
+
+        <Divider borderColor="gray.700" />
+
+        {/* Complete Moving Guide */}
+        <Container maxW="container.lg" py={16}>
+          <VStack spacing={12} align="stretch">
+            <Heading as="h2" size="xl" color="white" textAlign="center">
+              Complete Moving Guide
+            </Heading>
+
+            {/* Before Moving Day */}
+            <Card bg="gray.800" borderColor="gray.700" borderWidth="1px">
+              <CardBody>
+                <VStack spacing={6} align="stretch">
+                  <HStack>
+                    <Flex
+                      bg="blue.600"
+                      color="white"
+                      borderRadius="full"
+                      w={10}
+                      h={10}
+                      align="center"
+                      justify="center"
+                      fontWeight="bold"
+                      flexShrink={0}
+                    >
+                      1
+                    </Flex>
+                    <Heading size="lg" color="white">Before Moving Day</Heading>
+                  </HStack>
+
+                  <Box pl={{ base: 0, md: 14 }}>
+                    <VStack spacing={4} align="stretch">
+                      <Box borderLeft="4px solid" borderColor="blue.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>Start Early (8 Weeks Before)</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Create a moving timeline and checklist</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Research and book your moving company</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Start decluttering - donate or sell unwanted items</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Notify your landlord if renting</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Begin collecting packing materials</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box borderLeft="4px solid" borderColor="blue.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>6 Weeks Before</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Update your address with banks, utilities, and subscriptions</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Arrange school transfers for children</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Book time off work for moving day</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Order packing supplies</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Start packing non-essential items</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box borderLeft="4px solid" borderColor="blue.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>2 Weeks Before</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Confirm moving company booking</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Arrange utilities connection at new home</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Pack most rooms except essentials</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Use up frozen food</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Arrange pet care for moving day</ListItem>
+                        </List>
+                      </Box>
+                    </VStack>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Packing Like a Pro */}
+            <Card bg="gray.800" borderColor="gray.700" borderWidth="1px">
+              <CardBody>
+                <VStack spacing={6} align="stretch">
+                  <HStack>
+                    <Flex
+                      bg="green.600"
+                      color="white"
+                      borderRadius="full"
+                      w={10}
+                      h={10}
+                      align="center"
+                      justify="center"
+                      fontWeight="bold"
+                      flexShrink={0}
+                    >
+                      2
+                    </Flex>
+                    <Heading size="lg" color="white">Packing Like a Pro</Heading>
+                  </HStack>
+
+                  <Box pl={{ base: 0, md: 14 }}>
+                    <VStack spacing={4} align="stretch">
+                      <Box bg="green.900" p={4} borderRadius="lg">
+                        <Heading size="sm" color="white" mb={2}>Essential Packing Supplies</Heading>
+                        <List spacing={1} color="gray.300" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Sturdy cardboard boxes (various sizes)</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Bubble wrap and packing paper</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Strong packing tape</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Permanent markers for labeling</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Furniture blankets and covers</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Plastic bags for small items</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box borderLeft="4px solid" borderColor="green.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>Room-by-Room Packing Strategy</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" /><strong>Kitchen:</strong> Pack dishes vertically, wrap fragile items individually</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" /><strong>Bedroom:</strong> Use wardrobe boxes for hanging clothes</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" /><strong>Bathroom:</strong> Seal liquids with plastic wrap under caps</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" /><strong>Living Room:</strong> Disassemble furniture, keep screws in labeled bags</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" /><strong>Office:</strong> Back up computer data, pack electronics separately</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box bg="yellow.900" p={4} borderRadius="lg" borderLeft="4px solid" borderColor="yellow.500">
+                        <Heading size="sm" color="white" mb={2}>⚠️ Pro Tip: The "First Night" Box</Heading>
+                        <Text color="gray.300" fontSize="sm">
+                          Pack a separate box with essentials you'll need immediately: toiletries, change of clothes, 
+                          phone chargers, basic kitchen items, important documents, and medications. Label it clearly 
+                          and load it last so it's first off the van.
+                        </Text>
+                      </Box>
+                    </VStack>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Moving Day */}
+            <Card bg="gray.800" borderColor="gray.700" borderWidth="1px">
+              <CardBody>
+                <VStack spacing={6} align="stretch">
+                  <HStack>
+                    <Flex
+                      bg="orange.600"
+                      color="white"
+                      borderRadius="full"
+                      w={10}
+                      h={10}
+                      align="center"
+                      justify="center"
+                      fontWeight="bold"
+                      flexShrink={0}
+                    >
+                      3
+                    </Flex>
+                    <Heading size="lg" color="white">Moving Day</Heading>
+                  </HStack>
+
+                  <Box pl={{ base: 0, md: 14 }}>
+                    <VStack spacing={4} align="stretch">
+                      <Box borderLeft="4px solid" borderColor="orange.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>Morning Checklist</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Do a final walkthrough of your old home</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Check all cupboards, drawers, and storage spaces</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Take meter readings (gas, electric, water)</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Have cash ready for tipping movers</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Keep important documents with you</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box borderLeft="4px solid" borderColor="orange.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>During the Move</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Stay available to answer questions</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Direct movers on furniture placement</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Check items as they're loaded/unloaded</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Keep pets and children in a safe area</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Take photos of valuable items before moving</ListItem>
+                        </List>
+                      </Box>
+                    </VStack>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Settling In */}
+            <Card bg="gray.800" borderColor="gray.700" borderWidth="1px">
+              <CardBody>
+                <VStack spacing={6} align="stretch">
+                  <HStack>
+                    <Flex
+                      bg="purple.600"
+                      color="white"
+                      borderRadius="full"
+                      w={10}
+                      h={10}
+                      align="center"
+                      justify="center"
+                      fontWeight="bold"
+                      flexShrink={0}
+                    >
+                      4
+                    </Flex>
+                    <Heading size="lg" color="white">Settling Into Your New Home</Heading>
+                  </HStack>
+
+                  <Box pl={{ base: 0, md: 14 }}>
+                    <VStack spacing={4} align="stretch">
+                      <Box borderLeft="4px solid" borderColor="purple.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>First Day Priorities</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Check all utilities are working</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Test smoke alarms and carbon monoxide detectors</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Locate the stopcock and fuse box</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Unpack essential items first</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Make beds and set up bathroom</ListItem>
+                        </List>
+                      </Box>
+
+                      <Box borderLeft="4px solid" borderColor="purple.500" pl={4}>
+                        <Heading size="sm" color="white" mb={2}>First Week Tasks</Heading>
+                        <List spacing={1} color="gray.400" fontSize="sm">
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Register with local GP and dentist</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Update your driving license address</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Register to vote at new address</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Introduce yourself to neighbors</ListItem>
+                          <ListItem><ListIcon as={FiCheckCircle} color="green.400" />Explore your new neighborhood</ListItem>
+                        </List>
+                      </Box>
+                    </VStack>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+          </VStack>
+        </Container>
+
+        <Divider borderColor="gray.700" />
+
+        {/* Money-Saving Tips */}
+        <Container maxW="container.xl" py={16}>
+          <VStack spacing={12}>
+            <Heading as="h2" size="xl" color="white" textAlign="center">
+              Money-Saving Moving Tips
+            </Heading>
+
+            <Flex wrap="wrap" gap={6} w="full" justify="center">
+              {moneySavingTips.map((tip, index) => (
+                <Box
+                  key={index}
+                  flex={{ base: '1 1 100%', md: '1 1 calc(50% - 12px)' }}
+                  maxW={{ base: '100%', md: 'calc(50% - 12px)' }}
+                  minW={{ base: '280px', md: '280px' }}
+                >
+                  <Card bg="gray.800" borderColor="gray.700" borderWidth="1px" h="full">
+                    <CardBody>
+                      <HStack spacing={4} align="start">
+                        <Text fontSize="2xl">💰</Text>
+                        <Box>
+                          <Heading size="md" color="white" mb={2}>{tip.title}</Heading>
+                          <Text color="gray.400" fontSize="sm">{tip.description}</Text>
+                        </Box>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                </Box>
+              ))}
+            </Flex>
+          </VStack>
+        </Container>
+
+        {/* CTA Section */}
+        <Box bg="blue.900" py={16}>
+          <Container maxW="container.xl">
+            <VStack spacing={6} textAlign="center">
+              <Heading as="h2" size="xl" color="white">Ready to Move?</Heading>
+              <Text fontSize="lg" color="whiteAlpha.900">
+                Get an instant quote and book your move in minutes
+              </Text>
+              <Flex gap={4} flexWrap="wrap" justify="center">
+                <Button
+                  as={Link}
+                  href={ROUTES.SHARED.BOOKING_LUXURY}
+                  size="lg"
+                  colorScheme="blue"
+                  bg="white"
+                  color="blue.600"
+                  rightIcon={<FiArrowRight />}
+                  _hover={{ bg: 'blue.50' }}
+                >
+                  Get Instant Quote
+                </Button>
+                <Button
+                  as={Link}
+                  href="/checklist"
+                  size="lg"
+                  variant="outline"
+                  color="white"
+                  borderColor="white"
+                  borderWidth="2px"
+                  leftIcon={<FiDownload />}
+                  _hover={{ bg: 'whiteAlpha.200' }}
+                >
+                  Download Free Checklist
+                </Button>
+              </Flex>
+            </VStack>
+          </Container>
+        </Box>
+      </Box>
+    </>
+  );
+}
 

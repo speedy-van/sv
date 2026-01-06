@@ -10,17 +10,17 @@ const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
 });
 
 export const metadata: Metadata = {
-  title: 'Man and Van London | Furniture Removal & Moving Services UK',
-  description: 'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same day service available. Book online instantly.',
-  keywords: 'man and van London, furniture removal, house removals, moving services UK, van hire, removal company, furniture movers, office removals, same day delivery, man and van near me, cheap man and van, furniture delivery service, removal companies near me',
+  title: 'Facebook Marketplace Delivery | Furniture Collection & Man and Van UK',
+  description: 'Facebook Marketplace & Gumtree pickup service. We collect from private sellers and deliver to your door. Sofas, beds, wardrobes, appliances. Same day from £25/hour. Fully insured.',
+  keywords: 'Facebook Marketplace delivery, Gumtree pickup, collect from seller, furniture delivery, man and van London, sofa delivery, private seller collection, marketplace collection UK, furniture removal, door to door delivery',
   alternates: { canonical: 'https://speedy-van.co.uk/' },
   openGraph: {
-    title: 'Man and Van London | Furniture Removal & Moving Services UK',
-    description: 'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same day service available.',
+    title: 'Facebook Marketplace & Gumtree Pickup | Furniture Delivery UK',
+    description: 'We collect from Facebook Marketplace, Gumtree & private sellers and deliver to your door. Sofas, beds, wardrobes. Same day service from £25/hour.',
     url: 'https://speedy-van.co.uk/',
     siteName: 'Speedy Van',
     images: [
-      { url: '/og/og-home.jpg', width: 1200, height: 630, alt: 'Professional man and van service in London and across the UK' },
+      { url: '/og/og-home.jpg', width: 1200, height: 630, alt: 'Facebook Marketplace pickup and furniture delivery service UK' },
     ],
     locale: 'en_GB',
     type: 'website',
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@speedyvan',
     creator: '@speedyvan',
-    title: 'Man and Van London | Furniture Removal & Moving Services UK',
-    description: 'Professional man and van service across London & UK. House removals, furniture delivery from £25/hour. Book online instantly.',
+    title: 'Facebook Marketplace & Gumtree Pickup | Speedy Van',
+    description: 'We collect from private sellers and deliver to your door. Sofas, beds, wardrobes. Same day service available.',
   },
   appleWebApp: {
     capable: true,

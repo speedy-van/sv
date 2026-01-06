@@ -164,6 +164,10 @@ export async function GET(
     const customerPreferences = order.customerPreferences as any;
     const pickupFlatNumber = customerPreferences?.pickupAddressMeta?.flatNumber || null;
     const dropoffFlatNumber = customerPreferences?.dropoffAddressMeta?.flatNumber || null;
+    
+    // Extract collection source info
+    const collectionSource = customerPreferences?.collectionSource || null;
+    const marketplacePickup = customerPreferences?.marketplacePickup || null;
 
     // Extract relations with correct Prisma names
     const pickupAddress = order.pickupAddress;
@@ -208,6 +212,8 @@ export async function GET(
       } : null,
       serviceType: (order.customerPreferences as any)?.serviceType || (order.customerPreferences as any)?.serviceLevel || 'standard',
       crewSize: order.crewSize || 'TWO', // Number of helpers (ONE, TWO, THREE, FOUR)
+      collectionSource: collectionSource, // Where items are collected from
+      marketplacePickup: marketplacePickup, // Marketplace-specific details (seller info, etc.)
       orderType: order.orderType || (order.isMultiDrop ? 'multi-drop' : 'single'),
       isMultiDrop: order.isMultiDrop || false,
       routeId: order.routeId,

@@ -57,7 +57,22 @@ const MotionCard = chakra(motion.div, {
 
 const services = [
   {
-    title: 'House Moving',
+    title: 'Man and Van',
+    description: 'Professional man and van service for all your moving needs. Available 24/7 across the UK.',
+    icon: FiTruck,
+    color: 'cyan',
+    features: [
+      'Local and long distance',
+      '24/7 availability',
+      'Fully insured',
+      'Professional drivers',
+      'All van sizes'
+    ],
+    price: 'From £25/hr',
+    href: '/man-and-van'
+  },
+  {
+    title: 'House Removals',
     description: 'Complete residential relocation services for homes and apartments',
     icon: FiHome,
     color: 'blue',
@@ -68,23 +83,8 @@ const services = [
       'Storage solutions',
       'Insurance coverage'
     ],
-    price: 'From £150',
-    href: '/services/house-moving'
-  },
-  {
-    title: 'Office Relocation',
-    description: 'Professional business moving services with minimal downtime',
-    icon: FiSettings,
-    color: 'purple',
-    features: [
-      'IT equipment handling',
-      'Document security',
-      'After-hours service',
-      'Project management',
-      'Minimal business disruption'
-    ],
-    price: 'From £300',
-    href: '/services/office'
+    price: 'From £299',
+    href: '/house-removals'
   },
   {
     title: 'Furniture Delivery',
@@ -98,14 +98,44 @@ const services = [
       'Scheduled delivery',
       'Two-person team'
     ],
-    price: 'From £80',
-    href: '/services/furniture'
+    price: 'From £79',
+    href: '/furniture-removal'
   },
   {
-    title: 'Student Moving',
+    title: 'Same Day Delivery',
+    description: 'Urgent delivery when you need it fast. Book by 10am for same-day collection.',
+    icon: FiClock,
+    color: 'orange',
+    features: [
+      'Book by 10am',
+      'Same-day collection',
+      'Priority service',
+      'Real-time tracking',
+      'Express handling'
+    ],
+    price: 'From £69',
+    href: '/same-day-delivery'
+  },
+  {
+    title: 'Office Removals',
+    description: 'Professional business moving services with minimal downtime',
+    icon: FiSettings,
+    color: 'purple',
+    features: [
+      'IT equipment handling',
+      'Document security',
+      'After-hours service',
+      'Project management',
+      'Minimal business disruption'
+    ],
+    price: 'From £299',
+    href: '/office-removals'
+  },
+  {
+    title: 'Student Moves',
     description: 'Affordable moving solutions for students and young professionals',
     icon: FiBookOpen,
-    color: 'orange',
+    color: 'pink',
     features: [
       'Student discounts',
       'Flexible scheduling',
@@ -113,8 +143,8 @@ const services = [
       'University partnerships',
       'Budget-friendly rates'
     ],
-    price: 'From £60',
-    href: '/services/student'
+    price: 'From £59',
+    href: '/student-moves'
   }
 ];
 

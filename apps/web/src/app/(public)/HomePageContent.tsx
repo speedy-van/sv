@@ -213,6 +213,104 @@ export default function HomePageContent() {
           {/* Hero Section */}
           <Hero />
 
+          {/* Services Scrolling Banner - RIGHT AFTER HERO */}
+          <Box 
+            w="full" 
+            overflow="hidden" 
+            py={4}
+            position="relative"
+            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(16, 185, 129, 0.15) 100%)"
+            borderRadius="2xl"
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.3)"
+            boxShadow="0 10px 40px rgba(0,0,0,0.3)"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '80px',
+              background: 'linear-gradient(90deg, rgba(13,13,13,1), transparent)',
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+            _after={{
+              content: '""',
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: '80px',
+              background: 'linear-gradient(-90deg, rgba(13,13,13,1), transparent)',
+              zIndex: 10,
+              pointerEvents: 'none',
+            }}
+          >
+            <style>
+              {`
+                @keyframes scrollServicesHome {
+                  0% { transform: translateX(0); }
+                  100% { transform: translateX(-50%); }
+                }
+              `}
+            </style>
+            <Box
+              display="flex"
+              gap={4}
+              w="max-content"
+              px={4}
+              style={{
+                animation: 'scrollServicesHome 25s linear infinite',
+              }}
+            >
+              {[
+                { icon: '🏠', text: 'House Removals', color: '#3B82F6' },
+                { icon: '🏢', text: 'Office Moves', color: '#8B5CF6' },
+                { icon: '🛋️', text: 'Furniture Delivery', color: '#14B8A6' },
+                { icon: '📦', text: 'Single Items', color: '#F97316' },
+                { icon: '🛒', text: 'IKEA & Store Pickup', color: '#EAB308' },
+                { icon: '📱', text: 'Facebook Marketplace', color: '#3B82F6' },
+                { icon: '🏷️', text: 'Gumtree & eBay', color: '#22C55E' },
+                { icon: '🎓', text: 'Student Moves', color: '#EC4899' },
+                { icon: '⚡', text: 'Same Day Service', color: '#EF4444' },
+                { icon: '🚚', text: 'Man & Van', color: '#06B6D4' },
+                { icon: '🏠', text: 'House Removals', color: '#3B82F6' },
+                { icon: '🏢', text: 'Office Moves', color: '#8B5CF6' },
+                { icon: '🛋️', text: 'Furniture Delivery', color: '#14B8A6' },
+                { icon: '📦', text: 'Single Items', color: '#F97316' },
+                { icon: '🛒', text: 'IKEA & Store Pickup', color: '#EAB308' },
+                { icon: '📱', text: 'Facebook Marketplace', color: '#3B82F6' },
+                { icon: '🏷️', text: 'Gumtree & eBay', color: '#22C55E' },
+                { icon: '🎓', text: 'Student Moves', color: '#EC4899' },
+                { icon: '⚡', text: 'Same Day Service', color: '#EF4444' },
+                { icon: '🚚', text: 'Man & Van', color: '#06B6D4' },
+              ].map((service, idx) => (
+                <Box
+                  key={idx}
+                  px={5}
+                  py={2.5}
+                  borderRadius="full"
+                  bg={service.color}
+                  color="white"
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  fontWeight="700"
+                  whiteSpace="nowrap"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  flexShrink={0}
+                  boxShadow="0 4px 15px rgba(0,0,0,0.3)"
+                  transition="all 0.2s"
+                  _hover={{ transform: 'scale(1.05)' }}
+                >
+                  <Text as="span" fontSize={{ base: 'md', md: 'lg' }}>{service.icon}</Text>
+                  <Text as="span">{service.text}</Text>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
           {/* Hero Message Section */}
           <HeroMessage />
 

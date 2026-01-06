@@ -285,76 +285,143 @@ export default function SegmentManager({
     }
   };
 
-  // If no segments or only one segment, show simple view
+  // State for collapsed/expanded view
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // If no segments or only one segment, show collapsible button view
   if (segments.length <= 1) {
     return (
       <Box w="full" mt={6}>
-        <Card
-          bg="linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(17, 24, 39, 0.92))"
-          border="1px solid"
-          borderColor="rgba(59, 130, 246, 0.35)"
-          borderRadius="2xl"
-          boxShadow="0 20px 50px rgba(59,130,246,0.25)"
-        >
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              {/* Header */}
-              <HStack justify="space-between">
-                <Text fontSize="lg" fontWeight="700" color="white">
-                  Add a return or new journey
-                </Text>
-                <Badge colorScheme="blue" variant="subtle" borderRadius="full">
-                  Multi-leg ready
-                </Badge>
+        {/* Collapsed Button */}
+        {!isExpanded && (
+          <Button
+            onClick={() => setIsExpanded(true)}
+            w="full"
+            h="auto"
+            py={4}
+            px={5}
+            bg="linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%)"
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.3)"
+            borderRadius="xl"
+            _hover={{ 
+              borderColor: 'blue.400', 
+              bg: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 1) 100%)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 10px 30px rgba(59, 130, 246, 0.2)',
+            }}
+            transition="all 0.3s"
+          >
+            <HStack spacing={4} w="full" justify="space-between">
+              <HStack spacing={3}>
+                <Box
+                  p={2}
+                  borderRadius="lg"
+                  bg="blue.500"
+                >
+                  <Icon as={FaPlus} color="white" boxSize={4} />
+                </Box>
+                <VStack spacing={0} align="start">
+                  <Text fontWeight="600" color="white" fontSize="sm">
+                    Add Return or New Journey
+                  </Text>
+                  <Text fontSize="xs" color="whiteAlpha.600">
+                    Need multiple stops? Click to expand options
+                  </Text>
+                </VStack>
               </HStack>
+              <Badge colorScheme="blue" variant="subtle" borderRadius="full" fontSize="2xs">
+                Multi-leg
+              </Badge>
+            </HStack>
+          </Button>
+        )}
 
-              {/* Action Buttons */}
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
-                <Button
-                  onClick={handleAddReturn}
-                  leftIcon={<Icon as={FaUndo} />}
-                  bgGradient="linear(to-r, blue.500, cyan.500)"
-                  color="white"
-                  _hover={{ bgGradient: 'linear(to-r, blue.600, cyan.600)' }}
-                  size="md"
-                  h="auto"
-                  py={3}
-                  whiteSpace="normal"
-                  textAlign="center"
-                  flexDirection={{ base: 'row', md: 'row' }}
-                  justifyContent="center"
-                  alignItems="center"
-                  minH="48px"
-                >
-                  <Text as="span">Add Return Journey</Text>
-                </Button>
-                <Button
-                  onClick={handleAddAdditional}
-                  leftIcon={<Icon as={FaPlus} />}
-                  bgGradient="linear(to-r, purple.500, pink.500)"
-                  color="white"
-                  _hover={{ bgGradient: 'linear(to-r, purple.600, pink.600)' }}
-                  size="md"
-                  h="auto"
-                  py={3}
-                  whiteSpace="normal"
-                  textAlign="center"
-                  flexDirection={{ base: 'row', md: 'row' }}
-                  justifyContent="center"
-                  alignItems="center"
-                  minH="48px"
-                >
-                  <Text as="span">Add New Journey</Text>
-                </Button>
-              </SimpleGrid>
+        {/* Expanded Card */}
+        <Collapse in={isExpanded} animateOpacity>
+          <Card
+            bg="linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(17, 24, 39, 0.92))"
+            border="1px solid"
+            borderColor="rgba(59, 130, 246, 0.35)"
+            borderRadius="2xl"
+            boxShadow="0 20px 50px rgba(59,130,246,0.25)"
+            overflow="hidden"
+          >
+            {/* Gradient top border */}
+            <Box h="3px" bgGradient="linear(to-r, blue.400, purple.500, pink.400)" />
+            
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                {/* Header with close button */}
+                <HStack justify="space-between">
+                  <HStack spacing={3}>
+                    <Icon as={FaRoute} color="blue.300" boxSize={5} />
+                    <Text fontSize="lg" fontWeight="700" color="white">
+                      Add a return or new journey
+                    </Text>
+                  </HStack>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    color="whiteAlpha.600"
+                    onClick={() => setIsExpanded(false)}
+                    _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+                    borderRadius="full"
+                  >
+                    <Icon as={FaChevronUp} />
+                  </Button>
+                </HStack>
 
-              {/* Info Text */}
-              <Text fontSize="sm" color="gray.200" textAlign="center">
-                Use one-click return to mirror drop-off → pickup, or add a fresh route.
-              </Text>
-            </VStack>
-          </CardBody>
-        </Card>
+                {/* Action Buttons */}
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
+                  <Button
+                    onClick={handleAddReturn}
+                    leftIcon={<Icon as={FaUndo} />}
+                    bgGradient="linear(to-r, blue.500, cyan.500)"
+                    color="white"
+                    _hover={{ bgGradient: 'linear(to-r, blue.600, cyan.600)', transform: 'translateY(-2px)' }}
+                    size="md"
+                    h="auto"
+                    py={3}
+                    whiteSpace="normal"
+                    textAlign="center"
+                    flexDirection={{ base: 'row', md: 'row' }}
+                    justifyContent="center"
+                    alignItems="center"
+                    minH="48px"
+                    transition="all 0.2s"
+                  >
+                    <Text as="span">Add Return Journey</Text>
+                  </Button>
+                  <Button
+                    onClick={handleAddAdditional}
+                    leftIcon={<Icon as={FaPlus} />}
+                    bgGradient="linear(to-r, purple.500, pink.500)"
+                    color="white"
+                    _hover={{ bgGradient: 'linear(to-r, purple.600, pink.600)', transform: 'translateY(-2px)' }}
+                    size="md"
+                    h="auto"
+                    py={3}
+                    whiteSpace="normal"
+                    textAlign="center"
+                    flexDirection={{ base: 'row', md: 'row' }}
+                    justifyContent="center"
+                    alignItems="center"
+                    minH="48px"
+                    transition="all 0.2s"
+                  >
+                    <Text as="span">Add New Journey</Text>
+                  </Button>
+                </SimpleGrid>
+
+                {/* Info Text */}
+                <Text fontSize="sm" color="gray.300" textAlign="center">
+                  Use one-click return to mirror drop-off → pickup, or add a fresh route.
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
+        </Collapse>
       </Box>
     );
   }

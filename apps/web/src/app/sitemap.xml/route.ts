@@ -71,8 +71,169 @@ export async function GET() {
       changefreq: 'weekly',
       priority: '0.95'
     },
+    // Marketplace & Collection SEO Pages (High Intent)
+    {
+      url: `${baseUrl}/facebook-marketplace-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/gumtree-pickup-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/furniture-collection-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/sofa-delivery-service`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    // Location-based delivery routes
+    {
+      url: `${baseUrl}/delivery/gloucestershire-to-bristol`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/london-to-kent`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/manchester-to-liverpool`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/birmingham-to-coventry`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/glasgow-to-edinburgh`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/leeds-to-sheffield`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/london-to-brighton`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/london-to-oxford`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/cardiff-to-bristol`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    // Marketplace pickup by location
+    {
+      url: `${baseUrl}/delivery/facebook-marketplace-pickup-london`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/facebook-marketplace-pickup-manchester`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/facebook-marketplace-pickup-birmingham`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/delivery/gumtree-pickup-bristol`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
     {
       url: `${baseUrl}/affordable-man-and-van`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    // Core Service Hub
+    {
+      url: `${baseUrl}/services`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    // Core Service Pages - High Priority
+    {
+      url: `${baseUrl}/house-removals`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/single-item-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/same-day-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.95'
+    },
+    {
+      url: `${baseUrl}/student-moves`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/office-removals`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/storage-services`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/multi-stop-delivery`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/assembly-service`,
       lastmod: currentDate,
       changefreq: 'weekly',
       priority: '0.9'

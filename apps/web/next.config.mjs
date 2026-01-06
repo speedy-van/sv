@@ -58,6 +58,27 @@ const nextConfig = {
         destination: '/booking-luxury',
         permanent: false, // Temporary redirect (307) until standard booking page is created
       },
+      // SEO redirects - old service pages to new locations (301 permanent)
+      {
+        source: '/services/house-moving',
+        destination: '/house-removals',
+        permanent: true,
+      },
+      {
+        source: '/services/office',
+        destination: '/office-removals',
+        permanent: true,
+      },
+      {
+        source: '/services/furniture',
+        destination: '/furniture-removal',
+        permanent: true,
+      },
+      {
+        source: '/services/student',
+        destination: '/student-moves',
+        permanent: true,
+      },
       // Prevent Next.js from trying to prerender error pages
       {
         source: '/500',

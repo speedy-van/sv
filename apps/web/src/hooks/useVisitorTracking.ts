@@ -75,34 +75,34 @@ export function useVisitorTracking(options: VisitorTrackingOptions = {}) {
     // Skip if running on server
     if (typeof window === 'undefined') return;
 
-    // Get or create session ID (expires after 30 minutes of inactivity)
-    let sessionId = safeSessionStorageGetItem('visitor_session_id');
-    const sessionTimestamp = safeSessionStorageGetItem('visitor_session_timestamp');
+    try {
+      // Get or create session ID (expires after 30 minutes of inactivity)
+      let sessionId = safeSessionStorageGetItem('visitor_session_id');
+      const sessionTimestamp = safeSessionStorageGetItem('visitor_session_timestamp');
 
-    const now = Date.now();
-    const thirtyMinutes = 30 * 60 * 1000;
+      const now = Date.now();
+      const thirtyMinutes = 30 * 60 * 1000;
 
-    if (!sessionId || !sessionTimestamp || now - parseInt(sessionTimestamp) > thirtyMinutes) {
-      sessionId = uuidv4();
-      const saved = safeSessionStorageSetItem('visitor_session_id', sessionId);
-      if (!saved) {
-        console.warn('SessionStorage blocked, using temporary session ID');
+      if (!sessionId || !sessionTimestamp || now - parseInt(sessionTimestamp) > thirtyMinutes) {
+        sessionId = uuidv4();
+        safeSessionStorageSetItem('visitor_session_id', sessionId);
       }
-    }
 
-    safeSessionStorageSetItem('visitor_session_timestamp', now.toString());
-    sessionIdRef.current = sessionId;
+      safeSessionStorageSetItem('visitor_session_timestamp', now.toString());
+      sessionIdRef.current = sessionId;
 
-    // Get or create visitor ID (persists across sessions)
-    let visitorId = safeLocalStorageGetItem('visitor_id');
-    if (!visitorId) {
-      visitorId = uuidv4();
-      const saved = safeLocalStorageSetItem('visitor_id', visitorId);
-      if (!saved) {
-        console.warn('LocalStorage blocked, using temporary visitor ID');
+      // Get or create visitor ID (persists across sessions)
+      let visitorId = safeLocalStorageGetItem('visitor_id');
+      if (!visitorId) {
+        visitorId = uuidv4();
+        safeLocalStorageSetItem('visitor_id', visitorId);
       }
+      visitorIdRef.current = visitorId;
+    } catch {
+      // If storage is completely unavailable, use temporary IDs
+      sessionIdRef.current = sessionIdRef.current || uuidv4();
+      visitorIdRef.current = visitorIdRef.current || uuidv4();
     }
-    visitorIdRef.current = visitorId;
   };
 
   const getDeviceInfo = () => {

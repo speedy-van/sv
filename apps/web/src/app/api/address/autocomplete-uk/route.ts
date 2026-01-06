@@ -264,8 +264,16 @@ async function searchWithMapbox(query: string): Promise<any[]> {
     timestamp: new Date().toISOString()
   });
 
+  // Filter out non-UK results (e.g., Bermuda, Gibraltar, etc.)
+  // These are British Overseas Territories but not part of mainland UK
+  const ukOnlyFeatures = data.features.filter(feature => {
+    const placeName = feature.place_name?.toLowerCase() || '';
+    const excludedTerritories = ['bermuda', 'gibraltar', 'cayman', 'virgin islands', 'falkland', 'turks', 'montserrat', 'anguilla'];
+    return !excludedTerritories.some(territory => placeName.includes(territory));
+  });
+
   // Convert features to standardized format
-  return data.features.map((feature, index) => {
+  return ukOnlyFeatures.map((feature, index) => {
     // Extract address components from context
     const components: any = { country: 'United Kingdom' };
     
@@ -281,6 +289,16 @@ async function searchWithMapbox(query: string): Promise<any[]> {
       }
     });
 
+    // Validate UK postcode format if present
+    // UK postcodes follow pattern like: SW1A 1AA, M1 1AE, etc.
+    if (components.postcode) {
+      const ukPostcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+      if (!ukPostcodeRegex.test(components.postcode.trim())) {
+        // Skip non-UK postcodes (e.g., Bermuda GE04, HS02)
+        return null;
+      }
+    }
+
     return {
       id: feature.id,
       displayText: feature.place_name,
@@ -294,7 +312,7 @@ async function searchWithMapbox(query: string): Promise<any[]> {
       confidence: 0.85,
       priority: index + 100 // Lower priority than Google
     };
-  });
+  }).filter(Boolean); // Remove null entries from invalid postcodes
 }
 
 export async function GET(request: NextRequest) {

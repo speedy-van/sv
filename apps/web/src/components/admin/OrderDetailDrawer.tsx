@@ -237,6 +237,13 @@ export interface OrderDetail {
   pickupTimeSlot?: string;
   serviceType?: string;
   crewSize?: string; // Number of helpers: ONE, TWO, THREE, FOUR
+  collectionSource?: string; // Where items are collected from
+  marketplacePickup?: {
+    sellerHelpsLoading?: boolean;
+    sellerContactName?: string;
+    sellerPhone?: string;
+    platformSource?: string;
+  };
   orderType?: string;
   isMultiDrop?: boolean;
   routeId?: string | null;
@@ -2149,6 +2156,29 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                            '2 Men'}
                       </Badge>
                     )}
+                    {order?.collectionSource && order?.collectionSource !== 'private-address' && (
+                      <Badge 
+                        colorScheme={
+                          order?.collectionSource === 'marketplace' ? 'blue' :
+                          order?.collectionSource === 'retail-store' ? 'orange' :
+                          order?.collectionSource === 'storage-unit' ? 'purple' :
+                          order?.collectionSource === 'charity-shop' ? 'pink' :
+                          order?.collectionSource === 'auction' ? 'yellow' :
+                          order?.collectionSource === 'friend-family' ? 'green' :
+                          'gray'
+                        }
+                        size="md"
+                        title="Collection source"
+                      >
+                        📦 {order?.collectionSource === 'marketplace' ? 'Marketplace' :
+                           order?.collectionSource === 'retail-store' ? 'Retail Store' :
+                           order?.collectionSource === 'storage-unit' ? 'Storage Unit' :
+                           order?.collectionSource === 'charity-shop' ? 'Charity Shop' :
+                           order?.collectionSource === 'auction' ? 'Auction' :
+                           order?.collectionSource === 'friend-family' ? 'Friend/Family' :
+                           order?.collectionSource}
+                      </Badge>
+                    )}
                     {order?.isMultiDrop || order?.orderType === 'multi-drop' ? (
                       <Badge colorScheme="purple" size="md">
                         Multi-Drop Route
@@ -2186,6 +2216,57 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               </VStack>
 
               <Divider borderColor={borderColor} />
+
+              {/* Marketplace Pickup Details - Show only if marketplace source */}
+              {order?.collectionSource === 'marketplace' && order?.marketplacePickup && (
+                <>
+                  <VStack align="stretch" spacing={3}>
+                    <Text fontWeight="bold" fontSize="md" color={textColor}>
+                      📦 Marketplace Pickup Details
+                    </Text>
+                    <Box 
+                      bg="blue.900" 
+                      borderRadius="md" 
+                      p={3}
+                      borderWidth="1px"
+                      borderColor="blue.700"
+                    >
+                      <VStack align="stretch" spacing={2}>
+                        {order?.marketplacePickup?.platformSource && (
+                          <HStack justify="space-between">
+                            <Text color="gray.400" fontSize="sm">Platform</Text>
+                            <Badge colorScheme="blue">
+                              {order?.marketplacePickup?.platformSource === 'facebook' ? 'Facebook Marketplace' :
+                               order?.marketplacePickup?.platformSource === 'gumtree' ? 'Gumtree' :
+                               order?.marketplacePickup?.platformSource === 'ebay' ? 'eBay' :
+                               'Other'}
+                            </Badge>
+                          </HStack>
+                        )}
+                        {order?.marketplacePickup?.sellerContactName && (
+                          <HStack justify="space-between">
+                            <Text color="gray.400" fontSize="sm">Seller Name</Text>
+                            <Text color="white" fontWeight="medium">{order?.marketplacePickup?.sellerContactName}</Text>
+                          </HStack>
+                        )}
+                        {order?.marketplacePickup?.sellerPhone && (
+                          <HStack justify="space-between">
+                            <Text color="gray.400" fontSize="sm">Seller Phone</Text>
+                            <Text color="white" fontWeight="medium">{order?.marketplacePickup?.sellerPhone}</Text>
+                          </HStack>
+                        )}
+                        <HStack justify="space-between">
+                          <Text color="gray.400" fontSize="sm">Seller Helps Loading</Text>
+                          <Badge colorScheme={order?.marketplacePickup?.sellerHelpsLoading ? 'green' : 'gray'}>
+                            {order?.marketplacePickup?.sellerHelpsLoading ? 'Yes' : 'No'}
+                          </Badge>
+                        </HStack>
+                      </VStack>
+                    </Box>
+                  </VStack>
+                  <Divider borderColor={borderColor} />
+                </>
+              )}
 
               {/* Customer Information */}
               <VStack align="stretch" spacing={3}>

@@ -126,28 +126,88 @@ const Header: React.FC = memo(() => {
         ariaLabel: 'Explore our moving services',
         children: [
           {
-            label: 'House Moving',
-            href: '/services/house-moving',
-            icon: FiHome,
-            ariaLabel: 'Residential moving services',
+            label: 'Man and Van',
+            href: '/man-and-van',
+            icon: FiTruck,
+            ariaLabel: 'Man and van services',
           },
           {
-            label: 'Office Relocation',
-            href: '/services/office',
+            label: 'House Removals',
+            href: '/house-removals',
+            icon: FiHome,
+            ariaLabel: 'Full house removal services',
+          },
+          {
+            label: 'Same Day Delivery',
+            href: '/same-day-delivery',
+            icon: FiTruck,
+            ariaLabel: 'Express same day delivery',
+          },
+          {
+            label: 'Single Item Delivery',
+            href: '/single-item-delivery',
+            icon: FiTruck,
+            ariaLabel: 'Single item delivery service',
+          },
+          {
+            label: 'Office Removals',
+            href: '/office-removals',
             icon: FiSettings,
             ariaLabel: 'Commercial office relocation',
           },
           {
-            label: 'Furniture Delivery',
-            href: '/services/furniture',
-            icon: FiTruck,
-            ariaLabel: 'Furniture delivery services',
-          },
-          {
-            label: 'Student Moving',
-            href: '/services/student',
+            label: 'Student Moves',
+            href: '/student-moves',
             icon: FiBookOpen,
             ariaLabel: 'Student moving assistance',
+          },
+          {
+            label: 'Facebook Marketplace',
+            href: '/facebook-marketplace-delivery',
+            icon: FiMapPin,
+            ariaLabel: 'Facebook Marketplace collection',
+          },
+          {
+            label: 'Gumtree Pickup',
+            href: '/gumtree-pickup-delivery',
+            icon: FiMapPin,
+            ariaLabel: 'Gumtree pickup and delivery',
+          },
+          {
+            label: 'Sofa Delivery',
+            href: '/sofa-delivery-service',
+            icon: FiTruck,
+            ariaLabel: 'Sofa delivery service',
+          },
+          {
+            label: 'Furniture Collection',
+            href: '/furniture-collection-delivery',
+            icon: FiTruck,
+            ariaLabel: 'Furniture collection and delivery',
+          },
+          {
+            label: 'Assembly Service',
+            href: '/assembly-service',
+            icon: FiSettings,
+            ariaLabel: 'Furniture assembly service',
+          },
+          {
+            label: 'Storage Services',
+            href: '/storage-services',
+            icon: FiTruck,
+            ariaLabel: 'Storage pickup and delivery',
+          },
+          {
+            label: 'Multi-Stop Delivery',
+            href: '/multi-stop-delivery',
+            icon: FiMapPin,
+            ariaLabel: 'Multiple stop delivery',
+          },
+          {
+            label: 'View All Services',
+            href: '/services',
+            icon: FiSettings,
+            ariaLabel: 'View all services',
           },
         ],
       },
@@ -351,12 +411,9 @@ const Header: React.FC = memo(() => {
 
           {/* Enhanced Desktop Navigation */}
           <HStack spacing={8} flex={1} justify="center" display={{ base: 'none', md: 'flex' }}>
-            {navItems.map((item, index) => (
-              <MotionBox
+            {navItems.map((item) => (
+              <Box
                 key={item.label}
-                initial={false}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.06 } as any}
                 suppressHydrationWarning
               >
                 {item.hasDropdown ? (
@@ -460,7 +517,7 @@ const Header: React.FC = memo(() => {
                       {item.label}
                     </Link>
                   )}
-                </MotionBox>
+                </Box>
               ))}
             </HStack>
 

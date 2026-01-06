@@ -3051,6 +3051,9 @@ export default function WhoAndPaymentStep({
               economyPrice,
               standardPrice,
               priorityPrice,
+              // Collection Source & Marketplace Pickup Details
+              collectionSource: formData.step1.collectionSource || 'private-address',
+              marketplacePickup: formData.step1.marketplacePickup || null,
             }}
             onSuccess={(sessionId, paymentIntentId) => {
               updatePaymentStatus('success');

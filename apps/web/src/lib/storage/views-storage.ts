@@ -4,6 +4,12 @@
  * Manages saving and loading of custom views and filter presets
  */
 
+import {
+  safeLocalStorageGetItem,
+  safeLocalStorageSetItem,
+  safeLocalStorageRemoveItem,
+} from '@/lib/safe-storage';
+
 export interface SavedFilter {
   id: string;
   name: string;
@@ -64,10 +70,9 @@ export class ViewsStorage {
     if (typeof window === 'undefined') return [];
     
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_FILTERS);
+      const stored = safeLocalStorageGetItem(STORAGE_KEY_FILTERS);
       return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error loading saved filters:', error);
+    } catch {
       return [];
     }
   }
@@ -139,10 +144,9 @@ export class ViewsStorage {
     if (typeof window === 'undefined') return [];
     
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_VIEWS);
+      const stored = safeLocalStorageGetItem(STORAGE_KEY_VIEWS);
       return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error loading custom views:', error);
+    } catch {
       return [];
     }
   }
@@ -230,7 +234,7 @@ export class ViewsStorage {
    */
   static clearFilters(): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(STORAGE_KEY_FILTERS);
+    safeLocalStorageRemoveItem(STORAGE_KEY_FILTERS);
   }
 
   /**
@@ -238,7 +242,7 @@ export class ViewsStorage {
    */
   static clearViews(): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(STORAGE_KEY_VIEWS);
+    safeLocalStorageRemoveItem(STORAGE_KEY_VIEWS);
   }
 
   /**
@@ -286,12 +290,12 @@ export class ViewsStorage {
   // Private helpers
   private static setFilters(filters: SavedFilter[]): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY_FILTERS, JSON.stringify(filters));
+    safeLocalStorageSetItem(STORAGE_KEY_FILTERS, JSON.stringify(filters));
   }
 
   private static setViews(views: CustomView[]): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY_VIEWS, JSON.stringify(views));
+    safeLocalStorageSetItem(STORAGE_KEY_VIEWS, JSON.stringify(views));
   }
 }
 

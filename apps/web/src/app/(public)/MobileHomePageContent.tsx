@@ -10,10 +10,13 @@ import {
   Heading,
   Text,
   SimpleGrid,
+  AspectRatio,
   Avatar,
   Badge,
   Icon,
   Stack,
+  Image,
+  VisuallyHidden,
   chakra,
   shouldForwardProp,
   Button,
@@ -207,6 +210,39 @@ const stats = [
   { number: '£50', label: 'From', icon: FaTruck, color: 'neon' },
 ];
 
+const commonItemImages = [
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/sofa_3_seat_fabric_modern_lestar_jpg_48kg.jpg',
+    alt: 'Three-seat fabric sofa ready for moving',
+    label: '3-Seater Sofa',
+  },
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Bedroom/double_bed_frame_harper_storage_mattress_jpg_45kg.jpg',
+    alt: 'Double bed frame with storage drawers',
+    label: 'Double Bed',
+  },
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Wardrobes_closet/wardrobe_double_door_harmony_wood_better_home_jpg_68kg.jpg',
+    alt: 'Two-door wooden wardrobe',
+    label: '2-Door Wardrobe',
+  },
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Bag_luggage_box/moving_boxes_8_best_top_moving_house_boxes_jpg_18kg.jpg',
+    alt: 'Stack of labeled moving boxes',
+    label: 'Moving Boxes',
+  },
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/washing_machine_standard_dimensions_jpg_75kg.jpg',
+    alt: 'Front-load washing machine',
+    label: 'Washing Machine',
+  },
+  {
+    src: '/UK_Removal_Dataset/Images_Only/Kitchen_appliances/american_fridge_freezer_bosch_jpg_145kg.jpg',
+    alt: 'American-style fridge freezer',
+    label: 'Fridge Freezer',
+  },
+] as const;
+
 const viewportMotion = { once: true, amount: 0.25 };
 
 // Simplified animations to reduce CLS and improve performance
@@ -270,13 +306,9 @@ const MobileHero: React.FC = () => {
   const heroHeadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.25, 26), [prefersReducedMotion]);
   const heroSubheadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.4, 20), [prefersReducedMotion]);
   const heroCtas = useMemo(() => createFadeInUp(prefersReducedMotion, 0.55, 18), [prefersReducedMotion]);
-  const heroTitleWords = useMemo(
-    () => 'Professional Man and Van Service Across the UK'.split(' '),
-    []
-  );
   const heroSubtitleWords = useMemo(
     () =>
-      'Expert house removals, furniture delivery, and man and van services in London, Manchester, Birmingham, Glasgow, Edinburgh, Cardiff, Belfast, and all UK cities. Same day service from £25/hour with fully insured drivers.'
+      'Facebook Marketplace & Gumtree pickup service. We collect from private sellers and deliver to your door. Sofas, beds, wardrobes — expert handling across the UK. Same day from £25/hour.'
         .split(' '),
     []
   );
@@ -465,47 +497,20 @@ const MobileHero: React.FC = () => {
             variants={heroHeadline}
             viewport={viewportMotion}
           >
+            <VisuallyHidden>Facebook Marketplace Pickup and Furniture Delivery Service UK</VisuallyHidden>
             <Heading
               as="h1"
-              size={{ base: '2xl', md: '4xl' }}
-              mb={4}
-              fontWeight="black"
-              lineHeight={{ base: '1.1', md: '1.05' }}
-              maxW={{ base: '95%', md: '800px' }}
-              mx="auto"
-              letterSpacing={{ base: '-0.02em', md: '-0.03em' }}
-              sx={{
-                background: 'linear-gradient(135deg, #FFFFFF 0%, #00E5FF 35%, #00D18F 65%, #FFFFFF 100%)',
-                backgroundSize: '200% 200%',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: prefersReducedMotion ? undefined : 'gradientText 6s ease-in-out infinite',
-                filter: 'drop-shadow(0 4px 20px rgba(0,194,255,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
-                '@keyframes gradientText': {
-                  '0%': { backgroundPosition: '0% 50%' },
-                  '50%': { backgroundPosition: '100% 50%' },
-                  '100%': { backgroundPosition: '0% 50%' },
-                },
-              }}
+              fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }}
+              fontWeight="bold"
+              color="white"
+              textAlign="center"
+              lineHeight="1.2"
+              textShadow="0 2px 20px rgba(0,0,0,0.5)"
             >
-              {heroTitleWords.map((word, index) => (
-                <MotionText
-                  key={`${word}-${index}`}
-                  display="inline-block"
-                  mr={word.endsWith('.') ? 0 : { base: 1.5, md: 2 }}
-                  variants={createWordFade(prefersReducedMotion, 0.12 + index * 0.04)}
-                  sx={{
-                    '&:hover': {
-                      transform: prefersReducedMotion ? undefined : 'scale(1.05) translateY(-2px)',
-                      transition: 'transform 0.3s ease',
-                    },
-                  }}
-                >
-                  {word}
-                  {index < heroTitleWords.length - 1 ? ' ' : ''}
-                </MotionText>
-              ))}
+              Marketplace Pickup & Delivery
+              <Text as="span" display="block" color="cyan.400" mt={2} fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}>
+                Facebook • Gumtree • Private Sellers
+              </Text>
             </Heading>
           </MotionBox>
 
@@ -672,6 +677,49 @@ const MobileHero: React.FC = () => {
                     Call Now
                   </Button>
                 </MotionBox>
+              </HStack>
+
+              {/* Marketplace Quick Links */}
+              <HStack spacing={2} flexWrap="wrap" justify="center" mt={4}>
+                <Button
+                  as={Link}
+                  href="/facebook-marketplace-delivery"
+                  size="sm"
+                  variant="ghost"
+                  color="whiteAlpha.900"
+                  fontSize="xs"
+                  fontWeight="medium"
+                  _hover={{ color: 'cyan.400', bg: 'whiteAlpha.100' }}
+                  leftIcon={<Text fontSize="sm">📦</Text>}
+                >
+                  Facebook Marketplace
+                </Button>
+                <Button
+                  as={Link}
+                  href="/gumtree-pickup-delivery"
+                  size="sm"
+                  variant="ghost"
+                  color="whiteAlpha.900"
+                  fontSize="xs"
+                  fontWeight="medium"
+                  _hover={{ color: 'green.400', bg: 'whiteAlpha.100' }}
+                  leftIcon={<Text fontSize="sm">🌳</Text>}
+                >
+                  Gumtree
+                </Button>
+                <Button
+                  as={Link}
+                  href="/sofa-delivery-service"
+                  size="sm"
+                  variant="ghost"
+                  color="whiteAlpha.900"
+                  fontSize="xs"
+                  fontWeight="medium"
+                  _hover={{ color: 'purple.400', bg: 'whiteAlpha.100' }}
+                  leftIcon={<FaCouch size={12} />}
+                >
+                  Sofa Delivery
+                </Button>
               </HStack>
             </VStack>
           </MotionBox>
@@ -1250,9 +1298,11 @@ const MobileTestimonials: React.FC = () => {
                         size="sm"
                         name={testimonial.name}
                         src={testimonial.avatar}
-                        loading="lazy"
-                        w="32px"
-                        h="32px"
+                        w="40px"
+                        h="40px"
+                        border="2px solid"
+                        borderColor="cyan.400"
+                        boxShadow="0 4px 12px rgba(0,194,255,0.3)"
                       />
                       <VStack spacing={0} align="start" flex={1}>
                         <Text

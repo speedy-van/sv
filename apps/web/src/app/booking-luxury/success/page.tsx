@@ -136,6 +136,10 @@ export default function BookingSuccessPage() {
           // Extract booking details from session metadata
           const bookingAmount = data.amount_total / 100; // Convert from pence to pounds
           
+          // Clear booking-in-progress storage since booking is now complete
+          safeLocalStorageRemoveItem('sv_booking_luxury_last_step');
+          safeLocalStorageRemoveItem('sv_booking_luxury_reference');
+          
           setBookingDetails({
             id: data.client_reference_id || 'unknown',
             reference: data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN',

@@ -2137,3 +2137,33 @@ body.booking-luxury-no-smooth ::placeholder {
     gap: 0.75rem !important;
   }
 }
+
+/* Facebook Marketplace Page - Fix vertical text on iOS */
+.marketplace-items-grid,
+.marketplace-items-grid *,
+.marketplace-item-card,
+.marketplace-item-card *,
+.marketplace-text-fix,
+.marketplace-text-fix * {
+  writing-mode: horizontal-tb !important;
+  -webkit-writing-mode: horizontal-tb !important;
+  -moz-writing-mode: horizontal-tb !important;
+  -ms-writing-mode: lr-tb !important;
+  text-orientation: mixed !important;
+  -webkit-text-orientation: mixed !important;
+  direction: ltr !important;
+  unicode-bidi: normal !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4 !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+.marketplace-item-card {
+  display: flex !important;
+  flex-direction: column !important;
+}

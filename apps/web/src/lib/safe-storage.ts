@@ -21,13 +21,17 @@ export function getSafeLocalStorage(): Storage | null {
   }
 
   try {
+    // Check if localStorage property exists first
+    if (!('localStorage' in window)) {
+      return null;
+    }
     // Test access by attempting a read
     const test = window.localStorage;
     // Some browsers throw on access, some on method call
     test.length;
     return test;
-  } catch (error) {
-    // SecurityError, or storage disabled
+  } catch {
+    // SecurityError, or storage disabled - silently return null
     return null;
   }
 }
@@ -42,13 +46,17 @@ export function getSafeSessionStorage(): Storage | null {
   }
 
   try {
+    // Check if sessionStorage property exists first
+    if (!('sessionStorage' in window)) {
+      return null;
+    }
     // Test access by attempting a read
     const test = window.sessionStorage;
     // Some browsers throw on access, some on method call
     test.length;
     return test;
-  } catch (error) {
-    // SecurityError, or storage disabled
+  } catch {
+    // SecurityError, or storage disabled - silently return null
     return null;
   }
 }

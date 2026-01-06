@@ -2,10 +2,15 @@
 
 import { Box, Container, Heading, Text, VStack, HStack, Icon, SimpleGrid, Card, CardBody, List, ListItem, ListIcon, Button, Divider, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from '@chakra-ui/react';
 import { FiCheckCircle, FiStar, FiShield, FiPackage, FiTruck } from 'react-icons/fi';
+import Header from '@/components/site/Header';
+import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function FurnitureRemovalPage() {
   return (
-    <Box pt={20}>
+    <>
+      <Header />
+      <MobileHeader />
+    <Box pt={36}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={12}>
           <Box textAlign="center">
@@ -53,8 +58,9 @@ export default function FurnitureRemovalPage() {
           <Box w="full">
             <Heading as="h2" size="xl" mb={6}>Furniture Removal Pricing</Heading>
             <Text fontSize="lg" mb={4}>Transparent and competitive pricing for all furniture removal services. No hidden costs.</Text>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8}>
-              <Card borderWidth="1px" borderRadius="lg">
+            {/* Mobile: Stacked cards */}
+            <VStack spacing={6} w="full" display={{ base: 'flex', md: 'none' }}>
+              <Card borderWidth="1px" borderRadius="lg" w="full">
                 <CardBody>
                   <VStack spacing={4}>
                     <Heading size="lg">Single Item</Heading>
@@ -67,7 +73,7 @@ export default function FurnitureRemovalPage() {
                   </VStack>
                 </CardBody>
               </Card>
-              <Card borderWidth="1px" borderRadius="lg" borderColor="green.500">
+              <Card borderWidth="1px" borderRadius="lg" borderColor="green.500" w="full">
                 <CardBody>
                   <VStack spacing={4}>
                     <Heading size="lg">Multi-Item</Heading>
@@ -80,7 +86,7 @@ export default function FurnitureRemovalPage() {
                   </VStack>
                 </CardBody>
               </Card>
-              <Card borderWidth="1px" borderRadius="lg">
+              <Card borderWidth="1px" borderRadius="lg" w="full">
                 <CardBody>
                   <VStack spacing={4}>
                     <Heading size="lg">Full House</Heading>
@@ -93,7 +99,50 @@ export default function FurnitureRemovalPage() {
                   </VStack>
                 </CardBody>
               </Card>
-            </SimpleGrid>
+            </VStack>
+
+            {/* Desktop: Side by side */}
+            <HStack spacing={8} w="full" display={{ base: 'none', md: 'flex' }} align="stretch">
+              <Card borderWidth="1px" borderRadius="lg" flex={1}>
+                <CardBody>
+                  <VStack spacing={4}>
+                    <Heading size="lg">Single Item</Heading>
+                    <Text fontSize="2xl" fontWeight="bold">from £80</Text>
+                    <List spacing={2}>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> e.g., a sofa or wardrobe</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> 2-man team</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Fully insured</ListItem>
+                    </List>
+                  </VStack>
+                </CardBody>
+              </Card>
+              <Card borderWidth="1px" borderRadius="lg" borderColor="green.500" flex={1}>
+                <CardBody>
+                  <VStack spacing={4}>
+                    <Heading size="lg">Multi-Item</Heading>
+                    <Text fontSize="2xl" fontWeight="bold">from £120</Text>
+                    <List spacing={2}>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Up to 5 items</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> 2-man team</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Assembly service available</ListItem>
+                    </List>
+                  </VStack>
+                </CardBody>
+              </Card>
+              <Card borderWidth="1px" borderRadius="lg" flex={1}>
+                <CardBody>
+                  <VStack spacing={4}>
+                    <Heading size="lg">Full House</Heading>
+                    <Text fontSize="2xl" fontWeight="bold">Custom Quote</Text>
+                    <List spacing={2}>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Complete house contents</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Packing service available</ListItem>
+                      <ListItem><ListIcon as={FiCheckCircle} color="green.500" /> Free survey</ListItem>
+                    </List>
+                  </VStack>
+                </CardBody>
+              </Card>
+            </HStack>
           </Box>
 
           <Divider />
@@ -155,6 +204,7 @@ export default function FurnitureRemovalPage() {
         </VStack>
       </Container>
     </Box>
+    </>
   );
 }
 

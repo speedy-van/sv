@@ -186,6 +186,37 @@ const bookingSegmentSchema = z.object({
 // Crew size schema - number of helpers/workers
 const crewSizeSchema = z.enum(['1', '2', '3', '4']).default('1');
 
+// Collection source schema - where items are being collected from
+const collectionSourceSchema = z.enum([
+  'private-address',       // Regular home/office move
+  'marketplace',           // Facebook Marketplace, Gumtree, eBay
+  'retail-store',          // IKEA, DFS, furniture stores
+  'storage-unit',          // Self-storage facilities
+  'charity-shop',          // British Heart Foundation, etc.
+  'auction',               // Auction houses
+  'friend-family',         // Personal collection from friend/family
+]).default('private-address');
+
+// Marketplace pickup details schema
+const marketplacePickupSchema = z.object({
+  sellerHelpsLoading: z.boolean().default(false),
+  sellerContactName: z.string().optional(),
+  sellerPhone: z.string().optional(),
+  platformSource: z.enum(['facebook', 'gumtree', 'ebay', 'other']).optional(),
+  pickupFloorNumber: z.number().min(0).max(50).default(0),
+  dropoffFloorNumber: z.number().min(0).max(50).default(0),
+  pickupHasLift: z.boolean().default(false),
+  dropoffHasLift: z.boolean().default(false),
+  pickupAccessNotes: z.string().optional(),
+  dropoffAccessNotes: z.string().optional(),
+}).default({
+  sellerHelpsLoading: false,
+  pickupFloorNumber: 0,
+  dropoffFloorNumber: 0,
+  pickupHasLift: false,
+  dropoffHasLift: false,
+});
+
 const step1Schema = z.object({
   pickupAddress: frontendAddressSchema,
   dropoffAddress: frontendAddressSchema,
@@ -194,6 +225,8 @@ const step1Schema = z.object({
   items: z.array(itemSchema).min(1, 'Please select at least one item'),
   serviceType: serviceTypeSchema,
   crewSize: crewSizeSchema, // Number of helpers/workers (1-4)
+  collectionSource: collectionSourceSchema, // Where items are collected from
+  marketplacePickup: marketplacePickupSchema, // Marketplace-specific details
   pickupDateChoice: z.enum(['known', 'unknown']).default('known'),
   pickupDate: z.string().optional(),
   pickupTimeSlot: z.string().optional(),
@@ -265,6 +298,8 @@ export type Address = z.infer<typeof frontendAddressSchema>;
 export type PropertyDetails = z.infer<typeof frontendPropertyDetailsSchema>;
 export type Item = z.infer<typeof itemSchema>;
 export type ServiceType = z.infer<typeof serviceTypeSchema>;
+export type CollectionSource = z.infer<typeof collectionSourceSchema>;
+export type MarketplacePickup = z.infer<typeof marketplacePickupSchema>;
 export type AddOns = z.infer<typeof addOnsSchema>;
 export type CustomerDetails = z.infer<typeof customerDetailsSchema>;
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
@@ -312,6 +347,19 @@ const initialFormData: FormData = {
     items: [],
     serviceType: 'standard',
     crewSize: '1', // Default to 1 man (driver only) - base price
+    collectionSource: 'private-address', // Default to regular home/office
+    marketplacePickup: {
+      sellerHelpsLoading: false,
+      sellerContactName: '',
+      sellerPhone: '',
+      platformSource: undefined,
+      pickupFloorNumber: 0,
+      dropoffFloorNumber: 0,
+      pickupHasLift: false,
+      dropoffHasLift: false,
+      pickupAccessNotes: '',
+      dropoffAccessNotes: '',
+    },
     pickupDateChoice: 'known',
     pickupDate: '',
     pickupTimeSlot: undefined,

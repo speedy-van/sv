@@ -572,6 +572,9 @@ export async function GET(req: NextRequest) {
         'standard',
       orderType: raw.orderType || (raw.isMultiDrop ? 'multi-drop' : 'single'),
       isMultiDrop: raw.isMultiDrop || false,
+      // Collection source info
+      collectionSource: (raw.customerPreferences as any)?.collectionSource || null,
+      marketplacePickup: (raw.customerPreferences as any)?.marketplacePickup || null,
       // ✅ Add journey opportunities info
       relatedJourneys: relatedJourneys || [],
       hasReturnJourney: hasReturnJourney || relatedJourneys?.some((j: any) => j.type === 'return-journey') || false,

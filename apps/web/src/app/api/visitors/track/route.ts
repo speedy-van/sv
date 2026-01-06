@@ -64,6 +64,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Check if error is a database connection error
+function isDatabaseConnectionError(error: unknown): boolean {
+  if (error && typeof error === 'object') {
+    const err = error as { name?: string; code?: string; message?: string };
+    return (
+      err.name === 'PrismaClientInitializationError' ||
+      err.code === 'P1001' ||
+      err.code === 'P1002' ||
+      (err.message?.includes("Can't reach database server") ?? false) ||
+      (err.message?.includes('Connection refused') ?? false) ||
+      (err.message?.includes('ECONNREFUSED') ?? false) ||
+      (err.message?.includes('ETIMEDOUT') ?? false)
+    );
+  }
+  return false;
+}
+
 // Background processing function
 async function processTracking(request: NextRequest, body: VisitorTrackingData) {
   try {
@@ -162,8 +179,21 @@ async function processTracking(request: NextRequest, body: VisitorTrackingData) 
       });
     }
   } catch (error) {
+    // Silently ignore database connection errors - these are expected during
+    // temporary network issues and visitor tracking is non-critical
+    if (isDatabaseConnectionError(error)) {
+      // Log only once per minute to avoid log spam
+      const now = Date.now();
+      const lastLogKey = 'visitor_tracking_db_error_last_log';
+      const lastLog = (global as Record<string, number>)[lastLogKey] || 0;
+      if (now - lastLog > 60000) {
+        console.warn('[visitor-track] Database temporarily unavailable, skipping tracking');
+        (global as Record<string, number>)[lastLogKey] = now;
+      }
+      return;
+    }
+    // Log other errors but don't throw
     console.error('Background tracking processing error:', error);
-    // Don't throw - just log the error
   }
 }
 

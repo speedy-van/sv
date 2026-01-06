@@ -105,6 +105,15 @@ interface BookingData {
   priorityPrice?: number;
   // Crew size (number of helpers)
   crewSize?: '1' | '2' | '3' | '4';
+  // Collection source (where items are collected from)
+  collectionSource?: string;
+  // Marketplace-specific details
+  marketplacePickup?: {
+    sellerHelpsLoading?: boolean;
+    sellerContactName?: string;
+    sellerPhone?: string;
+    platformSource?: string;
+  };
   // Promotion code support
   promotionCode?: string;
   promotionDetails?: {
@@ -367,6 +376,8 @@ export default function StripePaymentButton({
           urgency: 'scheduled' as const,
           serviceType: bookingData.serviceType || 'standard',
           crewSize: bookingData.crewSize || '2', // Number of helpers
+          collectionSource: bookingData.collectionSource || 'private-address', // Where items are collected from
+          marketplacePickup: bookingData.marketplacePickup || null, // Marketplace-specific details
           notes: bookingData.notes || '',
           pricing: {
             subtotal: Math.round(getCorrectSubtotal(bookingData) * 100) / 100,

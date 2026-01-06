@@ -37,14 +37,24 @@ import {
 const HomeFooter: React.FC = () => {
   const footerLinks = {
     services: [
-      { label: 'House Moving', href: '/services/house-moving', icon: FiHome },
-      { label: 'Office Relocation', href: '/services/office', icon: FiUsers },
-      { label: 'Furniture Delivery', href: '/services/furniture', icon: FiPackage },
-      { label: 'Student Moving', href: '/services/student', icon: FiAward },
+      { label: 'Man and Van', href: '/man-and-van', icon: FiTruck },
+      { label: 'House Removals', href: '/house-removals', icon: FiHome },
+      { label: 'Same Day Delivery', href: '/same-day-delivery', icon: FiClock },
+      { label: 'Single Item Delivery', href: '/single-item-delivery', icon: FiPackage },
+      { label: 'Office Removals', href: '/office-removals', icon: FiUsers },
+      { label: 'Student Moves', href: '/student-moves', icon: FiAward },
+    ],
+    marketplace: [
+      { label: 'Facebook Marketplace', href: '/facebook-marketplace-delivery', icon: FiTruck },
+      { label: 'Gumtree Pickup', href: '/gumtree-pickup-delivery', icon: FiTruck },
+      { label: 'Sofa Delivery', href: '/sofa-delivery-service', icon: FiPackage },
+      { label: 'Furniture Collection', href: '/furniture-collection-delivery', icon: FiPackage },
+      { label: 'Assembly Service', href: '/assembly-service', icon: FiTruck },
+      { label: 'Storage Services', href: '/storage-services', icon: FiPackage },
     ],
     company: [
       { label: 'About Us', href: '/about', icon: FiUsers },
-      { label: 'Our Services', href: '/services', icon: FiTruck },
+      { label: 'All Services', href: '/services', icon: FiTruck },
       { label: 'Pricing', href: '/pricing', icon: FiCalendar },
       { label: 'Careers', href: '/careers', icon: FiUsers },
       { label: 'Contact', href: '/contact', icon: FiMail },
@@ -182,6 +192,35 @@ const HomeFooter: React.FC = () => {
               </Heading>
               <VStack align="start" spacing={3}>
                 {footerLinks.services.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    display="flex"
+                    alignItems="center"
+                    gap={3}
+                    fontSize="md"
+                    color="whiteAlpha.800"
+                    _hover={{
+                      color: '#00D18F',
+                      textDecoration: 'none',
+                      transform: 'translateX(4px)',
+                    }}
+                    transition="all 0.2s ease"
+                  >
+                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    {link.label}
+                  </Link>
+                ))}
+              </VStack>
+            </Box>
+
+            {/* Marketplace Column */}
+            <Box flex="1" minW={{ lg: '200px' }}>
+              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+                MARKETPLACE
+              </Heading>
+              <VStack align="start" spacing={3}>
+                {footerLinks.marketplace.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
