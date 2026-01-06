@@ -266,6 +266,7 @@ model Booking {
   Payment                                                    Payment[]
   TaxInvoice                                                 TaxInvoice[]
   TrackingPing                                               TrackingPing[]
+  CompanyBooking                                             CompanyBooking?
 
   @@index([currentStep, status])
   @@index([customerEmail, scheduledAt])
@@ -2138,6 +2139,7 @@ model User {
   Staff                                           Staff?
   SupportTicket                                   SupportTicket[]
   TaxInvoice                                      TaxInvoice[]
+  CompanyUser                                     CompanyUser[]
 
   @@index([role])
   @@index([role], map: "idx_user_role")
@@ -2819,4 +2821,595 @@ enum VehicleType {
   small_van
   large_van
   truck
+}
+
+
+// ============================================
+// B2B MODELS - Company Management & API Portal
+// ============================================
+
+model Company {
+  id                    String              @id @default(cuid())
+  name                  String
+  legalName             String?
+  vatNumber             String?             @unique
+  companyNumber         String?             @unique
+  billingAddressLine1   String?
+  billingAddressLine2   String?
+  billingCity           String?
+  billingPostcode       String?
+  billingCountry        String              @default("UK")
+  creditLimitGBP        Int                 @default(0)
+  currentBalanceGBP     Int                 @default(0)
+  paymentTermsDays      Int                 @default(0)
+  status                CompanyStatus       @default(PENDING)
+  industry              String?
+  website               String?
+  phone                 String?
+  email                 String?
+  logoUrl               String?
+  notes                 String?
+  riskScore             Int?
+  lastRiskAssessment    DateTime?
+  onboardingCompletedAt DateTime?
+  suspendedAt           DateTime?
+  suspendedReason       String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  createdBy             String?
+  
+  // Relations
+  CompanyUser           CompanyUser[]
+  ApiKey                ApiKey[]
+  PricingRule           PricingRule[]
+  CompanyBooking        CompanyBooking[]
+  CompanyQuote          CompanyQuote[]
+  CompanyInvoice        CompanyInvoice[]
+  CompanyInvitation     CompanyInvitation[]
+  CompanyAuditLog       CompanyAuditLog[]
+  CompanyDocument       CompanyDocument[]
+  CompanyContact        CompanyContact[]
+  WebhookEndpoint       WebhookEndpoint[]
+  
+  @@index([status])
+  @@index([vatNumber])
+  @@index([companyNumber])
+  @@index([createdAt])
+}
+
+model CompanyUser {
+  id          String            @id @default(cuid())
+  companyId   String
+  userId      String
+  role        CompanyRole       @default(MEMBER)
+  title       String?
+  department  String?
+  isActive    Boolean           @default(true)
+  invitedBy   String?
+  invitedAt   DateTime?
+  joinedAt    DateTime?
+  disabledAt  DateTime?
+  disabledBy  String?
+  lastLoginAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  // Relations
+  Company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  User        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, userId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([role])
+}
+
+model ApiKey {
+  id              String        @id @default(cuid())
+  companyId       String
+  name            String
+  description     String?
+  hashedKey       String        @unique
+  keyPrefix       String
+  scopes          String[]
+  status          ApiKeyStatus  @default(ACTIVE)
+  expiresAt       DateTime?
+  lastUsedAt      DateTime?
+  lastUsedIp      String?
+  usageCount      Int           @default(0)
+  rateLimitPerMin Int           @default(60)
+  rateLimitPerDay Int           @default(10000)
+  allowedIps      String[]
+  allowedDomains  String[]
+  createdBy       String
+  revokedAt       DateTime?
+  revokedBy       String?
+  revokedReason   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  Company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ApiKeyUsageLog  ApiKeyUsageLog[]
+  
+  @@index([companyId])
+  @@index([hashedKey])
+  @@index([status])
+  @@index([keyPrefix])
+}
+
+model ApiKeyUsageLog {
+  id          String   @id @default(cuid())
+  apiKeyId    String
+  endpoint    String
+  method      String
+  statusCode  Int
+  responseMs  Int
+  ip          String?
+  userAgent   String?
+  requestBody Json?
+  errorCode   String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  ApiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  
+  @@index([apiKeyId, createdAt])
+  @@index([endpoint])
+  @@index([createdAt])
+}
+
+model PricingRule {
+  id                  String          @id @default(cuid())
+  companyId           String
+  name                String
+  description         String?
+  ruleType            PricingRuleType
+  isActive            Boolean         @default(true)
+  priority            Int             @default(0)
+  
+  // Distance-based pricing
+  baseRateGBP         Int?
+  perMileRateGBP      Int?
+  minChargeGBP        Int?
+  maxChargeGBP        Int?
+  
+  // Volume/Weight pricing
+  perCubicMeterGBP    Int?
+  perKgGBP            Int?
+  
+  // Discounts
+  discountPercent     Float?
+  discountFixedGBP    Int?
+  volumeThreshold     Float?
+  
+  // Time-based
+  peakMultiplier      Float?
+  offPeakMultiplier   Float?
+  weekendMultiplier   Float?
+  
+  // Conditions (JSON for flexibility)
+  conditions          Json?
+  
+  validFrom           DateTime?
+  validTo             DateTime?
+  createdBy           String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  // Relations
+  Company             Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId, isActive])
+  @@index([ruleType])
+}
+
+model CompanyBooking {
+  id                    String                @id @default(cuid())
+  companyId             String
+  bookingId             String                @unique
+  poNumber              String?
+  costCenter            String?
+  projectCode           String?
+  internalReference     String?
+  requestedBy           String?
+  approvedBy            String?
+  approvedAt            DateTime?
+  notes                 String?
+  slaWindow             String?
+  slaDeadline           DateTime?
+  slaMet                Boolean?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  
+  // Relations
+  Company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Booking               Booking               @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([bookingId])
+  @@index([poNumber])
+  @@index([costCenter])
+}
+
+model CompanyQuote {
+  id                String            @id @default(cuid())
+  companyId         String
+  reference         String            @unique
+  status            CompanyQuoteStatus @default(DRAFT)
+  
+  // Addresses
+  pickupAddressLine1    String
+  pickupAddressLine2    String?
+  pickupCity            String
+  pickupPostcode        String
+  pickupCountry         String        @default("UK")
+  pickupLat             Float?
+  pickupLng             Float?
+  pickupNotes           String?
+  
+  dropoffAddressLine1   String
+  dropoffAddressLine2   String?
+  dropoffCity           String
+  dropoffPostcode       String
+  dropoffCountry        String        @default("UK")
+  dropoffLat            Float?
+  dropoffLng            Float?
+  dropoffNotes          String?
+  
+  // Pricing
+  distanceMiles         Float
+  estimatedDurationMins Int
+  subtotalGBP           Int
+  vatGBP                Int
+  totalGBP              Int
+  discountGBP           Int           @default(0)
+  discountReason        String?
+  pricingRuleId         String?
+  priceBreakdown        Json?
+  
+  // Validity
+  validUntil            DateTime
+  acceptedAt            DateTime?
+  rejectedAt            DateTime?
+  rejectedReason        String?
+  convertedToBookingId  String?
+  
+  // Metadata
+  items                 Json?
+  specialRequirements   String?
+  scheduledDate         DateTime?
+  serviceType           String?
+  vehicleType           String?
+  crewSize              Int           @default(2)
+  
+  createdBy             String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  
+  // Relations
+  Company               Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([reference])
+  @@index([validUntil])
+}
+
+model CompanyInvoice {
+  id                    String              @id @default(cuid())
+  companyId             String
+  invoiceNumber         String              @unique
+  status                CompanyInvoiceStatus @default(DRAFT)
+  
+  // Amounts (all in pence/GBP)
+  subtotalGBP           Int
+  vatGBP                Int
+  totalGBP              Int
+  paidAmountGBP         Int                 @default(0)
+  outstandingGBP        Int
+  
+  // Dates
+  issueDate             DateTime            @default(now())
+  dueDate               DateTime
+  paidAt                DateTime?
+  
+  // Payment details
+  paymentMethod         String?
+  paymentReference      String?
+  stripePaymentIntentId String?
+  
+  // B2B specific
+  poNumber              String?
+  costCenter            String?
+  billingPeriodStart    DateTime?
+  billingPeriodEnd      DateTime?
+  
+  // PDF
+  pdfUrl                String?
+  pdfGeneratedAt        DateTime?
+  
+  notes                 String?
+  internalNotes         String?
+  
+  createdBy             String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  // Relations
+  Company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  CompanyInvoiceItem    CompanyInvoiceItem[]
+  CompanyPayment        CompanyPayment[]
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([invoiceNumber])
+  @@index([dueDate])
+}
+
+model CompanyInvoiceItem {
+  id              String          @id @default(cuid())
+  invoiceId       String
+  description     String
+  quantity        Int             @default(1)
+  unitPriceGBP    Int
+  totalGBP        Int
+  vatRate         Float           @default(0.20)
+  vatGBP          Int
+  bookingId       String?
+  serviceDate     DateTime?
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  CompanyInvoice  CompanyInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  @@index([invoiceId])
+  @@index([bookingId])
+}
+
+model CompanyPayment {
+  id                    String              @id @default(cuid())
+  companyId             String
+  invoiceId             String?
+  amountGBP             Int
+  method                PaymentMethod       @default(stripe)
+  status                CompanyPaymentStatus @default(PENDING)
+  reference             String?
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  failureReason         String?
+  processedAt           DateTime?
+  refundedAmountGBP     Int                 @default(0)
+  refundedAt            DateTime?
+  notes                 String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  // Relations
+  CompanyInvoice        CompanyInvoice?     @relation(fields: [invoiceId], references: [id])
+  
+  @@index([companyId])
+  @@index([invoiceId])
+  @@index([status])
+}
+
+model CompanyInvitation {
+  id          String                    @id @default(cuid())
+  companyId   String
+  email       String
+  role        CompanyRole               @default(MEMBER)
+  token       String                    @unique
+  status      CompanyInvitationStatus   @default(PENDING)
+  invitedBy   String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  acceptedBy  String?
+  createdAt   DateTime                  @default(now())
+  
+  // Relations
+  Company     Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([email])
+  @@index([token])
+  @@index([status])
+}
+
+model CompanyAuditLog {
+  id          String   @id @default(cuid())
+  companyId   String
+  actorId     String
+  actorType   String
+  action      String
+  targetType  String
+  targetId    String?
+  before      Json?
+  after       Json?
+  ip          String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  Company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId, createdAt])
+  @@index([actorId])
+  @@index([action])
+  @@index([targetType, targetId])
+}
+
+model CompanyDocument {
+  id          String              @id @default(cuid())
+  companyId   String
+  type        CompanyDocumentType
+  name        String
+  description String?
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  uploadedBy  String
+  verifiedAt  DateTime?
+  verifiedBy  String?
+  expiresAt   DateTime?
+  status      DocumentStatus      @default(pending)
+  notes       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  
+  // Relations
+  Company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+}
+
+model CompanyContact {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  email       String?
+  phone       String?
+  role        String?
+  department  String?
+  isPrimary   Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  Company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([isPrimary])
+}
+
+model WebhookEndpoint {
+  id            String              @id @default(cuid())
+  companyId     String
+  url           String
+  description   String?
+  events        String[]
+  secret        String
+  isActive      Boolean             @default(true)
+  failureCount  Int                 @default(0)
+  lastTriggered DateTime?
+  lastSuccess   DateTime?
+  lastFailure   DateTime?
+  createdBy     String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  // Relations
+  Company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  WebhookLog    WebhookLog[]
+  
+  @@index([companyId])
+  @@index([isActive])
+}
+
+model WebhookLog {
+  id              String          @id @default(cuid())
+  endpointId      String
+  event           String
+  payload         Json
+  responseStatus  Int?
+  responseBody    String?
+  responseMs      Int?
+  attempt         Int             @default(1)
+  success         Boolean
+  errorMessage    String?
+  createdAt       DateTime        @default(now())
+  
+  // Relations
+  WebhookEndpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  
+  @@index([endpointId, createdAt])
+  @@index([event])
+  @@index([success])
+}
+
+// ============================================
+// B2B ENUMS
+// ============================================
+
+enum CompanyStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum CompanyRole {
+  OWNER
+  ADMIN
+  FINANCE
+  DISPATCHER
+  MEMBER
+  READ_ONLY
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  SUSPENDED
+  REVOKED
+  EXPIRED
+}
+
+enum PricingRuleType {
+  DISTANCE
+  VOLUME
+  WEIGHT
+  TIME
+  FIXED
+  DISCOUNT
+  SURCHARGE
+}
+
+enum CompanyQuoteStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+}
+
+enum CompanyInvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+  DISPUTED
+  WRITTEN_OFF
+}
+
+enum CompanyPaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum CompanyInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum CompanyDocumentType {
+  VAT_CERTIFICATE
+  COMPANY_REGISTRATION
+  INSURANCE
+  CONTRACT
+  PURCHASE_ORDER
+  OTHER
 }
