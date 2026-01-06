@@ -161,8 +161,8 @@ class RoutesAPIService {
                   User: {
                     select: { id: true, name: true, email: true }
                   },
-                  BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-                  BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+                  pickupAddress: true,
+                  dropoffAddress: true,
                   BookingItem: true
                 }
               }
@@ -211,8 +211,8 @@ class RoutesAPIService {
           id: drop.id,
           sequence: drop.sequence,
           status: drop.status,
-          pickupAddress: drop.booking?.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label || 'N/A',
-          deliveryAddress: drop.booking?.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label || 'N/A',
+          pickupAddress: drop.booking?.pickupAddress?.label || 'N/A',
+          deliveryAddress: drop.booking?.dropoffAddress?.label || 'N/A',
           timeWindow: drop.timeWindow || 'Flexible',
           quotedPrice: drop.quotedPrice ? drop.quotedPrice / 100 : 0,
           weight: drop.booking?.BookingItem.reduce((sum: number, item: any) => sum + (item.volumeM3 * 100), 0) || 0, // Rough weight estimate

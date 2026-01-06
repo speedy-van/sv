@@ -8,18 +8,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { companyService } from '@/lib/b2b';
-import { CompanyRole } from '@prisma/client';
+import { COMPANY_ROLES, CompanyRole } from '@/lib/b2b/enums';
 import { z } from 'zod';
 
 // Validation schema
 const InviteUserSchema = z.object({
   email: z.string().email('Valid email is required'),
-  role: z.nativeEnum(CompanyRole).default(CompanyRole.MEMBER),
+  role: z.enum(COMPANY_ROLES).default('MEMBER'),
 });
 
 const UpdateUserRoleSchema = z.object({
   userId: z.string().min(1),
-  role: z.nativeEnum(CompanyRole),
+  role: z.enum(COMPANY_ROLES),
 });
 
 export async function GET(

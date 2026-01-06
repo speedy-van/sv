@@ -220,12 +220,12 @@ export async function GET(req: NextRequest) {
       ? {
           OR: [
             {
-              BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+              pickupAddress: {
                 label: { contains: area, mode: 'insensitive' as any },
               },
             },
             {
-              BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
+              dropoffAddress: {
                 label: { contains: area, mode: 'insensitive' as any },
               },
             },
@@ -237,10 +237,10 @@ export async function GET(req: NextRequest) {
           OR: [
             { reference: { contains: q, mode: 'insensitive' as any } },
             {
-              BookingAddress_Booking_pickupAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' as any } },
+              pickupAddress: { label: { contains: q, mode: 'insensitive' as any } },
             },
             {
-              BookingAddress_Booking_dropoffAddressIdToBookingAddress: { label: { contains: q, mode: 'insensitive' as any } },
+              dropoffAddress: { label: { contains: q, mode: 'insensitive' as any } },
             },
             { customerName: { contains: q, mode: 'insensitive' as any } },
             { customerEmail: { contains: q, mode: 'insensitive' as any } },

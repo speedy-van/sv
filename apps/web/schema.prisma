@@ -249,10 +249,10 @@ model Booking {
   Assignment                                                 Assignment[]
   User                                                       User?                   @relation(fields: [customerId], references: [id])
   Driver                                                     Driver?                 @relation(fields: [driverId], references: [id])
-  BookingAddress_Booking_dropoffAddressIdToBookingAddress    BookingAddress          @relation("Booking_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
-  PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails PropertyDetails         @relation("Booking_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
-  BookingAddress_Booking_pickupAddressIdToBookingAddress     BookingAddress          @relation("Booking_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
-  PropertyDetails_Booking_pickupPropertyIdToPropertyDetails  PropertyDetails         @relation("Booking_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  dropoffAddress                                              BookingAddress          @relation("Booking_dropoffAddress", fields: [dropoffAddressId], references: [id])
+  dropoffProperty                                             PropertyDetails         @relation("Booking_dropoffProperty", fields: [dropoffPropertyId], references: [id])
+  pickupAddress                                               BookingAddress          @relation("Booking_pickupAddress", fields: [pickupAddressId], references: [id])
+  pickupProperty                                              PropertyDetails         @relation("Booking_pickupProperty", fields: [pickupPropertyId], references: [id])
   Route                                                      Route?                  @relation(fields: [routeId], references: [id])
   BookingCancellation                                        BookingCancellation[]
   BookingItem                                                BookingItem[]
@@ -283,8 +283,8 @@ model BookingAddress {
   postcode                                                  String
   lat                                                       Float
   lng                                                       Float
-  Booking_Booking_dropoffAddressIdToBookingAddress          Booking[]        @relation("Booking_dropoffAddressIdToBookingAddress")
-  Booking_Booking_pickupAddressIdToBookingAddress           Booking[]        @relation("Booking_pickupAddressIdToBookingAddress")
+  dropoffBookings                                           Booking[]        @relation("Booking_dropoffAddress")
+  pickupBookings                                            Booking[]        @relation("Booking_pickupAddress")
   BookingSegment_BookingSegment_dropoffAddressIdToBookingAddress  BookingSegment[] @relation("BookingSegment_dropoffAddressIdToBookingAddress")
   BookingSegment_BookingSegment_pickupAddressIdToBookingAddress   BookingSegment[] @relation("BookingSegment_pickupAddressIdToBookingAddress")
 }
@@ -1510,8 +1510,8 @@ model PropertyDetails {
   propertyType                                       PropertyType
   accessType                                         AccessType
   floors                                             Int              @default(0)
-  Booking_Booking_dropoffPropertyIdToPropertyDetails Booking[]        @relation("Booking_dropoffPropertyIdToPropertyDetails")
-  Booking_Booking_pickupPropertyIdToPropertyDetails  Booking[]        @relation("Booking_pickupPropertyIdToPropertyDetails")
+  dropoffBookings                                    Booking[]        @relation("Booking_dropoffProperty")
+  pickupBookings                                     Booking[]        @relation("Booking_pickupProperty")
   BookingSegment_BookingSegment_dropoffPropertyIdToPropertyDetails BookingSegment[] @relation("BookingSegment_dropoffPropertyIdToPropertyDetails")
   BookingSegment_BookingSegment_pickupPropertyIdToPropertyDetails  BookingSegment[] @relation("BookingSegment_pickupPropertyIdToPropertyDetails")
 }

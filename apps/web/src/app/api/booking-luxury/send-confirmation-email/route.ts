@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
 
     // Define the correct include relations based on Prisma schema
     const bookingInclude = {
-      BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
-      BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
+      pickupAddress: true,
+      dropoffAddress: true,
       PropertyDetails_Booking_pickupPropertyIdToPropertyDetails: true,
       PropertyDetails_Booking_dropoffPropertyIdToPropertyDetails: true,
       BookingItem: true,
@@ -113,8 +113,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare email data - use the correct relation names
-    const pickupAddress = (booking as any).BookingAddress_Booking_pickupAddressIdToBookingAddress;
-    const dropoffAddress = (booking as any).BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+    const pickupAddress = (booking as any).pickupAddress;
+    const dropoffAddress = (booking as any).dropoffAddress;
     
     const confirmedTotalInPounds = booking.totalGBP / 100;
     const emailData: OrderConfirmationData = {

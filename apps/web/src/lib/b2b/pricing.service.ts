@@ -11,6 +11,7 @@
 import { prisma } from '@/lib/prisma';
 import { PricingRuleType, Prisma } from '@prisma/client';
 import { companyAuditService } from './audit.service';
+import { comprehensivePricingEngine } from '@/lib/pricing';
 
 // Types
 export interface PricingInput {
@@ -110,8 +111,8 @@ export const companyPricingService = {
     // Get company-specific pricing rules
     const rules = await this.getActiveRules(input.companyId);
     
-    // Calculate distance
-    const distance = await this.calculateDistance(
+    // Get distance and duration from comprehensive pricing engine
+    const distance = await this.getDistanceFromPricingEngine(
       input.pickupPostcode,
       input.dropoffPostcode,
       input.pickupLat,
@@ -257,9 +258,10 @@ export const companyPricingService = {
   },
 
   /**
-   * Calculate distance between two postcodes
+   * Get distance using the unified comprehensive pricing engine
+   * All distance calculations must use comprehensivePricingEngine per system requirements
    */
-  async calculateDistance(
+  async getDistanceFromPricingEngine(
     pickupPostcode: string,
     dropoffPostcode: string,
     pickupLat?: number,
@@ -267,69 +269,37 @@ export const companyPricingService = {
     dropoffLat?: number,
     dropoffLng?: number
   ): Promise<{ miles: number; durationMins: number }> {
-    // If we have coordinates, use haversine formula
-    if (pickupLat && pickupLng && dropoffLat && dropoffLng) {
-      const miles = this.haversineDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
-      // Estimate duration: average 30 mph in UK
-      const durationMins = Math.round((miles / 30) * 60);
-      return { miles: Math.round(miles * 10) / 10, durationMins };
-    }
-
-    // Fallback: use postcodes.io to get coordinates
     try {
-      const [pickup, dropoff] = await Promise.all([
-        this.getPostcodeCoordinates(pickupPostcode),
-        this.getPostcodeCoordinates(dropoffPostcode),
-      ]);
+      // Use comprehensivePricingEngine for distance calculation
+      const pricingResult = await comprehensivePricingEngine.calculatePrice({
+        requestId: `b2b-distance-${Date.now()}`,
+        correlationId: `b2b-${pickupPostcode}-${dropoffPostcode}`,
+        items: [], // Empty items - we only need distance
+        pickup: {
+          postcode: pickupPostcode,
+          lat: pickupLat,
+          lng: pickupLng,
+        },
+        dropoffs: [{
+          postcode: dropoffPostcode,
+          lat: dropoffLat,
+          lng: dropoffLng,
+        }],
+        serviceLevel: 'standard',
+        customerSegment: 'bronze',
+      });
 
-      if (pickup && dropoff) {
-        const miles = this.haversineDistance(pickup.lat, pickup.lng, dropoff.lat, dropoff.lng);
-        const durationMins = Math.round((miles / 30) * 60);
-        return { miles: Math.round(miles * 10) / 10, durationMins };
-      }
+      // Extract distance info from pricing result
+      const distanceKm = pricingResult.breakdown?.distance?.kilometers || 16.09; // Default ~10 miles
+      const miles = Math.round((distanceKm * 0.621371) * 10) / 10;
+      const durationMins = pricingResult.breakdown?.time?.estimatedMinutes || Math.round((miles / 30) * 60);
+
+      return { miles, durationMins };
     } catch (error) {
-      console.error('[Pricing] Failed to calculate distance:', error);
+      console.error('[B2B Pricing] Failed to get distance from pricing engine:', error);
+      // Fallback values
+      return { miles: 10, durationMins: 30 };
     }
-
-    // Default fallback
-    return { miles: 10, durationMins: 30 };
-  },
-
-  /**
-   * Haversine formula for distance calculation
-   */
-  haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 3958.8; // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  },
-
-  /**
-   * Get coordinates for a postcode
-   */
-  async getPostcodeCoordinates(postcode: string): Promise<{ lat: number; lng: number } | null> {
-    try {
-      const response = await fetch(
-        `https://api.postcodes.io/postcodes/${encodeURIComponent(postcode.replace(/\s/g, ''))}`
-      );
-      const data = await response.json();
-      
-      if (data.result) {
-        return {
-          lat: data.result.latitude,
-          lng: data.result.longitude,
-        };
-      }
-    } catch (error) {
-      console.error('[Pricing] Failed to get postcode coordinates:', error);
-    }
-    return null;
   },
 
   /**

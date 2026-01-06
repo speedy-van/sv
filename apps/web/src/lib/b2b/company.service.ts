@@ -9,7 +9,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { Prisma, CompanyStatus, CompanyRole, CompanyInvitationStatus } from '@prisma/client';
+import { CompanyInvitationStatus, CompanyRole, CompanyStatus } from './enums';
 import { randomBytes } from 'crypto';
 import { companyAuditService } from './audit.service';
 
@@ -93,7 +93,7 @@ export const companyService = {
         website: input.website,
         phone: input.phone,
         email: input.email,
-        status: CompanyStatus.PENDING,
+        status: 'PENDING',
         createdBy: input.createdBy,
       },
     });
@@ -175,7 +175,7 @@ export const companyService = {
       sortOrder = 'desc',
     } = filters;
 
-    const where: Prisma.CompanyWhereInput = {};
+    const where: Record<string, unknown> = {};
 
     if (status) {
       where.status = status;
@@ -255,7 +255,7 @@ export const companyService = {
     return this.update(
       id,
       {
-        status: CompanyStatus.ACTIVE,
+        status: 'ACTIVE',
       },
       actorId
     );
@@ -268,7 +268,7 @@ export const companyService = {
     const company = await prisma.company.update({
       where: { id },
       data: {
-        status: CompanyStatus.SUSPENDED,
+        status: 'SUSPENDED',
         suspendedAt: new Date(),
         suspendedReason: reason,
       },
@@ -328,7 +328,7 @@ export const companyService = {
       },
     });
 
-    if (!company || company.status !== CompanyStatus.ACTIVE) {
+    if (!company || company.status !== 'ACTIVE') {
       return false;
     }
 
@@ -450,7 +450,7 @@ export const companyService = {
         token,
         invitedBy: input.invitedBy,
         expiresAt,
-        status: CompanyInvitationStatus.PENDING,
+        status: 'PENDING',
       },
     });
 
@@ -479,14 +479,14 @@ export const companyService = {
       throw new Error('Invalid invitation token');
     }
 
-    if (invitation.status !== CompanyInvitationStatus.PENDING) {
+    if (invitation.status !== 'PENDING') {
       throw new Error('Invitation is no longer valid');
     }
 
     if (new Date() > invitation.expiresAt) {
       await prisma.companyInvitation.update({
         where: { id: invitation.id },
-        data: { status: CompanyInvitationStatus.EXPIRED },
+        data: { status: 'EXPIRED' },
       });
       throw new Error('Invitation has expired');
     }
@@ -495,7 +495,7 @@ export const companyService = {
     await prisma.companyInvitation.update({
       where: { id: invitation.id },
       data: {
-        status: CompanyInvitationStatus.ACCEPTED,
+        status: 'ACCEPTED',
         acceptedAt: new Date(),
         acceptedBy: userId,
       },

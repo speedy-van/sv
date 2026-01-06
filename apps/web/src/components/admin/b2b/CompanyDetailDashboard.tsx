@@ -90,7 +90,7 @@ export default function CompanyDetailDashboard({ companyId }: CompanyDetailDashb
   const searchParams = useSearchParams();
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(searchParams?.get('tab') || 'overview');
 
   useEffect(() => {
     fetchCompany();
