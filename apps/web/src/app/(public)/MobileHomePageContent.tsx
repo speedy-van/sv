@@ -570,6 +570,34 @@ const MobileHero: React.FC = () => {
             </Text>
           </MotionBox>
 
+          {/* SEO Text for UK Cities */}
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={heroSubheadline}
+            viewport={viewportMotion}
+          >
+            <Text
+              fontSize={{ base: 'sm', md: 'md' }}
+              maxW={{ base: '95%', md: '700px' }}
+              lineHeight="1.6"
+              fontWeight="medium"
+              mx="auto"
+              color="whiteAlpha.800"
+              textShadow="0 1px 8px rgba(0,0,0,0.4)"
+            >
+              Expert house removals, furniture delivery, and man and van services in{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">London</Text>,{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">Manchester</Text>,{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">Birmingham</Text>,{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">Glasgow</Text>,{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">Edinburgh</Text>,{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">Cardiff</Text>, and all UK cities.
+              Same day service from{' '}
+              <Text as="span" color="cyan.300" fontWeight="bold">£25/hour</Text> with fully insured drivers.
+            </Text>
+          </MotionBox>
+
           {/* Enhanced CTA Buttons */}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <MotionBox

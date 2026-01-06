@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@speedy-van/shared';
+
+// Force dynamic to prevent build-time Prisma initialization
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/booking/status?reference=SV-XXXXXX
@@ -18,6 +20,9 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Dynamic import to prevent build-time initialization
+    const { prisma } = await import('@speedy-van/shared');
 
     // Look up the booking by reference
     const booking = await prisma.booking.findFirst({
