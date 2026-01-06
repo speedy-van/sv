@@ -246,6 +246,7 @@ model Booking {
   shouldBeMultiDrop                                          Boolean?                @default(false)
   isMultiLeg                                                 Boolean                 @default(false)
   totalSegments                                              Int                     @default(1)
+  notes                                                      String?
   Assignment                                                 Assignment[]
   User                                                       User?                   @relation(fields: [customerId], references: [id])
   Driver                                                     Driver?                 @relation(fields: [driverId], references: [id])
