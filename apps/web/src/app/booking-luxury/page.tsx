@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import {
   safeLocalStorageGetItem,
   safeLocalStorageRemoveItem,
@@ -104,6 +104,21 @@ const isValidUkPostcode = (postcode?: string | null) => {
 };
 
 export default function BookingLuxuryPage() {
+  return (
+    <Suspense fallback={
+      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
+        <VStack spacing={4}>
+          <Spinner size="xl" color="blue.500" />
+          <Text color="gray.600">Loading booking form...</Text>
+        </VStack>
+      </Box>
+    }>
+      <BookingLuxuryContent />
+    </Suspense>
+  );
+}
+
+function BookingLuxuryContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isClient, setIsClient] = useState<boolean>(false);
   const router = useRouter();

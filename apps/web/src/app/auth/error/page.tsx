@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -46,7 +46,7 @@ interface ErrorDetails {
   }>;
 }
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [errorDetails, setErrorDetails] = useState<ErrorDetails | null>(null);
@@ -402,5 +402,20 @@ export default function AuthErrorPage() {
         </VStack>
       </Container>
     </Box>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <Box minHeight="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center">
+        <VStack spacing={4}>
+          <Spinner size="xl" color="red.500" />
+          <Text color="gray.600">Loading error details...</Text>
+        </VStack>
+      </Box>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }

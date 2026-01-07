@@ -17,7 +17,7 @@ import {
   Link as ChakraLink,
   useToast,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import NextLink from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -36,7 +36,7 @@ const resetPasswordSchema = z
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams?.get('token');
   const [isLoading, setIsLoading] = useState(false);
@@ -206,5 +206,19 @@ export default function ResetPasswordPage() {
         </Text>
       </VStack>
     </Container>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <Container maxW="md" py={12}>
+        <VStack spacing={8}>
+          <Text>Loading...</Text>
+        </VStack>
+      </Container>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

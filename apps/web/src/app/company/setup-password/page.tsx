@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
@@ -23,7 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 
-export default function CompanyPasswordSetupPage() {
+function SetupPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -244,5 +244,20 @@ export default function CompanyPasswordSetupPage() {
         </VStack>
       </Container>
     </Box>
+  );
+}
+
+export default function CompanyPasswordSetupPage() {
+  return (
+    <Suspense fallback={
+      <Container maxW="md" py={20}>
+        <VStack spacing={8}>
+          <Progress size="xs" isIndeterminate colorScheme="blue" width="full" />
+          <Text>Loading setup form...</Text>
+        </VStack>
+      </Container>
+    }>
+      <SetupPasswordContent />
+    </Suspense>
   );
 }

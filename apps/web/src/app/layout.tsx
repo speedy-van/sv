@@ -120,8 +120,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
+  let initialConsent = null;
+  
+  try {
+    const cookieStore = await cookies();
+    initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
+  } catch (error) {
+    console.error('Error reading cookies in RootLayout:', error);
+    // Continue with null consent - ConsentProvider will handle this gracefully
+  }
 
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning translate="no">

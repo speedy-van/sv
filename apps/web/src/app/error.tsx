@@ -10,7 +10,10 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log error details for debugging
     console.error('Error boundary caught:', error);
+    console.error('Error digest:', error.digest);
+    console.error('Error stack:', error.stack);
   }, [error]);
 
   return (
@@ -19,6 +22,22 @@ export default function Error({
       <p style={{ fontSize: '1.125rem', marginBottom: '2rem', color: '#718096' }}>
         عذراً، حدث خطأ غير متوقع.
       </p>
+      {process.env.NODE_ENV === 'development' && (
+        <details style={{ marginBottom: '2rem', textAlign: 'left' }}>
+          <summary style={{ cursor: 'pointer', marginBottom: '1rem' }}>تفاصيل الخطأ</summary>
+          <pre style={{ 
+            backgroundColor: '#f7fafc', 
+            padding: '1rem', 
+            borderRadius: '5px',
+            overflow: 'auto',
+            fontSize: '0.875rem'
+          }}>
+            {error.message}
+            {error.digest && `\n\nDigest: ${error.digest}`}
+            {error.stack && `\n\nStack:\n${error.stack}`}
+          </pre>
+        </details>
+      )}
       <button
         onClick={reset}
         style={{ 

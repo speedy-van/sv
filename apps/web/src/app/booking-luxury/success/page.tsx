@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams } from 'next/navigation';
 import {
@@ -49,7 +49,7 @@ interface BookingDetails {
   scheduledAt: string;
 }
 
-export default function BookingSuccessPage() {
+function BookingSuccessPageContent() {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1114,5 +1114,22 @@ export default function BookingSuccessPage() {
       </VStack>
     </Container>
   </Box>
+  );
+}
+
+export default function BookingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <Box minHeight="100vh" bg="gray.50">
+        <Container maxW="7xl" py={12}>
+          <VStack spacing={8}>
+            <Spinner size="xl" />
+            <Text>Loading your booking details...</Text>
+          </VStack>
+        </Container>
+      </Box>
+    }>
+      <BookingSuccessPageContent />
+    </Suspense>
   );
 }

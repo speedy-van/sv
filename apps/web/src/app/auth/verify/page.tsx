@@ -13,11 +13,11 @@ import {
   CardBody,
   useToast,
 } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import NextLink from 'next/link';
 
-export default function EmailVerificationPage() {
+function EmailVerificationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams?.get('token');
@@ -187,5 +187,19 @@ export default function EmailVerificationPage() {
         </Card>
       </VStack>
     </Container>
+  );
+}
+
+export default function EmailVerificationPage() {
+  return (
+    <Suspense fallback={
+      <Container maxW="md" py={12}>
+        <VStack spacing={8}>
+          <Text>Verifying your email...</Text>
+        </VStack>
+      </Container>
+    }>
+      <EmailVerificationContent />
+    </Suspense>
   );
 }
