@@ -202,19 +202,19 @@ export async function GET(request: NextRequest) {
           totalGBP: true,
           customerName: true,
           customerEmail: true,
-          pickupAddress: {
+          BookingAddress_Booking_pickupAddressIdToBookingAddress: {
             select: {
               label: true,
               postcode: true,
             },
           },
-          dropoffAddress: {
+          BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
             select: {
               label: true,
               postcode: true,
             },
           },
-          driver: {
+          Driver: {
             select: {
               id: true,
               User: {
@@ -386,8 +386,8 @@ export async function GET(request: NextRequest) {
       drops: [{
         id: `drop-${booking.id}`,
         status: booking.status,
-        pickupAddress: booking.pickupAddress?.label,
-        deliveryAddress: booking.dropoffAddress?.label,
+        pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label,
+        deliveryAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label,
         customerName: booking.customerName,
         customerEmail: booking.customerEmail,
         items: booking.BookingItem || [],
@@ -407,8 +407,8 @@ export async function GET(request: NextRequest) {
         type: 'economy-booking',
         bookingId: booking.id,
         driverId: booking.driverId,
-        driverName: booking.driver?.User?.name || 'Unassigned',
-        driverEmail: booking.driver?.User?.email || null,
+        driverName: booking.Driver?.User?.name || 'Unassigned',
+        driverEmail: booking.Driver?.User?.email || null,
         vehicleId: null,
         status: booking.status,
         totalDrops: 1,
@@ -419,8 +419,8 @@ export async function GET(request: NextRequest) {
         drops: [{
           id: `drop-${booking.id}`,
           status: booking.status,
-          pickupAddress: booking.pickupAddress?.label,
-          deliveryAddress: booking.dropoffAddress?.label,
+          pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress?.label,
+          deliveryAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress?.label,
           customerName: booking.customerName,
           customerEmail: booking.customerEmail,
           items: booking.BookingItem || [],
@@ -488,8 +488,8 @@ export async function GET(request: NextRequest) {
           totalGBP: booking.totalGBP,
           customerName: booking.customerName,
           customerEmail: booking.customerEmail,
-          pickupAddress: booking.pickupAddress,
-          dropoffAddress: booking.dropoffAddress,
+          pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress,
+          dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress,
           items: booking.BookingItem,
           needsDropConversion: true, // Flag for frontend to show conversion button
         })),

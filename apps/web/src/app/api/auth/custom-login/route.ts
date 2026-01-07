@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
@@ -85,9 +86,10 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Login successful:', user.email);
 
-    // Create response
+    // Create response with token in body (backup for cookie issues)
     const response = NextResponse.json({
       success: true,
+      token: token, // Include token in response body as backup
       user: {
         id: user.id,
         email: user.email,
@@ -115,7 +117,12 @@ export async function POST(request: NextRequest) {
       // In production, omit domain to use current host
     };
     
+    // Set cookie on response object
     response.cookies.set('auth-token', token, cookieOptions);
+    
+    // Also set using cookies() API as backup (Next.js 15)
+    const cookieStore = await cookies();
+    cookieStore.set('auth-token', token, cookieOptions);
 
     // Get request details for debugging
     const host = request.headers.get('host');

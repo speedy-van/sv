@@ -1,11 +1,12 @@
 import LoginPageClient from './LoginPageClient';
 
 interface LoginPageProps {
-  searchParams: {
+  searchParams: Promise<{
     role?: string;
-  };
+  }>;
 }
 
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  return <LoginPageClient role={searchParams?.role} />;
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  return <LoginPageClient role={params?.role} />;
 }

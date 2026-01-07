@@ -11,6 +11,8 @@ import { prisma } from '@/lib/prisma';
 import { CompanyQuoteStatus, Prisma } from '@prisma/client';
 import { companyAuditService } from './audit.service';
 import { companyPricingService } from './pricing.service';
+import { orderLimitService } from './order-limit.service';
+import crypto from 'crypto';
 
 // Types
 export interface CreateQuoteInput {
@@ -332,6 +334,10 @@ export const companyQuoteService = {
   /**
    * Convert accepted quote to booking
    */
+  /**
+   * Convert accepted quote to booking
+   * CRITICAL: Enforces order limits atomically within transaction
+   */
   async convertToBooking(id: string, actorId: string, additionalData?: {
     poNumber?: string;
     costCenter?: string;
@@ -351,27 +357,114 @@ export const companyQuoteService = {
       throw new Error('Quote must be accepted before converting to booking');
     }
 
-    // TODO: Create actual booking using booking service
-    // For now, just update the quote status
-    const updatedQuote = await prisma.companyQuote.update({
-      where: { id },
-      data: {
-        status: CompanyQuoteStatus.CONVERTED,
-        // convertedToBookingId will be set when booking is created
-      },
+    // Create booking within transaction WITH ATOMIC LIMIT CHECK
+    const result = await prisma.$transaction(async (tx) => {
+      // Generate booking reference
+      const reference = `SV-B2B-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const bookingId = crypto.randomUUID();
+
+      // CRITICAL: Atomic limit check and increment
+      const { monthKey, sequenceNumber } = await orderLimitService.checkAndIncrementWithinTransaction(
+        quote.companyId,
+        bookingId,
+        tx
+      );
+
+      // Create addresses
+      const pickupAddressId = crypto.randomUUID();
+      const dropoffAddressId = crypto.randomUUID();
+
+      await tx.bookingAddress.create({
+        data: {
+          id: pickupAddressId,
+          label: [quote.pickupAddressLine1, quote.pickupCity, quote.pickupPostcode].filter(Boolean).join(', '),
+          postcode: quote.pickupPostcode,
+          lat: quote.pickupLat,
+          lng: quote.pickupLng,
+        },
+      });
+
+      await tx.bookingAddress.create({
+        data: {
+          id: dropoffAddressId,
+          label: [quote.dropoffAddressLine1, quote.dropoffCity, quote.dropoffPostcode].filter(Boolean).join(', '),
+          postcode: quote.dropoffPostcode,
+          lat: quote.dropoffLat,
+          lng: quote.dropoffLng,
+        },
+      });
+
+      // Create booking
+      const booking = await tx.booking.create({
+        data: {
+          id: bookingId,
+          reference,
+          pickupAddressId,
+          dropoffAddressId,
+          pickupLat: quote.pickupLat,
+          pickupLng: quote.pickupLng,
+          dropoffLat: quote.dropoffLat,
+          dropoffLng: quote.dropoffLng,
+          customerName: quote.Company.name,
+          customerEmail: quote.Company.email || '',
+          customerPhone: quote.Company.phone || '',
+          scheduledAt: quote.scheduledDate,
+          status: 'CONFIRMED',
+          totalGBP: quote.totalGBP,
+          serviceType: quote.serviceType || 'standard',
+          vehicleType: quote.vehicleType || 'MEDIUM_VAN',
+          crewSize: quote.crewSize || 2,
+        },
+      });
+
+      // Create CompanyBooking link
+      await tx.companyBooking.create({
+        data: {
+          companyId: quote.companyId,
+          bookingId: booking.id,
+          poNumber: additionalData?.poNumber,
+          costCenter: additionalData?.costCenter,
+          projectCode: additionalData?.projectCode,
+          notes: additionalData?.notes,
+          orderSequenceNumber: sequenceNumber,
+          countedTowardsLimit: true,
+          monthKey,
+        },
+      });
+
+      // Update quote status
+      await tx.companyQuote.update({
+        where: { id },
+        data: {
+          status: CompanyQuoteStatus.CONVERTED,
+          convertedToBookingId: booking.id,
+        },
+      });
+
+      // Log conversion
+      await tx.companyAuditLog.create({
+        data: {
+          companyId: quote.companyId,
+          action: 'QUOTE_CONVERTED',
+          actorId,
+          actorType: 'USER',
+          targetType: 'quote',
+          targetId: id,
+          metadata: {
+            bookingId: booking.id,
+            bookingReference: reference,
+            ...additionalData,
+          },
+        },
+      });
+
+      return {
+        booking,
+        quote: await tx.companyQuote.findUnique({ where: { id } }),
+      };
     });
 
-    await companyAuditService.log({
-      companyId: quote.companyId,
-      actorId,
-      actorType: 'user',
-      action: 'QUOTE_CONVERTED',
-      targetType: 'quote',
-      targetId: id,
-      metadata: additionalData,
-    });
-
-    return updatedQuote;
+    return result;
   },
 
   /**

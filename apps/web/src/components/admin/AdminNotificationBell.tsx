@@ -197,31 +197,49 @@ export function AdminNotificationBell() {
     >
       <PopoverTrigger>
         <Box position="relative" display="inline-block">
-          <Tooltip label="Notifications" hasArrow>
+          <Tooltip 
+            label="Notifications" 
+            hasArrow
+            bg="gray.800"
+            color="white"
+            fontSize="xs"
+            px={3}
+            py={2}
+            borderRadius="lg"
+          >
             <IconButton
               aria-label="Notifications"
               icon={<FiBell />}
               variant="ghost"
               size="sm"
-              borderRadius="full"
+              borderRadius="xl"
               onClick={onToggle}
-              _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
+              _hover={{ 
+                bg: 'rgba(0,194,255,0.15)', 
+                color: 'primary.300',
+                transform: 'scale(1.1) rotate(15deg)',
+                boxShadow: '0 4px 12px rgba(0,194,255,0.3)',
+              }}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             />
           </Tooltip>
           {unreadCount > 0 && (
             <Badge
               position="absolute"
-              top="-2px"
-              right="-2px"
-              colorScheme="red"
+              top="-4px"
+              right="-4px"
+              bgGradient="linear(to-r, red.500, red.600)"
+              color="white"
               borderRadius="full"
               fontSize="10px"
-              minW="18px"
-              h="18px"
+              minW="20px"
+              h="20px"
               display="flex"
               alignItems="center"
               justifyContent="center"
               fontWeight="bold"
+              boxShadow="0 2px 8px rgba(245, 101, 101, 0.5), 0 0 0 2px rgba(7, 13, 23, 1)"
+              animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
@@ -230,24 +248,38 @@ export function AdminNotificationBell() {
       </PopoverTrigger>
 
       <PopoverContent
-        bg="gray.800"
-        borderColor="gray.700"
-        boxShadow="xl"
-        w={{ base: '90vw', md: '400px' }}
-        maxW="400px"
+        bg="rgba(17, 25, 40, 0.98)"
+        backdropFilter="blur(16px)"
+        borderColor="rgba(0,194,255,0.2)"
+        borderWidth="1px"
+        boxShadow="0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,194,255,0.1)"
+        borderRadius="xl"
+        w={{ base: '90vw', md: '420px' }}
+        maxW="420px"
       >
         <PopoverHeader
-          borderColor="gray.700"
+          borderColor="rgba(255,255,255,0.08)"
           display="flex"
           justifyContent="space-between"
           alignItems="center"
+          py={4}
+          px={5}
         >
           <HStack>
-            <Text fontWeight="bold" color="white">
+            <Text fontWeight="bold" color="white" fontSize="lg">
               Notifications
             </Text>
             {unreadCount > 0 && (
-              <Badge colorScheme="red" borderRadius="full">
+              <Badge 
+                bgGradient="linear(to-r, red.500, red.600)" 
+                color="white"
+                borderRadius="full"
+                px={2.5}
+                py={0.5}
+                fontSize="xs"
+                fontWeight="bold"
+                boxShadow="0 2px 8px rgba(245, 101, 101, 0.4)"
+              >
                 {unreadCount}
               </Badge>
             )}

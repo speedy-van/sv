@@ -5,10 +5,22 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { apiKeyService, ValidateApiKeyResult } from './apikey.service';
+import { apiKeyService } from './api-key.service';
 
 // Rate limit storage (in production, use Redis)
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+export interface ValidateApiKeyResult {
+  valid: boolean;
+  apiKey?: {
+    id: string;
+    companyId: string;
+    scopes: string[];
+    rateLimitPerMin: number;
+    rateLimitPerDay: number;
+  };
+  error?: string;
+}
 
 /**
  * Extract API key from request
@@ -78,16 +90,22 @@ export function requireApiScope(
   scopes: string[],
   requiredScope: string
 ): { allowed: boolean; error?: string } {
-  const hasScope = apiKeyService.hasScope(scopes, requiredScope);
+  // Check if has wildcard or exact scope
+  const hasWildcard = scopes.includes('*');
+  const hasExact = scopes.includes(requiredScope);
   
-  if (!hasScope) {
-    return {
-      allowed: false,
-      error: `Missing required scope: ${requiredScope}`,
-    };
+  // Check resource wildcard (e.g., "bookings:*" includes "bookings:read")
+  const [resource] = requiredScope.split(':');
+  const hasResourceWildcard = scopes.includes(`${resource}:*`);
+  
+  if (hasWildcard || hasExact || hasResourceWildcard) {
+    return { allowed: true };
   }
-
-  return { allowed: true };
+  
+  return {
+    allowed: false,
+    error: `Missing required scope: ${requiredScope}`,
+  };
 }
 
 /**

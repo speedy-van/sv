@@ -73,6 +73,12 @@ export default function LoginPageClient({ role }: LoginPageClientProps) {
 
       console.log('✅ Login successful, data:', data);
       console.log('🍪 Auth cookie set by server');
+      
+      // Store token in localStorage as backup (for cases where cookies don't work)
+      if (data.token) {
+        localStorage.setItem('auth-token', data.token);
+        console.log('💾 Token also stored in localStorage');
+      }
 
       toast({
         title: 'Login successful',

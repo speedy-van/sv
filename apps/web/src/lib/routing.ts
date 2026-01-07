@@ -71,6 +71,8 @@ export const ROUTES = {
   ADMIN_STAFF: '/admin/staff',
   ADMIN_STAFF_ATTENDANCE: '/admin/staff/attendance',
   ADMIN_STAFF_REPORTS: '/admin/staff/reports',
+  ADMIN_B2B_COMPANIES: '/admin/b2b/companies',
+  ADMIN_B2B_APPLICATIONS: '/admin/b2b/applications',
   
   // Staff routes
   STAFF_DASHBOARD: '/staff/dashboard',
@@ -127,6 +129,8 @@ export const ROUTES = {
     STAFF: '/admin/staff',
     STAFF_ATTENDANCE: '/admin/staff/attendance',
     STAFF_REPORTS: '/admin/staff/reports',
+    B2B_COMPANIES: '/admin/b2b/companies',
+    B2B_APPLICATIONS: '/admin/b2b/applications',
   },
   
       SHARED: {

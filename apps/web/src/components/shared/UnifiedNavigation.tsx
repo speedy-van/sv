@@ -4,14 +4,15 @@
 
 'use client';
 
-import { Box, Flex, HStack, Link, Text, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Button, useBreakpointValue, Menu, MenuButton, MenuList, MenuItem, Tooltip } from '@chakra-ui/react';
+import { Box, Flex, HStack, Link, Text, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Button, useBreakpointValue, Menu, MenuButton, MenuList, MenuItem, Tooltip, Badge, Icon } from '@chakra-ui/react';
 import { useColorModeValue } from '@chakra-ui/react';
 import { ReactNode, useRef, useState, useEffect } from 'react';
 import { ROUTES, type UserRole } from '@/lib/routing';
-import { FiMenu, FiRefreshCw } from 'react-icons/fi';
+import { FiMenu, FiRefreshCw, FiUsers, FiBriefcase, FiBarChart2, FiSettings, FiTruck, FiClipboard, FiDollarSign, FiShield, FiActivity, FiFileText, FiMessageSquare, FiPhone, FiChevronDown } from 'react-icons/fi';
 import { usePathname, useRouter } from 'next/navigation';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { FaPhone } from 'react-icons/fa';
+import { RiSparklingFill } from 'react-icons/ri';
 
 interface NavigationItem {
   label: string;
@@ -150,7 +151,7 @@ export function UnifiedNavigation({
 
   const navigationItems = getNavigationItems();
 
-  // Helper: styled nav link with active state
+  // Helper: styled nav link with active state and enhanced design
   const NavPill = ({ href, label }: { href: string; label: string }) => {
     const isActive =
       href === '/admin'
@@ -163,15 +164,61 @@ export function UnifiedNavigation({
         href={href}
         size="sm"
         variant="ghost"
-        fontWeight="semibold"
+        fontWeight="bold"
         fontSize="sm"
-        borderRadius="full"
-        px={3}
-        py={2}
-        _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
-        bg={isActive ? 'rgba(0,194,255,0.12)' : 'transparent'}
-        color={isActive ? 'primary.400' : 'whiteAlpha.900'}
-        transition="all 0.15s ease"
+        letterSpacing="0.3px"
+        borderRadius="xl"
+        px={5}
+        py={2.5}
+        height="auto"
+        _hover={{ 
+          bg: isActive 
+            ? 'rgba(0,194,255,0.2)' 
+            : 'rgba(0,194,255,0.12)', 
+          color: 'primary.200',
+          transform: 'translateY(-2px) scale(1.02)',
+          boxShadow: isActive 
+            ? '0 6px 20px rgba(0,194,255,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' 
+            : '0 4px 14px rgba(0,194,255,0.25)',
+        }}
+        _active={{
+          transform: 'translateY(0) scale(0.98)',
+        }}
+        bg={isActive 
+          ? 'linear-gradient(135deg, rgba(0,194,255,0.18) 0%, rgba(0,150,255,0.25) 100%)' 
+          : 'transparent'}
+        color={isActive ? '#00D4FF' : 'whiteAlpha.900'}
+        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+        boxShadow={isActive 
+          ? '0 4px 14px rgba(0,194,255,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' 
+          : 'none'}
+        position="relative"
+        border={isActive ? '1px solid' : 'none'}
+        borderColor={isActive ? 'rgba(0,194,255,0.3)' : 'transparent'}
+        _before={isActive ? {
+          content: '""',
+          position: 'absolute',
+          bottom: '-18px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '32px',
+          height: '3px',
+          bgGradient: 'linear(to-r, transparent, primary.400, transparent)',
+          borderRadius: 'full',
+          boxShadow: '0 0 8px rgba(0,194,255,0.6)',
+        } : undefined}
+        _after={isActive ? {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          borderRadius: 'xl',
+          padding: '1px',
+          background: 'linear-gradient(135deg, rgba(0,194,255,0.3), rgba(0,150,255,0.1))',
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          maskComposite: 'exclude',
+          pointerEvents: 'none',
+        } : undefined}
       >
         {label}
       </Button>
@@ -183,15 +230,16 @@ export function UnifiedNavigation({
       bg={bg}
       borderBottom="1px"
       borderColor={borderColor}
-      boxShadow="0 6px 20px rgba(0,0,0,0.25)"
-      pl={{ base: 3, md: 4 }}
-      pr={{ base: 1, md: 4 }}
-      py={{ base: 4, md: 3 }}
+      boxShadow="0 12px 48px rgba(0,0,0,0.4), 0 2px 16px rgba(0,194,255,0.1)"
+      pl={{ base: 3, md: 7 }}
+      pr={{ base: 1, md: 7 }}
+      py={{ base: 4, md: 5 }}
       position="sticky"
       top={0}
       zIndex={100}
       sx={{
-        backdropFilter: 'saturate(180%) blur(8px)',
+        backdropFilter: 'saturate(200%) blur(20px)',
+        WebkitBackdropFilter: 'saturate(200%) blur(20px)',
       }}
       _before={{
         content: '""',
@@ -199,9 +247,20 @@ export function UnifiedNavigation({
         left: 0,
         right: 0,
         bottom: 0,
-        height: '1px',
+        height: '3px',
         background:
-          'linear-gradient(90deg, transparent 0%, rgba(0,194,255,0.35) 50%, transparent 100%)',
+          'linear-gradient(90deg, transparent 0%, rgba(0,194,255,0.4) 15%, rgba(0,194,255,0.8) 50%, rgba(0,194,255,0.4) 85%, transparent 100%)',
+        opacity: 0.7,
+        filter: 'blur(0.5px)',
+      }}
+      _after={{
+        content: '""',
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)',
       }}
     >
       <Flex 
@@ -212,14 +271,69 @@ export function UnifiedNavigation({
       >
         {/* Logo/Brand - Left Side */}
         <Link href={effectiveUserRole === 'driver' ? ROUTES.DRIVER_DASHBOARD : ROUTES.HOME} _hover={{ textDecoration: 'none' }}>
-          <Text 
-            fontSize={{ base: "md", md: "xl" }} 
-            fontWeight="bold" 
-            color="primary.500"
-            noOfLines={1}
-          >
-            {effectiveUserRole === 'driver' ? 'Speedy Van Driver' : 'Speedy Van'}
-          </Text>
+          <HStack spacing={3}>
+            <Box
+              w="42px"
+              h="42px"
+              borderRadius="xl"
+              bgGradient="linear(135deg, #00C2FF 0%, #0096FF 50%, #0066FF 100%)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              fontWeight="black"
+              fontSize="xl"
+              color="white"
+              boxShadow="0 6px 20px rgba(0,194,255,0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
+              position="relative"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                borderRadius: 'xl',
+                padding: '2px',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.3), transparent, rgba(0,194,255,0.5))',
+                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+              }}
+              transition="all 0.3s ease"
+              _hover={{
+                transform: 'scale(1.05) rotate(-5deg)',
+                boxShadow: '0 8px 28px rgba(0,194,255,0.5), inset 0 1px 0 rgba(255,255,255,0.3)',
+              }}
+            >
+              SV
+            </Box>
+            <VStack align="start" spacing={0}>
+              <Text 
+                fontSize={{ base: "md", md: "xl" }} 
+                fontWeight="black" 
+                bgGradient="linear(to-r, #00C2FF, #00E5FF, #00D4FF)"
+                bgClip="text"
+                noOfLines={1}
+                letterSpacing="tight"
+              >
+                {effectiveUserRole === 'driver' ? 'Speedy Van Driver' : 'Speedy Van'}
+              </Text>
+              {effectiveUserRole === 'admin' && (
+                <Badge
+                  bgGradient="linear(to-r, purple.500, purple.600)"
+                  color="white"
+                  variant="solid"
+                  fontSize="xs"
+                  px={2.5}
+                  py={0.5}
+                  borderRadius="full"
+                  fontWeight="bold"
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                  boxShadow="0 2px 8px rgba(128, 90, 213, 0.4)"
+                >
+                  Admin
+                </Badge>
+              )}
+            </VStack>
+          </HStack>
         </Link>
         
         {/* Desktop Navigation */}
@@ -234,202 +348,599 @@ export function UnifiedNavigation({
             }}
             whiteSpace="nowrap"
           >
-            {/* Admin: compact, grouped header */}
+            {/* Admin: enhanced, professionally organized header */}
             {effectiveUserRole === 'admin' ? (
               <>
-                {/* Primary links */}
+                {/* Core Operations - Primary Actions */}
                 {[
                   { label: 'Dashboard', href: ROUTES.ADMIN_DASHBOARD },
+                  { label: 'Orders', href: ROUTES.ADMIN_ORDERS },
                   { label: 'Operations', href: ROUTES.ADMIN_OPERATIONS },
-                  { label: 'Customers', href: ROUTES.ADMIN_CUSTOMERS },
                   { label: 'Dispatch', href: ROUTES.ADMIN_DISPATCH },
-                  { label: 'Chat', href: ROUTES.ADMIN_CHAT },
-                  { label: 'Analytics', href: ROUTES.ADMIN_ANALYTICS },
-                  { label: 'Finance', href: ROUTES.ADMIN_FINANCE },
                 ].map((item) => (
                   <NavPill key={item.href} href={item.href} label={item.label} />
                 ))}
 
-                {/* Drivers group */}
-                <Menu isLazy>
+                {/* People Management */}
+                <Menu isLazy placement="bottom-start">
                   <MenuButton
                     as={Button}
                     variant="ghost"
                     size="sm"
-                    fontWeight="medium"
+                    fontWeight="bold"
                     fontSize="sm"
-                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
-                    borderRadius="full"
-                    px={3}
+                    letterSpacing="0.3px"
+                    rightIcon={<Icon as={FiChevronDown} />}
+                    leftIcon={<Icon as={FiUsers} />}
+                    _hover={{ 
+                      color: 'primary.300', 
+                      bg: 'rgba(0,194,255,0.12)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0,194,255,0.2)',
+                    }}
+                    _active={{ 
+                      bg: 'rgba(0,194,255,0.18)',
+                      transform: 'translateY(0)',
+                    }}
+                    borderRadius="xl"
+                    px={5}
+                    height="auto"
+                    py={2.5}
+                    transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                   >
-                    Drivers
+                    People
                   </MenuButton>
-                  <MenuList bg="gray.800" borderColor="gray.700">
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_DRIVERS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                  <MenuList 
+                    bg="rgba(17, 25, 40, 0.95)"
+                    backdropFilter="blur(16px)"
+                    borderColor="rgba(0,194,255,0.2)"
+                    borderWidth="1px"
+                    boxShadow="0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,194,255,0.1)"
+                    borderRadius="xl"
+                    py={3}
+                    overflow="hidden"
+                    minW="240px"
+                  >
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      Customers
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_CUSTOMERS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiUsers} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
+                      All Customers
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_USERS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiShield} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      User Management
+                    </MenuItem>
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
                       Drivers
-                    </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_DRIVER_APPLICATIONS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_DRIVERS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiTruck} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Driver Applications
+                      All Drivers
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_DRIVER_SCHEDULE}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_DRIVER_APPLICATIONS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiClipboard} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Driver Schedule
+                      Applications
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_DRIVER_EARNINGS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_DRIVER_SCHEDULE} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiClipboard} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Driver Earnings
+                      Schedule
                     </MenuItem>
-                  </MenuList>
-                </Menu>
-
-                {/* Staff group */}
-                <Menu isLazy>
-                  <MenuButton
-                    as={Button}
-                    variant="ghost"
-                    size="sm"
-                    fontWeight="medium"
-                    fontSize="sm"
-                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
-                    borderRadius="full"
-                    px={3}
-                  >
-                    Staff
-                  </MenuButton>
-                  <MenuList bg="gray.800" borderColor="gray.700">
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_STAFF}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_DRIVER_EARNINGS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiDollarSign} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
+                      Earnings
+                    </MenuItem>
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
                       Staff
-                    </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_STAFF_ATTENDANCE}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_STAFF} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiUsers} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Staff Attendance
+                      Staff List
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_STAFF_REPORTS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_STAFF_ATTENDANCE} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiClipboard} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Staff Reports
+                      Attendance
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_STAFF_REPORTS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiFileText} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Reports
                     </MenuItem>
                   </MenuList>
                 </Menu>
 
-                {/* More group */}
-                <Menu isLazy>
+                {/* Business & Finance */}
+                <Menu isLazy placement="bottom-start">
                   <MenuButton
                     as={Button}
                     variant="ghost"
                     size="sm"
-                    fontWeight="medium"
+                    fontWeight="bold"
                     fontSize="sm"
-                    _hover={{ color: 'primary.500', bg: 'rgba(0,194,255,0.06)' }}
-                    borderRadius="full"
-                    px={3}
+                    letterSpacing="0.3px"
+                    rightIcon={<Icon as={FiChevronDown} />}
+                    leftIcon={<Icon as={FiBriefcase} />}
+                    _hover={{ 
+                      color: 'primary.300', 
+                      bg: 'rgba(0,194,255,0.12)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0,194,255,0.2)',
+                    }}
+                    _active={{ 
+                      bg: 'rgba(0,194,255,0.18)',
+                      transform: 'translateY(0)',
+                    }}
+                    borderRadius="xl"
+                    px={5}
+                    height="auto"
+                    py={2.5}
+                    transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
                   >
-                    More
+                    Business
                   </MenuButton>
-                  <MenuList bg="gray.800" borderColor="gray.700">
-                    <MenuItem
-                      as={Link}
-                      href="/admin/contact-inquiries"
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                  <MenuList 
+                    bg="rgba(17, 25, 40, 0.95)"
+                    backdropFilter="blur(16px)"
+                    borderColor="rgba(0,194,255,0.2)"
+                    borderWidth="1px"
+                    boxShadow="0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,194,255,0.1)"
+                    borderRadius="xl"
+                    py={3}
+                    overflow="hidden"
+                    minW="240px"
+                  >
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      B2B Management
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href="/admin/b2b/companies" 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiBriefcase} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Contact Inquiries
+                      Companies
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href="/admin/callbacks"
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
-                      icon={<FaPhone />}
+                    <MenuItem 
+                      as={Link} 
+                      href="/admin/b2b/applications" 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiClipboard} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Callbacks
+                      Applications
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_CONTENT}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      Finance
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_FINANCE} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiDollarSign} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
-                      Content
+                      Finance Dashboard
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_TRACKING}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_PAYOUTS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiDollarSign} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Payouts
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_BONUSES} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiDollarSign} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Bonuses
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_APPROVALS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiShield} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Approvals
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+
+                {/* Analytics & Insights */}
+                <NavPill href={ROUTES.ADMIN_ANALYTICS} label="Analytics" />
+                <NavPill href={ROUTES.ADMIN_CHAT} label="Chat" />
+
+                {/* System & Tools */}
+                <Menu isLazy placement="bottom-start">
+                  <MenuButton
+                    as={Button}
+                    variant="ghost"
+                    size="sm"
+                    fontWeight="bold"
+                    fontSize="sm"
+                    letterSpacing="0.3px"
+                    rightIcon={<Icon as={FiChevronDown} />}
+                    leftIcon={<Icon as={FiSettings} />}
+                    _hover={{ 
+                      color: 'primary.300', 
+                      bg: 'rgba(0,194,255,0.12)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0,194,255,0.2)',
+                    }}
+                    _active={{ 
+                      bg: 'rgba(0,194,255,0.18)',
+                      transform: 'translateY(0)',
+                    }}
+                    borderRadius="xl"
+                    px={5}
+                    height="auto"
+                    py={2.5}
+                    transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                  >
+                    System
+                  </MenuButton>
+                  <MenuList 
+                    bg="rgba(17, 25, 40, 0.95)"
+                    backdropFilter="blur(16px)"
+                    borderColor="rgba(0,194,255,0.2)"
+                    borderWidth="1px"
+                    boxShadow="0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,194,255,0.1)"
+                    borderRadius="xl"
+                    py={3}
+                    overflow="hidden"
+                    minW="240px"
+                  >
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      Monitoring
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_HEALTH} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiActivity} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      System Health
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_TRACKING} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiActivity} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
                       Tracking
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_LOGS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_LOGS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiFileText} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
                       Logs
                     </MenuItem>
-                    <MenuItem
-                      as={Link}
-                      href={ROUTES.ADMIN_SETTINGS}
-                      bg="gray.800"
-                      _hover={{ bg: 'gray.700' }}
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_AUDIT_TRAIL} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiShield} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
                     >
+                      Audit Trail
+                    </MenuItem>
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      Operations
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_ROUTES} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiTruck} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Route Management
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_VISITORS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiBarChart2} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Visitor Analytics
+                    </MenuItem>
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
+                      Content & Support
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_CONTENT} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiFileText} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Content Management
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href="/admin/contact-inquiries" 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiMessageSquare} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Contact Inquiries
+                    </MenuItem>
+                    <MenuItem 
+                      as={Link} 
+                      href="/admin/callbacks" 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiPhone} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      Callback Requests
+                    </MenuItem>
+                    
+                    <Box h="1px" bg="rgba(255,255,255,0.08)" my={2} mx={3} />
+                    
+                    <Text px={5} py={2} fontSize="xs" fontWeight="bold" color="primary.400" textTransform="uppercase" letterSpacing="wider">
                       Settings
+                    </Text>
+                    <MenuItem 
+                      as={Link} 
+                      href={ROUTES.ADMIN_SETTINGS} 
+                      bg="transparent" 
+                      _hover={{ bg: 'rgba(0,194,255,0.1)', color: 'primary.300' }}
+                      px={5}
+                      py={3}
+                      icon={<Icon as={FiSettings} color="primary.400" />}
+                      fontWeight="medium"
+                      transition="all 0.2s"
+                    >
+                      System Settings
                     </MenuItem>
                   </MenuList>
                 </Menu>
 
-                {/* Right side quick action: Refresh */}
-                <Tooltip label="Refresh data" hasArrow>
+                {/* Separator */}
+                <Box 
+                  h="28px" 
+                  w="2px" 
+                  bgGradient="linear(to-b, transparent, rgba(0,194,255,0.3), transparent)" 
+                  mx={2} 
+                />
+
+                {/* Quick Actions */}
+                <Tooltip 
+                  label="Refresh data" 
+                  hasArrow 
+                  placement="bottom"
+                  bg="gray.800"
+                  color="white"
+                  fontSize="xs"
+                  px={3}
+                  py={2}
+                  borderRadius="lg"
+                >
                   <IconButton
                     aria-label="Refresh"
                     icon={<FiRefreshCw />}
                     size="sm"
                     variant="ghost"
-                    borderRadius="full"
+                    borderRadius="xl"
                     onClick={() => router.refresh()}
-                    _hover={{ bg: 'rgba(0,194,255,0.08)', color: 'primary.500' }}
+                    _hover={{ 
+                      bg: 'rgba(0,194,255,0.15)', 
+                      color: 'primary.300',
+                      transform: 'rotate(180deg) scale(1.1)',
+                      boxShadow: '0 4px 12px rgba(0,194,255,0.3)',
+                    }}
+                    transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
                   />
                 </Tooltip>
 
                 {/* Notification Bell */}
                 <AdminNotificationBell />
 
-                {/* Open AI Assistant */}
+                {/* AI Assistant - Premium Design */}
                 <Button
                   size="sm"
-                  colorScheme="blue"
-                  variant="solid"
+                  bgGradient="linear(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)"
+                  color="white"
+                  fontWeight="bold"
+                  letterSpacing="0.5px"
+                  leftIcon={<Icon as={RiSparklingFill} />}
+                  _hover={{
+                    bgGradient: "linear(135deg, #5568d3 0%, #653a8b 50%, #e082ea 100%)",
+                    transform: 'translateY(-3px) scale(1.03)',
+                    boxShadow: '0 8px 24px rgba(102, 126, 234, 0.5), 0 0 20px rgba(240, 147, 251, 0.3)',
+                    _before: {
+                      left: '100%',
+                    }
+                  }}
+                  _active={{
+                    transform: 'translateY(-1px) scale(1.01)',
+                  }}
+                  borderRadius="xl"
+                  px={5}
+                  height="auto"
+                  py={2.5}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  boxShadow="0 4px 14px rgba(102, 126, 234, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)"
+                  position="relative"
+                  overflow="hidden"
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                    transition: 'left 0.5s',
+                  }}
                   onClick={() => {
                     try {
                       window.dispatchEvent(new Event('sv-ai-open'));

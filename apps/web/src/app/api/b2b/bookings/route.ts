@@ -9,7 +9,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { validateApiKeyAuth, requireApiScope } from '@/lib/b2b/middleware';
 import { companyQuoteService, companyService } from '@/lib/b2b';
+import { orderLimitService } from '@/lib/b2b/order-limit.service';
+import { verifyCompanySession } from '@/lib/auth/company-middleware';
 import { z } from 'zod';
+import crypto from 'crypto';
 
 // Validation schema
 const CreateBookingSchema = z.object({
@@ -167,34 +170,73 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate API key authentication
-    const authResult = await validateApiKeyAuth(request);
-    if (!authResult.valid) {
-      return NextResponse.json(
-        { success: false, error: authResult.error },
-        { status: 401 }
-      );
-    }
+    // Support both API key authentication and Company session authentication
+    let companyId: string;
+    let actorId: string;
+    let company: any;
 
-    // Check scope
-    const scopeCheck = requireApiScope(authResult.apiKey!.scopes, 'bookings:write');
-    if (!scopeCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: scopeCheck.error },
-        { status: 403 }
-      );
+    // Try API key first
+    const apiAuthResult = await validateApiKeyAuth(request);
+    if (apiAuthResult.valid) {
+      // API key authentication
+      const scopeCheck = requireApiScope(apiAuthResult.apiKey!.scopes, 'bookings:write');
+      if (!scopeCheck.allowed) {
+        return NextResponse.json(
+          { success: false, error: scopeCheck.error },
+          { status: 403 }
+        );
+      }
+
+      companyId = apiAuthResult.apiKey!.companyId;
+      actorId = `api:${apiAuthResult.apiKey!.id}`;
+
+      // Get company
+      company = await companyService.getById(companyId);
+      if (!company || company.status !== 'ACTIVE') {
+        return NextResponse.json(
+          { success: false, error: 'Company account is not active' },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Try company session authentication
+      const sessionResult = await verifyCompanySession();
+      if (!sessionResult.authenticated || !sessionResult.session) {
+        return NextResponse.json(
+          { success: false, error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
+
+      companyId = sessionResult.session.companyId;
+      actorId = `user:${sessionResult.session.userId}`;
+
+      // Get company
+      company = await companyService.getById(companyId);
+      if (!company || company.status !== 'ACTIVE') {
+        return NextResponse.json(
+          { success: false, error: 'Company account is not active' },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();
     const data = CreateBookingSchema.parse(body);
 
-    const companyId = authResult.apiKey!.companyId;
-
-    // Check company credit
-    const company = await companyService.getById(companyId);
-    if (!company || company.status !== 'ACTIVE') {
+    // CRITICAL: Check order limit BEFORE proceeding (advisory check for fast-fail)
+    const limitCheck = await orderLimitService.checkLimit(companyId);
+    if (!limitCheck.allowed) {
       return NextResponse.json(
-        { success: false, error: 'Company account is not active' },
+        {
+          success: false,
+          code: limitCheck.code,
+          error: limitCheck.message,
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+          monthKey: limitCheck.monthKey,
+          resetDate: limitCheck.resetDate.toISOString(),
+        },
         { status: 403 }
       );
     }
@@ -218,10 +260,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Convert quote to booking
+      // Convert quote to booking WITH ATOMIC LIMIT CHECK
       const result = await companyQuoteService.convertToBooking(
         data.quoteId,
-        `api:${authResult.apiKey!.id}`,
+        actorId,
         {
           poNumber: data.poNumber,
           costCenter: data.costCenter,
@@ -245,14 +287,139 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Create direct booking using booking service
-    // For now, return a placeholder response
+    // Create direct booking WITH ATOMIC LIMIT CHECK
+    const result = await prisma.$transaction(async (tx) => {
+      // Generate booking reference
+      const reference = `SV-B2B-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      const bookingId = crypto.randomUUID();
+
+      // CRITICAL: Atomic limit check and increment
+      const { monthKey, sequenceNumber } = await orderLimitService.checkAndIncrementWithinTransaction(
+        companyId,
+        bookingId,
+        tx
+      );
+
+      // Create addresses
+      const pickupAddressId = crypto.randomUUID();
+      const dropoffAddressId = crypto.randomUUID();
+
+      await tx.bookingAddress.create({
+        data: {
+          id: pickupAddressId,
+          label: [data.pickupAddressLine1, data.pickupCity, data.pickupPostcode].filter(Boolean).join(', '),
+          postcode: data.pickupPostcode,
+          lat: data.pickupLat,
+          lng: data.pickupLng,
+        },
+      });
+
+      await tx.bookingAddress.create({
+        data: {
+          id: dropoffAddressId,
+          label: [data.dropoffAddressLine1, data.dropoffCity, data.dropoffPostcode].filter(Boolean).join(', '),
+          postcode: data.dropoffPostcode,
+          lat: data.dropoffLat,
+          lng: data.dropoffLng,
+        },
+      });
+
+      // Simple pricing estimation (can be enhanced later)
+      const basePrice = 150; // £150 base
+      const estimatedTotalGBP = basePrice;
+
+      // Create booking
+      const booking = await tx.booking.create({
+        data: {
+          id: bookingId,
+          reference,
+          pickupAddressId,
+          dropoffAddressId,
+          pickupLat: data.pickupLat,
+          pickupLng: data.pickupLng,
+          dropoffLat: data.dropoffLat,
+          dropoffLng: data.dropoffLng,
+          customerName: company.name,
+          customerEmail: company.email || '',
+          customerPhone: company.phone || '',
+          scheduledAt: new Date(data.scheduledDate),
+          status: 'CONFIRMED',
+          totalGBP: estimatedTotalGBP,
+          serviceType: data.serviceType || 'standard',
+          vehicleType: data.vehicleType || 'MEDIUM_VAN',
+          crewSize: data.crewSize || 2,
+        },
+      });
+
+      // Create CompanyBooking link
+      await tx.companyBooking.create({
+        data: {
+          companyId,
+          bookingId: booking.id,
+          poNumber: data.poNumber,
+          costCenter: data.costCenter,
+          projectCode: data.projectCode,
+          notes: data.notes,
+          orderSequenceNumber: sequenceNumber,
+          countedTowardsLimit: true,
+          monthKey,
+        },
+      });
+
+      // Log creation
+      await tx.companyAuditLog.create({
+        data: {
+          companyId,
+          action: 'BOOKING_CREATED',
+          actorId,
+          actorType: actorId.startsWith('api:') ? 'API' : 'USER',
+          targetType: 'booking',
+          targetId: booking.id,
+          metadata: {
+            reference,
+            poNumber: data.poNumber,
+            source: 'direct_booking',
+          },
+        },
+      });
+
+      return { booking };
+    });
+
     return NextResponse.json({
-      success: false,
-      error: 'Direct booking not yet implemented. Please create a quote first.',
-    }, { status: 501 });
+      success: true,
+      data: {
+        bookingId: result.booking.id,
+        reference: result.booking.reference,
+        status: result.booking.status,
+        scheduledAt: result.booking.scheduledAt,
+        totalGBP: result.booking.totalGBP,
+      },
+      message: 'Direct booking created successfully',
+    }, { status: 201 });
   } catch (error: any) {
     console.error('[B2B Bookings] POST error:', error);
+    
+    // Handle order limit errors
+    try {
+      const limitError = JSON.parse(error.message);
+      if (limitError.code === 'ORDER_LIMIT_REACHED') {
+        return NextResponse.json(
+          {
+            success: false,
+            code: limitError.code,
+            error: limitError.message,
+            current: limitError.current,
+            limit: limitError.limit,
+            monthKey: limitError.monthKey,
+            resetDate: limitError.resetDate,
+          },
+          { status: 403 }
+        );
+      }
+    } catch {
+      // Not a limit error, continue
+    }
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

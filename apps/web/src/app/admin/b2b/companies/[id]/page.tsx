@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import CompanyDetailDashboard from '@/components/admin/b2b/CompanyDetailDashboard';
 import { Skeleton } from '@/components/ui/skeleton';
+import AdminB2BPageShell from '@/components/admin/b2b/AdminB2BPageShell';
 
 export const metadata: Metadata = {
   title: 'Company Details | B2B Admin',
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 function LoadingSkeleton() {
@@ -42,16 +43,20 @@ function LoadingSkeleton() {
   );
 }
 
-export default function CompanyDetailPage({ params }: PageProps) {
-  if (!params.id) {
+export default async function CompanyDetailPage({ params }: PageProps) {
+  const resolvedParams = await params;
+  
+  if (!resolvedParams.id) {
     notFound();
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Suspense fallback={<LoadingSkeleton />}>
-        <CompanyDetailDashboard companyId={params.id} />
-      </Suspense>
-    </div>
+    <AdminB2BPageShell>
+      <div className="min-h-screen bg-background">
+        <Suspense fallback={<LoadingSkeleton />}>
+          <CompanyDetailDashboard companyId={resolvedParams.id} />
+        </Suspense>
+      </div>
+    </AdminB2BPageShell>
   );
 }

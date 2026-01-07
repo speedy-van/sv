@@ -16,6 +16,7 @@ model AILearningPattern {
   lastSeen    DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
   @@unique([pattern, action])
   @@index([lastSeen])
   @@index([successRate])
@@ -53,7 +54,7 @@ model Address {
   notes               String?
   isDefault           Boolean  @default(false)
   createdAt           DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt           DateTime @updatedAt
   hasCongestionCharge Boolean  @default(false)
   isLEZ               Boolean  @default(false)
   isULEZ              Boolean  @default(false)
@@ -96,7 +97,7 @@ model AdminNotification {
   isRead    Boolean   @default(false)
   readAt    DateTime?
   createdAt DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime  @updatedAt
   actorId   String?
   actorRole String?
 
@@ -115,7 +116,7 @@ model Assignment {
   score          Int?
   expiresAt      DateTime?
   createdAt      DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt      DateTime         @updatedAt
   claimedAt      DateTime?
   status         AssignmentStatus @default(invited)
   Booking        Booking          @relation(fields: [bookingId], references: [id])
@@ -180,7 +181,7 @@ model Booking {
   paidAt                                                     DateTime?
   amountPaidGBP                                              Int                     @default(0)
   createdAt                                                  DateTime                @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                                                  DateTime                @updatedAt
   driverId                                                   String?
   customerName                                               String
   customerPhone                                              String
@@ -301,15 +302,15 @@ model BookingDraft {
 }
 
 model BookingAddress {
-  id                                                        String           @id @default(cuid())
-  label                                                     String
-  postcode                                                  String
-  lat                                                       Float
-  lng                                                       Float
-  Booking_Booking_dropoffAddressIdToBookingAddress          Booking[]        @relation("Booking_dropoffAddressIdToBookingAddress")
-  Booking_Booking_pickupAddressIdToBookingAddress           Booking[]        @relation("Booking_pickupAddressIdToBookingAddress")
-  BookingSegment_BookingSegment_dropoffAddressIdToBookingAddress  BookingSegment[] @relation("BookingSegment_dropoffAddressIdToBookingAddress")
-  BookingSegment_BookingSegment_pickupAddressIdToBookingAddress   BookingSegment[] @relation("BookingSegment_pickupAddressIdToBookingAddress")
+  id                                                             String           @id @default(cuid())
+  label                                                          String
+  postcode                                                       String
+  lat                                                            Float
+  lng                                                            Float
+  Booking_Booking_dropoffAddressIdToBookingAddress               Booking[]        @relation("Booking_dropoffAddressIdToBookingAddress")
+  Booking_Booking_pickupAddressIdToBookingAddress                Booking[]        @relation("Booking_pickupAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_dropoffAddressIdToBookingAddress BookingSegment[] @relation("BookingSegment_dropoffAddressIdToBookingAddress")
+  BookingSegment_BookingSegment_pickupAddressIdToBookingAddress  BookingSegment[] @relation("BookingSegment_pickupAddressIdToBookingAddress")
 }
 
 model BookingCancellation {
@@ -322,7 +323,7 @@ model BookingCancellation {
   createdAt       DateTime @default(now())
   cancelledByRole String
   refundProcessed Boolean  @default(false)
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
   Booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -354,7 +355,7 @@ model BookingProgress {
   data        Json?
   notes       String?
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime    @updatedAt
   Booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@unique([bookingId, step])
@@ -363,28 +364,28 @@ model BookingProgress {
 }
 
 model BookingSegment {
-  id                                                             String          @id @default(uuid())
-  bookingId                                                      String
-  booking                                                        Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  segmentType                                                    String
-  sequenceNumber                                                 Int
-  pickupAddressId                                                String
-  pickupAddress                                                  BookingAddress  @relation("BookingSegment_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
-  dropoffAddressId                                               String
-  dropoffAddress                                                 BookingAddress  @relation("BookingSegment_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
-  pickupPropertyId                                               String
-  pickupProperty                                                 PropertyDetails @relation("BookingSegment_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
-  dropoffPropertyId                                              String
-  dropoffProperty                                                PropertyDetails @relation("BookingSegment_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
-  scheduledAt                                                    DateTime
-  estimatedArrival                                               DateTime?
-  items                                                          Json
-  priceGBP                                                       Int
-  distanceMeters                                                 Int?
-  durationSeconds                                                Int?
-  notes                                                          String?
-  createdAt                                                      DateTime        @default(now())
-  updatedAt                                                      DateTime        @updatedAt
+  id                String          @id @default(uuid())
+  bookingId         String
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  segmentType       String
+  sequenceNumber    Int
+  pickupAddressId   String
+  pickupAddress     BookingAddress  @relation("BookingSegment_pickupAddressIdToBookingAddress", fields: [pickupAddressId], references: [id])
+  dropoffAddressId  String
+  dropoffAddress    BookingAddress  @relation("BookingSegment_dropoffAddressIdToBookingAddress", fields: [dropoffAddressId], references: [id])
+  pickupPropertyId  String
+  pickupProperty    PropertyDetails @relation("BookingSegment_pickupPropertyIdToPropertyDetails", fields: [pickupPropertyId], references: [id])
+  dropoffPropertyId String
+  dropoffProperty   PropertyDetails @relation("BookingSegment_dropoffPropertyIdToPropertyDetails", fields: [dropoffPropertyId], references: [id])
+  scheduledAt       DateTime
+  estimatedArrival  DateTime?
+  items             Json
+  priceGBP          Int
+  distanceMeters    Int?
+  durationSeconds   Int?
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   @@index([bookingId, sequenceNumber])
   @@index([segmentType])
@@ -423,7 +424,8 @@ model CareerApplication {
   contractSent    Boolean           @default(false)
   contractSentAt  DateTime?
   createdAt       DateTime          @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime          @updatedAt
+
   @@index([createdAt])
   @@index([email])
   @@index([status])
@@ -456,7 +458,7 @@ model ChatSession {
   bookingId                        String?
   isActive                         Boolean           @default(true)
   createdAt                        DateTime          @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                        DateTime          @updatedAt
   closedAt                         DateTime?
   closedBy                         String?
   createdBy                        String?
@@ -517,7 +519,7 @@ model CompanyTaxSettings {
   isActive                 Boolean             @default(true)
   metadata                 Json                @default("{}")
   createdAt                DateTime            @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                DateTime            @updatedAt
   createdBy                String
   updatedBy                String?
 
@@ -549,7 +551,7 @@ model Contact {
   notes     String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -608,7 +610,7 @@ model CustomerNotificationPreferences {
   pushDriverUpdates        Boolean  @default(true)
   pushServiceAlerts        Boolean  @default(true)
   createdAt                DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                DateTime @updatedAt
   User                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -618,7 +620,7 @@ model CustomerProfile {
   totalSpent    Decimal      @default(0)
   loyaltyPoints Int          @default(0)
   createdAt     DateTime     @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime     @updatedAt
   lastOrderDate DateTime?
   preferredTier ServiceTier  @default(standard)
   totalOrders   Int          @default(0)
@@ -639,7 +641,7 @@ model DispatchSettings {
   maxDriverJobs       Int      @default(3)
   requireOnlineStatus Boolean  @default(true)
   updatedBy           String
-  updatedAt   DateTime @updatedAt
+  updatedAt           DateTime @updatedAt
   createdAt           DateTime @default(now())
 
   @@index([isActive])
@@ -674,7 +676,7 @@ model Driver {
   rightToWorkType               String?
   approvedAt                    DateTime?
   createdAt                     DateTime                       @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                     DateTime                       @updatedAt
   rating                        Float?                         @default(0)
   strikes                       Int                            @default(0)
   bankAccountName               String?
@@ -764,7 +766,7 @@ model DriverAvailability {
   lastLat               Float?
   lastLng               Float?
   createdAt             DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime  @updatedAt
   locationConsent       Boolean   @default(false)
   maxConcurrentDrops    Int       @default(5)
   multiDropCapable      Boolean   @default(true)
@@ -803,7 +805,7 @@ model DriverChecks {
   policyEnd         DateTime?
   fileIds           String[]
   createdAt         DateTime   @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt         DateTime   @updatedAt
   Driver            Driver     @relation(fields: [driverId], references: [id])
 }
 
@@ -821,7 +823,7 @@ model DriverEarnings {
   paidOut                  Boolean            @default(false)
   payoutId                 String?
   createdAt                DateTime           @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                DateTime           @updatedAt
   adminAdjustedAmountPence Int?
   adminAdjustedAt          DateTime?
   adminAdjustedBy          String?
@@ -867,7 +869,7 @@ model DriverIncident {
   propertyDamage Boolean          @default(false)
   injuryInvolved Boolean          @default(false)
   createdAt      DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt      DateTime         @updatedAt
   Assignment     Assignment?      @relation(fields: [assignmentId], references: [id])
   Driver         Driver           @relation(fields: [driverId], references: [id])
 
@@ -917,7 +919,7 @@ model DriverNotificationPreferences {
   smsPayoutEvents      Boolean  @default(false)
   smsSystemAlerts      Boolean  @default(false)
   createdAt            DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt            DateTime @updatedAt
   emailMessages        Boolean  @default(false)
   Driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
@@ -961,7 +963,7 @@ model DriverPayout {
   stripeTransferId String?
   bankAccountId    String?
   createdAt        DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt        DateTime         @updatedAt
   DriverEarnings   DriverEarnings[]
   Driver           Driver           @relation(fields: [driverId], references: [id])
 
@@ -981,7 +983,7 @@ model DriverPayoutSettings {
   verified             Boolean   @default(false)
   verifiedAt           DateTime?
   createdAt            DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt            DateTime  @updatedAt
   Driver               Driver    @relation(fields: [driverId], references: [id])
 }
 
@@ -1003,7 +1005,7 @@ model DriverPerformance {
   monthlyCompletionRate Float    @default(0)
   monthlyOnTimeRate     Float    @default(0)
   createdAt             DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime @updatedAt
   Driver                Driver   @relation(fields: [driverId], references: [id])
 }
 
@@ -1014,7 +1016,7 @@ model DriverProfile {
   address   String?
   dob       DateTime?
   createdAt DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime  @updatedAt
   Driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
@@ -1033,7 +1035,7 @@ model DriverRating {
   moderatedBy     String?
   moderationNotes String?
   createdAt       DateTime       @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime       @updatedAt
   Assignment      Assignment     @relation(fields: [assignmentId], references: [id])
   Driver          Driver         @relation(fields: [driverId], references: [id])
 
@@ -1052,7 +1054,7 @@ model DriverShift {
   recurringDays String[]
   isActive      Boolean      @default(true)
   createdAt     DateTime     @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime     @updatedAt
   vehicleId     String?
   Driver        Driver       @relation(fields: [driverId], references: [id])
   VehicleSpec   VehicleSpec? @relation(fields: [vehicleId], references: [id])
@@ -1074,7 +1076,7 @@ model DriverTip {
   reconciledBy String?
   notes        String?
   createdAt    DateTime   @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt    DateTime   @updatedAt
   Assignment   Assignment @relation(fields: [assignmentId], references: [id])
   Driver       Driver     @relation(fields: [driverId], references: [id])
 
@@ -1093,7 +1095,7 @@ model DriverVehicle {
   motExpiry   DateTime?
   photos      Json?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime  @updatedAt
   Driver      Driver    @relation(fields: [driverId], references: [id])
 
   @@index([driverId])
@@ -1165,7 +1167,8 @@ model EmailTemplate {
   version   Int      @default(1)
   createdBy String
   createdAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
+
   @@index([category])
   @@index([createdAt])
   @@index([name])
@@ -1185,7 +1188,8 @@ model ErrorReport {
   assignee        String?
   status          String   @default("draft")
   createdAt       DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
+
   @@index([assignee])
   @@index([generatedAt])
   @@index([status])
@@ -1209,7 +1213,7 @@ model Invoice {
   stripePaymentIntentId String?
   notes                 String?
   createdAt             DateTime      @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime      @updatedAt
   Booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -1230,7 +1234,7 @@ model InvoiceItem {
   vatRate     Decimal     @db.Decimal(5, 4)
   vatRateType VatRateType @default(standard)
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime    @updatedAt
   TaxInvoice  TaxInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
@@ -1249,7 +1253,7 @@ model InvoicePayment {
   notes                 String?
   metadata              Json          @default("{}")
   createdAt             DateTime      @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime      @updatedAt
   TaxInvoice            TaxInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
@@ -1282,7 +1286,7 @@ model Message {
   sessionId   String
   status      MessageStatus @default(sent)
   type        MessageType   @default(text)
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime      @updatedAt
   readAt      DateTime?
   deliveredAt DateTime?
   User        User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
@@ -1305,7 +1309,7 @@ model ContactInquiry {
   source    String   @default("contact_form")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([status])
   @@index([createdAt])
 }
@@ -1333,7 +1337,7 @@ model Payment {
   status    PaymentStatus @default(unpaid)
   metadata  Json?
   createdAt DateTime      @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime      @updatedAt
   Booking   Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   Refund    Refund[]
 
@@ -1452,7 +1456,7 @@ model PricingSettings {
   advancedConfig                       Json?
   isActive                             Boolean  @default(true)
   createdAt                            DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                            DateTime @updatedAt
   createdBy                            String
   updatedBy                            String?
   User_PricingSettings_createdByToUser User     @relation("PricingSettings_createdByToUser", fields: [createdBy], references: [id])
@@ -1493,7 +1497,8 @@ model ProductionError {
   impact        Json
   relatedErrors String[]
   createdAt     DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
+
   @@index([category])
   @@index([level])
   @@index([source])
@@ -1521,7 +1526,8 @@ model Promotion {
   firstTimeOnly   Boolean  @default(false)
   createdBy       String
   createdAt       DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
+
   @@index([code])
   @@index([createdAt])
   @@index([status])
@@ -1529,12 +1535,12 @@ model Promotion {
 }
 
 model PropertyDetails {
-  id                                                 String           @id @default(cuid())
-  propertyType                                       PropertyType
-  accessType                                         AccessType
-  floors                                             Int              @default(0)
-  Booking_Booking_dropoffPropertyIdToPropertyDetails Booking[]        @relation("Booking_dropoffPropertyIdToPropertyDetails")
-  Booking_Booking_pickupPropertyIdToPropertyDetails  Booking[]        @relation("Booking_pickupPropertyIdToPropertyDetails")
+  id                                                               String           @id @default(cuid())
+  propertyType                                                     PropertyType
+  accessType                                                       AccessType
+  floors                                                           Int              @default(0)
+  Booking_Booking_dropoffPropertyIdToPropertyDetails               Booking[]        @relation("Booking_dropoffPropertyIdToPropertyDetails")
+  Booking_Booking_pickupPropertyIdToPropertyDetails                Booking[]        @relation("Booking_pickupPropertyIdToPropertyDetails")
   BookingSegment_BookingSegment_dropoffPropertyIdToPropertyDetails BookingSegment[] @relation("BookingSegment_dropoffPropertyIdToPropertyDetails")
   BookingSegment_BookingSegment_pickupPropertyIdToPropertyDetails  BookingSegment[] @relation("BookingSegment_pickupPropertyIdToPropertyDetails")
 }
@@ -1549,7 +1555,7 @@ model PushSubscription {
   deviceInfo Json?
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
   Driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@index([driverId])
@@ -1563,7 +1569,7 @@ model Quote {
   validUntil      DateTime
   isAccepted      Boolean      @default(false)
   createdAt       DateTime     @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime     @updatedAt
   acceptedTier    ServiceTier?
   deliveryAddress String
   distance        Float?
@@ -1606,7 +1612,8 @@ model ReferenceSequence {
   type       String
   lastNumber Int      @default(0)
   prefix     String   @default("SV")
-  updatedAt   DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
+
   @@index([type])
 }
 
@@ -1619,7 +1626,7 @@ model Refund {
   processedAt DateTime?
   metadata    Json?
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime     @updatedAt
   notes       String?
   Payment     Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
 
@@ -1653,7 +1660,7 @@ model Route {
   adminNotes                 String?
   isModifiedByAdmin          Boolean          @default(false)
   createdAt                  DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt                  DateTime         @updatedAt
   status                     RouteStatus      @default(planned)
   completedDrops             Int              @default(0)
   maxCapacityVolume          Float?
@@ -1740,7 +1747,8 @@ model ServiceArea {
   surgeMultiplier Decimal  @default(1.0000) @db.Decimal(5, 4)
   createdBy       String
   createdAt       DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
+
   @@index([createdAt])
   @@index([status])
 }
@@ -1757,7 +1765,7 @@ model Staff {
   hireDate        DateTime?
   terminationDate DateTime?
   createdAt       DateTime          @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime          @updatedAt
   User            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   StaffAttendance StaffAttendance[]
   StaffLeave      StaffLeave[]
@@ -1784,7 +1792,7 @@ model StaffAttendance {
   approvedBy        String?
   approvedAt        DateTime?
   createdAt         DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt         DateTime         @updatedAt
   Staff             Staff            @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, date])
@@ -1809,7 +1817,7 @@ model StaffLeave {
   rejectedAt      DateTime?
   rejectionReason String?
   createdAt       DateTime    @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime    @updatedAt
   Staff           Staff       @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@index([staffId])
@@ -1830,7 +1838,7 @@ model SupportTicket {
   priority              String                  @default("NORMAL")
   attachments           String[]
   createdAt             DateTime                @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime                @updatedAt
   User                  User                    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   SupportTicketResponse SupportTicketResponse[]
 
@@ -1891,7 +1899,7 @@ model SystemSettings {
   autoRoutingStatus      String    @default("idle")
   lastError              String?
   updatedBy              String
-  updatedAt   DateTime @updatedAt
+  updatedAt              DateTime  @updatedAt
   createdAt              DateTime  @default(now())
 
   @@index([autoRoutingEnabled])
@@ -1934,7 +1942,7 @@ model TaxDeadline {
   notes          String?
   metadata       Json            @default("{}")
   createdAt      DateTime        @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt      DateTime        @updatedAt
   createdBy      String
   updatedBy      String?
 
@@ -1969,7 +1977,7 @@ model TaxExpense {
   notes             String?
   metadata          Json              @default("{}")
   createdAt         DateTime          @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt         DateTime          @updatedAt
   createdBy         String
   updatedBy         String?
   TaxRecord         TaxRecord?        @relation(fields: [taxRecordId], references: [id])
@@ -2004,7 +2012,7 @@ model TaxInvoice {
   notes                 String?
   metadata              Json             @default("{}")
   createdAt             DateTime         @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime         @updatedAt
   createdBy             String
   updatedBy             String?
   InvoiceItem           InvoiceItem[]
@@ -2052,7 +2060,7 @@ model TaxRecord {
   notes                 String?
   metadata              Json          @default("{}")
   createdAt             DateTime      @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt             DateTime      @updatedAt
   createdBy             String
   updatedBy             String?
   TaxExpense            TaxExpense[]
@@ -2153,7 +2161,7 @@ model Vehicle {
   year            Int
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
   capacity        Float
   fuelType        FuelType
   lastMaintenance DateTime?
@@ -2173,7 +2181,7 @@ model VehicleSpec {
   crewSize     Int           @default(2)
   isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt    DateTime      @updatedAt
   make         String?
   model        String?
   year         Int?
@@ -2222,7 +2230,7 @@ model VisitorSession {
   exitTime         DateTime?
   lastSeenAt       DateTime        @default(now())
   createdAt        DateTime        @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt        DateTime        @updatedAt
   PageView         PageView[]
   VisitorAction    VisitorAction[]
 
@@ -2242,7 +2250,7 @@ model admin_stories {
   isActive     Boolean        @default(false)
   publishedAt  DateTime?
   createdAt    DateTime       @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt    DateTime       @updatedAt
   story_likes  story_likes[]
   story_shares story_shares[]
   story_views  story_views[]
@@ -2823,26 +2831,25 @@ enum VehicleType {
   truck
 }
 
-
 // ============================================
 // B2B MODELS - Company Management & API Portal
 // ============================================
 
 model Company {
-  id                    String              @id @default(cuid())
+  id                    String        @id @default(cuid())
   name                  String
   legalName             String?
-  vatNumber             String?             @unique
-  companyNumber         String?             @unique
+  vatNumber             String?       @unique
+  companyNumber         String?       @unique
   billingAddressLine1   String?
   billingAddressLine2   String?
   billingCity           String?
   billingPostcode       String?
-  billingCountry        String              @default("UK")
-  creditLimitGBP        Int                 @default(0)
-  currentBalanceGBP     Int                 @default(0)
-  paymentTermsDays      Int                 @default(0)
-  status                CompanyStatus       @default(PENDING)
+  billingCountry        String        @default("UK")
+  creditLimitGBP        Int           @default(0)
+  currentBalanceGBP     Int           @default(0)
+  paymentTermsDays      Int           @default(0)
+  status                CompanyStatus @default(PENDING)
   industry              String?
   website               String?
   phone                 String?
@@ -2854,50 +2861,61 @@ model Company {
   onboardingCompletedAt DateTime?
   suspendedAt           DateTime?
   suspendedReason       String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
   createdBy             String?
-  
+
+  // Order Limits & Tracking
+  monthlyOrderLimit   Int @default(0) // 0 = unlimited
+  totalLifetimeOrders Int @default(0)
+
+  // Onboarding & Access
+  passwordSetupToken     String?   @unique
+  passwordSetupExpiresAt DateTime?
+  firstLoginAt           DateTime?
+
   // Relations
-  CompanyUser           CompanyUser[]
-  ApiKey                ApiKey[]
-  PricingRule           PricingRule[]
-  CompanyBooking        CompanyBooking[]
-  CompanyQuote          CompanyQuote[]
-  CompanyInvoice        CompanyInvoice[]
-  CompanyInvitation     CompanyInvitation[]
-  CompanyAuditLog       CompanyAuditLog[]
-  CompanyDocument       CompanyDocument[]
-  CompanyContact        CompanyContact[]
-  WebhookEndpoint       WebhookEndpoint[]
-  
+  CompanyUser         CompanyUser[]
+  ApiKey              ApiKey[]
+  PricingRule         PricingRule[]
+  CompanyBooking      CompanyBooking[]
+  CompanyQuote        CompanyQuote[]
+  CompanyInvoice      CompanyInvoice[]
+  CompanyInvitation   CompanyInvitation[]
+  CompanyAuditLog     CompanyAuditLog[]
+  CompanyDocument     CompanyDocument[]
+  CompanyContact      CompanyContact[]
+  WebhookEndpoint     WebhookEndpoint[]
+  CompanyMonthlyUsage CompanyMonthlyUsage[]
+
   @@index([status])
   @@index([vatNumber])
   @@index([companyNumber])
   @@index([createdAt])
+  @@index([passwordSetupToken])
 }
 
 model CompanyUser {
-  id          String            @id @default(cuid())
+  id          String      @id @default(cuid())
   companyId   String
   userId      String
-  role        CompanyRole       @default(MEMBER)
+  role        CompanyRole @default(MEMBER)
   title       String?
   department  String?
-  isActive    Boolean           @default(true)
+  isActive    Boolean     @default(true)
   invitedBy   String?
   invitedAt   DateTime?
   joinedAt    DateTime?
   disabledAt  DateTime?
   disabledBy  String?
   lastLoginAt DateTime?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
   // Relations
-  Company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  User        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, userId])
   @@index([companyId])
   @@index([userId])
@@ -2905,33 +2923,33 @@ model CompanyUser {
 }
 
 model ApiKey {
-  id              String        @id @default(cuid())
+  id              String       @id @default(cuid())
   companyId       String
   name            String
   description     String?
-  hashedKey       String        @unique
+  hashedKey       String       @unique
   keyPrefix       String
   scopes          String[]
-  status          ApiKeyStatus  @default(ACTIVE)
+  status          ApiKeyStatus @default(ACTIVE)
   expiresAt       DateTime?
   lastUsedAt      DateTime?
   lastUsedIp      String?
-  usageCount      Int           @default(0)
-  rateLimitPerMin Int           @default(60)
-  rateLimitPerDay Int           @default(10000)
+  usageCount      Int          @default(0)
+  rateLimitPerMin Int          @default(60)
+  rateLimitPerDay Int          @default(10000)
   allowedIps      String[]
   allowedDomains  String[]
   createdBy       String
   revokedAt       DateTime?
   revokedBy       String?
   revokedReason   String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
   // Relations
-  Company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  ApiKeyUsageLog  ApiKeyUsageLog[]
-  
+  Company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ApiKeyUsageLog ApiKeyUsageLog[]
+
   @@index([companyId])
   @@index([hashedKey])
   @@index([status])
@@ -2950,146 +2968,153 @@ model ApiKeyUsageLog {
   requestBody Json?
   errorCode   String?
   createdAt   DateTime @default(now())
-  
+
   // Relations
-  ApiKey      ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
-  
+  ApiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
   @@index([apiKeyId, createdAt])
   @@index([endpoint])
   @@index([createdAt])
 }
 
 model PricingRule {
-  id                  String          @id @default(cuid())
-  companyId           String
-  name                String
-  description         String?
-  ruleType            PricingRuleType
-  isActive            Boolean         @default(true)
-  priority            Int             @default(0)
-  
+  id          String          @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  ruleType    PricingRuleType
+  isActive    Boolean         @default(true)
+  priority    Int             @default(0)
+
   // Distance-based pricing
-  baseRateGBP         Int?
-  perMileRateGBP      Int?
-  minChargeGBP        Int?
-  maxChargeGBP        Int?
-  
+  baseRateGBP    Int?
+  perMileRateGBP Int?
+  minChargeGBP   Int?
+  maxChargeGBP   Int?
+
   // Volume/Weight pricing
-  perCubicMeterGBP    Int?
-  perKgGBP            Int?
-  
+  perCubicMeterGBP Int?
+  perKgGBP         Int?
+
   // Discounts
-  discountPercent     Float?
-  discountFixedGBP    Int?
-  volumeThreshold     Float?
-  
+  discountPercent  Float?
+  discountFixedGBP Int?
+  volumeThreshold  Float?
+
   // Time-based
-  peakMultiplier      Float?
-  offPeakMultiplier   Float?
-  weekendMultiplier   Float?
-  
+  peakMultiplier    Float?
+  offPeakMultiplier Float?
+  weekendMultiplier Float?
+
   // Conditions (JSON for flexibility)
-  conditions          Json?
-  
-  validFrom           DateTime?
-  validTo             DateTime?
-  createdBy           String
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  
+  conditions Json?
+
+  validFrom DateTime?
+  validTo   DateTime?
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   // Relations
-  Company             Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId, isActive])
   @@index([ruleType])
 }
 
 model CompanyBooking {
-  id                    String                @id @default(cuid())
-  companyId             String
-  bookingId             String                @unique
-  poNumber              String?
-  costCenter            String?
-  projectCode           String?
-  internalReference     String?
-  requestedBy           String?
-  approvedBy            String?
-  approvedAt            DateTime?
-  notes                 String?
-  slaWindow             String?
-  slaDeadline           DateTime?
-  slaMet                Boolean?
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  
+  id                String    @id @default(cuid())
+  companyId         String
+  bookingId         String    @unique
+  poNumber          String?
+  costCenter        String?
+  projectCode       String?
+  internalReference String?
+  requestedBy       String?
+  approvedBy        String?
+  approvedAt        DateTime?
+  notes             String?
+  slaWindow         String?
+  slaDeadline       DateTime?
+  slaMet            Boolean?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Order Tracking
+  orderSequenceNumber Int     @default(0)
+  countedTowardsLimit Boolean @default(true)
+  monthKey            String? // e.g. "2026-01"
+
   // Relations
-  Company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  Booking               Booking               @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([bookingId])
   @@index([poNumber])
   @@index([costCenter])
+  @@index([companyId, orderSequenceNumber])
+  @@index([companyId, monthKey])
 }
 
 model CompanyQuote {
-  id                String            @id @default(cuid())
-  companyId         String
-  reference         String            @unique
-  status            CompanyQuoteStatus @default(DRAFT)
-  
+  id        String             @id @default(cuid())
+  companyId String
+  reference String             @unique
+  status    CompanyQuoteStatus @default(DRAFT)
+
   // Addresses
-  pickupAddressLine1    String
-  pickupAddressLine2    String?
-  pickupCity            String
-  pickupPostcode        String
-  pickupCountry         String        @default("UK")
-  pickupLat             Float?
-  pickupLng             Float?
-  pickupNotes           String?
-  
-  dropoffAddressLine1   String
-  dropoffAddressLine2   String?
-  dropoffCity           String
-  dropoffPostcode       String
-  dropoffCountry        String        @default("UK")
-  dropoffLat            Float?
-  dropoffLng            Float?
-  dropoffNotes          String?
-  
+  pickupAddressLine1 String
+  pickupAddressLine2 String?
+  pickupCity         String
+  pickupPostcode     String
+  pickupCountry      String  @default("UK")
+  pickupLat          Float?
+  pickupLng          Float?
+  pickupNotes        String?
+
+  dropoffAddressLine1 String
+  dropoffAddressLine2 String?
+  dropoffCity         String
+  dropoffPostcode     String
+  dropoffCountry      String  @default("UK")
+  dropoffLat          Float?
+  dropoffLng          Float?
+  dropoffNotes        String?
+
   // Pricing
   distanceMiles         Float
   estimatedDurationMins Int
   subtotalGBP           Int
   vatGBP                Int
   totalGBP              Int
-  discountGBP           Int           @default(0)
+  discountGBP           Int     @default(0)
   discountReason        String?
   pricingRuleId         String?
   priceBreakdown        Json?
-  
+
   // Validity
-  validUntil            DateTime
-  acceptedAt            DateTime?
-  rejectedAt            DateTime?
-  rejectedReason        String?
-  convertedToBookingId  String?
-  
+  validUntil           DateTime
+  acceptedAt           DateTime?
+  rejectedAt           DateTime?
+  rejectedReason       String?
+  convertedToBookingId String?
+
   // Metadata
-  items                 Json?
-  specialRequirements   String?
-  scheduledDate         DateTime?
-  serviceType           String?
-  vehicleType           String?
-  crewSize              Int           @default(2)
-  
-  createdBy             String
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  
+  items               Json?
+  specialRequirements String?
+  scheduledDate       DateTime?
+  serviceType         String?
+  vehicleType         String?
+  crewSize            Int       @default(2)
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  Company               Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([status])
   @@index([reference])
@@ -3097,50 +3122,50 @@ model CompanyQuote {
 }
 
 model CompanyInvoice {
-  id                    String              @id @default(cuid())
-  companyId             String
-  invoiceNumber         String              @unique
-  status                CompanyInvoiceStatus @default(DRAFT)
-  
+  id            String               @id @default(cuid())
+  companyId     String
+  invoiceNumber String               @unique
+  status        CompanyInvoiceStatus @default(DRAFT)
+
   // Amounts (all in pence/GBP)
-  subtotalGBP           Int
-  vatGBP                Int
-  totalGBP              Int
-  paidAmountGBP         Int                 @default(0)
-  outstandingGBP        Int
-  
+  subtotalGBP    Int
+  vatGBP         Int
+  totalGBP       Int
+  paidAmountGBP  Int @default(0)
+  outstandingGBP Int
+
   // Dates
-  issueDate             DateTime            @default(now())
-  dueDate               DateTime
-  paidAt                DateTime?
-  
+  issueDate DateTime  @default(now())
+  dueDate   DateTime
+  paidAt    DateTime?
+
   // Payment details
   paymentMethod         String?
   paymentReference      String?
   stripePaymentIntentId String?
-  
+
   // B2B specific
-  poNumber              String?
-  costCenter            String?
-  billingPeriodStart    DateTime?
-  billingPeriodEnd      DateTime?
-  
+  poNumber           String?
+  costCenter         String?
+  billingPeriodStart DateTime?
+  billingPeriodEnd   DateTime?
+
   // PDF
-  pdfUrl                String?
-  pdfGeneratedAt        DateTime?
-  
-  notes                 String?
-  internalNotes         String?
-  
-  createdBy             String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  
+  pdfUrl         String?
+  pdfGeneratedAt DateTime?
+
+  notes         String?
+  internalNotes String?
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  Company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  CompanyInvoiceItem    CompanyInvoiceItem[]
-  CompanyPayment        CompanyPayment[]
-  
+  Company            Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  CompanyInvoiceItem CompanyInvoiceItem[]
+  CompanyPayment     CompanyPayment[]
+
   @@index([companyId])
   @@index([status])
   @@index([invoiceNumber])
@@ -3148,67 +3173,67 @@ model CompanyInvoice {
 }
 
 model CompanyInvoiceItem {
-  id              String          @id @default(cuid())
-  invoiceId       String
-  description     String
-  quantity        Int             @default(1)
-  unitPriceGBP    Int
-  totalGBP        Int
-  vatRate         Float           @default(0.20)
-  vatGBP          Int
-  bookingId       String?
-  serviceDate     DateTime?
-  createdAt       DateTime        @default(now())
-  
+  id           String    @id @default(cuid())
+  invoiceId    String
+  description  String
+  quantity     Int       @default(1)
+  unitPriceGBP Int
+  totalGBP     Int
+  vatRate      Float     @default(0.20)
+  vatGBP       Int
+  bookingId    String?
+  serviceDate  DateTime?
+  createdAt    DateTime  @default(now())
+
   // Relations
-  CompanyInvoice  CompanyInvoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  
+  CompanyInvoice CompanyInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
   @@index([invoiceId])
   @@index([bookingId])
 }
 
 model CompanyPayment {
-  id                    String              @id @default(cuid())
+  id                    String               @id @default(cuid())
   companyId             String
   invoiceId             String?
   amountGBP             Int
-  method                PaymentMethod       @default(stripe)
+  method                PaymentMethod        @default(stripe)
   status                CompanyPaymentStatus @default(PENDING)
   reference             String?
   stripePaymentIntentId String?
   stripeChargeId        String?
   failureReason         String?
   processedAt           DateTime?
-  refundedAmountGBP     Int                 @default(0)
+  refundedAmountGBP     Int                  @default(0)
   refundedAt            DateTime?
   notes                 String?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
   // Relations
-  CompanyInvoice        CompanyInvoice?     @relation(fields: [invoiceId], references: [id])
-  
+  CompanyInvoice CompanyInvoice? @relation(fields: [invoiceId], references: [id])
+
   @@index([companyId])
   @@index([invoiceId])
   @@index([status])
 }
 
 model CompanyInvitation {
-  id          String                    @id @default(cuid())
-  companyId   String
-  email       String
-  role        CompanyRole               @default(MEMBER)
-  token       String                    @unique
-  status      CompanyInvitationStatus   @default(PENDING)
-  invitedBy   String
-  expiresAt   DateTime
-  acceptedAt  DateTime?
-  acceptedBy  String?
-  createdAt   DateTime                  @default(now())
-  
+  id         String                  @id @default(cuid())
+  companyId  String
+  email      String
+  role       CompanyRole             @default(MEMBER)
+  token      String                  @unique
+  status     CompanyInvitationStatus @default(PENDING)
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  acceptedBy String?
+  createdAt  DateTime                @default(now())
+
   // Relations
-  Company     Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([email])
   @@index([token])
@@ -3216,23 +3241,23 @@ model CompanyInvitation {
 }
 
 model CompanyAuditLog {
-  id          String   @id @default(cuid())
-  companyId   String
-  actorId     String
-  actorType   String
-  action      String
-  targetType  String
-  targetId    String?
-  before      Json?
-  after       Json?
-  ip          String?
-  userAgent   String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  
+  id         String   @id @default(cuid())
+  companyId  String
+  actorId    String
+  actorType  String
+  action     String
+  targetType String
+  targetId   String?
+  before     Json?
+  after      Json?
+  ip         String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
   // Relations
-  Company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId, createdAt])
   @@index([actorId])
   @@index([action])
@@ -3256,75 +3281,91 @@ model CompanyDocument {
   notes       String?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
-  
+
   // Relations
-  Company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([type])
   @@index([status])
 }
 
 model CompanyContact {
-  id          String   @id @default(cuid())
-  companyId   String
-  name        String
-  email       String?
-  phone       String?
-  role        String?
-  department  String?
-  isPrimary   Boolean  @default(false)
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id         String   @id @default(cuid())
+  companyId  String
+  name       String
+  email      String?
+  phone      String?
+  role       String?
+  department String?
+  isPrimary  Boolean  @default(false)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   // Relations
-  Company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([isPrimary])
 }
 
+model CompanyMonthlyUsage {
+  id         String   @id @default(cuid())
+  companyId  String
+  monthKey   String // Format: "YYYY-MM" e.g. "2026-01"
+  orderCount Int      @default(0)
+  orderLimit Int // Snapshot of limit for this month
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, monthKey])
+  @@index([companyId])
+  @@index([monthKey])
+}
+
 model WebhookEndpoint {
-  id            String              @id @default(cuid())
+  id            String    @id @default(cuid())
   companyId     String
   url           String
   description   String?
   events        String[]
   secret        String
-  isActive      Boolean             @default(true)
-  failureCount  Int                 @default(0)
+  isActive      Boolean   @default(true)
+  failureCount  Int       @default(0)
   lastTriggered DateTime?
   lastSuccess   DateTime?
   lastFailure   DateTime?
   createdBy     String
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
   // Relations
-  Company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  WebhookLog    WebhookLog[]
-  
+  Company    Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  WebhookLog WebhookLog[]
+
   @@index([companyId])
   @@index([isActive])
 }
 
 model WebhookLog {
-  id              String          @id @default(cuid())
-  endpointId      String
-  event           String
-  payload         Json
-  responseStatus  Int?
-  responseBody    String?
-  responseMs      Int?
-  attempt         Int             @default(1)
-  success         Boolean
-  errorMessage    String?
-  createdAt       DateTime        @default(now())
-  
+  id             String   @id @default(cuid())
+  endpointId     String
+  event          String
+  payload        Json
+  responseStatus Int?
+  responseBody   String?
+  responseMs     Int?
+  attempt        Int      @default(1)
+  success        Boolean
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+
   // Relations
   WebhookEndpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
-  
+
   @@index([endpointId, createdAt])
   @@index([event])
   @@index([success])
@@ -3412,4 +3453,74 @@ enum CompanyDocumentType {
   CONTRACT
   PURCHASE_ORDER
   OTHER
+}
+
+// ============================================================================
+// B2B Applications
+// ============================================================================
+
+model B2BApplication {
+  id String @id @default(cuid())
+
+  // Company Details
+  companyName        String
+  legalName          String
+  registrationNumber String?
+  vatNumber          String?
+  industry           String
+  companySize        String
+  website            String?
+
+  // Contact Person
+  contactName  String
+  contactEmail String
+  contactPhone String
+  contactRole  String
+
+  // Address
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  postcode     String
+  country      String  @default("United Kingdom")
+
+  // Business Requirements
+  estimatedMonthlyBookings String
+  primaryUseCase           String
+  additionalNotes          String?
+
+  // Order Limit
+  requestedMonthlyOrderLimit Int?
+  approvedMonthlyOrderLimit  Int?
+
+  // Status & Processing
+  status          B2BApplicationStatus @default(PENDING)
+  reviewNotes     String?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  rejectionReason String?
+  processedAt     DateTime?
+  processedBy     String?
+
+  // Created Company (when approved)
+  companyId String?
+
+  // Agreement timestamps
+  acceptedTermsAt   DateTime?
+  acceptedPrivacyAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([contactEmail])
+  @@index([companyName])
+  @@index([createdAt])
+}
+
+enum B2BApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
 }

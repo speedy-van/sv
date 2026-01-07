@@ -36,7 +36,7 @@ const UpdateCompanySchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -44,7 +44,8 @@ export async function GET(
       return authResult;
     }
 
-    const company = await companyService.getById(params.id);
+    const { id } = await params;
+    const company = await companyService.getById(id);
 
     if (!company) {
       return NextResponse.json(
@@ -54,7 +55,7 @@ export async function GET(
     }
 
     // Get additional statistics
-    const statistics = await companyService.getStatistics(params.id);
+    const statistics = await companyService.getStatistics(id);
 
     return NextResponse.json({
       success: true,
@@ -74,7 +75,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -82,11 +83,12 @@ export async function PUT(
       return authResult;
     }
 
+    const { id } = await params;
     const body = await request.json();
     const data = UpdateCompanySchema.parse(body);
 
     // Check if company exists
-    const existing = await companyService.getById(params.id);
+    const existing = await companyService.getById(id);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Company not found' },
@@ -105,7 +107,7 @@ export async function PUT(
       }
     }
 
-    const company = await companyService.update(params.id, data, authResult.id);
+    const company = await companyService.update(id, data, authResult.id);
 
     return NextResponse.json({
       success: true,
@@ -131,7 +133,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAdmin(request);
@@ -139,11 +141,12 @@ export async function DELETE(
       return authResult;
     }
 
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action') || 'suspend';
     const reason = searchParams.get('reason') || 'Admin action';
 
-    const existing = await companyService.getById(params.id);
+    const existing = await companyService.getById(id);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Company not found' },
@@ -154,12 +157,12 @@ export async function DELETE(
     let company;
     if (action === 'close') {
       company = await companyService.update(
-        params.id,
+        id,
         { status: CompanyStatus.CLOSED },
         authResult.id
       );
     } else {
-      company = await companyService.suspend(params.id, reason, authResult.id);
+      company = await companyService.suspend(id, reason, authResult.id);
     }
 
     return NextResponse.json({

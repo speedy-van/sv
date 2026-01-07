@@ -8,6 +8,7 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import CompaniesListDashboard from '@/components/admin/b2b/CompaniesListDashboard';
 import { Skeleton } from '@/components/ui/skeleton';
+import AdminB2BPageShell from '@/components/admin/b2b/AdminB2BPageShell';
 
 export const metadata: Metadata = {
   title: 'B2B Companies | Admin Dashboard',
@@ -33,10 +34,10 @@ function LoadingSkeleton() {
 
 export default function B2BCompaniesPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <AdminB2BPageShell>
       <Suspense fallback={<LoadingSkeleton />}>
         <CompaniesListDashboard />
       </Suspense>
-    </div>
+    </AdminB2BPageShell>
   );
 }
