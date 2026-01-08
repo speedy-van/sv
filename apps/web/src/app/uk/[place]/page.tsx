@@ -25,6 +25,9 @@ export const revalidate = 86400; // 24h ISR - pages are cached after first reque
 // Do NOT pre-render any pages at build time to avoid Render timeout
 export const dynamicParams = true;
 
+// Force dynamic rendering to fix NoFallbackError
+export const dynamic = 'force-dynamic';
+
 // CRITICAL FIX: Return EMPTY array to prevent pre-rendering 700+ pages at build time
 // Pages will be generated on-demand (ISR) when first requested
 // This is the key fix for Render deployment timeouts

@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation';
 import LocationDeliveryPage from './LocationDeliveryPage';
 import { getLocationData, getAllLocationSlugs } from './locationData';
 
+// Force dynamic rendering for ISR
+export const dynamic = 'force-dynamic';
+export const revalidate = 86400; // 24h
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

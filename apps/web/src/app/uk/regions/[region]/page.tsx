@@ -4,6 +4,10 @@ import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import type { Metadata } from 'next';
 
+// Force dynamic rendering for ISR
+export const dynamic = 'force-dynamic';
+export const revalidate = 86400; // 24h
+
 interface RegionPageProps {
   params: Promise<{ region: string }>;
 }
