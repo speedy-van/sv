@@ -57,7 +57,7 @@ async function getDashboardData() {
       },
     },
     include: {
-      Driver: {
+      driver: {
         include: {
           User: {
             select: {

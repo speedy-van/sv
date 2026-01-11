@@ -1075,7 +1075,7 @@ function generateAdminWelcomeHTML(data: AdminWelcomeData): string {
                 ✓ Approved by Operation Manager
               </p>
               <p style="margin: 0; font-size: 16px; color: #2c3e50; font-weight: 600;">
-                Mr. Jewan Saleh
+                Mr. Ahmad Alwakai
               </p>
             </div>
           </div>

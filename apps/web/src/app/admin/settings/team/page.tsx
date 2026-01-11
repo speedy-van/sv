@@ -546,6 +546,7 @@ function UserModal({
                   placeholder={isEditing ? "Leave blank to keep current password" : "Enter password"}
                   minLength={8}
                   disabled={isEditing}
+                  autoComplete={isEditing ? "new-password" : "current-password"}
                 />
                 <FormHelperText>
                   {isEditing 

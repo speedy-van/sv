@@ -206,7 +206,10 @@ export const companyService = {
         take: limit,
       }),
       prisma.company.count({ where }),
-    ]);
+    ]).catch((error) => {
+      console.error('Company list query error:', error);
+      throw error;
+    });
 
     return {
       companies,

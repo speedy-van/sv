@@ -3,6 +3,17 @@ import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 import { getCustomSession } from '@/lib/custom-auth';
 
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(message: string, status: number = 500, code?: string) {
+    super(message);
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export interface AuthGuardOptions {
   requiredRoles?: string[];
   requireAuth?: boolean;
@@ -94,7 +105,6 @@ export async function getCurrentUserRole(): Promise<string | null> {
 
 // Direct requireRole function for API routes
 export async function requireRoleDirect(request: NextRequest, roles: string | string[]): Promise<{ id: string; email: string; name: string; role: string }> {
-  // Try custom session first (cookie-based auth)
   const customSession = await getCustomSession();
   
   if (customSession?.user) {
@@ -111,7 +121,7 @@ export async function requireRoleDirect(request: NextRequest, roles: string | st
         userRole,
         requiredRoles,
       });
-      throw new Error('Insufficient permissions');
+      throw new ApiError('Insufficient permissions', 403, 'FORBIDDEN');
     }
     
     return {
@@ -122,12 +132,11 @@ export async function requireRoleDirect(request: NextRequest, roles: string | st
     };
   }
   
-  // Fallback to NextAuth session
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
     console.log('❌ requireRoleDirect - No session found (neither custom nor NextAuth)');
-    throw new Error('Authentication required');
+    throw new ApiError('Authentication required', 401, 'AUTH_REQUIRED');
   }
 
   const userRole = session.user.role;
@@ -138,7 +147,7 @@ export async function requireRoleDirect(request: NextRequest, roles: string | st
       userRole,
       requiredRoles,
     });
-    throw new Error('Insufficient permissions');
+    throw new ApiError('Insufficient permissions', 403, 'FORBIDDEN');
   }
   
   return session.user;
@@ -157,6 +166,12 @@ export function withApiHandler(
     try {
       return await handler(req);
     } catch (error: any) {
+      if (error instanceof ApiError) {
+        return NextResponse.json(
+          { error: error.message, code: error.code },
+          { status: error.status }
+        );
+      }
       console.error('API handler error:', error);
       return NextResponse.json(
         { error: error.message || 'Internal server error' },
