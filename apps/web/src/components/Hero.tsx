@@ -87,8 +87,8 @@ const MotionButton = chakra(motion.button, {
 });
 
 const Hero: React.FC<HeroProps> = ({
-  title = "🚚 Move Fast, Move Smart with Speedy Van",
-  subtitle = "Professional van hire and moving services across the UK. Book in minutes, track in real-time, move with confidence.",
+  title = "Your Move, Made Easy",
+  subtitle = "Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK.",
   ctaText = "Book Your Move Now",
   ctaHref = "/booking-luxury",
   backgroundImage,

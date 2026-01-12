@@ -9,8 +9,8 @@ export default function FurnitureMoversPage() {
       <Container maxW="container.xl" py={16}>
         <VStack spacing={12}>
           <Box textAlign="center">
-            <Heading as="h1" size="2xl" mb={4}>Expert Furniture Movers for Your Home or Office</Heading>
-            <Text fontSize="xl" color="gray.600">Hire professional furniture movers for safe and reliable transport of your valuable items. Our expert team is trained to handle all types of furniture with care. Book your furniture moving service today.</Text>
+            <Heading as="h1" size="2xl" mb={4}>Furniture Moved Safely, Every Time</Heading>
+            <Text fontSize="xl" color="gray.600">Professional furniture movers from £79. Expert handling, fully insured, same-day available. Book your move today and relax.</Text>
           </Box>
 
           <Divider />

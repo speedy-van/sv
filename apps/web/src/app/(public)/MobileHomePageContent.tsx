@@ -24,6 +24,7 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import { motion, isValidMotionProp } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   FaTruck,
   FaClock,
@@ -40,10 +41,14 @@ import {
 import { SiAfterpay, SiKlarna } from 'react-icons/si';
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import dynamic from 'next/dynamic';
 
 // Lazy load non-critical components
 const HomeFooter = dynamic(() => import('@/components/site/HomeFooter'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const LiveBookingCounter = dynamic(() => import('@/components/LiveBookingCounter'), {
   ssr: false,
   loading: () => null,
 });
@@ -308,7 +313,7 @@ const MobileHero: React.FC = () => {
   const heroCtas = useMemo(() => createFadeInUp(prefersReducedMotion, 0.55, 18), [prefersReducedMotion]);
   const heroSubtitleWords = useMemo(
     () =>
-      'Facebook Marketplace & Gumtree pickup service. We collect from private sellers and deliver to your door. Sofas, beds, wardrobes — expert handling across the UK. Same day from £25/hour.'
+      'Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK.'
         .split(' '),
     []
   );
@@ -422,8 +427,7 @@ const MobileHero: React.FC = () => {
     overflow="hidden"
   >
         <VStack spacing={{ base: 6, md: 8 }} textAlign="center">
-          {/* Trust Indicators - Moved to top */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {/* Live Booking Counter */}
           <MotionBox
             initial="hidden"
             whileInView="show"
@@ -431,62 +435,9 @@ const MobileHero: React.FC = () => {
             viewport={viewportMotion}
             mt={{ base: 0, md: 12, lg: 28 }}
           >
-            <HStack spacing={3} justify="center" wrap="wrap" mb={4}>
-              {[ 
-                { label: 'Fully Insured', icon: FaShieldAlt, bg: 'rgba(0,209,143,0.9)', color: 'white' },
-                { label: '5-Star Rated', icon: FaStar, bg: 'rgba(255,193,7,0.9)', color: 'black' },
-                { label: '24/7 Support', icon: FaClock, bg: 'rgba(0,194,255,0.9)', color: 'white' },
-              ].map((badge, index) => (
-                <MotionBox
-                  key={badge.label}
-                  variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.05, 12)}
-                  animate={floatPulse(prefersReducedMotion)}
-                >
-                  <Badge
-                    colorScheme="green"
-                    position="relative"
-                    display="inline-flex"
-                    alignItems="center"
-                    gap={2}
-                    size="lg"
-                    px={{ base: 4, md: 5 }}
-                    py={{ base: 2, md: 3 }}
-                    borderRadius="full"
-                    bg={badge.bg}
-                    color={badge.color}
-                    fontSize={{ base: 'sm', md: 'md' }}
-                    fontWeight="extrabold"
-                    border="1px solid rgba(255,255,255,0.24)"
-                    boxShadow="0 12px 32px rgba(0,0,0,0.28), 0 0 22px rgba(0,194,255,0.25)"
-                    backdropFilter="blur(8px)"
-                    sx={{
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        inset: 0,
-                        borderRadius: 'full',
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02))',
-                        opacity: 0.65,
-                      },
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        inset: '-4px',
-                        borderRadius: 'full',
-                        border: '1px solid rgba(255,255,255,0.18)',
-                        opacity: 0.8,
-                        filter: 'blur(1px)',
-                      },
-                    }}
-                  >
-                    <Icon as={badge.icon} mr={2} boxSize={{ base: 3, md: 4 }} zIndex={1} />
-                    <Box as="span" position="relative" zIndex={1}>
-                      {badge.label}
-                    </Box>
-                  </Badge>
-                </MotionBox>
-              ))}
-            </HStack>
+            <Box>
+              <LiveBookingCounter />
+            </Box>
           </MotionBox>
 
           {/* Main Heading */}
@@ -507,10 +458,7 @@ const MobileHero: React.FC = () => {
               lineHeight="1.2"
               textShadow="0 2px 20px rgba(0,0,0,0.5)"
             >
-              Marketplace Pickup & Delivery
-              <Text as="span" display="block" color="cyan.400" mt={2} fontSize={{ base: 'lg', sm: 'xl', md: '2xl' }}>
-                Facebook • Gumtree • Private Sellers
-              </Text>
+              Your Move, Made Easy
             </Heading>
           </MotionBox>
 

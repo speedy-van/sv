@@ -102,7 +102,7 @@ export default function SofaDeliveryServicePage() {
               color="white"
               lineHeight="shorter"
             >
-              Sofa Delivery Service UK
+              Sofa Delivered, Stress-Free
             </Heading>
 
             <Text
@@ -110,8 +110,7 @@ export default function SofaDeliveryServicePage() {
               color="whiteAlpha.900"
               maxW="800px"
             >
-              Professional sofa collection and delivery across the UK. From 2-seater sofas to 
-              large corner units — we handle stairs, narrow doorways, and deliver to your living room.
+              Professional sofa delivery from just £79. 2-man team handles stairs, narrow doors, and room placement. Fully insured, same-day available.
             </Text>
 
             <HStack spacing={4} flexWrap="wrap" justify="center">

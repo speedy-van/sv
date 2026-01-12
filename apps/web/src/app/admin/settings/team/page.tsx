@@ -532,6 +532,7 @@ function UserModal({
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="Enter email address"
+                  autoComplete="username"
                 />
               </FormControl>
 

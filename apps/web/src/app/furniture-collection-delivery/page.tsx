@@ -105,7 +105,7 @@ export default function FurnitureCollectionDeliveryPage() {
               color="white"
               lineHeight="shorter"
             >
-              Furniture Collection & Delivery Service
+              Furniture Delivered, Hassle-Free
             </Heading>
 
             <Text
@@ -113,9 +113,7 @@ export default function FurnitureCollectionDeliveryPage() {
               color="whiteAlpha.900"
               maxW="800px"
             >
-              Professional door-to-door furniture collection from anywhere in the UK. 
-              Whether it's a sofa from a private seller, a bed from a friend, or a wardrobe from 
-              a charity shop — we collect and deliver with care.
+              Same-day furniture collection from just £49. We collect from anywhere in the UK and deliver to your door. Fully insured, 5-star service.
             </Text>
 
             <HStack spacing={4} flexWrap="wrap" justify="center">

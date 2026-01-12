@@ -104,7 +104,7 @@ export default function GumtreePickupDeliveryPage() {
               color="white"
               lineHeight="shorter"
             >
-              Gumtree Pickup & Delivery Service
+              Gumtree Bargains, Delivered Today
             </Heading>
 
             <Text
@@ -112,8 +112,7 @@ export default function GumtreePickupDeliveryPage() {
               color="whiteAlpha.900"
               maxW="800px"
             >
-              Found a bargain on Gumtree? We collect from private sellers across the UK and deliver 
-              straight to your home. Furniture, appliances, large items — all handled with care.
+              Same-day Gumtree pickup from just £25/hour. We collect from sellers and deliver to your door. Fully insured, 5-star rated service.
             </Text>
 
             <HStack spacing={4} flexWrap="wrap" justify="center">

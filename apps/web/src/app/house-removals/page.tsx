@@ -74,15 +74,11 @@ export default function HouseRemovalsPage() {
               maxW="900px"
               lineHeight="shorter"
             >
-              Professional House Removals
-              <Text as="span" display="block" color="blue.300">
-                Stress-Free Moving Across the UK
-              </Text>
+              Your Home, Moved Right
             </Heading>
 
             <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.300" maxW="700px">
-              Full-service house removals with professional packing, careful handling, 
-              and reliable delivery. From studio flats to 5-bedroom homes - we move you safely.
+              Full-service house removals from £299. Professional packing, careful handling, same-day available. Studio flats to 5-bedroom homes. Fully insured.
             </Text>
 
             <HStack spacing={4} pt={4} flexWrap="wrap" justify="center">

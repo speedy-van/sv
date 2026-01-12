@@ -79,15 +79,11 @@ export default function ManAndVanIndexPage() {
               </Badge>
               
               <Heading as="h1" size={{ base: 'xl', md: '3xl' }} fontWeight="bold" maxW="800px" lineHeight="shorter">
-                Professional Man and Van
-                <Text as="span" display="block" bgGradient="linear(to-r, blue.400, cyan.400)" bgClip="text">
-                  Services Across the UK
-                </Text>
+                Man & Van, Done Right
               </Heading>
               
               <Text fontSize={{ base: 'lg', md: 'xl' }} maxW="600px" color="gray.300">
-                Trusted by 50,000+ customers. Available 24/7 in {locations.length}+ UK locations.
-                Instant quotes, fully insured, from just £25/hour.
+                From just £25/hour. Trusted by 50,000+ customers. Available 24/7 across the UK. Instant quotes, fully insured, 5-star rated.
               </Text>
               
               <Flex wrap="wrap" gap={4} justify={{ base: 'center', md: 'start' }}>

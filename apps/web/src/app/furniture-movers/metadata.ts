@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Professional Furniture Movers UK | Safe & Reliable | Speedy Van',
-  description: 'Hire professional furniture movers for safe and reliable transport of your valuable items. Our expert team is trained to handle all types of furniture with care. Book your furniture moving service today.',
+  title: 'Furniture Moved Safely, Every Time | From £79 | Speedy Van',
+  description: 'Professional furniture movers from £79. Expert handling, fully insured, same-day available. Sofas, beds, wardrobes - all moved safely. Book today.',
   keywords: 'furniture movers, furniture moving service, professional furniture movers, hire furniture movers, local furniture movers, furniture transport service',
   alternates: { canonical: 'https://speedy-van.co.uk/furniture-movers' },
   openGraph: {

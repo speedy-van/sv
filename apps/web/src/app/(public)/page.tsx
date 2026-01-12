@@ -10,13 +10,13 @@ const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
 });
 
 export const metadata: Metadata = {
-  title: 'Facebook Marketplace Delivery | Furniture Collection & Man and Van UK',
-  description: 'Facebook Marketplace & Gumtree pickup service. We collect from private sellers and deliver to your door. Sofas, beds, wardrobes, appliances. Same day from £25/hour. Fully insured.',
-  keywords: 'Facebook Marketplace delivery, Gumtree pickup, collect from seller, furniture delivery, man and van London, sofa delivery, private seller collection, marketplace collection UK, furniture removal, door to door delivery',
+  title: 'Your Move, Made Easy | Same-Day Van Service from £25/hr | Speedy Van',
+  description: 'Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK. Fully insured, 5-star rated.',
+  keywords: 'same day van service, Facebook Marketplace delivery, Gumtree pickup, furniture removal, man and van UK, house removals, furniture delivery, marketplace collection, private seller pickup, £25 per hour',
   alternates: { canonical: 'https://speedy-van.co.uk/' },
   openGraph: {
-    title: 'Facebook Marketplace & Gumtree Pickup | Furniture Delivery UK',
-    description: 'We collect from Facebook Marketplace, Gumtree & private sellers and deliver to your door. Sofas, beds, wardrobes. Same day service from £25/hour.',
+    title: 'Your Move, Made Easy | Same-Day Van Service UK',
+    description: 'Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK.',
     url: 'https://speedy-van.co.uk/',
     siteName: 'Speedy Van',
     images: [
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@speedyvan',
     creator: '@speedyvan',
-    title: 'Facebook Marketplace & Gumtree Pickup | Speedy Van',
-    description: 'We collect from private sellers and deliver to your door. Sofas, beds, wardrobes. Same day service available.',
+    title: 'Your Move, Made Easy | Speedy Van',
+    description: 'Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK.',
   },
   appleWebApp: {
     capable: true,

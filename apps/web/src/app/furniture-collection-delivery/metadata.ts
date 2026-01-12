@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Furniture Collection & Delivery Service | Door-to-Door | Speedy Van',
+  title: 'Furniture Delivered, Hassle-Free | Same-Day Collection | Speedy Van',
   description:
-    'Professional furniture collection and delivery service across the UK. We collect sofas, beds, wardrobes from private sellers, stores, or friends and deliver to your door. Fully insured.',
+    'Same-day furniture collection from just £49. We collect from anywhere in the UK and deliver to your door. Fully insured, 5-star service.',
   keywords:
     'furniture collection, furniture delivery, door to door furniture, sofa collection, bed delivery, wardrobe collection, furniture transport UK, collect furniture from seller, furniture pickup service',
   alternates: {

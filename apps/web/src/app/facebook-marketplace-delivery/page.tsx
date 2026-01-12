@@ -36,9 +36,15 @@ import {
 } from 'react-icons/fi';
 import { FaFacebook, FaCouch, FaBed, FaBox } from 'react-icons/fa';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
+
+const LiveBookingCounter = dynamic(() => import('@/components/LiveBookingCounter'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const faqData = [
   {
@@ -108,7 +114,7 @@ export default function FacebookMarketplaceDeliveryPage() {
               color="white"
               lineHeight="shorter"
             >
-              Facebook Marketplace Pickup & Delivery
+              Found It? We'll Deliver It Today
             </Heading>
 
             <Text
@@ -116,8 +122,7 @@ export default function FacebookMarketplaceDeliveryPage() {
               color="whiteAlpha.900"
               maxW="800px"
             >
-              Bought something on Facebook Marketplace? We collect from the seller and deliver straight to your door. 
-              Sofas, beds, wardrobes, appliances — we handle it all with care.
+              Same-day Facebook Marketplace pickup from just £25/hour. We collect from sellers and deliver straight to your door. Fully insured, 5-star rated service.
             </Text>
 
             <HStack spacing={4} flexWrap="wrap" justify="center">
@@ -140,6 +145,11 @@ export default function FacebookMarketplaceDeliveryPage() {
                 </HStack>
               </Badge>
             </HStack>
+
+            {/* Live Booking Counter */}
+            <Box mt={4}>
+              <LiveBookingCounter />
+            </Box>
 
             <HStack spacing={4} mt={4}>
               <Button
