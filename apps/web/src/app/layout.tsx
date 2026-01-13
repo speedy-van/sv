@@ -13,6 +13,7 @@ import '@/styles/mobile-fixes.css';
 import '@/styles/mobile-viewport-fixes.css';
 import '@/styles/ios-overrides.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@/lib/suppress-storage-errors'; // Suppress SecurityError for storage in restricted contexts
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
 import { parseConsentCookie } from '@/lib/consent';
 import { cookies } from 'next/headers';

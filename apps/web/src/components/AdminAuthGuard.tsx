@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Spinner, Text } from '@chakra-ui/react';
+import { safeSessionStorageGetItem, safeSessionStorageRemoveItem, safeLocalStorageGetItem } from '@/lib/safe-storage';
 
 interface User {
   id: string;
@@ -32,22 +33,18 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
       
       // Try to get token with fallback options
       let token: string | null = null;
-      try {
-        if (typeof window !== 'undefined') {
-          // Try sessionStorage first
-          token = sessionStorage.getItem('auth-token');
-          // Fallback to localStorage
-          if (!token) {
-            token = localStorage.getItem('auth-token');
-          }
-          // Fallback to memory
-          if (!token && (window as any).__authToken) {
-            token = (window as any).__authToken;
-            console.log('📦 Using in-memory token');
-          }
+      if (typeof window !== 'undefined') {
+        // Try sessionStorage first
+        token = safeSessionStorageGetItem('auth-token');
+        // Fallback to localStorage
+        if (!token) {
+          token = safeLocalStorageGetItem('auth-token');
         }
-      } catch (error) {
-        console.error('❌ Storage access blocked:', error);
+        // Fallback to memory
+        if (!token && (window as any).__authToken) {
+          token = (window as any).__authToken;
+          console.log('📦 Using in-memory token');
+        }
       }
 
       if (!token) {
@@ -72,7 +69,7 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
 
         if (!res.ok || !data.valid) {
           console.log('❌ AdminAuthGuard: Invalid token, clearing and redirecting');
-          sessionStorage.removeItem('auth-token');
+          safeSessionStorageRemoveItem('auth-token');
           router.push('/auth/login');
           return;
         }
@@ -82,7 +79,7 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
         setIsAuthenticated(true);
       } catch (error) {
         console.error('❌ AdminAuthGuard: Auth check failed:', error);
-        sessionStorage.removeItem('auth-token');
+        safeSessionStorageRemoveItem('auth-token');
         router.push('/auth/login');
       } finally {
         setIsLoading(false);

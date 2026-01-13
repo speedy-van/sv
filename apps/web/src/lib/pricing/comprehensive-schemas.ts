@@ -236,6 +236,9 @@ export const ComprehensivePricingInputSchema = z.object({
 
   // Service configuration
   serviceLevel: z.enum(["economy", "standard", "premium"]).default("standard"),
+  
+  // NEW: Service tier (compatible with pricing package)
+  serviceTier: z.enum(["economy", "standard", "premium"]).optional(),
 
   // Time factors
   scheduledDate: z.string().datetime(), // ISO 8601 UTC

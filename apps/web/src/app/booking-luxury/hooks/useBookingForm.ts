@@ -224,6 +224,7 @@ const step1Schema = z.object({
   dropoffProperty: frontendPropertyDetailsSchema,
   items: z.array(itemSchema).min(1, 'Please select at least one item'),
   serviceType: serviceTypeSchema,
+  serviceTier: z.enum(['economy', 'standard', 'premium']).default('economy'), // Service tier for competitive pricing
   crewSize: crewSizeSchema, // Number of helpers/workers (1-4)
   collectionSource: collectionSourceSchema, // Where items are collected from
   marketplacePickup: marketplacePickupSchema, // Marketplace-specific details
@@ -346,6 +347,7 @@ const initialFormData: FormData = {
     },
     items: [],
     serviceType: 'standard',
+    serviceTier: 'economy', // Add the missing serviceTier field
     crewSize: '1', // Default to 1 man (driver only) - base price
     collectionSource: 'private-address', // Default to regular home/office
     marketplacePickup: {

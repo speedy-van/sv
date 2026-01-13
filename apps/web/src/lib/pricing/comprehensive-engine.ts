@@ -152,7 +152,7 @@ const DEFAULT_OPERATIONAL_CONFIG: OperationalPricingConfig = OperationalPricingC
 
   // Pricing rates (derived from operational insights)
   baseRates: {
-    perKm: 1.50,
+    perKm: 0.93,     // £1.50 per MILE converted to per KM (1.50 / 1.609 = 0.93)
     perMinute: 0.50,
     perKg: 0.08,
     perM3: 4.50,
@@ -971,8 +971,13 @@ export class ComprehensivePricingEngine {
     input: EnhancedPricingInput,
     config: OperationalPricingConfig
   ): ComprehensivePricingBreakdown {
-    // 1. Base fee (from operational insights)
-    const baseFee = config.baseRates.baseFee;
+    // 1. Base fee - TIER SPECIFIC (not flat £75!)
+    const baseFees = {
+      economy: 15,
+      standard: 22,
+      premium: 45
+    };
+    const baseFee = baseFees[input.serviceLevel as keyof typeof baseFees] || baseFees.economy;
 
     // 2. Items cost (weight + volume + fragility from Section 5 & 6)
     const itemsCost = items.reduce((sum, item) => sum + item.item_base_cost, 0);
@@ -1108,12 +1113,19 @@ export class ComprehensivePricingEngine {
     // Customer segment discounts
     const segmentDiscount = config.customerSegments[customerSegment as keyof typeof config.customerSegments]?.discount || 0;
 
-    const adjustedSubtotal = breakdown.subtotalBeforeVat * serviceMultiplier * (1 - segmentDiscount);
+    // ✅ CRITICAL FIX: Apply service multiplier ONLY to add-on costs (not base fee)
+    // Base fee is already tier-specific (£15/£22/£45)
+    // Service multiplier applies to items, distance, labor, time, surcharges
+    const addOnCosts = breakdown.itemsCost + breakdown.distanceCost + breakdown.laborCost + 
+                       breakdown.timeCost + breakdown.accessSurcharges;
+    
+    const adjustedAddOns = addOnCosts * serviceMultiplier;
+    const adjustedSubtotal = (breakdown.baseFee + adjustedAddOns - breakdown.multiDropDiscount) * (1 - segmentDiscount);
 
     return {
       ...breakdown,
       serviceMultiplier,
-      customerDiscount: breakdown.subtotalBeforeVat * segmentDiscount,
+      customerDiscount: adjustedSubtotal * segmentDiscount / (1 - segmentDiscount), // Recalculate
       subtotalBeforeVat: adjustedSubtotal,
       totalAmount: adjustedSubtotal
     };

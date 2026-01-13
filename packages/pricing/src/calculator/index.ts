@@ -4,7 +4,10 @@ import {
   PricingBreakdown,
   DistanceMatrix,
   VEHICLE_CAPACITIES,
+  VEHICLE_CAPACITIES_BY_TIER,
+  ServiceTier,
   ITEM_CATEGORY_MULTIPLIERS,
+  ITEM_CATEGORY_MULTIPLIERS_ECONOMY,
   URGENCY_MULTIPLIERS,
   VehicleCapacity,
   EnhancedPricingRequest,
@@ -25,15 +28,20 @@ export class PricingCalculator {
    * Calculate comprehensive pricing for a delivery request
    */
   async calculatePrice(request: PricingRequest): Promise<PricingResult> {
+    // Determine service tier (default to ECONOMY for competitive pricing)
+    const serviceTier = request.serviceTier || ServiceTier.ECONOMY;
+    
     // Get distance and duration
     const distanceMatrix = await this.calculateDistance( // DEPRECATED - internal pricing system only
       request.pickupLocation,
       request.deliveryLocation
     );
 
-    // Determine optimal vehicle type
-    const recommendedVehicle = this.determineVehicleType(request.items, request.vehicleType);
-    const vehicleCapacity = VEHICLE_CAPACITIES[recommendedVehicle];
+    // Determine optimal vehicle type with tier-specific capacities
+    const recommendedVehicle = this.determineVehicleType(request.items, request.vehicleType, serviceTier);
+    
+    // Get vehicle capacity for the selected tier
+    const vehicleCapacity = VEHICLE_CAPACITIES_BY_TIER[serviceTier][recommendedVehicle];
 
     // CRITICAL: Calculate capacity utilization to determine load type
     const capacityUtilization = this.calculateCapacityUtilization(
@@ -41,10 +49,10 @@ export class PricingCalculator {
       vehicleCapacity
     );
 
-    // Calculate individual price components
+    // Calculate individual price components using tier-specific pricing
     const basePrice = this.calculateBasePrice(vehicleCapacity);
     const distancePrice = this.calculateDistancePrice(distanceMatrix.distance, vehicleCapacity); // DEPRECATED - internal pricing system only
-    const itemsPrice = this.calculateItemsPrice(request.items);
+    const itemsPrice = this.calculateItemsPrice(request.items, serviceTier);
     const timePrice = this.calculateTimePrice(distanceMatrix.duration, vehicleCapacity);
     const urgencyPrice = this.calculateUrgencyPrice(
       basePrice + distancePrice + itemsPrice + timePrice,
@@ -71,6 +79,7 @@ export class PricingCalculator {
     // Debug logging for development
     if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PRICING === 'true') {
       console.log('🔍 Pricing breakdown debug:', {
+        serviceTier,
         basePrice,
         distancePrice,
         itemsPrice,
@@ -113,6 +122,7 @@ export class PricingCalculator {
       estimatedDuration: distanceMatrix.duration,
       recommendedVehicle,
       breakdown,
+      serviceTier,  // Include service tier in result
       capacityUtilization,
       multiDropDiscountApplied,
       multiDropDiscount,
@@ -131,24 +141,34 @@ export class PricingCalculator {
 
   /**
    * Calculate distance-based pricing
+   * CRITICAL: Distance must be in MILES (UK standard), not kilometers
    */
-  private calculateDistancePrice(distance: number, vehicleCapacity: VehicleCapacity): number { // DEPRECATED - internal pricing system only
-    return distance * vehicleCapacity.pricePerKm;
+  private calculateDistancePrice(distanceInKm: number, vehicleCapacity: VehicleCapacity): number { // DEPRECATED - internal pricing system only
+    // Convert KM to MILES for UK pricing (1 km = 0.621371 miles)
+    const distanceInMiles = distanceInKm * 0.621371;
+    
+    // pricePerKm in VehicleCapacity is actually pricePerMile (renamed for clarity)
+    return distanceInMiles * vehicleCapacity.pricePerKm;
   }
 
   /**
-   * Calculate items-based pricing
+   * Calculate items-based pricing with tier-specific multipliers
    */
-  private calculateItemsPrice(items: PricingRequest['items']): number {
+  private calculateItemsPrice(items: PricingRequest['items'], serviceTier: ServiceTier = ServiceTier.ECONOMY): number {
     let totalPrice = 0;
+    
+    // Select multipliers based on service tier
+    const multipliers = serviceTier === ServiceTier.ECONOMY 
+      ? ITEM_CATEGORY_MULTIPLIERS_ECONOMY 
+      : ITEM_CATEGORY_MULTIPLIERS;
 
     for (const item of items) {
-      const categoryMultiplier = ITEM_CATEGORY_MULTIPLIERS[item.category] || ITEM_CATEGORY_MULTIPLIERS[ItemCategory.OTHER] || 1.2;
-      const baseItemPrice = 5; // Base price per item
+      const categoryMultiplier = multipliers[item.category] || multipliers[ItemCategory.OTHER] || 1.2;
+      const baseItemPrice = 2; // Base price per item - reduced for competitive pricing
       
       // Debug item pricing calculation
       if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PRICING === 'true') {
-        console.log(`💰 Item pricing: ${item.category} (qty: ${item.quantity}) - multiplier: ${categoryMultiplier}`);
+        console.log(`💰 Item pricing (${serviceTier}): ${item.category} (qty: ${item.quantity}) - multiplier: ${categoryMultiplier}`);
       }
       
       let itemPrice = baseItemPrice * item.quantity * categoryMultiplier;
@@ -202,11 +222,12 @@ export class PricingCalculator {
   }
 
   /**
-   * Determine optimal vehicle type based on items
+   * Determine optimal vehicle type based on items (using tier-specific capacities)
    */
   private determineVehicleType(
     items: PricingRequest['items'],
-    preferredType?: VehicleType
+    preferredType?: VehicleType,
+    serviceTier: ServiceTier = ServiceTier.ECONOMY
   ): VehicleType {
     const totalWeight = items.reduce((sum, item) => sum + (item.weight || 0), 0);
     const totalVolume = items.reduce((sum, item) => {
@@ -216,9 +237,12 @@ export class PricingCalculator {
     }, 0);
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
+    // Use tier-specific capacities
+    const tierCapacities = VEHICLE_CAPACITIES_BY_TIER[serviceTier];
+
     // Check if preferred type can handle the load
     if (preferredType) {
-      const capacity = VEHICLE_CAPACITIES[preferredType];
+      const capacity = tierCapacities[preferredType];
       if (
         totalWeight <= capacity.maxWeight &&
         totalVolume <= capacity.maxVolume &&
@@ -232,7 +256,7 @@ export class PricingCalculator {
     const vehicleTypes = [VehicleType.PICKUP, VehicleType.VAN, VehicleType.TRUCK];
     
     for (const vehicleType of vehicleTypes) {
-      const capacity = VEHICLE_CAPACITIES[vehicleType];
+      const capacity = tierCapacities[vehicleType];
       if (
         totalWeight <= capacity.maxWeight &&
         totalVolume <= capacity.maxVolume &&

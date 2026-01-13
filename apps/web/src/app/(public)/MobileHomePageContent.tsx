@@ -41,6 +41,7 @@ import {
 import { SiAfterpay, SiKlarna } from 'react-icons/si';
 import { TouchButton } from '@/components/mobile/TouchOptimizedComponents';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import MarqueeText from '@/components/MarqueeText';
 
 // Lazy load non-critical components
 const HomeFooter = dynamic(() => import('@/components/site/HomeFooter'), {
@@ -215,6 +216,44 @@ const stats = [
   { number: '£50', label: 'From', icon: FaTruck, color: 'neon' },
 ];
 
+const seoServices = [
+  {
+    title: 'Furniture Transport',
+    description: 'Professional movers to transport sofas, tables, chairs and beds across England, Scotland, and Wales.',
+    icon: '🛋️',
+    color: 'blue',
+    link: '/furniture-removal',
+  },
+  {
+    title: 'Long Distance House Mover',
+    description: 'Stress-free house moves anywhere in the UK. Guaranteed best prices from £25/hour.',
+    icon: '🏠',
+    color: 'green',
+    link: '/house-removals',
+  },
+  {
+    title: 'Packers and Movers',
+    description: 'Expert packing and moving services. Get instant quotes and book today.',
+    icon: '📦',
+    color: 'purple',
+    link: '/man-and-van',
+  },
+  {
+    title: 'Removal Companies',
+    description: 'From small moves to large relocations. Affordable and reliable removal services.',
+    icon: '🚚',
+    color: 'orange',
+    link: '/office-removals',
+  },
+  {
+    title: 'Large Item Movers',
+    description: 'Specialist large item delivery. Serving all UK destinations with competitive rates.',
+    icon: '📏',
+    color: 'cyan',
+    link: '/single-item-delivery',
+  },
+];
+
 const commonItemImages = [
   {
     src: '/UK_Removal_Dataset/Images_Only/Living_room_Furniture/sofa_3_seat_fabric_modern_lestar_jpg_48kg.jpg',
@@ -311,12 +350,6 @@ const MobileHero: React.FC = () => {
   const heroHeadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.25, 26), [prefersReducedMotion]);
   const heroSubheadline = useMemo(() => createFadeInUp(prefersReducedMotion, 0.4, 20), [prefersReducedMotion]);
   const heroCtas = useMemo(() => createFadeInUp(prefersReducedMotion, 0.55, 18), [prefersReducedMotion]);
-  const heroSubtitleWords = useMemo(
-    () =>
-      'Same-day van service from just £25/hour. Facebook Marketplace pickups, furniture moves, and full house removals across the UK.'
-        .split(' '),
-    []
-  );
 
   return (
     <Box
@@ -462,8 +495,7 @@ const MobileHero: React.FC = () => {
             </Heading>
           </MotionBox>
 
-          {/* Subtitle */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {/* Moving Text Banner */}
           <MotionBox
             initial="hidden"
             whileInView="show"
@@ -471,79 +503,7 @@ const MobileHero: React.FC = () => {
             viewport={viewportMotion}
             mt={{ base: 4, md: 6 }}
           >
-            <Text
-              fontSize={{ base: 'md', md: 'xl' }}
-              maxW={{ base: '95%', md: '700px' }}
-              lineHeight={{ base: '1.7', md: '1.8' }}
-              fontWeight="medium"
-              letterSpacing="0.01em"
-              mx="auto"
-              sx={{
-                color: 'rgba(255,255,255,0.95)',
-                textShadow: '0 2px 10px rgba(0,0,0,0.4), 0 0 30px rgba(0,194,255,0.2)',
-                '& strong': {
-                  color: '#00E5FF',
-                  fontWeight: 'bold',
-                },
-              }}
-            >
-              {heroSubtitleWords.map((word, index) => {
-                const isHighlighted = ['London,', 'Manchester,', 'Birmingham,', 'Glasgow,', 'Edinburgh,', 'Cardiff,', 'Belfast,', '£25/hour'].includes(word);
-                const isPriceWord = word === '£25/hour';
-                return (
-                  <MotionText
-                    key={`${word}-${index}`}
-                    display="inline-block"
-                    mr={word.endsWith('.') ? 0 : 1}
-                    variants={createWordFade(prefersReducedMotion, 0.2 + index * 0.015)}
-                    sx={{
-                      color: isHighlighted ? '#00E5FF' : 'inherit',
-                      fontWeight: isHighlighted ? 'bold' : 'inherit',
-                      textShadow: isPriceWord 
-                        ? '0 0 20px rgba(0,229,255,0.6), 0 0 40px rgba(0,209,143,0.4)' 
-                        : 'inherit',
-                      background: isPriceWord 
-                        ? 'linear-gradient(135deg, #00E5FF, #00D18F)' 
-                        : 'none',
-                      WebkitBackgroundClip: isPriceWord ? 'text' : 'unset',
-                      WebkitTextFillColor: isPriceWord ? 'transparent' : 'unset',
-                      backgroundClip: isPriceWord ? 'text' : 'unset',
-                    }}
-                  >
-                    {word}
-                    {index < heroSubtitleWords.length - 1 ? ' ' : ''}
-                  </MotionText>
-                );
-              })}
-            </Text>
-          </MotionBox>
-
-          {/* SEO Text for UK Cities */}
-          <MotionBox
-            initial="hidden"
-            whileInView="show"
-            variants={heroSubheadline}
-            viewport={viewportMotion}
-          >
-            <Text
-              fontSize={{ base: 'sm', md: 'md' }}
-              maxW={{ base: '95%', md: '700px' }}
-              lineHeight="1.6"
-              fontWeight="medium"
-              mx="auto"
-              color="whiteAlpha.800"
-              textShadow="0 1px 8px rgba(0,0,0,0.4)"
-            >
-              Expert house removals, furniture delivery, and man and van services in{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">London</Text>,{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">Manchester</Text>,{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">Birmingham</Text>,{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">Glasgow</Text>,{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">Edinburgh</Text>,{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">Cardiff</Text>, and all UK cities.
-              Same day service from{' '}
-              <Text as="span" color="cyan.300" fontWeight="bold">£25/hour</Text> with fully insured drivers.
-            </Text>
+            {/* Subtitle removed */}
           </MotionBox>
 
           {/* Enhanced CTA Buttons */}
@@ -1155,6 +1115,139 @@ const MobileServices: React.FC = () => {
   );
 };
 
+// SEO Services Section
+const SEOServicesSection: React.FC = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const seoStagger = useMemo(() => createStaggerContainer(prefersReducedMotion, 0.12, 0.1), [prefersReducedMotion]);
+
+  return (
+    <Box className="seo-services" py={{ base: 12, md: 16 }} bg="transparent">
+      <Container maxW="container.xl">
+        <VStack spacing={8}>
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={createFadeInUp(prefersReducedMotion, 0.05, 18)}
+            viewport={viewportMotion}
+            textAlign="center"
+          >
+            <Heading
+              size={{ base: 'lg', md: 'xl' }}
+              mb={4}
+              color="text.primary"
+            >
+              Comprehensive Moving Solutions
+            </Heading>
+            <Text color="whiteAlpha.700" fontSize={{ base: 'md', md: 'lg' }}>
+              Expert services tailored to your moving needs
+            </Text>
+          </MotionBox>
+
+          <MotionBox
+            initial="hidden"
+            whileInView="show"
+            variants={seoStagger}
+            viewport={viewportMotion}
+            w="full"
+          >
+            <SimpleGrid
+              columns={{ base: 1, sm: 2, md: 3 }}
+              spacing={{ base: 4, md: 6 }}
+              w="full"
+            >
+              {seoServices.map((service, index) => (
+                <Link 
+                  key={index}
+                  href={service.link}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <MotionCard
+                    variants={createFadeInUp(prefersReducedMotion, 0.1 + index * 0.08, 16)}
+                    whileHover={hoverLift(prefersReducedMotion)}
+                    p={{ base: 6, md: 7 }}
+                    borderRadius="2xl"
+                    borderWidth="2px"
+                    borderColor="rgba(0,194,255,0.2)"
+                    bg="linear-gradient(135deg, rgba(0,0,0,0.95), rgba(15,23,42,0.95))"
+                    position="relative"
+                    overflow="hidden"
+                    boxShadow="0 10px 40px rgba(0,0,0,0.7)"
+                    transition="all 0.3s ease"
+                    cursor="pointer"
+                    _hover={{
+                      borderColor: 'rgba(0,229,255,0.6)',
+                      boxShadow: '0 0 40px rgba(0,194,255,0.5)',
+                      transform: 'translateY(-8px)',
+                    }}
+                    sx={{
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: `linear-gradient(90deg, transparent, rgba(0,229,255,0.8), transparent)`,
+                        opacity: 0,
+                        transition: 'opacity 0.3s',
+                      },
+                      '&:hover::before': {
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                  <VStack spacing={4} align="center" textAlign="center">
+                    {/* Icon */}
+                    <Box
+                      fontSize={{ base: '3xl', md: '4xl' }}
+                      w="70px"
+                      h="70px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      borderRadius="xl"
+                      bg={`linear-gradient(135deg, rgba(0,194,255,0.15), rgba(16,185,129,0.15))`}
+                      border="2px solid"
+                      borderColor={`rgba(0,229,255,0.3)`}
+                      boxShadow="0 4px 20px rgba(0,194,255,0.3)"
+                      transition="all 0.3s"
+                      _groupHover={{
+                        transform: 'scale(1.1) rotateY(10deg)',
+                        boxShadow: '0 8px 30px rgba(0,194,255,0.5)',
+                      }}
+                    >
+                      {service.icon}
+                    </Box>
+
+                    {/* Title */}
+                    <Heading 
+                      size={{ base: 'sm', md: 'md' }} 
+                      color="white"
+                      lineHeight="short"
+                    >
+                      {service.title}
+                    </Heading>
+
+                    {/* Description */}
+                    <Text
+                      color="gray.400"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      lineHeight="tall"
+                    >
+                      {service.description}
+                    </Text>
+                  </VStack>
+                </MotionCard>
+                </Link>
+              ))}
+            </SimpleGrid>
+          </MotionBox>
+        </VStack>
+      </Container>
+    </Box>
+  );
+};
+
 // Mobile Testimonials Section
 const MobileTestimonials: React.FC = () => {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -1511,6 +1604,11 @@ export default function MobileHomePageContent() {
       {/* Mobile Services */}
       <Box position="relative" zIndex={1}>
         <MobileServices />
+      </Box>
+
+      {/* SEO Services Section */}
+      <Box position="relative" zIndex={1}>
+        <SEOServicesSection />
       </Box>
 
       {/* Interactive Service Map */}

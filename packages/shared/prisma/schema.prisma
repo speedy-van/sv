@@ -2725,9 +2725,7 @@ enum RtwMethod {
 enum ServiceTier {
   economy
   standard
-  priority
-  express
-  luxury
+  premium
 }
 
 enum ShiftStatus {

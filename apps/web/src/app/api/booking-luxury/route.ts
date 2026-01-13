@@ -651,27 +651,39 @@ export async function POST(request: NextRequest) {
       fragile: item.fragile || false,
     }));
 
-    // Determine service type - prioritize frontend selection, fallback to urgency
+    // Determine service type - prioritize serviceTier, then serviceType, fallback to urgency
     let serviceType: 'ECONOMY' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE' = 'STANDARD';
     
-    // ✅ CRITICAL: Use serviceType from frontend (Step 3 selection) if provided
-    const frontendServiceType = bookingData.serviceType?.toLowerCase();
-    if (frontendServiceType === 'economy') {
+    // ✅ NEW: Priority 1 - Use serviceTier from new tier system (economy, standard, premium)
+    const serviceTier = bookingData.serviceTier?.toLowerCase();
+    if (serviceTier === 'economy') {
       serviceType = 'ECONOMY';
-    } else if (frontendServiceType === 'express' || frontendServiceType === 'priority') {
+    } else if (serviceTier === 'premium') {
       serviceType = 'PREMIUM';
-    } else if (frontendServiceType === 'standard') {
+    } else if (serviceTier === 'standard') {
       serviceType = 'STANDARD';
-    } else if (bookingData.urgency === 'same-day') {
-      // Fallback to urgency-based detection
-      serviceType = 'ENTERPRISE';
-    } else if (bookingData.urgency === 'next-day') {
-      serviceType = 'PREMIUM';
-    } else if (bookingData.urgency === 'scheduled') {
-      serviceType = 'ECONOMY';
+    } 
+    // ✅ Priority 2 - Legacy: Use serviceType from frontend (Step 3 selection) if provided
+    else {
+      const frontendServiceType = bookingData.serviceType?.toLowerCase();
+      if (frontendServiceType === 'economy') {
+        serviceType = 'ECONOMY';
+      } else if (frontendServiceType === 'express' || frontendServiceType === 'priority') {
+        serviceType = 'PREMIUM';
+      } else if (frontendServiceType === 'standard') {
+        serviceType = 'STANDARD';
+      } else if (bookingData.urgency === 'same-day') {
+        // Fallback to urgency-based detection
+        serviceType = 'ENTERPRISE';
+      } else if (bookingData.urgency === 'next-day') {
+        serviceType = 'PREMIUM';
+      } else if (bookingData.urgency === 'scheduled') {
+        serviceType = 'ECONOMY';
+      }
     }
     
     console.log('🎯 Service type determined:', {
+      serviceTier: bookingData.serviceTier,
       frontendServiceType: bookingData.serviceType,
       resolvedServiceType: serviceType,
       urgency: bookingData.urgency,

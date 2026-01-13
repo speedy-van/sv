@@ -22,7 +22,13 @@ import {
 import { keyframes } from '@emotion/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { FaShoppingCart, FaTimes, FaArrowRight, FaClock, FaCheck } from 'react-icons/fa';
-import { safeLocalStorageGetItem, safeLocalStorageRemoveItem } from '@/lib/safe-storage';
+import { 
+  safeLocalStorageGetItem, 
+  safeLocalStorageRemoveItem,
+  safeSessionStorageGetItem,
+  safeSessionStorageSetItem,
+  safeSessionStorageRemoveItem
+} from '@/lib/safe-storage';
 
 const STEP_KEY = 'sv_booking_luxury_last_step';
 const REF_KEY = 'sv_booking_luxury_reference';
@@ -43,7 +49,7 @@ export default function BookingInProgressPopup() {
     
     const ref = safeLocalStorageGetItem(REF_KEY);
     const stepRaw = safeLocalStorageGetItem(STEP_KEY);
-    const remindAtStr = sessionStorage.getItem(REMIND_LATER_KEY);
+    const remindAtStr = safeSessionStorageGetItem(REMIND_LATER_KEY);
     
     // Check if "Remind Later" was clicked and 5 minutes haven't passed yet
     if (remindAtStr) {
@@ -55,7 +61,7 @@ export default function BookingInProgressPopup() {
         return;
       } else {
         // Time has passed, clear the reminder
-        sessionStorage.removeItem(REMIND_LATER_KEY);
+        safeSessionStorageRemoveItem(REMIND_LATER_KEY);
       }
     }
     
@@ -128,11 +134,11 @@ export default function BookingInProgressPopup() {
     // Set a timestamp for when to remind (5 minutes from now)
     if (typeof window !== 'undefined') {
       const remindAt = Date.now() + REMIND_DELAY_MS;
-      sessionStorage.setItem(REMIND_LATER_KEY, remindAt.toString());
+      safeSessionStorageSetItem(REMIND_LATER_KEY, remindAt.toString());
       
       // Schedule the popup to reappear after 5 minutes
       setTimeout(() => {
-        sessionStorage.removeItem(REMIND_LATER_KEY);
+        safeSessionStorageRemoveItem(REMIND_LATER_KEY);
         checkBookingState();
       }, REMIND_DELAY_MS);
     }

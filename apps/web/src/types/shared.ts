@@ -86,6 +86,7 @@ export const createLuxuryBookingSchema = z.object({
   pickupTimeSlot: z.string().optional(),
   urgency: z.enum(['same-day', 'next-day', 'scheduled']).optional(),
   serviceType: z.enum(['economy', 'standard', 'express', 'priority']).optional(),
+  serviceTier: z.enum(['economy', 'standard', 'premium']).optional().default('economy'), // NEW: Service tier selection
   crewSize: z.enum(['1', '2', '3', '4']).optional(), // Number of helpers/workers
   notes: z.string().optional(),
   pricing: z.object({

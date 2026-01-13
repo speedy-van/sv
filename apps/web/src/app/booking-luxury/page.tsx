@@ -43,6 +43,7 @@ import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
+import ServiceTierSelector from './components/ServiceTierSelector';
 import { useBookingForm } from './hooks/useBookingForm';
 import FloatingActionButtons from './components/FloatingActionButtons';
 import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
@@ -491,6 +492,7 @@ function BookingLuxuryContent() {
           }],
           scheduledDate: segment.datetime || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           serviceLevel: actualServiceLevel,
+          serviceTier: formData.step1.serviceTier || 'economy', // ✅ NEW: Pass serviceTier for competitive pricing
           urgency: actualUrgency,
           timeSlot: formData.step1.pickupTimeSlot || 'flexible',
           // ✅ CRITICAL: Include crewSize for crew surcharge calculation
@@ -1018,6 +1020,7 @@ function BookingLuxuryContent() {
             return fallback();
           })(),
           serviceLevel: 'standard',
+          serviceTier: formData.step1.serviceTier || 'economy', // ✅ NEW: Pass serviceTier for competitive pricing
           // ✅ CRITICAL: Include crewSize for crew surcharge calculation
           // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
           crewSize: formData.step1.crewSize || '1'
@@ -2360,6 +2363,32 @@ function BookingLuxuryContent() {
             {currentStep === 2 && (
               <Box key="step2-items" w="full" data-booking-step="2">
                 <VStack spacing={6} align="stretch">
+                  {/* Service Tier Selection */}
+                  <Card
+                    bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
+                    backdropFilter="blur(20px)"
+                    borderRadius="2xl"
+                    border="3px solid"
+                    borderColor="rgba(59, 130, 246, 0.5)"
+                    boxShadow="0 10px 40px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
+                  >
+                    <CardBody p={{ base: 5, md: 7 }}>
+                      <ServiceTierSelector
+                        selectedTier={formData.step1.serviceTier || 'economy'}
+                        onSelectTier={(tier) => {
+                          updateFormData('step1', { serviceTier: tier });
+                          toast({
+                            title: 'Service Tier Updated',
+                            description: `Selected ${tier} tier`,
+                            status: 'success',
+                            duration: 2000,
+                          });
+                        }}
+                        disabled={false}
+                      />
+                    </CardBody>
+                  </Card>
+
                   {/* Date & Time Selection - Right Under Progress Bar */}
                   <Box
                     id="datetime-card"

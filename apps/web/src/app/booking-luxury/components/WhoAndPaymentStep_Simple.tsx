@@ -471,9 +471,17 @@ export default function WhoAndPaymentStepSimple({
 
   const handleSelectDay = useCallback((index: number) => {
     const target = priceCalendar[index];
-    if (!target) return;
+    console.log('📅 handleSelectDay called:', { index, target, currentSelectedDayKey: selectedDayKey });
+    if (!target) {
+      console.warn('⚠️ No target found at index:', index);
+      return;
+    }
     // Avoid unnecessary updates if already selected
-    if (selectedDayKey === target.key) return;
+    if (selectedDayKey === target.key) {
+      console.log('✓ Already selected, skipping');
+      return;
+    }
+    console.log('✅ Updating selection to:', target.key);
     setSelectedDayKey(target.key);
     updateFormData('step1', {
       pickupDate: target.key, // store date-only to avoid tz drift
@@ -528,8 +536,15 @@ export default function WhoAndPaymentStepSimple({
     return minIdx;
   }, [priceCalendar]);
 
-  const selectCheapest = () => handleSelectDay(cheapestIndex);
-  const selectEarliest = () => handleSelectDay(0);
+  const selectCheapest = useCallback(() => {
+    console.log('🔍 Best Price clicked - selecting index:', cheapestIndex);
+    handleSelectDay(cheapestIndex);
+  }, [cheapestIndex, handleSelectDay]);
+  
+  const selectEarliest = useCallback(() => {
+    console.log('⏰ Earliest clicked - selecting index: 0');
+    handleSelectDay(0);
+  }, [handleSelectDay]);
 
   // Show a concise window (up to 10 days) while keeping the selected day visible
   const visiblePriceCalendar = useMemo(() => {
@@ -920,57 +935,157 @@ export default function WhoAndPaymentStepSimple({
               {/* Header Section */}
               <VStack align="stretch" spacing={4}>
                 <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
-                  <VStack align="start" spacing={1}>
-                    <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="700" color="white">
-                      📅 Choose Your Moving Date
-                    </Text>
-                    <Text fontSize="sm" color="gray.400">
-                      Select the best date for your budget
-                    </Text>
+                  <VStack align="start" spacing={2}>
+                    <HStack spacing={3} align="center">
+                      <Box
+                        w="48px"
+                        h="48px"
+                        borderRadius="xl"
+                        bg="linear-gradient(135deg, rgba(59,130,246,0.2), rgba(16,185,129,0.2))"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        fontSize="24px"
+                        boxShadow="0 4px 12px rgba(59,130,246,0.3)"
+                      >
+                        📅
+                      </Box>
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="800" color="white" lineHeight="1.2">
+                          Choose Your Date
+                        </Text>
+                        <Text fontSize="sm" color="gray.400" fontWeight="500">
+                          Find the perfect day for your move
+                        </Text>
+                      </VStack>
+                    </HStack>
                   </VStack>
-                  <HStack spacing={2} flexWrap="wrap">
+                  <HStack spacing={3} flexWrap="wrap">
                     <Button 
-                      size="sm" 
-                      variant="outline" 
+                      size="md"
+                      h="44px"
+                      px={5}
+                      bg="linear-gradient(135deg, rgba(59,130,246,0.15), rgba(147,51,234,0.15))"
+                      border="1px solid"
+                      borderColor="rgba(147,51,234,0.4)"
+                      color="white"
                       onClick={selectEarliest}
-                      borderColor="gray.600"
-                      color="gray.300"
-                      _hover={{ bg: 'gray.700', borderColor: 'gray.500' }}
+                      leftIcon={<Text fontSize="lg">⏰</Text>}
+                      fontWeight="700"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      _hover={{ 
+                        bg: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(147,51,234,0.25))',
+                        borderColor: 'rgba(147,51,234,0.6)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 24px rgba(147,51,234,0.4)'
+                      }}
+                      _active={{ transform: 'translateY(0px)' }}
                     >
-                      ⏰ Earliest
+                      Earliest
                     </Button>
                     <Button 
-                      size="sm" 
-                      bg="green.500"
+                      size="md"
+                      h="44px"
+                      px={6}
+                      bg="linear-gradient(135deg, #10B981, #059669)"
                       color="white"
                       onClick={selectCheapest}
-                      _hover={{ bg: 'green.400' }}
-                      leftIcon={<Text>💰</Text>}
+                      leftIcon={<Text fontSize="lg">💰</Text>}
+                      fontWeight="700"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      boxShadow="0 4px 16px rgba(16,185,129,0.4)"
+                      _hover={{ 
+                        bg: 'linear-gradient(135deg, #059669, #047857)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 24px rgba(16,185,129,0.6)'
+                      }}
+                      _active={{ transform: 'translateY(0px)' }}
                     >
                       Best Price
                     </Button>
                   </HStack>
                 </HStack>
 
-                {/* Price Legend - Simplified */}
+                {/* Price Legend - Enhanced */}
                 <HStack 
-                  spacing={4} 
+                  spacing={{ base: 3, md: 6 }}
                   flexWrap="wrap" 
-                  p={3} 
-                  bg="rgba(0,0,0,0.3)" 
-                  borderRadius="lg"
+                  p={4}
+                  bg="linear-gradient(135deg, rgba(0,0,0,0.4), rgba(30,41,59,0.4))"
+                  borderRadius="xl"
+                  border="1px solid"
+                  borderColor="rgba(255,255,255,0.05)"
+                  backdropFilter="blur(10px)"
+                  justify={{ base: 'center', md: 'space-evenly' }}
                 >
-                  <HStack spacing={2}>
-                    <Box w="14px" h="14px" borderRadius="full" bg="green.400" boxShadow="0 0 10px rgba(16,185,129,0.5)" />
-                    <Text fontSize="xs" color="green.300" fontWeight="600">Best Value</Text>
+                  <HStack spacing={2.5}>
+                    <Box 
+                      w="18px" 
+                      h="18px" 
+                      borderRadius="full" 
+                      bg="linear-gradient(135deg, #10B981, #059669)" 
+                      boxShadow="0 0 16px rgba(16,185,129,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
+                      position="relative"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: 'full',
+                        bg: 'white',
+                        opacity: 0.7
+                      }}
+                    />
+                    <Text fontSize="sm" color="green.300" fontWeight="700" letterSpacing="wide">Best Value</Text>
                   </HStack>
-                  <HStack spacing={2}>
-                    <Box w="14px" h="14px" borderRadius="full" bg="orange.400" boxShadow="0 0 10px rgba(251,146,60,0.5)" />
-                    <Text fontSize="xs" color="orange.300" fontWeight="600">Standard</Text>
+                  <HStack spacing={2.5}>
+                    <Box 
+                      w="18px" 
+                      h="18px" 
+                      borderRadius="full" 
+                      bg="linear-gradient(135deg, #FB923C, #EA580C)" 
+                      boxShadow="0 0 16px rgba(251,146,60,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
+                      position="relative"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: 'full',
+                        bg: 'white',
+                        opacity: 0.7
+                      }}
+                    />
+                    <Text fontSize="sm" color="orange.300" fontWeight="700" letterSpacing="wide">Standard</Text>
                   </HStack>
-                  <HStack spacing={2}>
-                    <Box w="14px" h="14px" borderRadius="full" bg="red.400" boxShadow="0 0 10px rgba(248,113,113,0.5)" />
-                    <Text fontSize="xs" color="red.300" fontWeight="600">Peak Time</Text>
+                  <HStack spacing={2.5}>
+                    <Box 
+                      w="18px" 
+                      h="18px" 
+                      borderRadius="full" 
+                      bg="linear-gradient(135deg, #F87171, #DC2626)" 
+                      boxShadow="0 0 16px rgba(248,113,113,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
+                      position="relative"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: 'full',
+                        bg: 'white',
+                        opacity: 0.7
+                      }}
+                    />
+                    <Text fontSize="sm" color="red.300" fontWeight="700" letterSpacing="wide">Peak Time</Text>
                   </HStack>
                 </HStack>
               </VStack>
@@ -995,22 +1110,34 @@ export default function WhoAndPaymentStepSimple({
 
                   const colorScheme = {
                     cheap: {
-                      bg: 'linear-gradient(180deg, rgba(16,185,129,0.18), rgba(16,185,129,0.08))',
-                      border: isSelected ? 'green.400' : 'rgba(16,185,129,0.35)',
-                      glow: '0 0 16px rgba(16,185,129,0.35)',
+                      bg: 'linear-gradient(135deg, rgba(16,185,129,0.22), rgba(5,150,105,0.12))',
+                      bgHover: 'linear-gradient(135deg, rgba(16,185,129,0.28), rgba(5,150,105,0.18))',
+                      border: isSelected ? 'green.400' : 'rgba(16,185,129,0.4)',
+                      borderHover: 'rgba(16,185,129,0.6)',
+                      glow: '0 0 20px rgba(16,185,129,0.4)',
+                      glowHover: '0 0 28px rgba(16,185,129,0.6), 0 4px 20px rgba(16,185,129,0.3)',
                       textColor: 'green.300',
+                      iconBg: 'rgba(16,185,129,0.2)',
                     },
                     mid: {
-                      bg: 'linear-gradient(180deg, rgba(251,146,60,0.18), rgba(251,146,60,0.08))',
-                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.35)',
-                      glow: '0 0 16px rgba(251,146,60,0.35)',
+                      bg: 'linear-gradient(135deg, rgba(251,146,60,0.22), rgba(234,88,12,0.12))',
+                      bgHover: 'linear-gradient(135deg, rgba(251,146,60,0.28), rgba(234,88,12,0.18))',
+                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.4)',
+                      borderHover: 'rgba(251,146,60,0.6)',
+                      glow: '0 0 20px rgba(251,146,60,0.4)',
+                      glowHover: '0 0 28px rgba(251,146,60,0.6), 0 4px 20px rgba(251,146,60,0.3)',
                       textColor: 'orange.300',
+                      iconBg: 'rgba(251,146,60,0.2)',
                     },
                     expensive: {
-                      bg: 'linear-gradient(180deg, rgba(248,113,113,0.18), rgba(248,113,113,0.08))',
-                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.35)',
-                      glow: '0 0 16px rgba(248,113,113,0.35)',
+                      bg: 'linear-gradient(135deg, rgba(248,113,113,0.22), rgba(220,38,38,0.12))',
+                      bgHover: 'linear-gradient(135deg, rgba(248,113,113,0.28), rgba(220,38,38,0.18))',
+                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.4)',
+                      borderHover: 'rgba(248,113,113,0.6)',
+                      glow: '0 0 20px rgba(248,113,113,0.4)',
+                      glowHover: '0 0 28px rgba(248,113,113,0.6), 0 4px 20px rgba(248,113,113,0.3)',
                       textColor: 'red.300',
+                      iconBg: 'rgba(248,113,113,0.2)',
                     },
                   };
 
@@ -1024,31 +1151,63 @@ export default function WhoAndPaymentStepSimple({
                       w="100%"
                       textAlign="left"
                       p={{ base: 4, md: 5 }}
-                      borderRadius="xl"
-                      borderWidth="1px"
+                      borderRadius="2xl"
+                      borderWidth="2px"
                       borderColor={scheme.border}
                       bg={scheme.bg}
-                      boxShadow={isSelected ? scheme.glow : '0 6px 18px rgba(0,0,0,0.35)'}
-                      transition="all 0.2s ease"
+                      boxShadow={isSelected ? scheme.glow : '0 8px 24px rgba(0,0,0,0.4)'}
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       onClick={() => handleSelectDay(cardIndex)}
                       position="relative"
-                      minH="140px"
-                      _focusVisible={{ outline: '2px solid #3b82f6', outlineOffset: '2px' }}
-                      _active={{ transform: 'translateY(1px)' }}
+                      minH="150px"
+                      overflow="hidden"
+                      backdropFilter="blur(8px)"
+                      _before={{
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        bg: scheme.border,
+                        opacity: isSelected ? 1 : 0,
+                        transition: 'opacity 0.3s'
+                      }}
+                      _hover={{
+                        bg: scheme.bgHover,
+                        borderColor: scheme.borderHover,
+                        boxShadow: scheme.glowHover,
+                        transform: 'translateY(-4px) scale(1.02)',
+                        _before: { opacity: 1 }
+                      }}
+                      _focusVisible={{ outline: '3px solid #3b82f6', outlineOffset: '3px' }}
+                      _active={{ transform: 'translateY(-2px) scale(1.01)' }}
                     >
                       {isCheapest && (
                         <Badge
                           position="absolute"
                           top="10px"
                           right="10px"
-                          colorScheme="green"
+                          bg="linear-gradient(135deg, #10B981, #059669)"
+                          color="white"
                           borderRadius="full"
                           px={3}
                           py={1}
                           fontSize="xs"
                           fontWeight="800"
+                          boxShadow="0 4px 12px rgba(16,185,129,0.5), 0 0 0 3px rgba(16,185,129,0.2)"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                          animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+                          sx={{
+                            '@keyframes pulse': {
+                              '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                              '50%': { opacity: 0.9, transform: 'scale(1.05)' }
+                            }
+                          }}
                         >
-                          Best
+                          💰 Best
                         </Badge>
                       )}
 
@@ -1057,42 +1216,85 @@ export default function WhoAndPaymentStepSimple({
                           position="absolute"
                           top="10px"
                           left="10px"
-                          w="24px"
-                          h="24px"
+                          w="28px"
+                          h="28px"
                           borderRadius="full"
-                          bg="blue.500"
+                          bg="linear-gradient(135deg, #3B82F6, #2563EB)"
                           display="flex"
                           alignItems="center"
                           justifyContent="center"
-                          boxShadow="0 0 0 6px rgba(59,130,246,0.25)"
+                          boxShadow="0 0 0 4px rgba(59,130,246,0.3), 0 4px 12px rgba(59,130,246,0.4)"
+                          animation="checkmark-appear 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                          sx={{
+                            '@keyframes checkmark-appear': {
+                              '0%': { transform: 'scale(0)', opacity: 0 },
+                              '50%': { transform: 'scale(1.2)' },
+                              '100%': { transform: 'scale(1)', opacity: 1 }
+                            }
+                          }}
                         >
-                          <Text fontSize="sm">✓</Text>
+                          <Text fontSize="md" fontWeight="bold" color="white">✓</Text>
                         </Box>
                       )}
 
-                      <VStack align="stretch" spacing={2}>
-                        <VStack align="stretch" spacing={0}>
-                          <Text color="white" fontWeight="800" fontSize={{ base: 'md', md: 'lg' }} noOfLines={2}>
-                            {option.label}
-                          </Text>
-                          <Text color="gray.400" fontSize="xs" fontWeight="600">
-                            {option.weekday}
-                          </Text>
+                      <VStack align="stretch" spacing={3}>
+                        <VStack align="stretch" spacing={1}>
+                          <HStack spacing={2} align="center">
+                            <Text 
+                              color="white" 
+                              fontWeight="800" 
+                              fontSize={{ base: 'lg', md: 'xl' }} 
+                              noOfLines={1}
+                              flex="1"
+                            >
+                              {option.label}
+                            </Text>
+                          </HStack>
+                          <HStack spacing={2}>
+                            <Box
+                              px={2}
+                              py={0.5}
+                              bg={scheme.iconBg}
+                              borderRadius="md"
+                              border="1px solid"
+                              borderColor={scheme.border}
+                            >
+                              <Text color="gray.300" fontSize="xs" fontWeight="700" textTransform="uppercase">
+                                {option.weekday}
+                              </Text>
+                            </Box>
+                          </HStack>
                         </VStack>
 
-                        <Box pt={1}>
+                        <Divider borderColor="rgba(255,255,255,0.1)" />
+
+                        <VStack align="stretch" spacing={1}>
+                          <HStack justify="space-between" align="baseline">
+                            <Text fontSize="xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wider">
+                              Price
+                            </Text>
+                            <Badge
+                              fontSize="2xs"
+                              px={2}
+                              py={0.5}
+                              borderRadius="md"
+                              bg={scheme.iconBg}
+                              color={scheme.textColor}
+                              fontWeight="800"
+                            >
+                              {level === 'cheap' ? '🎯 BEST VALUE' : level === 'expensive' ? '⚡ PEAK' : '📊 STANDARD'}
+                            </Badge>
+                          </HStack>
                           <Text 
-                            fontSize={{ base: '2xl', md: '28px' }} 
+                            fontSize={{ base: '3xl', md: '32px' }} 
                             fontWeight="900" 
                             color="white"
-                            lineHeight="1.1"
+                            lineHeight="1"
+                            letterSpacing="tight"
                           >
                             £{option.price.toFixed(2)}
                           </Text>
-                          <Text fontSize="xs" color={scheme.textColor} fontWeight="700">
-                            {level === 'cheap' ? 'Best value' : level === 'expensive' ? 'Peak' : 'Standard'}
-                          </Text>
-                        </Box>
+                        </VStack>
                       </VStack>
                     </Box>
                   );
@@ -1100,56 +1302,104 @@ export default function WhoAndPaymentStepSimple({
               </Grid>
 
               {effectiveIsMobile && displayedPriceCalendar.length < visiblePriceCalendar.length && (
-                <Box w="full" display="flex" justifyContent="center" mt={3}>
+                <Box w="full" display="flex" justifyContent="center" mt={4}>
                   <Button
-                    colorScheme="purple"
+                    bg="linear-gradient(135deg, rgba(124,58,237,0.2), rgba(147,51,234,0.2))"
+                    border="2px solid"
+                    borderColor="purple.400"
+                    color="white"
                     size="lg"
-                    borderRadius="full"
-                    boxShadow="0 12px 28px rgba(124, 58, 237, 0.45)"
+                    h="52px"
+                    px={8}
+                    borderRadius="xl"
+                    fontWeight="700"
+                    fontSize="md"
+                    boxShadow="0 8px 24px rgba(124, 58, 237, 0.4)"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                     onClick={() =>
                       setMobilePriceCardLimit((prev) =>
                         Math.min(prev + 6, visiblePriceCalendar.length)
                       )
                     }
                     w="100%"
+                    leftIcon={<Text fontSize="lg">📅</Text>}
+                    _hover={{
+                      bg: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(147,51,234,0.3))',
+                      borderColor: 'purple.300',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 32px rgba(124, 58, 237, 0.6)'
+                    }}
+                    _active={{ transform: 'translateY(0px)' }}
                   >
-                    Load more dates
+                    Load more dates ({visiblePriceCalendar.length - displayedPriceCalendar.length} remaining)
                   </Button>
                 </Box>
               )}
               
-              {/* Selection Confirmation */}
+              {/* Selection Confirmation - Enhanced */}
               {selectedPriceOption && (
                 <Box 
-                  p={4} 
-                  bg="rgba(59, 130, 246, 0.15)" 
+                  p={5} 
+                  bg="linear-gradient(135deg, rgba(59,130,246,0.2), rgba(16,185,129,0.15))"
                   borderRadius="xl"
-                  border="1px solid"
-                  borderColor="rgba(59, 130, 246, 0.3)"
+                  border="2px solid"
+                  borderColor="rgba(59, 130, 246, 0.4)"
+                  boxShadow="0 8px 24px rgba(59,130,246,0.3)"
+                  position="relative"
+                  overflow="hidden"
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    bgGradient: 'linear(to-r, blue.400, green.400)',
+                  }}
                 >
-                  <HStack justify="space-between" align="center" flexWrap="wrap" gap={2}>
+                  <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
                     <HStack spacing={3}>
                       <Box 
-                        w="40px" 
-                        h="40px" 
-                        borderRadius="full" 
-                        bg="blue.500" 
+                        w="48px" 
+                        h="48px" 
+                        borderRadius="xl" 
+                        bg="linear-gradient(135deg, #3B82F6, #10B981)"
                         display="flex" 
                         alignItems="center" 
                         justifyContent="center"
+                        boxShadow="0 4px 12px rgba(59,130,246,0.4)"
                       >
-                        <Text fontSize="lg">📅</Text>
+                        <Text fontSize="20px">✓</Text>
                       </Box>
-                      <VStack align="start" spacing={0}>
-                        <Text color="gray.400" fontSize="xs">Your selected date</Text>
-                        <Text color="white" fontWeight="700" fontSize="md">
-                          {selectedPriceOption.label} ({selectedPriceOption.weekday})
+                      <VStack align="start" spacing={0.5}>
+                        <Text color="gray.300" fontSize="xs" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                          Selected Date
                         </Text>
+                        <Text color="white" fontWeight="800" fontSize={{ base: 'md', md: 'lg' }}>
+                          {selectedPriceOption.label}
+                        </Text>
+                        <Badge 
+                          colorScheme="blue" 
+                          fontSize="xs"
+                          px={2}
+                          py={0.5}
+                          borderRadius="md"
+                        >
+                          {selectedPriceOption.weekday}
+                        </Badge>
                       </VStack>
                     </HStack>
-                    <VStack align="end" spacing={0}>
-                      <Text color="gray.400" fontSize="xs">Total Price</Text>
-                      <Text color="green.400" fontWeight="800" fontSize="xl">
+                    <VStack align="end" spacing={0.5}>
+                      <Text color="gray.300" fontSize="xs" fontWeight="600" textTransform="uppercase" letterSpacing="wide">
+                        Total Price
+                      </Text>
+                      <Text 
+                        color="white" 
+                        fontWeight="900" 
+                        fontSize={{ base: '2xl', md: '3xl' }}
+                        lineHeight="1"
+                        textShadow="0 2px 8px rgba(16,185,129,0.5)"
+                      >
                         £{selectedPriceOption.price.toFixed(2)}
                       </Text>
                     </VStack>
@@ -1166,28 +1416,71 @@ export default function WhoAndPaymentStepSimple({
           border="1px solid"
           borderColor="rgba(59, 130, 246, 0.2)"
           borderRadius="2xl"
-          backdropFilter="blur(10px)"
+          backdropFilter="blur(20px)"
+          overflow="hidden"
+          position="relative"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            bgGradient: 'linear(to-r, blue.400, purple.400)',
+          }}
         >
           <CardBody p={{ base: 6, md: 8 }}>
             <VStack spacing={6} align="stretch">
-              <Text fontSize="lg" fontWeight="600" color="white">
-                Your Information
-              </Text>
+              <HStack spacing={3} align="center">
+                <Box
+                  w="44px"
+                  h="44px"
+                  borderRadius="xl"
+                  bg="linear-gradient(135deg, rgba(59,130,246,0.2), rgba(147,51,234,0.2))"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  fontSize="20px"
+                  boxShadow="0 4px 12px rgba(59,130,246,0.3)"
+                >
+                  👤
+                </Box>
+                <VStack align="start" spacing={0}>
+                  <Text fontSize="xl" fontWeight="800" color="white" lineHeight="1.2">
+                    Your Information
+                  </Text>
+                  <Text fontSize="sm" color="gray.400" fontWeight="500">
+                    We need these details to contact you
+                  </Text>
+                </VStack>
+              </HStack>
 
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5}>
                 <FormControl isInvalid={!!errors['step2.customerDetails.firstName']}>
-                  <FormLabel color="white" fontSize="sm">First Name</FormLabel>
+                  <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                    👤 First Name
+                  </FormLabel>
                   <Input
                     placeholder="John"
                     value={formData.step2.customerDetails.firstName || ''}
                     onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    border="1px solid"
+                    bg="rgba(0, 0, 0, 0.4)"
+                    border="2px solid"
                     borderColor="rgba(59, 130, 246, 0.3)"
                     color="white"
                     size="lg"
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                    h="50px"
+                    borderRadius="xl"
+                    fontSize="md"
+                    fontWeight="500"
+                    transition="all 0.2s"
+                    _placeholder={{ color: 'gray.500' }}
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                    _focus={{ 
+                      borderColor: 'blue.500', 
+                      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
+                      bg: 'rgba(0, 0, 0, 0.5)'
+                    }}
                   />
                   {errors['step2.customerDetails.firstName'] && (
                     <FormErrorMessage>{errors['step2.customerDetails.firstName']}</FormErrorMessage>
@@ -1195,18 +1488,30 @@ export default function WhoAndPaymentStepSimple({
                 </FormControl>
 
                 <FormControl isInvalid={!!errors['step2.customerDetails.lastName']}>
-                  <FormLabel color="white" fontSize="sm">Last Name</FormLabel>
+                  <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                    👤 Last Name
+                  </FormLabel>
                   <Input
                     placeholder="Doe"
                     value={formData.step2.customerDetails.lastName || ''}
                     onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    border="1px solid"
+                    bg="rgba(0, 0, 0, 0.4)"
+                    border="2px solid"
                     borderColor="rgba(59, 130, 246, 0.3)"
                     color="white"
                     size="lg"
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                    _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                    h="50px"
+                    borderRadius="xl"
+                    fontSize="md"
+                    fontWeight="500"
+                    transition="all 0.2s"
+                    _placeholder={{ color: 'gray.500' }}
+                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                    _focus={{ 
+                      borderColor: 'blue.500', 
+                      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
+                      bg: 'rgba(0, 0, 0, 0.5)'
+                    }}
                   />
                   {errors['step2.customerDetails.lastName'] && (
                     <FormErrorMessage>{errors['step2.customerDetails.lastName']}</FormErrorMessage>
@@ -1215,19 +1520,31 @@ export default function WhoAndPaymentStepSimple({
               </SimpleGrid>
 
               <FormControl isInvalid={!!errors['step2.customerDetails.email']}>
-                <FormLabel color="white" fontSize="sm">Email Address</FormLabel>
+                <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                  ✉️ Email Address
+                </FormLabel>
                 <Input
                   type="email"
                   placeholder="john.doe@example.com"
                   value={formData.step2.customerDetails.email || ''}
                   onChange={(e) => updateCustomerDetails('email', e.target.value)}
-                  bg="rgba(0, 0, 0, 0.3)"
-                  border="1px solid"
+                  bg="rgba(0, 0, 0, 0.4)"
+                  border="2px solid"
                   borderColor="rgba(59, 130, 246, 0.3)"
                   color="white"
                   size="lg"
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  h="50px"
+                  borderRadius="xl"
+                  fontSize="md"
+                  fontWeight="500"
+                  transition="all 0.2s"
+                  _placeholder={{ color: 'gray.500' }}
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                  _focus={{ 
+                    borderColor: 'blue.500', 
+                    boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
+                    bg: 'rgba(0, 0, 0, 0.5)'
+                  }}
                 />
                 {errors['step2.customerDetails.email'] && (
                   <FormErrorMessage>{errors['step2.customerDetails.email']}</FormErrorMessage>
@@ -1235,19 +1552,31 @@ export default function WhoAndPaymentStepSimple({
               </FormControl>
 
               <FormControl isInvalid={!!errors['step2.customerDetails.phone']}>
-                <FormLabel color="white" fontSize="sm">Phone Number</FormLabel>
+                <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                  📞 Phone Number
+                </FormLabel>
                 <Input
                   type="tel"
                   placeholder="+44 1234 567890"
                   value={formData.step2.customerDetails.phone || ''}
                   onChange={(e) => updateCustomerDetails('phone', e.target.value)}
-                  bg="rgba(0, 0, 0, 0.3)"
-                  border="1px solid"
+                  bg="rgba(0, 0, 0, 0.4)"
+                  border="2px solid"
                   borderColor="rgba(59, 130, 246, 0.3)"
                   color="white"
                   size="lg"
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  h="50px"
+                  borderRadius="xl"
+                  fontSize="md"
+                  fontWeight="500"
+                  transition="all 0.2s"
+                  _placeholder={{ color: 'gray.500' }}
+                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                  _focus={{ 
+                    borderColor: 'blue.500', 
+                    boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
+                    bg: 'rgba(0, 0, 0, 0.5)'
+                  }}
                 />
                 {errors['step2.customerDetails.phone'] && (
                   <FormErrorMessage>{errors['step2.customerDetails.phone']}</FormErrorMessage>
@@ -1475,46 +1804,6 @@ export default function WhoAndPaymentStepSimple({
                     </AlertTitle>
                     <AlertDescription color="yellow.50" fontSize="sm">
                       Please provide your full pickup and drop-off address with postcode. City or town alone will not generate a price.
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              )}
-
-              {capacityCheck && (
-                <Alert
-                  status={(capacityCheck.vansRequired || 1) > 1 ? "error" : "warning"}
-                  variant="subtle"
-                  bg={(capacityCheck.vansRequired || 1) > 1 ? "rgba(239, 68, 68, 0.12)" : "rgba(251, 191, 36, 0.12)"}
-                  border="1px solid"
-                  borderColor={(capacityCheck.vansRequired || 1) > 1 ? "red.400" : "yellow.400"}
-                  borderRadius="lg"
-                >
-                  <AlertIcon />
-                  <Box>
-                    <AlertTitle color="white" fontSize="sm">
-                      Capacity check {(routeSummary?.stops?.length || 0) > 1 ? `(multi-drop: ${(routeSummary?.stops?.length || 1) - 1} drop${(routeSummary?.stops?.length || 1) - 1 === 1 ? '' : 's'})` : ''}
-                    </AlertTitle>
-                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
-                      <Text>
-                        Weight {capacityCheck.weightUtilization?.toFixed?.(0) ?? capacityCheck.weightUtilization ?? 0}% · Volume {capacityCheck.volumeUtilization?.toFixed?.(0) ?? capacityCheck.volumeUtilization ?? 0}% · Items {capacityCheck.itemUtilization?.toFixed?.(0) ?? capacityCheck.itemUtilization ?? 0}%
-                      </Text>
-                      {capacityCheck.vansRequired ? (
-                        <Text mt={1} fontWeight="bold" color={(capacityCheck.vansRequired || 1) > 1 ? "red.200" : "yellow.100"}>
-                          Requires {capacityCheck.vansRequired} van{capacityCheck.vansRequired === 1 ? '' : 's'}
-                        </Text>
-                      ) : null}
-                      {capacityCheck.warnings && capacityCheck.warnings.length > 0 && (
-                        <Text mt={1} color="yellow.100">
-                          {capacityCheck.warnings.slice(0, 2).join(' • ')}
-                          {capacityCheck.warnings.length > 2 ? ' …' : ''}
-                        </Text>
-                      )}
-                      {capacityCheck.recommendations && capacityCheck.recommendations.length > 0 && (
-                        <Text mt={1} color="blue.100">
-                          {capacityCheck.recommendations.slice(0, 2).join(' • ')}
-                          {capacityCheck.recommendations.length > 2 ? ' …' : ''}
-                        </Text>
-                      )}
                     </AlertDescription>
                   </Box>
                 </Alert>
@@ -1762,71 +2051,127 @@ export default function WhoAndPaymentStepSimple({
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
 
-              {/* Terms & Conditions */}
-              <VStack spacing={3} align="start">
-                <Checkbox
-                  isChecked={acceptedTerms}
-                  onChange={(e) => {
-                    const isMobile = window.innerWidth < 768;
-                    const scrollY = isMobile ? window.scrollY : undefined;
-                    setAcceptedTerms(e.target.checked);
-                    if (isMobile && scrollY !== undefined) {
-                      requestAnimationFrame(() => {
-                        window.scrollTo(0, scrollY);
-                      });
-                    }
-                  }}
-                  colorScheme="blue"
-                  color="gray.300"
-                  fontSize="sm"
-                >
-                  I accept the{' '}
-                  <Text 
-                    as="span" 
-                    color="blue.400" 
-                    textDecoration="underline" 
-                    cursor="pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open('/terms', '_blank');
-                    }}
+              {/* Terms & Conditions - Enhanced Design */}
+              <VStack 
+                spacing={4} 
+                align="start"
+                p={4}
+                bg="linear-gradient(135deg, rgba(59,130,246,0.08), rgba(147,51,234,0.08))"
+                borderRadius="xl"
+                border="1px solid"
+                borderColor="rgba(59,130,246,0.2)"
+              >
+                <HStack spacing={2} mb={1}>
+                  <Box
+                    w="32px"
+                    h="32px"
+                    borderRadius="lg"
+                    bg="linear-gradient(135deg, rgba(59,130,246,0.3), rgba(147,51,234,0.3))"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    fontSize="16px"
                   >
-                    Terms and Conditions
+                    📋
+                  </Box>
+                  <Text fontSize="md" fontWeight="700" color="white">
+                    Legal Requirements
                   </Text>
-                </Checkbox>
+                </HStack>
+                
+                <VStack spacing={3} align="start" w="full">
+                  <Box
+                    w="full"
+                    p={3}
+                    borderRadius="lg"
+                    bg="rgba(0,0,0,0.2)"
+                    border="1px solid"
+                    borderColor={acceptedTerms ? "green.400" : "rgba(255,255,255,0.1)"}
+                    transition="all 0.3s"
+                  >
+                    <Checkbox
+                      isChecked={acceptedTerms}
+                      onChange={(e) => {
+                        const isMobile = window.innerWidth < 768;
+                        const scrollY = isMobile ? window.scrollY : undefined;
+                        setAcceptedTerms(e.target.checked);
+                        if (isMobile && scrollY !== undefined) {
+                          requestAnimationFrame(() => {
+                            window.scrollTo(0, scrollY);
+                          });
+                        }
+                      }}
+                      colorScheme="blue"
+                      color="white"
+                      fontSize="sm"
+                      fontWeight="500"
+                      size="lg"
+                    >
+                      I accept the{' '}
+                      <Text 
+                        as="span" 
+                        color="blue.400" 
+                        textDecoration="underline" 
+                        cursor="pointer"
+                        fontWeight="700"
+                        _hover={{ color: 'blue.300' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open('/terms', '_blank');
+                        }}
+                      >
+                        Terms and Conditions
+                      </Text>
+                    </Checkbox>
+                  </Box>
 
-                <Checkbox
-                  isChecked={acceptedPrivacy}
-                  onChange={(e) => {
-                    const isMobile = window.innerWidth < 768;
-                    const scrollY = isMobile ? window.scrollY : undefined;
-                    setAcceptedPrivacy(e.target.checked);
-                    if (isMobile && scrollY !== undefined) {
-                      requestAnimationFrame(() => {
-                        window.scrollTo(0, scrollY);
-                      });
-                    }
-                  }}
-                  colorScheme="blue"
-                  color="gray.300"
-                  fontSize="sm"
-                >
-                  I have read the{' '}
-                  <Text 
-                    as="span" 
-                    color="blue.400" 
-                    textDecoration="underline" 
-                    cursor="pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      window.open('/privacy', '_blank');
-                    }}
+                  <Box
+                    w="full"
+                    p={3}
+                    borderRadius="lg"
+                    bg="rgba(0,0,0,0.2)"
+                    border="1px solid"
+                    borderColor={acceptedPrivacy ? "green.400" : "rgba(255,255,255,0.1)"}
+                    transition="all 0.3s"
                   >
-                    Privacy Policy
-                  </Text>
-                </Checkbox>
+                    <Checkbox
+                      isChecked={acceptedPrivacy}
+                      onChange={(e) => {
+                        const isMobile = window.innerWidth < 768;
+                        const scrollY = isMobile ? window.scrollY : undefined;
+                        setAcceptedPrivacy(e.target.checked);
+                        if (isMobile && scrollY !== undefined) {
+                          requestAnimationFrame(() => {
+                            window.scrollTo(0, scrollY);
+                          });
+                        }
+                      }}
+                      colorScheme="blue"
+                      color="white"
+                      fontSize="sm"
+                      fontWeight="500"
+                      size="lg"
+                    >
+                      I have read the{' '}
+                      <Text 
+                        as="span" 
+                        color="blue.400" 
+                        textDecoration="underline" 
+                        cursor="pointer"
+                        fontWeight="700"
+                        _hover={{ color: 'blue.300' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open('/privacy', '_blank');
+                        }}
+                      >
+                        Privacy Policy
+                      </Text>
+                    </Checkbox>
+                  </Box>
+                </VStack>
               </VStack>
 
               {/* Stripe Payment Button - Use actual component */}
@@ -1879,7 +2224,9 @@ export default function WhoAndPaymentStepSimple({
                   !formData.step2.customerDetails.firstName ||
                   !formData.step2.customerDetails.lastName ||
                   !formData.step2.customerDetails.email ||
-                  !formData.step2.customerDetails.phone
+                  !formData.step2.customerDetails.phone ||
+                  !acceptedTerms ||
+                  !acceptedPrivacy
                 }
                 onBookingCreated={handleBookingCreated}
                 onSuccess={(sessionId) => {
