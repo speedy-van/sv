@@ -90,7 +90,7 @@ describe('WhoAndPaymentStep - Critical Components', () => {
  * Integration test helper
  * Run this in browser console to verify critical components exist
  */
-export function verifyCriticalComponents(): void {
+export function verifyCriticalComponents(): boolean {
   const criticalElements = [
     {
       testId: 'booking-reference-alert',
