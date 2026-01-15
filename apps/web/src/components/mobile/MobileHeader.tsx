@@ -89,7 +89,7 @@ export default function MobileHeader() {
         backdropFilter="blur(10px)"
         borderBottom="1px solid rgba(55, 65, 81, 0.8)"
         px={3}
-        py={2}
+        py={1}
         zIndex={1000}
         boxShadow="0 2px 12px rgba(0,0,0,0.4)"
         suppressHydrationWarning
@@ -107,13 +107,13 @@ export default function MobileHeader() {
           }
         }}
       >
-        <Flex justify="space-between" align="center" h="56px">
+        <Flex justify="space-between" align="center" h="42px">
           {/* Logo */}
           <Link href="/" _hover={{ textDecoration: 'none' }}>
             <Box
               position="relative"
-              w="65px"
-              h="65px"
+              w="42px"
+              h="42px"
               borderRadius="full"
               overflow="hidden"
               _before={{
@@ -170,7 +170,7 @@ export default function MobileHeader() {
               }}
               suppressHydrationWarning
             >
-              <FiMessageCircle size={20} />
+              <FiMessageCircle size={18} />
             </Box>
             
             {/* WhatsApp Button - Icon Only */}
@@ -199,7 +199,7 @@ export default function MobileHeader() {
               }}
               suppressHydrationWarning
             >
-              <FaWhatsapp size={20} />
+              <FaWhatsapp size={18} />
             </Box>
             
             {/* Call Now Button - Icon Only */}
@@ -207,9 +207,9 @@ export default function MobileHeader() {
               as="a"
               href="tel:+441202129746"
               aria-label="Call now"
-              w="42px"
-              h="42px"
-              minW="42px"
+              w="38px"
+              h="38px"
+              minW="38px"
               bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
               color="white"
               boxShadow="0 3px 10px rgba(16, 185, 129, 0.35)"
@@ -237,9 +237,9 @@ export default function MobileHeader() {
               aria-label="Open menu"
               bg="rgba(31, 41, 55, 0.95)"
               color="white"
-              w="42px"
-              h="42px"
-              minW="42px"
+              w="38px"
+              h="38px"
+              minW="38px"
               borderRadius="full"
               boxShadow="0 2px 8px rgba(0, 0, 0, 0.15)"
               display="flex"

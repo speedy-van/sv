@@ -15,8 +15,6 @@ import '@/styles/ios-overrides.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@/lib/suppress-storage-errors'; // Suppress SecurityError for storage in restricted contexts
 import { ConsentProvider } from '@/components/Consent/ConsentProvider';
-import { parseConsentCookie } from '@/lib/consent';
-import { cookies } from 'next/headers';
 import AnalyticsScripts from '@/components/Consent/AnalyticsScripts';
 import Providers from '@/components/Providers';
 // import MotionProvider from '@/components/MotionProvider'; // Temporarily removed due to framer-motion export * issue
@@ -121,16 +119,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let initialConsent = null;
+  // Consent is now handled entirely client-side in ConsentProvider
+  // This allows static generation of all pages for better performance
   
-  try {
-    const cookieStore = await cookies();
-    initialConsent = parseConsentCookie(cookieStore.get('sv_consent')?.value);
-  } catch (error) {
-    console.error('Error reading cookies in RootLayout:', error);
-    // Continue with null consent - ConsentProvider will handle this gracefully
-  }
-
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning translate="no">
       <head>
@@ -188,7 +179,7 @@ export default async function RootLayout({
         <StructuredData type="moving-company" />
         <SchemaProvider>
           <Providers>
-            <ConsentProvider initialConsent={initialConsent}>
+            <ConsentProvider>
               <AnalyticsScripts />
               <Script
                 id="cookie-bar-viewport-adjust"

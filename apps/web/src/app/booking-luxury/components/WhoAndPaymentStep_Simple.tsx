@@ -4,6 +4,30 @@
  * Step 3: Customer Details & Payment - Simplified Version
  * Updated: 2025-11-20 - Enhanced toggle button UX
  * Clean, modern design like Uber/Airbnb
+ * 
+ * ⚠️⚠️⚠️ CRITICAL WARNINGS - READ BEFORE EDITING ⚠️⚠️⚠️
+ * 
+ * This file contains CRITICAL UI components that MUST NOT be deleted:
+ * 
+ * 1. BOOKING REFERENCE ALERT (line ~995):
+ *    - Shows booking reference number to customer
+ *    - Has data-testid="booking-reference-alert"
+ *    - DO NOT DELETE - breaks booking tracking system
+ * 
+ * 2. PRICE CALENDAR CARDS (line ~1050):
+ *    - 14-day pricing calendar
+ *    - Core booking selection interface
+ * 
+ * 3. ADDRESS WARNING (line ~1790):
+ *    - Warns when postcode is missing
+ * 
+ * Before deleting ANY component:
+ * - Check for data-critical="true" attribute
+ * - Check for console.error warnings
+ * - See: apps/web/src/app/booking-luxury/CRITICAL_COMPONENTS.md
+ * 
+ * If you accidentally delete a critical component, check git history:
+ * git log -p -S "bookingReference" -- "WhoAndPaymentStep_Simple.tsx"
  */
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
@@ -65,6 +89,7 @@ import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
 import SelectedItemsManager from './SelectedItemsManager';
+import OrbitingIconsAnimation from './OrbitingIconsAnimation';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -109,11 +134,29 @@ export default function WhoAndPaymentStepSimple({
   const [promotionCode, setPromotionCode] = useState('');
   const [isValidatingPromotion, setIsValidatingPromotion] = useState(false);
   const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
+  const [pricingStage, setPricingStage] = useState<'calculating' | 'results'>('calculating');
+  const [visibleCardsCount, setVisibleCardsCount] = useState(0);
   const toast = useToast();
   const isIOSDevice = useIsIOSDevice();
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
   const [isMobileView, setIsMobileView] = useState(false);
   const [mobilePriceCardLimit, setMobilePriceCardLimit] = useState(6);
+
+  // ⚠️ CRITICAL: Safety check for booking reference card visibility
+  useEffect(() => {
+    if (formData.step2.bookingReference) {
+      const alertElement = document.querySelector('[data-testid="booking-reference-alert"]');
+      if (!alertElement) {
+        console.error(
+          '🚨 CRITICAL BUG: Booking reference exists but alert card is not rendered!',
+          '\n   Reference:', formData.step2.bookingReference,
+          '\n   This means the booking reference card was deleted or hidden.',
+          '\n   Location: WhoAndPaymentStep_Simple.tsx line ~995',
+          '\n   Fix: Check if Alert with data-testid="booking-reference-alert" exists'
+        );
+      }
+    }
+  }, [formData.step2.bookingReference]);
 
   // Handle promotion code application
   const handleApplyPromotionCode = async () => {
@@ -221,7 +264,6 @@ export default function WhoAndPaymentStepSimple({
   const prevItemsRef = useRef<string>('');
   const prevCrewSizeRef = useRef<string>('');
   const isRecalculatingRef = useRef(false);
-  const bookingReference = formData.step2.bookingReference;
 
   const handleBookingCreated = useCallback(({ bookingId, reference }: { bookingId: string; reference: string }) => {
     updateFormData('step2', { bookingId, bookingReference: reference });
@@ -546,35 +588,18 @@ export default function WhoAndPaymentStepSimple({
     handleSelectDay(0);
   }, [handleSelectDay]);
 
-  // Show a concise window (up to 10 days) while keeping the selected day visible
+  // ✅ Show 2 weeks (14 days) - earlier dates cheaper, later dates available
   const visiblePriceCalendar = useMemo(() => {
     if (!priceCalendar.length) return [];
-    const maxDays = Math.min(priceCalendar.length, 21);
-    const base = priceCalendar.slice(0, maxDays);
-    if (selectedDayKey) {
-      const sel = priceCalendar.find((p) => p.key === selectedDayKey);
-      if (sel && !base.find((p) => p.iso === sel.iso)) {
-        return [sel, ...base].slice(0, maxDays);
-      }
-    }
-    return base;
-  }, [priceCalendar, selectedDayKey]);
+    
+    // Show first 14 days (2 weeks)
+    return priceCalendar.slice(0, 14);
+  }, [priceCalendar]);
 
-  // Limit visible price cards on mobile and allow incremental loading
-  useEffect(() => {
-    const total = priceCalendar.length || 0;
-    if (!effectiveIsMobile) {
-      setMobilePriceCardLimit(total);
-      return;
-    }
-    // On mobile, always start with first 6 (or fewer if not available)
-    setMobilePriceCardLimit(Math.min(6, total));
-  }, [effectiveIsMobile, priceCalendar.length]);
-
+  // ✅ LUXURY APPROACH: Always show all 3 cards (no pagination needed)
   const displayedPriceCalendar = useMemo(() => {
-    if (!effectiveIsMobile) return visiblePriceCalendar;
-    return visiblePriceCalendar.slice(0, mobilePriceCardLimit);
-  }, [effectiveIsMobile, mobilePriceCardLimit, visiblePriceCalendar]);
+    return visiblePriceCalendar; // Always show all 3 curated options
+  }, [visiblePriceCalendar]);
 
   // Debug logging only in development mode to reduce console noise
   if (process.env.NODE_ENV === 'development') {
@@ -906,32 +931,178 @@ export default function WhoAndPaymentStepSimple({
     }
   }, [formData.step2.customerDetails, updateFormData]);
   
+  // Auto-start orbit animation on mount, then gradually show cards
+  useEffect(() => {
+    // Reset visible cards
+    setVisibleCardsCount(0);
+    
+    // Show 3 cards after 3 seconds
+    const timer1 = setTimeout(() => {
+      setVisibleCardsCount(3);
+      setPricingStage('results');
+    }, 3000);
+    
+    // Show 4 cards after 4 seconds
+    const timer2 = setTimeout(() => {
+      setVisibleCardsCount(4);
+    }, 4000);
+    
+    // Show 5 cards after 5 seconds
+    const timer3 = setTimeout(() => {
+      setVisibleCardsCount(5);
+    }, 5000);
+    
+    // Show 6 cards after 6 seconds
+    const timer4 = setTimeout(() => {
+      setVisibleCardsCount(6);
+    }, 6000);
+    
+    // Show all cards after 7 seconds
+    const timer5 = setTimeout(() => {
+      setVisibleCardsCount(999); // Show all
+    }, 7000);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+      clearTimeout(timer5);
+    };
+  }, []); // Run only once on mount
+
+  // Re-trigger orbit animation when items or addresses change
+  useEffect(() => {
+    const itemsKey = JSON.stringify(
+      (formData.step1.items || []).map((item: any) => ({ id: item.id, quantity: item.quantity }))
+    );
+    const addressKey = `${formData.step1.pickupAddress?.postcode}-${formData.step1.dropoffAddress?.postcode}`;
+    
+    // Skip first render (already handled by mount effect)
+    if (prevItemsRef.current !== '' || prevCrewSizeRef.current !== '') {
+      // Reset to calculating stage
+      setPricingStage('calculating');
+      setVisibleCardsCount(0);
+      
+      // Show 3 cards after 3 seconds
+      const timer1 = setTimeout(() => {
+        setVisibleCardsCount(3);
+        setPricingStage('results');
+      }, 3000);
+      
+      // Show 4 cards after 4 seconds
+      const timer2 = setTimeout(() => {
+        setVisibleCardsCount(4);
+      }, 4000);
+      
+      // Show 5 cards after 5 seconds
+      const timer3 = setTimeout(() => {
+        setVisibleCardsCount(5);
+      }, 5000);
+      
+      // Show 6 cards after 6 seconds
+      const timer4 = setTimeout(() => {
+        setVisibleCardsCount(6);
+      }, 6000);
+      
+      // Show all cards after 7 seconds
+      const timer5 = setTimeout(() => {
+        setVisibleCardsCount(999);
+      }, 7000);
+      
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+        clearTimeout(timer4);
+        clearTimeout(timer5);
+      };
+    }
+  }, [
+    formData.step1.items,
+    formData.step1.pickupAddress?.postcode,
+    formData.step1.dropoffAddress?.postcode,
+  ]);
+
   return (
     <Box w="full">
       <VStack spacing={6} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* CARD 1: Date-based pricing list - Enhanced Design */}
-        <Card
-          bg="rgba(17, 24, 39, 0.95)"
-          border="1px solid"
-          borderColor="rgba(59, 130, 246, 0.3)"
-          borderRadius="2xl"
-          backdropFilter="blur(20px)"
-          overflow="hidden"
-          position="relative"
-          _before={{
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            bgGradient: 'linear(to-r, blue.400, cyan.400, green.400)',
-          }}
-        >
-          <CardBody p={{ base: 5, md: 8 }}>
-            <VStack spacing={6} align="stretch">
+        {/* ⚠️ CRITICAL: Booking Reference Alert - DO NOT DELETE OR MOVE
+            This card MUST always be visible when bookingReference exists.
+            It allows customers and admins to track the booking before payment.
+            Deleting this breaks the entire booking flow tracking system. */}
+        {formData.step2.bookingReference && (
+          <Alert
+            status="info"
+            variant="subtle"
+            bg="rgba(59, 130, 246, 0.12)"
+            border="1px solid"
+            borderColor="blue.400"
+            borderRadius="lg"
+            data-testid="booking-reference-alert"
+            data-critical="true"
+          >
+            <AlertIcon />
+            <Box>
+              <AlertTitle color="white" fontSize="sm">
+                Booking reference (pending payment)
+              </AlertTitle>
+              <AlertDescription color="whiteAlpha.900" fontSize="sm">
+                {formData.step2.bookingReference} — share this with admin to view or modify before payment.
+              </AlertDescription>
+            </Box>
+          </Alert>
+        )}
+
+        {/* STATE 1: CALCULATING - Show ONLY gears + text during calculating */}
+        {pricingStage === 'calculating' && (
+          <Card
+            bg="rgba(17, 24, 39, 0.95)"
+            border="2px solid"
+            borderColor="rgba(124, 58, 237, 0.4)"
+            borderRadius="2xl"
+            backdropFilter="blur(20px)"
+            overflow="hidden"
+            boxShadow="0 8px 32px rgba(124,58,237,0.3)"
+          >
+            <OrbitingIconsAnimation duration={2.5} />
+          </Card>
+        )}
+
+        {/* STATE 2: RESULTS - Price cards ONLY (no orbit animation) */}
+        {pricingStage === 'results' && (
+          <VStack spacing={6} align="stretch">
+          <Box
+            animation="fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1)"
+            sx={{
+              '@keyframes fadeInUp': {
+                '0%': { opacity: 0, transform: 'translateY(20px)' },
+                '100%': { opacity: 1, transform: 'translateY(0)' },
+              },
+            }}
+          >
+            <Card
+              bg="rgba(17, 24, 39, 0.95)"
+              border="1px solid"
+              borderColor="rgba(59, 130, 246, 0.3)"
+              borderRadius="2xl"
+              backdropFilter="blur(20px)"
+              overflow="hidden"
+              position="relative"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '4px',
+                bgGradient: 'linear(to-r, blue.400, cyan.400, green.400)',
+              }}
+            >
+              <CardBody p={{ base: 5, md: 8 }}>
+                <VStack spacing={6} align="stretch">
               {/* Header Section */}
               <VStack align="stretch" spacing={4}>
                 <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
@@ -960,153 +1131,40 @@ export default function WhoAndPaymentStepSimple({
                       </VStack>
                     </HStack>
                   </VStack>
-                  <HStack spacing={3} flexWrap="wrap">
-                    <Button 
-                      size="md"
-                      h="44px"
-                      px={5}
-                      bg="linear-gradient(135deg, rgba(59,130,246,0.15), rgba(147,51,234,0.15))"
-                      border="1px solid"
-                      borderColor="rgba(147,51,234,0.4)"
-                      color="white"
-                      onClick={selectEarliest}
-                      leftIcon={<Text fontSize="lg">⏰</Text>}
-                      fontWeight="700"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      _hover={{ 
-                        bg: 'linear-gradient(135deg, rgba(59,130,246,0.25), rgba(147,51,234,0.25))',
-                        borderColor: 'rgba(147,51,234,0.6)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 24px rgba(147,51,234,0.4)'
-                      }}
-                      _active={{ transform: 'translateY(0px)' }}
-                    >
-                      Earliest
-                    </Button>
-                    <Button 
-                      size="md"
-                      h="44px"
-                      px={6}
-                      bg="linear-gradient(135deg, #10B981, #059669)"
-                      color="white"
-                      onClick={selectCheapest}
-                      leftIcon={<Text fontSize="lg">💰</Text>}
-                      fontWeight="700"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      boxShadow="0 4px 16px rgba(16,185,129,0.4)"
-                      _hover={{ 
-                        bg: 'linear-gradient(135deg, #059669, #047857)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 24px rgba(16,185,129,0.6)'
-                      }}
-                      _active={{ transform: 'translateY(0px)' }}
-                    >
-                      Best Price
-                    </Button>
-                  </HStack>
                 </HStack>
 
-                {/* Price Legend - Enhanced */}
-                <HStack 
-                  spacing={{ base: 3, md: 6 }}
-                  flexWrap="wrap" 
+                {/* Price Legend - Simplified for 3-tier approach */}
+                <Box
                   p={4}
                   bg="linear-gradient(135deg, rgba(0,0,0,0.4), rgba(30,41,59,0.4))"
                   borderRadius="xl"
                   border="1px solid"
                   borderColor="rgba(255,255,255,0.05)"
                   backdropFilter="blur(10px)"
-                  justify={{ base: 'center', md: 'space-evenly' }}
                 >
-                  <HStack spacing={2.5}>
-                    <Box 
-                      w="18px" 
-                      h="18px" 
-                      borderRadius="full" 
-                      bg="linear-gradient(135deg, #10B981, #059669)" 
-                      boxShadow="0 0 16px rgba(16,185,129,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
-                      position="relative"
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: 'full',
-                        bg: 'white',
-                        opacity: 0.7
-                      }}
-                    />
-                    <Text fontSize="sm" color="green.300" fontWeight="700" letterSpacing="wide">Best Value</Text>
-                  </HStack>
-                  <HStack spacing={2.5}>
-                    <Box 
-                      w="18px" 
-                      h="18px" 
-                      borderRadius="full" 
-                      bg="linear-gradient(135deg, #FB923C, #EA580C)" 
-                      boxShadow="0 0 16px rgba(251,146,60,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
-                      position="relative"
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: 'full',
-                        bg: 'white',
-                        opacity: 0.7
-                      }}
-                    />
-                    <Text fontSize="sm" color="orange.300" fontWeight="700" letterSpacing="wide">Standard</Text>
-                  </HStack>
-                  <HStack spacing={2.5}>
-                    <Box 
-                      w="18px" 
-                      h="18px" 
-                      borderRadius="full" 
-                      bg="linear-gradient(135deg, #F87171, #DC2626)" 
-                      boxShadow="0 0 16px rgba(248,113,113,0.6), inset 0 1px 2px rgba(255,255,255,0.3)"
-                      position="relative"
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: 'full',
-                        bg: 'white',
-                        opacity: 0.7
-                      }}
-                    />
-                    <Text fontSize="sm" color="red.300" fontWeight="700" letterSpacing="wide">Peak Time</Text>
-                  </HStack>
-                </HStack>
+                  <Text color="gray.400" fontSize="sm" fontWeight="600" textAlign="center">
+                    Choose from three carefully selected pricing options
+                  </Text>
+                </Box>
               </VStack>
 
-              {/* Price Grid - Calendar/Table layout for mobile-first clarity */}
-              <Grid
-                templateColumns={{
-                  base: 'repeat(auto-fit, minmax(140px, 1fr))',
-                  sm: 'repeat(auto-fit, minmax(150px, 1fr))',
-                  md: 'repeat(auto-fit, minmax(170px, 1fr))',
-                }}
-                gap={{ base: 3, md: 4 }}
+              {/* Price Grid - 2 weeks (14 days) */}
+              <SimpleGrid
+                columns={{ base: 2, sm: 3, md: 4, lg: 5 }}
+                spacing={{ base: 3, md: 4 }}
                 w="full"
               >
-                {displayedPriceCalendar.map((option) => {
+                {displayedPriceCalendar.slice(0, visibleCardsCount).map((option, displayIndex) => {
                   const level = getPriceLevel(option.price);
                   const cardIndex = priceCalendar.findIndex((p) => p.iso === option.iso);
                   const isSelected = selectedDayKey
                     ? option.key === selectedDayKey
                     : cardIndex === 0;
                   const isCheapest = cardIndex === cheapestIndex;
+                  
+                  // Labels for the 3 tiers
+                  const tierLabels = ['Best Value', 'Standard', 'Premium'];
+                  const tierLabel = tierLabels[displayIndex] || 'Option';
 
                   const colorScheme = {
                     cheap: {
@@ -1120,24 +1178,24 @@ export default function WhoAndPaymentStepSimple({
                       iconBg: 'rgba(16,185,129,0.2)',
                     },
                     mid: {
-                      bg: 'linear-gradient(135deg, rgba(251,146,60,0.22), rgba(234,88,12,0.12))',
-                      bgHover: 'linear-gradient(135deg, rgba(251,146,60,0.28), rgba(234,88,12,0.18))',
-                      border: isSelected ? 'orange.400' : 'rgba(251,146,60,0.4)',
-                      borderHover: 'rgba(251,146,60,0.6)',
-                      glow: '0 0 20px rgba(251,146,60,0.4)',
-                      glowHover: '0 0 28px rgba(251,146,60,0.6), 0 4px 20px rgba(251,146,60,0.3)',
-                      textColor: 'orange.300',
-                      iconBg: 'rgba(251,146,60,0.2)',
+                      bg: 'linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.12))',
+                      bgHover: 'linear-gradient(135deg, rgba(59,130,246,0.28), rgba(37,99,235,0.18))',
+                      border: isSelected ? 'blue.400' : 'rgba(59,130,246,0.4)',
+                      borderHover: 'rgba(59,130,246,0.6)',
+                      glow: '0 0 20px rgba(59,130,246,0.4)',
+                      glowHover: '0 0 28px rgba(59,130,246,0.6), 0 4px 20px rgba(59,130,246,0.3)',
+                      textColor: 'blue.300',
+                      iconBg: 'rgba(59,130,246,0.2)',
                     },
                     expensive: {
-                      bg: 'linear-gradient(135deg, rgba(248,113,113,0.22), rgba(220,38,38,0.12))',
-                      bgHover: 'linear-gradient(135deg, rgba(248,113,113,0.28), rgba(220,38,38,0.18))',
-                      border: isSelected ? 'red.400' : 'rgba(248,113,113,0.4)',
-                      borderHover: 'rgba(248,113,113,0.6)',
-                      glow: '0 0 20px rgba(248,113,113,0.4)',
-                      glowHover: '0 0 28px rgba(248,113,113,0.6), 0 4px 20px rgba(248,113,113,0.3)',
-                      textColor: 'red.300',
-                      iconBg: 'rgba(248,113,113,0.2)',
+                      bg: 'linear-gradient(135deg, rgba(124,58,237,0.22), rgba(109,40,217,0.12))',
+                      bgHover: 'linear-gradient(135deg, rgba(124,58,237,0.28), rgba(109,40,217,0.18))',
+                      border: isSelected ? 'purple.400' : 'rgba(124,58,237,0.4)',
+                      borderHover: 'rgba(124,58,237,0.6)',
+                      glow: '0 0 20px rgba(124,58,237,0.4)',
+                      glowHover: '0 0 28px rgba(124,58,237,0.6), 0 4px 20px rgba(124,58,237,0.3)',
+                      textColor: 'purple.300',
+                      iconBg: 'rgba(124,58,237,0.2)',
                     },
                   };
 
@@ -1150,18 +1208,26 @@ export default function WhoAndPaymentStepSimple({
                       key={option.iso}
                       w="100%"
                       textAlign="left"
-                      p={{ base: 4, md: 5 }}
-                      borderRadius="2xl"
+                      p={{ base: 3, md: 4 }}
+                      borderRadius="xl"
                       borderWidth="2px"
                       borderColor={scheme.border}
                       bg={scheme.bg}
-                      boxShadow={isSelected ? scheme.glow : '0 8px 24px rgba(0,0,0,0.4)'}
+                      boxShadow={isSelected ? scheme.glow : '0 4px 16px rgba(0,0,0,0.4)'}
                       transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       onClick={() => handleSelectDay(cardIndex)}
                       position="relative"
-                      minH="150px"
+                      minH="140px"
                       overflow="hidden"
                       backdropFilter="blur(8px)"
+                      // ✨ Stagger animation - each card appears with delay
+                      animation={`fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${displayIndex * 0.05}s backwards`}
+                      sx={{
+                        '@keyframes fadeInUp': {
+                          '0%': { opacity: 0, transform: 'translateY(30px)' },
+                          '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                      }}
                       _before={{
                         content: '""',
                         position: 'absolute',
@@ -1238,55 +1304,57 @@ export default function WhoAndPaymentStepSimple({
                       )}
 
                       <VStack align="stretch" spacing={3}>
+                        {/* Tier Label */}
+                        <Badge
+                          alignSelf="flex-start"
+                          bg={scheme.iconBg}
+                          color="white"
+                          px={2}
+                          py={0.5}
+                          borderRadius="md"
+                          fontSize="2xs"
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          letterSpacing="wide"
+                        >
+                          {tierLabel}
+                        </Badge>
+
                         <VStack align="stretch" spacing={1}>
-                          <HStack spacing={2} align="center">
-                            <Text 
-                              color="white" 
-                              fontWeight="800" 
-                              fontSize={{ base: 'lg', md: 'xl' }} 
-                              noOfLines={1}
-                              flex="1"
-                            >
-                              {option.label}
-                            </Text>
-                          </HStack>
-                          <HStack spacing={2}>
+                          {/* Plan Title */}
+                          <Text 
+                            color="white" 
+                            fontWeight="700" 
+                            fontSize={{ base: 'sm', md: 'md' }} 
+                            lineHeight="1.2"
+                            noOfLines={1}
+                          >
+                            {option.label}
+                          </Text>
+                          
+                          {/* Date Info */}
+                          <HStack spacing={1}>
                             <Box
-                              px={2}
+                              px={1.5}
                               py={0.5}
                               bg={scheme.iconBg}
-                              borderRadius="md"
+                              borderRadius="sm"
                               border="1px solid"
                               borderColor={scheme.border}
                             >
-                              <Text color="gray.300" fontSize="xs" fontWeight="700" textTransform="uppercase">
+                              <Text color="gray.300" fontSize="2xs" fontWeight="600" textTransform="uppercase">
                                 {option.weekday}
                               </Text>
                             </Box>
                           </HStack>
                         </VStack>
 
-                        <Divider borderColor="rgba(255,255,255,0.1)" />
+                        <Divider borderColor="rgba(255,255,255,0.15)" />
 
+                        {/* Price Display */}
                         <VStack align="stretch" spacing={1}>
-                          <HStack justify="space-between" align="baseline">
-                            <Text fontSize="xs" color="gray.500" fontWeight="600" textTransform="uppercase" letterSpacing="wider">
-                              Price
-                            </Text>
-                            <Badge
-                              fontSize="2xs"
-                              px={2}
-                              py={0.5}
-                              borderRadius="md"
-                              bg={scheme.iconBg}
-                              color={scheme.textColor}
-                              fontWeight="800"
-                            >
-                              {level === 'cheap' ? '🎯 BEST VALUE' : level === 'expensive' ? '⚡ PEAK' : '📊 STANDARD'}
-                            </Badge>
-                          </HStack>
                           <Text 
-                            fontSize={{ base: '3xl', md: '32px' }} 
+                            fontSize={{ base: '2xl', md: '3xl' }} 
                             fontWeight="900" 
                             color="white"
                             lineHeight="1"
@@ -1294,47 +1362,31 @@ export default function WhoAndPaymentStepSimple({
                           >
                             £{option.price.toFixed(2)}
                           </Text>
+                          
+                          {/* CTA Indicator (not a button to avoid nesting) */}
+                          <HStack
+                            h="32px"
+                            px={2}
+                            bg={isSelected ? scheme.border : 'rgba(255,255,255,0.1)'}
+                            color="white"
+                            fontWeight="600"
+                            borderRadius="md"
+                            border="1px solid"
+                            borderColor={scheme.border}
+                            justify="center"
+                            spacing={1}
+                          >
+                            {isSelected && <Text fontSize="xs">✓</Text>}
+                            <Text fontSize="2xs">
+                              {isSelected ? 'Selected' : 'Select'}
+                            </Text>
+                          </HStack>
                         </VStack>
                       </VStack>
                     </Box>
                   );
                 })}
-              </Grid>
-
-              {effectiveIsMobile && displayedPriceCalendar.length < visiblePriceCalendar.length && (
-                <Box w="full" display="flex" justifyContent="center" mt={4}>
-                  <Button
-                    bg="linear-gradient(135deg, rgba(124,58,237,0.2), rgba(147,51,234,0.2))"
-                    border="2px solid"
-                    borderColor="purple.400"
-                    color="white"
-                    size="lg"
-                    h="52px"
-                    px={8}
-                    borderRadius="xl"
-                    fontWeight="700"
-                    fontSize="md"
-                    boxShadow="0 8px 24px rgba(124, 58, 237, 0.4)"
-                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                    onClick={() =>
-                      setMobilePriceCardLimit((prev) =>
-                        Math.min(prev + 6, visiblePriceCalendar.length)
-                      )
-                    }
-                    w="100%"
-                    leftIcon={<Text fontSize="lg">📅</Text>}
-                    _hover={{
-                      bg: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(147,51,234,0.3))',
-                      borderColor: 'purple.300',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 12px 32px rgba(124, 58, 237, 0.6)'
-                    }}
-                    _active={{ transform: 'translateY(0px)' }}
-                  >
-                    Load more dates ({visiblePriceCalendar.length - displayedPriceCalendar.length} remaining)
-                  </Button>
-                </Box>
-              )}
+              </SimpleGrid>
               
               {/* Selection Confirmation - Enhanced */}
               {selectedPriceOption && (
@@ -1409,6 +1461,9 @@ export default function WhoAndPaymentStepSimple({
             </VStack>
           </CardBody>
         </Card>
+      </Box>
+        </VStack>
+        )}
 
         {/* CARD 2: Customer Information - Single Clean Card */}
         <Card
@@ -1766,27 +1821,6 @@ export default function WhoAndPaymentStepSimple({
             </Box>
 
               <Divider borderColor="rgba(59, 130, 246, 0.2)" />
-
-              {bookingReference ? (
-                <Alert
-                  status="info"
-                  variant="subtle"
-                  bg="rgba(59, 130, 246, 0.12)"
-                  border="1px solid"
-                  borderColor="blue.400"
-                  borderRadius="lg"
-                >
-                  <AlertIcon />
-                  <Box>
-                    <AlertTitle color="white" fontSize="sm">
-                      Booking reference (pending payment)
-                    </AlertTitle>
-                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
-                      {bookingReference} — share this with admin to view or modify before payment.
-                    </AlertDescription>
-                  </Box>
-                </Alert>
-              ) : null}
 
               {addressIncomplete && (
                 <Alert

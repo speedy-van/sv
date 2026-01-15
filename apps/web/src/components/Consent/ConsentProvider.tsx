@@ -44,10 +44,9 @@ interface ConsentCookie {
 
 interface ConsentProviderProps {
   children: ReactNode;
-  initialConsent?: ConsentCookie | null;
 }
 
-export function ConsentProvider({ children, initialConsent }: ConsentProviderProps) {
+export function ConsentProvider({ children }: ConsentProviderProps) {
   const [preferences, setPreferences] = useState<ConsentPreferences>(defaultPreferences);
   const [hasConsent, setHasConsent] = useState(false);
 
@@ -68,21 +67,13 @@ export function ConsentProvider({ children, initialConsent }: ConsentProviderPro
         } catch (error) {
           console.warn('Failed to parse saved consent preferences:', error);
         }
-      } else if (initialConsent?.preferences) {
-        setPreferences({
-          ...defaultPreferences,
-          ...initialConsent.preferences,
-          necessary: true,
-        });
       }
 
       if (savedHasConsent === 'true') {
         setHasConsent(true);
-      } else if (initialConsent?.hasConsent) {
-        setHasConsent(true);
       }
     }
-  }, [initialConsent]);
+  }, []);
 
   const updatePreferences = (newPrefs: Partial<ConsentPreferences>) => {
     const updatedPreferences = { ...preferences, ...newPrefs };

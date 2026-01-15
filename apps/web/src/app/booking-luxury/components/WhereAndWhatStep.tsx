@@ -130,6 +130,7 @@ export default function WhereAndWhatStep({
   
   // ✅ NEW: Auto-add items toggle (manual vs automatic)
   const [autoAddItems, setAutoAddItems] = useState(true);
+  const [activeCard, setActiveCard] = useState<'property' | 'items'>('property');
   const [selectedMoveType, setSelectedMoveType] = useState<'house' | 'flat' | 'office' | 'storage' | 'single' | null>(null);
   const [selectedPropertySize, setSelectedPropertySize] = useState<string | null>(null);
   
@@ -1020,16 +1021,73 @@ export default function WhereAndWhatStep({
           </CardBody>
         </Card>
 
-        {/* ✅ NEW: What Type of Move Card */}
+        {/* ✅ UNIFIED: Single Card with Button Toggles */}
         <Card 
           bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
           backdropFilter="blur(20px)"
           borderRadius="xl"
           border="2px solid"
-          borderColor="rgba(245, 158, 11, 0.4)"
-          boxShadow="0 8px 32px rgba(245, 158, 11, 0.3)"
+          borderColor="rgba(59, 130, 246, 0.4)"
+          boxShadow="0 8px 32px rgba(59, 130, 246, 0.3)"
         >
           <CardBody p={{ base: 4, md: 6 }}>
+            {/* Toggle Buttons Row */}
+            <HStack spacing={3} w="full" mb={6}>
+              <Button
+                flex={1}
+                size="lg"
+                h="auto"
+                py={4}
+                bg={activeCard === 'property' 
+                  ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
+                  : 'rgba(31, 41, 55, 0.6)'}
+                color="white"
+                border="2px solid"
+                borderColor={activeCard === 'property' ? 'rgba(245, 158, 11, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
+                onClick={() => setActiveCard('property')}
+                _hover={{
+                  bg: activeCard === 'property'
+                    ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                    : 'rgba(245, 158, 11, 0.2)'
+                }}
+                transition="all 0.3s"
+                leftIcon={<Icon as={FaHome} boxSize={5} />}
+              >
+                <VStack spacing={0}>
+                  <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">Property Type</Text>
+                  <Text fontSize="xs" opacity={0.8}>Auto-add items</Text>
+                </VStack>
+              </Button>
+              
+              <Button
+                flex={1}
+                size="lg"
+                h="auto"
+                py={4}
+                bg={activeCard === 'items' 
+                  ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
+                  : 'rgba(31, 41, 55, 0.6)'}
+                color="white"
+                border="2px solid"
+                borderColor={activeCard === 'items' ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
+                onClick={() => setActiveCard('items')}
+                _hover={{
+                  bg: activeCard === 'items'
+                    ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                    : 'rgba(59, 130, 246, 0.2)'
+                }}
+                transition="all 0.3s"
+                leftIcon={<Icon as={FaBoxOpen} boxSize={5} />}
+              >
+                <VStack spacing={0}>
+                  <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="bold">Select Items</Text>
+                  <Text fontSize="xs" opacity={0.8}>Search or browse</Text>
+                </VStack>
+              </Button>
+            </HStack>
+
+            {/* Property Type Card Content */}
+            <Collapse in={activeCard === 'property'} animateOpacity>
             <VStack spacing={{ base: 4, md: 6 }} align="stretch">
               
               {/* Header */}
@@ -1323,19 +1381,10 @@ export default function WhereAndWhatStep({
                 </Box>
               )}
             </VStack>
-          </CardBody>
-        </Card>
+            </Collapse>
 
-        {/* Item Selection */}
-        <Card 
-          bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-          backdropFilter="blur(20px)"
-          borderRadius="xl"
-          border="2px solid"
-          borderColor="rgba(59, 130, 246, 0.4)"
-          boxShadow="0 8px 32px rgba(59, 130, 246, 0.3)"
-        >
-          <CardBody p={{ base: 4, md: 6 }}>
+            {/* Items Selection Card Content */}
+            <Collapse in={activeCard === 'items'} animateOpacity>
             <VStack spacing={{ base: 4, md: 6 }}>
               
               {/* Header */}
@@ -2180,6 +2229,7 @@ export default function WhereAndWhatStep({
               )}
 
             </VStack>
+            </Collapse>
           </CardBody>
         </Card>
 

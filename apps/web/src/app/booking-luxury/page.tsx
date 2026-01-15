@@ -2372,21 +2372,7 @@ function BookingLuxuryContent() {
                     borderColor="rgba(59, 130, 246, 0.5)"
                     boxShadow="0 10px 40px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
                   >
-                    <CardBody p={{ base: 5, md: 7 }}>
-                      <ServiceTierSelector
-                        selectedTier={formData.step1.serviceTier || 'economy'}
-                        onSelectTier={(tier) => {
-                          updateFormData('step1', { serviceTier: tier });
-                          toast({
-                            title: 'Service Tier Updated',
-                            description: `Selected ${tier} tier`,
-                            status: 'success',
-                            duration: 2000,
-                          });
-                        }}
-                        disabled={false}
-                      />
-                    </CardBody>
+                    {/* ServiceTierSelector removed - pricing by date only */}
                   </Card>
 
                   {/* Date & Time Selection - Right Under Progress Bar */}

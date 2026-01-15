@@ -28,7 +28,9 @@
     "env:check": "bash scripts/check-db-environment.sh",
     "db:setup": "cd packages/shared && npx prisma generate && npx prisma db push",
     "db:setup-local": "tsx scripts/setup-local-database.ts",
-    "db:verify-isolation": "tsx scripts/verify-database-isolation.ts"
+    "db:verify-isolation": "tsx scripts/verify-database-isolation.ts",
+    "check:critical": "tsx scripts/check-critical-components.ts",
+    "hooks:install": "cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit || echo 'Git hooks installed'"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

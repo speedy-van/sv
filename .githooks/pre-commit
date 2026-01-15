@@ -1,0 +1,63 @@
+#!/bin/bash
+# Pre-commit hook to prevent accidental deletion of critical components
+# Install: cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "🔍 Checking for critical component deletions..."
+
+# Get list of modified files
+MODIFIED_FILES=$(git diff --cached --name-only --diff-filter=M)
+
+# Critical patterns to check
+CRITICAL_PATTERNS=(
+  "data-testid=\"booking-reference-alert\""
+  "bookingReference.*Alert"
+  "Booking reference.*pending payment"
+)
+
+# Check each modified file
+for file in $MODIFIED_FILES; do
+  if [[ $file == *"WhoAndPaymentStep"* ]]; then
+    echo "📝 Checking critical file: $file"
+    
+    for pattern in "${CRITICAL_PATTERNS[@]}"; do
+      # Check if pattern exists in staged changes
+      if ! git diff --cached "$file" | grep -q "$pattern"; then
+        # Pattern not found in diff, check if it was deleted
+        if git show HEAD:"$file" 2>/dev/null | grep -q "$pattern"; then
+          echo ""
+          echo "🚨 CRITICAL ERROR: Potential deletion of critical component!"
+          echo "   File: $file"
+          echo "   Pattern: $pattern"
+          echo ""
+          echo "   This pattern was found in the previous version but not in staged changes."
+          echo "   If you intentionally deleted this, you may be breaking critical functionality."
+          echo ""
+          echo "   To bypass this check (NOT RECOMMENDED):"
+          echo "   git commit --no-verify"
+          echo ""
+          echo "   To see what changed:"
+          echo "   git diff --cached $file | grep -C 5 '$pattern'"
+          echo ""
+          exit 1
+        fi
+      fi
+    done
+  fi
+done
+
+# Check for specific booking reference patterns in deleted lines
+if git diff --cached | grep -q "^-.*bookingReference.*Alert"; then
+  echo ""
+  echo "⚠️  WARNING: Booking reference Alert code was modified or deleted"
+  echo "   This is a CRITICAL component - verify this change is intentional!"
+  echo ""
+  read -p "   Continue with commit? (y/N) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "   Commit cancelled."
+    exit 1
+  fi
+fi
+
+echo "✅ Critical component check passed"
+exit 0

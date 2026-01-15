@@ -7,6 +7,7 @@ import {
   Container,
   VStack,
   HStack,
+  Flex,
   Heading,
   Text,
   SimpleGrid,
@@ -363,8 +364,8 @@ const MobileHero: React.FC = () => {
       sx={{
         minHeight: { base: 'auto', md: '90vh' },
         height: { base: 'auto', md: '90vh' },
-        py: { base: '120px', md: '80px' },
-        pt: { base: '140px', md: '100px' },
+        py: { base: '20px', md: '80px' },
+        pt: { base: 'calc(env(safe-area-inset-top) + 56px)', md: '100px' },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -438,14 +439,14 @@ const MobileHero: React.FC = () => {
         zIndex={-1}
       />
 
-      {/* Dark Overlay for better text readability */}
+      {/* Strong Dark Overlay for better text readability */}
       <Box
         position="absolute"
         top="0"
         left="0"
         width="100%"
         height="100%"
-        bg="linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.4) 100%)"
+        bg="linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.5) 100%)"
         zIndex={1}
       />
 
@@ -466,7 +467,7 @@ const MobileHero: React.FC = () => {
             whileInView="show"
             variants={heroStagger}
             viewport={viewportMotion}
-            mt={{ base: 0, md: 12, lg: 28 }}
+            mt={{ base: 2, md: 12, lg: 28 }}
           >
             <Box>
               <LiveBookingCounter />
@@ -495,15 +496,24 @@ const MobileHero: React.FC = () => {
             </Heading>
           </MotionBox>
 
-          {/* Moving Text Banner */}
+          {/* Subheadline */}
           <MotionBox
             initial="hidden"
             whileInView="show"
             variants={heroSubheadline}
             viewport={viewportMotion}
-            mt={{ base: 4, md: 6 }}
+            mt={{ base: 2, md: 4 }}
           >
-            {/* Subtitle removed */}
+            <Text
+              fontSize={{ base: 'sm', md: 'md' }}
+              color="whiteAlpha.900"
+              fontWeight="medium"
+              maxW="400px"
+              mx="auto"
+              textShadow="0 2px 10px rgba(0,0,0,0.8)"
+            >
+              From £25/hour • Same-day service • Fully insured
+            </Text>
           </MotionBox>
 
           {/* Enhanced CTA Buttons */}
@@ -515,8 +525,9 @@ const MobileHero: React.FC = () => {
             viewport={viewportMotion}
             w="full"
             maxW="500px"
+            mt={{ base: 4, md: 6 }}
           >
-            <VStack spacing={4} w="full">
+            <VStack spacing={3} w="full">
               {/* Primary CTA */}
               <MotionBox whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
                 <TouchButton
@@ -615,48 +626,105 @@ const MobileHero: React.FC = () => {
                 </MotionBox>
               </HStack>
 
-              {/* Marketplace Quick Links */}
-              <HStack spacing={2} flexWrap="wrap" justify="center" mt={4}>
-                <Button
-                  as={Link}
-                  href="/facebook-marketplace-delivery"
-                  size="sm"
-                  variant="ghost"
-                  color="whiteAlpha.900"
+              {/* Popular Deliveries Pills */}
+              <Box w="full" mt={5}>
+                <Text
                   fontSize="xs"
+                  color="whiteAlpha.700"
                   fontWeight="medium"
-                  _hover={{ color: 'cyan.400', bg: 'whiteAlpha.100' }}
-                  leftIcon={<Text fontSize="sm">📦</Text>}
+                  mb={2}
+                  textAlign="center"
+                  textTransform="uppercase"
+                  letterSpacing="wider"
                 >
-                  Facebook Marketplace
-                </Button>
-                <Button
-                  as={Link}
-                  href="/gumtree-pickup-delivery"
-                  size="sm"
-                  variant="ghost"
-                  color="whiteAlpha.900"
-                  fontSize="xs"
-                  fontWeight="medium"
-                  _hover={{ color: 'green.400', bg: 'whiteAlpha.100' }}
-                  leftIcon={<Text fontSize="sm">🌳</Text>}
+                  Popular Deliveries
+                </Text>
+                <Flex
+                  gap={2}
+                  flexWrap="wrap"
+                  justify="center"
+                  maxW="full"
                 >
-                  Gumtree
-                </Button>
-                <Button
-                  as={Link}
-                  href="/sofa-delivery-service"
-                  size="sm"
-                  variant="ghost"
-                  color="whiteAlpha.900"
-                  fontSize="xs"
-                  fontWeight="medium"
-                  _hover={{ color: 'purple.400', bg: 'whiteAlpha.100' }}
-                  leftIcon={<FaCouch size={12} />}
-                >
-                  Sofa Delivery
-                </Button>
-              </HStack>
+                  <Button
+                    as={Link}
+                    href="/facebook-marketplace-delivery"
+                    size="sm"
+                    bg="rgba(255,255,255,0.15)"
+                    backdropFilter="blur(10px)"
+                    color="white"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    borderRadius="full"
+                    px={4}
+                    py={2}
+                    h="auto"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    _hover={{ 
+                      bg: 'rgba(0,194,255,0.3)', 
+                      borderColor: 'cyan.400',
+                      transform: 'translateY(-2px)',
+                      textDecoration: 'none'
+                    }}
+                    transition="all 0.2s"
+                    leftIcon={<Text fontSize="sm">📦</Text>}
+                  >
+                    Facebook Marketplace
+                  </Button>
+                  <Button
+                    as={Link}
+                    href="/gumtree-pickup-delivery"
+                    size="sm"
+                    bg="rgba(255,255,255,0.15)"
+                    backdropFilter="blur(10px)"
+                    color="white"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    borderRadius="full"
+                    px={4}
+                    py={2}
+                    h="auto"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    _hover={{ 
+                      bg: 'rgba(0,209,143,0.3)', 
+                      borderColor: 'green.400',
+                      transform: 'translateY(-2px)',
+                      textDecoration: 'none'
+                    }}
+                    transition="all 0.2s"
+                    leftIcon={<Text fontSize="sm">🌳</Text>}
+                  >
+                    Gumtree
+                  </Button>
+                  <Button
+                    as={Link}
+                    href="/sofa-delivery-service"
+                    size="sm"
+                    bg="rgba(255,255,255,0.15)"
+                    backdropFilter="blur(10px)"
+                    color="white"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    borderRadius="full"
+                    px={4}
+                    py={2}
+                    h="auto"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    _hover={{ 
+                      bg: 'rgba(147,51,234,0.3)', 
+                      borderColor: 'purple.400',
+                      transform: 'translateY(-2px)',
+                      textDecoration: 'none'
+                    }}
+                    transition="all 0.2s"
+                    leftIcon={<FaCouch size={12} />}
+                  >
+                    Sofa Delivery
+                  </Button>
+                </Flex>
+              </Box>
             </VStack>
           </MotionBox>
 
