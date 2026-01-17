@@ -268,6 +268,9 @@ model Booking {
   TaxInvoice                                                 TaxInvoice[]
   TrackingPing                                               TrackingPing[]
   CompanyBooking                                             CompanyBooking?
+  ReviewRequest                                              ReviewRequest[]
+  Review                                                     Review[]
+  DiscountCodeUsed                                           DiscountCode[]          @relation("DiscountCodeUsed")
 
   @@index([currentStep, status])
   @@index([customerEmail, scheduledAt])
@@ -707,6 +710,7 @@ model Driver {
   DriverVehicle                 DriverVehicle[]
   PushSubscription              PushSubscription[]
   TrackingPing                  TrackingPing[]
+  Review                        Review[]
 }
 
 model DriverApplication {
@@ -2148,6 +2152,9 @@ model User {
   SupportTicket                                   SupportTicket[]
   TaxInvoice                                      TaxInvoice[]
   CompanyUser                                     CompanyUser[]
+  ReviewRequest                                   ReviewRequest[]
+  Review                                          Review[]
+  DiscountCode                                    DiscountCode[]
 
   @@index([role])
   @@index([role], map: "idx_user_role")
@@ -3521,4 +3528,104 @@ enum B2BApplicationStatus {
   UNDER_REVIEW
   APPROVED
   REJECTED
+}
+
+// ============================================
+// Review System Models (Phase 2 - SEO)
+// ============================================
+
+model ReviewRequest {
+  id              String    @id @default(cuid())
+  bookingId       String
+  customerId      String
+  customerEmail   String
+  customerName    String
+  status          ReviewRequestStatus @default(PENDING)
+  sentAt          DateTime?
+  reminderSentAt  DateTime?
+  respondedAt     DateTime?
+  token           String    @unique
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  Booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User            User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Review          Review?
+  
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([status])
+  @@index([sentAt])
+  @@index([token])
+}
+
+model Review {
+  id               String    @id @default(cuid())
+  bookingId        String
+  customerId       String
+  driverId         String?
+  rating           Int       // 1-5 stars
+  title            String?
+  comment          String?
+  isPublic         Boolean   @default(true)
+  isApproved       Boolean   @default(false)
+  approvedAt       DateTime?
+  approvedBy       String?
+  city             String?
+  serviceType      String?
+  reviewRequestId  String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  Booking          Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User             User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Driver           Driver?        @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  ReviewRequest    ReviewRequest? @relation(fields: [reviewRequestId], references: [id], onDelete: SetNull)
+  DiscountCode     DiscountCode?
+  
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([driverId])
+  @@index([rating])
+  @@index([isPublic])
+  @@index([isApproved])
+  @@index([city])
+  @@index([serviceType])
+  @@index([createdAt])
+}
+
+model DiscountCode {
+  id                  String    @id @default(cuid())
+  code                String    @unique
+  customerId          String
+  reviewId            String    @unique
+  discountPercentage  Int       @default(10)
+  maxDiscountAmount   Decimal?  @db.Decimal(10, 2)
+  isUsed              Boolean   @default(false)
+  usedAt              DateTime?
+  usedInBookingId     String?
+  expiresAt           DateTime
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  User                User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Review              Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  UsedInBooking       Booking?  @relation("DiscountCodeUsed", fields: [usedInBookingId], references: [id], onDelete: SetNull)
+  
+  @@index([code])
+  @@index([customerId])
+  @@index([isUsed])
+  @@index([expiresAt])
+}
+
+enum ReviewRequestStatus {
+  PENDING
+  SENT
+  REMINDED
+  RESPONDED
+  EXPIRED
 }

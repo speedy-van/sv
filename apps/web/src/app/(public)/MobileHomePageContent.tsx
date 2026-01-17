@@ -65,6 +65,16 @@ const PriceMatchBadge = dynamic(() => import('@/components/PriceMatchBadge'), {
   loading: () => null,
 });
 
+const RecentBookingsWidget = dynamic(() => import('@/components/SEO/RecentBookingsWidget').then(mod => ({ default: mod.RecentBookingsWidget })), {
+  ssr: false,
+  loading: () => null,
+});
+
+const ReviewsWidget = dynamic(() => import('@/components/SEO/ReviewsWidget'), {
+  ssr: false,
+  loading: () => null,
+});
+
 const LiveTrustpilotTicker = dynamic(() => import('@/components/LiveTrustpilotTicker'), {
   ssr: false,
   loading: () => null,
@@ -381,17 +391,13 @@ const MobileHero: React.FC = () => {
     <Box
       className="mobile-hero"
       position="relative"
-      display="flex"
-      alignItems="center"
       overflow="hidden"
       w="100%"
-      maxW="100%"
       sx={{
-        minHeight: { base: '320vh', sm: '280vh', md: '150vh' },
-        height: { base: 'auto', md: 'auto' },
-        py: { base: '20px', md: '80px' },
-        pb: { base: '480px', sm: '400px', md: '320px' },
-        pt: { base: 'calc(env(safe-area-inset-top) + 140px)', sm: 'calc(env(safe-area-inset-top) + 130px)', md: '100px' },
+        minHeight: { base: 'calc(100vh - 60px)', md: '85vh' },
+        py: { base: 4, md: 8 },
+        pt: { base: 'calc(env(safe-area-inset-top) + 80px)', sm: 'calc(env(safe-area-inset-top) + 90px)', md: '120px' },
+        pb: { base: 8, md: 12 },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -477,91 +483,91 @@ const MobileHero: React.FC = () => {
       />
 
   <Container 
-    className="mobile-container"
-    maxW="full" 
-    px={{ base: 4, md: 6 }} 
+    maxW="container.xl"
+    px={{ base: 4, md: 6, lg: 8 }} 
     position="relative" 
     zIndex={1}
-    w="100%"
-    mx="auto"
-    overflow="hidden"
+    h="100%"
+    display="flex"
+    flexDirection="column"
+    justifyContent="center"
   >
-        <VStack spacing={{ base: 6, md: 8 }} textAlign="center">
-          {/* Live Booking Counter */}
-          <MotionBox
-            initial="hidden"
-            whileInView="show"
-            variants={heroStagger}
-            viewport={viewportMotion}
-            mt={{ base: 160, sm: 120, md: 60, lg: 28 }}
-          >
-            <VStack spacing={4}>
+        {/* Hero Grid Layout */}
+        <Box
+          display="grid"
+          gridTemplateColumns={{ base: '1fr', lg: '1fr 1fr' }}
+          gap={{ base: 6, md: 8, lg: 12 }}
+          alignItems="center"
+          w="100%"
+          maxW="1400px"
+          mx="auto"
+        >
+          {/* Left Column - Social Proof & CTA */}
+          <VStack spacing={{ base: 5, md: 6 }} align={{ base: 'center', lg: 'flex-start' }}>
+            {/* Live Booking Counter */}
+            <MotionBox
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={viewportMotion}
+              // @ts-ignore
+              transition={{ duration: 0.6, delay: 0.1 }}
+              animate={prefersReducedMotion ? {} : {
+                y: [0, -8, 0],
+              }}
+              // @ts-ignore
+              transition={{
+                y: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              w="100%"
+              display="flex"
+              justifyContent={{ base: 'center', lg: 'flex-start' }}
+            >
               <LiveBookingCounter />
-              <HStack spacing={3} flexWrap="wrap" justify="center">
+            </MotionBox>
+
+            {/* Trust Badges */}
+            <MotionBox
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={viewportMotion}
+              // @ts-ignore
+              transition={{ duration: 0.5, delay: 0.3 }}
+              animate={prefersReducedMotion ? {} : {
+                scale: [1, 1.05, 1],
+              }}
+              // @ts-ignore
+              transition={{
+                scale: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              w="100%"
+            >
+              <HStack 
+                spacing={3} 
+                flexWrap="wrap" 
+                justify={{ base: 'center', lg: 'flex-start' }}
+              >
                 <LiveAvailabilityPulse />
                 <PriceMatchBadge />
               </HStack>
-            </VStack>
-          </MotionBox>
+            </MotionBox>
 
-          {/* Main Heading */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <MotionBox
-            initial="hidden"
-            whileInView="show"
-            variants={heroHeadline}
-            viewport={viewportMotion}
-          >
-            <VisuallyHidden>Facebook Marketplace Pickup and Furniture Delivery Service UK</VisuallyHidden>
-            <Heading
-              as="h1"
-              fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }}
-              fontWeight="bold"
-              color="white"
-              textAlign="center"
-              lineHeight="1.2"
-              textShadow="0 2px 20px rgba(0,0,0,0.5)"
+            {/* Primary CTA */}
+            <MotionBox
+              initial="hidden"
+              whileInView="show"
+              variants={heroCtas}
+              viewport={viewportMotion}
+              w="100%"
+              maxW={{ base: '100%', md: '400px', lg: '100%' }}
             >
-              Your Move, Made Easy
-            </Heading>
-          </MotionBox>
-
-          {/* Subheadline */}
-          <MotionBox
-            initial="hidden"
-            whileInView="show"
-            variants={heroSubheadline}
-            viewport={viewportMotion}
-            mt={{ base: 2, md: 4 }}
-          >
-            <VStack spacing={3}>
-              <Text
-                fontSize={{ base: 'sm', md: 'md' }}
-                color="whiteAlpha.900"
-                fontWeight="medium"
-                maxW="400px"
-                mx="auto"
-                textShadow="0 2px 10px rgba(0,0,0,0.8)"
-              >
-                From £25/hour • Same-day service • Fully insured
-              </Text>
-              <LiveTrustpilotTicker />
-            </VStack>
-          </MotionBox>
-
-          {/* Enhanced CTA Buttons */}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <MotionBox
-            initial="hidden"
-            whileInView="show"
-            variants={heroCtas}
-            viewport={viewportMotion}
-            w="full"
-            maxW="500px"
-            mt={{ base: 4, md: 6 }}
-          >
-            <VStack spacing={3} w="full">
-              {/* Primary CTA */}
               <MotionBox whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
                 <TouchButton
                   size="xl"
@@ -569,8 +575,8 @@ const MobileHero: React.FC = () => {
                   color="white"
                   fontWeight="bold"
                   px={8}
-                  py={6}
-                  fontSize="lg"
+                  py={7}
+                  fontSize={{ base: 'lg', md: 'xl' }}
                   borderRadius="2xl"
                   rightIcon={<FaArrowRight />}
                   boxShadow="0 8px 25px rgba(0,180,255,0.6)"
@@ -607,10 +613,10 @@ const MobileHero: React.FC = () => {
               </MotionBox>
 
               {/* Secondary Actions */}
-              <HStack spacing={3} w="full" justify="center" display={{ base: 'flex', md: 'none' }}>
+              <HStack spacing={3} w="full" justify="center" mt={3}>
                 <MotionBox flex={1} whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
                   <TouchButton
-                    size="lg"
+                    size="md"
                     variant="outline"
                     borderColor="white"
                     color="white"
@@ -628,7 +634,7 @@ const MobileHero: React.FC = () => {
                     flex={1}
                     onClick={() => (window.location.href = '/track')}
                   >
-                    Track Move
+                    Track
                   </TouchButton>
                 </MotionBox>
 
@@ -636,7 +642,7 @@ const MobileHero: React.FC = () => {
                   <Button
                     as="a"
                     href="tel:+441202129746"
-                    size="lg"
+                    size="md"
                     variant="outline"
                     borderColor="white"
                     color="white"
@@ -654,27 +660,47 @@ const MobileHero: React.FC = () => {
                     fontWeight="semibold"
                     flex={1}
                   >
-                    Call Now
+                    Call
                   </Button>
                 </MotionBox>
               </HStack>
+            </MotionBox>
+          </VStack>
 
-            </VStack>
-          </MotionBox>
-
-          {/* Quick Quote Widget - Below CTAs */}
+          {/* Right Column - Quote Widget */}
           <MotionBox
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 50, rotateY: -15 }}
+            whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
             viewport={viewportMotion}
-            w="full"
-            maxW="500px"
-            mt={{ base: 6, md: 8 }}
+            // @ts-ignore
+            transition={{ duration: 0.8, delay: 0.4, type: "spring", stiffness: 100 }}
+            animate={prefersReducedMotion ? {} : {
+              y: [0, -12, 0],
+              rotateZ: [0, 1, 0, -1, 0],
+            }}
+            // @ts-ignore - Framer Motion transition types conflict with Chakra
+            transition={{
+              y: {
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              },
+              rotateZ: {
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
+            display="flex"
+            justifyContent={{ base: 'center', lg: 'flex-end' }}
+            w="100%"
+            style={{ perspective: 1000 }}
           >
-            <QuickQuoteWidget />
+            <Box w="100%" maxW={{ base: '100%', md: '450px' }}>
+              <QuickQuoteWidget />
+            </Box>
           </MotionBox>
-
-        </VStack>
+        </Box>
       </Container>
     </Box>
   );
@@ -1636,6 +1662,33 @@ export default function MobileHomePageContent() {
       {/* Mobile Testimonials */}
       <Box position="relative" zIndex={1}>
         <MobileTestimonials />
+      </Box>
+
+      {/* Recent Bookings - SEO Social Proof */}
+      <Box position="relative" zIndex={1} py={{ base: 12, md: 16 }} bg="transparent">
+        <Container maxW="container.xl">
+          <VStack spacing={8}>
+            <VStack spacing={3} textAlign="center">
+              <Heading
+                size={{ base: 'lg', md: 'xl' }}
+                color="text.primary"
+              >
+                Recent Moves
+              </Heading>
+              <Text color="text.secondary" fontSize={{ base: 'md', md: 'lg' }}>
+                Live activity from our customers across the UK
+              </Text>
+            </VStack>
+            <Box w="full" maxW="900px" mx="auto">
+              <RecentBookingsWidget />
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* Customer Reviews - SEO Social Proof */}
+      <Box position="relative" zIndex={1} bg="gray.50">
+        <ReviewsWidget limit={6} showFilters={true} />
       </Box>
 
       {/* Mobile CTA */}

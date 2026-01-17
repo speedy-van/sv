@@ -14,10 +14,10 @@ export default function LiveAvailabilityPulse() {
   const [vansAvailable, setVansAvailable] = useState(12);
 
   useEffect(() => {
-    // Fetch user's location via IP
+    // Fetch user's location via internal API
     const fetchLocation = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        const response = await fetch('/api/location');
         const data = await response.json();
         if (data.city) {
           setLocation(data.city);

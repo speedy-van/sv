@@ -2,6 +2,17 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import places from '@/data/places.json';
+import dynamicImport from 'next/dynamic';
+
+// Lazy load the Recent Bookings Widget
+const RecentBookingsWidget = dynamicImport(
+  () => import('@/components/SEO/RecentBookingsWidget').then(mod => ({ default: mod.RecentBookingsWidget }))
+);
+
+// Lazy load the Reviews Widget
+const ReviewsWidget = dynamicImport(
+  () => import('@/components/SEO/ReviewsWidget')
+);
 
 // ✅ Force Node runtime for dynamic rendering
 export const runtime = 'nodejs';
@@ -109,6 +120,34 @@ export default async function CatchAllUkPage({
             <p>No hidden costs, guaranteed quotes</p>
           </div>
         </div>
+      </section>
+
+      {/* Recent Moves Section - SEO Social Proof */}
+      <section className="uk-place-recent-moves" style={{ 
+        padding: '3rem 1rem',
+        maxWidth: '900px',
+        margin: '0 auto'
+      }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          Recent Moves in {place.name}
+        </h2>
+        <p style={{ 
+          textAlign: 'center', 
+          color: '#666', 
+          marginBottom: '2rem',
+          fontSize: '1rem'
+        }}>
+          Live activity from customers in your area
+        </p>
+        <RecentBookingsWidget />
+      </section>
+
+      {/* Customer Reviews Section - SEO Social Proof */}
+      <section className="uk-place-reviews" style={{ 
+        background: '#f9fafb',
+        padding: '3rem 0'
+      }}>
+        <ReviewsWidget city={place.name} limit={4} showFilters={false} />
       </section>
 
       <section className="uk-place-navigation">

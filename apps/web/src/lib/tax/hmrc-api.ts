@@ -369,7 +369,7 @@ export class HMRCAPIService {
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
     
     if (missingVars.length > 0) {
-      console.warn(`Missing HMRC environment variables: ${missingVars.join(', ')}`);
+      // Silenced during build: Missing HMRC environment variables
     }
   }
 

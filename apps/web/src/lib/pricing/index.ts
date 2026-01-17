@@ -126,7 +126,8 @@ import { DistanceCalculator } from '@/lib/pricing';    // REMOVED
 // ENFORCEMENT LOGGING
 // ============================================================================
 
-console.log(`🏆 ENTERPRISE ENGINE PRICE: ${PRICING_SYSTEM_VERSION} loaded`);
-console.log(`✅ ONLY ENGINE: ${ALLOWED_PRICING_ENGINES.join(', ')}`);
-console.log(`❌ REMOVED ENGINES: ${REMOVED_PRICING_ENGINES.join(', ')}`);
-console.log(`🎯 SINGLE SOURCE OF TRUTH: comprehensivePricingEngine.calculatePrice()`);
+// Disabled during build to reduce noise
+// console.log(`🏆 ENTERPRISE ENGINE PRICE: ${PRICING_SYSTEM_VERSION} loaded`);
+// console.log(`✅ ONLY ENGINE: ${ALLOWED_PRICING_ENGINES.join(', ')}`);
+// console.log(`❌ REMOVED ENGINES: ${REMOVED_PRICING_ENGINES.join(', ')}`);
+// console.log(`🎯 SINGLE SOURCE OF TRUTH: comprehensivePricingEngine.calculatePrice()`);

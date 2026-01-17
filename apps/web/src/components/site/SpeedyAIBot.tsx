@@ -617,18 +617,131 @@ export default function SpeedyAIBot() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              overflow="hidden"
+              overflow="visible"
               display={{ base: 'none', sm: 'block' }}
             >
+              {/* Enhanced 3D Hammer with Glow */}
+              <MotionBox
+                position="absolute"
+                top="-50px"
+                left="50%"
+                transform="translateX(-50%)"
+                fontSize="3xl"
+                filter="drop-shadow(0 4px 12px rgba(255,140,0,0.6)) drop-shadow(0 2px 8px rgba(0,0,0,0.4))"
+                animate={{
+                  rotate: [0, -30, 15, 0],
+                  y: [0, 38, 0],
+                  scale: [1, 1.4, 1.05, 1],
+                  filter: [
+                    "drop-shadow(0 4px 12px rgba(255,140,0,0.6)) drop-shadow(0 2px 8px rgba(0,0,0,0.4))",
+                    "drop-shadow(0 6px 20px rgba(255,100,0,1)) drop-shadow(0 4px 12px rgba(255,200,0,0.8))",
+                    "drop-shadow(0 4px 12px rgba(255,140,0,0.6)) drop-shadow(0 2px 8px rgba(0,0,0,0.4))"
+                  ]
+                }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  repeatDelay: 4.4,
+                  times: [0, 0.45, 0.65, 1],
+                  ease: [0.6, 0.01, 0.05, 0.95]
+                }}
+                zIndex={10}
+                style={{ 
+                  transformOrigin: 'bottom center',
+                  textShadow: '3px 3px 6px rgba(0,0,0,0.6), 0 0 10px rgba(255,140,0,0.4)'
+                }}
+              >
+                🔨
+              </MotionBox>
+
+              {/* Hammer Trail Effect */}
+              <MotionBox
+                position="absolute"
+                top="-50px"
+                left="50%"
+                transform="translateX(-50%)"
+                fontSize="3xl"
+                opacity={0.3}
+                filter="blur(4px)"
+                animate={{
+                  rotate: [0, -30, 15, 0],
+                  y: [0, 35, 0],
+                  scale: [1, 1.3, 1, 1],
+                  opacity: [0, 0.5, 0, 0]
+                }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  repeatDelay: 4.4,
+                  times: [0, 0.4, 0.6, 1],
+                  ease: "easeOut"
+                }}
+                zIndex={9}
+                style={{ transformOrigin: 'bottom center' }}
+              >
+                🔨
+              </MotionBox>
+
               <Box
                 position="relative"
                 zIndex={2}
-                bgGradient="linear(to-r, gray.800, blue.600, gray.800)"
-                bgClip="text"
                 fontWeight="bold"
+                display="inline-flex"
+                gap="1px"
               >
-                Need a quote?
+                {['N', 'e', 'e', 'd', ' ', 'a', ' ', 'q', 'u', 'o', 't', 'e', '?'].map((char, index) => (
+                  <MotionBox
+                    key={`${char}-${index}`}
+                    as="span"
+                    display="inline-block"
+                    bgGradient="linear(to-r, gray.800, blue.600, gray.800)"
+                    bgClip="text"
+                    animate={{
+                      y: [0, -8, 5, -3, 2, 0],
+                      rotate: [0, -5, 3, -2, 1, 0],
+                      scale: [1, 1.15, 0.95, 1.05, 0.98, 1],
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      repeat: Infinity,
+                      repeatDelay: 4.4,
+                      delay: 0.6 + (index * 0.03),
+                      times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+                      ease: "easeOut"
+                    }}
+                    style={{ 
+                      transformOrigin: 'center center',
+                      minWidth: char === ' ' ? '0.3em' : 'auto'
+                    }}
+                  >
+                    {char === ' ' ? '\u00A0' : char}
+                  </MotionBox>
+                ))}
               </Box>
+              
+              {/* Impact Effect */}
+              <MotionBox
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
+                w="120%"
+                h="120%"
+                borderRadius="lg"
+                bg="yellow.300"
+                opacity={0}
+                animate={{
+                  scale: [0.8, 1.3],
+                  opacity: [0.6, 0],
+                }}
+                transition={{
+                  duration: 0.4,
+                  repeat: Infinity,
+                  repeatDelay: 4.6,
+                  ease: "easeOut"
+                }}
+                zIndex={0}
+              />
               
               {/* Animated White Wave Light Effect */}
               <Box

@@ -68,6 +68,10 @@ services:
         sync: false
       - key: MAIL_FROM
         value: noreply@speedy-van.co.uk
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        value: noreply@speedy-van.co.uk
       
       # SMS
       - key: THESMSWORKS_KEY
@@ -75,6 +79,12 @@ services:
       - key: THESMSWORKS_SECRET
         sync: false
       - key: THESMSWORKS_JWT
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
         sync: false
       
       # Other
@@ -100,6 +110,38 @@ services:
       # Cron Security (not needed for node-cron, but keep for manual endpoint)
       - key: CRON_SECRET
         generateValue: true
+      
+      # Public URL
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://speedy-van.co.uk
+
+  # Cron Job 1: Send Review Requests (Every hour)
+  - type: cron
+    name: send-review-requests
+    runtime: node
+    schedule: "0 * * * *"
+    buildCommand: echo "No build needed"
+    startCommand: curl -X GET https://speedy-van.co.uk/api/cron/send-review-requests -H "Authorization: Bearer $CRON_SECRET"
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: speedy-van-web
+          envVarKey: CRON_SECRET
+
+  # Cron Job 2: Send Review Reminders (Every 6 hours)
+  - type: cron
+    name: send-review-reminders
+    runtime: node
+    schedule: "0 */6 * * *"
+    buildCommand: echo "No build needed"
+    startCommand: curl -X GET https://speedy-van.co.uk/api/cron/send-review-reminders -H "Authorization: Bearer $CRON_SECRET"
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: speedy-van-web
+          envVarKey: CRON_SECRET
 
   # Optional: Background Worker (if you want separate process for cron)
   # - type: worker

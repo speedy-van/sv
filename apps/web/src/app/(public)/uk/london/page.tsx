@@ -42,6 +42,13 @@ import ServiceSchema from '@/components/Schema/ServiceSchema';
 import { ROUTES } from '@/lib/routing';
 import Header from '@/components/site/Header';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import dynamic from 'next/dynamic';
+
+// Lazy load Recent Bookings Widget
+const RecentBookingsWidget = dynamic(
+  () => import('@/components/SEO/RecentBookingsWidget').then(mod => ({ default: mod.RecentBookingsWidget })),
+  { ssr: false }
+);
 
 const MotionBox = motion.create(Box);
 
@@ -746,6 +753,27 @@ export default function LondonPage() {
               </VStack>
             </Box>
           </MotionBox>
+
+          {/* Recent Moves Section - SEO Social Proof */}
+          <Box py={16}>
+            <VStack spacing={8} align="stretch">
+              <VStack spacing={4} textAlign="center">
+                <Badge bg="rgba(255,255,255,0.05)" color="whiteAlpha.800" px={4} py={1} borderRadius="full">
+                  Live Activity
+                </Badge>
+                <Heading as="h2" size="xl" color="white">
+                  Recent Moves in London
+                </Heading>
+                <Text color="whiteAlpha.700" maxW="2xl" mx="auto">
+                  Real-time activity from customers across London boroughs
+                </Text>
+              </VStack>
+
+              <Box maxW="900px" mx="auto" w="full">
+                <RecentBookingsWidget />
+              </Box>
+            </VStack>
+          </Box>
 
           {/* FAQ Section */}
           <Box py={8}>
