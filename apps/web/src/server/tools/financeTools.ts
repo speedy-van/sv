@@ -284,7 +284,7 @@ export class GenerateInvoiceTool extends BaseTool {
         BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
         Payment: true,
-      },
+      } as any,
     });
 
     if (!order) {
@@ -301,12 +301,12 @@ export class GenerateInvoiceTool extends BaseTool {
       };
     }
 
-    const successfulPayment = order.Payment?.find((p: typeof order.Payment[0]) => 
+    const successfulPayment = (order as any).Payment?.find((p: any) => 
       p.status === PaymentStatus.paid
     );
 
-    const pickupAddress = order.BookingAddress_Booking_pickupAddressIdToBookingAddress;
-    const dropoffAddress = order.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
+    const pickupAddress = (order as any).BookingAddress_Booking_pickupAddressIdToBookingAddress;
+    const dropoffAddress = (order as any).BookingAddress_Booking_dropoffAddressIdToBookingAddress;
 
     const invoiceData = {
       invoiceNumber: `INV-${order.reference}`,

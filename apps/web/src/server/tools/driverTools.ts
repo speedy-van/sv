@@ -307,7 +307,7 @@ export class GetDriverEarningsTool extends BaseTool {
               include: {
                 BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
                 BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-              },
+              } as any,
             },
           },
         },

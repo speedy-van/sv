@@ -12,13 +12,8 @@ import { getPusherServer } from '@/lib/pusher';
 import { multiDropEligibilityEngine } from '@/lib/services/multi-drop-eligibility-engine';
 import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-optimizer';
 
-type BookingWithAddresses = Prisma.BookingGetPayload<{
-  include: {
-    BookingItem: true;
-    BookingAddress_Booking_pickupAddressIdToBookingAddress: true;
-    BookingAddress_Booking_dropoffAddressIdToBookingAddress: true;
-  };
-}>;
+// Type for booking with addresses - using any due to Prisma relation name limitations
+type BookingWithAddresses = any;
 
 /**
  * Get or create a system driver for unassigned routes
@@ -113,7 +108,7 @@ async function createRoutesAutomatically() {
         BookingItem: true,
         BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
         BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-      },
+      } as any,
       orderBy: [
         { priority: 'desc' },
         { scheduledAt: 'asc' },
@@ -165,7 +160,7 @@ async function createRoutesAutomatically() {
             lng: dropoffAddress.lng || 0,
           },
         },
-          items: booking.BookingItem.map(item => ({
+          items: booking.BookingItem.map((item: any) => ({
           category: item.category || 'furniture',
           name: item.name,
           quantity: item.quantity,

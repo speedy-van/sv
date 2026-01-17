@@ -32,7 +32,7 @@ export class GetUnassignedOrdersTool extends BaseTool {
         BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
         BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
-      },
+      } as any,
       orderBy,
       take: input.limit,
     });
@@ -143,7 +143,7 @@ export class AssignDriverToOrderTool extends BaseTool {
         assignment,
         order: await prisma.booking.findUnique({
           where: { id: input.orderId },
-          include: { Driver: { include: { User: true } } },
+          include: { Driver: { include: { User: true } } } as any,
         }),
         message: `Successfully assigned ${driver.User.name} to order ${order.reference}`,
       },
@@ -170,7 +170,7 @@ export class FindBestDriverForOrderTool extends BaseTool {
         BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
         BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
-      },
+      } as any,
     });
 
     if (!order) {
@@ -351,7 +351,7 @@ export class GetOrderDetailsTool extends BaseTool {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
-      },
+      } as any,
     });
 
     if (!order) {
@@ -383,7 +383,7 @@ export class GetOrderDetailsTool extends BaseTool {
         summary: {
           reference: normalizedOrder.reference,
           status: normalizedOrder.status,
-          driver: normalizedOrder.driver?.User.name || 'Not assigned',
+          driver: (normalizedOrder.driver as any)?.User?.name || 'Not assigned',
           createdAt: normalizedOrder.createdAt,
           totalAmount: normalizedOrder.totalGBP,
         },

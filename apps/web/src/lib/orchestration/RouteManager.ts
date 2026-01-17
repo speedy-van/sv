@@ -289,7 +289,7 @@ export class RouteManager {
           BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
           BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
           BookingItem: true,
-        },
+        } as any,
         orderBy: { scheduledAt: 'asc' },
         take: 100, // Process in batches
       });
@@ -437,7 +437,7 @@ export class RouteManager {
           include: {
             BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
             BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-          }
+          } as any
         });
 
         drops = await this.convertBookingsToDrops(bookings);
@@ -550,7 +550,7 @@ export class RouteManager {
       include: {
         BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
         BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-      }
+      } as any
     });
 
     const drops = await this.convertBookingsToDrops(bookings);
@@ -834,7 +834,7 @@ export class RouteManager {
             include: {
               BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
               BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-            }
+            } as any
           },
         }
       });
