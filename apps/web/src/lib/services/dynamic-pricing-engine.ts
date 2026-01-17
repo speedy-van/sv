@@ -166,8 +166,18 @@ export class DynamicPricingEngine {
         capacityCheck,
       };
     } catch (error) {
-      console.error('Dynamic pricing calculation failed:', error);
-      throw new Error('Failed to calculate dynamic pricing');
+      console.error('❌ Dynamic pricing calculation failed:', error);
+      console.error('❌ Request data:', {
+        pickup: request.pickupAddress.postcode,
+        dropoff: request.dropoffAddress.postcode,
+        serviceType: request.serviceType,
+        items: request.items.length,
+        isMultiDrop: request.isMultiDrop
+      });
+      
+      // Re-throw with original error message for debugging
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to calculate dynamic pricing: ${errorMessage}`);
     }
   }
 
@@ -735,7 +745,7 @@ export class DynamicPricingEngine {
         createdAt: {
           gte: new Date(Date.now() - 2 * 60 * 60 * 1000), // Last 2 hours
         },
-        pickupAddress: {
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
           postcode: {
             startsWith: postcode.substring(0, 3),
           },

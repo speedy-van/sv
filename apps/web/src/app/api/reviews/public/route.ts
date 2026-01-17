@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         city: true,
         serviceType: true,
         createdAt: true,
-        user: {
+        User: {
           select: {
             name: true,
           },

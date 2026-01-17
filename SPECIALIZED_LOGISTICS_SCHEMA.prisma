@@ -1,0 +1,303 @@
+// Specialized Logistics: Prisma Schema Extensions
+// Add these models to packages/shared/prisma/schema.prisma
+
+// ============================================================================
+// SPECIALIZED ITEM CATEGORIES & ENUMS
+// ============================================================================
+
+enum SpecializedItemCategory {
+  PIANO_UPRIGHT
+  PIANO_GRAND
+  FINE_ART_PAINTING
+  FINE_ART_SCULPTURE
+  MEDICAL_EQUIPMENT
+  ANTIQUE_FURNITURE
+  LUXURY_FURNITURE
+  FRAGILE_ELECTRONICS
+  CUSTOM_SPECIALIZED
+}
+
+enum InsuranceTier {
+  STANDARD      // Up to £5,000
+  PREMIUM       // £5,000 - £25,000
+  PLATINUM      // £25,000 - £100,000
+  BESPOKE       // £100,000+
+}
+
+enum EquipmentType {
+  PIANO_DOLLY
+  PIANO_BOARD
+  TAIL_LIFT
+  STAIR_CLIMBER
+  ART_CRATE
+  CLIMATE_CONTROLLED_VAN
+  HYDRAULIC_LIFT
+  NON_MARKING_STRAPS
+  PROTECTIVE_BLANKETS
+  SPECIALIZED_TROLLEY
+}
+
+enum ReportType {
+  PRE_MOVE
+  POST_MOVE
+  INCIDENT
+}
+
+enum ConditionGrade {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+// ============================================================================
+// SPECIALIZED ITEM MODEL
+// ============================================================================
+
+model SpecializedItem {
+  id                    String                    @id @default(cuid())
+  bookingItemId         String                    @unique
+  category              SpecializedItemCategory
+  
+  // Technical specifications (dynamic based on category)
+  technicalSpecs        Json                      @default("{}")
+  handlingRequirements  String[]                  @default([])
+  requiredEquipment     String[]                  @default([])
+  
+  // Risk & Value
+  declaredValue         Int                       @default(0) // Value in pence
+  insuranceTier         InsuranceTier             @default(STANDARD)
+  fragilityScore        Int                       @default(5) @db.SmallInt  // 1-10
+  complexityScore       Int                       @default(5) @db.SmallInt  // 1-10
+  
+  // Environmental requirements
+  temperatureControl    Boolean                   @default(false)
+  humidityControl       Boolean                   @default(false)
+  verticalTransport     Boolean                   @default(false)
+  
+  // Pre-move assessment
+  requiresOnSiteVisit   Boolean                   @default(false)
+  assessmentNotes       String?
+  assessedBy            String?
+  assessedAt            DateTime?
+  
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  
+  // Relations
+  BookingItem           BookingItem               @relation(fields: [bookingItemId], references: [id], onDelete: Cascade)
+  ConditionReports      ConditionReport[]
+  
+  @@index([category, fragilityScore])
+  @@index([insuranceTier, declaredValue])
+}
+
+// ============================================================================
+// SPECIALIZED EQUIPMENT REGISTRY
+// ============================================================================
+
+model SpecializedEquipment {
+  id                  String                   @id @default(cuid())
+  name                String
+  equipmentType       EquipmentType
+  description         String?
+  
+  // Verification
+  verificationRequired Boolean                  @default(true)
+  certificationTypes   String[]                 @default([])
+  
+  // Capabilities
+  maxWeight           Int?                      // kg
+  suitableFor         SpecializedItemCategory[] @default([])
+  
+  // Cost implications
+  dailyRentalCost     Int?                      // pence
+  insurancePremium    Int?                      // pence
+  
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  
+  // Relations
+  DriverEquipment     DriverEquipment[]
+  
+  @@index([equipmentType])
+}
+
+// ============================================================================
+// DRIVER EQUIPMENT VERIFICATION
+// ============================================================================
+
+model DriverEquipment {
+  id                      String                @id @default(cuid())
+  driverId                String
+  equipmentId             String
+  
+  // Verification status
+  verified                Boolean               @default(false)
+  verifiedBy              String?               // Admin ID
+  verifiedAt              DateTime?
+  expiresAt               DateTime?             // For time-limited certifications
+  
+  // Evidence
+  photoUrl                String?
+  certificateUrl          String?
+  serialNumber            String?
+  
+  // Operational
+  isOperational           Boolean               @default(true)
+  lastMaintenanceDate     DateTime?
+  nextMaintenanceDate     DateTime?
+  
+  notes                   String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  
+  // Relations
+  Driver                  Driver                @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  Equipment               SpecializedEquipment  @relation(fields: [equipmentId], references: [id])
+  
+  @@unique([driverId, equipmentId])
+  @@index([driverId, verified, isOperational])
+  @@index([equipmentId, verified])
+}
+
+// ============================================================================
+// PRE-MOVE CONDITION REPORTING
+// ============================================================================
+
+model ConditionReport {
+  id                    String              @id @default(cuid())
+  specializedItemId     String
+  bookingId             String
+  reportType            ReportType          @default(PRE_MOVE)
+  
+  // Reporter information
+  reportedBy            String              // Driver ID or Admin ID
+  reportedAt            DateTime            @default(now())
+  
+  // Visual documentation
+  photos                Json                @default("[]") // Array of {url, caption, timestamp, geoLocation}
+  videoUrl              String?
+  
+  // Condition assessment
+  overallCondition      ConditionGrade      @default(GOOD)
+  damagePre             String[]            @default([])  // Pre-existing damage
+  specialNotes          String?
+  
+  // Measurements (for high-value items)
+  measurements          Json?               // {length, width, height, weight}
+  
+  // Customer acknowledgment
+  customerSigned        Boolean             @default(false)
+  customerSignature     String?             // Digital signature data
+  customerSignedAt      DateTime?
+  
+  // Sync to customer dashboard
+  syncedToCustomer      Boolean             @default(false)
+  syncedAt              DateTime?
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  // Relations
+  SpecializedItem       SpecializedItem     @relation(fields: [specializedItemId], references: [id], onDelete: Cascade)
+  Booking               Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@index([bookingId, reportType])
+  @@index([specializedItemId, reportType])
+  @@index([reportedAt])
+}
+
+// ============================================================================
+// DYNAMIC WORKFLOW CONFIGURATIONS
+// ============================================================================
+
+model SpecializedWorkflow {
+  id                    String                    @id @default(cuid())
+  itemCategory          SpecializedItemCategory   @unique
+  
+  // Workflow definition
+  workflowName          String
+  requiredFields        Json                      @default("[]") // Dynamic form fields
+  optionalFields        Json?
+  
+  // Business rules
+  minInsuranceValue     Int                       @default(0) // Minimum insurance in pence
+  requiresPhotos        Boolean                   @default(true)
+  requiresOnSiteVisit   Boolean                   @default(false)
+  
+  // Equipment requirements
+  mandatoryEquipment    String[]                  @default([])
+  recommendedEquipment  String[]                  @default([])
+  
+  // Pricing modifiers
+  basePriceMultiplier   Float                     @default(1.0)
+  insuranceMultiplier   Float                     @default(1.0)
+  
+  // Template content
+  customerGuidance      String?                   // Guidance shown to customer
+  driverInstructions    String?                   // Instructions for driver
+  
+  isActive              Boolean                   @default(true)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  
+  @@index([itemCategory, isActive])
+}
+
+// ============================================================================
+// INSURANCE QUOTES
+// ============================================================================
+
+model InsuranceQuote {
+  id                    String                    @id @default(cuid())
+  itemCategory          SpecializedItemCategory
+  declaredValue         Int                       // in pence
+  insuranceTier         InsuranceTier
+  
+  // Pricing
+  basePremium           Int                       // in pence
+  riskModifier          Float                     @default(1.0)
+  finalPremium          Int                       // in pence
+  
+  validUntil            DateTime
+  quoteData             Json?
+  
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  
+  @@index([validUntil])
+  @@index([itemCategory, insuranceTier])
+}
+
+// ============================================================================
+// UPDATES TO EXISTING MODELS
+// ============================================================================
+
+// Add to BookingItem model:
+// isSpecialized         Boolean              @default(false)
+// SpecializedItem       SpecializedItem?
+
+// Add to Driver model:
+// DriverEquipment       DriverEquipment[]
+// specializations       SpecializedItemCategory[]  @default([])
+// certifications        Json?
+
+// Add to Booking model:
+// hasSpecializedItems   Boolean              @default(false)
+// specializedInsurance  Int?                 // Additional insurance in pence
+// ConditionReports      ConditionReport[]
+
+// ============================================================================
+// MIGRATION INSTRUCTIONS
+// ============================================================================
+
+/*
+1. Copy these models to packages/shared/prisma/schema.prisma
+2. Add the enum types at the top of the file
+3. Update existing models (BookingItem, Driver, Booking) with new fields
+4. Run: npx prisma format
+5. Run: npx prisma migrate dev --name add_specialized_logistics
+6. Run: npx prisma generate
+*/

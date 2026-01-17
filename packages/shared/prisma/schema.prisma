@@ -248,6 +248,8 @@ model Booking {
   isMultiLeg                                                 Boolean                 @default(false)
   totalSegments                                              Int                     @default(1)
   notes                                                      String?
+  hasSpecializedItems                                        Boolean                 @default(false)
+  specializedInsurance                                       Int?
   Assignment                                                 Assignment[]
   User                                                       User?                   @relation(fields: [customerId], references: [id])
   Driver                                                     Driver?                 @relation(fields: [driverId], references: [id])
@@ -271,6 +273,7 @@ model Booking {
   ReviewRequest                                              ReviewRequest[]
   Review                                                     Review[]
   DiscountCodeUsed                                           DiscountCode[]          @relation("DiscountCodeUsed")
+  ConditionReports                                           ConditionReport[]
 
   @@index([currentStep, status])
   @@index([customerEmail, scheduledAt])
@@ -335,15 +338,17 @@ model BookingCancellation {
 }
 
 model BookingItem {
-  id              String  @id @default(cuid())
+  id              String           @id @default(cuid())
   bookingId       String
   name            String
-  quantity        Int     @default(1)
+  quantity        Int              @default(1)
   volumeM3        Float
   category        String?
   estimatedVolume Float?
   estimatedWeight Float?
-  Booking         Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  isSpecialized   Boolean          @default(false)
+  Booking         Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  SpecializedItem SpecializedItem?
 
   @@index([bookingId])
 }
@@ -685,8 +690,8 @@ model Driver {
   bankAccountName               String?
   bankAccountNumber             String?
   bankName                      String?
-  bankSortCode                  String?
-  taxInfo                       Json?
+  specializations               SpecializedItemCategory[]      @default([])
+  certifications                Json?
   AccountDeletionRequest        AccountDeletionRequest[]
   Assignment                    Assignment[]
   BonusRequest                  BonusRequest[]
@@ -711,6 +716,7 @@ model Driver {
   PushSubscription              PushSubscription[]
   TrackingPing                  TrackingPing[]
   Review                        Review[]
+  DriverEquipment               DriverEquipment[]
 }
 
 model DriverApplication {
@@ -3535,25 +3541,25 @@ enum B2BApplicationStatus {
 // ============================================
 
 model ReviewRequest {
-  id              String    @id @default(cuid())
-  bookingId       String
-  customerId      String
-  customerEmail   String
-  customerName    String
-  status          ReviewRequestStatus @default(PENDING)
-  sentAt          DateTime?
-  reminderSentAt  DateTime?
-  respondedAt     DateTime?
-  token           String    @unique
-  expiresAt       DateTime
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id             String              @id @default(cuid())
+  bookingId      String
+  customerId     String
+  customerEmail  String
+  customerName   String
+  status         ReviewRequestStatus @default(PENDING)
+  sentAt         DateTime?
+  reminderSentAt DateTime?
+  respondedAt    DateTime?
+  token          String              @unique
+  expiresAt      DateTime
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
   // Relations
-  Booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  User            User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Review          Review?
-  
+  Booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User    User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Review  Review?
+
   @@index([bookingId])
   @@index([customerId])
   @@index([status])
@@ -3562,30 +3568,30 @@ model ReviewRequest {
 }
 
 model Review {
-  id               String    @id @default(cuid())
-  bookingId        String
-  customerId       String
-  driverId         String?
-  rating           Int       // 1-5 stars
-  title            String?
-  comment          String?
-  isPublic         Boolean   @default(true)
-  isApproved       Boolean   @default(false)
-  approvedAt       DateTime?
-  approvedBy       String?
-  city             String?
-  serviceType      String?
-  reviewRequestId  String?   @unique
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  
+  id              String    @id @default(cuid())
+  bookingId       String
+  customerId      String
+  driverId        String?
+  rating          Int // 1-5 stars
+  title           String?
+  comment         String?
+  isPublic        Boolean   @default(true)
+  isApproved      Boolean   @default(false)
+  approvedAt      DateTime?
+  approvedBy      String?
+  city            String?
+  serviceType     String?
+  reviewRequestId String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
   // Relations
-  Booking          Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  User             User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Driver           Driver?        @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  ReviewRequest    ReviewRequest? @relation(fields: [reviewRequestId], references: [id], onDelete: SetNull)
-  DiscountCode     DiscountCode?
-  
+  Booking       Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  User          User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Driver        Driver?        @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  ReviewRequest ReviewRequest? @relation(fields: [reviewRequestId], references: [id], onDelete: SetNull)
+  DiscountCode  DiscountCode?
+
   @@index([bookingId])
   @@index([customerId])
   @@index([driverId])
@@ -3598,24 +3604,24 @@ model Review {
 }
 
 model DiscountCode {
-  id                  String    @id @default(cuid())
-  code                String    @unique
-  customerId          String
-  reviewId            String    @unique
-  discountPercentage  Int       @default(10)
-  maxDiscountAmount   Decimal?  @db.Decimal(10, 2)
-  isUsed              Boolean   @default(false)
-  usedAt              DateTime?
-  usedInBookingId     String?
-  expiresAt           DateTime
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  
+  id                 String    @id @default(cuid())
+  code               String    @unique
+  customerId         String
+  reviewId           String    @unique
+  discountPercentage Int       @default(10)
+  maxDiscountAmount  Decimal?  @db.Decimal(10, 2)
+  isUsed             Boolean   @default(false)
+  usedAt             DateTime?
+  usedInBookingId    String?
+  expiresAt          DateTime
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
   // Relations
-  User                User      @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Review              Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  UsedInBooking       Booking?  @relation("DiscountCodeUsed", fields: [usedInBookingId], references: [id], onDelete: SetNull)
-  
+  User          User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  UsedInBooking Booking? @relation("DiscountCodeUsed", fields: [usedInBookingId], references: [id], onDelete: SetNull)
+
   @@index([code])
   @@index([customerId])
   @@index([isUsed])
@@ -3628,4 +3634,256 @@ enum ReviewRequestStatus {
   REMINDED
   RESPONDED
   EXPIRED
+}
+
+// ============================================================================
+// SPECIALIZED LOGISTICS - NEW ENUMS & MODELS
+// ============================================================================
+
+enum SpecializedItemCategory {
+  PIANO_UPRIGHT
+  PIANO_GRAND
+  FINE_ART_PAINTING
+  FINE_ART_SCULPTURE
+  MEDICAL_EQUIPMENT
+  ANTIQUE_FURNITURE
+  LUXURY_FURNITURE
+  FRAGILE_ELECTRONICS
+  CUSTOM_SPECIALIZED
+}
+
+enum InsuranceTier {
+  STANDARD // Up to £5,000
+  PREMIUM // £5,000 - £25,000
+  PLATINUM // £25,000 - £100,000
+  BESPOKE // £100,000+
+}
+
+enum EquipmentType {
+  PIANO_DOLLY
+  PIANO_BOARD
+  TAIL_LIFT
+  STAIR_CLIMBER
+  ART_CRATE
+  CLIMATE_CONTROLLED_VAN
+  HYDRAULIC_LIFT
+  NON_MARKING_STRAPS
+  PROTECTIVE_BLANKETS
+  SPECIALIZED_TROLLEY
+}
+
+enum ReportType {
+  PRE_MOVE
+  POST_MOVE
+  INCIDENT
+}
+
+enum ConditionGrade {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+// Specialized Item Model
+model SpecializedItem {
+  id            String                  @id @default(cuid())
+  bookingItemId String                  @unique
+  category      SpecializedItemCategory
+
+  // Technical specifications (dynamic based on category)
+  technicalSpecs       Json     @default("{}")
+  handlingRequirements String[] @default([])
+  requiredEquipment    String[] @default([])
+
+  // Risk & Value
+  declaredValue   Int           @default(0) // Value in pence
+  insuranceTier   InsuranceTier @default(STANDARD)
+  fragilityScore  Int           @default(5) @db.SmallInt // 1-10
+  complexityScore Int           @default(5) @db.SmallInt // 1-10
+
+  // Environmental requirements
+  temperatureControl Boolean @default(false)
+  humidityControl    Boolean @default(false)
+  verticalTransport  Boolean @default(false)
+
+  // Pre-move assessment
+  requiresOnSiteVisit Boolean   @default(false)
+  assessmentNotes     String?
+  assessedBy          String?
+  assessedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  BookingItem      BookingItem       @relation(fields: [bookingItemId], references: [id], onDelete: Cascade)
+  ConditionReports ConditionReport[]
+
+  @@index([category, fragilityScore])
+  @@index([insuranceTier, declaredValue])
+}
+
+// Specialized Equipment Registry
+model SpecializedEquipment {
+  id            String        @id @default(cuid())
+  name          String
+  equipmentType EquipmentType
+  description   String?
+
+  // Verification
+  verificationRequired Boolean  @default(true)
+  certificationTypes   String[] @default([])
+
+  // Capabilities
+  maxWeight   Int? // kg
+  suitableFor SpecializedItemCategory[] @default([])
+
+  // Cost implications
+  dailyRentalCost  Int? // pence
+  insurancePremium Int? // pence
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  DriverEquipment DriverEquipment[]
+
+  @@index([equipmentType])
+}
+
+// Driver Equipment Verification
+model DriverEquipment {
+  id          String @id @default(cuid())
+  driverId    String
+  equipmentId String
+
+  // Verification status
+  verified   Boolean   @default(false)
+  verifiedBy String? // Admin ID
+  verifiedAt DateTime?
+  expiresAt  DateTime? // For time-limited certifications
+
+  // Evidence
+  photoUrl       String?
+  certificateUrl String?
+  serialNumber   String?
+
+  // Operational
+  isOperational       Boolean   @default(true)
+  lastMaintenanceDate DateTime?
+  nextMaintenanceDate DateTime?
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  Driver    Driver               @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  Equipment SpecializedEquipment @relation(fields: [equipmentId], references: [id])
+
+  @@unique([driverId, equipmentId])
+  @@index([driverId, verified, isOperational])
+  @@index([equipmentId, verified])
+}
+
+// Pre-Move Condition Reporting
+model ConditionReport {
+  id                String     @id @default(cuid())
+  specializedItemId String
+  bookingId         String
+  reportType        ReportType @default(PRE_MOVE)
+
+  // Reporter information
+  reportedBy String // Driver ID or Admin ID
+  reportedAt DateTime @default(now())
+
+  // Visual documentation
+  photos   Json    @default("[]") // Array of {url, caption, timestamp, geoLocation}
+  videoUrl String?
+
+  // Condition assessment
+  overallCondition ConditionGrade @default(GOOD)
+  damagePre        String[]       @default([]) // Pre-existing damage
+  specialNotes     String?
+
+  // Measurements (for high-value items)
+  measurements Json? // {length, width, height, weight}
+
+  // Customer acknowledgment
+  customerSigned    Boolean   @default(false)
+  customerSignature String? // Digital signature data
+  customerSignedAt  DateTime?
+
+  // Sync to customer dashboard
+  syncedToCustomer Boolean   @default(false)
+  syncedAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  SpecializedItem SpecializedItem @relation(fields: [specializedItemId], references: [id], onDelete: Cascade)
+  Booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, reportType])
+  @@index([specializedItemId, reportType])
+  @@index([reportedAt])
+}
+
+// Dynamic Workflow Configurations
+model SpecializedWorkflow {
+  id           String                  @id @default(cuid())
+  itemCategory SpecializedItemCategory @unique
+
+  // Workflow definition
+  workflowName   String
+  requiredFields Json   @default("[]") // Dynamic form fields
+  optionalFields Json?
+
+  // Business rules
+  minInsuranceValue   Int     @default(0) // Minimum insurance in pence
+  requiresPhotos      Boolean @default(true)
+  requiresOnSiteVisit Boolean @default(false)
+
+  // Equipment requirements
+  mandatoryEquipment   String[] @default([])
+  recommendedEquipment String[] @default([])
+
+  // Pricing modifiers
+  basePriceMultiplier Float @default(1.0)
+  insuranceMultiplier Float @default(1.0)
+
+  // Template content
+  customerGuidance   String? // Guidance shown to customer
+  driverInstructions String? // Instructions for driver
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemCategory, isActive])
+}
+
+// Insurance Quotes
+model InsuranceQuote {
+  id            String                  @id @default(cuid())
+  itemCategory  SpecializedItemCategory
+  declaredValue Int // in pence
+  insuranceTier InsuranceTier
+
+  // Pricing
+  basePremium  Int // in pence
+  riskModifier Float @default(1.0)
+  finalPremium Int // in pence
+
+  validUntil DateTime
+  quoteData  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([validUntil])
+  @@index([itemCategory, insuranceTier])
 }

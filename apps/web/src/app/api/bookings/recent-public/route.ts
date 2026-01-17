@@ -29,13 +29,13 @@ export async function GET() {
         serviceType: true,
         status: true,
         actualDeliveryTime: true,
-        pickupAddress: {
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
           select: { label: true },
         },
-        dropoffAddress: {
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: {
           select: { label: true },
         },
-        driver: {
+        Driver: {
           select: { rating: true },
         },
       },
@@ -48,6 +48,9 @@ export async function GET() {
     // Transform to public-safe format
     const publicBookings = recentBookings.map((booking: any) => ({
       id: booking.id,
+      pickupAddress: booking.BookingAddress_Booking_pickupAddressIdToBookingAddress,
+      dropoffAddress: booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress,
+      driver: booking.Driver,
       customerName: anonymizeName(booking.customerName),
       from: extractCityFromLabel(
         booking.pickupAddress?.label || ''

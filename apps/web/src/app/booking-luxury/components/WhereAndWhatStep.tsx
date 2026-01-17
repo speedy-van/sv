@@ -96,6 +96,13 @@ import {
 } from '@/lib/uk-removal-items-data';
 
 import type { BookingSegment } from '../types/segment';
+import { useSpecializedItems } from '../hooks/useSpecializedItems';
+import SpecializedItemWizard from './specialized/SpecializedItemWizard';
+import {
+  SpecializedItemIndicator,
+  SpecializedItemBadge,
+  SpecializedItemsSummary,
+} from './specialized/SpecializedItemComponents';
 
 interface WhereAndWhatStepProps {
   formData: FormData;
@@ -162,6 +169,21 @@ export default function WhereAndWhatStep({
   const segments = (formData.step1.segments || []) as BookingSegment[];
   const isMultiLeg = segments.length > 1;
   const toast = useToast();
+  
+  // Specialized items hook
+  const {
+    checkIfSpecialized,
+    detectCategory,
+    openWizard,
+    closeWizard,
+    activeWizardItemId,
+    saveSpecializedItem,
+    hasSpecializedData,
+    getTotalInsurancePremium,
+    getSpecializedItemsSummary,
+    getSpecializedItem,
+  } = useSpecializedItems();
+  
   const {
     isOpen: isSelectedItemsPanelOpen,
     onOpen: onSelectedItemsPanelOpen,
@@ -300,13 +322,33 @@ export default function WhereAndWhatStep({
       }
     });
     
+    // Check if this is a specialized item
+    if (checkIfSpecialized(item)) {
+      const category = detectCategory(item.name);
+      if (category) {
+        // Show toast to inform user
+        toast({
+          title: 'Specialized Item Detected',
+          description: `${item.name} requires specialized handling. Please configure details.`,
+          status: 'info',
+          duration: 5000,
+          isClosable: true,
+        });
+        
+        // Auto-open wizard after a short delay
+        setTimeout(() => {
+          openWizard(item.id);
+        }, 500);
+      }
+    }
+    
     // Restore scroll position after update (mobile only)
     if (isMobile && scrollY !== undefined) {
       requestAnimationFrame(() => {
         window.scrollTo(0, scrollY);
       });
     }
-  }, [updateItemsInAllSegments]);
+  }, [updateItemsInAllSegments, checkIfSpecialized, detectCategory, openWizard, toast]);
 
   const removeItem = useCallback((itemId: any) => {
     // Save scroll position before update (mobile only)
@@ -471,9 +513,19 @@ export default function WhereAndWhatStep({
                 p={2}
                 borderRadius="lg"
               >
-                <Text fontSize="sm" color="gray.300" fontWeight="medium">
-                  Quantity:
-                </Text>
+                <HStack spacing={2} flex={1}>
+                  <Text fontSize="sm" color="gray.300" fontWeight="medium">
+                    Quantity:
+                  </Text>
+                  {checkIfSpecialized(item) && (
+                    <SpecializedItemBadge
+                      category={detectCategory(item.name)!}
+                      isConfigured={hasSpecializedData(item.id)}
+                      onClick={() => openWizard(item.id)}
+                      size="sm"
+                    />
+                  )}
+                </HStack>
                 <HStack spacing={2}>
                   <IconButton
                     size="sm"
@@ -517,6 +569,16 @@ export default function WhereAndWhatStep({
             </Box>
           ))}
         </VStack>
+        
+        {/* Specialized Items Summary */}
+        {getSpecializedItemsSummary().length > 0 && (
+          <Box mt={4} w="full">
+            <SpecializedItemsSummary
+              specializedItems={getSpecializedItemsSummary()}
+              totalPremium={getTotalInsurancePremium()}
+            />
+          </Box>
+        )}
 
         {pricingTiers && (
           <VStack spacing={2} w="full" mt={4}>
@@ -1673,7 +1735,7 @@ export default function WhereAndWhatStep({
                     {displayedItems.slice(0, 50).map((item) => {
                       const quantity = getItemQuantity(item.id);
                       return (
-                        <VStack key={item.id} spacing={2} align="center" w="full">
+                        <VStack key={item.id} spacing={2} align="center" w="full" position="relative">
                           <Box 
                             w="100%" 
                             h={{ base: "120px", sm: "140px", md: "160px" }} 
@@ -1683,7 +1745,13 @@ export default function WhereAndWhatStep({
                             display="flex" 
                             alignItems="center" 
                             justifyContent="center"
+                            position="relative"
                           >
+                            <SpecializedItemIndicator
+                              isSpecialized={checkIfSpecialized(item)}
+                              isConfigured={hasSpecializedData(item.id)}
+                              onClick={() => openWizard(item.id)}
+                            />
                             <Image 
                               src={item.image} 
                               alt={item.name} 
@@ -2376,6 +2444,25 @@ export default function WhereAndWhatStep({
             </DrawerContent>
           </Drawer>
         </>
+      )}
+      
+      {/* Specialized Items Wizard */}
+      {activeWizardItemId && (
+        <SpecializedItemWizard
+          isOpen={!!activeWizardItemId}
+          onClose={closeWizard}
+          bookingItemId={activeWizardItemId}
+          itemName={currentItems.find(i => i.id === activeWizardItemId)?.name || ''}
+          onComplete={(data) => {
+            saveSpecializedItem(activeWizardItemId, data);
+            closeWizard();
+          }}
+          preselectedCategory={
+            activeWizardItemId
+              ? detectCategory(currentItems.find(i => i.id === activeWizardItemId)?.name || '') || undefined
+              : undefined
+          }
+        />
       )}
     </Container>
   );
