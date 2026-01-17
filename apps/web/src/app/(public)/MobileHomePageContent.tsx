@@ -387,10 +387,10 @@ const MobileHero: React.FC = () => {
       w="100%"
       maxW="100%"
       sx={{
-        minHeight: { base: '180vh', sm: '150vh', md: '90vh' },
-        height: { base: 'auto', md: '90vh' },
+        minHeight: { base: '320vh', sm: '280vh', md: '150vh' },
+        height: { base: 'auto', md: 'auto' },
         py: { base: '20px', md: '80px' },
-        pb: { base: '180px', sm: '140px', md: '80px' },
+        pb: { base: '480px', sm: '400px', md: '320px' },
         pt: { base: 'calc(env(safe-area-inset-top) + 140px)', sm: 'calc(env(safe-area-inset-top) + 130px)', md: '100px' },
         '&::before': {
           content: '""',
@@ -432,7 +432,7 @@ const MobileHero: React.FC = () => {
             height: '100%',
             objectFit: 'cover',
             zIndex: 0,
-            filter: 'brightness(0.6)',
+            filter: 'brightness(0.65)',
             imageRendering: 'crisp-edges',
             WebkitBackfaceVisibility: 'hidden',
             backfaceVisibility: 'hidden',
@@ -449,8 +449,8 @@ const MobileHero: React.FC = () => {
             // Video started playing - production ready
           }}
         >
-          {/* Use smaller optimized video first (2.67MB vs 56MB) */}
-          <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/background.mp4`} type="video/mp4" />
+          {/* Enhanced 4K drone footage with professional color grading */}
+          <source src={`${process.env.NEXT_PUBLIC_CDN_URL || ''}/videos/speedy_van_hero_final.mp4`} type="video/mp4" />
         </video>
       )}
 
@@ -493,7 +493,7 @@ const MobileHero: React.FC = () => {
             whileInView="show"
             variants={heroStagger}
             viewport={viewportMotion}
-            mt={{ base: 64, sm: 48, md: 12, lg: 28 }}
+            mt={{ base: 160, sm: 120, md: 60, lg: 28 }}
           >
             <VStack spacing={4}>
               <LiveBookingCounter />
