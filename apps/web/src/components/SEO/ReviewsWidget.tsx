@@ -77,11 +77,19 @@ export default function ReviewsWidget({
       }
 
       const response = await fetch(`/api/reviews/public?${params}`);
+      
+      if (!response.ok) {
+        console.error('Failed to fetch reviews:', response.status);
+        setReviews([]);
+        setTotalPages(1);
+        return;
+      }
+      
       const data = await response.json();
 
-      setReviews(data.reviews);
-      setStats(data.stats);
-      setTotalPages(data.pagination.totalPages);
+      setReviews(data.reviews || []);
+      setStats(data.stats || null);
+      setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       // Silent error: Error fetching reviews
     } finally {

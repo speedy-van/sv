@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       city: review.city,
       serviceType: review.serviceType,
       createdAt: review.createdAt,
-      customerName: anonymizeName(review.user?.name || 'Anonymous'),
+      customerName: anonymizeName(review.User?.name || 'Anonymous'),
     }));
 
     return NextResponse.json({
