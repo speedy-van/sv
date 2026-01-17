@@ -70,6 +70,16 @@ const LiveTrustpilotTicker = dynamic(() => import('@/components/LiveTrustpilotTi
   loading: () => null,
 });
 
+const StickyCTA = dynamic(() => import('@/components/StickyCTA'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const QuickQuoteWidget = dynamic(() => import('@/components/QuickQuoteWidget'), {
+  ssr: false,
+  loading: () => null,
+});
+
 const SpeedyAIBotWrapper = dynamic(() => import('@/components/site/SpeedyAIBotWrapper'), {
   ssr: false,
   loading: () => null,
@@ -597,7 +607,7 @@ const MobileHero: React.FC = () => {
               </MotionBox>
 
               {/* Secondary Actions */}
-              <HStack spacing={3} w="full" justify="center">
+              <HStack spacing={3} w="full" justify="center" display={{ base: 'flex', md: 'none' }}>
                 <MotionBox flex={1} whileHover={hoverLift(prefersReducedMotion)} whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}>
                   <TouchButton
                     size="lg"
@@ -650,6 +660,18 @@ const MobileHero: React.FC = () => {
               </HStack>
 
             </VStack>
+          </MotionBox>
+
+          {/* Quick Quote Widget - Below CTAs */}
+          <MotionBox
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={viewportMotion}
+            w="full"
+            maxW="500px"
+            mt={{ base: 6, md: 8 }}
+          >
+            <QuickQuoteWidget />
           </MotionBox>
 
         </VStack>
@@ -1635,6 +1657,9 @@ export default function MobileHomePageContent() {
       <Box position="relative" zIndex={1}>
         <SpeedyAIBotWrapper />
       </Box>
+
+      {/* Sticky CTA - Shows on scroll */}
+      <StickyCTA />
     </Box>
   );
 }
