@@ -98,7 +98,7 @@ export default function LiveBookingCounter() {
   }, []);
 
   return (
-    <Box textAlign="center" position="relative" mt={{ base: 4, md: 6, lg: 8 }}>
+    <Box textAlign="center" position="relative" mt={{ base: 48, sm: 32, md: 6, lg: 8 }}>
       {/* Today's Bookings Counter */}
       <HStack
         spacing={{ base: 3, md: 4, lg: 5 }}

@@ -362,10 +362,11 @@ const MobileHero: React.FC = () => {
       w="100%"
       maxW="100%"
       sx={{
-        minHeight: { base: 'auto', md: '90vh' },
+        minHeight: { base: '180vh', sm: '150vh', md: '90vh' },
         height: { base: 'auto', md: '90vh' },
         py: { base: '20px', md: '80px' },
-        pt: { base: 'calc(env(safe-area-inset-top) + 118px)', md: '100px' },
+        pb: { base: '180px', sm: '140px', md: '80px' },
+        pt: { base: 'calc(env(safe-area-inset-top) + 140px)', sm: 'calc(env(safe-area-inset-top) + 130px)', md: '100px' },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -467,7 +468,7 @@ const MobileHero: React.FC = () => {
             whileInView="show"
             variants={heroStagger}
             viewport={viewportMotion}
-            mt={{ base: 2, md: 12, lg: 28 }}
+            mt={{ base: 64, sm: 48, md: 12, lg: 28 }}
           >
             <Box>
               <LiveBookingCounter />
@@ -626,105 +627,6 @@ const MobileHero: React.FC = () => {
                 </MotionBox>
               </HStack>
 
-              {/* Popular Deliveries Pills */}
-              <Box w="full" mt={5}>
-                <Text
-                  fontSize="xs"
-                  color="whiteAlpha.700"
-                  fontWeight="medium"
-                  mb={2}
-                  textAlign="center"
-                  textTransform="uppercase"
-                  letterSpacing="wider"
-                >
-                  Popular Deliveries
-                </Text>
-                <Flex
-                  gap={2}
-                  flexWrap="wrap"
-                  justify="center"
-                  maxW="full"
-                >
-                  <Button
-                    as={Link}
-                    href="/facebook-marketplace-delivery"
-                    size="sm"
-                    bg="rgba(255,255,255,0.15)"
-                    backdropFilter="blur(10px)"
-                    color="white"
-                    fontSize="xs"
-                    fontWeight="semibold"
-                    borderRadius="full"
-                    px={4}
-                    py={2}
-                    h="auto"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    _hover={{ 
-                      bg: 'rgba(0,194,255,0.3)', 
-                      borderColor: 'cyan.400',
-                      transform: 'translateY(-2px)',
-                      textDecoration: 'none'
-                    }}
-                    transition="all 0.2s"
-                    leftIcon={<Text fontSize="sm">📦</Text>}
-                  >
-                    Facebook Marketplace
-                  </Button>
-                  <Button
-                    as={Link}
-                    href="/gumtree-pickup-delivery"
-                    size="sm"
-                    bg="rgba(255,255,255,0.15)"
-                    backdropFilter="blur(10px)"
-                    color="white"
-                    fontSize="xs"
-                    fontWeight="semibold"
-                    borderRadius="full"
-                    px={4}
-                    py={2}
-                    h="auto"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    _hover={{ 
-                      bg: 'rgba(0,209,143,0.3)', 
-                      borderColor: 'green.400',
-                      transform: 'translateY(-2px)',
-                      textDecoration: 'none'
-                    }}
-                    transition="all 0.2s"
-                    leftIcon={<Text fontSize="sm">🌳</Text>}
-                  >
-                    Gumtree
-                  </Button>
-                  <Button
-                    as={Link}
-                    href="/sofa-delivery-service"
-                    size="sm"
-                    bg="rgba(255,255,255,0.15)"
-                    backdropFilter="blur(10px)"
-                    color="white"
-                    fontSize="xs"
-                    fontWeight="semibold"
-                    borderRadius="full"
-                    px={4}
-                    py={2}
-                    h="auto"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    _hover={{ 
-                      bg: 'rgba(147,51,234,0.3)', 
-                      borderColor: 'purple.400',
-                      transform: 'translateY(-2px)',
-                      textDecoration: 'none'
-                    }}
-                    transition="all 0.2s"
-                    leftIcon={<FaCouch size={12} />}
-                  >
-                    Sofa Delivery
-                  </Button>
-                </Flex>
-              </Box>
             </VStack>
           </MotionBox>
 
