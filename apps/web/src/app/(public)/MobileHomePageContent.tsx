@@ -55,6 +55,21 @@ const LiveBookingCounter = dynamic(() => import('@/components/LiveBookingCounter
   loading: () => null,
 });
 
+const LiveAvailabilityPulse = dynamic(() => import('@/components/LiveAvailabilityPulse'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const PriceMatchBadge = dynamic(() => import('@/components/PriceMatchBadge'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const LiveTrustpilotTicker = dynamic(() => import('@/components/LiveTrustpilotTicker'), {
+  ssr: false,
+  loading: () => null,
+});
+
 const SpeedyAIBotWrapper = dynamic(() => import('@/components/site/SpeedyAIBotWrapper'), {
   ssr: false,
   loading: () => null,
@@ -470,9 +485,13 @@ const MobileHero: React.FC = () => {
             viewport={viewportMotion}
             mt={{ base: 64, sm: 48, md: 12, lg: 28 }}
           >
-            <Box>
+            <VStack spacing={4}>
               <LiveBookingCounter />
-            </Box>
+              <HStack spacing={3} flexWrap="wrap" justify="center">
+                <LiveAvailabilityPulse />
+                <PriceMatchBadge />
+              </HStack>
+            </VStack>
           </MotionBox>
 
           {/* Main Heading */}
@@ -505,16 +524,19 @@ const MobileHero: React.FC = () => {
             viewport={viewportMotion}
             mt={{ base: 2, md: 4 }}
           >
-            <Text
-              fontSize={{ base: 'sm', md: 'md' }}
-              color="whiteAlpha.900"
-              fontWeight="medium"
-              maxW="400px"
-              mx="auto"
-              textShadow="0 2px 10px rgba(0,0,0,0.8)"
-            >
-              From £25/hour • Same-day service • Fully insured
-            </Text>
+            <VStack spacing={3}>
+              <Text
+                fontSize={{ base: 'sm', md: 'md' }}
+                color="whiteAlpha.900"
+                fontWeight="medium"
+                maxW="400px"
+                mx="auto"
+                textShadow="0 2px 10px rgba(0,0,0,0.8)"
+              >
+                From £25/hour • Same-day service • Fully insured
+              </Text>
+              <LiveTrustpilotTicker />
+            </VStack>
           </MotionBox>
 
           {/* Enhanced CTA Buttons */}
