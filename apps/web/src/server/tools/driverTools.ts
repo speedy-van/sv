@@ -43,13 +43,13 @@ export class GetAvailableDriversTool extends BaseTool {
             Booking: true,
           },
         },
-      },
+      } as any,
     });
 
     return {
       success: true,
       data: {
-        drivers: drivers.map((driver: typeof drivers[0]) => ({
+        drivers: (drivers as any[]).map((driver: any) => ({
           id: driver.id,
           name: driver.User.name,
           phone: driver.User.phone,
@@ -94,7 +94,7 @@ export class GetDriverDetailsTool extends BaseTool {
               include: {
                 BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
                 BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
-              },
+              } as any,
             },
           },
           orderBy: {
@@ -108,8 +108,8 @@ export class GetDriverDetailsTool extends BaseTool {
           },
           take: 5,
         },
-      },
-    });
+      } as any,
+    }) as any;
 
     if (!driver) {
       return {
@@ -139,12 +139,12 @@ export class GetDriverDetailsTool extends BaseTool {
         stats: {
           totalEarnings: totalEarnings._sum.netAmountPence || 0,
           completedOrders,
-          rating: driver.DriverPerformance?.averageRating || 0,
-          completionRate: driver.DriverPerformance?.completionRate || 0,
-          onTimeRate: driver.DriverPerformance?.onTimeRate || 0,
+          rating: (driver as any).DriverPerformance?.averageRating || 0,
+          completionRate: (driver as any).DriverPerformance?.completionRate || 0,
+          onTimeRate: (driver as any).DriverPerformance?.onTimeRate || 0,
         },
-        recentAssignments: driver.Assignment,
-        recentEarnings: driver.DriverEarnings,
+        recentAssignments: (driver as any).Assignment,
+        recentEarnings: (driver as any).DriverEarnings,
       },
     };
   }
@@ -175,8 +175,8 @@ export class UpdateDriverStatusTool extends BaseTool {
             },
           },
         },
-      },
-    });
+      } as any,
+    }) as any;
 
     if (!driver) {
       return {
@@ -186,10 +186,10 @@ export class UpdateDriverStatusTool extends BaseTool {
     }
 
     // Check for active assignments
-    if (driver.Assignment.length > 0 && input.status !== 'active') {
+    if ((driver as any).Assignment.length > 0 && input.status !== 'active') {
       return {
         success: false,
-        error: `Driver has ${driver.Assignment.length} active assignments. Cannot change status.`,
+        error: `Driver has ${(driver as any).Assignment.length} active assignments. Cannot change status.`,
       };
     }
 
