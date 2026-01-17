@@ -739,21 +739,46 @@ export class DynamicPricingEngine {
   }
 
   private async getCurrentDemand(postcode: string): Promise<number> {
-    // Get current bookings in the area
-    const recentBookings = await prisma.booking.count({
-      where: {
-        createdAt: {
-          gte: new Date(Date.now() - 2 * 60 * 60 * 1000), // Last 2 hours
-        },
-        BookingAddress_Booking_pickupAddressIdToBookingAddress: {
+    try {
+      // Get current bookings in the area
+      // Since we can't directly filter on nested relations in count(),
+      // we'll get the addresses first and then count bookings
+      const postcodePrefix = postcode.substring(0, 3);
+      
+      const addresses = await prisma.bookingAddress.findMany({
+        where: {
           postcode: {
-            startsWith: postcode.substring(0, 3),
+            startsWith: postcodePrefix,
           },
         },
-      },
-    });
-    
-    return recentBookings;
+        select: {
+          id: true,
+        },
+      });
+
+      const addressIds = addresses.map(addr => addr.id);
+
+      if (addressIds.length === 0) {
+        return 0;
+      }
+
+      const recentBookings = await prisma.booking.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 2 * 60 * 60 * 1000), // Last 2 hours
+          },
+          pickupAddressId: {
+            in: addressIds,
+          },
+        },
+      });
+      
+      return recentBookings;
+    } catch (error) {
+      console.error('Error getting current demand:', error);
+      // Return default value on error
+      return 0;
+    }
   }
 
   private async getAvailableSupply(postcode: string): Promise<number> {

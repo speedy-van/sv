@@ -286,8 +286,8 @@ export class RouteManager {
           }
         },
         include: {
-          pickupAddress: true,
-          dropoffAddress: true,
+          BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+          BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
           BookingItem: true,
         },
         orderBy: { scheduledAt: 'asc' },
@@ -435,8 +435,8 @@ export class RouteManager {
             routeId: null,
           },
           include: {
-            pickupAddress: true,
-            dropoffAddress: true,
+            BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+            BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
           }
         });
 
@@ -548,8 +548,8 @@ export class RouteManager {
     const bookings = await prisma.booking.findMany({
       where: { id: { in: bookingIds } },
       include: {
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
       }
     });
 
@@ -718,8 +718,8 @@ export class RouteManager {
     const drops = [];
     
     for (const booking of bookings) {
-      const pickupAddress = booking.pickupAddress;
-      const dropoffAddress = booking.dropoffAddress;
+      const pickupAddress = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
+      const dropoffAddress = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
 
       if (!pickupAddress?.lat || !pickupAddress?.lng || !dropoffAddress?.lat || !dropoffAddress?.lng) {
         continue; // Skip bookings without geocoded addresses
@@ -832,8 +832,8 @@ export class RouteManager {
         include: {
           Booking: {
             include: {
-              pickupAddress: true,
-              dropoffAddress: true,
+              BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+              BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
             }
           },
         }
@@ -861,7 +861,7 @@ export class RouteManager {
       const driverName = driver.User?.name || 'Driver';
 
       const firstPickupAddress =
-        (route as any).Booking?.[0]?.pickupAddress;
+        (route as any).Booking?.[0]?.BookingAddress_Booking_pickupAddressIdToBookingAddress;
 
       // Prepare notification data
       const notificationData = {

@@ -38,6 +38,7 @@ import {
 import { FaCheckCircle, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
 import {
   SpecializedItemCategory,
+  EquipmentType,
   CATEGORY_DISPLAY_NAMES,
   getCategoryIcon,
   type DynamicFormField,
@@ -121,8 +122,8 @@ export default function SpecializedItemWizard({
     try {
       // This would call an API endpoint, but for now we'll simulate it
       const mockEquipment: RequiredEquipmentResult = {
-        required: ['PIANO_DOLLY', 'PIANO_BOARD', 'NON_MARKING_STRAPS'],
-        recommended: ['PROTECTIVE_BLANKETS'],
+        required: [EquipmentType.PIANO_DOLLY, EquipmentType.PIANO_BOARD, EquipmentType.NON_MARKING_STRAPS],
+        recommended: [EquipmentType.PROTECTIVE_BLANKETS],
         warnings: ['Heavy piano requires 3-person crew'],
         estimatedCost: 4500, // £45
       };

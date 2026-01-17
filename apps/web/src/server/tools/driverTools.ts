@@ -92,8 +92,8 @@ export class GetDriverDetailsTool extends BaseTool {
           include: {
             Booking: {
               include: {
-                pickupAddress: true,
-                dropoffAddress: true,
+                BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+                BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
               },
             },
           },
@@ -305,8 +305,8 @@ export class GetDriverEarningsTool extends BaseTool {
           include: {
             Booking: {
               include: {
-                pickupAddress: true,
-                dropoffAddress: true,
+                BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+                BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
               },
             },
           },

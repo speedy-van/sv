@@ -280,8 +280,8 @@ export class GenerateInvoiceTool extends BaseTool {
     const order = await prisma.booking.findUnique({
       where: { id: input.orderId },
       include: {
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
         Payment: true,
       },
@@ -305,8 +305,8 @@ export class GenerateInvoiceTool extends BaseTool {
       p.status === PaymentStatus.paid
     );
 
-    const pickupAddress = order.pickupAddress;
-    const dropoffAddress = order.dropoffAddress;
+    const pickupAddress = order.BookingAddress_Booking_pickupAddressIdToBookingAddress;
+    const dropoffAddress = order.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
 
     const invoiceData = {
       invoiceNumber: `INV-${order.reference}`,

@@ -9,8 +9,6 @@ import {
 } from '@/types/specialized-logistics';
 import {
   detectSpecializedItem,
-  requiresSpecializedHandling,
-  getDefaultTechnicalSpecs,
 } from '../specialized/specialized-detection';
 
 interface SpecializedItemData {
@@ -29,16 +27,22 @@ export function useSpecializedItems() {
 
   /**
    * Check if an item requires specialized handling
+  /**
+   * Check if an item requires specialized handling
    */
   const checkIfSpecialized = useCallback((item: any): boolean => {
-    return requiresSpecializedHandling(item);
+    if (typeof item === 'string') {
+      return detectSpecializedItem(item).isSpecialized;
+    }
+    return detectSpecializedItem(item.name || '').isSpecialized;
   }, []);
 
   /**
    * Detect the specialized category of an item
    */
   const detectCategory = useCallback((itemName: string): SpecializedItemCategory | null => {
-    return detectSpecializedItem(itemName);
+    const result = detectSpecializedItem(itemName);
+    return result.isSpecialized ? result.suggestedCategory || null : null;
   }, []);
 
   /**
@@ -135,7 +139,19 @@ export function useSpecializedItems() {
    * Get default technical specs for an item
    */
   const getDefaultSpecs = useCallback((category: SpecializedItemCategory, item: any) => {
-    return getDefaultTechnicalSpecs(category, item);
+    // Return basic default specs based on category
+    const defaults: Record<SpecializedItemCategory, Record<string, any>> = {
+      [SpecializedItemCategory.PIANO_UPRIGHT]: { weight: 200, height: 120 },
+      [SpecializedItemCategory.PIANO_GRAND]: { weight: 400, length: 150 },
+      [SpecializedItemCategory.FINE_ART_PAINTING]: { dimensions: '100x80cm' },
+      [SpecializedItemCategory.FINE_ART_SCULPTURE]: { weight: 50 },
+      [SpecializedItemCategory.MEDICAL_EQUIPMENT]: { requiresCalibration: true },
+      [SpecializedItemCategory.ANTIQUE_FURNITURE]: { age: 'over 50 years' },
+      [SpecializedItemCategory.LUXURY_FURNITURE]: { designer: 'unknown' },
+      [SpecializedItemCategory.FRAGILE_ELECTRONICS]: { value: 1000 },
+      [SpecializedItemCategory.CUSTOM_SPECIALIZED]: {},
+    };
+    return defaults[category] || {};
   }, []);
 
   /**
@@ -145,7 +161,8 @@ export function useSpecializedItems() {
     const missingItems: string[] = [];
 
     items.forEach(item => {
-      if (requiresSpecializedHandling(item) && !specializedItems[item.id]) {
+      const detection = detectSpecializedItem(item.name || '');
+      if (detection.isSpecialized && !specializedItems[item.id]) {
         missingItems.push(item.name);
       }
     });

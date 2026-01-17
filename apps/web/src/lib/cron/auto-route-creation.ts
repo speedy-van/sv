@@ -15,8 +15,8 @@ import { intelligentRouteOptimizer } from '@/lib/services/intelligent-route-opti
 type BookingWithAddresses = Prisma.BookingGetPayload<{
   include: {
     BookingItem: true;
-    pickupAddress: true;
-    dropoffAddress: true;
+    BookingAddress_Booking_pickupAddressIdToBookingAddress: true;
+    BookingAddress_Booking_dropoffAddressIdToBookingAddress: true;
   };
 }>;
 
@@ -111,8 +111,8 @@ async function createRoutesAutomatically() {
       },
       include: {
         BookingItem: true,
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
       },
       orderBy: [
         { priority: 'desc' },
@@ -139,8 +139,8 @@ async function createRoutesAutomatically() {
         }
 
         // Analyze eligibility
-      const pickupAddress = booking.pickupAddress;
-      const dropoffAddress = booking.dropoffAddress;
+      const pickupAddress = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress;
+      const dropoffAddress = booking.BookingAddress_Booking_dropoffAddressIdToBookingAddress;
 
       if (!pickupAddress || !dropoffAddress) {
         console.warn(`Skipping booking ${booking.id} due to missing address relations`);
@@ -270,7 +270,7 @@ async function groupBookingsByTimeAndRegion(bookings: any[]) {
     const regionMap = new Map<string, any[]>();
 
     for (const booking of windowBookings) {
-      const region = booking.pickupAddress.postcode.split(' ')[0]; // e.g., "M1" from "M1 1AA"
+      const region = booking.BookingAddress_Booking_pickupAddressIdToBookingAddress.postcode.split(' ')[0]; // e.g., "M1" from "M1 1AA"
       
       if (!regionMap.has(region)) {
         regionMap.set(region, []);
@@ -347,10 +347,10 @@ async function createMultiDropRoutes(bookings: any[]) {
   const routes = await intelligentRouteOptimizer.createOptimalRoutes(
     bookings.map(b => ({
       bookingId: b.id,
-      pickupLat: b.pickupAddress.lat,
-      pickupLng: b.pickupAddress.lng,
-      dropoffLat: b.dropoffAddress.lat,
-      dropoffLng: b.dropoffAddress.lng,
+      pickupLat: b.BookingAddress_Booking_pickupAddressIdToBookingAddress.lat,
+      pickupLng: b.BookingAddress_Booking_pickupAddressIdToBookingAddress.lng,
+      dropoffLat: b.BookingAddress_Booking_dropoffAddressIdToBookingAddress.lat,
+      dropoffLng: b.BookingAddress_Booking_dropoffAddressIdToBookingAddress.lng,
       scheduledAt: b.scheduledAt,
       loadPercentage: b.estimatedLoadPercentage || 0,
       priority: b.priority || 5,

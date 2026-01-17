@@ -185,6 +185,16 @@ export interface DynamicFormField {
   showWhen?: boolean | string;
 }
 
+export interface InsuranceQuoteBreakdown {
+  declaredValue: number;
+  basePremium: number;
+  categoryRisk: number;
+  riskAdjustment: number;
+  riskModifiers: number;
+  discountsApplied: number;
+  finalPremium: number;
+}
+
 export interface InsuranceQuote {
   id: string;
   itemCategory: SpecializedItemCategory;
@@ -195,6 +205,7 @@ export interface InsuranceQuote {
   finalPremium: number; // pence
   validUntil: Date;
   quoteData?: Record<string, any>;
+  breakdown?: InsuranceQuoteBreakdown;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -287,26 +298,42 @@ export const CATEGORY_DISPLAY_NAMES: Record<SpecializedItemCategory, string> = {
   [SpecializedItemCategory.CUSTOM_SPECIALIZED]: 'Custom Specialized Item'
 };
 
-export const INSURANCE_TIER_DISPLAY: Record<InsuranceTier, { name: string; coverage: string; description: string }> = {
+export interface InsuranceTierInfo {
+  name: string;
+  coverage: string;
+  maxCoverage: number;
+  description: string;
+  features: string[];
+}
+
+export const INSURANCE_TIER_DISPLAY: Record<InsuranceTier, InsuranceTierInfo> = {
   [InsuranceTier.STANDARD]: {
     name: 'Standard Coverage',
     coverage: 'Up to £5,000',
-    description: 'Basic goods-in-transit insurance'
+    maxCoverage: 500000,
+    description: 'Basic goods-in-transit insurance',
+    features: ['Standard transit cover', 'Basic liability protection', 'Proof of delivery']
   },
   [InsuranceTier.PREMIUM]: {
     name: 'Premium Protection',
     coverage: 'Up to £25,000',
-    description: 'Enhanced coverage with photo documentation'
+    maxCoverage: 2500000,
+    description: 'Enhanced coverage with photo documentation',
+    features: ['Photo documentation', 'Enhanced coverage', 'Priority handling', 'Condition reports']
   },
   [InsuranceTier.PLATINUM]: {
     name: 'Platinum Care',
     coverage: 'Up to £100,000',
-    description: 'Comprehensive specialist coverage'
+    maxCoverage: 10000000,
+    description: 'Comprehensive specialist coverage',
+    features: ['Full specialist coverage', 'Climate control', 'White-glove service', 'Video documentation']
   },
   [InsuranceTier.BESPOKE]: {
     name: 'Bespoke Coverage',
     coverage: 'Custom',
-    description: 'Tailored for unique high-value items'
+    maxCoverage: Infinity,
+    description: 'Tailored for unique high-value items',
+    features: ['Custom coverage limits', 'Dedicated specialist team', 'Comprehensive documentation', 'On-site assessment']
   }
 };
 

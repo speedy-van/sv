@@ -29,8 +29,8 @@ export class GetUnassignedOrdersTool extends BaseTool {
         driverId: null,
       },
       include: {
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
       },
       orderBy,
@@ -38,11 +38,11 @@ export class GetUnassignedOrdersTool extends BaseTool {
     });
 
     const normalizedOrders = orders.map(order => {
-      const { BookingItem, pickupAddress, dropoffAddress, ...rest } = order;
+      const { BookingItem, BookingAddress_Booking_pickupAddressIdToBookingAddress, BookingAddress_Booking_dropoffAddressIdToBookingAddress, ...rest } = order;
       return {
         ...rest,
-        pickupAddress,
-        dropoffAddress,
+        pickupAddress: BookingAddress_Booking_pickupAddressIdToBookingAddress,
+        dropoffAddress: BookingAddress_Booking_dropoffAddressIdToBookingAddress,
         items: BookingItem,
       };
     });
@@ -143,7 +143,7 @@ export class AssignDriverToOrderTool extends BaseTool {
         assignment,
         order: await prisma.booking.findUnique({
           where: { id: input.orderId },
-          include: { driver: { include: { User: true } } },
+          include: { Driver: { include: { User: true } } },
         }),
         message: `Successfully assigned ${driver.User.name} to order ${order.reference}`,
       },
@@ -167,8 +167,8 @@ export class FindBestDriverForOrderTool extends BaseTool {
     const order = await prisma.booking.findUnique({
       where: { id: input.orderId },
       include: {
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
       },
     });
@@ -339,10 +339,10 @@ export class GetOrderDetailsTool extends BaseTool {
         ? { id: input.orderId }
         : { reference: input.reference },
       include: {
-        pickupAddress: true,
-        dropoffAddress: true,
+        BookingAddress_Booking_pickupAddressIdToBookingAddress: true,
+        BookingAddress_Booking_dropoffAddressIdToBookingAddress: true,
         BookingItem: true,
-        driver: {
+        Driver: {
           include: { User: true },
         },
         Assignment: true,
@@ -363,16 +363,16 @@ export class GetOrderDetailsTool extends BaseTool {
 
     const {
       BookingItem,
-      pickupAddress,
-      dropoffAddress,
-      driver,
+      BookingAddress_Booking_pickupAddressIdToBookingAddress,
+      BookingAddress_Booking_dropoffAddressIdToBookingAddress,
+      Driver,
       ...orderRest
     } = order;
     const normalizedOrder = {
       ...orderRest,
-      pickupAddress,
-      dropoffAddress,
-      driver,
+      pickupAddress: BookingAddress_Booking_pickupAddressIdToBookingAddress,
+      dropoffAddress: BookingAddress_Booking_dropoffAddressIdToBookingAddress,
+      driver: Driver,
       items: BookingItem,
     };
 
