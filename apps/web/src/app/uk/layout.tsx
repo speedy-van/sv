@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box } from '@chakra-ui/react';
 import Header from '@/components/site/Header';
-import SkipLink from '@/components/site/SkipLink';
 import { WhatsAppFloatingGuard } from '@/components/shared/WhatsAppFloatingGuard';
 import HomeFooter from '@/components/site/HomeFooter';
 
@@ -14,7 +13,6 @@ export const dynamicParams = false;
 export default function UKLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <SkipLink />
       <Box
         sx={{
           minHeight: '100svh',
@@ -33,6 +31,14 @@ export default function UKLayout({ children }: { children: React.ReactNode }) {
         <Box
           as="main"
           flex="1"
+          sx={{
+            // Header height + iOS safe area
+            paddingTop: {
+              base: 'calc(72px + env(safe-area-inset-top))',
+              md: 'calc(120px + env(safe-area-inset-top))',
+              lg: 'calc(140px + env(safe-area-inset-top))',
+            },
+          }}
           pb="env(safe-area-inset-bottom)"
           className="safe-area-bottom"
         >

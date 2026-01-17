@@ -365,7 +365,7 @@ const MobileHero: React.FC = () => {
         minHeight: { base: 'auto', md: '90vh' },
         height: { base: 'auto', md: '90vh' },
         py: { base: '20px', md: '80px' },
-        pt: { base: 'calc(env(safe-area-inset-top) + 56px)', md: '100px' },
+        pt: { base: 'calc(env(safe-area-inset-top) + 118px)', md: '100px' },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -1219,7 +1219,7 @@ const SEOServicesSection: React.FC = () => {
             w="full"
           >
             <SimpleGrid
-              columns={{ base: 1, sm: 2, md: 3 }}
+              columns={{ base: 1, md: 2, lg: 3 }}
               spacing={{ base: 4, md: 6 }}
               w="full"
             >
@@ -1627,6 +1627,9 @@ export default function MobileHomePageContent() {
       overflowY="hidden"
       color="white"
       suppressHydrationWarning
+      sx={{
+        scrollMarginTop: { base: '72px', md: '120px', lg: '140px' },
+      }}
     >
       {/* Snow overlay for homepage */}
       <Box

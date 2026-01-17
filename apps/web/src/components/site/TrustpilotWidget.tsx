@@ -138,72 +138,48 @@ export default function TrustpilotWidget({
     >
       <Container maxW="container.xl">
         <VStack spacing={{ base: 6, md: 8 }}>
-          <Box
-            textAlign="center"
-            w="full"
-            maxW={{ base: '100%', md: '1200px' }}
-            mx="auto"
-            px={{ base: 4, md: 0 }}
-            bg="rgba(0,0,0,0.9)"
-            border="1px solid #1f2937"
-            borderRadius="xl"
-            boxShadow="0 10px 35px rgba(0,0,0,0.6)"
-            py={{ base: 8, md: 12 }}
-          >
-            <VStack spacing={3} mb={2} align="stretch">
-              <HStack justify="space-between" align="center" flexWrap="wrap" rowGap={2}>
-                <Badge
-                  colorScheme="green"
-                  variant="subtle"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                  fontWeight="bold"
-                  fontSize="xs"
-                >
-                  Rated Excellent on Trustpilot
-                </Badge>
-                <Button
-                  size="sm"
-                  colorScheme="green"
-                  variant="outline"
-                  leftIcon={<Icon as={FaStar} />}
-                  onClick={() => window.open('https://www.trustpilot.com/review/speedy-van.co.uk', '_blank', 'noopener,noreferrer')}
-                >
-                  View Our Reviews
-                </Button>
-              </HStack>
+          <VStack spacing={{ base: 4, md: 6 }} w="full" align="center">
+            <VStack spacing={2}>
               <HStack spacing={1} justify="center">
                 {[...Array(5)].map((_, i) => (
                   <Icon
                     key={i}
                     as={FaStar}
-                    color={i === 4 ? 'green.300' : 'green.400'}
-                    boxSize={4}
+                    color="green.400"
+                    boxSize={{ base: 5, md: 6 }}
                   />
                 ))}
-                <Text color="green.200" fontWeight="semibold" fontSize="sm">
+                <Text color="green.300" fontWeight="bold" fontSize={{ base: 'md', md: 'lg' }} ml={2}>
                   4.8/5
                 </Text>
               </HStack>
-              <Text color="whiteAlpha.800" fontSize="sm">
-                Join thousands of happy customers.
+              <Badge
+                colorScheme="green"
+                variant="solid"
+                px={4}
+                py={1.5}
+                borderRadius="full"
+                fontWeight="bold"
+                fontSize={{ base: 'xs', md: 'sm' }}
+              >
+                Rated Excellent on Trustpilot
+              </Badge>
+              <Text color="whiteAlpha.700" fontSize={{ base: 'sm', md: 'md' }} textAlign="center">
+                Join thousands of happy customers
               </Text>
             </VStack>
             {/* Enhanced Trustpilot TrustBox Widget */}
             <Box
               position="relative"
               textAlign="center"
-              minH={{ base: '80px', md: '80px' }}
+              minH={{ base: '60px', md: '60px' }}
               w="100%"
+              maxW="800px"
+              mx="auto"
               display="block"
               visibility="visible"
               opacity={1}
               bg="transparent"
-              borderRadius="xl"
-              p={6}
-              border="none"
-              boxShadow="none"
             >
               {/* Trustpilot Widget - Official TrustBox snippet structure */}
               <Box
@@ -268,8 +244,8 @@ export default function TrustpilotWidget({
                 </a>
               </Box>
 
-              {/* Enhanced Clickable Link */}
-              <Box
+              {/* Enhanced Clickable Button */}
+              <Button
                 as="a"
                 href="https://www.trustpilot.com/review/speedy-van.co.uk"
                 target="_blank"
@@ -279,50 +255,25 @@ export default function TrustpilotWidget({
                   e.stopPropagation();
                   window.open('https://www.trustpilot.com/review/speedy-van.co.uk', '_blank', 'noopener,noreferrer');
                 }}
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                gap={2}
-                padding="14px 32px"
+                size={{ base: 'md', md: 'lg' }}
+                colorScheme="green"
+                leftIcon={<Icon as={FaStar} />}
+                mt={3}
+                px={{ base: 6, md: 8 }}
                 borderRadius="full"
-                bg="linear-gradient(135deg, #00C2FF 0%, #3B82F6 100%)"
-                color="white"
-                textDecoration="none"
-                fontWeight="bold"
-                fontSize={{ base: 'sm', md: 'md' }}
-                transition="all 0.3s ease"
-                cursor="pointer"
-                boxShadow="0 4px 15px rgba(0, 194, 255, 0.3)"
-                position="relative"
-                overflow="hidden"
+                boxShadow="0 4px 15px rgba(34, 197, 94, 0.3)"
                 _hover={{
-                  transform: 'translateY(-2px) scale(1.02)',
-                  boxShadow: '0 8px 25px rgba(0, 194, 255, 0.5)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(34, 197, 94, 0.4)',
                 }}
                 _active={{
-                  transform: 'translateY(0) scale(0.98)',
-                }}
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: '-100%',
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                  transition: 'left 0.5s ease',
-                }}
-                sx={{
-                  '&:hover::before': {
-                    left: '100%',
-                  }
+                  transform: 'translateY(0)',
                 }}
               >
-                <Text as="span" fontSize="lg">⭐</Text>
-                <Text as="span">View Our Reviews</Text>
-              </Box>
+                View Our Reviews
+              </Button>
             </Box>
-          </Box>
+          </VStack>
 
           {/* Footer Links */}
           <HStack spacing={6} wrap="wrap" justify="center">

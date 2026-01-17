@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box } from '@chakra-ui/react';
 import Header from '@/components/site/Header';
-import SkipLink from '@/components/site/SkipLink';
 import { WhatsAppFloatingGuard } from '@/components/shared/WhatsAppFloatingGuard';
 import CallMeBackFloating from '@/components/shared/CallMeBackFloating';
 
@@ -12,7 +11,6 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <SkipLink />
       <Box
         sx={{
           minHeight: '100svh',
@@ -28,6 +26,14 @@ export default function PublicLayout({
 
         <Box
           as="main"
+          sx={{
+            // Header height + iOS safe area
+            paddingTop: {
+              base: 'calc(72px + env(safe-area-inset-top))',
+              md: 'calc(120px + env(safe-area-inset-top))',
+              lg: 'calc(140px + env(safe-area-inset-top))',
+            },
+          }}
           pb="env(safe-area-inset-bottom)"
           className="safe-area-bottom"
         >

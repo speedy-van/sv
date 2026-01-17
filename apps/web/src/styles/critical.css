@@ -55,8 +55,8 @@ body {
 
 /* Mobile header - Reserve space */
 .mobile-header {
-  height: 60px;
-  min-height: 60px;
+  height: 118px;
+  min-height: 118px;
 }
 
 /* Stats section - Reserve minimum height */
@@ -128,22 +128,29 @@ img, video {
 
 /* Skip to content link - CSS-only approach for accessibility */
 .skip-to-content {
-  position: absolute;
-  top: -60px;
+  position: fixed;
+  top: 0;
   left: 0;
   background-color: #2563EB;
   color: white;
   padding: 12px 24px;
   z-index: 10000;
-  transition: top 0.3s ease;
-  border-radius: 0 0 8px 0;
   font-weight: 600;
   text-decoration: none;
   font-size: 14px;
+  border-radius: 0 0 8px 0;
+  /* Hide by default - only show on focus */
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.skip-to-content:focus {
-  top: 0 !important;
+.skip-to-content:focus,
+.skip-to-content:focus-visible {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
   outline: 2px solid white;
   outline-offset: 2px;
 }
@@ -156,4 +163,40 @@ input[type="checkbox"],
 input[type="radio"] {
   min-height: 44px;
   min-width: 44px;
+}
+
+/* iOS-specific fixes for header and layout */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific */
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Ensure header stays fixed properly on iOS */
+  .desktop-header {
+    position: fixed !important;
+    top: 0 !important;
+    will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Prevent content from being hidden under fixed header */
+main {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Safe area viewport support */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

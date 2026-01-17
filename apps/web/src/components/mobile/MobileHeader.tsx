@@ -40,9 +40,9 @@ export default function MobileHeader() {
         w="100%"
         h="100%"
         objectFit="cover"
-        border="2px solid"
+        border="3px solid"
         borderColor="#00C2FF"
-        boxShadow="0 0 15px rgba(0,194,255,0.5)"
+        boxShadow="0 0 20px rgba(0,194,255,0.5), inset 0 0 10px rgba(0,194,255,0.2)"
         transition="all 0.3s ease"
         sx={{
           borderRadius: 'full',
@@ -53,6 +53,11 @@ export default function MobileHeader() {
         }}
         onCanPlay={() => setCanPlayLogo(true)}
         onError={() => setCanPlayLogo(false)}
+        _hover={{
+          borderColor: '#00D18F',
+          boxShadow: '0 0 30px rgba(0,194,255,0.8), inset 0 0 15px rgba(0,194,255,0.4)',
+          transform: 'rotate(-5deg)',
+        }}
       />
       <Box
         as="img"
@@ -61,9 +66,9 @@ export default function MobileHeader() {
         w="100%"
         h="100%"
         objectFit="cover"
-        border="2px solid"
+        border="3px solid"
         borderColor="#00C2FF"
-        boxShadow="0 0 15px rgba(0,194,255,0.5)"
+        boxShadow="0 0 20px rgba(0,194,255,0.5), inset 0 0 10px rgba(0,194,255,0.2)"
         transition="all 0.3s ease"
         sx={{
           borderRadius: 'full',
@@ -85,13 +90,13 @@ export default function MobileHeader() {
         left="0"
         right="0"
         w="100%"
-        bg="rgba(13, 13, 13, 0.97)"
+        bg="linear-gradient(135deg, #001F3F, #002D6B)"
         backdropFilter="blur(10px)"
-        borderBottom="1px solid rgba(55, 65, 81, 0.8)"
-        px={3}
-        py={1}
+        borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+        px={0}
+        py={3}
         zIndex={1000}
-        boxShadow="0 2px 12px rgba(0,0,0,0.4)"
+        boxShadow="0 4px 20px rgba(0,0,0,0.3)"
         suppressHydrationWarning
         display={{ base: 'block', md: 'none' }}
         visibility="visible"
@@ -107,35 +112,40 @@ export default function MobileHeader() {
           }
         }}
       >
-        <Flex justify="space-between" align="center" h="42px">
-          {/* Logo */}
-          <Link href="/" _hover={{ textDecoration: 'none' }}>
-            <Box
-              position="relative"
-              w="42px"
-              h="42px"
-              borderRadius="full"
-              overflow="hidden"
-              _before={{
-                content: '""',
-                position: 'absolute',
-                top: '-3px',
-                left: '-3px',
-                right: '-3px',
-                bottom: '-3px',
-                borderRadius: 'full',
-                background: 'linear-gradient(135deg, #00C2FF, #00D18F)',
-                opacity: 0.5,
-                filter: 'blur(6px)',
-                animation: 'pulse 2s ease-in-out infinite',
-                zIndex: -1,
-              }}
-            >
-              {logoMedia}
-            </Box>
-          </Link>
+        <Box maxW="100%" mx="auto" px={4}>
+          <Flex justify="space-between" align="center" h="112px">
+            {/* Enhanced Logo */}
+            <Link href="/" _hover={{ textDecoration: 'none' }}>
+              <Box
+                position="relative"
+                w="88px"
+                h="88px"
+                borderRadius="full"
+                overflow="hidden"
+                transition="transform 0.3s ease"
+                _hover={{
+                  transform: 'scale(1.05) rotate(5deg)',
+                }}
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  top: '-4px',
+                  left: '-4px',
+                  right: '-4px',
+                  bottom: '-4px',
+                  borderRadius: 'full',
+                  background: 'linear-gradient(135deg, #00C2FF, #00D18F)',
+                  opacity: 0.6,
+                  filter: 'blur(8px)',
+                  animation: 'pulse 2s ease-in-out infinite',
+                  zIndex: -1,
+                }}
+              >
+                {logoMedia}
+              </Box>
+            </Link>
 
-          {/* Right side - Clean icon buttons */}
+          {/* Right side - Enhanced icon buttons */}
           <HStack
             spacing={2}
             flexShrink={0}
@@ -153,17 +163,20 @@ export default function MobileHeader() {
               h="42px"
               minW="42px"
               borderRadius="full"
-              bg="linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)"
+              bg="rgba(255, 255, 255, 0.15)"
               color="white"
-              boxShadow="0 3px 10px rgba(37, 99, 235, 0.35)"
+              border="1px solid rgba(255, 255, 255, 0.2)"
+              backdropFilter="blur(10px)"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
               display="flex"
               alignItems="center"
               justifyContent="center"
               cursor="pointer"
               transition="all 0.2s ease"
               _hover={{
-                bg: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-                transform: 'scale(1.05)',
+                bg: 'rgba(255, 255, 255, 0.25)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               }}
               _active={{
                 transform: 'scale(0.95)',
@@ -182,17 +195,20 @@ export default function MobileHeader() {
               h="42px"
               minW="42px"
               borderRadius="full"
-              bg="linear-gradient(135deg, #25D366, #128C7E)"
+              bg="rgba(255, 255, 255, 0.15)"
               color="white"
-              boxShadow="0 3px 10px rgba(37, 211, 102, 0.35)"
+              border="1px solid rgba(255, 255, 255, 0.2)"
+              backdropFilter="blur(10px)"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
               display="flex"
               alignItems="center"
               justifyContent="center"
               cursor="pointer"
               transition="all 0.2s ease"
               _hover={{
-                bg: 'linear-gradient(135deg, #128C7E, #0C6C5A)',
-                transform: 'scale(1.05)',
+                bg: 'rgba(255, 255, 255, 0.25)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               }}
               _active={{
                 transform: 'scale(0.95)',
@@ -207,12 +223,14 @@ export default function MobileHeader() {
               as="a"
               href="tel:+441202129746"
               aria-label="Call now"
-              w="38px"
-              h="38px"
-              minW="38px"
-              bg="linear-gradient(135deg, #10B981 0%, #059669 100%)"
+              w="42px"
+              h="42px"
+              minW="42px"
+              bg="rgba(255, 255, 255, 0.15)"
               color="white"
-              boxShadow="0 3px 10px rgba(16, 185, 129, 0.35)"
+              border="1px solid rgba(255, 255, 255, 0.2)"
+              backdropFilter="blur(10px)"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
               borderRadius="full"
               transition="all 0.2s ease"
               display="flex"
@@ -220,8 +238,9 @@ export default function MobileHeader() {
               justifyContent="center"
               cursor="pointer"
               _hover={{
-                bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                transform: 'scale(1.05)',
+                bg: 'rgba(255, 255, 255, 0.25)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               }}
               _active={{
                 transform: 'scale(0.95)',
@@ -235,36 +254,38 @@ export default function MobileHeader() {
             <Box
               as="button"
               aria-label="Open menu"
-              bg="rgba(31, 41, 55, 0.95)"
+              bg="rgba(255, 255, 255, 0.15)"
               color="white"
-              w="38px"
-              h="38px"
-              minW="38px"
+              w="42px"
+              h="42px"
+              minW="42px"
+              border="1px solid rgba(255, 255, 255, 0.2)"
+              backdropFilter="blur(10px)"
               borderRadius="full"
-              boxShadow="0 2px 8px rgba(0, 0, 0, 0.15)"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
               display="flex"
               alignItems="center"
               justifyContent="center"
               cursor="pointer"
               transition="all 0.2s"
               _hover={{ 
-                bg: 'rgba(17, 24, 39, 1)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                bg: 'rgba(255, 255, 255, 0.25)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
               }}
               _active={{ 
-                bg: 'rgba(31, 41, 55, 1)',
                 transform: 'scale(0.95)'
               }}
               onClick={onOpen}
               suppressHydrationWarning
             >
               <Box as="span" display="flex" alignItems="center" justifyContent="center" suppressHydrationWarning>
-                <FiMenu size={24} />
+                <FiMenu size={20} />
               </Box>
             </Box>
           </HStack>
         </Flex>
+        </Box>
       </Box>
 
       {/* Mobile Drawer - Enhanced Design */}
@@ -275,8 +296,8 @@ export default function MobileHeader() {
         size="xs"
       >
         <DrawerOverlay 
-          bg="blackAlpha.600" 
-          backdropFilter="blur(12px)"
+          bg="blackAlpha.700" 
+          backdropFilter="blur(16px)"
           sx={{
             animation: 'fadeIn 0.2s ease-out',
             '@keyframes fadeIn': {
@@ -286,17 +307,16 @@ export default function MobileHeader() {
           }}
         />
         <DrawerContent 
-          bg="linear-gradient(180deg, rgba(15, 17, 20, 0.98) 0%, rgba(10, 12, 15, 0.98) 100%)"
+          bg="linear-gradient(180deg, #001F3F 0%, #002D6B 100%)"
           backdropFilter="blur(20px)"
-          borderLeft="2px solid"
-          borderColor="rgba(59, 130, 246, 0.3)"
-          boxShadow="0 0 40px rgba(0, 0, 0, 0.4)"
+          borderLeft="2px solid rgba(255, 255, 255, 0.1)"
+          boxShadow="0 0 40px rgba(0, 0, 0, 0.5)"
         >
           <DrawerCloseButton 
             color="white" 
             fontSize="20px"
             _hover={{ 
-              bg: 'rgba(59, 130, 246, 0.3)',
+              bg: 'rgba(255, 255, 255, 0.2)',
               transform: 'scale(1.1)',
             }}
             _active={{
@@ -306,8 +326,8 @@ export default function MobileHeader() {
           />
           <DrawerHeader 
             borderBottomWidth="2px" 
-            borderColor="rgba(59, 130, 246, 0.3)"
-            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%)"
+            borderColor="rgba(255, 255, 255, 0.2)"
+            bg="rgba(255, 255, 255, 0.05)"
             py={5}
           >
             <Text 
@@ -326,9 +346,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -339,20 +362,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FiUser color="white" size={20} />
                   </Box>
@@ -364,9 +387,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -377,20 +403,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FaTruck color="white" size={20} />
                   </Box>
@@ -402,9 +428,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -415,20 +444,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FaQuestionCircle color="white" size={20} />
                   </Box>
@@ -440,9 +469,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -453,20 +485,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FaStar color="white" size={20} />
                   </Box>
@@ -478,9 +510,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -491,20 +526,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FiMapPin color="white" size={20} />
                   </Box>
@@ -516,9 +551,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -529,20 +567,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FiFileText color="white" size={20} />
                   </Box>
@@ -554,9 +592,12 @@ export default function MobileHeader() {
                 as="button"
                 p={4}
                 borderRadius="xl"
+                bg="rgba(255, 255, 255, 0.05)"
+                border="1px solid rgba(255, 255, 255, 0.1)"
                 _hover={{ 
-                  bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  bg: 'rgba(255, 255, 255, 0.1)',
                   transform: 'translateX(4px)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
                 }}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
@@ -567,20 +608,20 @@ export default function MobileHeader() {
                 cursor="pointer"
                 textAlign="left"
                 w="full"
-                bg="transparent"
-                border="none"
                 transition="all 0.2s"
               >
                 <HStack spacing={3}>
                   <Box 
                     w="40px" 
                     h="40px" 
-                    bg="linear-gradient(135deg, #3B82F6, #06B6D4)"
+                    bg="rgba(255, 255, 255, 0.15)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    backdropFilter="blur(10px)"
                     borderRadius="lg"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    boxShadow="0 2px 8px rgba(59, 130, 246, 0.3)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
                   >
                     <FaQuestionCircle color="white" size={20} />
                   </Box>

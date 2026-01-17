@@ -162,6 +162,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }: { token: any; user?: any }) {
@@ -183,19 +184,24 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }: { session: Session; token: any }) {
-      // Only update session if token has role data
-      if (token && (token as any).role) {
-        if (!session.user) session.user = { id: '', email: '', name: '', role: 'customer' } as any;
-        ;(session.user as any).id = (token as any).sub as string;
-        ;(session.user as any).role = (token as any).role as UserRole;
-        ;(session.user as any).adminRole = (token as any).adminRole;
-        console.log('✅ Session user data set:', {
-          id: session.user.id,
-          role: session.user.role,
-          adminRole: (session.user as any).adminRole,
-        });
+      try {
+        // Only update session if token has role data
+        if (token && (token as any).role) {
+          if (!session.user) session.user = { id: '', email: '', name: '', role: 'customer' } as any;
+          ;(session.user as any).id = (token as any).sub as string;
+          ;(session.user as any).role = (token as any).role as UserRole;
+          ;(session.user as any).adminRole = (token as any).adminRole;
+          console.log('✅ Session user data set:', {
+            id: session.user.id,
+            role: session.user.role,
+            adminRole: (session.user as any).adminRole,
+          });
+        }
+        return session;
+      } catch (error) {
+        console.error('❌ Error in session callback:', error);
+        return session;
       }
-      return session;
     },
   },
   pages: {
@@ -203,6 +209,8 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET || 'ZV6xh/oJhYk9wwrjX5RA5JgjC9uCSuWZHpIprjYs2LA=',
+  debug: process.env.NODE_ENV === 'development',
+  useSecureCookies: process.env.NODE_ENV === 'production',
 };
 
 export async function requireAuth() {

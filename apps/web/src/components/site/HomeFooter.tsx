@@ -80,20 +80,13 @@ const HomeFooter: React.FC = () => {
     { icon: FiLinkedin, href: 'https://linkedin.com/company/speedyvan', label: 'LinkedIn', color: '#0077B5' },
   ];
 
-  const trustIndicators = [
-    { icon: FiShield, text: 'Fully Insured', color: '#00D18F' },
-    { icon: FiAward, text: '50K+ Customers', color: '#00C2FF' },
-    { icon: FiHeart, text: '5-Star Rated', color: '#FFD700' },
-    { icon: FiClock, text: '24/7 Online Booking', color: '#9F7AEA' },
-  ];
-
   return (
     <Box
       as="footer"
-      bg="#000000"
+      bg="linear-gradient(135deg, #001F3F, #002D6B)"
       color="white"
       width="100%"
-      mt={16}
+      mt={8}
       position="relative"
       overflow="hidden"
       sx={{
@@ -102,53 +95,9 @@ const HomeFooter: React.FC = () => {
         },
       }}
     >
-      {/* Trust Indicators Section */}
-      <Box
-        borderTop="1px solid"
-        borderColor="rgba(255,255,255,0.08)"
-        py={{ base: 12, md: 16 }}
-        bg="transparent"
-      >
-        <Container maxW="container.xl">
-          <Flex
-            gap={{ base: 4, md: 8 }}
-            justify="center"
-            wrap="wrap"
-          >
-            {trustIndicators.map((item, index) => (
-              <HStack
-                key={index}
-                spacing={2}
-                px={4}
-                py={2}
-                borderRadius="xl"
-                bg="rgba(0,0,0,0.9)"
-                backdropFilter="blur(8px)"
-                border="1px solid #1f2937"
-                _hover={{
-                  bg: 'rgba(0,0,0,0.95)',
-                  transform: 'translateY(-2px)',
-                  borderColor: item.color,
-                }}
-                transition="all 0.3s ease"
-              >
-                <Icon as={item.icon} boxSize={5} color={item.color} />
-                <Text
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  color="white"
-                  fontWeight="semibold"
-                >
-                  {item.text}
-                </Text>
-              </HStack>
-            ))}
-          </Flex>
-        </Container>
-      </Box>
-
       {/* Main Footer Content */}
       <Box 
-        py={{ base: 12, md: 16 }} 
+        py={{ base: 6, md: 8 }} 
         w="100%"
         className="home-footer-main"
         bg="transparent"
@@ -157,9 +106,9 @@ const HomeFooter: React.FC = () => {
           <Box
             display="flex !important"
             flexDirection={{ base: 'column', lg: 'row' }}
-            gap={{ base: 10, lg: 16 }}
+            gap={{ base: 6, lg: 10 }}
             justifyContent="space-between"
-            mb={12}
+            mb={6}
             w="100%"
             className="home-footer-grid"
             sx={{
@@ -187,18 +136,18 @@ const HomeFooter: React.FC = () => {
           >
             {/* Services Column */}
             <Box flex="1" minW={{ lg: '200px' }}>
-              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" mb={3} color="white" fontWeight="bold" letterSpacing="wide">
                 OUR SERVICES
               </Heading>
-              <VStack align="start" spacing={3}>
+              <VStack align="start" spacing={2}>
                 {footerLinks.services.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
                     display="flex"
                     alignItems="center"
-                    gap={3}
-                    fontSize="md"
+                    gap={2}
+                    fontSize="sm"
                     color="whiteAlpha.800"
                     _hover={{
                       color: '#00D18F',
@@ -216,18 +165,18 @@ const HomeFooter: React.FC = () => {
 
             {/* Marketplace Column */}
             <Box flex="1" minW={{ lg: '200px' }}>
-              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" mb={3} color="white" fontWeight="bold" letterSpacing="wide">
                 MARKETPLACE
               </Heading>
-              <VStack align="start" spacing={3}>
+              <VStack align="start" spacing={2}>
                 {footerLinks.marketplace.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
                     display="flex"
                     alignItems="center"
-                    gap={3}
-                    fontSize="md"
+                    gap={2}
+                    fontSize="sm"
                     color="whiteAlpha.800"
                     _hover={{
                       color: '#00D18F',
@@ -236,7 +185,7 @@ const HomeFooter: React.FC = () => {
                     }}
                     transition="all 0.2s ease"
                   >
-                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    <Icon as={link.icon} boxSize={3.5} color="#00D18F" />
                     {link.label}
                   </Link>
                 ))}
@@ -245,18 +194,18 @@ const HomeFooter: React.FC = () => {
 
             {/* Company Column */}
             <Box flex="1" minW={{ lg: '200px' }}>
-              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" mb={3} color="white" fontWeight="bold" letterSpacing="wide">
                 COMPANY
               </Heading>
-              <VStack align="start" spacing={3}>
+              <VStack align="start" spacing={2}>
                 {footerLinks.company.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
                     display="flex"
                     alignItems="center"
-                    gap={3}
-                    fontSize="md"
+                    gap={2}
+                    fontSize="sm"
                     color="whiteAlpha.800"
                     _hover={{
                       color: '#00D18F',
@@ -265,7 +214,7 @@ const HomeFooter: React.FC = () => {
                     }}
                     transition="all 0.2s ease"
                   >
-                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    <Icon as={link.icon} boxSize={3.5} color="#00D18F" />
                     {link.label}
                   </Link>
                 ))}
@@ -274,18 +223,18 @@ const HomeFooter: React.FC = () => {
 
             {/* Support Column */}
             <Box flex="1" minW={{ lg: '200px' }}>
-              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" mb={3} color="white" fontWeight="bold" letterSpacing="wide">
                 SUPPORT
               </Heading>
-              <VStack align="start" spacing={3}>
+              <VStack align="start" spacing={2}>
                 {footerLinks.support.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
                     display="flex"
                     alignItems="center"
-                    gap={3}
-                    fontSize="md"
+                    gap={2}
+                    fontSize="sm"
                     color="whiteAlpha.800"
                     _hover={{
                       color: '#00D18F',
@@ -294,7 +243,7 @@ const HomeFooter: React.FC = () => {
                     }}
                     transition="all 0.2s ease"
                   >
-                    <Icon as={link.icon} boxSize={4} color="#00D18F" />
+                    <Icon as={link.icon} boxSize={3.5} color="#00D18F" />
                     {link.label}
                   </Link>
                 ))}
@@ -303,10 +252,10 @@ const HomeFooter: React.FC = () => {
 
             {/* Contact Info Column */}
             <Box flex="1" minW={{ lg: '220px' }}>
-              <Heading size="sm" mb={6} color="white" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" mb={3} color="white" fontWeight="bold" letterSpacing="wide">
                 CONTACT US
               </Heading>
-              <VStack align="start" spacing={4}>
+              <VStack align="start" spacing={2.5}>
                 <VStack align="start" spacing={1}>
                   <HStack spacing={2} color="#00D18F">
                     <Icon as={FiPhone} boxSize={4} />
@@ -316,7 +265,7 @@ const HomeFooter: React.FC = () => {
                   </HStack>
                   <Link
                     href="tel:+441202129746"
-                    fontSize="md"
+                    fontSize="sm"
                     color="white"
                     fontWeight="medium"
                     _hover={{ color: '#00D18F' }}
@@ -330,14 +279,14 @@ const HomeFooter: React.FC = () => {
 
                 <VStack align="start" spacing={1}>
                   <HStack spacing={2} color="#00D18F">
-                    <Icon as={FiMail} boxSize={4} />
+                    <Icon as={FiMail} boxSize={3.5} />
                     <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
                       Email
                     </Text>
                   </HStack>
                   <Link
                     href="mailto:support@speedy-van.co.uk"
-                    fontSize="md"
+                    fontSize="sm"
                     color="white"
                     fontWeight="medium"
                     _hover={{ color: '#00D18F' }}
@@ -348,7 +297,7 @@ const HomeFooter: React.FC = () => {
 
                 <VStack align="start" spacing={1}>
                   <HStack spacing={2} color="#00D18F">
-                    <Icon as={FiMapPin} boxSize={4} />
+                    <Icon as={FiMapPin} boxSize={3.5} />
                     <Text fontSize="xs" fontWeight="bold" textTransform="uppercase">
                       Address
                     </Text>
@@ -362,7 +311,7 @@ const HomeFooter: React.FC = () => {
             </Box>
           </Box>
 
-          <Divider borderColor="whiteAlpha.200" my={8} />
+          <Divider borderColor="whiteAlpha.200" my={4} />
 
           {/* Bottom Section */}
           <Box
@@ -370,7 +319,7 @@ const HomeFooter: React.FC = () => {
             flexDirection={{ base: 'column', md: 'row' }}
             justifyContent="space-between"
             alignItems="center"
-            gap={6}
+            gap={4}
             className="home-footer-bottom"
             sx={{
               display: 'flex !important',
@@ -388,13 +337,13 @@ const HomeFooter: React.FC = () => {
             }}
           >
           {/* Left Side: Legal Links & Copyright */}
-          <VStack align={{ base: 'center', md: 'start' }} spacing={3} flex={1}>
-            <HStack spacing={4} flexWrap="wrap" justify={{ base: 'center', md: 'start' }}>
+          <VStack align={{ base: 'center', md: 'start' }} spacing={2} flex={1}>
+            <HStack spacing={3} flexWrap="wrap" justify={{ base: 'center', md: 'start' }}>
               {footerLinks.legal.map((link, index) => (
                 <React.Fragment key={link.label}>
                   <Link
                     href={link.href}
-                    fontSize="sm"
+                    fontSize="xs"
                     color="whiteAlpha.700"
                     _hover={{ color: '#00D18F' }}
                   >
@@ -407,11 +356,11 @@ const HomeFooter: React.FC = () => {
               ))}
             </HStack>
 
-            <VStack spacing={1} align={{ base: 'center', md: 'start' }}>
-              <Text fontSize="sm" color="whiteAlpha.700">
+            <VStack spacing={0.5} align={{ base: 'center', md: 'start' }}>
+              <Text fontSize="xs" color="whiteAlpha.700">
                 © {new Date().getFullYear()} Speedy Van. All rights reserved.
               </Text>
-              <Text fontSize="xs" color="whiteAlpha.600">
+              <Text fontSize="2xs" color="whiteAlpha.600">
                 SPEEDY VAN REMOVALS LTD · Company No. SC865658
               </Text>
               <HStack spacing={1} fontSize="xs" color="whiteAlpha.600">
@@ -423,11 +372,11 @@ const HomeFooter: React.FC = () => {
           </VStack>
 
           {/* Right Side: Social Media Icons */}
-          <VStack spacing={3}>
-            <Text fontSize="sm" color="white" fontWeight="bold">
+          <VStack spacing={2}>
+            <Text fontSize="xs" color="white" fontWeight="bold">
               FOLLOW US
             </Text>
-            <HStack spacing={3}>
+            <HStack spacing={2}>
               {socialLinks.map((social) => (
                 <Tooltip key={social.label} label={social.label} placement="top">
                   <IconButton
@@ -436,8 +385,8 @@ const HomeFooter: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    icon={<Icon as={social.icon} boxSize={6} />}
-                    size="lg"
+                    icon={<Icon as={social.icon} boxSize={5} />}
+                    size="md"
                     variant="ghost"
                     color="white"
                     bg="whiteAlpha.100"

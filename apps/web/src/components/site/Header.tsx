@@ -43,10 +43,10 @@ import {
   FiBookOpen,
   FiMapPin
 } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { m, isValidMotionProp } from 'framer-motion';
 import { chakra, shouldForwardProp } from '@chakra-ui/react';
 import HeaderButton from '@/components/common/HeaderButton';
-import { WhatsAppIconLink } from '@/components/shared/WhatsAppEntryPoint';
 
 const Header: React.FC = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,14 +58,15 @@ const Header: React.FC = memo(() => {
 
 
   // Theme colors - must be called at top level, not inside useMemo
+  // Using same colors as Book Now button for consistency
   const bgColor = useColorModeValue(
-    isScrolled ? 'rgba(255,255,255,0.95)' : 'white',
-    isScrolled ? 'rgba(26,32,44,0.95)' : 'gray.800'
+    isScrolled ? 'linear-gradient(135deg, #001F3F, #002D6B)' : 'linear-gradient(135deg, #001F3F, #002D6B)',
+    isScrolled ? 'linear-gradient(135deg, #001F3F, #002D6B)' : 'linear-gradient(135deg, #001F3F, #002D6B)'
   );
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const borderColor = useColorModeValue('rgba(0, 194, 255, 0.2)', 'rgba(0, 194, 255, 0.2)');
   const shadowColor = useColorModeValue(
-    'rgba(0,0,0,0.1)',
-    'rgba(0,0,0,0.3)'
+    'rgba(0, 180, 255, 0.3)',
+    'rgba(0, 180, 255, 0.3)'
   );
 
   // Memoized theme colors object for better performance
@@ -345,13 +346,18 @@ const Header: React.FC = memo(() => {
       left={0}
       right={0}
       zIndex={1000}
+      bg={themeColors.bgColor}
       borderBottom={`1px solid ${themeColors.borderColor}`}
       boxShadow={isScrolled ? `0 4px 20px ${themeColors.shadowColor}` : 'sm'}
       backdropFilter={isScrolled ? 'blur(20px)' : 'none'}
       suppressHydrationWarning
       w="100%"
+      sx={{
+        // iOS safe area support
+        paddingTop: 'env(safe-area-inset-top)',
+      }}
     >
-      <Box maxW="container.xl" mx="auto" px={{ base: 4, md: 6, lg: 8 }}>
+      <Box maxW="container.xl" mx="auto" px={{ base: 0, md: 0, lg: 0 }} pl={{ base: 2, md: 3, lg: 4 }} pr={{ base: 4, md: 6, lg: 8 }}>
         <Flex
           h={{ base: '72px', md: '120px', lg: '140px' }}
           align="center"
@@ -367,7 +373,7 @@ const Header: React.FC = memo(() => {
             transition={{ type: "spring", stiffness: 400, damping: 17 } as any}
             cursor="pointer"
             onClick={() => window.location.href = '/'}
-            ml={{ base: 2, md: 0 }}
+            ml={{ base: '-128px', md: '-128px', lg: '-128px' }}
             flexShrink={0}
           >
             <Box
@@ -400,17 +406,17 @@ const Header: React.FC = memo(() => {
               {logoMedia}
             </Box>
             <VStack align="start" spacing={0.5} display={{ base: 'none', md: 'flex' }}>
-              <Text fontSize={{ md: 'lg', lg: 'xl' }} fontWeight="bold" color="text.primary" lineHeight="1.2">
+              <Text fontSize={{ md: 'lg', lg: 'xl' }} fontWeight="bold" color="white" lineHeight="1.2">
                 Speedy Van
               </Text>
-              <Text fontSize="sm" color="text.secondary" fontWeight="medium" lineHeight="1.2">
+              <Text fontSize="sm" color="rgba(255,255,255,0.8)" fontWeight="medium" lineHeight="1.2">
                 Professional Moving Services
               </Text>
             </VStack>
           </MotionFlex>
 
           {/* Enhanced Desktop Navigation */}
-          <HStack spacing={8} flex={1} justify="center" display={{ base: 'none', md: 'flex' }}>
+          <HStack spacing={4} flex={1} justify="center" display={{ base: 'none', md: 'flex' }}>
             {navItems.map((item) => (
               <Box
                 key={item.label}
@@ -419,17 +425,37 @@ const Header: React.FC = memo(() => {
                 {item.hasDropdown ? (
                   <Menu>
                     <MenuButton
-                      as={HeaderButton}
-                      variant="ghost"
+                      as={Button}
                       rightIcon={<FiChevronDown />}
-                      size="md"
-                      animate={false}
-                      h="48px"
-                      px={4}
-                      color="text.primary"
+                      h="42px"
+                      minW="auto"
+                      borderRadius="lg"
+                      bg="rgba(255,255,255,0.15)"
+                      color="white"
+                      fontWeight="600"
+                      fontSize="sm"
+                      border="1px solid"
+                      borderColor="rgba(255,255,255,0.2)"
+                      backdropFilter="blur(10px)"
+                      transition="all 0.3s ease"
+                      boxShadow="0 2px 8px rgba(0,0,0,0.1)"
+                      sx={{
+                        paddingLeft: '32px !important',
+                        paddingRight: '80px !important',
+                      }}
                       _hover={{
-                        color: 'neon.400',
-                        bg: 'rgba(0,194,255,0.05)',
+                        bg: 'rgba(255,255,255,0.25)',
+                        borderColor: '#00C2FF',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,194,255,0.3)',
+                      }}
+                      _active={{
+                        transform: 'translateY(0px)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      }}
+                      _expanded={{
+                        bg: 'rgba(255,255,255,0.25)',
+                        borderColor: '#00C2FF',
                       }}
                       >
                         {item.label}
@@ -480,42 +506,36 @@ const Header: React.FC = memo(() => {
                       </MenuList>
                     </Menu>
                   ) : (
-                    <Link
+                    <Button
+                      as={Link}
                       href={item.href}
-                      position="relative"
-                      display="flex"
-                      alignItems="center"
-                      h="48px"
-                      px={4}
-                      color="text.primary"
-                      fontWeight="semibold"
-                      fontSize="md"
-                      borderRadius="md"
+                      size="md"
+                      h="42px"
+                      px={['How It Works', 'Pricing', 'Contact'].includes(item.label) ? 12 : 6}
+                      borderRadius="lg"
+                      bg="rgba(255,255,255,0.15)"
+                      color="white"
+                      fontWeight="600"
+                      fontSize="sm"
+                      border="1px solid"
+                      borderColor="rgba(255,255,255,0.2)"
+                      backdropFilter="blur(10px)"
                       transition="all 0.3s ease"
+                      boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                       _hover={{
-                        color: 'neon.400',
-                        bg: 'rgba(0,194,255,0.05)',
+                        bg: 'rgba(255,255,255,0.25)',
+                        borderColor: '#00C2FF',
                         transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,194,255,0.3)',
                         textDecoration: 'none',
                       }}
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        bottom: '-4px',
-                        left: '0',
-                        width: '0',
-                        height: '2px',
-                        bg: 'linear-gradient(90deg, #00C2FF, #00D18F)',
-                        transition: 'width 0.3s ease',
-                      }}
-                      sx={{
-                        '&:hover::after': {
-                          width: '100%',
-                        }
+                      _active={{
+                        transform: 'translateY(0px)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                       }}
                     >
                       {item.label}
-                    </Link>
+                    </Button>
                   )}
                 </Box>
               ))}
@@ -529,37 +549,45 @@ const Header: React.FC = memo(() => {
             flexShrink={0}
             sx={{
               '& > * + *': {
-                marginLeft: '12px',
+                marginLeft: '24px',
               },
             }}
           >
-            <Tooltip label="Chat" hasArrow placement="bottom">
+            <Tooltip label="Chat with us" hasArrow placement="bottom">
               <Button
-                leftIcon={<FiMessageCircle size={18} />}
+                leftIcon={<FiMessageCircle size={16} />}
                 aria-label="Open chat"
                 onClick={() => {
                   if (typeof window === 'undefined') return;
-                  // Redirect to booking-luxury with openChat parameter
                   window.location.href = '/booking-luxury?openChat=1';
                 }}
-                h="40px"
-                px={3}
-                borderRadius="full"
-                bgGradient="linear(to-r, #2563EB, #1D4ED8)"
+                size="md"
+                h="42px"
+                px={5}
+                borderRadius="lg"
+                bg="rgba(255,255,255,0.15)"
                 color="white"
-                fontWeight="semibold"
+                fontWeight="600"
+                fontSize="sm"
+                border="1px solid"
+                borderColor="rgba(255,255,255,0.2)"
+                backdropFilter="blur(10px)"
                 display={{ base: 'none', md: 'inline-flex' }}
                 alignItems="center"
                 justifyContent="center"
                 cursor="pointer"
-                transition="all 0.2s"
+                transition="all 0.3s ease"
+                boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                 _hover={{
-                  bgGradient: 'linear(to-r, #1D4ED8, #1E40AF)',
+                  bg: 'rgba(255,255,255,0.25)',
+                  borderColor: '#00C2FF',
                   transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,194,255,0.3)',
                   textDecoration: 'none',
                 }}
                 _active={{
-                  transform: 'translateY(-1px)',
+                  transform: 'translateY(0px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 }}
                 suppressHydrationWarning
               >
@@ -568,38 +596,80 @@ const Header: React.FC = memo(() => {
             </Tooltip>
             
 
-            <WhatsAppIconLink
-              size="md"
-              variant="solid"
-              tooltip="Chat / Book on WhatsApp"
-              context="header_cta"
-              showLabel
-              display={{ base: 'none', md: 'inline-flex' }}
-            />
-            <Tooltip label="Call Now" hasArrow placement="bottom">
+            <Tooltip label="Chat / Book on WhatsApp" hasArrow placement="bottom">
               <Button
-                as="a"
-                href="tel:+441202129746"
-                leftIcon={<FiPhone size={18} />}
-                aria-label="Call now"
-                h="40px"
-                px={3}
-                borderRadius="full"
-                bgGradient="linear(to-r, #10B981, #059669)"
+                leftIcon={<FaWhatsapp size={16} />}
+                aria-label="WhatsApp"
+                onClick={() => {
+                  if (typeof window === 'undefined') return;
+                  window.open('https://wa.me/message/K57JWNNC2K3TA1', '_blank', 'noopener,noreferrer');
+                }}
+                size="md"
+                h="42px"
+                px={5}
+                borderRadius="lg"
+                bg="rgba(255,255,255,0.15)"
                 color="white"
-                fontWeight="semibold"
+                fontWeight="600"
+                fontSize="sm"
+                border="1px solid"
+                borderColor="rgba(255,255,255,0.2)"
+                backdropFilter="blur(10px)"
                 display={{ base: 'none', md: 'inline-flex' }}
                 alignItems="center"
                 justifyContent="center"
                 cursor="pointer"
-                transition="all 0.2s"
+                transition="all 0.3s ease"
+                boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                 _hover={{
-                  bgGradient: 'linear(to-r, #059669, #047857)',
+                  bg: 'rgba(255,255,255,0.25)',
+                  borderColor: '#25D366',
                   transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(37,211,102,0.3)',
                   textDecoration: 'none',
                 }}
                 _active={{
-                  transform: 'translateY(-1px)',
+                  transform: 'translateY(0px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}
+                suppressHydrationWarning
+              >
+                WhatsApp
+              </Button>
+            </Tooltip>
+            <Tooltip label="Call us now" hasArrow placement="bottom">
+              <Button
+                as="a"
+                href="tel:+441202129746"
+                leftIcon={<FiPhone size={16} />}
+                aria-label="Call now"
+                size="md"
+                h="42px"
+                px={5}
+                borderRadius="lg"
+                bg="rgba(255,255,255,0.15)"
+                color="white"
+                fontWeight="600"
+                fontSize="sm"
+                border="1px solid"
+                borderColor="rgba(255,255,255,0.2)"
+                backdropFilter="blur(10px)"
+                display={{ base: 'none', md: 'inline-flex' }}
+                alignItems="center"
+                justifyContent="center"
+                cursor="pointer"
+                transition="all 0.3s ease"
+                boxShadow="0 2px 8px rgba(0,0,0,0.1)"
+                _hover={{
+                  bg: 'rgba(255,255,255,0.25)',
+                  borderColor: '#00D18F',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0,209,143,0.3)',
+                  textDecoration: 'none',
+                }}
+                _active={{
+                  transform: 'translateY(0px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 }}
                 suppressHydrationWarning
               >
@@ -609,11 +679,35 @@ const Header: React.FC = memo(() => {
               
             <Menu>
               <MenuButton
-                as={HeaderButton}
-                variant="primary"
-                size="lg"
+                as={Button}
                 rightIcon={<FiChevronDown />}
-                minW={{ base: '100px', lg: '120px' }}
+                size="md"
+                h="42px"
+                px={5}
+                borderRadius="lg"
+                bg="rgba(255,255,255,0.15)"
+                color="white"
+                fontWeight="600"
+                fontSize="sm"
+                border="1px solid"
+                borderColor="rgba(255,255,255,0.2)"
+                backdropFilter="blur(10px)"
+                transition="all 0.3s ease"
+                boxShadow="0 2px 8px rgba(0,0,0,0.1)"
+                _hover={{
+                  bg: 'rgba(255,255,255,0.25)',
+                  borderColor: '#FFD700',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(255,215,0,0.3)',
+                }}
+                _active={{
+                  transform: 'translateY(0px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}
+                _expanded={{
+                  bg: 'rgba(255,255,255,0.25)',
+                  borderColor: '#FFD700',
+                }}
               >
                 Sign In
               </MenuButton>
@@ -733,9 +827,9 @@ const Header: React.FC = memo(() => {
               variant="ghost"
               size="lg"
               aria-label="Toggle menu"
-              color="text.primary"
+              color="white"
               _hover={{
-                bg: 'rgba(0,194,255,0.1)',
+                bg: 'rgba(255,255,255,0.1)',
                 color: 'neon.400',
               }}
               borderRadius="xl"
