@@ -28,6 +28,7 @@ export class DualProviderService {
   private sessionId = Math.random().toString(36).substring(2);
 
   constructor(config?: Partial<ProviderConfig>) {
+    const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
     this.config = {
       google: {
         apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -39,8 +40,8 @@ export class DualProviderService {
         },
       },
       mapbox: {
-        accessToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg',
-        enabled: true,
+        accessToken: mapboxAccessToken,
+        enabled: !!mapboxAccessToken,
         timeout: 3000,
         country: 'GB',
         proximity: undefined,

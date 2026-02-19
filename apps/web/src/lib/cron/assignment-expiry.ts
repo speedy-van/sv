@@ -18,7 +18,6 @@ let cronJob: ScheduledTask | null = null;
 export function startAssignmentExpiryCron() {
   // Prevent multiple cron jobs
   if (cronJob) {
-    console.log('⚠️ Assignment expiry cron already running');
     return;
   }
 
@@ -31,7 +30,6 @@ export function startAssignmentExpiryCron() {
     }
   });
 
-  console.log('✅ Assignment expiry cron job started (runs every 1 minute)');
 }
 
 /**
@@ -42,7 +40,6 @@ export function stopAssignmentExpiryCron() {
   if (cronJob) {
     cronJob.stop();
     cronJob = null;
-    console.log('🛑 Assignment expiry cron job stopped');
   }
 }
 
@@ -51,10 +48,8 @@ export function stopAssignmentExpiryCron() {
  */
 async function checkAndExpireAssignments() {
   const now = new Date();
-  console.log(`⏰ [${now.toISOString()}] Running assignment expiry check...`);
 
   try {
-    console.log('🔍 [assignment-expiry] Prisma client status:', { prisma: !!prisma, type: typeof prisma });
     // Find all claimed AND invited assignments that have expired
     const expiredAssignments = await prisma.assignment.findMany({
       where: {
@@ -75,11 +70,8 @@ async function checkAndExpireAssignments() {
     });
 
     if (expiredAssignments.length === 0) {
-      console.log('✅ No expired assignments found');
       return;
     }
-
-    console.log(`🔴 Found ${expiredAssignments.length} expired assignment(s)`);
 
     const pusher = getPusherServer();
 
@@ -87,8 +79,6 @@ async function checkAndExpireAssignments() {
     const results = await Promise.all(
       expiredAssignments.map(async (assignment) => {
         try {
-          console.log(`⏰ Expiring assignment ${assignment.id} for driver ${assignment.driverId}`);
-          
           let newAcceptanceRate = 100;
           
           await prisma.$transaction(async (tx) => {
@@ -127,7 +117,6 @@ async function checkAndExpireAssignments() {
                 }
               });
 
-              console.log(`📉 Decreased acceptance rate for driver ${assignment.driverId} from ${currentRate}% to ${newAcceptanceRate}%`);
             }
           });
 

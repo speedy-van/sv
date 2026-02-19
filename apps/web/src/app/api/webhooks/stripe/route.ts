@@ -58,6 +58,21 @@ async function sendOrderConfirmationEmail(bookingId: string) {
 
     // Prepare email data
     const confirmedTotalInPounds = booking.totalGBP / 100;
+    
+    // Determine payment status message
+    let paymentStatusMessage = '';
+    if (booking.status === 'PENDING_MATCH' && !booking.paymentCaptured) {
+      if (booking.savedPaymentMethodId) {
+        // Far booking - card saved
+        paymentStatusMessage = '<p style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 12px; margin: 16px 0; color: #1E3A8A;"><strong>💳 Payment Status:</strong> Your card has been saved securely. You will be charged only after a driver confirms your booking (typically within 15-30 minutes).</p>';
+      } else {
+        // Near booking - payment authorized but not captured
+        paymentStatusMessage = '<p style="background-color: #EFF6FF; border-left: 4px solid #3B82F6; padding: 12px; margin: 16px 0; color: #1E3A8A;"><strong>⏳ Payment Status:</strong> Payment authorized but NOT captured yet. You will only be charged after a driver confirms your booking (typically within 15-30 minutes).</p>';
+      }
+    } else if (booking.status === 'CONFIRMED' && booking.paymentCaptured) {
+      paymentStatusMessage = '<p style="background-color: #DCFCE7; border-left: 4px solid #10B981; padding: 12px; margin: 16px 0; color: #065F46;"><strong>✅ Payment Status:</strong> Payment captured and booking confirmed.</p>';
+    }
+    
     const emailData: OrderConfirmationData = {
       customerName: booking.customerName,
       customerEmail: booking.customerEmail,
@@ -72,6 +87,7 @@ async function sendOrderConfirmationEmail(bookingId: string) {
       }),
       totalAmount: confirmedTotalInPounds,
       currency: 'GBP',
+      paymentStatusMessage, // Add payment status to email
     };
 
     // Generate invoice PDF to attach to email
@@ -269,6 +285,13 @@ async function handleCheckoutSessionCompleted(session: any) {
   try {
     console.log('💰 Checkout session completed:', session.id);
 
+    if (session.mode === 'setup') {
+      console.warn('⚠️ Setup mode is disabled. Ignoring session to avoid saving payment methods.', {
+        sessionId: session.id,
+      });
+      return;
+    }
+
     const bookingId = session.metadata?.bookingId;
     console.log('🔍 Webhook metadata:', {
       bookingId: session.metadata?.bookingId,
@@ -350,12 +373,104 @@ async function handleCheckoutSessionCompleted(session: any) {
       shouldBeMultiDrop: isEconomyBooking,
     });
 
+    // Handle based on session mode (payment vs setup)
+    if (session.mode === 'setup') {
+      // FAR BOOKING: Card saved via setup mode, not charged yet
+      console.log('💳 Setup mode - saving payment method for far booking');
+      
+      const setupIntentId = session.setup_intent as string;
+      const stripe = (await import('stripe')).default;
+      const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2024-04-10',
+      });
+      const setupIntent = await stripeClient.setupIntents.retrieve(setupIntentId);
+      const paymentMethodId = setupIntent.payment_method as string;
+      const customerId = session.customer as string;
+
+      // Update booking with saved payment method
+      const bookingUpdateData: any = {
+        stripeSetupIntentId: setupIntentId,
+        stripeCustomerId: customerId,
+        savedPaymentMethodId: paymentMethodId,
+        status: isEconomyBooking ? 'CONFIRMED' : 'PENDING_MATCH',
+        matchStartTime: isEconomyBooking ? null : new Date(),
+      };
+
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: bookingUpdateData,
+      });
+
+      console.log('✅ Payment method saved for far booking:', {
+        bookingId,
+        setupIntentId,
+        customerId,
+        paymentMethodId: paymentMethodId.substring(0, 20) + '...',
+      });
+
+      // Trigger driver matching for non-economy bookings
+      if (!isEconomyBooking) {
+        const { broadcastJobToDrivers } = await import('@/lib/services/driver-matching-service');
+        broadcastJobToDrivers(bookingId).catch(error => {
+          console.error('❌ Failed to broadcast job to drivers:', error);
+          prisma.auditLog.create({
+            data: {
+              actorId: 'system',
+              actorRole: 'system',
+              action: 'driver_broadcast_failed',
+              targetType: 'booking',
+              targetId: bookingId,
+              details: {
+                error: error instanceof Error ? error.message : String(error),
+                bookingReference: fullBooking.reference,
+                timestamp: new Date().toISOString(),
+              },
+            },
+          });
+        });
+      }
+
+      // Send confirmation email
+      await sendOrderConfirmationEmail(bookingId);
+
+      return;
+    }
+
+    // NEAR BOOKING: Payment mode with manual or automatic capture
+    const paymentIntentId = session.payment_intent as string;
+    if (!paymentIntentId) {
+      console.error('❌ No payment intent in payment mode session');
+      return;
+    }
+
     // Auto-confirm booking after successful payment
     const bookingUpdateData: any = {
-      status: 'CONFIRMED',
+      status: isEconomyBooking ? 'CONFIRMED' : 'PENDING_MATCH', // Economy = confirmed, Standard = wait for driver
       paidAt: new Date(),
-      stripePaymentIntentId: session.payment_intent,
+      stripePaymentIntentId: paymentIntentId,
+      paymentCaptured: false, // Will be captured after driver confirms
+      matchStartTime: isEconomyBooking ? null : new Date(), // Start driver matching for non-economy bookings
     };
+
+    // Check if this is manual or automatic capture
+    try {
+      const stripe = (await import('stripe')).default;
+      const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2024-04-10',
+      });
+      const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.capture_method === 'automatic') {
+        bookingUpdateData.paymentCaptured = true;
+        bookingUpdateData.paymentCapturedAt = new Date();
+        bookingUpdateData.status = 'CONFIRMED';
+        console.log('✅ Automatic capture - payment confirmed immediately');
+      } else {
+        console.log('⏳ Manual capture - waiting for driver confirmation');
+      }
+    } catch (error) {
+      console.error('❌ Failed to check payment intent capture method:', error);
+    }
 
     if (isEconomyBooking) {
       bookingUpdateData.customerPreferences = withServicePreference(
@@ -437,6 +552,35 @@ async function handleCheckoutSessionCompleted(session: any) {
 
     // Send order confirmation email to customer
     await sendOrderConfirmationEmail(bookingId);
+
+    // ✅ TRIGGER DRIVER MATCHING for non-economy bookings with manual capture
+    if (!isEconomyBooking && !bookingUpdateData.paymentCaptured) {
+      try {
+        console.log('[WEBHOOK] Triggering driver matching for booking:', bookingId);
+        const { broadcastJobToDrivers } = await import('@/lib/services/driver-matching-service');
+        
+        // Trigger asynchronously (don't block webhook response)
+        broadcastJobToDrivers(bookingId).catch(error => {
+          console.error('[WEBHOOK] Driver matching broadcast failed:', error);
+          // Log error for manual follow-up
+          prisma.auditLog.create({
+            data: {
+              actorId: 'system',
+              actorRole: 'system',
+              action: 'driver_matching_failed',
+              targetType: 'booking',
+              targetId: bookingId,
+              details: {
+                error: error instanceof Error ? error.message : String(error),
+                timestamp: new Date().toISOString(),
+              },
+            },
+          }).catch(console.error);
+        });
+      } catch (error) {
+        console.error('[WEBHOOK] Failed to import driver matching service:', error);
+      }
+    }
 
     // Log auto-confirmation
     await prisma.auditLog.create({

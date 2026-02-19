@@ -2533,7 +2533,7 @@ function BookingLuxuryContent() {
                                     Fastest confirmation
                                   </Badge>
                                   <Badge colorScheme="teal" variant="outline" borderRadius="full" px={2}>
-                                    Guaranteed slot
+                                    Requested slot (subject to availability)
                                   </Badge>
                                   <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
                                     Crew pre-arranged

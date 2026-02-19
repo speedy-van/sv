@@ -100,7 +100,7 @@ __tests__/temp/dual-provider-system.test.ts - Comprehensive tests
 Add to your `.env.local` file:
 ```bash
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_places_api_key_here
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
 ```
 
 ### Google Cloud Setup

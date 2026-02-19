@@ -423,8 +423,11 @@ async function searchAddressesByPostcodeGoogle(postcode: string, limit: number):
 }
 
 async function searchAddressesByPostcodeMapbox(postcode: string, limit: number): Promise<any[]> {
-  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 
-    'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  if (!accessToken) {
+    console.warn('⚠️ [Mapbox] Missing NEXT_PUBLIC_MAPBOX_TOKEN - skipping Mapbox postcode search');
+    return [];
+  }
 
   try {
     console.log(`🗺️ [Mapbox] Searching for postcode: ${postcode}`);

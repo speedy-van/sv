@@ -40,6 +40,10 @@ interface BookingDetails {
   id: string;
   reference: string;
   status: string;
+  paymentCaptured: boolean;
+  paymentIntentStatus?: string | null;
+  paymentStatus?: string | null;
+  mode?: string | null;
   customer: {
     name: string;
     email: string;
@@ -64,6 +68,7 @@ function BookingSuccessPageContent() {
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
 
   const hasTrackedInitialConversion = useRef(false);
+  const hasBookingDetailsRef = useRef(false);
 
   // Track page view for Google Ads (only once per page load)
   useEffect(() => {
@@ -109,12 +114,14 @@ function BookingSuccessPageContent() {
   }, []);
 
   useEffect(() => {
-    // Add a safety timeout to prevent infinite loading
+    const maxRetries = 8;
     const safetyTimeout = setTimeout(() => {
-      console.warn('âš ï¸ Safety timeout reached - stopping loading');
+      console.warn('⚠️ Safety timeout reached - stopping loading');
       setIsLoading(false);
-      setError('Request timed out. Please refresh the page.');
-    }, 30000); // 30 seconds max
+      if (!hasBookingDetailsRef.current) {
+        setError('We are still finalizing your booking. Please refresh the page or contact support if this persists.');
+      }
+    }, 60000); // 60 seconds max
 
     const fetchBookingDetails = async (retryCount = 0) => {
       if (!sessionId) {
@@ -124,7 +131,6 @@ function BookingSuccessPageContent() {
       }
 
       try {
-        // Fetch session details from Stripe
         const response = await fetch(`/api/stripe/session/${sessionId}`);
         const data = await response.json();
 
@@ -132,71 +138,72 @@ function BookingSuccessPageContent() {
           throw new Error(data.error || 'Failed to fetch booking details');
         }
 
-        if (data && data.payment_status === 'paid') {
-          // Extract booking details from session metadata
-          const bookingAmount = data.amount_total / 100; // Convert from pence to pounds
-          
-          // Clear booking-in-progress storage since booking is now complete
-          safeLocalStorageRemoveItem('sv_booking_luxury_last_step');
-          safeLocalStorageRemoveItem('sv_booking_luxury_reference');
-          
-          setBookingDetails({
-            id: data.client_reference_id || 'unknown',
-            reference: data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN',
-            status: 'CONFIRMED',
-            customer: {
-              name: data.metadata?.customerName || data.customer_details?.name || 'Customer',
-              email: data.metadata?.customerEmail || data.customer_details?.email || '',
-              phone: data.customer_details?.phone || '',
-            },
-            totalAmount: bookingAmount,
-            scheduledAt: new Date().toISOString(), // Default to now if not available
+        const bookingFromApi = data?.booking ?? null;
+        const paymentIntentStatus = data?.payment_intent_status || null;
+        const paymentStatus = data?.payment_status || null;
+        const mode = data?.mode || null;
+
+        const totalAmount = data?.amount_total
+          ? data.amount_total / 100
+          : bookingFromApi?.totalGBP
+            ? bookingFromApi.totalGBP / 100
+            : 0;
+
+        const derivedStatus = bookingFromApi?.status || (mode === 'setup' ? 'PENDING_MATCH' : 'PENDING_PAYMENT');
+
+        const nextBookingDetails: BookingDetails = {
+          id: bookingFromApi?.id || data.client_reference_id || 'unknown',
+          reference:
+            bookingFromApi?.reference ||
+            data.metadata?.bookingReference ||
+            bookingRef ||
+            data.client_reference_id ||
+            'SV-UNKNOWN',
+          status: derivedStatus,
+          paymentCaptured: Boolean(bookingFromApi?.paymentCaptured),
+          paymentIntentStatus,
+          paymentStatus,
+          mode,
+          customer: {
+            name: bookingFromApi?.customerName || data.metadata?.customerName || data.customer_details?.name || 'Customer',
+            email: bookingFromApi?.customerEmail || data.metadata?.customerEmail || data.customer_details?.email || '',
+            phone: bookingFromApi?.customerPhone || data.customer_details?.phone || '',
+          },
+          totalAmount,
+          scheduledAt: bookingFromApi?.scheduledAt || new Date().toISOString(),
+        };
+
+        setBookingDetails(nextBookingDetails);
+        hasBookingDetailsRef.current = true;
+
+        const isNoDriverAvailable = nextBookingDetails.status === 'NO_DRIVER_AVAILABLE';
+        const isCancelled = nextBookingDetails.status === 'CANCELLED';
+        const isConfirmed = nextBookingDetails.status === 'CONFIRMED' && nextBookingDetails.paymentCaptured;
+        const isPendingMatch = nextBookingDetails.status === 'PENDING_MATCH' || !nextBookingDetails.paymentCaptured;
+
+        // Clear booking-in-progress storage once we have a booking
+        safeLocalStorageRemoveItem('sv_booking_luxury_last_step');
+        safeLocalStorageRemoveItem('sv_booking_luxury_reference');
+
+        // Show success toast only when fully confirmed
+        const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
+        const alreadyShowedToast = toastTrackingKey ? safeLocalStorageGetItem(toastTrackingKey) : null;
+
+        if (isConfirmed && !toastShown && !alreadyShowedToast) {
+          setToastShown(true);
+          safeLocalStorageSetItem(toastTrackingKey || '', 'true');
+          toast({
+            title: 'Booking Confirmed!',
+            description:
+              "🎉 Your Speedy Van booking is confirmed! You'll receive notifications when a driver is assigned (typically within 15-30 minutes).",
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
           });
+        }
 
-          // Show success toast (only once per session)
-          const toastTrackingKey = sessionId ? `toast_shown_${sessionId}` : null;
-          const alreadyShowedToast = toastTrackingKey ? safeLocalStorageGetItem(toastTrackingKey) : null;
-          
-          if (!toastShown && !alreadyShowedToast) {
-            setToastShown(true);
-            safeLocalStorageSetItem(toastTrackingKey || '', 'true');
-            toast({
-              title: 'Booking Confirmed!',
-              description:
-                "🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.",
-              status: 'success',
-              duration: 5000,
-              isClosable: true,
-            });
-          }
-
-          // Update booking with payment intent (in case webhook didn't fire in test mode)
-          try {
-            const bookingId = data.client_reference_id || data.metadata?.bookingId;
-            if (bookingId && data.payment_intent) {
-              const updateResponse = await fetch(`/api/booking-luxury/${bookingId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  stripePaymentIntentId: data.payment_intent,
-                  status: 'CONFIRMED',
-                  paidAt: new Date().toISOString()
-                })
-              });
-
-              if (updateResponse.ok) {
-                const result = await updateResponse.json();
-                console.log('✅ Booking updated successfully:', result);
-              } else {
-                const errorText = await updateResponse.text();
-                console.error('❌ Failed to update booking. Status:', updateResponse.status, 'Response:', errorText);
-              }
-            }
-          } catch (updateError) {
-            console.error('âŒ Error updating booking:', updateError);
-          }
-
-          // Send confirmation email as backup (in case webhook didn't fire)
+        // Send confirmation email only when fully confirmed
+        if (isConfirmed) {
           try {
             const emailResponse = await fetch('/api/booking-luxury/send-confirmation-email', {
               method: 'POST',
@@ -205,110 +212,155 @@ function BookingSuccessPageContent() {
             });
 
             if (emailResponse.ok) {
-              console.log('âœ… Confirmation email sent successfully from success page');
+              console.log('✅ Confirmation email sent successfully from success page');
             } else {
-              console.warn('âš ï¸ Confirmation email failed from success page');
+              console.warn('⚠️ Confirmation email failed from success page');
             }
           } catch (emailError) {
-            console.error('âŒ Error sending confirmation email from success page:', emailError);
+            console.error('❌ Error sending confirmation email from success page:', emailError);
           }
+        }
 
-          // Send SMS confirmation automatically when success page loads (only once per session)
-          if (data.customer_details?.phone && smsTrackingKey) {
-            // Check if SMS was already sent (using safe localStorage + state)
-            const alreadySentInStorage = safeLocalStorageGetItem(smsTrackingKey);
+        // Send SMS confirmation only when fully confirmed
+        if (isConfirmed && nextBookingDetails.customer.phone && smsTrackingKey) {
+          const alreadySentInStorage = safeLocalStorageGetItem(smsTrackingKey);
+          
+          if (!smsSent && !alreadySentInStorage) {
+            try {
+              setSmsSent(true);
+              safeLocalStorageSetItem(smsTrackingKey, 'true');
             
-            if (!smsSent && !alreadySentInStorage) {
-              try {
-                // Mark as sent BEFORE making the request to prevent race conditions
-                setSmsSent(true);
-                safeLocalStorageSetItem(smsTrackingKey, 'true');
-              
-              // Send SMS via API endpoint
               const smsResponse = await fetch('/api/notifications/sms/send', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  to: data.customer_details.phone,
-                    message: `Your Speedy Van booking ${data.metadata?.bookingReference || bookingRef || data.client_reference_id || 'SV-UNKNOWN'} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
+                  to: nextBookingDetails.customer.phone,
+                  message: `Your Speedy Van booking ${nextBookingDetails.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
                   type: 'booking_confirmation'
                 })
               });
               
               if (smsResponse.ok) {
-                  // SMS sent successfully
-                  if (process.env.NODE_ENV === 'development') {
-                console.log('âœ… SMS confirmation sent successfully');
-                  }
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('✅ SMS confirmation sent successfully');
+                }
               } else {
-                console.warn('âš ï¸ SMS confirmation failed from success page');
-                  // Remove flag to allow retry on failure
-                  setSmsSent(false);
-                  safeLocalStorageRemoveItem(smsTrackingKey);
-              }
-            } catch (smsError) {
-              console.error('âŒ Error sending SMS from success page:', smsError);
-                // Remove flag to allow retry on error
+                console.warn('⚠️ SMS confirmation failed from success page');
                 setSmsSent(false);
                 safeLocalStorageRemoveItem(smsTrackingKey);
               }
-            } else {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('â„¹ï¸ SMS already sent for this session - preventing duplicate');
-              }
+            } catch (smsError) {
+              console.error('❌ Error sending SMS from success page:', smsError);
+              setSmsSent(false);
+              safeLocalStorageRemoveItem(smsTrackingKey);
             }
-          } else if (!data.customer_details?.phone) {
-            if (process.env.NODE_ENV === 'development') {
-            console.log('â„¹ï¸ No phone number available for SMS');
-            }
+          } else if (process.env.NODE_ENV === 'development') {
+            console.log('ℹ️ SMS already sent for this session - preventing duplicate');
           }
-          
-          // Stop loading on success
+        } else if (process.env.NODE_ENV === 'development' && !nextBookingDetails.customer.phone) {
+          console.log('ℹ️ No phone number available for SMS');
+        }
+
+        if (isCancelled) {
           clearTimeout(safetyTimeout);
           setIsLoading(false);
-        } else {
-          // Handle different payment statuses with retry logic
-          if (data?.payment_status === 'unpaid' && retryCount < 3) {
-            setLoadingMessage(`Payment processing... Checking status (${retryCount + 1}/3)`);
-            setTimeout(() => fetchBookingDetails(retryCount + 1), 2000);
-            return; // Don't set loading to false here
-          } else if (data?.payment_status === 'unpaid') {
-            // Final attempt failed - stop loading
-            clearTimeout(safetyTimeout);
-            setIsLoading(false);
-            throw new Error('Payment is still pending after multiple attempts. Please refresh the page or contact support.');
-          } else if (data?.payment_status === 'no_payment_required') {
-            throw new Error('No payment was required for this session.');
-          } else {
-            throw new Error(`Payment not completed. Status: ${data?.payment_status || 'unknown'}`);
-          }
+          setError('This booking was cancelled. Please contact support if you believe this is a mistake.');
+          return;
         }
+
+        if (isNoDriverAvailable) {
+          clearTimeout(safetyTimeout);
+          setIsLoading(false);
+          return;
+        }
+
+        if (isPendingMatch && retryCount < maxRetries) {
+          setIsLoading(false);
+          setLoadingMessage(`Finding a driver... Checking status (${retryCount + 1}/${maxRetries})`);
+          const delayMs = Math.min(2000 * Math.pow(1.5, retryCount), 15000);
+          setTimeout(() => fetchBookingDetails(retryCount + 1), delayMs);
+          return;
+        }
+
+        if (!bookingFromApi && retryCount < maxRetries) {
+          setLoadingMessage(`Finalizing your booking... (${retryCount + 1}/${maxRetries})`);
+          const delayMs = Math.min(2000 * Math.pow(1.5, retryCount), 15000);
+          setTimeout(() => fetchBookingDetails(retryCount + 1), delayMs);
+          return;
+        }
+
+        if (!bookingFromApi && retryCount >= maxRetries) {
+          clearTimeout(safetyTimeout);
+          setIsLoading(false);
+          setError('We could not confirm your booking yet. Please refresh or contact support if this persists.');
+          return;
+        }
+
+        clearTimeout(safetyTimeout);
+        setIsLoading(false);
       } catch (err) {
-        console.error('Error fetching booking details:', err);
+        const errorMessage = err instanceof Error ? err.message : '';
+
+        if (!(err instanceof Error) || !err.message.includes('Payment')) {
+          console.error('Error fetching booking details:', err);
+        }
         
-        // Retry on network errors (but not on payment status errors)
         if (retryCount < 2 && err instanceof Error && !err.message.includes('Payment')) {
           setLoadingMessage(`Connection error... Retrying (${retryCount + 1}/2)`);
           setTimeout(() => fetchBookingDetails(retryCount + 1), 3000);
-          return; // Don't set loading to false here
+          return;
         }
         
-        // Final failure - stop loading and show error
         clearTimeout(safetyTimeout);
-        setError(err instanceof Error ? err.message : 'Failed to load booking details');
+        setError(errorMessage || 'Failed to load booking details');
         setIsLoading(false);
       }
     };
 
     fetchBookingDetails();
     
-    // Cleanup function to clear timeout on unmount
     return () => {
       clearTimeout(safetyTimeout);
     };
-  }, [sessionId, bookingRef, toast]);
+  }, [sessionId, bookingRef, toast, toastShown, smsSent]);
+
+  const isConfirmed = bookingDetails?.status === 'CONFIRMED' && bookingDetails?.paymentCaptured;
+  const isPendingMatch = bookingDetails?.status === 'PENDING_MATCH' || bookingDetails?.paymentCaptured === false;
+  const isNoDriverAvailable = bookingDetails?.status === 'NO_DRIVER_AVAILABLE';
+  const isHoldAuthorized = bookingDetails?.paymentIntentStatus === 'requires_capture';
+  const isSetupMode = bookingDetails?.mode === 'setup';
+
+  const headerTitle = isConfirmed
+    ? 'Booking Confirmed'
+    : isNoDriverAvailable
+      ? 'No Driver Available'
+      : 'Finding Driver';
+
+  const headerMessage = isConfirmed
+    ? "🎉 Your Speedy Van booking is confirmed! You'll receive notifications when a driver is assigned (typically within 15-30 minutes)."
+    : isNoDriverAvailable
+      ? 'We could not find an available driver for your requested time. Please contact support for assistance.'
+      : isSetupMode
+        ? 'Your card is saved securely. We are finding a driver and will charge you only after driver confirmation.'
+        : isHoldAuthorized
+          ? 'Payment authorized (hold placed). We are finding a driver and will capture payment after confirmation.'
+          : 'We are finding a driver for your booking. You will be charged only after confirmation.';
+
+  const statusBadgeLabel = isConfirmed
+    ? '✓ CONFIRMED'
+    : isNoDriverAvailable
+      ? 'NO DRIVER'
+      : isPendingMatch
+        ? 'PENDING MATCH'
+        : 'PENDING';
+
+  const statusBadgeColor = isConfirmed
+    ? 'green'
+    : isNoDriverAvailable
+      ? 'red'
+      : 'blue';
 
   if (isLoading) {
     return (
@@ -439,7 +491,7 @@ function BookingSuccessPageContent() {
                 bgGradient="linear(to-r, #34d399, #10b981, #22d3ee)"
                 bgClip="text"
               >
-                Booking Confirmed
+                {headerTitle}
               </Text>
               <Text 
                 fontSize={{ base: "md", md: "xl" }} 
@@ -454,7 +506,7 @@ function BookingSuccessPageContent() {
                 borderRadius="xl"
                 boxShadow="0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(34,197,94,0.15)"
               >
-                🎉 Your premium Speedy Van booking is confirmed! You'll receive instant notifications via SMS and email when your driver is assigned and on their way.
+                {headerMessage}
               </Text>
             </VStack>
           </VStack>
@@ -502,7 +554,7 @@ function BookingSuccessPageContent() {
                     </Text>
                   </HStack>
                   <Badge 
-                    colorScheme="green" 
+                    colorScheme={statusBadgeColor}
                     fontSize={{ base: "xs", md: "sm" }} 
                     px={{ base: 3, md: 4 }} 
                     py={{ base: 1, md: 2 }} 
@@ -510,7 +562,7 @@ function BookingSuccessPageContent() {
                     textTransform="uppercase"
                     letterSpacing="wide"
                   >
-                    ✓ CONFIRMED
+                    {statusBadgeLabel}
                   </Badge>
                 </HStack>
                 
@@ -582,20 +634,37 @@ function BookingSuccessPageContent() {
                   >
                     <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Status:</Text>
                     <Badge 
-                      colorScheme="green" 
+                      colorScheme={statusBadgeColor}
                       size={{ base: "md", md: "lg" }}
                       px={4}
                       py={2}
                       borderRadius="full"
                       fontSize={{ base: "xs", md: "sm" }}
                     >
-                      ✓ Confirmed
+                      {statusBadgeLabel}
                     </Badge>
                   </HStack>
                 </VStack>
               </VStack>
             </CardBody>
           </Card>
+
+          {isNoDriverAvailable && (
+            <Alert status="warning" borderRadius="xl">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle>We could not find a driver</AlertTitle>
+                <AlertDescription>
+                  Please choose an alternative time or contact our support team for assistance.
+                </AlertDescription>
+                <HStack mt={4} spacing={3} flexWrap="wrap">
+                  <Button as="a" href="mailto:support@speedy-van.co.uk" variant="outline">
+                    Contact support
+                  </Button>
+                </HStack>
+              </Box>
+            </Alert>
+          )}
 
           {/* Next Steps - Enhanced */}
           <Card

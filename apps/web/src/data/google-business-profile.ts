@@ -186,7 +186,7 @@ Whether you need to move a single item or an entire home, our experienced team h
     },
     {
       question: 'How much do your services cost?',
-      answer: 'Our man and van services start from £25/hour. House removals start from £50. We offer free instant quotes online or over the phone. Final prices depend on distance, items, and service type.',
+      answer: 'Our man and van services start from £25/hour. House removals start from £50. We offer free fast quotes online or over the phone. Final prices depend on distance, items, and service type.',
     },
     {
       question: 'Do you offer same-day service?',
@@ -198,7 +198,7 @@ Whether you need to move a single item or an entire home, our experienced team h
     },
     {
       question: 'How do I book a service?',
-      answer: 'You can book instantly online at speedy-van.co.uk, call us on 01202 129746, or request a quote through our website. We respond within minutes.',
+      answer: 'You can book online at speedy-van.co.uk, call us on 01202 129746, or request a quote through our website. We respond within minutes.',
     },
     {
       question: 'Do you provide packing materials?',

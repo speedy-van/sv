@@ -20,11 +20,6 @@ export async function getCustomSession(): Promise<CustomSession | null> {
     const cookieStore = await cookies(); // Next.js 15 - async
     const token = cookieStore.get('auth-token')?.value;
     
-    // Debug: Log all cookies
-    const allCookies = cookieStore.getAll();
-    console.log('🍪 getCustomSession - All cookies:', allCookies.map(c => c.name));
-    console.log('🔑 getCustomSession - auth-token exists:', !!token);
-
     if (!token) {
       // No token = guest user, this is normal - no need to log
       return null;

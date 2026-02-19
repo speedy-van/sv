@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Same Day Delivery | Express Man and Van | Speedy Van',
-  description: 'Same day delivery and collection service. Book by 10am for guaranteed same-day pickup. Urgent furniture, appliance, and item delivery across the UK. Fully insured express service.',
+  description: 'Same day delivery and collection service. Book by 10am for same-day pickup (subject to availability). Urgent furniture, appliance, and item delivery across the UK. Fully insured express service.',
   keywords: [
     'same day delivery',
     'express delivery',
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Same Day Delivery | Express Service | Speedy Van',
-    description: 'Same day delivery across the UK. Book by 10am for same-day collection.',
+    description: 'Same day delivery across the UK. Book by 10am for same-day collection (subject to availability).',
     url: 'https://speedy-van.co.uk/same-day-delivery',
     siteName: 'Speedy Van',
     locale: 'en_GB',

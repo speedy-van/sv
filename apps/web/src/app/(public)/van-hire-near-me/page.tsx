@@ -42,7 +42,7 @@ const canonicalUrl = `${APP_BASE_URL}/van-hire-near-me`;
 export const metadata: Metadata = {
   title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
   description:
-    'Need a van near you? Book instantly online. Professional drivers, same-day service, real-time tracking. Serving Glasgow, Hamilton, Edinburgh. From £25. Book now!',
+    'Need a van near you? Book online. Professional drivers, same-day service subject to availability, tracking available. Serving Glasgow, Hamilton, Edinburgh. From £25. Book now!',
   keywords: [
     'van hire near me',
     'man and van near me',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
     description:
-      'Book a van near you in minutes. Professional drivers, instant quotes, same-day service.',
+      'Book a van near you in minutes. Professional drivers, fast quotes, same-day service subject to availability.',
     type: 'website',
     locale: 'en_GB',
     url: canonicalUrl,
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     creator: '@speedyvan',
     title: `Van Hire Near Me - Same Day Service from £25 | ${BRAND_NAME}`,
     description:
-      'Book a van near you in minutes. Professional drivers, instant quotes, same-day service.',
+      'Book a van near you in minutes. Professional drivers, fast quotes, same-day service subject to availability.',
   },
 };
 
@@ -186,7 +186,7 @@ export default function VanHireNearMePage() {
                   variant="outline"
                   colorScheme="whiteAlpha"
                 >
-                  Get Instant Quote
+                  Get Quote
                 </Button>
               </HStack>
             </VStack>
@@ -211,7 +211,7 @@ export default function VanHireNearMePage() {
               {
                 icon: FaPoundSign,
                 title: 'From £25',
-                description: 'Transparent pricing with no hidden fees. Get instant quote online.',
+                description: 'Transparent pricing with no hidden fees. Get quote online.',
               },
               {
                 icon: FaClock,
@@ -341,7 +341,7 @@ export default function VanHireNearMePage() {
         <Container maxW="container.md" textAlign="center">
           <Heading mb={4}>Ready to Book Your Van?</Heading>
           <Text fontSize="lg" mb={8}>
-            Get an instant quote in 30 seconds. No payment required.
+            Get a quote in 30 seconds. No payment required.
           </Text>
           <Button
             as="a"
@@ -351,7 +351,7 @@ export default function VanHireNearMePage() {
             px={12}
             py={7}
           >
-            Get Instant Quote →
+            Get Quote →
           </Button>
         </Container>
       </Box>

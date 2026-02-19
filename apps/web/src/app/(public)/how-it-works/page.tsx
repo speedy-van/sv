@@ -427,13 +427,13 @@ export default function HowItWorksPage() {
           <Step
             n="3"
             title="Payment & Confirmation"
-            description="Pay securely with Stripe. Get instant confirmation via email and SMS with your booking reference (e.g., SV-000001)."
+            description="Pay securely with Stripe. Get booking confirmation via email and SMS with your booking reference (e.g., SV-000001). Driver assigned typically within 15-30 minutes."
             icon={FaCreditCard}
             note="Klarna & Clearpay available on eligible bookings at checkout."
             features={[
               'Secure Stripe payment processing',
-              'Email & SMS instant confirmation',
-              'Real-time booking tracking',
+              'Email & SMS booking confirmation',
+              'Driver assignment notification',
               'Digital receipt & invoice',
             ]}
             cta={{
@@ -475,7 +475,7 @@ export default function HowItWorksPage() {
               >
                 <FeatureCard
                   icon={FaBolt}
-                  title="Instant Booking"
+                  title="Quick Booking"
                   description="No phone calls needed"
                 />
                 <FeatureCard
@@ -485,8 +485,8 @@ export default function HowItWorksPage() {
                 />
                 <FeatureCard
                   icon={FaRocket}
-                  title="Auto Assignment"
-                  description="Best driver matched instantly"
+                  title="Smart Matching"
+                  description="Best driver matched for your job"
                 />
                 <FeatureCard
                   icon={FaClock}

@@ -200,6 +200,14 @@ model Booking {
   pickupPropertyId                                           String
   scheduledAt                                                DateTime
   stripePaymentIntentId                                      String?                 @unique
+  stripeSetupIntentId                                        String?                 @unique
+  stripeCustomerId                                           String?
+  savedPaymentMethodId                                       String?
+  paymentCaptured                                            Boolean                 @default(false)
+  paymentCapturedAt                                          DateTime?
+  paymentHoldExpiresAt                                       DateTime?
+  matchStartTime                                             DateTime?
+  matchAttempts                                              Int                     @default(0)
   totalGBP                                                   Int
   weatherSurchargeGBP                                        Int
   status                                                     BookingStatus           @default(DRAFT)
@@ -2364,6 +2372,9 @@ enum AttendanceStatus {
 enum BookingStatus {
   DRAFT
   PENDING_PAYMENT
+  PENDING_MATCH
+  DRIVER_CONFIRMED
+  NO_DRIVER_AVAILABLE
   CONFIRMED
   CANCELLED
   COMPLETED

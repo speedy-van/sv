@@ -12,17 +12,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('📍 /api/auth/session endpoint called');
-    
     // Try custom session first
     const customSession = await getCustomSession();
     if (customSession) {
-      console.log('✅ Custom session found:', {
-        userId: customSession.user.id,
-        email: customSession.user.email,
-        role: customSession.user.role,
-      });
-
       // Return in NextAuth-compatible format
       return NextResponse.json({
         user: customSession.user,
@@ -39,7 +31,6 @@ export async function GET(request: NextRequest) {
     // Fallback to NextAuth session
     const nextAuthSession = await getServerSession(authOptions);
     if (nextAuthSession) {
-      console.log('✅ NextAuth session found');
       return NextResponse.json(nextAuthSession, {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -50,7 +41,6 @@ export async function GET(request: NextRequest) {
     }
 
     // No session found
-    console.log('❌ No session found');
     return NextResponse.json(
       { user: null, expires: null },
       {

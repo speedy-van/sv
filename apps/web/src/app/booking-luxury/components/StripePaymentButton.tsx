@@ -710,7 +710,7 @@ export default function StripePaymentButton({
             borderColor="rgba(59, 130, 246, 0.4)"
             boxShadow="0 4px 12px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
           >
-            ⚡ Instant Processing
+            💳 Secure Payment
           </Badge>
         </HStack>
 

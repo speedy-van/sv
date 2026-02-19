@@ -57,7 +57,7 @@
 NEXT_PUBLIC_GOOGLE_MAPS=AIzaSyBD0UyoHapCoeo8EflCpTstilF6QPgmKTo
 
 # Mapbox API (Fallback)
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
 ```
 
 ## 🎯 User Experience Flow

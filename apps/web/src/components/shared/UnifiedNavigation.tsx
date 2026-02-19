@@ -27,6 +27,8 @@ interface UnifiedNavigationProps {
   role?: string;
 }
 
+type EffectiveUserRole = UserRole | 'superadmin' | 'guest';
+
 export function UnifiedNavigation({
   userRole,
   isAuthenticated = false,
@@ -34,7 +36,7 @@ export function UnifiedNavigation({
   role
 }: UnifiedNavigationProps) {
   // If role is passed, use it as userRole for backward compatibility
-  const effectiveUserRole = userRole || (role as UserRole) || 'guest';
+  const effectiveUserRole = (userRole || role || 'guest') as EffectiveUserRole;
   const bg = useColorModeValue('rgba(7, 13, 23, 0.85)', 'rgba(7, 13, 23, 0.85)');
   const borderColor = useColorModeValue('rgba(255,255,255,0.08)', 'rgba(255,255,255,0.08)');
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -103,9 +105,11 @@ export function UnifiedNavigation({
 
     switch (effectiveUserRole) {
       case 'admin':
-        return [
+      case 'superadmin': {
+        const navigationItems: NavigationItem[] = [
           { label: 'Dashboard', href: ROUTES.ADMIN_DASHBOARD },
           { label: 'Operations', href: ROUTES.ADMIN_OPERATIONS },
+          { label: 'Jobs Market', href: '/jobs-market' },
           { label: 'Drivers', href: ROUTES.ADMIN_DRIVERS },
           { label: 'Driver Applications', href: ROUTES.ADMIN_DRIVER_APPLICATIONS },
           { label: 'Driver Schedule', href: ROUTES.ADMIN_DRIVER_SCHEDULE },
@@ -123,16 +127,21 @@ export function UnifiedNavigation({
           { label: 'Chat', href: ROUTES.ADMIN_CHAT },
           { label: 'Settings', href: ROUTES.ADMIN_SETTINGS },
         ];
-      case 'driver':
-        return [
+        return navigationItems;
+      }
+      case 'driver': {
+        const navigationItems: NavigationItem[] = [
           { label: 'Dashboard', href: ROUTES.DRIVER_DASHBOARD },
           { label: 'Jobs', href: ROUTES.DRIVER_JOBS },
+          { label: 'Jobs Market', href: '/jobs-market' },
           { label: 'Schedule', href: ROUTES.DRIVER_SCHEDULE },
           { label: 'Availability', href: ROUTES.DRIVER_AVAILABILITY },
           { label: 'Earnings', href: ROUTES.DRIVER_EARNINGS },
           { label: 'Profile', href: ROUTES.DRIVER_PROFILE },
           { label: 'Settings', href: ROUTES.DRIVER_SETTINGS },
         ];
+        return navigationItems;
+      }
       case 'customer':
         return [
           { label: 'Dashboard', href: ROUTES.CUSTOMER_DASHBOARD },

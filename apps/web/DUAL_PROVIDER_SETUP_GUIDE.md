@@ -13,7 +13,7 @@ Add the following environment variable to your `.env.local` file:
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_places_api_key_here
 
 # Mapbox API Key (Fallback Provider) - Already configured
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
 ```
 
 ## Google Places API Setup

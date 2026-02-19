@@ -11,12 +11,12 @@ const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
 
 export const metadata: Metadata = {
   title: 'Book Man and Van Today from £25/hr | Beat Any Price | Speedy Van',
-  description: 'Unbeatable Man With A Van prices from only £25/hour. Guaranteed to beat any price. Same-day van service across England, Scotland, Wales. Facebook Marketplace pickups, furniture moves, and full house removals across the UK. Professional furniture transport, long distance house movers, packers and movers. Fully insured, 5-star rated.',
+  description: 'Unbeatable Man With A Van prices from only £25/hour. Guaranteed to beat any price. Van service across England, Scotland, Wales (same-day subject to availability). Facebook Marketplace pickups, furniture moves, and full house removals across the UK. Professional furniture transport, long distance house movers, packers and movers. Fully insured, 5-star rated.',
   keywords: 'man and van, man with a van, book man and van today, man and van prices, cheap man and van, man and van England, man and van Scotland, man and van Wales, same day van service, Facebook Marketplace delivery, Gumtree pickup, furniture removal, house removals, furniture delivery, £25 per hour, furniture transport, long distance house mover, packers and movers, removal companies, large item movers',
   alternates: { canonical: 'https://speedy-van.co.uk/' },
   openGraph: {
     title: 'Book Man and Van Today from £25/hr | Beat Any Price | Speedy Van',
-    description: 'Unbeatable Man With A Van prices from only £25/hour. Same-day service across England, Scotland, Wales. Facebook Marketplace pickups, furniture moves, and full house removals. Professional furniture transport, guaranteed to beat any price.',
+    description: 'Unbeatable Man With A Van prices from only £25/hour. Van service across England, Scotland, Wales (same-day subject to availability). Facebook Marketplace pickups, furniture moves, and full house removals. Professional furniture transport, guaranteed to beat any price.',
     url: 'https://speedy-van.co.uk/',
     siteName: 'Speedy Van',
     images: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     site: '@speedyvan',
     creator: '@speedyvan',
     title: 'Book Man and Van Today from £25/hr | Beat Any Price',
-    description: 'Unbeatable Man With A Van prices from only £25/hour across England, Scotland, Wales. Same-day service, Facebook Marketplace pickups, furniture moves. Guaranteed to beat any price.',
+    description: 'Unbeatable Man With A Van prices from only £25/hour across England, Scotland, Wales. Van service available, Facebook Marketplace pickups, furniture moves. Guaranteed to beat any price.',
   },
   appleWebApp: {
     capable: true,
@@ -64,7 +64,7 @@ export default function HomePage() {
     url: 'https://speedy-van.co.uk',
     logo: 'https://speedy-van.co.uk/android-chrome-512x512.png',
     image: 'https://speedy-van.co.uk/og/og-home.jpg',
-    telephone: '+44-800-123-4567',
+    telephone: '01202 129746',
     priceRange: '£',
     slogan: 'Book Man and Van Today - Guaranteed To Beat Any Price',
     address: {

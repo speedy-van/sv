@@ -2,7 +2,7 @@ import React from 'react';
 
 export const metadata = {
   title: 'Book Your Move | Man & Van Service | House, Office & Furniture Removal | Speedy Van UK',
-  description: 'Professional man and van service for all your moving needs. House removals, office relocations, furniture delivery, Facebook Marketplace pickups, Gumtree collections, IKEA & store deliveries. Same-day service available across the UK. Get an instant quote!',
+  description: 'Professional man and van service for all your moving needs. House removals, office relocations, furniture delivery, Facebook Marketplace pickups, Gumtree collections, IKEA & store deliveries. Same-day service subject to availability across the UK. Get a quote!',
   keywords: [
     'man and van',
     'house removal',
@@ -28,7 +28,7 @@ export const metadata = {
   ],
   openGraph: {
     title: 'Book Your Move | Speedy Van - UK\'s Trusted Man & Van Service',
-    description: 'Move anything, anywhere. House removals, furniture delivery, marketplace pickups & more. Professional drivers, instant quotes, same-day service available.',
+    description: 'Move anything, anywhere. House removals, furniture delivery, marketplace pickups & more. Professional drivers, quotes provided, same-day service subject to availability.',
     type: 'website',
     locale: 'en_GB',
     siteName: 'Speedy Van',
@@ -36,7 +36,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Book Your Move | Speedy Van UK',
-    description: 'Professional man and van for house moves, furniture delivery, marketplace pickups & store collections. Get your instant quote now!',
+    description: 'Professional man and van for house moves, furniture delivery, marketplace pickups & store collections. Get your quote now!',
   },
   alternates: {
     canonical: 'https://speedy-van.co.uk/booking-luxury',

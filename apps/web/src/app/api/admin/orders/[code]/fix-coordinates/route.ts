@@ -2,9 +2,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 async function geocodeAddress(address: string, postcode: string): Promise<{lat: number, lng: number} | null> {
+  if (!MAPBOX_TOKEN) {
+    console.warn('⚠️ Missing NEXT_PUBLIC_MAPBOX_TOKEN - cannot geocode address');
+    return null;
+  }
   try {
     const query = `${address}, ${postcode}, UK`;
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=GB&limit=1`;

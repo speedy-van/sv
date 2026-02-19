@@ -262,6 +262,16 @@ const step1Schema = z.object({
         message: 'Please select a valid future date',
       });
     }
+
+    const maxDate = new Date(today);
+    maxDate.setDate(maxDate.getDate() + 7);
+    if (selectedDate > maxDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pickupDate'],
+        message: 'Pickup date must be within the next 7 days',
+      });
+    }
   }
 });
 

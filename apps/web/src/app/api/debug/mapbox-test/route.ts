@@ -4,12 +4,12 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const query = url.searchParams.get('q') || 'London';
 
-  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
   if (!token) {
     return NextResponse.json({
       error: 'No Mapbox token found',
-      token: 'NOT SET',
+      hasToken: false,
     });
   }
 
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: true,
       query,
-      token: token.substring(0, 10) + '...',
+      hasToken: true,
       responseStatus: response.status,
       responseOk: response.ok,
       mapboxData: data,
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: false,
       error: error.message,
-      token: token.substring(0, 10) + '...',
+      hasToken: true,
       query,
     });
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   VStack,
   HStack,
@@ -12,6 +12,7 @@ import {
   CardBody,
   SimpleGrid,
   Button,
+  useToast,
 } from '@chakra-ui/react';
 import { FiDollarSign, FiClock, FiCreditCard, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { OrderDetail } from '../OrderDetailDrawer';
@@ -36,6 +37,8 @@ export function OrderPaymentTab({
   secondaryTextColor,
   onRefresh,
 }: OrderPaymentTabProps) {
+  const [isCapturing, setIsCapturing] = useState(false);
+  const toast = useToast();
   const formatCurrency = (amount: number) => {
     return `£${(amount / 100).toFixed(2)}`;
   };
@@ -59,6 +62,8 @@ export function OrderPaymentTab({
   const remainingAmount = totalGBP - amountPaidGBP;
   const paymentStatus = order.paidAt ? 'paid' : amountPaidGBP > 0 ? 'partial' : 'unpaid';
   const paymentPercentage = totalGBP > 0 ? (amountPaidGBP / totalGBP) * 100 : 0;
+  const canCapture = order.status === 'PENDING_MATCH' && !order.paymentCaptured;
+  const hasPaymentIntent = !!order.stripePaymentIntentId;
 
   return (
     <VStack spacing={6} align="stretch">
@@ -199,6 +204,67 @@ export function OrderPaymentTab({
                   if (onRefresh) onRefresh();
                 }}
               />
+            </VStack>
+          </CardBody>
+        </Card>
+      )}
+
+      {canCapture && (
+        <Card bg={cardBg} borderColor="#3b82f6" borderWidth={2}>
+          <CardBody>
+            <VStack align="stretch" spacing={4}>
+              <HStack>
+                <FiCreditCard color="#3b82f6" />
+                <Text fontWeight="bold" color={textColor}>
+                  Manual Capture Required
+                </Text>
+              </HStack>
+              <Text fontSize="sm" color={secondaryTextColor}>
+                This booking is awaiting manual capture. Use this button only after a driver is confirmed.
+              </Text>
+              <Button
+                size="sm"
+                colorScheme="blue"
+                isLoading={isCapturing}
+                isDisabled={!hasPaymentIntent || order.status === 'CANCELLED' || order.paymentCaptured}
+                onClick={async () => {
+                  setIsCapturing(true);
+                  try {
+                    const response = await fetch('/api/stripe/capture', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ bookingId: order.id }),
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                      throw new Error(result?.error || result?.message || 'Failed to capture payment');
+                    }
+
+                    toast({
+                      title: 'Payment captured',
+                      description: `Booking ${order.reference} is now confirmed.`,
+                      status: 'success',
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                    if (onRefresh) onRefresh();
+                  } catch (error) {
+                    toast({
+                      title: 'Capture failed',
+                      description: error instanceof Error ? error.message : 'Unknown error',
+                      status: 'error',
+                      duration: 5000,
+                      isClosable: true,
+                    });
+                  } finally {
+                    setIsCapturing(false);
+                  }
+                }}
+              >
+                Capture Payment
+              </Button>
             </VStack>
           </CardBody>
         </Card>

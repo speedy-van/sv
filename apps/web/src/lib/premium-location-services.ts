@@ -85,7 +85,7 @@ export interface GeolocationResult {
 }
 
 // Dual provider configuration for premium autocomplete experience
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 const GOOGLE_PLACES_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // API endpoints
@@ -98,7 +98,6 @@ console.log('Premium Location Services Debug:', {
   mapboxToken: MAPBOX_TOKEN ? 'SET' : 'NOT SET',
   googlePlacesKey: GOOGLE_PLACES_API_KEY ? 'SET' : 'NOT SET',
   mapboxTokenLength: MAPBOX_TOKEN.length,
-  mapboxTokenStart: MAPBOX_TOKEN.substring(0, 10) + '...',
   hasFallback: !!GOOGLE_PLACES_API_KEY,
   environment: process.env.NODE_ENV
 });

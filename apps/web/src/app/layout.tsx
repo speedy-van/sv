@@ -42,7 +42,7 @@ const inter = Inter({
 const defaultTitle =
   'Man and Van London | From £25/hour | Book Online Now | Speedy Van';
 const defaultDescription =
-  'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same-day service available. Trusted by 50,000+ customers. Book instantly online.';
+  'Professional man and van service across London & UK. House removals, furniture delivery, office moving from £25/hour. Same-day service subject to availability. Trusted by 50,000+ customers. Book online.';
 const defaultKeywords =
   'man and van London, man and van near me, furniture removal London, house removals UK, moving services London, van hire with driver, removal company London, furniture movers, office removals, same day man and van, cheap man and van, furniture delivery service, 2 men and van, van and man London';
 

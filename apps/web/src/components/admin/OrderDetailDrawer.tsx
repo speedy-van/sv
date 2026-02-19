@@ -186,6 +186,9 @@ export interface OrderDetail {
   status: string;
   scheduledAt: string;
   totalGBP: number;
+  stripePaymentIntentId?: string | null;
+  paymentCaptured?: boolean;
+  paymentCapturedAt?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -4030,7 +4033,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                               <body>
                                 <div id='map'></div>
                                 <script>
-                                  mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+                                  const MAPBOX_TOKEN = ${JSON.stringify(process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || '')};
+                                  if (!MAPBOX_TOKEN) {
+                                    const mapEl = document.getElementById('map');
+                                    if (mapEl) {
+                                      mapEl.innerHTML = '<div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 14px; color: #111827; background: #f9fafb;">Map unavailable (missing Mapbox token).</div>';
+                                    }
+                                  } else {
+                                    mapboxgl.accessToken = MAPBOX_TOKEN;
                                   
                                   const driversRaw = ${JSON.stringify(
                                     (availableDrivers || []).map(d => ({
@@ -4132,6 +4142,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                                   maybeExtend(dropoffLng, dropoffLat);
                                   drivers.forEach(d => maybeExtend(d.lng, d.lat));
                                   map.fitBounds(bounds, { padding: 60, duration: 1000 });
+                                  }
                                 </script>
                               </body>
                               </html>

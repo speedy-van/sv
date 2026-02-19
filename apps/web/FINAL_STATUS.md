@@ -51,9 +51,9 @@ The address autocomplete system has been successfully implemented and all issues
 ### **Environment Variables Configured**:
 
 ```bash
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
-DATABASE_URL=postgresql://neondb_owner:npg_qNFE0IHpk1vT@ep-dry-glitter-aftvvy9d-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-NEXTAUTH_SECRET=ZV6xh/oJhYk9wwrjX5RA5JgjC9uCSuWZHpIprjYs2LA=
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
+DATABASE_URL=postgresql://username:password@host:5432/database?sslmode=require
+NEXTAUTH_SECRET=your-nextauth-secret-here
 NEXTAUTH_URL=http://localhost:3000
 ```
 

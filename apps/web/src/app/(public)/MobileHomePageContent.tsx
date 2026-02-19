@@ -85,11 +85,6 @@ const StickyCTA = dynamic(() => import('@/components/StickyCTA'), {
   loading: () => null,
 });
 
-const QuickQuoteWidget = dynamic(() => import('@/components/QuickQuoteWidget'), {
-  ssr: false,
-  loading: () => null,
-});
-
 const SpeedyAIBotWrapper = dynamic(() => import('@/components/site/SpeedyAIBotWrapper'), {
   ssr: false,
   loading: () => null,
@@ -495,7 +490,7 @@ const MobileHero: React.FC = () => {
         {/* Hero Grid Layout */}
         <Box
           display="grid"
-          gridTemplateColumns={{ base: '1fr', lg: '1fr 1fr' }}
+          gridTemplateColumns={{ base: '1fr', lg: '1fr' }}
           gap={{ base: 6, md: 8, lg: 12 }}
           alignItems="center"
           w="100%"
@@ -666,40 +661,6 @@ const MobileHero: React.FC = () => {
               </HStack>
             </MotionBox>
           </VStack>
-
-          {/* Right Column - Quote Widget */}
-          <MotionBox
-            initial={{ opacity: 0, x: 50, rotateY: -15 }}
-            whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-            viewport={viewportMotion}
-            // @ts-ignore
-            transition={{ duration: 0.8, delay: 0.4, type: "spring", stiffness: 100 }}
-            animate={prefersReducedMotion ? {} : {
-              y: [0, -12, 0],
-              rotateZ: [0, 1, 0, -1, 0],
-            }}
-            // @ts-ignore - Framer Motion transition types conflict with Chakra
-            transition={{
-              y: {
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              },
-              rotateZ: {
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
-            }}
-            display="flex"
-            justifyContent={{ base: 'center', lg: 'flex-end' }}
-            w="100%"
-            style={{ perspective: 1000 }}
-          >
-            <Box w="100%" maxW={{ base: '100%', md: '450px' }}>
-              <QuickQuoteWidget />
-            </Box>
-          </MotionBox>
         </Box>
       </Container>
     </Box>

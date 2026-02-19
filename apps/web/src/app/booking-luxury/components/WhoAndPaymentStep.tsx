@@ -3008,7 +3008,47 @@ export default function WhoAndPaymentStep({
       <Flex w="full" justify="center" mt={{ base: 4, sm: 6 }} mb={{ base: 3, sm: 4 }}>
         {/* Stripe Payment Button */}
         {!paymentSuccess ? (
-          <Box maxW={{ base: "full", md: "500px" }} w="full">
+          <VStack w="full" maxW={{ base: "full", md: "500px" }} spacing={4}>
+            {/* Payment Info Banner */}
+            <Alert
+              status="info"
+              variant="subtle"
+              borderRadius="lg"
+              bg="rgba(59, 130, 246, 0.15)"
+              borderWidth="2px"
+              borderColor="rgba(59, 130, 246, 0.4)"
+              py={4}
+              px={5}
+            >
+              <AlertIcon color="blue.400" />
+              <VStack align="start" spacing={1} flex={1}>
+                <Text fontWeight="700" color="white" fontSize="sm">
+                  {(() => {
+                    // Calculate if this is a far booking
+                    const scheduledDate = formData.step1.pickupDate ? new Date(formData.step1.pickupDate) : new Date();
+                    const daysUntilPickup = Math.ceil((scheduledDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const isFarBooking = daysUntilPickup > 7;
+                    
+                    return isFarBooking 
+                      ? "💳 Card Will Be Saved Securely"
+                      : "⏳ Payment Hold - Not Charged Yet";
+                  })()}
+                </Text>
+                <Text fontSize="xs" color="rgba(255, 255, 255, 0.8)" lineHeight="1.5">
+                  {(() => {
+                    const scheduledDate = formData.step1.pickupDate ? new Date(formData.step1.pickupDate) : new Date();
+                    const daysUntilPickup = Math.ceil((scheduledDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const isFarBooking = daysUntilPickup > 7;
+                    
+                    return isFarBooking 
+                      ? "We will securely save your card. You will be charged only after a driver confirms your booking."
+                      : "You will NOT be charged until a driver confirms. A temporary hold may appear on your statement.";
+                  })()}
+                </Text>
+              </VStack>
+            </Alert>
+
+            <Box w="full">
             <StripePaymentButton
             amount={step2.promotionDetails?.finalAmount || formData.step1.pricing.total}
             bookingData={{
@@ -3082,6 +3122,7 @@ export default function WhoAndPaymentStep({
             }
           />
           </Box>
+          </VStack>
         ) : (
           <Alert status="success" borderRadius="xl" p={4} maxW={{ base: "full", md: "500px" }} w="full">
             <AlertIcon />

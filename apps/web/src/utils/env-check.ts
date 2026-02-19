@@ -15,7 +15,7 @@ console.log('Mapbox Token:', process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?
 
 // Test the actual values in the service
 const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 console.log('\n📋 Configuration that will be used:');
 console.log('- Google API Key:', googleKey ? `${googleKey.substring(0, 20)}...` : 'MISSING');

@@ -1845,7 +1845,11 @@ const EnhancedAdminRoutesDashboard = ({
                       <body>
                         <div id='map'></div>
                         <script>
-                          mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+                          const MAPBOX_TOKEN = ${JSON.stringify(process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '')};
+                          if (!MAPBOX_TOKEN) {
+                            document.body.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9CA3AF; font-family: system-ui; background: #1a202c;">Map unavailable (missing Mapbox token).</div>';
+                          } else {
+                            mapboxgl.accessToken = MAPBOX_TOKEN;
                           
                           // Get all driver locations
                           const drivers = ${JSON.stringify(
@@ -1938,6 +1942,7 @@ const EnhancedAdminRoutesDashboard = ({
                                 map.fitBounds(bounds, { padding: 70, duration: 1000, maxZoom: 13 });
                               }
                             }, 100);
+                          }
                           }
                         </script>
                       </body>

@@ -204,7 +204,12 @@ export default function LiveTrackingMap({
 
     try {
       const mapboxgl = window.mapboxgl;
-      mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg';
+      const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      if (!mapboxToken) {
+        setError('Map unavailable (missing Mapbox token).');
+        return;
+      }
+      mapboxgl.accessToken = mapboxToken;
 
       // Calculate bounds to fit all locations
       const bounds = new mapboxgl.LngLatBounds();

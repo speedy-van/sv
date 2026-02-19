@@ -37,7 +37,6 @@ A comprehensive database protection system has been implemented to completely se
 - ✅ `ENVIRONMENT_SEPARATION_GUIDE.md` - Detailed English guide
 - ✅ `QUICK_SETUP_DATABASE_SEPARATION.md` - Quick English setup
 - ✅ `DATABASE_SEPARATION_AR.md` - Detailed Arabic guide
-- ✅ `ابدأ_هنا_إعداد_قاعدة_البيانات.md` - Quick Arabic setup
 - ✅ `START_HERE_DATABASE_SETUP.md` - Quickstart guide
 - ✅ `IMPLEMENTATION_SUMMARY_DATABASE_SEPARATION.md` - Technical summary
 - ✅ `packages/shared/src/database/README.md` - Module documentation
@@ -130,7 +129,6 @@ scripts/create-dev-database-template.sql                 [SQL Template]
 ENVIRONMENT_SEPARATION_GUIDE.md                          [Detailed EN]
 QUICK_SETUP_DATABASE_SEPARATION.md                       [Quick EN]
 DATABASE_SEPARATION_AR.md                                [Detailed AR]
-ابدأ_هنا_إعداد_قاعدة_البيانات.md                        [Quick AR]
 START_HERE_DATABASE_SETUP.md                             [Quickstart]
 IMPLEMENTATION_SUMMARY_DATABASE_SEPARATION.md            [Tech Summary]
 DATABASE_ENVIRONMENT_SETUP_COMPLETE.md                   [This File]
@@ -202,8 +200,7 @@ pnpm run dev
 ## 📚 Documentation Index
 
 ### For Quick Setup
-- 🇬🇧 English: `START_HERE_DATABASE_SETUP.md`
-- 🇸🇦 Arabic: `ابدأ_هنا_إعداد_قاعدة_البيانات.md`
+- 📄 `START_HERE_DATABASE_SETUP.md` - Quick setup guide
 
 ### For Detailed Information
 - 🇬🇧 English: `ENVIRONMENT_SEPARATION_GUIDE.md`
@@ -413,5 +410,5 @@ For project-specific help:
 
 ---
 
-**Ready to start? See `START_HERE_DATABASE_SETUP.md` or `ابدأ_هنا_إعداد_قاعدة_البيانات.md`**
+**Ready to start? See `START_HERE_DATABASE_SETUP.md`**
 

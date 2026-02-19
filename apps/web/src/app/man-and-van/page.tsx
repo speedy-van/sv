@@ -83,7 +83,7 @@ export default function ManAndVanIndexPage() {
               </Heading>
               
               <Text fontSize={{ base: 'lg', md: 'xl' }} maxW="600px" color="gray.300">
-                From just £25/hour. Trusted by 50,000+ customers. Available 24/7 across the UK. Instant quotes, fully insured, 5-star rated.
+                From just £25/hour. Trusted by 50,000+ customers. Available 24/7 across the UK. Online quotes, fully insured, 5-star rated.
               </Text>
               
               <Flex wrap="wrap" gap={4} justify={{ base: 'center', md: 'start' }}>

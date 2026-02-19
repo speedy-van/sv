@@ -232,6 +232,22 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid amount conversion');
     }
     
+    // Enforce pickup date within 7 days before creating/updating booking
+    const scheduledDate = bookingData.pickupDate ? new Date(bookingData.pickupDate) :
+                           bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date();
+    const daysUntilPickup = Math.ceil((scheduledDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const isFarBooking = daysUntilPickup > 7;
+
+    if (isFarBooking) {
+      return NextResponse.json(
+        {
+          error: 'Pickup date must be within 7 days to proceed with payment.',
+          details: 'Please choose a date within the next 7 days.',
+        },
+        { status: 400 }
+      );
+    }
+
     // Create unique booking reference for this session
     // Check if this is for an existing booking (from luxury booking flow)
     let existingBooking = null;
@@ -447,12 +463,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const defaultSuccessUrl = `${request.nextUrl.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}&booking_ref=${bookingReference}`;
+    const resolvedSuccessUrl: string = (() => {
+      const baseUrl = successUrl || defaultSuccessUrl;
+
+      try {
+        const url = new URL(baseUrl, request.nextUrl.origin);
+
+        if (!url.searchParams.get('booking_ref')) {
+          url.searchParams.set('booking_ref', bookingReference);
+        }
+
+        if (!url.searchParams.get('session_id')) {
+          url.searchParams.set('session_id', '{CHECKOUT_SESSION_ID}');
+        }
+
+        return url.toString();
+      } catch {
+        return defaultSuccessUrl;
+      }
+    })();
+
     console.log('🔗 [CHECKOUT DEBUG] Creating Stripe checkout session with URLs:');
-    console.log('🔗 [CHECKOUT DEBUG] Success URL:', successUrl || `${request.nextUrl.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}&booking_ref=${bookingReference}`);
+    console.log('🔗 [CHECKOUT DEBUG] Success URL:', resolvedSuccessUrl);
     console.log('🔗 [CHECKOUT DEBUG] Cancel URL:', cancelUrl || `${request.nextUrl.origin}/booking-luxury?step=2&payment=cancelled`);
 
-    // Create Stripe checkout session
-    const stripeSession = await stripe.checkout.sessions.create({
+    console.log('📅 Booking schedule check:', {
+      scheduledDate: scheduledDate.toISOString(),
+      daysUntilPickup,
+      isFarBooking,
+      useManualCapture: true,
+    });
+
+    // NEAR BOOKING (≤7 days): Use payment mode with manual capture
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: CHECKOUT_PAYMENT_METHOD_TYPES,
       line_items: [
         {
@@ -479,8 +523,10 @@ export async function POST(request: NextRequest) {
         bookingReference: bookingReference,
         serviceType: (bookingData as any)?.serviceType || 'unknown',
         itemCount: (bookingData as any)?.items?.length?.toString() || '0',
+        daysUntilPickup: daysUntilPickup.toString(),
+        isFarBooking: 'false',
       },
-      success_url: successUrl || `${request.nextUrl.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}&booking_ref=${bookingReference}`,
+      success_url: resolvedSuccessUrl,
       cancel_url: cancelUrl || `${request.nextUrl.origin}/booking-luxury?step=2&payment=cancelled`,
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
       billing_address_collection: 'required',
@@ -492,14 +538,29 @@ export async function POST(request: NextRequest) {
       },
       custom_text: {
         submit: {
-          message: 'Secure payment processed by Stripe. Your booking will be confirmed immediately after payment.',
+          message: 'Secure payment processed by Stripe. You will NOT be charged until a driver confirms (hold may apply).',
         },
       },
+      payment_intent_data: {
+        capture_method: 'manual',
+        metadata: {
+          bookingId: booking.id,
+          bookingReference: bookingReference,
+        },
+      },
+    };
+    
+    console.log('💳 Manual capture enabled for near booking:', {
+      bookingId: booking.id,
+      holdExpiresAtDays: 7,
     });
+
+    const stripeSession = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('✅ Stripe session created:', {
       sessionId: stripeSession.id,
       sessionUrl: stripeSession.url,
+      captureMethod: 'manual',
     });
 
     return NextResponse.json({

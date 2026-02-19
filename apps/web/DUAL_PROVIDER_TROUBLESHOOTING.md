@@ -27,7 +27,7 @@ Make sure your `.env.local` file contains:
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_places_api_key_here
 
 # Mapbox API Key (Required - fallback provider)
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
 ```
 
 ## 🧪 Step 3: Test the System

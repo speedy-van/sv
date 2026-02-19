@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const now = new Date();
-    console.log(`⏰ [${now.toISOString()}] Running assignment expiry check...`);
 
     // Find all claimed AND invited assignments that have expired
     const expiredAssignments = await prisma.assignment.findMany({
@@ -57,7 +56,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (expiredAssignments.length === 0) {
-      console.log('✅ No expired assignments found');
       return NextResponse.json({
         success: true,
         message: 'No expired assignments found',
@@ -66,16 +64,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`🔴 Found ${expiredAssignments.length} expired assignment(s)`);
-
     const pusher = getPusherServer();
 
     // Process each expired assignment
     const results = await Promise.all(
       expiredAssignments.map(async (assignment) => {
         try {
-          console.log(`⏰ Expiring assignment ${assignment.id} for driver ${assignment.driverId}`);
-          
           let newAcceptanceRate = 100;
           
           await prisma.$transaction(async (tx) => {
@@ -114,7 +108,6 @@ export async function GET(request: NextRequest) {
                 }
               });
 
-              console.log(`📉 Decreased acceptance rate for driver ${assignment.driverId} from ${currentRate}% to ${newAcceptanceRate}%`);
             }
           });
 

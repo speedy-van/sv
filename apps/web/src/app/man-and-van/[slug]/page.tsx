@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countyText = location.county ? `, ${location.county}` : '';
   
   const title = `Man and Van ${cityName}${countyText} | 24/7 Removals & Delivery | Speedy Van`;
-  const description = `Professional man and van service in ${cityName}${countyText}. 24/7 online booking, instant quotes, fully insured. From £25/hour. Same-day service available across ${cityName}.`;
+  const description = `Professional man and van service in ${cityName}${countyText}. 24/7 online booking, fast quotes, fully insured. From £25/hour. Same-day service subject to availability across ${cityName}.`;
   const url = `https://speedy-van.co.uk/man-and-van/${slug}`;
 
   return {
@@ -110,7 +110,7 @@ export default function ManAndVanLocationPage({ params }: PageProps) {
             </Heading>
             <Text fontSize="xl" maxW="2xl">
               Professional removal and delivery service in {cityName}{county && `, ${county}`}. 
-              Available 24/7 with instant online booking. Fully insured, reliable, and affordable from just £25/hour.
+              Available 24/7 with online booking. Fully insured, reliable, and affordable from just £25/hour.
             </Text>
             <HStack spacing={4} flexWrap="wrap">
               <Link href="/booking-luxury">
@@ -121,7 +121,7 @@ export default function ManAndVanLocationPage({ params }: PageProps) {
                   _hover={{ bg: 'gray.100' }}
                   leftIcon={<FaTruck />}
                 >
-                  Get Instant Quote
+                  Get Quote
                 </Button>
               </Link>
               <Button
@@ -236,7 +236,7 @@ export default function ManAndVanLocationPage({ params }: PageProps) {
           <VStack spacing={4} align="start">
             <HStack spacing={3}>
               <FaCheckCircle color="green" />
-              <Text>Instant online booking with transparent pricing</Text>
+              <Text>Fast online booking with transparent pricing</Text>
             </HStack>
             <HStack spacing={3}>
               <FaCheckCircle color="green" />

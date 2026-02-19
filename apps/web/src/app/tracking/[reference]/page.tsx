@@ -43,6 +43,18 @@ const LiveTrackingMap = dynamic(
   }
 );
 
+// Booking status message mapping
+const STATUS_MESSAGES: Record<string, { title: string; description: string; color: string }> = {
+  DRAFT: { title: 'Draft', description: 'Booking not yet confirmed', color: 'gray' },
+  PENDING_PAYMENT: { title: 'Pending Payment', description: 'Awaiting payment confirmation', color: 'orange' },
+  PENDING_MATCH: { title: 'Finding Driver', description: 'Searching for available driver (typically 15-30 min)', color: 'blue' },
+  DRIVER_CONFIRMED: { title: 'Driver Assigned', description: 'Driver confirmed and preparing for pickup', color: 'green' },
+  NO_DRIVER_AVAILABLE: { title: 'No Driver Found', description: 'No driver available - please choose alternative', color: 'red' },
+  CONFIRMED: { title: 'Confirmed', description: 'Booking confirmed', color: 'green' },
+  CANCELLED: { title: 'Cancelled', description: 'Booking cancelled', color: 'red' },
+  COMPLETED: { title: 'Completed', description: 'Delivery completed', color: 'green' },
+};
+
 interface TrackingPageData {
   id: string;
   reference: string;
@@ -195,6 +207,11 @@ export default function CustomerTrackingPage() {
       </Container>
     );
   }
+
+  // Get status message
+  const statusInfo = STATUS_MESSAGES[pageData.booking.status] || STATUS_MESSAGES.DRAFT;
+  const lastUpdated = pageData.lastUpdated ? new Date(pageData.lastUpdated) : new Date();
+  const minutesAgo = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
 
   return (
     <Box minH="100vh" bg={bg}>

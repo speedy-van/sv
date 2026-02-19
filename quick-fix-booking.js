@@ -54,3 +54,49 @@ console.log('💡 Run: fixBookingPayment()');
 if (confirm('Do you want to automatically fix booking SVMG3YFW3DLUPQ now?')) {
   fixBookingPayment();
 }
+
+// Manual capture helper for PENDING_MATCH bookings (run in admin browser session)
+async function capturePendingMatchBooking() {
+  try {
+    console.log('🔎 Searching for recent PENDING_MATCH booking...');
+
+    const listResponse = await fetch('/api/admin/orders?status=all&take=50');
+    const listResult = await listResponse.json();
+
+    const orders = Array.isArray(listResult?.orders) ? listResult.orders : [];
+    const candidate = orders.find(order => order.status === 'PENDING_MATCH' && order.stripePaymentIntentId);
+
+    if (!candidate) {
+      console.warn('⚠️ No PENDING_MATCH booking with stripePaymentIntentId found in recent orders.');
+      return null;
+    }
+
+    console.log('✅ Found candidate booking:', {
+      id: candidate.id,
+      reference: candidate.reference,
+      status: candidate.status,
+      stripePaymentIntentId: candidate.stripePaymentIntentId,
+    });
+
+    const captureResponse = await fetch('/api/stripe/capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId: candidate.id })
+    });
+
+    const captureResult = await captureResponse.json();
+
+    if (captureResponse.ok && captureResult.success) {
+      console.log('✅ Capture succeeded:', captureResult);
+      return captureResult;
+    }
+
+    console.error('❌ Capture failed:', captureResult);
+    return null;
+  } catch (error) {
+    console.error('❌ Capture helper error:', error);
+    return null;
+  }
+}
+
+console.log('💡 Run: capturePendingMatchBooking()');

@@ -56,24 +56,12 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials: { email?: string; password?: string; role?: string } | undefined) {
         try {
-          console.log('🔐 NextAuth authorize called with:', {
-            email: credentials?.email,
-            hasPassword: !!credentials?.password,
-            passwordLength: credentials?.password?.length,
-            requestedRole: credentials?.role,
-          });
-
           if (!credentials?.email || !credentials?.password) {
-            console.log('❌ Missing email or password');
             return null;
           }
 
           // Convert email to lowercase for case-insensitive lookup
           const normalizedEmail = credentials.email.toLowerCase().trim();
-          console.log('📧 Normalized email:', normalizedEmail);
-
-          console.log('🔍 Querying database for user...');
-          console.log('🔍 [auth] Prisma client status:', { prisma: !!prisma, type: typeof prisma });
           const user = await prisma.user.findUnique({
             where: { email: normalizedEmail },
             select: {
@@ -88,34 +76,16 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user || !user.password) {
-            console.log('❌ User not found or no password');
             return null;
           }
-
-          console.log('✅ User found:', {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            adminRole: user.adminRole,
-            isActive: user.isActive,
-            hasPassword: !!user.password,
-            passwordHash: user.password?.substring(0, 20) + '...',
-          });
-
-          console.log('🔐 Comparing passwords...');
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           );
 
-          console.log('🔐 Password comparison result:', isPasswordValid);
-
           if (!isPasswordValid) {
-            console.log('❌ Invalid password');
             return null;
           }
-
-          console.log('✅ Password is valid');
 
           // Check role if provided - allow admin login without specifying role
           // Handle 'undefined' string from client-side
@@ -191,11 +161,6 @@ export const authOptions: NextAuthOptions = {
           ;(session.user as any).id = (token as any).sub as string;
           ;(session.user as any).role = (token as any).role as UserRole;
           ;(session.user as any).adminRole = (token as any).adminRole;
-          console.log('✅ Session user data set:', {
-            id: session.user.id,
-            role: session.user.role,
-            adminRole: (session.user as any).adminRole,
-          });
         }
         return session;
       } catch (error) {
@@ -209,7 +174,7 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error',
   },
   secret: process.env.NEXTAUTH_SECRET || 'ZV6xh/oJhYk9wwrjX5RA5JgjC9uCSuWZHpIprjYs2LA=',
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
   useSecureCookies: process.env.NODE_ENV === 'production',
 };
 

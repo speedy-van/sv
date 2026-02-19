@@ -43,6 +43,13 @@ type SupportedEvent = typeof SUPPORTED_EVENTS[number];
  * Handle incoming Stripe webhooks
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  return NextResponse.json(
+    {
+      error: 'This webhook endpoint is deprecated. Use /api/webhooks/stripe instead.',
+    },
+    { status: 410 }
+  );
+
   const correlationId = `WEBHOOK-${createRequestId()}`;
   const startTime = Date.now();
 
@@ -553,15 +560,10 @@ async function handleInvoicePaymentFailed(
 
 // GET endpoint for webhook configuration info
 export async function GET(): Promise<NextResponse> {
-  return NextResponse.json({
-    endpoint: '/api/stripe/webhook',
-    description: 'Stripe webhook handler for payment events',
-    supportedEvents: SUPPORTED_EVENTS,
-    version: '1.0.0',
-    configuration: {
-      signatureVerification: 'enabled',
-      eventProcessing: 'async',
-      errorHandling: 'comprehensive'
-    }
-  });
+  return NextResponse.json(
+    {
+      error: 'This webhook endpoint is deprecated. Use /api/webhooks/stripe instead.',
+    },
+    { status: 410 }
+  );
 }

@@ -43,7 +43,7 @@ Add these to your `.env.local` file:
 
 ```bash
 # Mapbox (Primary provider for all features)
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoiYWhtYWRhbHdha2FpIiwiYSI6ImNtZGNsZ3RsZDEzdGsya3F0ODFxeGRzbXoifQ.jfgGW0KNFTwATOShRDtQsg
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token_here
 
 # Google Places API (Luxury booking only + fallback)
 NEXT_PUBLIC_GOOGLE_MAPS=AIzaSyBD0UyoHapCoeo8EflCpTstilF6QPgmKTo

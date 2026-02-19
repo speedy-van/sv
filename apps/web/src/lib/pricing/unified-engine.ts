@@ -95,6 +95,9 @@ interface PricingConfig {
     parking: number; // £ for difficult parking
     congestion: number; // £ for congestion zones
     timeWindows: number; // £ for specific time requirements
+    shortNotice24h: number; // Multiplier for <24h bookings
+    shortNotice48h: number; // Multiplier for <48h bookings
+    pickupDistancePerKm: number; // £ per km to reach pickup
   };
   laborRates: {
     workerPerHour: number; // £ per worker per hour
@@ -186,7 +189,7 @@ export class UnifiedPricingEngine {
         perMinute: 0.19, // £0.19 per minute (reduced by 4x)
         perKg: 0.0625, // £0.0625 per kg (reduced by 4x)
         perM3: 3.75, // £3.75 per cubic meter (reduced by 4x)
-        baseFee: 37.50, // £37.50 base job fee (reduced by 4x)
+        baseFee: 35.00, // £35.00 MINIMUM job fee (increased from 37.50)
         multiDropDiscount: 0.15 // 15% discount per additional drop
       },
       serviceMultipliers: {
@@ -198,7 +201,10 @@ export class UnifiedPricingEngine {
         stairs: 15.00, // £15 per flight of stairs
         parking: 25.00, // £25 for difficult parking
         congestion: 20.00, // £20 for congestion zones
-        timeWindows: 35.00 // £35 for specific time requirements
+        timeWindows: 35.00, // £35 for specific time requirements
+        shortNotice24h: 1.25, // +25% for <24h bookings
+        shortNotice48h: 1.15, // +15% for <48h bookings
+        pickupDistancePerKm: 0.50, // £0.50 per km to reach pickup from driver location
       },
       laborRates: {
         workerPerHour: 6.25, // £6.25 per worker per hour (reduced by 4x)

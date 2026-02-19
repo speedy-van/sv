@@ -9,13 +9,15 @@ export const revalidate = 300; // Cache for 5 minutes
  * Supports filtering by city and rating
  */
 export async function GET(request: NextRequest) {
+  let page = 1;
+  let limit = 10;
   try {
     const { searchParams } = new URL(request.url);
     
     const city = searchParams.get('city');
     const minRating = searchParams.get('minRating');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    page = parseInt(searchParams.get('page') || '1');
+    limit = parseInt(searchParams.get('limit') || '10');
 
     // Build filter criteria
     const where: any = {
@@ -112,6 +114,26 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
+    const errorCode = (error as { code?: string }).code;
+    const errorMessage = error instanceof Error ? error.message : '';
+
+    if (errorCode === 'P2021' || errorMessage.includes('prisma.review')) {
+      return NextResponse.json({
+        reviews: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        },
+        stats: {
+          averageRating: 0,
+          totalReviews: 0,
+          distribution: {},
+        },
+      });
+    }
+
     console.error('Error fetching reviews:', error);
     return NextResponse.json(
       { error: 'Failed to fetch reviews' },
