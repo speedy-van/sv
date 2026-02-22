@@ -54,8 +54,8 @@ export function QuickFiltersBar({
   maxVisible = 8,
 }: QuickFiltersBarProps) {
   const [showAll, setShowAll] = useState(false);
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const visibleFilters = showAll ? filters : filters.slice(0, maxVisible);
@@ -140,11 +140,11 @@ export function QuickFiltersBar({
             leftIcon={IconComponent ? <IconComponent /> : undefined}
             variant={active ? 'solid' : 'outline'}
             bg={active ? (filter.color || '#2563eb') : 'transparent'}
-            color={active ? '#FFFFFF' : textColor}
+            color={active ? '#F5F8FF' : textColor}
             borderColor={active ? (filter.color || '#2563eb') : borderColor}
             borderWidth={1}
             _hover={{
-              bg: active ? (filter.color || '#2563eb') : '#1a1a1a',
+              bg: active ? (filter.color || '#2563eb') : '#18233A',
               borderColor: filter.color || '#2563eb',
             }}
           >
@@ -153,7 +153,7 @@ export function QuickFiltersBar({
               <Badge
                 ml={2}
                 bg={active ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.3)'}
-                color={active ? '#FFFFFF' : secondaryTextColor}
+                color={active ? '#F5F8FF' : secondaryTextColor}
                 borderRadius="full"
                 px={2}
                 py={0.5}
@@ -175,11 +175,11 @@ export function QuickFiltersBar({
             borderColor={borderColor}
             color={textColor}
             rightIcon={<FiChevronDown />}
-            _hover={{ bg: '#1a1a1a' }}
+            _hover={{ bg: '#18233A' }}
           >
             More ({hiddenFilters.length})
           </MenuButton>
-          <MenuList bg="#111111" borderColor={borderColor} minW="200px">
+          <MenuList bg="#121A2B" borderColor={borderColor} minW="200px">
             {hiddenFilters.map((filter) => {
               const active = isActive(filter.id);
               const IconComponent = filter.icon;
@@ -189,9 +189,9 @@ export function QuickFiltersBar({
                   key={filter.id}
                   icon={IconComponent ? <IconComponent /> : undefined}
                   onClick={() => onFilterToggle(filter.id)}
-                  bg="#111111"
+                  bg="#121A2B"
                   color={active ? (filter.color || '#2563eb') : textColor}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                 >
                   <HStack justify="space-between" w="100%">
                     <Text>{filter.label}</Text>
@@ -222,7 +222,7 @@ export function QuickFiltersBar({
             variant="ghost"
             onClick={onClearAll}
             color={textColor}
-            _hover={{ bg: '#1a1a1a', color: '#ef4444' }}
+            _hover={{ bg: '#18233A', color: '#ef4444' }}
           />
         </Tooltip>
       )}

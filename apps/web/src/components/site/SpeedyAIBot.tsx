@@ -246,7 +246,7 @@ export default function SpeedyAIBot() {
       console.error('Chat error:', error);
 
       // H4: Specific error messages based on error type
-      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.';
+      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at 01202 129746.';
       let toastTitle = 'Error';
       let toastDescription = 'Something went wrong';
 
@@ -1172,40 +1172,40 @@ export default function SpeedyAIBot() {
                     minHeight: '48px',
                     fontSize: '16px',
                     fontWeight: 400,
-                    color: '#000000',
+                    color: '#0B1020',
                     backgroundColor: '#F9FAFB',
                     border: '1px solid #D1D5DB',
                     borderRadius: '12px',
                     padding: '0 16px',
                   }}
                   sx={{
-                    height: '48px !important',
-                    minHeight: '48px !important',
-                    fontSize: '16px !important',
-                    fontWeight: '400 !important',
-                    color: '#000000 !important',
-                    backgroundColor: '#F9FAFB !important',
-                    border: '1px solid #D1D5DB !important',
-                    borderRadius: '12px !important',
-                    padding: '0 16px !important',
-                    WebkitTextFillColor: '#000000 !important',
+                    height: '48px',
+                    minHeight: '48px',
+                    fontSize: '16px',
+                    fontWeight: '400',
+                    color: '#0B1020',
+                    backgroundColor: '#F9FAFB',
+                    border: '1px solid #D1D5DB',
+                    borderRadius: '12px',
+                    padding: '0 16px',
+                    WebkitTextFillColor: '#0B1020',
                     '&::placeholder': {
-                      color: '#9CA3AF !important',
-                      fontWeight: '400 !important',
+                      color: '#9CA3AF',
+                      fontWeight: '400',
                     },
                     '&:focus': {
-                      borderColor: '#3B82F6 !important',
-                      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1) !important',
-                      backgroundColor: '#FFFFFF !important',
-                      outline: 'none !important',
+                      borderColor: '#3B82F6',
+                      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+                      backgroundColor: '#F5F8FF',
+                      outline: 'none',
                     },
                     '&:disabled': {
-                      opacity: '0.6 !important',
-                      cursor: 'not-allowed !important',
+                      opacity: '0.6',
+                      cursor: 'not-allowed',
                     },
                     '&::selection': {
-                      backgroundColor: '#DBEAFE !important',
-                      color: '#000000 !important',
+                      backgroundColor: '#DBEAFE',
+                      color: '#0B1020',
                     }
                   }}
                 />

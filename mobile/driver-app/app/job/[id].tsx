@@ -662,7 +662,7 @@ export default function JobDetailsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#3B82F6" />
       </View>
     );
   }
@@ -699,7 +699,7 @@ export default function JobDetailsScreen() {
           )}
           {syncStatus === 'syncing' && (
             <View style={styles.syncStatus}>
-              <ActivityIndicator size="small" color="#007AFF" />
+              <ActivityIndicator size="small" color="#3B82F6" />
               <Text style={styles.syncText}>Syncing</Text>
             </View>
           )}
@@ -747,7 +747,7 @@ export default function JobDetailsScreen() {
                   { latitude: job.pickup.lat, longitude: job.pickup.lng },
                   { latitude: job.dropoff.lat, longitude: job.dropoff.lng },
                 ]}
-                strokeColor="#007AFF"
+                strokeColor="#3B82F6"
                 strokeWidth={3}
               />
             </MapView>
@@ -815,7 +815,7 @@ export default function JobDetailsScreen() {
                 style={styles.actionIcon}
                 onPress={() => handleCall(job.customer.phone)}
               >
-                <Ionicons name="call" size={20} color="#007AFF" />
+                <Ionicons name="call" size={20} color="#3B82F6" />
               </TouchableOpacity>
             </View>
           </View>
@@ -836,7 +836,7 @@ export default function JobDetailsScreen() {
             style={styles.navigateButton}
             onPress={() => handleNavigate(job.pickup.lat, job.pickup.lng, job.pickup.address)}
           >
-            <Ionicons name="navigate" size={16} color="#007AFF" />
+            <Ionicons name="navigate" size={16} color="#3B82F6" />
             <Text style={styles.navigateText}>Navigate</Text>
           </TouchableOpacity>
         </View>
@@ -856,7 +856,7 @@ export default function JobDetailsScreen() {
             style={styles.navigateButton}
             onPress={() => handleNavigate(job.dropoff.lat, job.dropoff.lng, job.dropoff.address)}
           >
-            <Ionicons name="navigate" size={16} color="#007AFF" />
+            <Ionicons name="navigate" size={16} color="#3B82F6" />
             <Text style={styles.navigateText}>Navigate</Text>
           </TouchableOpacity>
         </View>
@@ -1055,7 +1055,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   badge: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1132,7 +1132,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 12,
-    color: '#007AFF',
+    color: '#3B82F6',
     fontWeight: '500',
     marginBottom: 12,
   },
@@ -1146,7 +1146,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   navigateText: {
-    color: '#007AFF',
+    color: '#3B82F6',
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
@@ -1206,7 +1206,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
   },
   startButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
   },
   completeButton: {
     backgroundColor: '#4CAF50',

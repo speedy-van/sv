@@ -24,7 +24,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: '#3B82F6',
         tabBarInactiveTintColor: '#8E8E93',
         tabBarButton: TabBarButton, // Add sound effect to all tab buttons
         animation: 'fade',

@@ -21,7 +21,7 @@ interface MobileOptimizationsProps {
  */
 export function MobileOptimizations({ children }: MobileOptimizationsProps) {
   const isMobile = useBreakpointValue({ base: true, md: false });
-  const bgColor = useColorModeValue('#000000', '#000000');
+  const bgColor = useColorModeValue('#0B1020', '#0B1020');
 
   // Mobile-specific optimizations
   const mobileStyles = isMobile

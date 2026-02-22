@@ -20,13 +20,9 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Card,
-  CardBody,
-  CardHeader,
   Badge,
   Icon,
   Flex,
-  useColorModeValue,
   Divider,
   Stack,
   Circle,
@@ -34,6 +30,10 @@ import {
   SimpleGrid,
   IconButton,
   useClipboard,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
 } from '@chakra-ui/react';
 import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash, FaCopy, FaCalendarAlt } from 'react-icons/fa';
 import { Image } from '@chakra-ui/react';
@@ -49,6 +49,7 @@ import FloatingActionButtons from './components/FloatingActionButtons';
 import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
 import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
 import SelectedItemsManager from './components/SelectedItemsManager';
+import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 import type { BookingSegment } from './types/segment';
 import { 
   useDisclosure,
@@ -104,13 +105,15 @@ const isValidUkPostcode = (postcode?: string | null) => {
   return /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/.test(pc);
 };
 
+type PricingFlowState = 'idle' | 'loading' | 'success' | 'error';
+
 export default function BookingLuxuryPage() {
   return (
     <Suspense fallback={
       <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
         <VStack spacing={4}>
           <Spinner size="xl" color="blue.500" />
-          <Text color="gray.600">Loading booking form...</Text>
+          <Text color="text.secondary">Loading booking form...</Text>
         </VStack>
       </Box>
     }>
@@ -269,6 +272,8 @@ function BookingLuxuryContent() {
     standard: any;
     express: any;
   } | null>(null);
+  const [pricingFlowState, setPricingFlowState] = useState<PricingFlowState>('idle');
+  const [pricingFlowMessage, setPricingFlowMessage] = useState<string | null>(null);
   const [isLoadingReference, setIsLoadingReference] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const bookingReference = formData.step2.bookingReference;
@@ -278,6 +283,22 @@ function BookingLuxuryContent() {
   // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
   const pendingSegmentPricing = useRef<Map<number, any>>(new Map());
+
+  const setPricingFailure = useCallback((message: string) => {
+    setPricingFlowState('error');
+    setPricingFlowMessage(message);
+    setPricingTiers(null);
+    setAvailabilityData(null);
+  }, []);
+
+  const clearPricingFailure = useCallback(() => {
+    setPricingFlowMessage(null);
+    if (pricingFlowState === 'error') {
+      setPricingFlowState('idle');
+    }
+  }, [pricingFlowState]);
+
+  const hasValidQuote = pricingFlowState === 'success' && (pricingTiers?.standard?.price ?? 0) > 0;
 
   // ✅ CRITICAL FIX: Wrap addReturnSegment to pass pricingTiers for accurate pricing
   const addReturnSegmentWithPricing = useCallback((bufferMinutes: number = 30) => {
@@ -705,6 +726,8 @@ function BookingLuxuryContent() {
           }
         };
         setPricingTiers(multiLegTiers);
+        setPricingFlowState('success');
+        setPricingFlowMessage(null);
         console.log('✅ Multi-leg pricingTiers set:', {
           totalPrice,
           avgPerSegment,
@@ -753,6 +776,8 @@ function BookingLuxuryContent() {
           }
         };
         setPricingTiers(fallbackTiers);
+        setPricingFlowState('success');
+        setPricingFlowMessage(null);
         console.log('✅ Multi-leg pricingTiers set from existing segment pricing:', {
           totalFromExisting,
           avgPerSegment,
@@ -784,6 +809,8 @@ function BookingLuxuryContent() {
           }
         };
         setPricingTiers(fallbackTiers);
+        setPricingFlowState('success');
+        setPricingFlowMessage(null);
         console.log('✅ Multi-leg pricingTiers set from global formData.step1.pricing:', {
           globalPrice,
           estimatedTotal,
@@ -816,6 +843,14 @@ function BookingLuxuryContent() {
           }
         };
         setPricingTiers(fallbackTiers);
+        setPricingFailure('We could not generate a verified quote for this route. Please retry quote or review your addresses and items.');
+        toast({
+          title: 'Quote requires attention',
+          description: 'The displayed amount is only an estimate. Please retry quote before continuing.',
+          status: 'warning',
+          duration: 6000,
+          isClosable: true,
+        });
         console.log('⚠️ Multi-leg pricingTiers estimated from distance (fallback):', {
           totalDistance,
           estimatedPrice,
@@ -827,7 +862,7 @@ function BookingLuxuryContent() {
         });
       }
     }
-  }, [calculateSegmentPricing, formData.step1.segments, formData.step1.pricing, updateFormData]);
+  }, [calculateSegmentPricing, formData.step1.segments, formData.step1.pricing, setPricingFailure, toast, updateFormData]);
 
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
@@ -835,6 +870,8 @@ function BookingLuxuryContent() {
     const segments = (formData.step1.segments || []) as any[];
     if (segments.length > 1) {
       console.log('🔄 Multi-leg booking: Calculating pricing for all segments');
+      setPricingFlowState('loading');
+      setPricingFlowMessage('Calculating quote for all journey segments...');
       await calculateAllSegmentsPricing();
       return;
     }
@@ -842,7 +879,7 @@ function BookingLuxuryContent() {
     // Single-leg: continue with normal pricing
     // Only calculate if we have addresses (items can be empty - will use default)
     if (!formData.step1.pickupAddress?.coordinates) {
-      console.log('⏭️ Skipping pricing: No pickup address coordinates');
+      setPricingFailure('Please select a valid pickup address from suggestions before getting your quote.');
       return;
     }
     
@@ -852,7 +889,7 @@ function BookingLuxuryContent() {
     const hasSegmentItems = segments.length === 1 && segments[0]?.items && segments[0].items.length > 0;
     
     if (!hasGlobalItems && !hasSegmentItems) {
-      console.log('⏭️ Skipping pricing: No items selected (API requires items)');
+      setPricingFailure('Please add at least one item to generate your quote.');
       setIsLoadingAvailability(false);
       return;
     }
@@ -909,7 +946,7 @@ function BookingLuxuryContent() {
 
     // Validate addresses exist
     if (!pickupNorm || !dropNorm) {
-      console.warn('Missing address data - cannot calculate pricing');
+      setPricingFailure('Please complete both pickup and drop-off addresses.');
       return;
     }
 
@@ -918,7 +955,7 @@ function BookingLuxuryContent() {
     const dropPostcode = normalizeUkPostcode(dropNorm.postcode);
 
     if (!isValidUkPostcode(pickupPostcode) || !isValidUkPostcode(dropPostcode)) {
-      console.warn('Invalid UK postcode format; skipping pricing', { pickupPostcode, dropPostcode });
+      setPricingFailure('Please use valid UK postcodes for pickup and drop-off.');
       toast({
         title: 'Postcode needed',
         description: 'Please enter valid UK postcodes (e.g., SW1A 1AA, M1 1AE).',
@@ -931,16 +968,27 @@ function BookingLuxuryContent() {
     }
 
     // Validate addresses have coordinates (required)
-    if (!pickupNorm?.coordinates?.lat || !pickupNorm?.coordinates?.lng) {
-      console.warn('Incomplete pickup address - missing coordinates');
+    const pickupLat = pickupNorm?.coordinates?.lat;
+    const pickupLng = pickupNorm?.coordinates?.lng;
+    const dropLat = dropNorm?.coordinates?.lat;
+    const dropLng = dropNorm?.coordinates?.lng;
+    const hasPickupCoordinates = typeof pickupLat === 'number' && typeof pickupLng === 'number';
+    const hasDropCoordinates = typeof dropLat === 'number' && typeof dropLng === 'number';
+    const pickupIsZero = pickupLat === 0 && pickupLng === 0;
+    const dropIsZero = dropLat === 0 && dropLng === 0;
+
+    if (!hasPickupCoordinates || pickupIsZero) {
+      setPricingFailure('Pickup coordinates are invalid. Please re-select the pickup address.');
       return;
     }
 
-    if (!dropNorm?.coordinates?.lat || !dropNorm?.coordinates?.lng) {
-      console.warn('Incomplete drop address - missing coordinates');
+    if (!hasDropCoordinates || dropIsZero) {
+      setPricingFailure('Drop-off coordinates are invalid. Please re-select the drop-off address.');
       return;
     }
 
+    setPricingFlowState('loading');
+    setPricingFlowMessage('Calculating your quote...');
     setIsLoadingAvailability(true);
 
     try {
@@ -965,7 +1013,7 @@ function BookingLuxuryContent() {
       // ✅ CRITICAL FIX: Require at least one valid item
       // Do not use default items - this leads to inaccurate pricing
       if (validItems.length === 0) {
-        console.warn('⚠️ No valid items after filtering - skipping pricing calculation');
+        setPricingFailure('Please review your items. We could not use the current item selection for quoting.');
         setIsLoadingAvailability(false);
         return;
       }
@@ -1032,6 +1080,7 @@ function BookingLuxuryContent() {
 
         if (!data || data.success !== true || !data.data) {
           console.error('Pricing API returned an unexpected payload', { data });
+          setPricingFailure('Quote service returned an invalid response. Please retry quote.');
           return;
         }
 
@@ -1048,6 +1097,7 @@ function BookingLuxuryContent() {
 
         if (typeof amountMinor !== 'number' || Number.isNaN(amountMinor) || amountMinor <= 0) {
           console.error('Pricing API returned an invalid amount', { amountMinorRaw });
+          setPricingFailure('Quote amount is invalid. Please retry quote.');
           return;
         }
 
@@ -1080,6 +1130,8 @@ function BookingLuxuryContent() {
         };
 
         setPricingTiers(calculatedTiers);
+        setPricingFlowState('success');
+        setPricingFlowMessage(null);
         setCapacityCheck(data.data.route?.capacityCheck || null);
         setRouteSummary(data.data.route || null);
 
@@ -1109,13 +1161,15 @@ function BookingLuxuryContent() {
 
       } else {
         console.error('Pricing API error:', await response.text());
+        setPricingFailure('Unable to generate your quote right now. Please retry quote.');
       }
     } catch (error) {
       console.error('Auto-pricing calculation failed:', error);
+      setPricingFailure('Quote request failed. Please retry quote.');
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [formData.step1, calculateAllSegmentsPricing]);
+  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, toast]);
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -1568,6 +1622,14 @@ function BookingLuxuryContent() {
       // Step 2: Check items and date/time are selected
       const segments = (formData.step1.segments || []) as any[];
       const isMultiLeg = segments.length > 1;
+      const pickupCoordinates = formData.step1.pickupAddress?.coordinates;
+      const dropoffCoordinates = formData.step1.dropoffAddress?.coordinates;
+      const pickupCoordinatesValid = typeof pickupCoordinates?.lat === 'number' &&
+        typeof pickupCoordinates?.lng === 'number' &&
+        !(pickupCoordinates.lat === 0 && pickupCoordinates.lng === 0);
+      const dropoffCoordinatesValid = typeof dropoffCoordinates?.lat === 'number' &&
+        typeof dropoffCoordinates?.lng === 'number' &&
+        !(dropoffCoordinates.lat === 0 && dropoffCoordinates.lng === 0);
       
       // Check if items exist (either in segments or global)
       const hasItems = isMultiLeg 
@@ -1610,6 +1672,42 @@ function BookingLuxuryContent() {
         });
         // Clear error state after 3 seconds
         setTimeout(() => setErrorCardId(null), 3000);
+        return;
+      }
+
+      if (!pickupCoordinatesValid || !dropoffCoordinatesValid) {
+        setPricingFailure('Please re-select both addresses from suggestions to generate a valid quote.');
+        toast({
+          title: 'Address coordinates required',
+          description: 'Use “Edit addresses” and choose both locations again before continuing.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        setCurrentStep(1);
+        return;
+      }
+
+      if (pricingFlowState === 'loading') {
+        toast({
+          title: 'Quote is still loading',
+          description: 'Please wait for pricing to finish before continuing.',
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (!hasValidQuote) {
+        setPricingFailure(pricingFlowMessage || 'A verified quote is required before continuing to payment.');
+        toast({
+          title: 'Quote required',
+          description: 'Please retry quote, review addresses, or review items.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
         return;
       }
       
@@ -1709,9 +1807,7 @@ function BookingLuxuryContent() {
 
   // Success page is now handled by dedicated /booking/success route
 
-  const bgColor = '#000000'; // Black background
-  const cardBg = 'gray.800'; // Dark theme card background
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = 'bg.canvas';
 
   // REMOVED: Scroll restoration interferes with step transitions
 
@@ -1721,12 +1817,12 @@ function BookingLuxuryContent() {
     <>
       <style jsx global>{`
         .booking-time-select {
-          color: #e2e8f0 !important;
-          background-color: rgba(15, 23, 42, 0.95) !important;
+          color: #a9b4cc;
+          background-color: #121a2b;
         }
         .booking-time-select option {
-          color: #e2e8f0 !important;
-          background-color: #1e293b !important;
+          color: #a9b4cc;
+          background-color: #121a2b;
         }
       `}</style>
     <Box 
@@ -1750,30 +1846,6 @@ function BookingLuxuryContent() {
         overflowAnchor: 'none',
       }}
     >
-      {/* Snow overlay - subtle animated dots */}
-      <Box
-        aria-hidden
-        position="fixed"
-        inset={0}
-        pointerEvents="none"
-        zIndex={0}
-        backgroundImage={
-          'radial-gradient(rgba(255,255,255,0.55) 1.2px, transparent 1.2px),' +
-          'radial-gradient(rgba(255,255,255,0.35) 1px, transparent 1px)'
-        }
-        backgroundSize="140px 140px, 90px 90px"
-        backgroundPosition="0 0, 60px 60px"
-        opacity={0.85}
-        mixBlendMode="screen"
-        sx={{
-          animation: 'snowMove 18s linear infinite',
-          '@keyframes snowMove': {
-            '0%': { backgroundPosition: '0 0, 80px 80px' },
-            '100%': { backgroundPosition: '0 320px, 60px 380px' },
-          },
-        }}
-      />
-
       <Container 
         maxW={{ base: "full", md: "6xl" }} 
         px={{ base: 2, md: 6 }}
@@ -1793,11 +1865,11 @@ function BookingLuxuryContent() {
             position="sticky"
             top={0}
             zIndex={100}
-            bg="linear-gradient(120deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.9))"
+            bg="bg.header"
             backdropFilter="blur(12px)"
             borderBottom="1px solid"
-            borderColor="rgba(59, 130, 246, 0.25)"
-            boxShadow="0 8px 30px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(255,255,255,0.04)"
+            borderColor="border.primary"
+            boxShadow="sm"
             py={{ base: 2, md: 3 }}
             mb={{ base: 3, md: 6 }}
             mx={{ base: -2, md: 0 }}
@@ -1822,8 +1894,8 @@ function BookingLuxuryContent() {
                 <HStack 
                   spacing={{ base: 2, md: 3 }}
                   sx={{
-                    flexDirection: 'row !important',
-                    alignItems: 'center !important',
+                    flexDirection: 'row',
+                    alignItems: 'center',
                   }}
                 >
                   <VStack spacing={0} align="flex-start">
@@ -1868,7 +1940,7 @@ function BookingLuxuryContent() {
                     </Text>
                     <Text
                       fontSize={{ base: '2xs', md: 'xs' }}
-                      color="whiteAlpha.700"
+                      color="text.secondary"
                       fontWeight="600"
                       letterSpacing="wide"
                       animation="fadeInOut 3s ease-in-out infinite"
@@ -1973,7 +2045,7 @@ function BookingLuxuryContent() {
                   </Box>
                   <IconButton
                     as="a"
-                    href="tel:+441202129746"
+                    href="tel:01202129746"
                     aria-label="Call Speedy Van"
                     icon={<Icon as={FaPhone} boxSize={{ base: 5, md: 6 }} />}
 
@@ -2114,8 +2186,8 @@ function BookingLuxuryContent() {
                   justify="center"
                   w="full"
                   sx={{
-                    flexDirection: 'row !important',
-                    alignItems: 'center !important',
+                    flexDirection: 'row',
+                    alignItems: 'center',
                   }}
                 >
                   {STEPS.map((step, index) => (
@@ -2279,7 +2351,7 @@ function BookingLuxuryContent() {
             </Heading>
             <Text 
               fontSize={{ base: "md", md: "lg" }} 
-              color="whiteAlpha.800"
+              color="text.secondary"
               fontWeight="500"
               letterSpacing="wide"
               textTransform="none"
@@ -2346,6 +2418,7 @@ function BookingLuxuryContent() {
           >
             {currentStep === 1 && (
               <Box key="step1-addresses" w="full" data-booking-step="1">
+                <ResponsiveSection maxW="1200px" w="full">
                 <AddressesStep
                   formData={formData}
                   updateFormData={updateFormData}
@@ -2358,475 +2431,174 @@ function BookingLuxuryContent() {
                   removeSegment={removeSegment}
                   validateSegments={validateSegments}
                 />
+                </ResponsiveSection>
               </Box>
             )}
             {currentStep === 2 && (
               <Box key="step2-items" w="full" data-booking-step="2">
+                <ResponsiveSection maxW="1200px" w="full">
                 <VStack spacing={6} align="stretch">
-                  {/* Service Tier Selection */}
-                  <Card
-                    bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-                    backdropFilter="blur(20px)"
-                    borderRadius="2xl"
-                    border="3px solid"
-                    borderColor="rgba(59, 130, 246, 0.5)"
-                    boxShadow="0 10px 40px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
-                  >
-                    {/* ServiceTierSelector removed - pricing by date only */}
-                  </Card>
-
                   {/* Date & Time Selection - Right Under Progress Bar */}
                   <Box
                     id="datetime-card"
                     position="relative"
-                    sx={errorCardId === 'datetime-card' ? {
-                      '@keyframes redNeonTravel': {
-                        '0%': { clipPath: 'inset(0 100% 100% 0)' },
-                        '25%': { clipPath: 'inset(0 0 100% 0)' },
-                        '50%': { clipPath: 'inset(0 0 0 100%)' },
-                        '75%': { clipPath: 'inset(100% 0 0 0)' },
-                        '100%': { clipPath: 'inset(0 100% 0 0)' },
-                      },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '-3px',
-                        left: '-3px',
-                        right: '-3px',
-                        bottom: '-3px',
-                        borderRadius: '2xl',
-                        border: '3px solid #ef4444',
-                        boxShadow: '0 0 15px #ef4444, 0 0 30px #ef4444, 0 0 45px #ef4444',
-                        animation: 'redNeonTravel 1.5s linear infinite',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                      },
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '-3px',
-                        left: '-3px',
-                        right: '-3px',
-                        bottom: '-3px',
-                        borderRadius: '2xl',
-                        border: '2px solid rgba(239, 68, 68, 0.3)',
-                        pointerEvents: 'none',
-                        zIndex: 9,
-                      },
-                    } : {}}
+                    borderRadius="2xl"
+                    border="1px solid"
+                    borderColor={errorCardId === 'datetime-card' ? 'red.400' : 'border.primary'}
+                    boxShadow={errorCardId === 'datetime-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : 'none'}
                   >
-                    <Card 
-                      bg="linear-gradient(135deg, rgba(31, 41, 55, 0.98) 0%, rgba(26, 32, 44, 0.95) 100%)"
-                      backdropFilter="blur(20px)"
+                    <Box 
+                      bg="bg.card"
                       borderRadius="2xl"
-                      border="3px solid"
-                      borderColor={errorCardId === 'datetime-card' ? 'transparent' : 'rgba(168, 85, 247, 0.5)'}
-                      boxShadow="0 10px 40px rgba(168, 85, 247, 0.4), 0 0 20px rgba(168, 85, 247, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)"
                       position="relative"
-                      overflow="visible"
-                      _before={{
-                        content: '""',
-                        position: 'absolute',
-                        inset: '-4px',
-                        borderRadius: '2xl',
-                        padding: '4px',
-                        background: 'linear-gradient(135deg, #a855f7, #9333ea, #7e22ce)',
-                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                        WebkitMaskComposite: 'xor',
-                        maskComposite: 'exclude',
-                        opacity: errorCardId === 'datetime-card' ? 0 : 0.4,
-                      }}
+                      overflow="hidden"
                   >
-                    <CardBody p={{ base: 5, md: 7 }}>
+                    <Box p={{ base: 5, md: 7 }}>
                       <VStack spacing={{ base: 6, md: 8 }} align="stretch">
-                        <VStack spacing={3} textAlign="center">
-                          <Badge
-                            colorScheme="purple"
-                            variant="subtle"
-                            px={3}
-                            py={1}
-                            borderRadius="full"
-                            textTransform="none"
-                            fontWeight="semibold"
-                            fontSize="sm"
-                          >
-                            Step 2 · Schedule
-                          </Badge>
-                          <Heading 
-                            size={{ base: "lg", md: "xl" }} 
-                            bgGradient="linear(to-r, #a855f7, #ec4899)"
-                            bgClip="text"
-                            fontWeight="black"
-                            letterSpacing="tight"
-                          >
-                            📅 When do you need the move?
+                        <VStack spacing={2} textAlign="left" align="stretch">
+                          <Heading size="md" color="text.primary">
+                            When do you need the move?
                           </Heading>
-                          <Text 
-                            color="gray.300" 
-                            fontSize={{ base: "md", md: "lg" }}
-                            fontWeight="medium"
-                          >
-                            Select your preferred date and time
+                          <Text color="text.secondary" fontSize="sm">
+                            Select your preferred date and time. We offer priority scheduling and same-day options.
                           </Text>
-                          <HStack spacing={3} flexWrap="wrap" justify="center">
-                            <Badge colorScheme="green" px={3} py={1} borderRadius="full" variant="outline">
-                              Priority scheduling
-                            </Badge>
-                            <Badge colorScheme="pink" px={3} py={1} borderRadius="full" variant="outline">
-                              Concierge follow-up
-                            </Badge>
-                            <Badge colorScheme="blue" px={3} py={1} borderRadius="full" variant="outline">
-                              Same-day alerts
-                            </Badge>
-                          </HStack>
-                          <Stack
-                            direction={{ base: 'column', lg: 'row' }}
-                            spacing={4}
-                            w="full"
-                            maxW={{ base: '100%', lg: '720px' }}
-                            mx="auto"
-                            align="stretch"
-                          >
-                            {/* Option 1: Select Date & Time */}
-                            <Box
-                              as="button"
+                          <Stack direction={{ base: 'column', sm: 'row' }} spacing={3} w="full">
+                            <Button
+                              variant={formData.step1.pickupDateChoice === 'known' ? 'solid' : 'outline'}
+                              colorScheme={formData.step1.pickupDateChoice === 'known' ? 'green' : 'gray'}
+                              leftIcon={<Icon as={FaCalendarAlt} />}
                               onClick={() => updateFormData('step1', { pickupDateChoice: 'known' })}
-                              p={{ base: 4, md: 5 }}
-                              borderRadius="2xl"
-                              border="3px solid"
-                              borderColor={formData.step1.pickupDateChoice === 'known' ? 'green.300' : 'rgba(255,255,255,0.08)'}
-                              bgGradient={formData.step1.pickupDateChoice === 'known' 
-                                ? 'linear(to-br, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))' 
-                                : 'linear(to-br, rgba(30, 41, 59, 0.75), rgba(17, 24, 39, 0.85))'}
-                              boxShadow={formData.step1.pickupDateChoice === 'known' ? '0 15px 40px rgba(34, 197, 94, 0.25)' : '0 10px 30px rgba(15, 23, 42, 0.45)'}
-                              transition="all 0.28s ease"
-                              _hover={{ borderColor: 'green.200', transform: 'translateY(-4px)' }}
-                              position="relative"
-                              textAlign="left"
-                              w="full"
+                              flex={1}
+                              minH="48px"
+                              fontSize="md"
+                              _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-green-400)' }}
                             >
-                              {formData.step1.pickupDateChoice === 'known' && (
-                                <Box position="absolute" top={3} right={3}>
-                                  <Icon as={FaCheck} color="green.300" boxSize={5} />
-                                </Box>
-                              )}
-                              <VStack align="stretch" spacing={3}>
-                                <HStack spacing={3} align="center">
-                                  <Circle size="48px" bg="rgba(34, 197, 94, 0.12)" border="1px solid rgba(34, 197, 94, 0.25)">
-                                    <Icon as={FaCalendarAlt} boxSize={6} color="green.300" />
-                                  </Circle>
-                                  <VStack align="flex-start" spacing={1}>
-                                    <Text fontWeight="extrabold" color="white" fontSize={{ base: "lg", md: "xl" }}>
-                                      I Know My Date
-                                    </Text>
-                                    <Badge colorScheme="green" variant="solid" borderRadius="full" px={2}>
-                                      Recommended
-                                    </Badge>
-                                  </VStack>
-                                </HStack>
-                                <Text fontSize="sm" color="gray.200" lineHeight="tall">
-                                  Lock in the exact date and time that fits your schedule.
-                                </Text>
-                                <Divider borderColor="rgba(255,255,255,0.08)" />
-                                <HStack spacing={3} color="gray.100" fontSize="sm" flexWrap="wrap">
-                                  <Badge colorScheme="green" variant="outline" borderRadius="full" px={2}>
-                                    Fastest confirmation
-                                  </Badge>
-                                  <Badge colorScheme="teal" variant="outline" borderRadius="full" px={2}>
-                                    Requested slot (subject to availability)
-                                  </Badge>
-                                  <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
-                                    Crew pre-arranged
-                                  </Badge>
-                                </HStack>
-                              </VStack>
-                            </Box>
+                              I know my date
+                            </Button>
                             
-                            {/* Option 2: Flexible */}
-                            <Box
-                              as="button"
+                            <Button
+                              variant={formData.step1.pickupDateChoice === 'unknown' ? 'solid' : 'outline'}
+                              colorScheme={formData.step1.pickupDateChoice === 'unknown' ? 'purple' : 'gray'}
+                              leftIcon={<Icon as={FaClock} />}
                               onClick={() => updateFormData('step1', { pickupDateChoice: 'unknown', pickupDate: '', pickupTimeSlot: undefined })}
-                              p={{ base: 4, md: 5 }}
-                              borderRadius="2xl"
-                              border="3px solid"
-                              borderColor={formData.step1.pickupDateChoice === 'unknown' ? 'purple.300' : 'rgba(255,255,255,0.08)'}
-                              bgGradient={formData.step1.pickupDateChoice === 'unknown' 
-                                ? 'linear(to-br, rgba(139, 92, 246, 0.22), rgba(99, 102, 241, 0.22))' 
-                                : 'linear(to-br, rgba(30, 41, 59, 0.75), rgba(17, 24, 39, 0.85))'}
-                              boxShadow={formData.step1.pickupDateChoice === 'unknown' ? '0 15px 40px rgba(139, 92, 246, 0.25)' : '0 10px 30px rgba(15, 23, 42, 0.45)'}
-                              transition="all 0.28s ease"
-                              _hover={{ borderColor: 'purple.200', transform: 'translateY(-4px)' }}
-                              position="relative"
-                              textAlign="left"
-                              w="full"
+                              flex={1}
+                              minH="48px"
+                              fontSize="md"
+                              _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-purple-400)' }}
                             >
-                              {formData.step1.pickupDateChoice === 'unknown' && (
-                                <Box position="absolute" top={3} right={3}>
-                                  <Icon as={FaCheck} color="purple.300" boxSize={5} />
-                                </Box>
-                              )}
-                              <VStack align="stretch" spacing={3}>
-                                <HStack spacing={3} align="center">
-                                  <Circle size="48px" bg="rgba(139, 92, 246, 0.12)" border="1px solid rgba(139, 92, 246, 0.25)">
-                                    <Icon as={FaClock} boxSize={6} color="purple.300" />
-                                  </Circle>
-                                  <VStack align="flex-start" spacing={1}>
-                                    <Text fontWeight="extrabold" color="white" fontSize={{ base: "lg", md: "xl" }}>
-                                      I'm Flexible
-                                    </Text>
-                                    <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
-                                      We’ll handle timing
-                                    </Badge>
-                                  </VStack>
-                                </HStack>
-                                <Text fontSize="sm" color="gray.200" lineHeight="tall">
-                                  Tell us your window and our team will coordinate the best slot.
-                                </Text>
-                                <Divider borderColor="rgba(255,255,255,0.08)" />
-                                <HStack spacing={3} color="gray.100" fontSize="sm" flexWrap="wrap">
-                                  <Badge colorScheme="purple" variant="outline" borderRadius="full" px={2}>
-                                    Concierge callback
-                                  </Badge>
-                                  <Badge colorScheme="pink" variant="outline" borderRadius="full" px={2}>
-                                    We propose times
-                                  </Badge>
-                                  <Badge colorScheme="blue" variant="outline" borderRadius="full" px={2}>
-                                    Reschedule-friendly
-                                  </Badge>
-                                </HStack>
-                              </VStack>
-                            </Box>
+                              I'm flexible
+                            </Button>
                           </Stack>
                         </VStack>
 
                         {formData.step1.pickupDateChoice === 'unknown' ? (
                           <Box textAlign="center">
                             <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
-                              You’re flexible — you can confirm date and time later and continue now.
+                              You're flexible — you can confirm date and time later and continue now.
                             </Text>
                           </Box>
                         ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
-                          <Box position="relative" style={{ zIndex: 10 }}>
-                            <Text 
-                              color="white" 
-                              fontSize={{ base: "sm", md: "md" }} 
-                              mb={2}
-                              fontWeight="bold"
-                              letterSpacing="wide"
-                            >
-                              📅 Select Date
-                            </Text>
-                            <input
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                          <FormControl isInvalid={!!errors['step1.pickupDate']}>
+                            <FormLabel htmlFor="booking-date" color="text.primary" fontSize="sm" fontWeight="600">
+                              Select date
+                            </FormLabel>
+                            <Input
+                              id="booking-date"
                               type="date"
                               value={formData.step1.pickupDate || ''}
+                              min={(() => {
+                                const t = new Date();
+                                t.setDate(t.getDate() + 1);
+                                return t.toISOString().split('T')[0];
+                              })()}
                               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 const selectedDate = e.target.value;
                                 updateFormData('step1', { pickupDate: selectedDate });
-                                
-                                // Calculate urgency based on date
                                 const now = new Date();
                                 const selected = new Date(selectedDate);
                                 const diffHours = (selected.getTime() - now.getTime()) / (1000 * 60 * 60);
-                                
                                 let urgency: 'same-day' | 'next-day' | 'scheduled' = 'scheduled';
-                                if (diffHours < 24) {
-                                  urgency = 'same-day';
-                                } else if (diffHours < 48) {
-                                  urgency = 'next-day';
-                                }
-                                
+                                if (diffHours < 24) urgency = 'same-day';
+                                else if (diffHours < 48) urgency = 'next-day';
                                 updateFormData('step1', { urgency });
-                                
-                                console.log('📅 Date changed:', {
-                                  date: selectedDate,
-                                  diffHours: diffHours.toFixed(1),
-                                  urgency
-                                });
                               }}
-                              min={(() => {
-                                const tomorrow = new Date();
-                                tomorrow.setDate(tomorrow.getDate() + 1);
-                                return tomorrow.toISOString().split('T')[0];
-                              })()}
-                              className="booking-date-input"
-                              style={{
-                                width: '100%',
-                                padding: '14px 16px',
-                                fontSize: '16px',
-                                borderRadius: '16px',
-                                border: '3px solid transparent',
-                                backgroundImage: 'linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)), linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                                backgroundOrigin: 'border-box',
-                                backgroundClip: 'padding-box, border-box',
-                                color: 'white',
-                                fontWeight: '600',
-                                colorScheme: 'dark',
-                                cursor: 'pointer',
-                                outline: 'none',
-                                transition: 'all 0.3s',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                              }}
+                              bg="bg.surface"
+                              borderColor="border.primary"
+                              color="text.primary"
+                              size="lg"
+                              _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px var(--chakra-colors-green-400)' }}
                             />
                             {errors['step1.pickupDate'] && (
-                              <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupDate']}</Text>
+                              <Text as="span" color="red.400" fontSize="sm" mt={1} role="alert">{errors['step1.pickupDate']}</Text>
                             )}
-                          </Box>
-
-                          <Box position="relative" style={{ zIndex: 9 }}>
-                            <Text 
-                              color="white" 
-                              fontSize={{ base: "sm", md: "md" }} 
-                              mb={2}
-                              fontWeight="bold"
-                              letterSpacing="wide"
-                            >
-                              ⏰ Select Time
-                            </Text>
-                            <select
+                          </FormControl>
+                          <FormControl isInvalid={!!errors['step1.pickupTime']}>
+                            <FormLabel htmlFor="booking-time" color="text.primary" fontSize="sm" fontWeight="600">
+                              Select time slot
+                            </FormLabel>
+                            <Select
+                              id="booking-time"
                               value={formData.step1.pickupTimeSlot || ''}
-                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                const timeSlot = e.target.value;
-                                updateFormData('step1', { pickupTimeSlot: timeSlot });
-                                
-                                console.log('⏰ Time changed:', timeSlot);
-                              }}
-                              className="booking-time-select"
-                              style={{
-                                width: '100%',
-                                padding: '14px 16px',
-                                fontSize: '16px',
-                                borderRadius: '16px',
-                                border: '3px solid rgba(139, 92, 246, 0.5)',
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                color: '#e2e8f0',
-                                fontWeight: '700',
-                                cursor: 'pointer',
-                                outline: 'none',
-                                appearance: 'none',
-                                paddingRight: '48px',
-                                transition: 'all 0.3s',
-                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-                              }}
+                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                updateFormData('step1', { pickupTimeSlot: e.target.value })}
+                              placeholder="Choose a time"
+                              bg="bg.surface"
+                              borderColor="border.primary"
+                              color="text.primary"
+                              size="lg"
+                              _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px var(--chakra-colors-green-400)' }}
                             >
-                              <option value="" style={{ background: '#1e293b', color: '#e2e8f0' }}>Choose a time</option>
-                              <option value="morning" style={{ background: '#1e293b', color: '#e2e8f0' }}>8 AM - 12 PM 🌅 (Morning)</option>
-                              <option value="afternoon" style={{ background: '#1e293b', color: '#e2e8f0' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
-                              <option value="evening" style={{ background: '#1e293b', color: '#e2e8f0' }}>4 PM - 6 PM 🌆 (Evening)</option>
-                              <option value="flexible" style={{ background: '#1e293b', color: '#e2e8f0' }}>Flexible ⏰ (Best Price)</option>
-                            </select>
+                              <option value="morning">8 AM – 12 PM (Morning)</option>
+                              <option value="afternoon">12 PM – 4 PM (Afternoon)</option>
+                              <option value="evening">4 PM – 6 PM (Evening)</option>
+                              <option value="flexible">Flexible (best price)</option>
+                            </Select>
                             {errors['step1.pickupTime'] && (
-                              <Text color="red.400" fontSize="sm" mt={2}>{errors['step1.pickupTime']}</Text>
+                              <Text as="span" color="red.400" fontSize="sm" mt={1} role="alert">{errors['step1.pickupTime']}</Text>
                             )}
-                          </Box>
+                          </FormControl>
                         </SimpleGrid>
                         )}
 
-                        {/* Crew Size Selection */}
-                        <Box mt={4}>
-                          <Text 
-                            color="white" 
-                            fontSize={{ base: "sm", md: "md" }} 
-                            mb={3}
-                            fontWeight="bold"
-                            letterSpacing="wide"
-                          >
-                            👷 How many helpers do you need?
-                          </Text>
-                          <SimpleGrid 
-                            columns={{ base: 2, sm: 4 }} 
-                            spacing={{ base: 2, md: 3 }}
-                            sx={{
-                              '@media screen and (max-width: 480px)': {
-                                gridTemplateColumns: 'repeat(2, 1fr) !important',
-                                gap: '8px !important',
-                              }
-                            }}
-                          >
+                        <Box mt={6}>
+                          <FormLabel color="text.primary" fontSize="sm" fontWeight="600" mb={3} display="block">
+                            How many helpers do you need?
+                          </FormLabel>
+                          <SimpleGrid columns={{ base: 2, sm: 4 }} spacing={3}>
                             {[
-                              { value: '1', label: '1 Man', desc: 'Driver only', price: 'Base' },
-                              { value: '2', label: '2 Men', desc: 'Standard move', price: '+20%', popular: true },
-                              { value: '3', label: '3 Men', desc: 'Large items', price: '+35%' },
-                              { value: '4', label: '4 Men', desc: 'Full house', price: '+50%' },
+                              { value: '1' as const, label: '1', desc: 'Driver only' },
+                              { value: '2' as const, label: '2', desc: 'Standard' },
+                              { value: '3' as const, label: '3', desc: 'Large items' },
+                              { value: '4' as const, label: '4', desc: 'Full house' },
                             ].map((option) => {
                               const isSelected = formData.step1.crewSize === option.value;
                               return (
-                                <Box
+                                <Button
                                   key={option.value}
-                                  onClick={() => {
-                                    updateFormData('step1', { crewSize: option.value as '1' | '2' | '3' | '4' });
-                                    console.log('👷 Crew size changed:', option.value);
-                                    // ✅ FIX: Price recalculation is now handled automatically by useEffect in Step 3
-                                    // For Step 2, we trigger it manually but without setTimeout
-                                    // The useEffect in page.tsx will handle it automatically
-                                  }}
-                                  cursor="pointer"
-                                  p={{ base: 2, md: 4 }}
-                                  borderRadius="xl"
-                                  border="2px solid"
-                                  borderColor={isSelected ? 'blue.400' : 'whiteAlpha.200'}
-                                  bg={isSelected 
-                                    ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))'
-                                    : 'rgba(26, 32, 44, 0.6)'
-                                  }
-                                  boxShadow={isSelected ? '0 0 20px rgba(59, 130, 246, 0.4)' : 'none'}
-                                  transition="all 0.3s"
-                                  _hover={{
-                                    borderColor: isSelected ? 'blue.400' : 'whiteAlpha.400',
-                                    transform: 'translateY(-2px)',
-                                  }}
-                                  position="relative"
-                                  minH={{ base: "80px", md: "auto" }}
+                                  variant={isSelected ? 'solid' : 'outline'}
+                                  colorScheme={isSelected ? 'blue' : 'gray'}
+                                  size="lg"
+                                  minH="56px"
+                                  onClick={() => updateFormData('step1', { crewSize: option.value })}
+                                  _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
+                                  aria-pressed={isSelected}
                                 >
-                                  {option.popular && (
-                                    <Badge
-                                      position="absolute"
-                                      top={-2}
-                                      right={-2}
-                                      colorScheme="green"
-                                      fontSize="2xs"
-                                      px={2}
-                                      borderRadius="full"
-                                    >
-                                      Popular
-                                    </Badge>
-                                  )}
-                                  <VStack spacing={0.5}>
-                                    <Text 
-                                      fontSize={{ base: "md", md: "2xl" }} 
-                                      fontWeight="bold" 
-                                      color={isSelected ? 'blue.300' : 'white'}
-                                      lineHeight="1.2"
-                                    >
-                                      {option.label}
-                                    </Text>
-                                    <Text 
-                                      fontSize={{ base: "2xs", md: "xs" }} 
-                                      color="whiteAlpha.700"
-                                      textAlign="center"
-                                      display={{ base: "none", sm: "block" }}
-                                    >
-                                      {option.desc}
-                                    </Text>
-                                    <Badge 
-                                      colorScheme={option.price === 'Base' ? 'green' : option.price === 'Popular' ? 'blue' : 'orange'}
-                                      fontSize="2xs"
-                                      mt={0.5}
-                                    >
-                                      {option.price}
-                                    </Badge>
+                                  <VStack spacing={0}>
+                                    <Text fontWeight="bold" fontSize="lg">{option.label} men</Text>
+                                    <Text fontSize="xs" opacity={0.9}>{option.desc}</Text>
                                   </VStack>
-                                </Box>
+                                </Button>
                               );
                             })}
                           </SimpleGrid>
-                          <Text color="whiteAlpha.600" fontSize="xs" mt={2} textAlign="center">
-                            More helpers = faster move. Price adjusts based on crew size.
+                          <Text color="text.secondary" fontSize="xs" mt={2}>
+                            More helpers mean a faster move. Price adjusts by crew size.
                           </Text>
                         </Box>
                       </VStack>
-                    </CardBody>
-                  </Card>
+                    </Box>
+                  </Box>
                   </Box>
 
 
@@ -2834,41 +2606,10 @@ function BookingLuxuryContent() {
                   <Box
                     id="items-card"
                     position="relative"
-                    sx={errorCardId === 'items-card' ? {
-                      '@keyframes redNeonTravel': {
-                        '0%': { clipPath: 'inset(0 100% 100% 0)' },
-                        '25%': { clipPath: 'inset(0 0 100% 0)' },
-                        '50%': { clipPath: 'inset(0 0 0 100%)' },
-                        '75%': { clipPath: 'inset(100% 0 0 0)' },
-                        '100%': { clipPath: 'inset(0 100% 0 0)' },
-                      },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '-3px',
-                        left: '-3px',
-                        right: '-3px',
-                        bottom: '-3px',
-                        borderRadius: '2xl',
-                        border: '3px solid #ef4444',
-                        boxShadow: '0 0 15px #ef4444, 0 0 30px #ef4444, 0 0 45px #ef4444',
-                        animation: 'redNeonTravel 1.5s linear infinite',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                      },
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '-3px',
-                        left: '-3px',
-                        right: '-3px',
-                        bottom: '-3px',
-                        borderRadius: '2xl',
-                        border: '2px solid rgba(239, 68, 68, 0.3)',
-                        pointerEvents: 'none',
-                        zIndex: 9,
-                      },
-                    } : {}}
+                    borderRadius="2xl"
+                    border="1px solid"
+                    borderColor={errorCardId === 'items-card' ? 'red.400' : 'border.primary'}
+                    boxShadow={errorCardId === 'items-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : 'none'}
                   >
                     <WhereAndWhatStepHierarchical
                       formData={formData}
@@ -2880,15 +2621,15 @@ function BookingLuxuryContent() {
                   </Box>
 
                   {/* SINGLE Navigation Section - Bottom of Step 2 */}
-                  <Card
-                    bg="rgba(26, 32, 44, 0.8)"
+                  <Box
+                    bg="bg.card"
                     backdropFilter="blur(10px)"
                     borderRadius="xl"
                     border="1px solid"
-                    borderColor="rgba(255, 255, 255, 0.1)"
+                    borderColor="border.primary"
                     mt={8}
                   >
-                    <CardBody p={{ base: 4, md: 6 }}>
+                    <Box p={{ base: 4, md: 6 }}>
                       <VStack spacing={4}>
                         {/* Status Message */}
                         {(() => {
@@ -2916,6 +2657,24 @@ function BookingLuxuryContent() {
                                 ⚠️ Please select a date to continue
                               </Text>
                             );
+                          } else if (pricingFlowState === 'loading' || isLoadingAvailability) {
+                            return (
+                              <Text color="blue.300" fontSize="sm" textAlign="center">
+                                ⏳ Calculating your quote...
+                              </Text>
+                            );
+                          } else if (!hasValidQuote) {
+                            return (
+                              <Text color="red.300" fontSize="sm" textAlign="center">
+                                ❌ Quote not ready. Please retry quote before continuing.
+                              </Text>
+                            );
+                          } else if (pricingFlowMessage) {
+                            return (
+                              <Text color="yellow.300" fontSize="sm" textAlign="center">
+                                {pricingFlowMessage}
+                              </Text>
+                            );
                           } else {
                             return (
                               <Text color="green.300" fontSize="sm" textAlign="center">
@@ -2925,17 +2684,57 @@ function BookingLuxuryContent() {
                           }
                         })()}
 
+                        {pricingFlowState === 'error' && pricingFlowMessage && (
+                          <Alert status="error" borderRadius="lg">
+                            <AlertIcon />
+                            <Box>
+                              <AlertTitle>Quote needs attention</AlertTitle>
+                              <AlertDescription>{pricingFlowMessage}</AlertDescription>
+                              <HStack mt={3} spacing={3} flexWrap="wrap">
+                                <Button
+                                  size="sm"
+                                  leftIcon={<FaRedo />}
+                                  onClick={() => {
+                                    clearPricingFailure();
+                                    calculateComprehensivePricing().catch((error: unknown) => {
+                                      console.error('Failed to retry quote:', error);
+                                      setPricingFailure('Retry quote failed. Please check addresses/items and try again.');
+                                    });
+                                  }}
+                                >
+                                  Retry quote
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => setCurrentStep(1)}>
+                                  Edit addresses
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const itemsCard = document.getElementById('items-card');
+                                    if (itemsCard) {
+                                      itemsCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                  }}
+                                >
+                                  Review items
+                                </Button>
+                              </HStack>
+                            </Box>
+                          </Alert>
+                        )}
+
                         {/* Navigation Buttons */}
                         <HStack justify="space-between" w="full" spacing={4}>
                           <Button
                             leftIcon={<FaArrowLeft />}
                             onClick={() => setCurrentStep(1)}
                             variant="outline"
-                            colorScheme="whiteAlpha"
+                            colorScheme="gray"
                             size="lg"
-                            color="white"
-                            borderColor="whiteAlpha.300"
-                            _hover={{ bg: 'whiteAlpha.200' }}
+                            color="text.primary"
+                            borderColor="border.primary"
+                            _hover={{ bg: 'bg.surface.elevated' }}
                             flex={1}
                           >
                             Back
@@ -2957,7 +2756,8 @@ function BookingLuxuryContent() {
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
                                 : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
-                              return !hasItems || !hasDate;
+                              const quoteReady = pricingFlowState === 'success' && (pricingTiers?.standard?.price ?? 0) > 0;
+                              return !hasItems || !hasDate || !quoteReady || isLoadingAvailability;
                             })()}
                             boxShadow={(() => {
                               const segments = (formData.step1.segments || []) as any[];
@@ -2968,7 +2768,8 @@ function BookingLuxuryContent() {
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
                                 : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
-                              return hasItems && hasDate ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none";
+                              const quoteReady = pricingFlowState === 'success' && (pricingTiers?.standard?.price ?? 0) > 0;
+                              return hasItems && hasDate && quoteReady ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none";
                             })()}
                             _hover={(() => {
                               const segments = (formData.step1.segments || []) as any[];
@@ -2979,7 +2780,8 @@ function BookingLuxuryContent() {
                               const hasDate = isMultiLeg
                                 ? segments.every(s => s.datetime)
                                 : (formData.step1.pickupDateChoice === 'unknown' || formData.step1.pickupDate);
-                              return hasItems && hasDate ? {
+                              const quoteReady = pricingFlowState === 'success' && (pricingTiers?.standard?.price ?? 0) > 0;
+                              return hasItems && hasDate && quoteReady ? {
                                 bg: "blue.600",
                                 transform: 'translateY(-2px)',
                                 boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)'
@@ -2991,17 +2793,19 @@ function BookingLuxuryContent() {
                               bg: "gray.600"
                             }}
                           >
-                            Get your price
+                            {isLoadingAvailability ? 'Calculating quote...' : 'Get your price'}
                           </Button>
                         </HStack>
                       </VStack>
-                    </CardBody>
-                  </Card>
+                    </Box>
+                  </Box>
                 </VStack>
+                </ResponsiveSection>
               </Box>
             )}
             {currentStep === 3 && (
               <Box key="step3-payment" w="full" data-booking-step="3">
+                <ResponsiveSection maxW="1200px" w="full">
                 <WhoAndPaymentStepSimple
                   formData={formData}
                   updateFormData={updateFormData}
@@ -3021,6 +2825,7 @@ function BookingLuxuryContent() {
                   getTotalSegmentsPrice={getTotalSegmentsPrice}
                   onBookingCreated={handleBookingCreated}
                 />
+                </ResponsiveSection>
               </Box>
             )}
           </Box>
@@ -3139,8 +2944,8 @@ function BookingLuxuryContent() {
       {/* Selected Items Modal - Multi-leg Journey Switcher */}
       <Modal isOpen={isItemsOpen} onClose={onItemsClose} size="xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent bg="gray.900" color="white" maxW="900px">
-          <ModalHeader borderBottom="1px solid" borderColor="whiteAlpha.200">
+        <ModalContent bg="bg.surface" color="text.primary" maxW="900px" border="1px solid" borderColor="border.primary">
+          <ModalHeader borderBottom="1px solid" borderColor="border.primary">
             Selected Items 
             {(() => {
               const segments = (formData.step1.segments || []) as BookingSegment[];
@@ -3152,8 +2957,8 @@ function BookingLuxuryContent() {
             })()}
           </ModalHeader>
           <ModalCloseButton 
-            color="white" 
-            _hover={{ bg: 'whiteAlpha.300' }} 
+            color="text.primary" 
+            _hover={{ bg: 'bg.surface.elevated' }} 
           />
           <ModalBody pb={6} pt={4}>
             <SelectedItemsManager

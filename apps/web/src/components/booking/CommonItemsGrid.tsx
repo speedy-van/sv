@@ -19,6 +19,7 @@ import {
   useDisclosure,
   Badge,
   Flex,
+  Image,
 } from '@chakra-ui/react';
 import { 
   FaPlus, 
@@ -328,7 +329,7 @@ export const CommonItemsGrid = ({ onAddItem, selectedItems = [] }: CommonItemsGr
                     bg={quantity > 0 ? 'green.50' : cardBg}
                     justify="space-between"
                     transition="all 0.2s"
-                    spacing={2}
+                    spacing={3}
                     align="center"
                     minW={0}
                     _hover={{
@@ -336,6 +337,23 @@ export const CommonItemsGrid = ({ onAddItem, selectedItems = [] }: CommonItemsGr
                       borderColor: quantity > 0 ? 'green.400' : 'purple.300'
                     }}
                   >
+                    {/* Item image so customer can easily recognise the item */}
+                    <Box flexShrink={0} w="48px" h="48px" borderRadius="md" overflow="hidden" bg={isDark ? 'gray.700' : 'gray.100'}>
+                      {item.image ? (
+                        <Image
+                          src={item.image}
+                          alt=""
+                          w="full"
+                          h="full"
+                          objectFit="cover"
+                          fallback={<Flex w="full" h="full" align="center" justify="center"><Icon as={FaBox} color="gray.400" boxSize={5} /></Flex>}
+                        />
+                      ) : (
+                        <Flex w="full" h="full" align="center" justify="center">
+                          <Icon as={FaBox} color="gray.400" boxSize={5} />
+                        </Flex>
+                      )}
+                    </Box>
                     <Text 
                       fontSize="sm" 
                       fontWeight="medium" 

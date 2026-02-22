@@ -137,7 +137,7 @@ export default function ProfileScreen() {
         </View>
         {onPress && (
           <View style={styles.menuArrowContainer}>
-            <Ionicons name="chevron-forward" size={20} color={danger ? '#EF4444' : '#FFFFFF'} />
+            <Ionicons name="chevron-forward" size={20} color={danger ? '#EF4444' : '#F5F8FF'} />
           </View>
         )}
       </TouchableOpacity>
@@ -207,7 +207,7 @@ export default function ProfileScreen() {
                     <Ionicons
                       name={user.driver.status === 'active' ? 'checkmark-circle' : 'close-circle'}
                       size={14}
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                     />
                     <Text style={styles.statusText}>
                       {user.driver.status === 'active' ? 'Active' : 'Inactive'}
@@ -434,21 +434,21 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#007AFF',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
     elevation: 12,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
   },
   avatarText: {
     fontSize: 44,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -1,
   },
   avatarStatus: {
@@ -476,12 +476,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
   },
   email: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '500',
     opacity: 0.8,
   },
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.5,
   },
   scrollView: {
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     opacity: 0.9,
@@ -610,14 +610,14 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   menuTitleDanger: {
     color: '#EF4444',
   },
   menuSubtitle: {
     fontSize: 13,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '500',
     opacity: 0.8,
   },

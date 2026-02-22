@@ -94,9 +94,9 @@ export function ExportTemplatesManager() {
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
   const toast = useToast();
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -283,7 +283,7 @@ export function ExportTemplatesManager() {
           onClick={onCreateModalOpen}
           size="sm"
           bg="#10b981"
-          color="#FFFFFF"
+          color="#F5F8FF"
           _hover={{ bg: '#059669' }}
         >
           Create Template
@@ -294,7 +294,7 @@ export function ExportTemplatesManager() {
         <Alert status="info" bg="rgba(16, 185, 129, 0.1)" borderColor="#10b981" borderWidth={1}>
           <AlertIcon color="#10b981" />
           <VStack align="start" spacing={1} flex={1}>
-            <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+            <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
               No export templates yet
             </Text>
             <Text fontSize="xs" color={secondaryTextColor}>
@@ -343,7 +343,7 @@ export function ExportTemplatesManager() {
                         onClick={() => handleEditClick(template)}
                         bg={cardBg}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Edit
                       </MenuItem>
@@ -352,7 +352,7 @@ export function ExportTemplatesManager() {
                         onClick={() => handleDeleteTemplate(template.id)}
                         bg={cardBg}
                         color="#ef4444"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Delete
                       </MenuItem>
@@ -374,7 +374,7 @@ export function ExportTemplatesManager() {
                     onClick={() => handleUseTemplate(template)}
                     size="sm"
                     bg="#10b981"
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     _hover={{ bg: '#059669' }}
                   >
                     Use Template
@@ -409,7 +409,7 @@ export function ExportTemplatesManager() {
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder="e.g., Customer Report"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -422,7 +422,7 @@ export function ExportTemplatesManager() {
                   value={templateDescription}
                   onChange={(e) => setTemplateDescription(e.target.value)}
                   placeholder="Describe this template..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -438,9 +438,9 @@ export function ExportTemplatesManager() {
                       onClick={() => setTemplateFormat(format)}
                       variant={templateFormat === format ? 'solid' : 'outline'}
                       bg={templateFormat === format ? '#2563eb' : 'transparent'}
-                      color={templateFormat === format ? '#FFFFFF' : textColor}
+                      color={templateFormat === format ? '#F5F8FF' : textColor}
                       borderColor={borderColor}
-                      _hover={{ bg: templateFormat === format ? '#1d4ed8' : '#1a1a1a' }}
+                      _hover={{ bg: templateFormat === format ? '#1d4ed8' : '#18233A' }}
                       flex={1}
                     >
                       {format.toUpperCase()}
@@ -453,7 +453,7 @@ export function ExportTemplatesManager() {
                   Select Fields *
                 </Text>
                 <Box
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderWidth={1}
                   borderColor={borderColor}
                   borderRadius="md"
@@ -495,7 +495,7 @@ export function ExportTemplatesManager() {
             </Button>
             <Button
               bg="#10b981"
-              color="#FFFFFF"
+              color="#F5F8FF"
               onClick={isCreateModalOpen ? handleCreateTemplate : handleEditTemplate}
               _hover={{ bg: '#059669' }}
             >

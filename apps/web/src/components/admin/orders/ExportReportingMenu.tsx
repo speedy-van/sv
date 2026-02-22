@@ -158,25 +158,25 @@ export function ExportReportingMenu({
           leftIcon={<FaFileExport />}
           variant="outline"
           isDisabled={disabled || ordersToExport.length === 0}
-          bg="#111111"
-          color="#FFFFFF"
-          borderColor="#333333"
+          bg="#121A2B"
+          color="#F5F8FF"
+          borderColor="#2A3A5E"
           borderWidth="2px"
           borderRadius="lg"
           px={4}
           py={2}
           fontWeight="semibold"
           letterSpacing="0.5px"
-          _hover={{ bg: '#1a1a1a', borderColor: '#2563eb' }}
+          _hover={{ bg: '#18233A', borderColor: '#2563eb' }}
         >
           Export
         </MenuButton>
-        <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+        <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
           <MenuItem
             icon={<FaFileCsv />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => {
               setExportFormat('csv');
               onModalOpen();
@@ -186,9 +186,9 @@ export function ExportReportingMenu({
           </MenuItem>
           <MenuItem
             icon={<FaFileExcel />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => {
               setExportFormat('excel');
               onModalOpen();
@@ -198,9 +198,9 @@ export function ExportReportingMenu({
           </MenuItem>
           <MenuItem
             icon={<FaFilePdf />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => {
               setExportFormat('pdf');
               onModalOpen();
@@ -208,12 +208,12 @@ export function ExportReportingMenu({
           >
             Export to PDF
           </MenuItem>
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
           <MenuItem
             icon={<FaDownload />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => {
               setExportFormat('csv');
               onExport('csv', exportOptions);
@@ -227,8 +227,8 @@ export function ExportReportingMenu({
       {/* Export Configuration Modal */}
       <Modal isOpen={isModalOpen} onClose={onModalClose} size="lg" scrollBehavior="inside">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF" borderBottomWidth={1} borderColor="#333333">
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF" borderBottomWidth={1} borderColor="#2A3A5E">
             <HStack spacing={2}>
               {exportFormat === 'csv' && <FaFileCsv />}
               {exportFormat === 'excel' && <FaFileExcel />}
@@ -236,13 +236,13 @@ export function ExportReportingMenu({
               <Text>Export to {exportFormat.toUpperCase()}</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+          <ModalCloseButton color="#F5F8FF" />
           
-          <ModalBody color="#FFFFFF" py={6}>
+          <ModalBody color="#F5F8FF" py={6}>
             <VStack align="stretch" spacing={6}>
-              <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Exporting {ordersToExport.length} order(s)
                 </Text>
               </Alert>
@@ -258,7 +258,7 @@ export function ExportReportingMenu({
               {!exporting && (
                 <>
                   <VStack align="stretch" spacing={3}>
-                    <Text fontWeight="bold" fontSize="md" color="#FFFFFF">
+                    <Text fontWeight="bold" fontSize="md" color="#F5F8FF">
                       Export Options
                     </Text>
                     <CheckboxGroup
@@ -277,28 +277,28 @@ export function ExportReportingMenu({
                     >
                       <VStack align="start" spacing={2}>
                         <Checkbox value="includeHeaders" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Headers</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Headers</Text>
                         </Checkbox>
                         <Checkbox value="includeCustomerInfo" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Customer Information</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Customer Information</Text>
                         </Checkbox>
                         <Checkbox value="includeAddresses" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Addresses</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Addresses</Text>
                         </Checkbox>
                         <Checkbox value="includeItems" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Items</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Items</Text>
                         </Checkbox>
                         <Checkbox value="includeDriverInfo" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Driver Information</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Driver Information</Text>
                         </Checkbox>
                         <Checkbox value="includePaymentInfo" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Payment Information</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Payment Information</Text>
                         </Checkbox>
                         <Checkbox value="includeNotes" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Notes</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Notes</Text>
                         </Checkbox>
                         <Checkbox value="includeSegments" colorScheme="blue">
-                          <Text color="#FFFFFF" fontSize="sm">Include Journey Segments</Text>
+                          <Text color="#F5F8FF" fontSize="sm">Include Journey Segments</Text>
                         </Checkbox>
                       </VStack>
                     </CheckboxGroup>
@@ -308,7 +308,7 @@ export function ExportReportingMenu({
             </VStack>
           </ModalBody>
 
-          <ModalFooter borderTopWidth={1} borderColor="#333333">
+          <ModalFooter borderTopWidth={1} borderColor="#2A3A5E">
             <HStack spacing={3} w="full" justify="space-between">
               <Text fontSize="sm" color="#9ca3af">
                 {ordersToExport.length} order(s) will be exported
@@ -317,9 +317,9 @@ export function ExportReportingMenu({
                 <Button
                   variant="outline"
                   onClick={onModalClose}
-                  borderColor="#333333"
-                  color="#FFFFFF"
-                  _hover={{ bg: '#1a1a1a' }}
+                  borderColor="#2A3A5E"
+                  color="#F5F8FF"
+                  _hover={{ bg: '#18233A' }}
                   isDisabled={exporting}
                 >
                   Cancel
@@ -329,7 +329,7 @@ export function ExportReportingMenu({
                   onClick={handleExport}
                   isLoading={exporting}
                   bg="#2563eb"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   _hover={{ bg: '#1d4ed8' }}
                   leftIcon={exportFormat === 'csv' ? <FaFileCsv /> : exportFormat === 'excel' ? <FaFileExcel /> : <FaFilePdf />}
                 >

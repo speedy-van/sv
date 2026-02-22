@@ -125,7 +125,7 @@ export default function LocationDeliveryPage({ location }: LocationDeliveryPageP
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -350,7 +350,7 @@ export default function LocationDeliveryPage({ location }: LocationDeliveryPageP
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

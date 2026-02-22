@@ -7,10 +7,7 @@ import '@/styles/critical.css';
 import '@/styles/globals.css';
 import '@/styles/video-background.css';
 import '@/styles/charts.css';
-import '@/styles/responsive-fixes.css';
 import '@/styles/mobile-enhancements.css';
-import '@/styles/mobile-fixes.css';
-import '@/styles/mobile-viewport-fixes.css';
 import '@/styles/ios-overrides.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@/lib/suppress-storage-errors'; // Suppress SecurityError for storage in restricted contexts

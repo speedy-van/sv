@@ -70,7 +70,7 @@ function JsonLd() {
     '@type': 'Organization',
     name: 'Speedy Van',
     url: 'https://speedy-van.co.uk',
-    telephone: '+44 1202 129746',
+    telephone: '01202 129746',
     email: 'support@speedy-van.co.uk',
     logo: 'https://speedy-van.co.uk/logo.png',
   };
@@ -152,7 +152,7 @@ export default function FAQPage() {
               </Button>
               <Button
                 as={NextLink}
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 variant="outline"
                 colorScheme="purple"
                 size="md"

@@ -55,10 +55,10 @@ export function BatchEditModal({
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
-  const bgColor = useColorModeValue('#000000', '#000000');
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const bgColor = useColorModeValue('#0B1020', '#0B1020');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const handleSave = async () => {
@@ -116,7 +116,7 @@ export function BatchEditModal({
           <VStack align="stretch" spacing={4}>
             <Alert status="info" bg="rgba(37, 99, 235, 0.1)" borderColor="#2563eb" borderWidth={1}>
               <AlertIcon color="#2563eb" />
-              <Text fontSize="sm" color="#FFFFFF">
+              <Text fontSize="sm" color="#F5F8FF">
                 Only fill the fields you want to update. Empty fields will be ignored.
               </Text>
             </Alert>
@@ -238,7 +238,7 @@ export function BatchEditModal({
             onClick={handleSave}
             isLoading={saving}
             bg="#2563eb"
-            color="#FFFFFF"
+            color="#F5F8FF"
             _hover={{ bg: '#1d4ed8' }}
           >
             Save Changes

@@ -124,7 +124,7 @@ export default function TrendingItems({
   return (
     <VStack spacing={6} align="stretch">
       {/* Header */}
-      <Card bg="gradient-to-r from-orange.50 to-red.50" borderRadius="xl" p={6} borderWidth="1px" borderColor="orange.200">
+      <Card bg="gradient-to-r from-orange.50 to-red.50" borderRadius="xl" p={{ base: 4, md: 6 }} borderWidth="1px" borderColor="orange.200">
         <VStack spacing={3} align="center">
           <Circle size="50px" bg="orange.500" color="white">
             <Icon as={FaFire} boxSize={6} />
@@ -141,7 +141,7 @@ export default function TrendingItems({
       </Card>
 
       {/* Top 10 Most Common Items */}
-      <Card bg="white" borderRadius="xl" p={6} shadow="md">
+      <Card bg="white" borderRadius="xl" p={{ base: 4, md: 6 }} shadow="md">
         <VStack spacing={4} align="stretch">
           <HStack spacing={3}>
             <Circle size="40px" bg="red.500" color="white">
@@ -250,7 +250,7 @@ export default function TrendingItems({
       </Card>
 
       {/* Popular Items by Category */}
-      <Card bg="white" borderRadius="xl" p={6} shadow="md">
+      <Card bg="white" borderRadius="xl" p={{ base: 4, md: 6 }} shadow="md">
         <VStack spacing={4} align="stretch">
           <HStack spacing={3}>
             <Circle size="40px" bg="blue.500" color="white">
@@ -374,7 +374,7 @@ export default function TrendingItems({
       </Card>
 
       {/* Quick Category Buttons */}
-      <Card bg="purple.50" borderRadius="xl" p={4}>
+      <Card bg="purple.50" borderRadius="xl" p={{ base: 3, md: 4 }}>
         <VStack spacing={3} align="stretch">
           <HStack spacing={2} justify="center">
             <Icon as={FaCrown} color="purple.500" boxSize={4} />
@@ -407,7 +407,7 @@ export default function TrendingItems({
       </Card>
 
       {/* Statistics Footer */}
-      <Card bg="gray.50" borderRadius="xl" p={4}>
+      <Card bg="gray.50" borderRadius="xl" p={{ base: 3, md: 4 }}>
         <VStack spacing={2} align="center">
           <Text fontSize="sm" fontWeight="bold" color="gray.700">
             📊 Based on 10,000+ successful moves

@@ -29,13 +29,13 @@ export default function AdditionalJourneysSection({
   return (
     <Box>
       <VStack align="stretch" spacing={4} mb={4}>
-        <Alert status="info" borderRadius="md" bg="rgba(6, 182, 212, 0.1)" borderWidth={1} borderColor="#06b6d4">
-          <AlertIcon color="#06b6d4" />
+        <Alert status="info" variant="subtle" colorScheme="cyan" borderRadius="md">
+          <AlertIcon />
           <VStack align="start" spacing={1} flex={1}>
-            <Text fontSize="sm" fontWeight="bold" color="#06b6d4">
+            <Text fontSize="sm" fontWeight="bold">
               Additional Journeys Section
             </Text>
-            <Text fontSize="xs" color="#9ca3af">
+            <Text fontSize="xs" opacity={0.9}>
               This section shows all bookings that include return journeys or additional journeys. 
               Each booking displays the main journey along with all additional journey segments.
             </Text>

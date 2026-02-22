@@ -35,9 +35,9 @@ export function HelpTooltip({
   placement = 'top',
   variant = 'tooltip',
 }: HelpTooltipProps) {
-  const bgColor = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const bgColor = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   if (variant === 'popover') {

@@ -93,7 +93,7 @@ export default function DispatchModeToggle({
 
   if (isLoading) {
     return (
-      <HStack spacing={2} bg="#111111" px={3} py={2} borderRadius="lg" border="1px solid" borderColor="#333333">
+      <HStack spacing={2} bg="#121A2B" px={3} py={2} borderRadius="lg" border="1px solid" borderColor="#2A3A5E">
         <Spinner size="sm" color="#2563eb" />
         <Text fontSize="sm" color="#9ca3af">Loading...</Text>
       </HStack>
@@ -152,7 +152,7 @@ export default function DispatchModeToggle({
       >
         <Icon 
           as={mode === 'auto' ? FiZap : FiUser} 
-          color="#FFFFFF"
+          color="#F5F8FF"
           boxSize={size === 'lg' ? 6 : size === 'sm' ? 4 : 5}
           position="relative"
           zIndex={1}
@@ -164,7 +164,7 @@ export default function DispatchModeToggle({
             <Text 
               fontSize={size === 'lg' ? 'md' : 'sm'} 
               fontWeight="bold"
-              color="#FFFFFF"
+              color="#F5F8FF"
               letterSpacing="0.3px"
               textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
             >
@@ -183,7 +183,7 @@ export default function DispatchModeToggle({
 
         <Badge
           bg="rgba(255, 255, 255, 0.2)"
-          color="#FFFFFF"
+          color="#F5F8FF"
           fontSize={size === 'lg' ? 'sm' : 'xs'}
           px={3}
           py={1}
@@ -208,7 +208,7 @@ export default function DispatchModeToggle({
             size={size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md'}
             sx={{
               'span[data-checked]': {
-                bg: '#FFFFFF',
+                bg: '#F5F8FF',
               },
             }}
           />
@@ -217,7 +217,7 @@ export default function DispatchModeToggle({
         {isSwitching && (
           <Spinner 
             size="sm" 
-            color="#FFFFFF"
+            color="#F5F8FF"
             position="absolute"
             right={2}
             top="50%"

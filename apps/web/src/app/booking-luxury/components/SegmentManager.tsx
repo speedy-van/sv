@@ -350,7 +350,7 @@ export default function SegmentManager({
             {/* Gradient top border */}
             <Box h="3px" bgGradient="linear(to-r, blue.400, purple.500, pink.400)" />
             
-            <CardBody>
+            <CardBody p={{ base: 4, md: 6 }}>
               <VStack spacing={4} align="stretch">
                 {/* Header with close button */}
                 <HStack justify="space-between">
@@ -1198,7 +1198,7 @@ export default function SegmentManager({
                                   borderRadius: '12px',
                                   border: '2px solid rgba(139, 92, 246, 0.4)',
                                   backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                  color: '#e2e8f0',
+                                  color: '#A9B4CC',
                                   fontWeight: '600',
                                   cursor: 'pointer',
                                   outline: 'none',
@@ -1254,18 +1254,18 @@ export default function SegmentManager({
                                   borderRadius: '12px',
                                   border: '2px solid rgba(139, 92, 246, 0.4)',
                                   backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                  color: '#e2e8f0',
+                                  color: '#A9B4CC',
                                   fontWeight: '600',
                                   cursor: 'pointer',
                                   outline: 'none',
                                   appearance: 'none',
                                 }}
                               >
-                                <option value="" style={{ background: '#1e293b', color: '#e2e8f0' }}>Choose a time</option>
-                                <option value="morning" style={{ background: '#1e293b', color: '#e2e8f0' }}>8 AM - 12 PM 🌅 (Morning)</option>
-                                <option value="afternoon" style={{ background: '#1e293b', color: '#e2e8f0' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
-                                <option value="evening" style={{ background: '#1e293b', color: '#e2e8f0' }}>4 PM - 6 PM 🌆 (Evening)</option>
-                                <option value="flexible" style={{ background: '#1e293b', color: '#e2e8f0' }}>Flexible ⏰ (Best Price)</option>
+                                <option value="" style={{ background: '#1e293b', color: '#A9B4CC' }}>Choose a time</option>
+                                <option value="morning" style={{ background: '#1e293b', color: '#A9B4CC' }}>8 AM - 12 PM 🌅 (Morning)</option>
+                                <option value="afternoon" style={{ background: '#1e293b', color: '#A9B4CC' }}>12 PM - 4 PM ☀️ (Afternoon)</option>
+                                <option value="evening" style={{ background: '#1e293b', color: '#A9B4CC' }}>4 PM - 6 PM 🌆 (Evening)</option>
+                                <option value="flexible" style={{ background: '#1e293b', color: '#A9B4CC' }}>Flexible ⏰ (Best Price)</option>
                               </select>
                             </Box>
                           </SimpleGrid>

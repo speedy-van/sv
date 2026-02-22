@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 /**
  * Step 3: Customer Details & Payment - Simplified Version
@@ -42,8 +42,6 @@ import {
   Input,
   Textarea,
   Checkbox,
-  Card,
-  CardBody,
   Divider,
   Badge,
   Alert,
@@ -64,6 +62,8 @@ import {
   WrapItem,
   Tag,
   useBreakpointValue,
+  Card,
+  CardBody,
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
@@ -90,6 +90,7 @@ import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
 import SelectedItemsManager from './SelectedItemsManager';
 import OrbitingIconsAnimation from './OrbitingIconsAnimation';
+import LuxurySurfaceCard from './LuxurySurfaceCard';
 
 interface WhoAndPaymentStepProps {
   formData: FormData;
@@ -1026,30 +1027,25 @@ export default function WhoAndPaymentStepSimple({
 
   return (
     <Box w="full">
-      <VStack spacing={6} align="stretch">
+      <VStack spacing={{ base: 5, md: 6 }} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* ⚠️ CRITICAL: Booking Reference Alert - DO NOT DELETE OR MOVE
-            This card MUST always be visible when bookingReference exists.
-            It allows customers and admins to track the booking before payment.
-            Deleting this breaks the entire booking flow tracking system. */}
+        {/* ⚠️ CRITICAL: Booking Reference - Chakra Alert (do not delete) */}
         {formData.step2.bookingReference && (
           <Alert
             status="info"
             variant="subtle"
-            bg="rgba(59, 130, 246, 0.12)"
-            border="1px solid"
-            borderColor="blue.400"
+            colorScheme="blue"
             borderRadius="lg"
             data-testid="booking-reference-alert"
             data-critical="true"
           >
             <AlertIcon />
-            <Box>
-              <AlertTitle color="white" fontSize="sm">
+            <Box flex="1">
+              <AlertTitle fontSize="sm">
                 Booking reference (pending payment)
               </AlertTitle>
-              <AlertDescription color="whiteAlpha.900" fontSize="sm">
+              <AlertDescription fontSize="sm" opacity={0.95}>
                 {formData.step2.bookingReference} — share this with admin to view or modify before payment.
               </AlertDescription>
             </Box>
@@ -1058,17 +1054,14 @@ export default function WhoAndPaymentStepSimple({
 
         {/* STATE 1: CALCULATING - Show ONLY gears + text during calculating */}
         {pricingStage === 'calculating' && (
-          <Card
-            bg="rgba(17, 24, 39, 0.95)"
-            border="2px solid"
-            borderColor="rgba(124, 58, 237, 0.4)"
-            borderRadius="2xl"
-            backdropFilter="blur(20px)"
-            overflow="hidden"
-            boxShadow="0 8px 32px rgba(124,58,237,0.3)"
+          <LuxurySurfaceCard
+            tone="info"
+            borderWidth="2px"
+            borderColor="purple.400"
+            boxShadow="0 8px 28px rgba(124, 58, 237, 0.24)"
           >
             <OrbitingIconsAnimation duration={2.5} />
-          </Card>
+          </LuxurySurfaceCard>
         )}
 
         {/* STATE 2: RESULTS - Price cards ONLY (no orbit animation) */}
@@ -1083,67 +1076,19 @@ export default function WhoAndPaymentStepSimple({
               },
             }}
           >
-            <Card
-              bg="rgba(17, 24, 39, 0.95)"
-              border="1px solid"
-              borderColor="rgba(59, 130, 246, 0.3)"
-              borderRadius="2xl"
-              backdropFilter="blur(20px)"
-              overflow="hidden"
-              position="relative"
-              _before={{
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '4px',
-                bgGradient: 'linear(to-r, blue.400, cyan.400, green.400)',
-              }}
-            >
-              <CardBody p={{ base: 5, md: 8 }}>
+            <LuxurySurfaceCard tone="info">
+              <Box p={{ base: 5, md: 8 }}>
                 <VStack spacing={6} align="stretch">
-              {/* Header Section */}
               <VStack align="stretch" spacing={4}>
-                <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
-                  <VStack align="start" spacing={2}>
-                    <HStack spacing={3} align="center">
-                      <Box
-                        w="48px"
-                        h="48px"
-                        borderRadius="xl"
-                        bg="linear-gradient(135deg, rgba(59,130,246,0.2), rgba(16,185,129,0.2))"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        fontSize="24px"
-                        boxShadow="0 4px 12px rgba(59,130,246,0.3)"
-                      >
-                        📅
-                      </Box>
-                      <VStack align="start" spacing={0}>
-                        <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="800" color="white" lineHeight="1.2">
-                          Choose Your Date
-                        </Text>
-                        <Text fontSize="sm" color="gray.400" fontWeight="500">
-                          Find the perfect day for your move
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </VStack>
-                </HStack>
-
-                {/* Price Legend - Simplified for 3-tier approach */}
-                <Box
-                  p={4}
-                  bg="linear-gradient(135deg, rgba(0,0,0,0.4), rgba(30,41,59,0.4))"
-                  borderRadius="xl"
-                  border="1px solid"
-                  borderColor="rgba(255,255,255,0.05)"
-                  backdropFilter="blur(10px)"
-                >
-                  <Text color="gray.400" fontSize="sm" fontWeight="600" textAlign="center">
-                    Choose from three carefully selected pricing options
+                <Heading size="md" color="text.primary">
+                  Choose your date
+                </Heading>
+                <Text color="text.secondary" fontSize="sm">
+                  Select a day for your move. Prices vary by date.
+                </Text>
+                <Box p={3} bg="bg.surface" borderRadius="lg" borderWidth="1px" borderColor="border.primary">
+                  <Text color="text.secondary" fontSize="sm" fontWeight="600" textAlign="center">
+                    Three pricing options: Best Value, Standard, Premium
                   </Text>
                 </Box>
               </VStack>
@@ -1202,13 +1147,12 @@ export default function WhoAndPaymentStepSimple({
                   const scheme = colorScheme[level];
 
                   return (
-                    <Box
+                    <Card
                       as="button"
                       type="button"
                       key={option.iso}
                       w="100%"
                       textAlign="left"
-                      p={{ base: 3, md: 4 }}
                       borderRadius="xl"
                       borderWidth="2px"
                       borderColor={scheme.border}
@@ -1219,15 +1163,7 @@ export default function WhoAndPaymentStepSimple({
                       position="relative"
                       minH="140px"
                       overflow="hidden"
-                      backdropFilter="blur(8px)"
-                      // ✨ Stagger animation - each card appears with delay
-                      animation={`fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${displayIndex * 0.05}s backwards`}
-                      sx={{
-                        '@keyframes fadeInUp': {
-                          '0%': { opacity: 0, transform: 'translateY(30px)' },
-                          '100%': { opacity: 1, transform: 'translateY(0)' },
-                        },
-                      }}
+                      cursor="pointer"
                       _before={{
                         content: '""',
                         position: 'absolute',
@@ -1248,7 +1184,15 @@ export default function WhoAndPaymentStepSimple({
                       }}
                       _focusVisible={{ outline: '3px solid #3b82f6', outlineOffset: '3px' }}
                       _active={{ transform: 'translateY(-2px) scale(1.01)' }}
+                      sx={{
+                        '@keyframes fadeInUp': {
+                          '0%': { opacity: 0, transform: 'translateY(30px)' },
+                          '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                      }}
+                      animation={`fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${displayIndex * 0.05}s backwards`}
                     >
+                      <CardBody p={{ base: 3, md: 4 }} position="relative" backdropFilter="blur(8px)">
                       {isCheapest && (
                         <Badge
                           position="absolute"
@@ -1383,7 +1327,8 @@ export default function WhoAndPaymentStepSimple({
                           </HStack>
                         </VStack>
                       </VStack>
-                    </Box>
+                      </CardBody>
+                    </Card>
                   );
                 })}
               </SimpleGrid>
@@ -1459,82 +1404,48 @@ export default function WhoAndPaymentStepSimple({
                 </Box>
               )}
             </VStack>
-          </CardBody>
-        </Card>
+          </Box>
+            </LuxurySurfaceCard>
       </Box>
         </VStack>
         )}
 
         {/* CARD 2: Customer Information - Single Clean Card */}
-        <Card
-          bg="rgba(26, 26, 26, 0.6)"
-          border="1px solid"
-          borderColor="rgba(59, 130, 246, 0.2)"
-          borderRadius="2xl"
-          backdropFilter="blur(20px)"
-          overflow="hidden"
-          position="relative"
-          _before={{
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            bgGradient: 'linear(to-r, blue.400, purple.400)',
-          }}
-        >
-          <CardBody p={{ base: 6, md: 8 }}>
+        <LuxurySurfaceCard tone="info" borderWidth="1px" borderRadius="xl">
+          <Box p={{ base: 6, md: 8 }}>
             <VStack spacing={6} align="stretch">
-              <HStack spacing={3} align="center">
-                <Box
-                  w="44px"
-                  h="44px"
-                  borderRadius="xl"
-                  bg="linear-gradient(135deg, rgba(59,130,246,0.2), rgba(147,51,234,0.2))"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  fontSize="20px"
-                  boxShadow="0 4px 12px rgba(59,130,246,0.3)"
-                >
-                  👤
-                </Box>
-                <VStack align="start" spacing={0}>
-                  <Text fontSize="xl" fontWeight="800" color="white" lineHeight="1.2">
-                    Your Information
-                  </Text>
-                  <Text fontSize="sm" color="gray.400" fontWeight="500">
-                    We need these details to contact you
-                  </Text>
-                </VStack>
-              </HStack>
+              <Heading size="md" color="text.primary">
+                Your information
+              </Heading>
+              <Text color="text.secondary" fontSize="sm">
+                We need these details to contact you and confirm your booking.
+              </Text>
 
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5}>
                 <FormControl isInvalid={!!errors['step2.customerDetails.firstName']}>
-                  <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                  <FormLabel color="text.secondary" fontSize="sm" fontWeight="600" mb={2}>
                     👤 First Name
                   </FormLabel>
                   <Input
                     placeholder="John"
                     value={formData.step2.customerDetails.firstName || ''}
                     onChange={(e) => updateCustomerDetails('firstName', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.4)"
-                    border="2px solid"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
+                    bg="bg.surface"
+                    border="1px solid"
+                    borderColor="border.primary"
+                    color="text.primary"
                     size="lg"
                     h="50px"
                     borderRadius="xl"
                     fontSize="md"
                     fontWeight="500"
                     transition="all 0.2s"
-                    _placeholder={{ color: 'gray.500' }}
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                    _placeholder={{ color: 'text.tertiary' }}
+                    _hover={{ borderColor: 'border.secondary', bg: 'bg.surface.elevated' }}
                     _focus={{ 
-                      borderColor: 'blue.500', 
-                      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
-                      bg: 'rgba(0, 0, 0, 0.5)'
+                      borderColor: 'interactive.primary', 
+                      boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
+                      bg: 'bg.surface.elevated'
                     }}
                   />
                   {errors['step2.customerDetails.firstName'] && (
@@ -1543,29 +1454,29 @@ export default function WhoAndPaymentStepSimple({
                 </FormControl>
 
                 <FormControl isInvalid={!!errors['step2.customerDetails.lastName']}>
-                  <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                  <FormLabel color="text.secondary" fontSize="sm" fontWeight="600" mb={2}>
                     👤 Last Name
                   </FormLabel>
                   <Input
                     placeholder="Doe"
                     value={formData.step2.customerDetails.lastName || ''}
                     onChange={(e) => updateCustomerDetails('lastName', e.target.value)}
-                    bg="rgba(0, 0, 0, 0.4)"
-                    border="2px solid"
-                    borderColor="rgba(59, 130, 246, 0.3)"
-                    color="white"
+                    bg="bg.surface"
+                    border="1px solid"
+                    borderColor="border.primary"
+                    color="text.primary"
                     size="lg"
                     h="50px"
                     borderRadius="xl"
                     fontSize="md"
                     fontWeight="500"
                     transition="all 0.2s"
-                    _placeholder={{ color: 'gray.500' }}
-                    _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                    _placeholder={{ color: 'text.tertiary' }}
+                    _hover={{ borderColor: 'border.secondary', bg: 'bg.surface.elevated' }}
                     _focus={{ 
-                      borderColor: 'blue.500', 
-                      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
-                      bg: 'rgba(0, 0, 0, 0.5)'
+                      borderColor: 'interactive.primary', 
+                      boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
+                      bg: 'bg.surface.elevated'
                     }}
                   />
                   {errors['step2.customerDetails.lastName'] && (
@@ -1575,7 +1486,7 @@ export default function WhoAndPaymentStepSimple({
               </SimpleGrid>
 
               <FormControl isInvalid={!!errors['step2.customerDetails.email']}>
-                <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                <FormLabel color="text.secondary" fontSize="sm" fontWeight="600" mb={2}>
                   ✉️ Email Address
                 </FormLabel>
                 <Input
@@ -1583,22 +1494,22 @@ export default function WhoAndPaymentStepSimple({
                   placeholder="john.doe@example.com"
                   value={formData.step2.customerDetails.email || ''}
                   onChange={(e) => updateCustomerDetails('email', e.target.value)}
-                  bg="rgba(0, 0, 0, 0.4)"
-                  border="2px solid"
-                  borderColor="rgba(59, 130, 246, 0.3)"
-                  color="white"
+                  bg="bg.surface"
+                  border="1px solid"
+                  borderColor="border.primary"
+                  color="text.primary"
                   size="lg"
                   h="50px"
                   borderRadius="xl"
                   fontSize="md"
                   fontWeight="500"
                   transition="all 0.2s"
-                  _placeholder={{ color: 'gray.500' }}
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                  _placeholder={{ color: 'text.tertiary' }}
+                  _hover={{ borderColor: 'border.secondary', bg: 'bg.surface.elevated' }}
                   _focus={{ 
-                    borderColor: 'blue.500', 
-                    boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
-                    bg: 'rgba(0, 0, 0, 0.5)'
+                    borderColor: 'interactive.primary', 
+                    boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
+                    bg: 'bg.surface.elevated'
                   }}
                 />
                 {errors['step2.customerDetails.email'] && (
@@ -1607,7 +1518,7 @@ export default function WhoAndPaymentStepSimple({
               </FormControl>
 
               <FormControl isInvalid={!!errors['step2.customerDetails.phone']}>
-                <FormLabel color="gray.300" fontSize="sm" fontWeight="600" mb={2}>
+                <FormLabel color="text.secondary" fontSize="sm" fontWeight="600" mb={2}>
                   📞 Phone Number
                 </FormLabel>
                 <Input
@@ -1615,22 +1526,22 @@ export default function WhoAndPaymentStepSimple({
                   placeholder="+44 1234 567890"
                   value={formData.step2.customerDetails.phone || ''}
                   onChange={(e) => updateCustomerDetails('phone', e.target.value)}
-                  bg="rgba(0, 0, 0, 0.4)"
-                  border="2px solid"
-                  borderColor="rgba(59, 130, 246, 0.3)"
-                  color="white"
+                  bg="bg.surface"
+                  border="1px solid"
+                  borderColor="border.primary"
+                  color="text.primary"
                   size="lg"
                   h="50px"
                   borderRadius="xl"
                   fontSize="md"
                   fontWeight="500"
                   transition="all 0.2s"
-                  _placeholder={{ color: 'gray.500' }}
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)', bg: 'rgba(0, 0, 0, 0.5)' }}
+                  _placeholder={{ color: 'text.tertiary' }}
+                  _hover={{ borderColor: 'border.secondary', bg: 'bg.surface.elevated' }}
                   _focus={{ 
-                    borderColor: 'blue.500', 
-                    boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
-                    bg: 'rgba(0, 0, 0, 0.5)'
+                    borderColor: 'interactive.primary', 
+                    boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)',
+                    bg: 'bg.surface.elevated'
                   }}
                 />
                 {errors['step2.customerDetails.phone'] && (
@@ -1639,52 +1550,46 @@ export default function WhoAndPaymentStepSimple({
               </FormControl>
 
               <FormControl>
-                <FormLabel color="white" fontSize="sm">Company Name (Optional)</FormLabel>
+                <FormLabel color="text.secondary" fontSize="sm">Company Name (Optional)</FormLabel>
                 <Input
                   placeholder="Your Company Ltd"
                   value={formData.step2.customerDetails.company || ''}
                   onChange={(e) => updateCustomerDetails('company', e.target.value)}
-                  bg="rgba(0, 0, 0, 0.3)"
+                  bg="bg.surface"
                   border="1px solid"
-                  borderColor="rgba(59, 130, 246, 0.3)"
-                  color="white"
+                  borderColor="border.primary"
+                  color="text.primary"
                   size="lg"
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  _hover={{ borderColor: 'border.secondary' }}
+                  _focus={{ borderColor: 'interactive.primary', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel color="white" fontSize="sm">Special Instructions (Optional)</FormLabel>
+                <FormLabel color="text.secondary" fontSize="sm">Special Instructions (Optional)</FormLabel>
                 <Textarea
                   placeholder="Any special instructions or requests for your move..."
                   value={formData.step2.specialInstructions || ''}
                   onChange={(e) => updateFormData('step2', { specialInstructions: e.target.value })}
-                  bg="rgba(0, 0, 0, 0.3)"
+                  bg="bg.surface"
                   border="1px solid"
-                  borderColor="rgba(59, 130, 246, 0.3)"
-                  color="white"
+                  borderColor="border.primary"
+                  color="text.primary"
                   rows={3}
-                  _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
-                  _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.3)' }}
+                  _hover={{ borderColor: 'border.secondary' }}
+                  _focus={{ borderColor: 'interactive.primary', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                 />
               </FormControl>
             </VStack>
-          </CardBody>
-        </Card>
+          </Box>
+        </LuxurySurfaceCard>
 
         {/* CARD 3: Payment & Confirmation - Final Step */}
-        <Card
-          bg="rgba(26, 26, 26, 0.6)"
-          border="1px solid"
-          borderColor="rgba(59, 130, 246, 0.2)"
-          borderRadius="2xl"
-          backdropFilter="blur(10px)"
-        >
-          <CardBody p={{ base: 6, md: 8 }}>
+        <LuxurySurfaceCard tone="neutral" borderWidth="1px" borderRadius="2xl">
+          <Box p={{ base: 6, md: 8 }}>
             <VStack spacing={6} align="stretch">
               <HStack justify="space-between" align="center">
-                <Text fontSize="lg" fontWeight="600" color="white">
+                <Text fontSize="lg" fontWeight="600" color="text.primary">
                   Complete Your Booking
                 </Text>
                 <Badge 
@@ -2284,8 +2189,8 @@ export default function WhoAndPaymentStepSimple({
                 <Text>Secure payment processed by Stripe</Text>
               </HStack>
             </VStack>
-          </CardBody>
-        </Card>
+          </Box>
+        </LuxurySurfaceCard>
       </VStack>
     </Box>
   );

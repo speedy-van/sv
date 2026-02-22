@@ -140,9 +140,9 @@ const colors = {
     100: '#CFFAFE',
     200: '#A5F3FC',
     300: '#67E8F9',
-    400: '#22D3EE',
-    500: '#06B6D4', // Primary cyan (matches driver portal)
-    600: '#0891B2',
+    400: '#60A5FA',
+    500: '#3B82F6', // Midnight Neon Pro primary
+    600: '#2563EB',
     700: '#0E7490',
     800: '#155E75',
     900: '#164E63',
@@ -192,25 +192,25 @@ const colors = {
 
   // Background colors - Dark theme to match driver portal
   bg: {
-    canvas: '#111827', // Main background (gray.900)
-    card: '#1F2937', // Card background (gray.800)
-    surface: '#1F2937', // Surface background (same as card for consistency)
+    canvas: '#0B1020',
+    card: '#1A2640',
+    surface: '#121A2B',
     overlay: 'rgba(0, 0, 0, 0.8)',
   },
 
   // Border colors
   border: {
-    primary: '#374151', // gray.700
-    secondary: '#4B5563', // gray.600
-    neon: '#06B6D4', // Cyan to match driver portal
+    primary: '#2A3A5E',
+    secondary: '#22314F',
+    neon: '#3B82F6',
   },
 
   // Text colors
   text: {
-    primary: '#F7FAFC',
-    secondary: '#CBD5E0',
-    tertiary: '#A0AEC0',
-    muted: '#718096',
+    primary: '#F5F8FF',
+    secondary: '#A9B4CC',
+    tertiary: '#7E8AA6',
+    muted: '#64748B',
   },
 };
 
@@ -420,6 +420,14 @@ const components = {
         borderColor: 'border.primary',
         boxShadow: 'xl',
         overflow: 'hidden',
+        w: 'full',
+        minH: '100%',
+        transition: 'all 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+        _hover: {
+          borderColor: 'border.neon',
+          boxShadow: '0 14px 34px rgba(124, 92, 255, 0.22)',
+          transform: { base: 'none', md: 'translateY(-2px)' },
+        },
       },
       header: {
         p: { base: 4, md: 6 },
@@ -629,6 +637,9 @@ const styles = {
       fontSize: 'md',
       lineHeight: 'base',
       fontFamily: 'system-ui, -apple-system, sans-serif',
+      background:
+        'radial-gradient(1000px circle at 12% 0%, rgba(59,130,246,0.22), transparent 46%), radial-gradient(1200px circle at 88% 8%, rgba(34,211,238,0.16), transparent 42%), linear-gradient(165deg, #0B1020 0%, #121A2B 55%, #0B1020 100%)',
+      backgroundAttachment: 'fixed',
       // Prevent iOS zoom on input focus
       WebkitTextSizeAdjust: '100%',
       // Smooth scrolling
@@ -685,27 +696,27 @@ const styles = {
     // Reduce motion for users who prefer it
     '@media (prefers-reduced-motion: reduce)': {
       '*': {
-        animationDuration: '0.01ms !important',
-        animationIterationCount: '1 !important',
-        transitionDuration: '0.01ms !important',
-        scrollBehavior: 'auto !important',
+        animationDuration: '0.01ms',
+        animationIterationCount: '1',
+        transitionDuration: '0.01ms',
+        scrollBehavior: 'auto',
       },
     },
 
     // High contrast mode support
     '@media (prefers-contrast: high)': {
       '*': {
-        borderColor: 'currentColor !important',
+        borderColor: 'currentColor',
       },
     },
 
     // Print styles
     '@media print': {
       '*': {
-        background: 'white !important',
-        color: 'black !important',
-        boxShadow: 'none !important',
-        textShadow: 'none !important',
+        background: 'white',
+        color: 'black',
+        boxShadow: 'none',
+        textShadow: 'none',
       },
     },
   },

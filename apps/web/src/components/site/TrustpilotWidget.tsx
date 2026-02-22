@@ -132,7 +132,8 @@ export default function TrustpilotWidget({
     <Box
       as="section"
       bg="transparent"
-      borderTop="1px solid rgba(255, 255, 255, 0.06)"
+      borderTop="1px solid"
+      borderColor="border.secondary"
       py={{ base: 8, md: 10 }}
       mt={{ base: 10, md: 14 }}
     >
@@ -199,37 +200,37 @@ export default function TrustpilotWidget({
                 mb={4}
                 sx={{
                   '@media (max-width: 767px)': {
-                    display: 'block !important',
-                    visibility: 'visible !important',
-                    opacity: '1 !important',
-                    minHeight: '52px !important',
+                    display: 'block',
+                    visibility: 'visible',
+                    opacity: '1',
+                    minHeight: '52px',
                     '& iframe': {
-                      height: '52px !important',
+                      height: '52px',
                     }
                   },
                   '@media (min-width: 768px)': {
-                    minHeight: '52px !important',
+                    minHeight: '52px',
                     '& iframe': {
-                      height: '52px !important',
+                      height: '52px',
                     }
                   },
                   '& a': {
                     textDecoration: 'none',
-                    color: '#00C2FF',
+                    color: 'var(--chakra-colors-interactive-secondary)',
                     fontWeight: '600',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      color: '#3B82F6',
+                      color: 'var(--chakra-colors-interactive-primary)',
                     }
                   },
                   '& .trustpilot-widget': {
                     display: 'inline-block',
                   },
                   '& iframe': {
-                    display: 'block !important',
-                    visibility: 'visible !important',
-                    opacity: '1 !important',
-                    width: '100% !important',
+                    display: 'block',
+                    visibility: 'visible',
+                    opacity: '1',
+                    width: '100%',
                     borderRadius: '8px',
                   }
                 }}
@@ -261,10 +262,10 @@ export default function TrustpilotWidget({
                 mt={3}
                 px={{ base: 6, md: 8 }}
                 borderRadius="full"
-                boxShadow="0 4px 15px rgba(34, 197, 94, 0.3)"
+                boxShadow="md"
                 _hover={{
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(34, 197, 94, 0.4)',
+                  boxShadow: 'lg',
                 }}
                 _active={{
                   transform: 'translateY(0)',

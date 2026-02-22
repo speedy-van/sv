@@ -23,7 +23,7 @@ export default function UKLayout({ children }: { children: React.ReactNode }) {
         display="flex"
         flexDirection="column"
         w="100%"
-        bg="linear-gradient(135deg, #0a0a0a 0%, #111827 50%, #0a0a0a 100%)"
+        bg="linear-gradient(135deg, #121A2B 0%, #111827 50%, #121A2B 100%)"
         color="white"
       >
         <Header />

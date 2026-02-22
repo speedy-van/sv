@@ -24,6 +24,7 @@ import {
   Spinner,
   Alert,
   AlertIcon,
+  AlertDescription,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -229,9 +230,9 @@ export default function InvoicesPage() {
 
   if (error) {
     return (
-      <Alert status="error">
+      <Alert status="error" variant="subtle" colorScheme="red">
         <AlertIcon />
-        {error}
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }

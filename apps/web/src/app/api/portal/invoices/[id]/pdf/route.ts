@@ -58,7 +58,7 @@ export async function GET(
       company: {
         name: 'Speedy Van',
         address: '123 Moving Street, London, UK',
-        email: 'hello@speedy-van.co.uk',
+        email: 'support@speedy-van.co.uk',
         phone: '01202 129746',
       },
       customer: {

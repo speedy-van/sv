@@ -102,9 +102,9 @@ export function IntegrationHub() {
     },
   ]);
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const handleToggle = (id: string) => {
@@ -232,7 +232,7 @@ export function IntegrationHub() {
                           variant="outline"
                           borderColor={borderColor}
                           color={textColor}
-                          _hover={{ bg: '#1a1a1a' }}
+                          _hover={{ bg: '#18233A' }}
                           flex={1}
                         >
                           Settings
@@ -242,7 +242,7 @@ export function IntegrationHub() {
                           size="sm"
                           leftIcon={<FiLink />}
                           bg={getCategoryColor(integration.category)}
-                          color="#FFFFFF"
+                          color="#F5F8FF"
                           _hover={{ opacity: 0.9 }}
                           flex={1}
                         >
@@ -261,7 +261,7 @@ export function IntegrationHub() {
       <Alert status="info" bg="rgba(37, 99, 235, 0.1)" borderColor="#2563eb" borderWidth={1}>
         <AlertIcon color="#2563eb" />
         <VStack align="start" spacing={1} flex={1}>
-          <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+          <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
             Need More Integrations?
           </Text>
           <Text fontSize="xs" color={secondaryTextColor}>

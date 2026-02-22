@@ -39,7 +39,6 @@ import {
 } from 'react-icons/fi';
 import Link from 'next/link';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import { ROUTES } from '@/lib/routing';
 
 const quickTips = [
@@ -106,7 +105,6 @@ export default function MovingTipsPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Box pt={{ base: 20, md: 24 }} bg="gray.900" minH="100vh">
         {/* Hero Section */}
         <Box bgGradient="linear(to-br, blue.900, blue.800, gray.900)" py={{ base: 16, md: 24 }}>
@@ -142,7 +140,7 @@ export default function MovingTipsPage() {
                 </Button>
                 <Button
                   as="a"
-                  href="tel:+441202129746"
+                  href="tel:01202129746"
                   size="lg"
                   variant="outline"
                   color="white"

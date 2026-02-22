@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: spacing.md,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
     ...shadows.md,
   },
   typeIcon: {
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.headline,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 4,
@@ -533,14 +533,14 @@ const styles = StyleSheet.create({
   },
   confidence: {
     ...typography.caption2,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 11,
     fontWeight: '700',
     opacity: 0.9,
   },
   priorityBadge: {
     ...typography.caption2Emphasized,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: spacing.sm,
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   },
   description: {
     ...typography.body,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 15,
     lineHeight: 22,
     marginBottom: spacing.md,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   },
   benefitsTitle: {
     ...typography.subheadlineEmphasized,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: spacing.md,
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     ...typography.caption1,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     ...typography.calloutEmphasized,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   primaryActionButtonText: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   actionButtonTextLoading: {
     opacity: 0.7,

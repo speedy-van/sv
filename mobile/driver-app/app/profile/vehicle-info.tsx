@@ -186,10 +186,10 @@ export default function VehicleInfoScreen() {
           activeOpacity={0.8}
         >
           {saving ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color="#F5F8FF" />
           ) : (
             <>
-              <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
+              <Ionicons name="checkmark-circle" size={22} color="#F5F8FF" />
               <Text style={styles.saveButtonText}>Save Changes</Text>
             </>
           )}
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.3,
   },
 });

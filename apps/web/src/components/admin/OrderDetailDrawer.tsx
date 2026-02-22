@@ -428,11 +428,11 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
   } = useDisclosure();
 
   // Dark theme with black background and white text
-  const bgColor = '#000000'; // Pure black background
-  const borderColor = '#333333'; // Dark gray border
-  const textColor = '#FFFFFF'; // White text
+  const bgColor = '#0B1020'; // Pure black background
+  const borderColor = '#2A3A5E'; // Dark gray border
+  const textColor = '#F5F8FF'; // White text
   const secondaryTextColor = '#9ca3af'; // Light gray for secondary text
-  const cardBg = '#111111'; // Dark gray for cards
+  const cardBg = '#121A2B'; // Dark gray for cards
 
   useEffect(() => {
     if (isOpen && orderCode) {
@@ -1649,8 +1649,8 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
     >
       <DrawerOverlay bg="blackAlpha.800" />
       <DrawerContent 
-        bg="#000000" 
-        color="#FFFFFF"
+        bg="#0B1020" 
+        color="#F5F8FF"
         maxW={isEmbedded ? { base: '100%', lg: '520px' } : undefined}
         ml={isEmbedded ? 'auto' : undefined}
       >
@@ -1658,7 +1658,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           color={textColor} 
           size="lg"
           borderRadius="md"
-          _hover={{ bg: '#1a1a1a', transform: 'scale(1.1)' }} 
+          _hover={{ bg: '#18233A', transform: 'scale(1.1)' }} 
           transition="all 0.2s"
           top={4}
           right={4}
@@ -1668,15 +1668,15 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           pb={4}
           pt={4}
           px={6}
-          bg="linear-gradient(180deg, #111111 0%, #0a0a0a 100%)" 
+          bg="linear-gradient(180deg, #121A2B 0%, #121A2B 100%)" 
           color={textColor} 
           position="sticky"
           top={0}
           zIndex={10}
           sx={{ 
-            bg: 'linear-gradient(180deg, #111111 0%, #0a0a0a 100%) !important',
-            backgroundColor: 'linear-gradient(180deg, #111111 0%, #0a0a0a 100%) !important',
-            color: '#FFFFFF !important',
+            bg: 'linear-gradient(180deg, #121A2B 0%, #121A2B 100%)',
+            backgroundColor: 'linear-gradient(180deg, #121A2B 0%, #121A2B 100%)',
+            color: '#F5F8FF',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
           }}
         >
@@ -1698,7 +1698,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       px={4} 
                       py={2} 
                       bg="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       borderRadius="md"
                       fontWeight="bold"
                       boxShadow="0 2px 4px rgba(37, 99, 235, 0.3)"
@@ -1711,9 +1711,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         icon={<FiCopy />}
                         size="sm"
                         variant="ghost"
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         borderRadius="md"
-                        _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                        _hover={{ bg: '#18233A', color: '#10b981', transform: 'scale(1.1)' }}
                         transition="all 0.2s"
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
@@ -1781,24 +1781,24 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
           color={textColor}
           pt={4}
           sx={{ 
-            bg: `${bgColor} !important`,
-            backgroundColor: `${bgColor} !important`,
-            color: `${textColor} !important`,
+            bg: `${bgColor}`,
+            backgroundColor: `${bgColor}`,
+            color: `${textColor}`,
             '&::-webkit-scrollbar': {
               width: '8px',
             },
             '&::-webkit-scrollbar-track': {
-              bg: '#0a0a0a',
+              bg: '#121A2B',
             },
             '&::-webkit-scrollbar-thumb': {
-              bg: '#333333',
+              bg: '#2A3A5E',
               borderRadius: '4px',
               '&:hover': {
                 bg: '#404040',
               },
             },
             scrollbarWidth: 'thin',
-            scrollbarColor: '#333333 #0a0a0a',
+            scrollbarColor: '#2A3A5E #121A2B',
           }}
         >
           {loading ? (
@@ -1806,7 +1806,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Spinner size="xl" color="#2563eb" />
             </Box>
           ) : error ? (
-            <Alert status="error" bg="#1a1a1a" borderColor={borderColor}>
+            <Alert status="error" bg="#18233A" borderColor={borderColor}>
               <AlertIcon color="#ef4444" />
               <Text color={textColor}>{error}</Text>
             </Alert>
@@ -1832,14 +1832,14 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                     fontWeight: 'medium',
                     transition: 'all 0.2s',
                     _hover: {
-                      bg: '#1a1a1a',
+                      bg: '#18233A',
                       color: '#60a5fa',
                     },
                   },
                   '& button[aria-selected="true"]': {
                     borderBottomColor: '#2563eb',
                     color: '#2563eb',
-                    bg: '#1a1a1a',
+                    bg: '#18233A',
                     borderTopColor: '#2563eb',
                     borderLeftColor: '#2563eb',
                     borderRightColor: '#2563eb',
@@ -1995,7 +1995,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isLoading={isSaving}
                         loadingText="Saving..."
                         bg="#10b981"
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         _hover={{ bg: '#059669' }}
                       >
                         {newCalculatedPrice ? 'Save & Update Price' : 'Save Changes'}
@@ -2009,7 +2009,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isDisabled={isSaving}
                         borderColor={borderColor}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Cancel Edit
                       </Button>
@@ -2026,9 +2026,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         onClick={handleEditStart}
                         isDisabled={order?.status === 'CANCELLED'}
                         bg="#2563eb"
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         _hover={{ bg: '#1d4ed8' }}
-                        _disabled={{ bg: '#1a1a1a', color: secondaryTextColor, opacity: 0.5 }}
+                        _disabled={{ bg: '#18233A', color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Edit Order
                       </Button>
@@ -2044,7 +2044,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isDisabled={order?.status === 'CANCELLED'}
                         borderColor={borderColor}
                         color="#10b981"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                         _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Send Confirmation
@@ -2331,7 +2331,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isDisabled={order?.status === 'CANCELLED' || isSaving}
                         borderColor="#10b981"
                         color="#10b981"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                         _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Send Email Confirmation
@@ -2348,7 +2348,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isDisabled={order?.status === 'CANCELLED' || isSaving || (!editedOrder?.customerPhone && !order?.customerPhone)}
                         borderColor="#2563eb"
                         color="#2563eb"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                         _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Send SMS Confirmation
@@ -2768,7 +2768,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         leftIcon={<FiTruck />}
                         borderColor={borderColor}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Change Driver
                       </Button>
@@ -2780,7 +2780,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         leftIcon={<FiX />}
                         borderColor={borderColor}
                         color="#ef4444"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Remove Driver
                       </Button>
@@ -2824,7 +2824,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       leftIcon={<FiTruck />}
                       borderColor={borderColor}
                       color="#10b981"
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                     >
                       Assign Driver
                     </Button>
@@ -3644,7 +3644,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isLoading={isSaving}
                       loadingText="Saving..."
                       bg="#10b981"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       _hover={{ bg: '#059669' }}
                     >
                       {newCalculatedPrice ? 'Save & Update Price' : 'Save Changes'}
@@ -3658,7 +3658,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isDisabled={isSaving}
                       borderColor={borderColor}
                       color={textColor}
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                     >
                       Cancel Edit
                     </Button>
@@ -3675,9 +3675,9 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       onClick={handleEditStart}
                       isDisabled={order?.status === 'CANCELLED'}
                       bg="#2563eb"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       _hover={{ bg: '#1d4ed8' }}
-                      _disabled={{ bg: '#1a1a1a', color: secondaryTextColor, opacity: 0.5 }}
+                      _disabled={{ bg: '#18233A', color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Edit Order
                     </Button>
@@ -3693,7 +3693,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isDisabled={order?.status === 'CANCELLED'}
                       borderColor={borderColor}
                       color="#10b981"
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                       _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Send Confirmation
@@ -3710,7 +3710,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       onClick={handleSendFloorWarningEmail}
                       borderColor={borderColor}
                       color="#f59e0b"
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                       isLoading={isSendingEmail}
                       loadingText="Sending..."
                       isDisabled={order?.status === 'CANCELLED'}
@@ -3727,7 +3727,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isDisabled={order?.status === 'CANCELLED'}
                       borderColor={borderColor}
                       color={textColor}
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                       _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       {order?.driver ? 'Change Driver' : 'Assign Driver'}
@@ -3743,7 +3743,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isDisabled={order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
                         borderColor={borderColor}
                         color="#f59e0b"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                         _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                       >
                         Remove Driver
@@ -3759,7 +3759,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                       isDisabled={order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
                       borderColor={borderColor}
                       color="#ef4444"
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                       _disabled={{ borderColor: borderColor, color: secondaryTextColor, opacity: 0.5 }}
                     >
                       Cancel Order
@@ -3786,10 +3786,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Text color="#ef4444">Cancel Order</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+          <ModalCloseButton color={textColor} _hover={{ bg: '#18233A' }} />
           <ModalBody bg={bgColor} color={textColor}>
             <VStack spacing={4} align="stretch">
-              <Alert status="warning" bg="#1a1a1a" borderColor={borderColor}>
+              <Alert status="warning" bg="#18233A" borderColor={borderColor}>
                 <AlertIcon color="#f59e0b" />
                 <VStack align="start" spacing={1}>
                   <Text fontWeight="bold" color={textColor}>This action cannot be undone!</Text>
@@ -3825,7 +3825,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 isDisabled={isCancelling}
                 borderColor={borderColor}
                 color={textColor}
-                _hover={{ bg: '#1a1a1a' }}
+                _hover={{ bg: '#18233A' }}
               >
                 Keep Order
               </Button>
@@ -3835,7 +3835,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                 isLoading={isCancelling}
                 loadingText="Cancelling..."
                 bg="#ef4444"
-                color="#FFFFFF"
+                color="#F5F8FF"
                 _hover={{ bg: '#dc2626' }}
               >
                 Yes, Cancel Order
@@ -3855,10 +3855,10 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
               <Text color={textColor}>{order?.driver ? 'Change Driver' : 'Assign Driver'}</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton color={textColor} _hover={{ bg: '#1a1a1a' }} />
+          <ModalCloseButton color={textColor} _hover={{ bg: '#18233A' }} />
           <ModalBody overflowY="auto" maxH="60vh" bg={bgColor} color={textColor}>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" bg="#1a1a1a" borderColor={borderColor}>
+              <Alert status="info" bg="#18233A" borderColor={borderColor}>
                 <AlertIcon color="#2563eb" />
                 <Text fontSize="sm" color={textColor}>
                   {order?.driver 
@@ -3877,7 +3877,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                   </HStack>
                 ) : availableDrivers.length === 0 ? (
                   <VStack spacing={3} align="stretch">
-                    <Alert status="warning" bg="#1a1a1a" borderColor={borderColor}>
+                    <Alert status="warning" bg="#18233A" borderColor={borderColor}>
                       <AlertIcon color="#f59e0b" />
                       <VStack align="start" spacing={1}>
                         <Text fontSize="sm" fontWeight="bold" color={textColor}>No drivers found</Text>
@@ -3895,7 +3895,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         isLoading={isLoadingDrivers}
                         borderColor={borderColor}
                         color="#2563eb"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Refresh Driver List
                       </Button>
@@ -3905,7 +3905,7 @@ const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({
                         variant="outline"
                         borderColor={borderColor}
                         color="#f59e0b"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                         onClick={async () => {
                           try {
                             const response = await fetch('/api/admin/drivers/fix-availability', {

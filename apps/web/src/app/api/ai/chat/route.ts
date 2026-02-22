@@ -801,7 +801,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'AI_SERVICE_ERROR',
-          message: 'Our AI service is temporarily unavailable. Please try again or call us at +44 1202129746.',
+          message: 'Our AI service is temporarily unavailable. Please try again or call us at 01202 129746.',
         },
         { status: 503 }
       );
@@ -812,7 +812,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'INTERNAL_ERROR',
-        message: 'I apologize, I\'m experiencing technical difficulties. Please try again or contact us at +44 1202129746.',
+        message: 'I apologize, I\'m experiencing technical difficulties. Please try again or contact us at 01202 129746.',
       },
       { status: 500 }
     );

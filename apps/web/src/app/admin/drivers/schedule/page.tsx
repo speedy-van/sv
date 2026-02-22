@@ -283,7 +283,7 @@ export default function AdminDriverSchedulePage() {
             onChange={(e) => setSelectedDate(e.target.value)}
             style={{
               padding: '4px 8px',
-              border: '1px solid #E2E8F0',
+              border: '1px solid #A9B4CC',
               borderRadius: '6px',
               fontSize: '14px'
             }}

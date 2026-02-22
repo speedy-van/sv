@@ -37,7 +37,7 @@ export function ServicePageSchema({
       '@type': 'MovingCompany',
       name: 'Speedy Van',
       url: 'https://speedy-van.co.uk',
-      telephone: '+441202129746',
+      telephone: '01202 129746',
       email: 'support@speedy-van.co.uk',
       address: {
         '@type': 'PostalAddress',

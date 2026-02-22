@@ -54,10 +54,10 @@ interface JourneyRelationshipCardProps {
 export function JourneyRelationshipCard({
   mainBooking,
   segments,
-  bgColor = '#000000',
-  textColor = '#FFFFFF',
-  borderColor = '#333333',
-  cardBg = '#111111',
+  bgColor = '#0B1020',
+  textColor = '#F5F8FF',
+  borderColor = '#2A3A5E',
+  cardBg = '#121A2B',
   secondaryTextColor = '#9ca3af',
 }: JourneyRelationshipCardProps) {
   const outboundSegment = segments.find(s => s.segmentType === 'outbound');

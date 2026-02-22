@@ -108,36 +108,33 @@ const colors = {
 
 const semanticTokens = {
   colors: {
-    // Background Tokens - FORCE DARK ON ALL MODES
-    'bg.canvas': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
-    'bg.surface': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
-    'bg.surface.elevated': { default: '#262626', _light: '#262626', _dark: '#262626' },
-    'bg.surface.hover': { default: '#333333', _light: '#333333', _dark: '#333333' },
-    'bg.header': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
-    'bg.footer': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
-    'bg.modal': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
-    'bg.card': { default: '#1A1A1A', _light: '#1A1A1A', _dark: '#1A1A1A' },
-    'bg.input': { default: '#262626', _light: '#262626', _dark: '#262626' },
+    // Midnight Neon Pro
+    'bg.canvas': { default: '#0B1020', _light: '#0B1020', _dark: '#0B1020' },
+    'bg.surface': { default: '#121A2B', _light: '#121A2B', _dark: '#121A2B' },
+    'bg.surface.elevated': { default: '#18233A', _light: '#18233A', _dark: '#18233A' },
+    'bg.surface.hover': { default: '#21304D', _light: '#21304D', _dark: '#21304D' },
+    'bg.header': { default: '#0B1020', _light: '#0B1020', _dark: '#0B1020' },
+    'bg.footer': { default: '#0B1020', _light: '#0B1020', _dark: '#0B1020' },
+    'bg.modal': { default: '#121A2B', _light: '#121A2B', _dark: '#121A2B' },
+    'bg.card': { default: '#1A2640', _light: '#1A2640', _dark: '#1A2640' },
+    'bg.input': { default: '#121A2B', _light: '#121A2B', _dark: '#121A2B' },
 
-    // Text Tokens - FORCE WHITE ON ALL MODES
-    'text.primary': { default: '#FFFFFF', _light: '#FFFFFF', _dark: '#FFFFFF' },
-    'text.secondary': { default: '#E5E5E5', _light: '#E5E5E5', _dark: '#E5E5E5' },
-    'text.tertiary': { default: '#A3A3A3', _light: '#A3A3A3', _dark: '#A3A3A3' },
-    'text.disabled': { default: '#737373', _light: '#737373', _dark: '#737373' },
-    'text.inverse': { default: '#0D0D0D', _light: '#0D0D0D', _dark: '#0D0D0D' },
+    'text.primary': { default: '#F5F8FF', _light: '#F5F8FF', _dark: '#F5F8FF' },
+    'text.secondary': { default: '#A9B4CC', _light: '#A9B4CC', _dark: '#A9B4CC' },
+    'text.tertiary': { default: '#7E8AA6', _light: '#7E8AA6', _dark: '#7E8AA6' },
+    'text.disabled': { default: '#64748B', _light: '#64748B', _dark: '#64748B' },
+    'text.inverse': { default: '#0B1020', _light: '#0B1020', _dark: '#0B1020' },
 
-    // Border Tokens
-    'border.primary': { default: '#404040', _light: '#404040', _dark: '#404040' },
-    'border.secondary': { default: '#262626', _light: '#262626', _dark: '#262626' },
-    'border.neon': { default: '#00C2FF', _light: '#00C2FF', _dark: '#00C2FF' },
-    'border.brand': { default: '#00D18F', _light: '#00D18F', _dark: '#00D18F' },
+    'border.primary': { default: '#2A3A5E', _light: '#2A3A5E', _dark: '#2A3A5E' },
+    'border.secondary': { default: '#22314F', _light: '#22314F', _dark: '#22314F' },
+    'border.neon': { default: '#3B82F6', _light: '#3B82F6', _dark: '#3B82F6' },
+    'border.brand': { default: '#22D3EE', _light: '#22D3EE', _dark: '#22D3EE' },
 
-    // Interactive Tokens
-    'interactive.primary': { default: '#00C2FF', _light: '#00C2FF', _dark: '#00C2FF' },
-    'interactive.secondary': { default: '#00D18F', _light: '#00D18F', _dark: '#00D18F' },
-    'interactive.hover': { default: '#1AB0FF', _light: '#1AB0FF', _dark: '#1AB0FF' },
-    'interactive.active': { default: '#0099CC', _light: '#0099CC', _dark: '#0099CC' },
-    'interactive.disabled': { default: '#404040', _light: '#404040', _dark: '#404040' },
+    'interactive.primary': { default: '#3B82F6', _light: '#3B82F6', _dark: '#3B82F6' },
+    'interactive.secondary': { default: '#22D3EE', _light: '#22D3EE', _dark: '#22D3EE' },
+    'interactive.hover': { default: '#60A5FA', _light: '#60A5FA', _dark: '#60A5FA' },
+    'interactive.active': { default: '#2563EB', _light: '#2563EB', _dark: '#2563EB' },
+    'interactive.disabled': { default: '#334155', _light: '#334155', _dark: '#334155' },
 
     // Status Tokens
     'status.success': { default: '#22C55E', _light: '#22C55E', _dark: '#22C55E' },
@@ -181,7 +178,7 @@ const styles = {
     // Neon gradient background
     body: {
       background:
-        'linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 50%, #0D0D0D 100%)',
+        'radial-gradient(1000px circle at 12% 0%, rgba(59,130,246,0.22), transparent 46%), radial-gradient(1200px circle at 88% 8%, rgba(34,211,238,0.16), transparent 42%), linear-gradient(165deg, #0B1020 0%, #121A2B 55%, #0B1020 100%)',
       backgroundAttachment: 'fixed',
       minHeight: '100vh',
       // iPhone 15+ safe-area support (prevents Safari from clipping top/bottom elements)
@@ -244,9 +241,9 @@ const styles = {
     // Motion reduction support
     '@media (prefers-reduced-motion: reduce)': {
       '*': {
-        animationDuration: '0.01ms !important',
-        animationIterationCount: '1 !important',
-        transitionDuration: '0.01ms !important',
+        animationDuration: '0.01ms',
+        animationIterationCount: '1',
+        transitionDuration: '0.01ms',
       },
     },
   },

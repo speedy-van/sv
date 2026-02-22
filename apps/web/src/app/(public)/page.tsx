@@ -1,13 +1,7 @@
 import { Metadata, Viewport } from 'next';
-import dynamic from 'next/dynamic';
 import CookieBanner from '@/components/Consent/CookieBanner';
 import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';
-
-// PERFORMANCE: Load the home page content with SSR enabled for better initial load
-const MobileHomePageContent = dynamic(() => import('./MobileHomePageContent'), {
-  ssr: true,
-  loading: () => null,
-});
+import HomePageContent from './HomePageContent';
 
 export const metadata: Metadata = {
   title: 'Book Man and Van Today from £25/hr | Beat Any Price | Speedy Van',
@@ -193,7 +187,7 @@ export default function HomePage() {
       />
       <CookieBanner />
       <CookiePreferencesModal />
-      <MobileHomePageContent />
+      <HomePageContent />
     </>
   );
 }

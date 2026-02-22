@@ -585,7 +585,7 @@ export const AIDashboardSection: React.FC<AIDashboardSectionProps> = ({
                 isMonitoring && { transform: [{ scale: pulseAnim }, { rotate: rotateValue }] }
               ]}>
                 <View style={styles.aiIconWrapper}>
-                  <Ionicons name="sparkles" size={28} color="#FFFFFF" />
+                  <Ionicons name="sparkles" size={28} color="#F5F8FF" />
                   {isMonitoring && (
                     <>
                       <View style={styles.liveIndicator} />
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.success,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
     ...shadows.glow.green,
   },
   headerTextContainer: {
@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typography.title2,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -907,25 +907,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs / 2,
     borderRadius: borderRadius.sm,
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
     ...shadows.md,
   },
   liveBadgeDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
   },
   liveBadgeText: {
     ...typography.small,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '800',
     fontSize: 10,
     letterSpacing: 1.5,
   },
   headerSubtitle: {
     ...typography.caption1,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 14,
     opacity: 0.9,
     fontWeight: '500',
@@ -950,13 +950,13 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.caption2,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   statusTextLive: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   headerGradient: {
     height: 2,

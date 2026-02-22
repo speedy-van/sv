@@ -103,7 +103,7 @@ export default function CookieDiagnosticPage() {
             font-size: 20px;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #A9B4CC;
           }
           .info-grid {
             display: grid;
@@ -162,7 +162,7 @@ export default function CookieDiagnosticPage() {
           }
           pre {
             background: #1a202c;
-            color: #e2e8f0;
+            color: #A9B4CC;
             padding: 20px;
             border-radius: 8px;
             overflow-x: auto;

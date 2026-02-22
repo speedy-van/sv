@@ -593,7 +593,7 @@ export default function AdminDriversPage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" bg="#0a0a0a">
+      <Box minH="100vh" bg="#121A2B">
         <Flex justify="center" align="center" minH="400px">
           <VStack spacing={4}>
             <Spinner size="xl" color="blue.400" thickness="4px" />
@@ -605,7 +605,7 @@ export default function AdminDriversPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#0a0a0a" py={6}>
+    <Box minH="100vh" bg="#121A2B" py={6}>
       <Container maxW="container.xl">
         <VStack spacing={6} align="stretch">
           
@@ -766,10 +766,10 @@ export default function AdminDriversPage() {
                     borderRadius="xl"
                     color="white"
                   >
-                    <option value="all" style={{ background: '#1a1a1a' }}>All Status</option>
-                    <option value="active" style={{ background: '#1a1a1a' }}>Active</option>
-                    <option value="suspended" style={{ background: '#1a1a1a' }}>Suspended</option>
-                    <option value="inactive" style={{ background: '#1a1a1a' }}>Inactive</option>
+                    <option value="all" style={{ background: '#18233A' }}>All Status</option>
+                    <option value="active" style={{ background: '#18233A' }}>Active</option>
+                    <option value="suspended" style={{ background: '#18233A' }}>Suspended</option>
+                    <option value="inactive" style={{ background: '#18233A' }}>Inactive</option>
                   </Select>
                 </Box>
                 <Box>
@@ -782,10 +782,10 @@ export default function AdminDriversPage() {
                     borderRadius="xl"
                     color="white"
                   >
-                    <option value="all" style={{ background: '#1a1a1a' }}>All</option>
-                    <option value="online" style={{ background: '#1a1a1a' }}>Online</option>
-                    <option value="offline" style={{ background: '#1a1a1a' }}>Offline</option>
-                    <option value="break" style={{ background: '#1a1a1a' }}>On Break</option>
+                    <option value="all" style={{ background: '#18233A' }}>All</option>
+                    <option value="online" style={{ background: '#18233A' }}>Online</option>
+                    <option value="offline" style={{ background: '#18233A' }}>Offline</option>
+                    <option value="break" style={{ background: '#18233A' }}>On Break</option>
                   </Select>
                 </Box>
                 <Box>
@@ -798,9 +798,9 @@ export default function AdminDriversPage() {
                     borderRadius="xl"
                     color="white"
                   >
-                    <option value="all" style={{ background: '#1a1a1a' }}>All</option>
-                    <option value="compliant" style={{ background: '#1a1a1a' }}>Compliant</option>
-                    <option value="issues" style={{ background: '#1a1a1a' }}>Has Issues</option>
+                    <option value="all" style={{ background: '#18233A' }}>All</option>
+                    <option value="compliant" style={{ background: '#18233A' }}>Compliant</option>
+                    <option value="issues" style={{ background: '#18233A' }}>Has Issues</option>
                   </Select>
                 </Box>
                 <Box>
@@ -1004,7 +1004,7 @@ export default function AdminDriversPage() {
                               color="gray.400"
                               _hover={{ bg: 'rgba(255,255,255,0.1)' }}
                             />
-                            <MenuList bg="#1a1a1a" borderColor="rgba(255,255,255,0.1)">
+                            <MenuList bg="#18233A" borderColor="rgba(255,255,255,0.1)">
                               <MenuItem 
                                 icon={<FiEye />}
                                 bg="transparent"
@@ -1848,9 +1848,9 @@ export default function AdminDriversPage() {
                                 borderRadius="xl"
                                 color="white"
                               >
-                                <option value="active" style={{ background: '#1a1a1a' }}>Active</option>
-                                <option value="suspended" style={{ background: '#1a1a1a' }}>Suspended</option>
-                                <option value="inactive" style={{ background: '#1a1a1a' }}>Inactive</option>
+                                <option value="active" style={{ background: '#18233A' }}>Active</option>
+                                <option value="suspended" style={{ background: '#18233A' }}>Suspended</option>
+                                <option value="inactive" style={{ background: '#18233A' }}>Inactive</option>
                               </Select>
                             </FormControl>
                             <FormControl>

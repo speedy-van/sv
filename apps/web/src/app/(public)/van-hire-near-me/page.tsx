@@ -115,7 +115,7 @@ export default function VanHireNearMePage() {
 
       {/* Hero Section - Above the fold */}
       <Box
-        bg="linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 100%)"
+        bg="linear-gradient(135deg, #0D0D0D 0%, #18233A 100%)"
         color="white"
         py={{ base: 12, md: 20 }}
       >

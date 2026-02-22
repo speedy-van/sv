@@ -31,8 +31,8 @@ export default function MarketplaceServiceSchema({
     url: 'https://speedy-van.co.uk',
     logo: 'https://speedy-van.co.uk/logo.png',
     image: 'https://speedy-van.co.uk/og/og-home.jpg',
-    telephone: '+441202129746',
-    email: 'hello@speedy-van.co.uk',
+    telephone: '01202 129746',
+    email: 'support@speedy-van.co.uk',
     priceRange: priceRange,
     address: {
       '@type': 'PostalAddress',

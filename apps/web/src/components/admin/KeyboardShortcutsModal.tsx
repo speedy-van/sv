@@ -31,10 +31,10 @@ export function KeyboardShortcutsModal({
   onClose,
   shortcuts,
 }: KeyboardShortcutsModalProps) {
-  const bgColor = useColorModeValue('#000000', '#000000');
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const bgColor = useColorModeValue('#0B1020', '#0B1020');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   // Group shortcuts by category
@@ -109,7 +109,7 @@ export function KeyboardShortcutsModal({
                         {formatKey(shortcut).map((key, keyIndex) => (
                           <React.Fragment key={keyIndex}>
                             <Kbd
-                              bg="#1a1a1a"
+                              bg="#18233A"
                               color={textColor}
                               borderColor={borderColor}
                               fontSize="xs"

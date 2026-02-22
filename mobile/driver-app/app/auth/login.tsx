@@ -414,12 +414,12 @@ export default function LoginScreen() {
                     <BlurView intensity={20} tint="dark" style={styles.buttonBlur}>
                       <View style={styles.buttonContent}>
                         {loading ? (
-                          <ActivityIndicator color="#FFFFFF" size="small" />
+                          <ActivityIndicator color="#F5F8FF" size="small" />
                         ) : (
                           <>
-                            <Ionicons name="log-in" size={20} color="#FFFFFF" />
+                            <Ionicons name="log-in" size={20} color="#F5F8FF" />
                             <Text style={styles.buttonText}>Sign In</Text>
-                            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                            <Ionicons name="arrow-forward" size={20} color="#F5F8FF" />
                           </>
                         )}
                       </View>
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   titleChar: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
     textShadowColor: 'rgba(255, 255, 255, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textAlign: 'center',
     fontWeight: '500',
     opacity: 0.9,
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.3,
   },
   inputContainer: {
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     paddingVertical: spacing.md,
   },
   inputError: {
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.3,
   },
   footer: {
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '600',
     opacity: 0.9,
   },

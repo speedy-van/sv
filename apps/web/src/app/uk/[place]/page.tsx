@@ -12,7 +12,6 @@ import { APP_BASE_URL, BRAND_NAME } from '@/lib/seo/constants';
 import '@/styles/uk-place-pages.css';
 import { FaTruck, FaShieldAlt, FaClock, FaStar, FaMapMarkerAlt, FaRoute, FaCheckCircle, FaPhone, FaArrowRight } from 'react-icons/fa';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 // ✅ Force Node runtime for dynamic rendering
 export const runtime = 'nodejs';
@@ -302,7 +301,6 @@ export default async function PlacePage({
   return (
     <main className="uk-place-container enhanced">
       <Header />
-      <MobileHeader />
       <JsonLd place={place} nearby={nearby} />
 
       {/* Hero Section */}
@@ -334,7 +332,7 @@ export default async function PlacePage({
             <Link className="btn btn-secondary" href="/how-it-works">
               How it works
             </Link>
-            <a className="btn btn-call" href="tel:+441202129746">
+            <a className="btn btn-call" href="tel:01202129746">
               <FaPhone className="btn-icon" />
               Call Now
             </a>

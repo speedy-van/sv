@@ -366,9 +366,9 @@ export function InteractiveRouteMap({
   return (
     <VStack align="stretch" spacing={3}>
       {showControls && editable && (
-        <HStack justify="space-between" p={3} bg="#111111" borderRadius="md" borderWidth={1} borderColor="#333333">
+        <HStack justify="space-between" p={3} bg="#121A2B" borderRadius="md" borderWidth={1} borderColor="#2A3A5E">
           <HStack spacing={3}>
-            <Text fontSize="sm" color="#FFFFFF" fontWeight="bold">
+            <Text fontSize="sm" color="#F5F8FF" fontWeight="bold">
               Interactive Route Map
             </Text>
             {hasChanges && (
@@ -388,7 +388,7 @@ export function InteractiveRouteMap({
               leftIcon={<FiRefreshCw />}
               onClick={handleOptimize}
               bg="#2563eb"
-              color="#FFFFFF"
+              color="#F5F8FF"
               _hover={{ bg: '#1d4ed8' }}
             >
               Optimize
@@ -400,9 +400,9 @@ export function InteractiveRouteMap({
                   leftIcon={<FiX />}
                   onClick={handleReset}
                   variant="outline"
-                  borderColor="#333333"
-                  color="#FFFFFF"
-                  _hover={{ bg: '#1a1a1a' }}
+                  borderColor="#2A3A5E"
+                  color="#F5F8FF"
+                  _hover={{ bg: '#18233A' }}
                 >
                   Reset
                 </Button>
@@ -412,7 +412,7 @@ export function InteractiveRouteMap({
                   onClick={handleSave}
                   isLoading={isSaving}
                   bg="#10b981"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   _hover={{ bg: '#059669' }}
                 >
                   Save Changes
@@ -424,9 +424,9 @@ export function InteractiveRouteMap({
       )}
 
       {editable && (
-        <Alert status="info" bg="#1a1a1a" borderColor="#333333" borderRadius="md">
+        <Alert status="info" bg="#18233A" borderColor="#2A3A5E" borderRadius="md">
           <AlertIcon color="#2563eb" />
-          <Text fontSize="sm" color="#FFFFFF">
+          <Text fontSize="sm" color="#F5F8FF">
             Drag markers to reorder stops. The route will update automatically.
           </Text>
         </Alert>
@@ -461,7 +461,7 @@ export function InteractiveRouteMap({
 
       {/* Drops List */}
       <VStack align="stretch" spacing={2} mt={3}>
-        <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+        <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
           Route Stops ({localDrops.length})
         </Text>
         {localDrops
@@ -470,10 +470,10 @@ export function InteractiveRouteMap({
             <HStack
               key={drop.id}
               p={2}
-              bg="#111111"
+              bg="#121A2B"
               borderRadius="md"
               borderWidth={1}
-              borderColor="#333333"
+              borderColor="#2A3A5E"
               spacing={3}
             >
               <Badge
@@ -489,7 +489,7 @@ export function InteractiveRouteMap({
               </Badge>
               <VStack align="start" spacing={0} flex={1}>
                 {drop.customerName && (
-                  <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+                  <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
                     {drop.customerName}
                   </Text>
                 )}

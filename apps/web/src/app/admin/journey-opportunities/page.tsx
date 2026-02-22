@@ -378,7 +378,7 @@ export default function JourneyOpportunitiesPage() {
             <Spinner size="xl" color="blue.500" />
           </Box>
         ) : filteredOpportunities.length === 0 ? (
-          <Alert status="info" bg="gray.800" borderColor="gray.700">
+          <Alert status="info" variant="subtle" colorScheme="blue">
             <AlertIcon />
             No journey opportunities found
           </Alert>

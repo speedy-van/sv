@@ -658,7 +658,7 @@ export default function DriverApplicationsPage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" bg="#0a0a0a">
+      <Box minH="100vh" bg="#121A2B">
         <Flex justify="center" align="center" minH="400px">
           <VStack spacing={4}>
             <Spinner size="xl" color="blue.400" thickness="4px" />
@@ -671,7 +671,7 @@ export default function DriverApplicationsPage() {
 
   if (error) {
     return (
-      <Box minH="100vh" bg="#0a0a0a" py={8}>
+      <Box minH="100vh" bg="#121A2B" py={8}>
         <Container maxW="container.xl">
           <Box
             bg="rgba(245, 101, 101, 0.1)"
@@ -698,7 +698,7 @@ export default function DriverApplicationsPage() {
 
   return (
     <>
-    <Box minH="100vh" bg="#0a0a0a" py={6}>
+    <Box minH="100vh" bg="#121A2B" py={6}>
       <Container maxW="container.xl">
         <VStack spacing={6} align="stretch">
           
@@ -863,7 +863,7 @@ export default function DriverApplicationsPage() {
                     color="white"
                   >
                     {Object.entries(statusLabels).map(([value, label]) => (
-                      <option key={value} value={value} style={{ background: '#1a1a1a' }}>
+                      <option key={value} value={value} style={{ background: '#18233A' }}>
                         {label}
                       </option>
                     ))}

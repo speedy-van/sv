@@ -90,7 +90,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
         top="60px"
         bottom={0}
         width="320px"
-        bg="#1a1a1a"
+        bg="#18233A"
         borderLeft="1px solid #333"
         p={4}
         overflowY="auto"
@@ -112,7 +112,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
         top="60px"
         bottom={0}
         width="320px"
-        bg="#1a1a1a"
+        bg="#18233A"
         borderLeft="1px solid #333"
         p={4}
         zIndex={1000}
@@ -129,7 +129,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
       top="60px"
       bottom={0}
       width="320px"
-      bg="#1a1a1a"
+      bg="#18233A"
       borderLeft="1px solid #333"
       overflowY="auto"
       zIndex={1000}
@@ -138,7 +138,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
           width: '8px',
         },
         '&::-webkit-scrollbar-track': {
-          background: '#0a0a0a',
+          background: '#121A2B',
         },
         '&::-webkit-scrollbar-thumb': {
           background: '#333',
@@ -165,7 +165,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
         <Divider borderColor="#333" />
 
         {/* Bookings Overview */}
-        <Box bg="#0a0a0a" p={3} borderRadius="md" border="1px solid #333">
+        <Box bg="#121A2B" p={3} borderRadius="md" border="1px solid #333">
           <HStack mb={2}>
             <Icon as={FiPackage} color="#10b981" />
             <Text fontSize="sm" fontWeight="bold" color="#ECECF1">
@@ -209,7 +209,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
         </Box>
 
         {/* Drivers Overview */}
-        <Box bg="#0a0a0a" p={3} borderRadius="md" border="1px solid #333">
+        <Box bg="#121A2B" p={3} borderRadius="md" border="1px solid #333">
           <HStack mb={2}>
             <Icon as={FiTruck} color="#3b82f6" />
             <Text fontSize="sm" fontWeight="bold" color="#ECECF1">
@@ -245,7 +245,7 @@ export const LiveStatusDashboard: React.FC<{ isOpen: boolean }> = ({ isOpen }) =
         </Box>
 
         {/* Revenue Overview */}
-        <Box bg="#0a0a0a" p={3} borderRadius="md" border="1px solid #333">
+        <Box bg="#121A2B" p={3} borderRadius="md" border="1px solid #333">
           <HStack mb={2}>
             <Icon as={FiDollarSign} color="#10b981" />
             <Text fontSize="sm" fontWeight="bold" color="#ECECF1">

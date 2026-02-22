@@ -50,7 +50,6 @@ import {
 } from 'react-icons/fi';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import { WhatsAppFloatingButton } from '@/components/shared/WhatsAppEntryPoint';
 import CallMeBackFloating from '@/components/shared/CallMeBackFloating';
 
@@ -254,7 +253,6 @@ export default function PricingPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
@@ -373,36 +371,35 @@ export default function PricingPage() {
             colorScheme="blue" 
             w="full" 
             maxW="6xl"
-            sx={{
-              '& .chakra-tabs__tablist': {
-                bg: 'rgba(26, 26, 26, 0.95)',
-                borderColor: 'rgba(59, 130, 246, 0.3)',
-              },
-              '& .chakra-tabs__tab': {
-                color: 'gray.300',
-                borderColor: 'rgba(59, 130, 246, 0.3)',
-                _selected: {
-                  color: 'white',
-                  bg: 'rgba(59, 130, 246, 0.2)',
-                  borderColor: 'rgba(59, 130, 246, 0.5)',
-                },
-                _hover: {
-                  color: 'white',
-                  bg: 'rgba(59, 130, 246, 0.1)',
-                }
-              },
-              '& .chakra-tabs__tab-panels': {
-                bg: 'transparent',
-              }
-            }}
           >
-            <TabList>
-              <Tab>By Service Type</Tab>
-              <Tab>By Home Size</Tab>
-              <Tab>Add-On Services</Tab>
+            <TabList bg="rgba(26, 26, 26, 0.95)" borderColor="rgba(59, 130, 246, 0.3)">
+              <Tab
+                color="gray.300"
+                borderColor="rgba(59, 130, 246, 0.3)"
+                _selected={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.1)' }}
+              >
+                By Service Type
+              </Tab>
+              <Tab
+                color="gray.300"
+                borderColor="rgba(59, 130, 246, 0.3)"
+                _selected={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.1)' }}
+              >
+                By Home Size
+              </Tab>
+              <Tab
+                color="gray.300"
+                borderColor="rgba(59, 130, 246, 0.3)"
+                _selected={{ color: 'white', bg: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 0.5)' }}
+                _hover={{ color: 'white', bg: 'rgba(59, 130, 246, 0.1)' }}
+              >
+                Add-On Services
+              </Tab>
             </TabList>
 
-            <TabPanels>
+            <TabPanels bg="transparent">
               {/* Service Type Pricing */}
               <TabPanel px={0}>
                 <SimpleGrid columns={{ base: 1, lg: 4 }} spacing={6} mt={8}>
@@ -1017,7 +1014,7 @@ export default function PricingPage() {
                 <HeaderButton
                   variant="outline"
                   size="lg"
-                  onClick={() => window.open('tel:+441202129746')}
+                  onClick={() => window.open('tel:01202129746')}
                   borderColor="neon.400"
                   color="white"
                   borderWidth="2px"

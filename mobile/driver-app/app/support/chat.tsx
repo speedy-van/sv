@@ -165,7 +165,7 @@ export default function ChatScreen() {
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <View style={styles.backButtonCircle}>
-            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+            <Ionicons name="arrow-back" size={22} color="#F5F8FF" />
           </View>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.xxl + spacing.md,
     paddingBottom: spacing.lg,
-    backgroundColor: '#007AFF',
-    shadowColor: '#007AFF',
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   headerSubtitle: {
     fontSize: 12,
@@ -361,9 +361,9 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     borderBottomRightRadius: 4,
-    shadowColor: '#007AFF',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -391,11 +391,11 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     lineHeight: 21,
   },
   myMessageText: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   messageTime: {
     fontSize: 10,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md + (Platform.OS === 'ios' ? 20 : 0),
     backgroundColor: 'rgba(30, 64, 175, 0.1)',
     borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
+    borderTopColor: '#2A3A5E',
     gap: spacing.sm,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
@@ -428,20 +428,20 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingHorizontal: spacing.md + 4,
     fontSize: 15,
-    color: '#000000',
+    color: '#0B1020',
     maxHeight: 100,
     minHeight: 40,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: '#2A3A5E',
   },
   sendButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#007AFF',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 4,
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.4,
-    backgroundColor: '#C7C7CC',
+    backgroundColor: '#3E5A8F',
   },
 });
 

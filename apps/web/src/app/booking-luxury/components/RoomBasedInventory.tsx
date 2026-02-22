@@ -881,8 +881,8 @@ export default function RoomBasedInventory({
                             boxShadow={isSelected ? '0 0 0 1px var(--chakra-colors-green-500)' : 'none'}
                             sx={{
                               WebkitMinContent: 'min-content',
-                              minHeight: '90px !important',
-                              height: 'auto !important',
+                              minHeight: '90px',
+                              height: 'auto',
                             }}
                           >
                             <CardBody p={3}>
@@ -897,8 +897,8 @@ export default function RoomBasedInventory({
                                   position="relative"
                                   flexShrink={0}
                                   sx={{
-                                    minHeight: '160px !important',
-                                    height: '160px !important',
+                                    minHeight: '160px',
+                                    height: '160px',
                                   }}
                                 >
                                   {item.image ? (
@@ -1087,8 +1087,8 @@ export default function RoomBasedInventory({
                                   boxShadow={isSelected ? '0 0 0 1px var(--chakra-colors-green-500)' : 'none'}
                                   sx={{
                                     WebkitMinContent: 'min-content',
-                                    minHeight: '90px !important',
-                                    height: 'auto !important',
+                                    minHeight: '90px',
+                                    height: 'auto',
                                   }}
                                 >
                                   <CardBody p={3}>
@@ -1103,8 +1103,8 @@ export default function RoomBasedInventory({
                                         position="relative"
                                         flexShrink={0}
                                         sx={{
-                                          minHeight: '160px !important',
-                                          height: '160px !important',
+                                          minHeight: '160px',
+                                          height: '160px',
                                         }}
                                       >
                                         {item.image ? (

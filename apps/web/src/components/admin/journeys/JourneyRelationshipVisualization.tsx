@@ -98,10 +98,10 @@ export function JourneyRelationshipVisualization({
     onClose: onMapModalClose,
   } = useDisclosure();
 
-  const bgColor = useColorModeValue('#000000', '#000000');
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const bgColor = useColorModeValue('#0B1020', '#0B1020');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const sortedSegments = [...segments].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
@@ -164,7 +164,7 @@ export function JourneyRelationshipVisualization({
                 variant="outline"
                 borderColor={borderColor}
                 color={textColor}
-                _hover={{ bg: '#1a1a1a' }}
+                _hover={{ bg: '#18233A' }}
               >
                 {viewMode === 'hierarchical' ? 'Timeline View' : 'Hierarchical View'}
               </Button>
@@ -174,7 +174,7 @@ export function JourneyRelationshipVisualization({
                   leftIcon={<FiMapPin />}
                   onClick={onViewMap}
                   bg="#2563eb"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   _hover={{ bg: '#1d4ed8' }}
                 >
                   View Map

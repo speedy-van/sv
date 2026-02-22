@@ -3,25 +3,25 @@
 
 .speedy-ai-mobile-button,
 button.speedy-ai-mobile-button {
-  position: fixed !important;
-  bottom: 8px !important;
-  right: 8px !important;
-  left: unset !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  width: 70px !important;
-  height: 70px !important;
-  border-radius: 50% !important;
-  z-index: 9998 !important;
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  left: unset;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  z-index: 9998;
 }
 
 /* Remove any black background */
 .speedy-ai-mobile-button video,
 .speedy-ai-mobile-button > div,
 .speedy-ai-mobile-button * {
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  background: transparent;
+  padding: 0;
+  margin: 0;
 }
 

@@ -122,7 +122,7 @@ export default function SupportScreen() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'job_assigned':
-        return { name: 'briefcase', color: '#007AFF' };
+        return { name: 'briefcase', color: '#3B82F6' };
       case 'job_update':
         return { name: 'information-circle', color: '#FF9500' };
       case 'earnings':
@@ -174,7 +174,7 @@ export default function SupportScreen() {
             onPress={openChat}
             activeOpacity={0.8}
           >
-            <Ionicons name="chatbubbles" size={18} color="#FFFFFF" />
+            <Ionicons name="chatbubbles" size={18} color="#F5F8FF" />
             <Text style={styles.chatButtonText}>Live Chat</Text>
           </TouchableOpacity>
         </View>
@@ -204,7 +204,7 @@ export default function SupportScreen() {
       {/* Notifications List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
         <ScrollView
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
   },
   unreadBadge: {
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   unreadText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   },
   chatButtonText: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.3,
   },
   unreadDot: {
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   },
   notificationMessage: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     lineHeight: 20,
     marginBottom: 8,
   },

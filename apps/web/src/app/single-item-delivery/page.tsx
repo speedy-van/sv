@@ -31,13 +31,11 @@ import {
 import { FaCouch, FaBed, FaDesktop } from 'react-icons/fa';
 import Link from 'next/link';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function SingleItemDeliveryPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
     <Box pt={36} bg="gray.900" minH="100vh">
       {/* Hero Section */}
       <Box
@@ -78,7 +76,7 @@ export default function SingleItemDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

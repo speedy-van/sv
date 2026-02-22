@@ -36,7 +36,6 @@ import { FaCouch, FaHandsHelping, FaFacebook } from 'react-icons/fa';
 import Link from 'next/link';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 const faqData = [
   {
@@ -65,7 +64,6 @@ export default function SofaDeliveryServicePage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <MarketplaceServiceSchema
         serviceName="Sofa Delivery Service"
         serviceDescription="Professional sofa delivery service. We collect sofas from Facebook Marketplace, Gumtree, stores, or any address and deliver safely to your home with 2-man handling."
@@ -146,7 +144,7 @@ export default function SofaDeliveryServicePage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -515,7 +513,7 @@ export default function SofaDeliveryServicePage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

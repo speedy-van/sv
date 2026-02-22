@@ -128,7 +128,7 @@ export default function HistoryScreen() {
         </View>
 
         <View style={styles.summaryCard}>
-          <Ionicons name="cash" size={32} color="#007AFF" />
+          <Ionicons name="cash" size={32} color="#3B82F6" />
           <Text style={styles.summaryValue}>£{totalEarnings.toFixed(2)}</Text>
           <Text style={styles.summaryLabel}>Total Earnings</Text>
         </View>
@@ -137,7 +137,7 @@ export default function HistoryScreen() {
       {/* Jobs List */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
         <ScrollView
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   periodButtonActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
   },
   periodText: {
     fontSize: 14,

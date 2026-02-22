@@ -107,7 +107,7 @@ export default function HomeSizeSelector({
   };
 
   return (
-    <Card bg="white" borderRadius="xl" p={6} shadow="md" borderWidth="2px" borderColor="blue.200">
+    <Card bg="white" borderRadius="xl" p={{ base: 4, md: 6 }} shadow="md" borderWidth="2px" borderColor="blue.200">
       <VStack spacing={6} align="stretch">
         {/* Header */}
         <VStack spacing={3} align="center">

@@ -12,19 +12,19 @@
 .mapboxgl-map {
   border-radius: 16px;
   overflow: hidden;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
 }
 
 /* Ensure map container is properly sized */
 .mapboxgl-canvas-container {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
 }
 
 .mapboxgl-canvas {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
 }
 
 /* Hide default controls */
@@ -128,17 +128,6 @@ html, body {
 
 /* Safari 17+ Flex/Grid Fix: Prevent flex items from collapsing in Grid containers */
 @supports (-webkit-touch-callout: none) {
-  /* iOS Safari only - target Safari-specific bugs */
-  .chakra-simple-grid > *,
-  [data-chakra-simple-grid] > *,
-  .css-grid > *,
-  .css-simple-grid > * {
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    flex-basis: auto !important;
-  }
-  
   /* Additional Safari 17+ fixes for flex containers */
   .flex-container,
   [style*="display: flex"],
@@ -334,77 +323,77 @@ footer {
 
 /* Footer component fixes */
 footer > div {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Additional footer visibility fixes */
 [data-testid="footer"],
 footer[role="contentinfo"] {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Final footer visibility fixes */
 footer,
 footer * {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Ensure footer is not hidden by any CSS */
 footer {
-  clip: auto !important;
-  clip-path: none !important;
-  height: auto !important;
-  overflow: visible !important;
-  position: relative !important;
-  width: 100% !important;
+  clip: auto;
+  clip-path: none;
+  height: auto;
+  overflow: visible;
+  position: relative;
+  width: 100%;
 }
 
 /* Final footer visibility fixes for all screen sizes */
 @media (max-width: 768px) {
   footer {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    clip: auto !important;
-    clip-path: none !important;
-    height: auto !important;
-    overflow: visible !important;
-    position: relative !important;
-    width: 100% !important;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    clip: auto;
+    clip-path: none;
+    height: auto;
+    overflow: visible;
+    position: relative;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   footer {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    clip: auto !important;
-    clip-path: none !important;
-    height: auto !important;
-    overflow: visible !important;
-    position: relative !important;
-    width: 100% !important;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    clip: auto;
+    clip-path: none;
+    height: auto;
+    overflow: visible;
+    position: relative;
+    width: 100%;
   }
 }
 
 @media (max-height: 600px) {
   footer {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    clip: auto !important;
-    clip-path: none !important;
-    height: auto !important;
-    overflow: visible !important;
-    position: relative !important;
-    width: 100% !important;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    clip: auto;
+    clip-path: none;
+    height: auto;
+    overflow: visible;
+    position: relative;
+    width: 100%;
   }
 }
 
@@ -498,10 +487,10 @@ footer {
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { 
-    animation-duration: 0.001ms !important; 
-    animation-iteration-count: 1 !important; 
-    transition-duration: 0.001ms !important; 
-    scroll-behavior: auto !important; 
+    animation-duration: 0.001ms; 
+    animation-iteration-count: 1; 
+    transition-duration: 0.001ms; 
+    scroll-behavior: auto; 
   }
 }
 
@@ -509,52 +498,52 @@ footer {
 /* Cancel any full-viewport blur overlays within the booking route only.   */
 [data-page="booking"] [style*="backdrop-filter"]:where([style*="inset: 0"], [style*="inset:0"]) {
   /* if some component accidentally renders a full-screen blur, neutralize it */
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 [data-page="booking"] .blur-overlay,
 [data-page="booking"] [data-overlay="glass"],
 [data-page="booking"] .frost,
 [data-page="booking"] .frosted {
   /* keep overlays from covering content on booking pages */
-  pointer-events: none !important;
-  z-index: 0 !important;
+  pointer-events: none;
+  z-index: 0;
 }
 [data-page="booking"] [data-glass="topbar"] {
   /* allow only the nav's local blur */
-  pointer-events: auto !important;
-  z-index: 20 !important;
+  pointer-events: auto;
+  z-index: 20;
 }
 
 /* If a global body glass layer exists, disable it on booking pages */
 [data-page="booking"] body::before,
 [data-page="booking"] :root body::before {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  content: none !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  content: none;
 }
 
 /* Enhanced focus styles for better accessibility */
 *:focus-visible {
-  outline: 2px solid #00C2FF !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5) !important;
+  outline: 2px solid #00C2FF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5);
 }
 
 /* Skip focus styles for mouse users */
 *:focus:not(:focus-visible) {
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   * {
-    border-color: currentColor !important;
+    border-color: currentColor;
   }
   
   button, input, select, textarea {
-    border-width: 2px !important;
+    border-width: 2px;
   }
 }
 
@@ -668,25 +657,25 @@ footer {
 /* Improved button focus states */
 button:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid #00C2FF !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5) !important;
+  outline: 2px solid #00C2FF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.5);
 }
 
 /* Improved link focus states */
 a:focus-visible {
-  outline: 2px solid #00C2FF !important;
-  outline-offset: 2px !important;
-  text-decoration: underline !important;
+  outline: 2px solid #00C2FF;
+  outline-offset: 2px;
+  text-decoration: underline;
 }
 
 /* Improved form control focus states */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #00C2FF !important;
-  outline-offset: 2px !important;
-  border-color: #00D18F !important;
+  outline: 2px solid #00C2FF;
+  outline-offset: 2px;
+  border-color: #00D18F;
 }
 
 /* Dark mode improvements */
@@ -708,17 +697,17 @@ textarea:focus-visible {
   button,
   nav,
   .no-print {
-    display: none !important;
+    display: none;
   }
   
   * {
-    background: white !important;
-    color: black !important;
-    box-shadow: none !important;
+    background: white;
+    color: black;
+    box-shadow: none;
   }
   
   a {
-    text-decoration: underline !important;
+    text-decoration: underline;
   }
   
   a[href]:after {
@@ -776,68 +765,30 @@ textarea:focus-visible {
     font-size: 16px; /* Prevent zoom on iOS */
     touch-action: manipulation;
   }
-  
-  #cookie-bar .chakra-button {
-    border-radius: 8px;
-    font-weight: 500;
-  }
-  
-  /* Improve modal touch targets */
-  .chakra-modal__content button {
+
+  /* Improve dialog touch targets */
+  [role="dialog"] button {
     min-height: 44px;
     min-width: 44px;
   }
-  
-  /* Better modal spacing on mobile */
-  .chakra-modal__body {
-    padding: 20px 16px;
-  }
-  
-  .chakra-modal__header {
-    padding: 16px 16px 8px;
-  }
-  
-  .chakra-modal__footer {
-    padding: 8px 16px 16px;
-  }
+
 }
 
 /* Enhanced cookie modal for mobile */
 @media (max-width: 768px) {
-  .chakra-modal__content {
+  [role="dialog"] {
     margin: 0;
     border-radius: 0;
     min-height: 100vh;
     max-height: 100vh;
   }
-  
-  /* Better switch touch targets */
-  .chakra-switch {
-    min-width: 44px;
-    min-height: 24px;
-  }
-  
-  .chakra-switch__track {
-    min-width: 44px;
-    min-height: 24px;
-  }
-  
-  .chakra-switch__thumb {
-    min-width: 20px;
-    min-height: 20px;
-  }
 }
 
 /* Improved cookie text readability on mobile */
 @media (max-width: 768px) {
-  #cookie-bar .chakra-text {
+  #cookie-bar p {
     line-height: 1.5;
     font-size: 14px;
-  }
-  
-  /* Better spacing for cookie preferences */
-  .chakra-stack {
-    gap: 16px;
   }
 }
 
@@ -846,130 +797,12 @@ textarea:focus-visible {
   #cookie-bar {
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
-  
-  .chakra-modal__content {
+
+  [role="dialog"] {
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
 
-/* Mobile-friendly booking steps */
-@media (max-width: 768px) {
-  /* Booking page container */
-  .booking-page-container {
-    padding: 16px 12px;
-  }
-  
-  /* Booking step cards */
-  .booking-step-card {
-    padding: 20px 16px;
-    margin-bottom: 16px;
-  }
-  
-  /* Progress bar improvements */
-  .booking-progress {
-    padding: 16px 12px;
-    margin-bottom: 20px;
-  }
-  
-  /* Step content spacing */
-  .booking-step-content {
-    padding: 0;
-  }
-  
-  /* Form controls */
-  .booking-form-control {
-    margin-bottom: 16px;
-  }
-  
-  /* Input fields */
-  .booking-input {
-    height: 48px;
-    font-size: 16px;
-  }
-  
-  /* Select dropdowns */
-  .booking-select {
-    height: 48px;
-    font-size: 16px;
-  }
-  
-  /* Checkboxes */
-  .booking-checkbox {
-    min-height: 44px;
-    padding: 8px 0;
-  }
-  
-  /* Number inputs */
-  .booking-number-input {
-    height: 48px;
-  }
-  
-  /* Text areas */
-  .booking-textarea {
-    min-height: 80px;
-    font-size: 16px;
-  }
-}
-
-/* Enhanced booking buttons */
-@media (max-width: 768px) {
-  /* Navigation buttons container */
-  .booking-navigation {
-    padding-top: 24px;
-    margin-top: 16px;
-  }
-  
-  /* Primary action buttons */
-  .booking-primary-button {
-    min-height: 48px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Secondary buttons */
-  .booking-secondary-button {
-    min-height: 48px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 8px;
-  }
-  
-  /* Button hover effects */
-  .booking-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  .booking-button:active {
-    transform: translateY(0);
-  }
-}
-
-/* Improved form layout on mobile */
-@media (max-width: 768px) {
-  /* Stack form fields vertically */
-  .booking-form-row {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  /* Full width inputs on mobile */
-  .booking-form-row .chakra-form-control {
-    width: 100%;
-  }
-  
-  /* Better spacing for form sections */
-  .booking-form-section {
-    margin-bottom: 24px;
-  }
-  
-  /* Improved divider spacing */
-  .booking-divider {
-    margin: 24px 0;
-  }
-}
 
 /* Touch-friendly interactive elements */
 @media (max-width: 768px) {
@@ -1003,173 +836,6 @@ textarea:focus-visible {
   }
 }
 
-/* Safe area support for booking pages */
-@supports (padding: max(0px)) {
-  .booking-page-container {
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-  
-  .booking-navigation {
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-}
-
-/* Mobile-friendly styles for booking radio options */
-.booking-radio-option {
-  min-height: 44px;
-  touch-action: manipulation;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.booking-radio-option:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.booking-radio-option:active {
-  transform: translateY(0);
-}
-
-/* Enhanced radio button styles for mobile */
-.booking-radio-option .chakra-radio {
-  min-height: 44px;
-  min-width: 44px;
-  display: flex;
-  align-items: center;
-}
-
-.booking-radio-option .chakra-radio__control {
-  min-height: 24px;
-  min-width: 24px;
-}
-
-/* Mobile-specific improvements for radio options */
-@media (max-width: 768px) {
-  .booking-radio-option {
-    padding: 16px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-  }
-  
-  .booking-radio-option .chakra-radio {
-    min-height: 48px;
-  }
-  
-  .booking-radio-option .chakra-radio__control {
-    min-height: 28px;
-    min-width: 28px;
-  }
-  
-  .booking-radio-option .chakra-text {
-    font-size: 16px;
-    line-height: 1.4;
-  }
-  
-  .booking-radio-option .chakra-badge {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-}
-
-/* Ensure proper spacing for radio option content */
-.booking-radio-option .chakra-stack {
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .booking-radio-option .chakra-stack {
-    gap: 16px;
-  }
-}
-
-/* Mobile-friendly styles for payment step */
-.booking-step-card .booking-primary-button {
-  min-height: 56px;
-  touch-action: manipulation;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  text-transform: none;
-}
-
-.booking-step-card .booking-primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 209, 143, 0.4);
-}
-
-.booking-step-card .booking-primary-button:active {
-  transform: translateY(0);
-  box-shadow: 0 5px 15px rgba(0, 209, 143, 0.3);
-}
-
-/* Enhanced checkbox styles for payment step */
-.booking-step-card .booking-checkbox {
-  min-height: 44px;
-  touch-action: manipulation;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.booking-step-card .booking-checkbox .chakra-checkbox__control {
-  min-height: 24px;
-  min-width: 24px;
-}
-
-.booking-step-card .booking-checkbox .chakra-checkbox__label {
-  font-size: 16px;
-  line-height: 1.4;
-  font-weight: 500;
-}
-
-/* Mobile-specific improvements for payment step */
-@media (max-width: 768px) {
-  .booking-step-card .booking-primary-button {
-    min-height: 60px;
-    font-size: 18px;
-    padding: 16px 24px;
-  }
-  
-  .booking-step-card .booking-checkbox {
-    min-height: 48px;
-  }
-  
-  .booking-step-card .booking-checkbox .chakra-checkbox__control {
-    min-height: 28px;
-    min-width: 28px;
-  }
-  
-  .booking-step-card .booking-checkbox .chakra-checkbox__label {
-    font-size: 16px;
-    line-height: 1.5;
-  }
-  
-  /* Improve payment amount display on mobile */
-  .booking-step-card .booking-form-section {
-    padding: 16px;
-  }
-  
-  .booking-step-card .booking-form-section .chakra-badge {
-    font-size: 20px;
-    padding: 12px 16px;
-  }
-  
-  .booking-step-card .booking-form-section .chakra-text {
-    font-size: 16px;
-    line-height: 1.4;
-  }
-}
-
-/* Ensure proper spacing for payment step content */
-.booking-step-card .booking-form-section .chakra-vstack {
-  gap: 16px;
-}
-
-@media (max-width: 768px) {
-  .booking-step-card .booking-form-section .chakra-vstack {
-    gap: 20px;
-  }
-}
 
 /* Enhanced Button Animations for Booking Luxury */
 @keyframes pulse-enhanced {
@@ -1183,62 +849,7 @@ textarea:focus-visible {
   }
 }
 
-/* Enhanced Button Styles - Fallback for Chakra Theme */
-.chakra-button[data-variant="enhanced-minus"] {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-  color: white !important;
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3) !important;
-  transition: all 0.3s ease !important;
-}
-
-.chakra-button[data-variant="enhanced-minus"]:hover {
-  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
-  transform: scale(1.1) rotate(-5deg) !important;
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.4) !important;
-}
-
-.chakra-button[data-variant="enhanced-plus"] {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  color: white !important;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3) !important;
-  transition: all 0.3s ease !important;
-}
-
-.chakra-button[data-variant="enhanced-plus"]:hover {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
-  transform: scale(1.1) rotate(5deg) !important;
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6), 0 0 30px rgba(16, 185, 129, 0.4) !important;
-}
-
-.chakra-button[data-variant="enhanced-add"] {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-  color: white !important;
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.4) !important;
-  transition: all 0.3s ease !important;
-}
-
-.chakra-button[data-variant="enhanced-add"]:hover {
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
-  transform: scale(1.15) rotate(10deg) !important;
-  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.7), 0 0 40px rgba(59, 130, 246, 0.5) !important;
-}
-
-/* Enhanced Quantity Box */
-.chakra-box[data-variant="enhanced-quantity"],
-.chakra-button[data-variant="enhanced-quantity"] {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
-  color: white !important;
-  font-weight: bold !important;
-  animation: pulse-enhanced 2s ease-in-out infinite !important;
-  box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6) !important;
-  transition: all 0.3s ease !important;
-}
-
-.chakra-box[data-variant="enhanced-quantity"]:hover,
-.chakra-button[data-variant="enhanced-quantity"]:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 10px 35px rgba(251, 191, 36, 0.8) !important;
-}
+/* Enhanced button variants are defined in Chakra theme (mobile-theme.ts). */
 
 /* Custom Mapbox animations for Speedy Van service map */
 @keyframes pulse {
@@ -1269,16 +880,16 @@ textarea:focus-visible {
 
 /* Enhanced popup styles for city markers */
 .mapboxgl-popup-content {
-  background: rgba(0, 194, 255, 0.95) !important;
-  color: white !important;
-  border-radius: 8px !important;
-  padding: 12px !important;
-  min-width: 150px !important;
-  font-family: 'Inter', sans-serif !important;
+  background: rgba(0, 194, 255, 0.95);
+  color: white;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 150px;
+  font-family: 'Inter', sans-serif;
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: rgba(0, 194, 255, 0.95) !important;
+  border-top-color: rgba(0, 194, 255, 0.95);
 }
 
 /* Service coverage indicators */
@@ -1317,81 +928,81 @@ textarea:focus-visible {
 
 /* Home Footer Horizontal Layout Fix */
 .home-footer-grid {
-  display: flex !important;
+  display: flex;
 }
 
 @media (min-width: 992px) {
   .home-footer-grid {
-    flex-direction: row !important;
+    flex-direction: row;
   }
   
   .home-footer-grid > * {
-    flex: 1 1 0% !important;
-    min-width: 200px !important;
+    flex: 1 1 0%;
+    min-width: 200px;
   }
 }
 
 @media (max-width: 991px) {
   .home-footer-grid {
-    flex-direction: column !important;
+    flex-direction: column;
   }
 }
 
 /* Home Footer Bottom Section Horizontal Fix */
 .home-footer-bottom {
-  display: flex !important;
+  display: flex;
 }
 
 @media (min-width: 768px) {
   .home-footer-bottom {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 
 @media (max-width: 767px) {
   .home-footer-bottom {
-    flex-direction: column !important;
+    flex-direction: column;
   }
 }
 
 /* Driver Application: keep download card horizontal on desktop / Safari */
 .download-driver-card {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  align-items: center !important;
-  width: 100% !important;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  width: 100%;
 }
 
 .download-driver-card__content {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  align-items: center !important;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
 }
 
 .download-driver-card__cta {
-  display: inline-flex !important;
+  display: inline-flex;
   align-self: stretch;
 }
 
 @media (min-width: 768px) {
   .download-driver-card {
-    grid-template-columns: 1fr auto !important;
-    gap: 1.5rem !important;
-    grid-auto-flow: column !important;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    grid-auto-flow: column;
   }
 
   .download-driver-card__content {
-    grid-template-columns: auto 1fr !important;
-    text-align: left !important;
-    justify-items: start !important;
-    grid-auto-flow: column !important;
+    grid-template-columns: auto 1fr;
+    text-align: left;
+    justify-items: start;
+    grid-auto-flow: column;
   }
 
   .download-driver-card__cta {
-    justify-self: end !important;
-    width: auto !important;
+    justify-self: end;
+    width: auto;
   }
 }
 
@@ -1399,8 +1010,8 @@ textarea:focus-visible {
   @media (min-width: 768px) {
     .download-driver-card,
     .download-driver-card__content {
-      grid-auto-flow: column !important;
-      align-items: center !important;
+      grid-auto-flow: column;
+      align-items: center;
     }
   }
 }
@@ -1472,143 +1083,58 @@ textarea:focus-visible {
 /* ===== SPEEDY AI MOBILE BUTTON - FORCE POSITIONING ===== */
 .speedy-ai-mobile-button,
 button.speedy-ai-mobile-button {
-  position: fixed !important;
-  bottom: 8px !important;
-  right: 8px !important;
-  left: unset !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  width: 70px !important;
-  height: 70px !important;
-  border-radius: 50% !important;
-  z-index: 9998 !important;
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  left: unset;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  z-index: 9998;
 }
 
 /* Remove black background from video */
 .speedy-ai-mobile-button video,
 .speedy-ai-mobile-button > div,
 .speedy-ai-mobile-button > * {
-  background: transparent !important;
-  background-color: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* ===== HEADER DUPLICATION FIX - CRITICAL FOR iPHONE 15/16/17 ===== */
-/* Hide desktop header immediately on mobile BEFORE hydration */
-@media (max-width: 767px) {
-  .desktop-header,
-  header[role="banner"]:not(.mobile-header) {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-  }
-}
-
-/* Hide mobile header on desktop */
-@media (min-width: 768px) {
-  .mobile-header {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    pointer-events: none !important;
-  }
-}
-
-/* ===== FORCE DARK BACKGROUNDS ON ALL PAGES - ALL BROWSERS ===== */
-/* CRITICAL: Remove ALL white backgrounds */
-body,
-main,
-#__next,
-html {
-  background: #0D0D0D !important;
-  background-color: #0D0D0D !important;
-  color: #FFFFFF !important;
-}
-
-/* Override Chakra Containers and Boxes */
-.chakra-box,
-[data-chakra-component="Box"],
-.chakra-container,
-.chakra-stack,
-.css-0 {
-  background-color: transparent !important;
-}
-
-/* Override ANY white backgrounds from Chakra */
-.chakra-card,
-.chakra-box[bg="white"],
-[bg="white"],
-[background="white"],
-[style*="background: white"],
-[style*="background: rgb(255, 255, 255)"],
-[style*="background: #fff"],
-[style*="background: #ffffff"],
-[style*="background-color: white"],
-[style*="background-color: rgb(255, 255, 255)"],
-[style*="background-color: #fff"],
-[style*="background-color: #ffffff"],
-[style*="background:white"],
-[style*="background:#fff"],
-[style*="background-color:white"],
-[style*="background-color:#fff"] {
-  background: rgba(26, 26, 26, 0.95) !important;
-  background-color: rgba(26, 26, 26, 0.95) !important;
-}
-
-/* Override gray.50, gray.100 (light grays) */
-[bg*="gray.50"],
-[bg*="gray.100"],
-[style*="gray.50"],
-[style*="background: rgb(249"],
-[style*="background: rgb(243"] {
-  background: rgba(59, 130, 246, 0.1) !important;
-  background-color: rgba(59, 130, 246, 0.1) !important;
-}
-
-/* Override Card components */
-.chakra-card__body,
-.chakra-card__header,
-.chakra-card__footer {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: transparent;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
 }
 
 /* Forms and inputs - dark but usable */
 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.customer-chat-input),
 textarea:not(.customer-chat-input),
 select:not(.customer-chat-input) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: white !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 input::placeholder:not(.customer-chat-input::placeholder),
 textarea::placeholder:not(.customer-chat-input::placeholder) {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Customer Chat Input - Light Background Override */
 .customer-chat-input,
 input.customer-chat-input,
 textarea.customer-chat-input {
-  background: white !important;
-  background-color: white !important;
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
-  border-color: #e5e7eb !important;
+  background: white;
+  background-color: white;
+  color: #000000;
+  -webkit-text-fill-color: #000000;
+  border-color: #e5e7eb;
 }
 
 .customer-chat-input::placeholder {
-  color: #9ca3af !important;
-  -webkit-text-fill-color: #9ca3af !important;
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
 }
 
 /* Buttons keep their intended colors */
@@ -1616,51 +1142,49 @@ textarea.customer-chat-input {
 
 /* Allow smooth natural scrolling */
 html {
-  scroll-behavior: smooth !important;
+  scroll-behavior: smooth;
   /* CRITICAL: Prevent vertical text on mobile Safari */
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
-  direction: ltr !important;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  direction: ltr;
 }
 
 body {
-  scroll-behavior: smooth !important;
+  scroll-behavior: smooth;
   /* CRITICAL: Prevent vertical text on mobile Safari */
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
-  direction: ltr !important;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  direction: ltr;
 }
 
 html.booking-luxury-no-smooth,
 body.booking-luxury-no-smooth {
-  scroll-behavior: auto !important;
-  overscroll-behavior: contain !important;
+  scroll-behavior: auto;
+  overscroll-behavior: contain;
 }
 
 /* Force all headings and text to be horizontal - CRITICAL FOR MOBILE SAFARI */
 * {
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
 }
 
-h1, h2, h3, h4, h5, h6, .chakra-heading, .chakra-text, p, span, div {
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
-  direction: ltr !important;
+h1, h2, h3, h4, h5, h6, p, span, div {
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  direction: ltr;
 }
 
 /* Specific fix for booking-luxury header */
 [data-booking-header] *,
 [data-booking-header] h1,
 [data-booking-header] h2,
-[data-booking-header] h3,
-[data-booking-header] .chakra-heading,
-[data-booking-header] .chakra-text {
-  writing-mode: horizontal-tb !important;
-  text-orientation: mixed !important;
-  direction: ltr !important;
-  transform: none !important;
-  white-space: nowrap !important;
+[data-booking-header] h3 {
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  direction: ltr;
+  transform: none;
+  white-space: nowrap;
 }
 
 /* CRITICAL: Prevent ALL automatic scrolling on focus */
@@ -1668,32 +1192,21 @@ input:focus,
 textarea:focus,
 select:focus,
 button:focus {
-  scroll-margin: 0 !important;
-  scroll-padding: 0 !important;
-}
-
-/* Prevent Chakra UI from auto-scrolling */
-.chakra-input:focus,
-.chakra-textarea:focus,
-.chakra-select:focus,
-.chakra-button:focus,
-.chakra-card:focus-within,
-.chakra-box:focus-within {
-  scroll-margin: 0 !important;
-  scroll-padding: 0 !important;
+  scroll-margin: 0;
+  scroll-padding: 0;
 }
 
 /* Prevent ANY element from triggering auto-scroll */
 *:focus,
 *:focus-within {
-  scroll-margin: 0 !important;
-  scroll-padding: 0 !important;
+  scroll-margin: 0;
+  scroll-padding: 0;
 }
 
 /* Mobile Safari natural scrolling - iPhone 14/15/16/17 */
 @media (max-width: 768px) {
   html, body {
-    scroll-behavior: smooth !important;
+    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     /* Ensure full viewport height */
     min-height: 100vh;
@@ -1714,23 +1227,15 @@ button:focus {
     /* No restrictions - natural browser behavior */
   }
   
-  /* Allow natural Chakra UI scroll behavior */
-  .chakra-input:focus,
-  .chakra-textarea:focus,
-  .chakra-select:focus {
-    /* No restrictions - natural browser behavior */
-  }
 }
 
 /* Hide scrollbars but keep scroll functionality */
-.chakra-drawer__body,
-.chakra-modal__body {
+[role="dialog"] {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
 
-.chakra-drawer__body::-webkit-scrollbar,
-.chakra-modal__body::-webkit-scrollbar {
+[role="dialog"]::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
@@ -1741,215 +1246,166 @@ button:focus {
 
 /* Fix native date picker calendar positioning and styling */
 input[type="date"] {
-  position: relative !important;
-  z-index: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Ensure date picker calendar opens downward (not upward) */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  position: absolute !important;
-  right: 12px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  cursor: pointer !important;
-  z-index: 2 !important;
-  filter: invert(1) !important;
-  opacity: 0.9 !important;
-  width: 20px !important;
-  height: 20px !important;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 2;
+  filter: invert(1);
+  opacity: 0.9;
+  width: 20px;
+  height: 20px;
 }
 
 /* Fix date picker popup positioning */
 input[type="date"]::-webkit-datetime-edit {
-  position: relative !important;
-  z-index: 1 !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* Ensure calendar popup has correct stacking context */
 input[type="date"]:focus {
-  position: relative !important;
-  z-index: 100 !important;
+  position: relative;
+  z-index: 100;
 }
 
 /* Fix select dropdown styling and positioning */
-.chakra-select,
 select {
-  position: relative !important;
-  z-index: 1 !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
+  position: relative;
+  z-index: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 /* Ensure select dropdown options are properly styled */
-.chakra-select option,
 select option {
-  background-color: white !important;
-  color: #111827 !important;
-  padding: 14px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  line-height: 1.5 !important;
-}
-
-/* Fix dropdown arrow positioning */
-.chakra-select__icon-wrapper {
-  position: absolute !important;
-  right: 12px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  pointer-events: none !important;
-  z-index: 2 !important;
+  background-color: white;
+  color: #111827;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 /* Ensure dropdown menu has proper stacking and positioning */
-.chakra-select:focus,
 select:focus {
-  position: relative !important;
-  z-index: 100 !important;
-  outline: none !important;
-}
-
-/* Fix for production minification changing dropdown behavior */
-.chakra-select__wrapper {
-  position: relative !important;
-  z-index: 1 !important;
+  position: relative;
+  z-index: 100;
+  outline: none;
 }
 
 /* Ensure dropdown options list appears correctly */
-.chakra-select option:hover,
 select option:hover {
-  background-color: #f3f4f6 !important;
+  background-color: #f3f4f6;
 }
 
-.chakra-select option:checked,
 select option:checked {
-  background-color: #3b82f6 !important;
-  color: white !important;
+  background-color: #3b82f6;
+  color: white;
 }
 
 /* Fix for white broken list appearance in production */
-/* Override any conflicting Chakra or global styles */
-select[class*="chakra"] {
-  background: white !important;
-  border: 2px solid rgba(59, 130, 246, 0.4) !important;
-  border-radius: 12px !important;
-  color: #111827 !important;
-}
-
-select[class*="chakra"]:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
-}
 
 /* Ensure proper rendering in all browsers */
 @supports (-webkit-appearance: none) {
   select {
-    -webkit-appearance: none !important;
+    -webkit-appearance: none;
   }
 }
 
 @supports (-moz-appearance: none) {
   select {
-    -moz-appearance: none !important;
+    -moz-appearance: none;
   }
 }
 
 /* Critical: Ensure consistent rendering between dev and production */
-select,
-.chakra-select {
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
+select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* Fix for calendar popup direction (ensure it opens downward) */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer !important;
-  filter: invert(1) !important;
-  opacity: 0.8 !important;
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 0.8;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 1 !important;
+  opacity: 1;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:focus {
-  outline: none !important;
+  outline: none;
 }
 
 /* CRITICAL: Prevent calendar from opening upward in production */
 input[type="date"] {
-  transform: none !important;
-  transform-origin: initial !important;
-  position: relative !important;
+  transform: none;
+  transform-origin: initial;
+  position: relative;
 }
 
 /* Fix select dropdown styling inconsistency between dev and production */
 select {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 12px center !important;
-  background-size: 12px !important;
-  padding-right: 36px !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 36px;
 }
 
 /* Override any global styles that might affect select dropdown */
 select option {
-  background: white !important;
-  color: #111827 !important;
-  padding: 8px 12px !important;
-  font-weight: 600 !important;
+  background: white;
+  color: #111827;
+  padding: 8px 12px;
+  font-weight: 600;
 }
 
 /* Booking Luxury: keep disabled inputs legible on dark cards */
-html.booking-luxury-no-smooth .chakra-input[disabled],
-body.booking-luxury-no-smooth .chakra-input[disabled],
 html.booking-luxury-no-smooth input[disabled],
 body.booking-luxury-no-smooth input[disabled] {
-  color: white !important;
-  -webkit-text-fill-color: white !important;
-  opacity: 1 !important;
-  background-color: rgba(26, 26, 26, 0.85) !important;
-  border-color: rgba(139, 92, 246, 0.6) !important;
+  color: white;
+  -webkit-text-fill-color: white;
+  opacity: 1;
+  background-color: rgba(26, 26, 26, 0.85);
+  border-color: rgba(139, 92, 246, 0.6);
 }
 
 /* Booking Luxury: force input text to white on dark cards */
-html.booking-luxury-no-smooth .chakra-input,
-body.booking-luxury-no-smooth .chakra-input,
 html.booking-luxury-no-smooth input,
 body.booking-luxury-no-smooth input,
-html.booking-luxury-no-smooth .chakra-textarea,
-body.booking-luxury-no-smooth .chakra-textarea,
 html.booking-luxury-no-smooth textarea,
 body.booking-luxury-no-smooth textarea {
-  color: white !important;
-  -webkit-text-fill-color: white !important;
+  color: white;
+  -webkit-text-fill-color: white;
 }
 
 html.booking-luxury-no-smooth ::placeholder,
 body.booking-luxury-no-smooth ::placeholder {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-/* Ensure proper z-index hierarchy for form controls */
-.chakra-form-control {
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-.chakra-form-control:focus-within {
-  z-index: 100 !important;
-}
 
 /* Fix for iOS Safari date picker */
 @supports (-webkit-touch-callout: none) {
   input[type="date"] {
-    -webkit-appearance: none !important;
-    min-height: 48px !important;
+    -webkit-appearance: none;
+    min-height: 48px;
   }
 }
 
@@ -1960,97 +1416,97 @@ body.booking-luxury-no-smooth ::placeholder {
 
 /* Booking Date Input - Native HTML styling */
 .booking-date-input {
-  position: relative !important;
-  z-index: 10 !important;
-  width: 100% !important;
-  padding: 12px !important;
-  font-size: 16px !important;
-  border-radius: 12px !important;
-  border: 2px solid rgba(59, 130, 246, 0.4) !important;
-  background-color: rgba(26, 26, 26, 0.8) !important;
-  color: white !important;
-  font-weight: 500 !important;
-  color-scheme: dark !important;
-  cursor: pointer !important;
-  outline: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  background-color: rgba(26, 26, 26, 0.8);
+  color: white;
+  font-weight: 500;
+  color-scheme: dark;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .booking-date-input:hover {
-  border-color: rgba(59, 130, 246, 0.6) !important;
+  border-color: rgba(59, 130, 246, 0.6);
 }
 
 .booking-date-input:focus {
-  border-color: rgba(59, 130, 246, 0.8) !important;
-  z-index: 100 !important;
+  border-color: rgba(59, 130, 246, 0.8);
+  z-index: 100;
 }
 
 .booking-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1) !important;
-  cursor: pointer !important;
-  opacity: 0.9 !important;
-  width: 20px !important;
-  height: 20px !important;
-  position: absolute !important;
-  right: 12px !important;
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.9;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 12px;
 }
 
 /* Booking Time Select - Native HTML styling */
 .booking-time-select {
-  position: relative !important;
-  z-index: 9 !important;
-  width: 100% !important;
-  padding: 12px !important;
-  padding-right: 40px !important;
-  font-size: 16px !important;
-  border-radius: 12px !important;
-  border: 2px solid rgba(139, 92, 246, 0.6) !important;
-  background-color: rgba(26, 26, 26, 0.9) !important;
-  color: white !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  outline: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
+  position: relative;
+  z-index: 9;
+  width: 100%;
+  padding: 12px;
+  padding-right: 40px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(139, 92, 246, 0.6);
+  background-color: rgba(26, 26, 26, 0.9);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .booking-time-select:hover {
-  border-color: rgba(139, 92, 246, 0.8) !important;
+  border-color: rgba(139, 92, 246, 0.8);
 }
 
 .booking-time-select:focus {
-  border-color: rgba(139, 92, 246, 1) !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
-  z-index: 100 !important;
+  border-color: rgba(139, 92, 246, 1);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  z-index: 100;
 }
 
 .booking-time-select option {
-  background-color: rgba(15, 23, 42, 0.95) !important;
-  color: white !important;
-  padding: 14px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  line-height: 1.5 !important;
+  background-color: rgba(15, 23, 42, 0.95);
+  color: white;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .booking-time-select option:hover {
-  background-color: rgba(79, 70, 229, 0.4) !important;
+  background-color: rgba(79, 70, 229, 0.4);
 }
 
 .booking-time-select option:checked {
-  background-color: #8b5cf6 !important;
-  color: white !important;
+  background-color: #8b5cf6;
+  color: white;
 }
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .booking-date-input,
   .booking-time-select {
-    font-size: 16px !important; /* Prevent iOS zoom on focus */
-    min-height: 44px !important; /* iOS touch target minimum */
+    font-size: 16px; /* Prevent iOS zoom on focus */
+    min-height: 44px; /* iOS touch target minimum */
   }
 }
 
@@ -2066,45 +1522,45 @@ body.booking-luxury-no-smooth ::placeholder {
 .category-card-pure-html *,
 .category-name-pure-text,
 .category-name-pure-text * {
-  writing-mode: horizontal-tb !important;
-  -webkit-writing-mode: horizontal-tb !important;
-  -moz-writing-mode: horizontal-tb !important;
-  -ms-writing-mode: lr-tb !important;
-  text-orientation: mixed !important;
-  -webkit-text-orientation: mixed !important;
-  direction: ltr !important;
-  unicode-bidi: normal !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  overflow-wrap: break-word !important;
-  line-height: 1.4 !important;
-  text-rendering: optimizeLegibility !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
+  writing-mode: horizontal-tb;
+  -webkit-writing-mode: horizontal-tb;
+  -moz-writing-mode: horizontal-tb;
+  -ms-writing-mode: lr-tb;
+  text-orientation: mixed;
+  -webkit-text-orientation: mixed;
+  direction: ltr;
+  unicode-bidi: normal;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Common Items Grid - Pure CSS Grid */
 .common-items-grid-container {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 0.5rem !important;
-  width: 100% !important;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  width: 100%;
 }
 
 /* Category Card Pure HTML */
 .category-card-pure-html {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .category-card-pure-html:hover {
-  border-color: rgb(159, 122, 234) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  border-color: rgb(159, 122, 234);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Safari-specific fix for category cards */
@@ -2119,22 +1575,22 @@ body.booking-luxury-no-smooth ::placeholder {
   .category-card-pure-html *,
   .category-name-pure-text,
   .category-name-pure-text * {
-    writing-mode: horizontal-tb !important;
-    -webkit-writing-mode: horizontal-tb !important;
-    text-orientation: mixed !important;
-    -webkit-text-orientation: mixed !important;
-    direction: ltr !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
+    writing-mode: horizontal-tb;
+    -webkit-writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    -webkit-text-orientation: mixed;
+    direction: ltr;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 
 @media (min-width: 768px) {
   .common-items-grid-container {
-    grid-template-columns: repeat(9, 1fr) !important;
-    gap: 0.75rem !important;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 0.75rem;
   }
 }
 
@@ -2145,25 +1601,25 @@ body.booking-luxury-no-smooth ::placeholder {
 .marketplace-item-card *,
 .marketplace-text-fix,
 .marketplace-text-fix * {
-  writing-mode: horizontal-tb !important;
-  -webkit-writing-mode: horizontal-tb !important;
-  -moz-writing-mode: horizontal-tb !important;
-  -ms-writing-mode: lr-tb !important;
-  text-orientation: mixed !important;
-  -webkit-text-orientation: mixed !important;
-  direction: ltr !important;
-  unicode-bidi: normal !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  overflow-wrap: break-word !important;
-  line-height: 1.4 !important;
-  text-rendering: optimizeLegibility !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
+  writing-mode: horizontal-tb;
+  -webkit-writing-mode: horizontal-tb;
+  -moz-writing-mode: horizontal-tb;
+  -ms-writing-mode: lr-tb;
+  text-orientation: mixed;
+  -webkit-text-orientation: mixed;
+  direction: ltr;
+  unicode-bidi: normal;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .marketplace-item-card {
-  display: flex !important;
-  flex-direction: column !important;
+  display: flex;
+  flex-direction: column;
 }

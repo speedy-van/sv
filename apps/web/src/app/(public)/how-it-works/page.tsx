@@ -22,7 +22,7 @@ import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { FaMapMarkerAlt, FaBoxes, FaCreditCard, FaCheckCircle, FaRocket, FaBolt, FaShieldAlt, FaClock } from 'react-icons/fa';
 import { ROUTES } from '@/lib/routing';
-import MobileHeader from '@/components/mobile/MobileHeader';
+import Header from '@/components/site/Header';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -85,9 +85,9 @@ function Step({ n, title, description, icon, features, cta, delay = 0, note }: S
         transition="all 0.3s ease"
         sx={{
           '@media (max-width: 767px)': {
-            width: '100% !important',
-            maxWidth: '100% !important',
-            minWidth: '100% !important',
+            width: '100%',
+            maxWidth: '100%',
+            minWidth: '100%',
           }
         }}
       >
@@ -228,8 +228,8 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
         transition="all 0.3s"
         sx={{
           '@media (max-width: 767px)': {
-            width: '100% !important',
-            maxWidth: '100% !important',
+            width: '100%',
+            maxWidth: '100%',
           }
         }}
       >
@@ -269,7 +269,7 @@ export default function HowItWorksPage() {
 
   return (
     <Box as="main">
-      <MobileHeader />
+      <Header />
       
       {/* Hero Section */}
       <Box
@@ -580,8 +580,8 @@ export default function HowItWorksPage() {
                     w="full"
                     sx={{
                       '@media (max-width: 767px)': {
-                        width: '100% !important',
-                        maxWidth: '100% !important',
+                        width: '100%',
+                        maxWidth: '100%',
                       }
                     }}
                   >
@@ -603,8 +603,8 @@ export default function HowItWorksPage() {
                     w="full"
                     sx={{
                       '@media (max-width: 767px)': {
-                        width: '100% !important',
-                        maxWidth: '100% !important',
+                        width: '100%',
+                        maxWidth: '100%',
                       }
                     }}
                   >
@@ -626,8 +626,8 @@ export default function HowItWorksPage() {
                     w="full"
                     sx={{
                       '@media (max-width: 767px)': {
-                        width: '100% !important',
-                        maxWidth: '100% !important',
+                        width: '100%',
+                        maxWidth: '100%',
                       }
                     }}
                   >
@@ -649,8 +649,8 @@ export default function HowItWorksPage() {
                     w="full"
                     sx={{
                       '@media (max-width: 767px)': {
-                        width: '100% !important',
-                        maxWidth: '100% !important',
+                        width: '100%',
+                        maxWidth: '100%',
                       }
                     }}
                   >

@@ -18,7 +18,7 @@ const generateTestBooking = (overrides: any = {}) => ({
   totalGBP: 5000, // £50
   customerName: 'Test Customer',
   customerEmail: 'test@example.com',
-  customerPhone: '+441202129746',
+  customerPhone: '01202 129746',
   pickupAddressId: 'test_pickup_addr',
   dropoffAddressId: 'test_dropoff_addr',
   pickupPropertyId: 'test_pickup_prop',
@@ -78,7 +78,7 @@ describe('Dual Routing System - Integration Tests', () => {
           email: 'admin@test.com',
           password: 'hashed_password',
           role: 'admin',
-          phone: '+441202129746',
+          phone: '01202 129746',
         }
       });
       adminUserId = newAdmin.id;

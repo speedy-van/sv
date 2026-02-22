@@ -411,7 +411,7 @@ export default function SmartSearchEngine({
 
         {/* Trending Items Section */}
         {showTrending && !searchTerm && trendingItems.length > 0 && (
-          <Card bg="gradient-to-r from-orange.50 to-red.50" borderRadius="xl" p={4}>
+          <Card bg="gradient-to-r from-orange.50 to-red.50" borderRadius="xl" p={{ base: 3, md: 4 }}>
             <VStack spacing={3} align="stretch">
               <HStack spacing={2}>
                 <Icon as={FaFire} color="orange.500" boxSize={4} />
@@ -449,7 +449,7 @@ export default function SmartSearchEngine({
 
         {/* Quick Search Suggestions */}
         {!searchTerm && (
-          <Card bg="purple.50" borderRadius="xl" p={4}>
+          <Card bg="purple.50" borderRadius="xl" p={{ base: 3, md: 4 }}>
             <VStack spacing={3} align="stretch">
               <HStack spacing={2}>
                 <Icon as={FaBolt} color="purple.500" boxSize={4} />

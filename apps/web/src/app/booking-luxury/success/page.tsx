@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef, useState, Suspense } from 'react';
 // @ts-ignore - Temporary fix for Next.js module resolution
@@ -17,7 +17,6 @@ import {
   Text,
   Button,
   Icon,
-  Card,
   CardBody,
   Divider,
   Badge,
@@ -33,7 +32,8 @@ import { CheckCircleIcon, PhoneIcon, EmailIcon } from '@chakra-ui/icons';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import Link from 'next/link';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
+import LuxurySurfaceCard from '../components/LuxurySurfaceCard';
+import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 // SMS will be sent via API endpoint
 
 interface BookingDetails {
@@ -60,15 +60,29 @@ function BookingSuccessPageContent() {
   const [loadingMessage, setLoadingMessage] = useState('Loading your booking details...');
   const [smsSent, setSmsSent] = useState(false);
   const [toastShown, setToastShown] = useState(false);
+  const [pollAttempt, setPollAttempt] = useState(0);
+  const [retryToken, setRetryToken] = useState(0);
   const searchParams = useSearchParams();
   const toast = useToast();
 
   const sessionId = searchParams?.get('session_id');
   const bookingRef = searchParams?.get('booking_ref');  // Generate unique key for SMS tracking (per session)
   const smsTrackingKey = sessionId ? `sms_sent_${sessionId}` : null;
+  const supportPhone = '01202 129746';
+  const supportEmail = 'support@speedy-van.co.uk';
 
   const hasTrackedInitialConversion = useRef(false);
   const hasBookingDetailsRef = useRef(false);
+
+  const handleRetryFetch = () => {
+    setError(null);
+    setBookingDetails(null);
+    hasBookingDetailsRef.current = false;
+    setPollAttempt(0);
+    setLoadingMessage('Retrying booking status...');
+    setIsLoading(true);
+    setRetryToken((prev) => prev + 1);
+  };
 
   // Track page view for Google Ads (only once per page load)
   useEffect(() => {
@@ -115,15 +129,25 @@ function BookingSuccessPageContent() {
 
   useEffect(() => {
     const maxRetries = 8;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
     const safetyTimeout = setTimeout(() => {
       console.warn('⚠️ Safety timeout reached - stopping loading');
       setIsLoading(false);
       if (!hasBookingDetailsRef.current) {
-        setError('We are still finalizing your booking. Please refresh the page or contact support if this persists.');
+        setError(`We are still finalizing your booking. Please retry or contact support at ${supportPhone} / ${supportEmail}.`);
       }
     }, 60000); // 60 seconds max
 
+    const scheduleRetry = (callback: () => void, delayMs: number) => {
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
+      retryTimer = setTimeout(callback, delayMs);
+    };
+
     const fetchBookingDetails = async (retryCount = 0) => {
+      setPollAttempt(retryCount + 1);
+
       if (!sessionId) {
         setError('No session ID provided');
         setIsLoading(false);
@@ -277,17 +301,24 @@ function BookingSuccessPageContent() {
         }
 
         if (isPendingMatch && retryCount < maxRetries) {
-          setIsLoading(false);
+          setIsLoading(true);
           setLoadingMessage(`Finding a driver... Checking status (${retryCount + 1}/${maxRetries})`);
           const delayMs = Math.min(2000 * Math.pow(1.5, retryCount), 15000);
-          setTimeout(() => fetchBookingDetails(retryCount + 1), delayMs);
+          scheduleRetry(() => fetchBookingDetails(retryCount + 1), delayMs);
+          return;
+        }
+
+        if (isPendingMatch && retryCount >= maxRetries) {
+          clearTimeout(safetyTimeout);
+          setIsLoading(false);
+          setError(`We could not confirm a driver match yet. Please retry, refresh, or contact support at ${supportPhone} / ${supportEmail}.`);
           return;
         }
 
         if (!bookingFromApi && retryCount < maxRetries) {
           setLoadingMessage(`Finalizing your booking... (${retryCount + 1}/${maxRetries})`);
           const delayMs = Math.min(2000 * Math.pow(1.5, retryCount), 15000);
-          setTimeout(() => fetchBookingDetails(retryCount + 1), delayMs);
+          scheduleRetry(() => fetchBookingDetails(retryCount + 1), delayMs);
           return;
         }
 
@@ -309,7 +340,7 @@ function BookingSuccessPageContent() {
         
         if (retryCount < 2 && err instanceof Error && !err.message.includes('Payment')) {
           setLoadingMessage(`Connection error... Retrying (${retryCount + 1}/2)`);
-          setTimeout(() => fetchBookingDetails(retryCount + 1), 3000);
+          scheduleRetry(() => fetchBookingDetails(retryCount + 1), 3000);
           return;
         }
         
@@ -323,8 +354,11 @@ function BookingSuccessPageContent() {
     
     return () => {
       clearTimeout(safetyTimeout);
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
     };
-  }, [sessionId, bookingRef, toast, toastShown, smsSent]);
+  }, [sessionId, bookingRef, toast, toastShown, smsSent, retryToken, supportEmail, supportPhone]);
 
   const isConfirmed = bookingDetails?.status === 'CONFIRMED' && bookingDetails?.paymentCaptured;
   const isPendingMatch = bookingDetails?.status === 'PENDING_MATCH' || bookingDetails?.paymentCaptured === false;
@@ -368,6 +402,9 @@ function BookingSuccessPageContent() {
         <VStack spacing={6} align="center">
           <Spinner size="xl" color="green.500" />
           <Text fontSize="lg">{loadingMessage}</Text>
+          <Text fontSize="sm" color="gray.500">
+            Attempt {pollAttempt > 0 ? pollAttempt : 1} of 8
+          </Text>
         </VStack>
       </Container>
     );
@@ -383,11 +420,30 @@ function BookingSuccessPageContent() {
             <AlertDescription>{error}</AlertDescription>
           </Box>
         </Alert>
-        <Box mt={6} textAlign="center">
-          <Button as={Link} href="/" colorScheme="blue">
-            Return Home
-          </Button>
-        </Box>
+        <VStack mt={6} spacing={3} align="stretch">
+          <HStack>
+            <Button colorScheme="blue" onClick={handleRetryFetch}>
+              Retry
+            </Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Refresh page
+            </Button>
+          </HStack>
+          <Alert status="info" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Need support?</AlertTitle>
+              <AlertDescription>
+                Call {supportPhone} or email {supportEmail}
+              </AlertDescription>
+            </Box>
+          </Alert>
+          <Box textAlign="center">
+            <Button as={Link} href="/" colorScheme="blue" variant="ghost">
+              Return Home
+            </Button>
+          </Box>
+        </VStack>
       </Container>
     );
   }
@@ -400,15 +456,34 @@ function BookingSuccessPageContent() {
           <Box>
             <AlertTitle>No booking details found</AlertTitle>
             <AlertDescription>
-              Your payment may still be processing. Please check your email for confirmation.
+              Your payment may still be processing. Please retry now, or contact support if this keeps happening.
             </AlertDescription>
           </Box>
         </Alert>
-        <Box mt={6} textAlign="center">
-          <Button as={Link} href="/" colorScheme="blue">
-            Return Home
-          </Button>
-        </Box>
+        <VStack mt={6} spacing={3} align="stretch">
+          <HStack>
+            <Button colorScheme="blue" onClick={handleRetryFetch}>
+              Retry
+            </Button>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Refresh page
+            </Button>
+          </HStack>
+          <Alert status="info" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Need support?</AlertTitle>
+              <AlertDescription>
+                Call {supportPhone} or email {supportEmail}
+              </AlertDescription>
+            </Box>
+          </Alert>
+          <Box textAlign="center">
+            <Button as={Link} href="/" colorScheme="blue" variant="ghost">
+              Return Home
+            </Button>
+          </Box>
+        </VStack>
       </Container>
     );
   }
@@ -416,26 +491,14 @@ function BookingSuccessPageContent() {
   return (
     <Box 
       minH="100vh" 
-      bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 50%, rgba(15, 23, 42, 0.98) 100%)"
+      bg="bg.canvas"
       position="relative"
       overflow="hidden"
-      _before={{
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bgGradient: 'radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.15), transparent 50%), radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.15), transparent 50%)',
-        animation: 'pulse 4s ease-in-out infinite',
-        pointerEvents: 'none',
-      }}
     >
       <Box position="relative" zIndex={100}>
         <Header />
-        <MobileHeader />
       </Box>
-      <Container maxW="container.lg" py={{ base: 6, md: 12 }} position="relative" zIndex={1}>
+      <ResponsiveSection maxW="1200px" py={{ base: 6, md: 12 }} position="relative" zIndex={1}>
         <VStack spacing={{ base: 6, md: 10 }} align="stretch">
           {/* Success Header - Enhanced */}
           <VStack 
@@ -462,7 +525,7 @@ function BookingSuccessPageContent() {
                 transform="translate(-50%, -50%)"
                 w={{ base: 24, md: 32 }}
                 h={{ base: 24, md: 32 }}
-                bg="radial-gradient(circle, rgba(34, 197, 94, 0.3), transparent 70%)"
+                bg="green.900"
                 borderRadius="full"
                 animation="ripple 2s ease-out infinite"
                 sx={{
@@ -477,7 +540,7 @@ function BookingSuccessPageContent() {
                 w={{ base: 16, md: 20 }} 
                 h={{ base: 16, md: 20 }} 
                 color="green.400"
-                filter="drop-shadow(0 0 20px rgba(34, 197, 94, 0.6))"
+                filter="drop-shadow(0 0 12px rgba(34, 197, 94, 0.35))"
               />
             </Box>
             
@@ -486,25 +549,25 @@ function BookingSuccessPageContent() {
                 fontSize={{ base: "3xl", md: "5xl" }} 
                 fontWeight="900" 
                 letterSpacing="tight"
-                color="white"
-                textShadow="0 8px 30px rgba(16,185,129,0.45), 0 2px 10px rgba(0,0,0,0.35)"
-                bgGradient="linear(to-r, #34d399, #10b981, #22d3ee)"
+                color="text.primary"
+                textShadow="none"
+                bgGradient="linear(to-r, green.300, green.400, cyan.300)"
                 bgClip="text"
               >
                 {headerTitle}
               </Text>
               <Text 
                 fontSize={{ base: "md", md: "xl" }} 
-                color="white"
+                color="text.primary"
                 maxW="2xl"
                 lineHeight="tall"
                 px={{ base: 4, md: 6 }}
                 py={{ base: 3, md: 4 }}
-                bg="rgba(15,23,42,0.55)"
+                bg="bg.surface"
                 border="1px solid"
-                borderColor="rgba(34,197,94,0.35)"
+                borderColor="border.secondary"
                 borderRadius="xl"
-                boxShadow="0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(34,197,94,0.15)"
+                boxShadow="sm"
               >
                 {headerMessage}
               </Text>
@@ -512,15 +575,10 @@ function BookingSuccessPageContent() {
           </VStack>
 
           {/* Booking Details Card - Premium Design */}
-          <Card
-            bg="linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(45, 55, 72, 0.9) 100%)"
-            border="2px solid"
-            borderColor="rgba(34, 197, 94, 0.3)"
-            borderRadius="2xl"
-            backdropFilter="blur(20px)"
-            boxShadow="0 25px 60px rgba(0,0,0,0.5), 0 0 80px rgba(34, 197, 94, 0.15)"
-            position="relative"
-            overflow="hidden"
+          <LuxurySurfaceCard
+            tone="success"
+            borderWidth="2px"
+            boxShadow="lg"
             _before={{
               content: '""',
               position: 'absolute',
@@ -540,7 +598,7 @@ function BookingSuccessPageContent() {
                       h="10px"
                       bg="green.400"
                       borderRadius="full"
-                      boxShadow="0 0 20px rgba(34, 197, 94, 0.8)"
+                      boxShadow="0 0 10px rgba(34, 197, 94, 0.35)"
                       animation="blink 2s ease-in-out infinite"
                       sx={{
                         '@keyframes blink': {
@@ -549,7 +607,7 @@ function BookingSuccessPageContent() {
                         }
                       }}
                     />
-                    <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white">
+                    <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="text.primary">
                       Booking Details
                     </Text>
                   </HStack>
@@ -566,18 +624,18 @@ function BookingSuccessPageContent() {
                   </Badge>
                 </HStack>
                 
-                <Divider borderColor="whiteAlpha.200" />
+                <Divider borderColor="border.primary" />
                 
                 <VStack spacing={{ base: 4, md: 5 }} align="stretch">
                   <HStack 
                     justify="space-between" 
                     p={4}
-                    bg="whiteAlpha.50"
+                    bg="bg.surface"
                     borderRadius="xl"
                     transition="all 0.3s"
-                    _hover={{ bg: "whiteAlpha.100" }}
+                    _hover={{ bg: "bg.surface.elevated" }}
                   >
-                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Booking Reference:</Text>
+                    <Text color="text.secondary" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Booking Reference:</Text>
                     <Text 
                       fontWeight="bold" 
                       fontFamily="mono" 
@@ -592,33 +650,33 @@ function BookingSuccessPageContent() {
                   <HStack 
                     justify="space-between"
                     p={4}
-                    bg="whiteAlpha.50"
+                    bg="bg.surface"
                     borderRadius="xl"
                     transition="all 0.3s"
-                    _hover={{ bg: "whiteAlpha.100" }}
+                    _hover={{ bg: "bg.surface.elevated" }}
                   >
-                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Customer Name:</Text>
-                    <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }} color="white">{bookingDetails.customer.name}</Text>
+                    <Text color="text.secondary" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Customer Name:</Text>
+                    <Text fontWeight="semibold" fontSize={{ base: "sm", md: "md" }} color="text.primary">{bookingDetails.customer.name}</Text>
                   </HStack>
                   
                   <HStack 
                     justify="space-between"
                     p={4}
-                    bg="linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))"
-                    border="2px solid"
-                    borderColor="rgba(34, 197, 94, 0.3)"
+                    bg="green.900"
+                    border="1px solid"
+                    borderColor="green.400"
                     borderRadius="xl"
                     transition="all 0.3s"
                     _hover={{ 
-                      bg: "linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.15))",
-                      borderColor: "rgba(34, 197, 94, 0.5)"
+                      bg: "green.800",
+                      borderColor: "green.300"
                     }}
                   >
-                    <Text color="white" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Total Amount:</Text>
+                    <Text color="text.primary" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Total Amount:</Text>
                     <Text 
                       fontWeight="bold" 
                       fontSize={{ base: "xl", md: "2xl" }}
-                      color="white"
+                      color="text.primary"
                     >
                       £{bookingDetails.totalAmount.toFixed(2)}
                     </Text>
@@ -627,12 +685,12 @@ function BookingSuccessPageContent() {
                   <HStack 
                     justify="space-between"
                     p={4}
-                    bg="whiteAlpha.50"
+                    bg="bg.surface"
                     borderRadius="xl"
                     transition="all 0.3s"
-                    _hover={{ bg: "whiteAlpha.100" }}
+                    _hover={{ bg: "bg.surface.elevated" }}
                   >
-                    <Text color="whiteAlpha.800" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Status:</Text>
+                    <Text color="text.secondary" fontSize={{ base: "sm", md: "md" }} fontWeight="medium">Status:</Text>
                     <Badge 
                       colorScheme={statusBadgeColor}
                       size={{ base: "md", md: "lg" }}
@@ -647,7 +705,7 @@ function BookingSuccessPageContent() {
                 </VStack>
               </VStack>
             </CardBody>
-          </Card>
+          </LuxurySurfaceCard>
 
           {isNoDriverAvailable && (
             <Alert status="warning" borderRadius="xl">
@@ -667,15 +725,10 @@ function BookingSuccessPageContent() {
           )}
 
           {/* Next Steps - Enhanced */}
-          <Card
-            bg="linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(45, 55, 72, 0.9))"
-            border="2px solid"
-            borderColor="rgba(59, 130, 246, 0.3)"
-            borderRadius="2xl"
-            backdropFilter="blur(20px)"
-            boxShadow="0 20px 50px rgba(59, 130, 246, 0.15)"
-            position="relative"
-            overflow="hidden"
+          <LuxurySurfaceCard
+            tone="info"
+            borderWidth="2px"
+            boxShadow="0 20px 46px rgba(59, 130, 246, 0.14)"
             _before={{
               content: '""',
               position: 'absolute',
@@ -859,18 +912,14 @@ function BookingSuccessPageContent() {
                 </VStack>
               </VStack>
             </CardBody>
-          </Card>
+          </LuxurySurfaceCard>
 
           {/* Contact Information - Premium */}
-          <Card
-            bg="linear-gradient(135deg, rgba(45, 55, 72, 0.95), rgba(26, 32, 44, 0.9))"
-            border="2px solid"
-            borderColor="rgba(236, 72, 153, 0.3)"
-            borderRadius="2xl"
-            backdropFilter="blur(20px)"
-            boxShadow="0 20px 50px rgba(236, 72, 153, 0.15)"
-            position="relative"
-            overflow="hidden"
+          <LuxurySurfaceCard
+            tone="neutral"
+            borderWidth="2px"
+            borderColor="pink.400"
+            boxShadow="0 20px 46px rgba(236, 72, 153, 0.15)"
             _before={{
               content: '""',
               position: 'absolute',
@@ -961,7 +1010,7 @@ function BookingSuccessPageContent() {
                 </VStack>
               </VStack>
             </CardBody>
-          </Card>
+          </LuxurySurfaceCard>
 
           {/* Action Buttons - Enhanced */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 3, md: 4 }} w="full">
@@ -1181,7 +1230,7 @@ function BookingSuccessPageContent() {
           ) : null;
         })()}
       </VStack>
-    </Container>
+    </ResponsiveSection>
   </Box>
   );
 }

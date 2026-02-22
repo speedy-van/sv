@@ -263,7 +263,7 @@ export default function AdminChatWidgetMinimal({
         flexDirection="column"
         overflow="hidden"
       >
-        <CardBody p={0} borderBottom="1px solid #2a2f3a" bg="#171923">
+        <CardBody p={0} borderBottom="1px solid #2a2f3a" bg="#0B1020">
           <HStack justify="space-between" p={3}>
             <HStack>
               <Avatar size="sm" bg="#2563eb" icon={<FiZap />} />
@@ -360,7 +360,7 @@ export default function AdminChatWidgetMinimal({
           </VStack>
         </Box>
 
-        <CardBody p={3} borderTop="1px solid #2a2f3a" bg="#171923">
+        <CardBody p={3} borderTop="1px solid #2a2f3a" bg="#0B1020">
           <HStack align="flex-end">
             <Textarea
               value={input}
@@ -374,12 +374,12 @@ export default function AdminChatWidgetMinimal({
               placeholder={placeholder}
               rows={2}
               resize="none"
-              bg="#000000"
-              color="#FFFFFF"
-              borderColor="#333333"
+              bg="#0B1020"
+              color="#F5F8FF"
+              borderColor="#2A3A5E"
               _placeholder={{ color: '#9AA0B4' }}
               fontSize="sm"
-              css={{ caretColor: '#FFFFFF' }}
+              css={{ caretColor: '#F5F8FF' }}
             />
             <IconButton
               aria-label="Send"

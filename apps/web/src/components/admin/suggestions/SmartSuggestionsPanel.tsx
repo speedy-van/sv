@@ -58,9 +58,9 @@ export function SmartSuggestionsPanel({
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -331,7 +331,7 @@ export function SmartSuggestionsPanel({
                       }
                     }}
                     bg={getTypeColor(suggestion.type)}
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     _hover={{ bg: getTypeColor(suggestion.type), opacity: 0.9 }}
                   >
                     {suggestion.actionLabel}

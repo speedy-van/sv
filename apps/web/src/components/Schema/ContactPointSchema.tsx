@@ -16,7 +16,7 @@ interface ContactPointSchemaProps {
 }
 
 const ContactPointSchema: React.FC<ContactPointSchemaProps> = ({
-  telephone = '+441202129746',
+  telephone = '01202 129746',
   email = 'support@speedy-van.co.uk',
   contactType = 'customer service',
   availableLanguage = ['English'],

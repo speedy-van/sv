@@ -41,7 +41,6 @@ import ReviewSchema from '@/components/Schema/ReviewSchema';
 import ServiceSchema from '@/components/Schema/ServiceSchema';
 import { ROUTES } from '@/lib/routing';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import dynamic from 'next/dynamic';
 
 // Lazy load Recent Bookings Widget
@@ -140,7 +139,6 @@ export default function LondonPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <LocalBusinessSchema />
       <ContactPointSchema contactType="customer service" />
 
@@ -295,7 +293,7 @@ export default function LondonPage() {
                 </Button>
                 <Button
                   as={Link}
-                  href="tel:+441202129746"
+                  href="tel:01202129746"
                   size="lg"
                   bg="transparent"
                   color="white"

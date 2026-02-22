@@ -90,11 +90,11 @@ export function CustomViewsManager({
   const [itemToDelete, setItemToDelete] = useState<{ type: 'filter' | 'view'; id: string } | null>(null);
 
   const toast = useToast();
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
-  const bgColor = useColorModeValue('#1a1a1a', '#1a1a1a');
+  const bgColor = useColorModeValue('#18233A', '#18233A');
 
   useEffect(() => {
     loadData();
@@ -331,7 +331,7 @@ export function CustomViewsManager({
           onClick={onFilterModalOpen}
           size="sm"
           bg="#2563eb"
-          color="#FFFFFF"
+          color="#F5F8FF"
           _hover={{ bg: '#1d4ed8' }}
         >
           Save Filter
@@ -341,7 +341,7 @@ export function CustomViewsManager({
           onClick={onViewModalOpen}
           size="sm"
           bg="#9333ea"
-          color="#FFFFFF"
+          color="#F5F8FF"
           _hover={{ bg: '#7c3aed' }}
         >
           Save View
@@ -389,7 +389,7 @@ export function CustomViewsManager({
           {savedFilters.length === 0 ? (
             <Alert status="info" bg="rgba(37, 99, 235, 0.1)" borderColor="#2563eb" borderWidth={1}>
               <AlertIcon color="#2563eb" />
-              <Text fontSize="sm" color="#FFFFFF">
+              <Text fontSize="sm" color="#F5F8FF">
                 No saved filters. Save your current filters to get started.
               </Text>
             </Alert>
@@ -399,7 +399,7 @@ export function CustomViewsManager({
                 <HStack
                   key={filter.id}
                   p={3}
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderRadius="md"
                   borderWidth={1}
                   borderColor={borderColor}
@@ -428,7 +428,7 @@ export function CustomViewsManager({
                       size="sm"
                       onClick={() => handleLoadFilter(filter)}
                       bg="#10b981"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       _hover={{ bg: '#059669' }}
                     >
                       Load
@@ -447,7 +447,7 @@ export function CustomViewsManager({
                           onClick={() => handleSetDefault('filter', filter.id)}
                           bg={cardBg}
                           color={textColor}
-                          _hover={{ bg: '#1a1a1a' }}
+                          _hover={{ bg: '#18233A' }}
                         >
                           Set as Default
                         </MenuItem>
@@ -459,7 +459,7 @@ export function CustomViewsManager({
                           }}
                           bg={cardBg}
                           color="#ef4444"
-                          _hover={{ bg: '#1a1a1a' }}
+                          _hover={{ bg: '#18233A' }}
                         >
                           Delete
                         </MenuItem>
@@ -514,7 +514,7 @@ export function CustomViewsManager({
           {customViews.length === 0 ? (
             <Alert status="info" bg="rgba(147, 51, 234, 0.1)" borderColor="#9333ea" borderWidth={1}>
               <AlertIcon color="#9333ea" />
-              <Text fontSize="sm" color="#FFFFFF">
+              <Text fontSize="sm" color="#F5F8FF">
                 No custom views. Save your current view to get started.
               </Text>
             </Alert>
@@ -524,7 +524,7 @@ export function CustomViewsManager({
                 <HStack
                   key={view.id}
                   p={3}
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderRadius="md"
                   borderWidth={1}
                   borderColor={borderColor}
@@ -561,7 +561,7 @@ export function CustomViewsManager({
                       size="sm"
                       onClick={() => handleLoadView(view)}
                       bg="#9333ea"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       _hover={{ bg: '#7c3aed' }}
                     >
                       Load
@@ -580,7 +580,7 @@ export function CustomViewsManager({
                           onClick={() => handleSetDefault('view', view.id)}
                           bg={cardBg}
                           color={textColor}
-                          _hover={{ bg: '#1a1a1a' }}
+                          _hover={{ bg: '#18233A' }}
                         >
                           Set as Default
                         </MenuItem>
@@ -592,7 +592,7 @@ export function CustomViewsManager({
                           }}
                           bg={cardBg}
                           color="#ef4444"
-                          _hover={{ bg: '#1a1a1a' }}
+                          _hover={{ bg: '#18233A' }}
                         >
                           Delete
                         </MenuItem>
@@ -622,7 +622,7 @@ export function CustomViewsManager({
                   value={filterName}
                   onChange={(e) => setFilterName(e.target.value)}
                   placeholder="e.g., High Priority Orders"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -635,7 +635,7 @@ export function CustomViewsManager({
                   value={filterDescription}
                   onChange={(e) => setFilterDescription(e.target.value)}
                   placeholder="Describe this filter..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                   rows={3}
@@ -647,7 +647,7 @@ export function CustomViewsManager({
             <Button variant="ghost" onClick={onFilterModalClose} mr={3} color={textColor}>
               Cancel
             </Button>
-            <Button bg="#2563eb" color="#FFFFFF" onClick={handleSaveFilter} _hover={{ bg: '#1d4ed8' }}>
+            <Button bg="#2563eb" color="#F5F8FF" onClick={handleSaveFilter} _hover={{ bg: '#1d4ed8' }}>
               Save Filter
             </Button>
           </ModalFooter>
@@ -670,7 +670,7 @@ export function CustomViewsManager({
                   value={viewName}
                   onChange={(e) => setViewName(e.target.value)}
                   placeholder="e.g., My Daily View"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -683,7 +683,7 @@ export function CustomViewsManager({
                   value={viewDescription}
                   onChange={(e) => setViewDescription(e.target.value)}
                   placeholder="Describe this view..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                   rows={3}
@@ -695,7 +695,7 @@ export function CustomViewsManager({
             <Button variant="ghost" onClick={onViewModalClose} mr={3} color={textColor}>
               Cancel
             </Button>
-            <Button bg="#9333ea" color="#FFFFFF" onClick={handleSaveView} _hover={{ bg: '#7c3aed' }}>
+            <Button bg="#9333ea" color="#F5F8FF" onClick={handleSaveView} _hover={{ bg: '#7c3aed' }}>
               Save View
             </Button>
           </ModalFooter>
@@ -717,7 +717,7 @@ export function CustomViewsManager({
             <Button variant="ghost" onClick={onDeleteModalClose} mr={3} color={textColor}>
               Cancel
             </Button>
-            <Button bg="#ef4444" color="#FFFFFF" onClick={handleDelete} _hover={{ bg: '#dc2626' }}>
+            <Button bg="#ef4444" color="#F5F8FF" onClick={handleDelete} _hover={{ bg: '#dc2626' }}>
               Delete
             </Button>
           </ModalFooter>

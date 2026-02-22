@@ -1919,7 +1919,7 @@ const EnhancedAdminRoutesDashboard = ({
                                 '<span style="font-size: 13px; font-weight: 500; color: #10B981;">ONLINE & AVAILABLE</span>' +
                                 '</div>' +
                                 '<div style="font-size: 12px; color: #9CA3AF; margin-bottom: 4px;">Active Routes: <strong style="color: white;">' + driver.activeRoutes + '</strong></div>' +
-                                '<div style="font-size: 11px; color: #6B7280; margin-top: 8px; padding-top: 8px; border-top: 1px solid #374151;">Click to select this driver</div>' +
+                                '<div style="font-size: 11px; color: #6B7280; margin-top: 8px; padding-top: 8px; border-top: 1px solid #2A3A5E;">Click to select this driver</div>' +
                                 '</div>'
                               );
                               

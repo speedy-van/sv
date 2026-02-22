@@ -59,9 +59,9 @@ export function QuickActionsMenu({
   disabled = false,
 }: QuickActionsMenuProps) {
   const toast = useToast();
-  const menuBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const menuBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const handleStatusChange = async (newStatus: string) => {
@@ -136,7 +136,7 @@ export function QuickActionsMenu({
           size="sm"
           isDisabled={disabled}
           color={textColor}
-          _hover={{ bg: '#1a1a1a' }}
+          _hover={{ bg: '#18233A' }}
         />
       </Tooltip>
       <MenuList bg={menuBg} borderColor={borderColor} minW="200px">
@@ -153,7 +153,7 @@ export function QuickActionsMenu({
                 onClick={() => handleStatusChange(status)}
                 bg={menuBg}
                 color={textColor}
-                _hover={{ bg: '#1a1a1a' }}
+                _hover={{ bg: '#18233A' }}
               >
                 <HStack spacing={2}>
                   <Text>Mark as {status.replace('_', ' ')}</Text>
@@ -183,7 +183,7 @@ export function QuickActionsMenu({
                 onClick={() => onSendEmail(orderId)}
                 bg={menuBg}
                 color={textColor}
-                _hover={{ bg: '#1a1a1a' }}
+                _hover={{ bg: '#18233A' }}
               >
                 Send Email
               </MenuItem>
@@ -194,7 +194,7 @@ export function QuickActionsMenu({
                 onClick={() => onSendSMS(orderId)}
                 bg={menuBg}
                 color={textColor}
-                _hover={{ bg: '#1a1a1a' }}
+                _hover={{ bg: '#18233A' }}
               >
                 Send SMS
               </MenuItem>
@@ -213,7 +213,7 @@ export function QuickActionsMenu({
             onClick={() => onEdit(orderId)}
             bg={menuBg}
             color={textColor}
-            _hover={{ bg: '#1a1a1a' }}
+            _hover={{ bg: '#18233A' }}
           >
             Edit Order
           </MenuItem>
@@ -224,7 +224,7 @@ export function QuickActionsMenu({
             onClick={() => onDuplicate(orderId)}
             bg={menuBg}
             color={textColor}
-            _hover={{ bg: '#1a1a1a' }}
+            _hover={{ bg: '#18233A' }}
           >
             Duplicate Order
           </MenuItem>
@@ -235,7 +235,7 @@ export function QuickActionsMenu({
             onClick={() => onAssignDriver(orderId)}
             bg={menuBg}
             color={textColor}
-            _hover={{ bg: '#1a1a1a' }}
+            _hover={{ bg: '#18233A' }}
           >
             Assign Driver
           </MenuItem>
@@ -246,7 +246,7 @@ export function QuickActionsMenu({
             onClick={() => onRequestPayment(orderId)}
             bg={menuBg}
             color={textColor}
-            _hover={{ bg: '#1a1a1a' }}
+            _hover={{ bg: '#18233A' }}
           >
             Request Payment
           </MenuItem>
@@ -259,7 +259,7 @@ export function QuickActionsMenu({
               onClick={() => onDelete(orderId)}
               bg={menuBg}
               color="#ef4444"
-              _hover={{ bg: '#1a1a1a' }}
+              _hover={{ bg: '#18233A' }}
             >
               Delete Order
             </MenuItem>

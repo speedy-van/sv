@@ -1,7 +1,6 @@
 import places from '@/data/places.json';
 import RegionPageClient from '@/components/regions/RegionPageClient';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import type { Metadata } from 'next';
 
 // Force dynamic rendering for ISR
@@ -52,7 +51,6 @@ export default async function RegionPage({ params }: RegionPageProps) {
   return (
     <>
       <Header />
-      <MobileHeader />
       <RegionPageClient regionName={regionName} regionPlaces={regionPlaces} />
     </>
   );

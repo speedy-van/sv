@@ -105,8 +105,8 @@ const colorThemes: Record<JourneyColorTheme, {
   label: string;
 }> = {
   outbound: {
-    bgGradient: 'linear(135deg, #4299e1 0%, #3182ce 50%, #2b6cb0 100%)',
-    fallbackBg: '#3182ce',
+    bgGradient: 'linear-gradient(135deg, var(--chakra-colors-blue-500) 0%, var(--chakra-colors-blue-600) 50%, var(--chakra-colors-blue-700) 100%)',
+    fallbackBg: 'blue.600',
     borderColor: 'blue.200',
     hoverBorderColor: 'blue.400',
     badgeColorScheme: 'blue',
@@ -119,8 +119,8 @@ const colorThemes: Record<JourneyColorTheme, {
     label: 'Outbound',
   },
   return: {
-    bgGradient: 'linear(135deg, #48bb78 0%, #38a169 50%, #2f855a 100%)',
-    fallbackBg: '#38a169',
+    bgGradient: 'linear-gradient(135deg, var(--chakra-colors-green-400) 0%, var(--chakra-colors-green-500) 50%, var(--chakra-colors-green-600) 100%)',
+    fallbackBg: 'green.600',
     borderColor: 'green.200',
     hoverBorderColor: 'green.400',
     badgeColorScheme: 'green',
@@ -133,8 +133,8 @@ const colorThemes: Record<JourneyColorTheme, {
     label: 'Return',
   },
   additional: {
-    bgGradient: 'linear(135deg, #b794f4 0%, #9f7aea 50%, #805ad5 100%)',
-    fallbackBg: '#9f7aea',
+    bgGradient: 'linear-gradient(135deg, var(--chakra-colors-purple-400) 0%, var(--chakra-colors-purple-500) 50%, var(--chakra-colors-purple-600) 100%)',
+    fallbackBg: 'purple.600',
     borderColor: 'purple.200',
     hoverBorderColor: 'purple.400',
     badgeColorScheme: 'purple',
@@ -147,8 +147,8 @@ const colorThemes: Record<JourneyColorTheme, {
     label: 'Additional',
   },
   default: {
-    bgGradient: 'linear(135deg, #805ad5 0%, #667eea 50%, #764ba2 100%)',
-    fallbackBg: '#667eea',
+    bgGradient: 'linear-gradient(135deg, var(--chakra-colors-purple-600) 0%, var(--chakra-colors-blue-500) 50%, var(--chakra-colors-purple-700) 100%)',
+    fallbackBg: 'purple.600',
     borderColor: 'purple.200',
     hoverBorderColor: 'purple.400',
     badgeColorScheme: 'purple',
@@ -193,10 +193,10 @@ export default function SelectedItemsCard({
   // Get icon color based on theme
   const getIconColor = () => {
     switch (segmentType) {
-      case 'outbound': return '#3182CE';
-      case 'return': return '#38A169';
-      case 'additional': return '#9F7AEA';
-      default: return '#8B5CF6';
+      case 'outbound': return 'blue.600';
+      case 'return': return 'green.600';
+      case 'additional': return 'purple.600';
+      default: return 'purple.600';
     }
   };
 
@@ -234,10 +234,10 @@ export default function SelectedItemsCard({
   // Get gradient for category icon background
   const getCategoryGradient = () => {
     switch (segmentType) {
-      case 'outbound': return 'linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%)';
-      case 'return': return 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)';
-      case 'additional': return 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)';
-      default: return 'linear-gradient(135deg, #faf5ff 0%, #e9d8fd 100%)';
+      case 'outbound': return 'linear-gradient(135deg, var(--chakra-colors-blue-50) 0%, var(--chakra-colors-blue-100) 100%)';
+      case 'return': return 'linear-gradient(135deg, var(--chakra-colors-green-50) 0%, var(--chakra-colors-green-100) 100%)';
+      case 'additional': return 'linear-gradient(135deg, var(--chakra-colors-purple-50) 0%, var(--chakra-colors-purple-100) 100%)';
+      default: return 'linear-gradient(135deg, var(--chakra-colors-purple-50) 0%, var(--chakra-colors-purple-100) 100%)';
     }
   };
 
@@ -254,14 +254,14 @@ export default function SelectedItemsCard({
           _hover={{ borderColor: theme.hoverBorderColor, transform: 'scale(1.01)' }}
           transition="all 0.3s ease"
         >
-          <CardBody py={10}>
+          <CardBody py={{ base: 8, md: 10 }}>
             <VStack spacing={5}>
               <Box
                 position="relative"
                 w="90px"
                 h="90px"
                 borderRadius="2xl"
-                bg="white"
+                bg="bg.surface"
                 boxShadow="0 8px 25px rgba(0,0,0,0.1)"
                 display="flex"
                 alignItems="center"
@@ -286,10 +286,10 @@ export default function SelectedItemsCard({
                 />
               </Box>
               <VStack spacing={2}>
-                <Text color="gray.700" fontSize="lg" fontWeight="bold">
+                <Text color="text.primary" fontSize="lg" fontWeight="bold">
                   No items selected
                 </Text>
-                <Text color="gray.500" fontSize="sm" textAlign="center" maxW="200px">
+                <Text color="text.secondary" fontSize="sm" textAlign="center" maxW="200px">
                   {isMultiLeg && segmentLabel 
                     ? `Add items for ${segmentLabel}`
                     : 'Browse the catalog above to add items'
@@ -318,7 +318,7 @@ export default function SelectedItemsCard({
       <VStack spacing={4} align="stretch" w="100%">
         {/* Header - Single Line Layout */}
         <Card
-          bg={theme.fallbackBg}
+                bg={theme.fallbackBg}
           bgGradient={theme.bgGradient}
           borderWidth="2px"
           borderColor={theme.accentColor}
@@ -419,7 +419,7 @@ export default function SelectedItemsCard({
           {items.map((item, index) => (
             <ScaleFade key={`${item.id}-${index}`} initialScale={0.98} in delay={index * 0.05}>
               <Card
-                bg="white"
+                bg="bg.surface"
                 borderWidth="2px"
                 borderColor={theme.borderColor}
                 borderRadius="xl"
@@ -455,7 +455,7 @@ export default function SelectedItemsCard({
                           h="100%"
                           borderRadius={{ base: 'lg', md: 'xl' }}
                           overflow="hidden"
-                          bg="gray.100"
+                          bg="bg.surface.elevated"
                           boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                         >
                           <NextImage
@@ -494,7 +494,7 @@ export default function SelectedItemsCard({
                           <Icon 
                             as={getCategoryIcon(item.category)} 
                             boxSize={{ base: 5, sm: 6, md: 7 }} 
-                            color={theme.accentColor}
+                            color={getIconColor()}
                           />
                           <Badge
                             position="absolute"
@@ -523,7 +523,7 @@ export default function SelectedItemsCard({
                       <Text 
                         fontWeight="700" 
                         fontSize={{ base: 'sm', sm: 'md', md: 'lg' }} 
-                        color="gray.800" 
+                        color="text.primary" 
                         noOfLines={1}
                         whiteSpace="nowrap"
                         overflow="hidden"
@@ -550,7 +550,7 @@ export default function SelectedItemsCard({
                         >
                           {item.category}
                         </Badge>
-                        <HStack spacing={0.5} color="gray.500" fontSize={{ base: '10px', sm: '11px', md: 'xs' }} flexShrink={0}>
+                        <HStack spacing={0.5} color="text.tertiary" fontSize={{ base: '10px', sm: '11px', md: 'xs' }} flexShrink={0}>
                           <Icon as={FaWeight} boxSize={{ base: 2.5, sm: 3 }} />
                           <Text whiteSpace="nowrap">{item.weight} kg</Text>
                         </HStack>
@@ -671,7 +671,7 @@ export default function SelectedItemsCard({
                         >
                           {item.quantity}
                         </Text>
-                        <Text fontSize={{ base: '10px', sm: '11px', md: 'xs' }} color="gray.500" mt={0.5} whiteSpace="nowrap">
+                        <Text fontSize={{ base: '10px', sm: '11px', md: 'xs' }} color="text.tertiary" mt={0.5} whiteSpace="nowrap">
                           Qty
                         </Text>
                       </Box>
@@ -683,10 +683,10 @@ export default function SelectedItemsCard({
                   <Divider my={3} borderColor={theme.borderColor} />
                   <Flex justify="space-between" align="center" px={1}>
                     <HStack spacing={2}>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="text.secondary">
                         Subtotal
                       </Text>
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color="text.tertiary">
                         ({item.quantity} × £{item.unitPrice?.toFixed(2)})
                       </Text>
                     </HStack>
@@ -720,7 +720,7 @@ export default function SelectedItemsCard({
                     w="50px"
                     h="50px"
                     borderRadius="xl"
-                    bg="white"
+                    bg="bg.surface"
                     boxShadow="0 4px 12px rgba(0,0,0,0.1)"
                     display="flex"
                     alignItems="center"
@@ -746,10 +746,10 @@ export default function SelectedItemsCard({
                     </Badge>
                   </Box>
                   <VStack align="start" spacing={0}>
-                    <Text fontSize="md" color="gray.800" fontWeight="bold">
+                    <Text fontSize="md" color="text.primary" fontWeight="bold">
                       Items Total
                     </Text>
-                    <HStack spacing={2} fontSize="sm" color="gray.600">
+                    <HStack spacing={2} fontSize="sm" color="text.secondary">
                       <HStack spacing={1}>
                         <Icon as={FaCubes} boxSize={3} />
                         <Text>{items.length} types</Text>
@@ -764,13 +764,13 @@ export default function SelectedItemsCard({
                 </HStack>
                 <Box 
                   textAlign="right"
-                  bg="white"
+                  bg="bg.surface"
                   px={4}
                   py={2}
                   borderRadius="xl"
                   boxShadow="0 2px 8px rgba(0,0,0,0.08)"
                 >
-                  <Text fontSize="xs" color="gray.500">Estimated</Text>
+                  <Text fontSize="xs" color="text.tertiary">Estimated</Text>
                   <Text fontSize="2xl" fontWeight="bold" color={theme.accentDark}>
                     £{totalPrice.toFixed(2)}
                   </Text>

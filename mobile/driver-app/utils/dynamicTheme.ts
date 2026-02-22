@@ -33,39 +33,39 @@ const getTimeBasedColors = (hour: number) => {
   // Dawn (5-7 AM)
   if (hour >= 5 && hour < 7) {
     return {
-      primary: '#FF6B35', // Warm orange
-      accent: '#F7931E',  // Golden
+      primary: '#3B82F6',
+      accent: '#22D3EE',
     };
   }
 
   // Morning (7 AM - 12 PM)
   if (hour >= 7 && hour < 12) {
     return {
-      primary: '#007AFF', // iOS Blue
-      accent: '#34C759',  // Green
+      primary: '#3B82F6',
+      accent: '#22D3EE',
     };
   }
 
   // Afternoon (12-5 PM)
   if (hour >= 12 && hour < 17) {
     return {
-      primary: '#5856D6', // Purple
-      accent: '#FF9500',  // Orange
+      primary: '#3B82F6',
+      accent: '#22D3EE',
     };
   }
 
   // Evening (5-9 PM)
   if (hour >= 17 && hour < 21) {
     return {
-      primary: '#AF52DE', // Purple
-      accent: '#FF2D55',  // Pink
+      primary: '#3B82F6',
+      accent: '#22D3EE',
     };
   }
 
   // Night (9 PM - 5 AM)
   return {
-    primary: '#007AFF', // Blue
-    accent: '#5AC8FA',  // Light blue
+    primary: '#3B82F6',
+    accent: '#22D3EE',
   };
 };
 
@@ -84,7 +84,7 @@ const getHighContrastColors = (baseColors: typeof colors, highContrast: boolean)
     ...baseColors,
     text: {
       ...baseColors.text,
-      secondary: '#FFFFFF', // Full white for better contrast
+      secondary: '#F5F8FF', // Full white for better contrast
       tertiary: '#CCCCCC',   // Lighter gray
     },
     border: {
@@ -131,7 +131,7 @@ export const useAdaptiveTheme = (
   // Determine effective theme mode
   const effectiveTheme = useMemo(() => {
     if (mode === 'auto') {
-      return systemTheme || 'dark'; // Default to dark if system theme unavailable
+      return 'dark';
     }
     return mode;
   }, [mode, systemTheme]);
@@ -153,15 +153,15 @@ export const useAdaptiveTheme = (
 
     // Adaptive background colors based on theme and display
     const adaptiveBackground = effectiveTheme === 'dark' ? {
-      primary: oled ? '#000000' : baseColors.background.primary,
-      secondary: oled ? '#000000' : baseColors.background.secondary,
+      primary: oled ? '#0B1020' : baseColors.background.primary,
+      secondary: oled ? '#0B1020' : baseColors.background.secondary,
       tertiary: oled ? '#0A0A0A' : baseColors.background.tertiary,
       elevated: oled ? '#1A1A1A' : baseColors.background.elevated,
     } : {
-      primary: '#FFFFFF',
+      primary: '#F5F8FF',
       secondary: '#F8F9FA',
       tertiary: '#F1F3F4',
-      elevated: '#FFFFFF',
+      elevated: '#F5F8FF',
     };
 
     return {
@@ -170,7 +170,7 @@ export const useAdaptiveTheme = (
       adaptive: {
         background: adaptiveBackground.primary,
         surface: adaptiveBackground.secondary,
-        text: effectiveTheme === 'dark' ? '#FFFFFF' : '#000000',
+        text: effectiveTheme === 'dark' ? '#F5F8FF' : '#0B1020',
         border: effectiveTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
       },
       timeBased: timeColors,
@@ -308,7 +308,7 @@ export const defaultAdaptiveTheme: AdaptiveTheme = {
       border: colors.border.light,
     },
     timeBased: {
-      primary: '#007AFF',
+      primary: '#3B82F6',
       accent: '#34C759',
     }
   },

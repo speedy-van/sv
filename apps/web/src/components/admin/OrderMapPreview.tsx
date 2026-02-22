@@ -23,8 +23,8 @@ export function OrderMapPreview({
   pickupLocation,
   dropoffLocation,
   height = '300px',
-  bgColor = '#000000',
-  borderColor = '#333333',
+  bgColor = '#0B1020',
+  borderColor = '#2A3A5E',
 }: OrderMapPreviewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
@@ -258,7 +258,7 @@ export function OrderMapPreview({
       >
         <Alert status="error" bg={bgColor} borderColor={borderColor}>
           <AlertIcon />
-          <Text color="#FFFFFF">{error}</Text>
+          <Text color="#F5F8FF">{error}</Text>
         </Alert>
       </Box>
     );

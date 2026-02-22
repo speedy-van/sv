@@ -86,7 +86,7 @@ await unifiedEmailService.sendOrderConfirmation({
 **Supported UK Number Formats** (auto-converted to 0044):
 - `01202129746` → `00441202129746`
 - `00441202129746` → `00441202129746`
-- `+441202129746` → `00441202129746`
+- `01202 129746` → `00441202129746`
 - `441202129746` → `00441202129746`
 
 **Environment Variables**:
@@ -249,10 +249,10 @@ STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 The SMS service automatically normalizes UK phone numbers:
 
 ```typescript
-// All these formats are supported and normalized to +441202129746
+// All these formats are supported and normalized to 01202 129746
 '01202129746'      // Mobile with leading 0
 '00441202129746'   // International with 0044
-'+441202129746'    // International with +44
+'01202 129746'    // International with +44
 '441202129746'     // International without +
 ```
 

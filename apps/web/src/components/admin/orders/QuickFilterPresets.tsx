@@ -61,13 +61,13 @@ export function QuickFilterPresets({
               bg={
                 activePreset === preset.id
                   ? `${preset.colorScheme}.500`
-                  : '#111111'
+                  : '#121A2B'
               }
-              color="#FFFFFF"
+              color="#F5F8FF"
               borderColor={
                 activePreset === preset.id
                   ? `${preset.colorScheme}.500`
-                  : '#333333'
+                  : '#2A3A5E'
               }
               borderWidth="2px"
               borderRadius="lg"
@@ -83,7 +83,7 @@ export function QuickFilterPresets({
               _hover={{
                 bg: activePreset === preset.id 
                   ? `${preset.colorScheme}.600` 
-                  : '#1a1a1a',
+                  : '#18233A',
                 borderColor: `${preset.colorScheme}.400`,
                 transform: 'translateY(-2px)',
                 boxShadow: `0 6px 20px rgba(0, 0, 0, 0.4)`,
@@ -103,7 +103,7 @@ export function QuickFilterPresets({
                       ? `${preset.colorScheme}.700`
                       : `${preset.colorScheme}.500`
                   }
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   borderRadius="full"
                   px={2}
                   py={0.5}

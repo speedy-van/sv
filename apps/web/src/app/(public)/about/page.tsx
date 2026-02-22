@@ -26,7 +26,6 @@ import { JsonLd } from './metadata';
 import AnalyticsConsentGate from './AnalyticsConsentGate';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import { ROUTES } from '@/lib/routing';
 import { 
   FiCheckCircle, 
@@ -51,7 +50,6 @@ export default function AboutPage() {
   return (
     <Box bg="#0D0D0D" minH="100vh">
       <Header />
-      <MobileHeader />
       <AnalyticsConsentGate />
       <JsonLd />
       

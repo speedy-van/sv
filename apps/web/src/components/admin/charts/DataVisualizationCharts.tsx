@@ -40,9 +40,9 @@ export function DataVisualizationCharts({ period = '30d' }: DataVisualizationCha
   const [ordersData, setOrdersData] = useState<ChartData | null>(null);
   const [statusDistribution, setStatusDistribution] = useState<ChartData | null>(null);
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -275,7 +275,7 @@ export function DataVisualizationCharts({ period = '30d' }: DataVisualizationCha
                           <Box
                             w="100%"
                             h="8px"
-                            bg="#1a1a1a"
+                            bg="#18233A"
                             borderRadius="full"
                             overflow="hidden"
                           >

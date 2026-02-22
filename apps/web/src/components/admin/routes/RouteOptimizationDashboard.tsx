@@ -183,11 +183,11 @@ export function RouteOptimizationDashboard({
 
   if (!currentRoute || !currentRoute.drops || currentRoute.drops.length < 2) {
     return (
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardBody>
-          <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+          <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
             <AlertIcon />
-            <Text color="#FFFFFF">
+            <Text color="#F5F8FF">
               Route needs at least 2 drops for optimization
             </Text>
           </Alert>
@@ -199,12 +199,12 @@ export function RouteOptimizationDashboard({
   return (
     <VStack align="stretch" spacing={4}>
       {/* Optimization Controls */}
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardHeader>
           <HStack justify="space-between">
             <HStack spacing={2}>
               <FiZap color="#f59e0b" />
-              <Text fontWeight="bold" fontSize="lg" color="#FFFFFF">
+              <Text fontWeight="bold" fontSize="lg" color="#F5F8FF">
                 Route Optimization
               </Text>
             </HStack>
@@ -214,7 +214,7 @@ export function RouteOptimizationDashboard({
               onClick={loadOptimizationMetrics}
               isLoading={loading}
               bg="#2563eb"
-              color="#FFFFFF"
+              color="#F5F8FF"
               _hover={{ bg: '#1d4ed8' }}
             >
               Refresh Metrics
@@ -229,9 +229,9 @@ export function RouteOptimizationDashboard({
                 <Select
                   value={optimizationMode}
                   onChange={(e) => setOptimizationMode(e.target.value as any)}
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                 >
                   <option value="balanced">Balanced (Recommended)</option>
                   <option value="distance">Minimize Distance</option>
@@ -245,14 +245,14 @@ export function RouteOptimizationDashboard({
                   onChange={(e) => setIncludeTraffic(e.target.checked)}
                   colorScheme="blue"
                 >
-                  <Text color="#FFFFFF" fontSize="sm">Include Traffic Data</Text>
+                  <Text color="#F5F8FF" fontSize="sm">Include Traffic Data</Text>
                 </Checkbox>
                 <Checkbox
                   isChecked={includeTimeWindows}
                   onChange={(e) => setIncludeTimeWindows(e.target.checked)}
                   colorScheme="blue"
                 >
-                  <Text color="#FFFFFF" fontSize="sm">Respect Time Windows</Text>
+                  <Text color="#F5F8FF" fontSize="sm">Respect Time Windows</Text>
                 </Checkbox>
               </VStack>
             </SimpleGrid>
@@ -261,7 +261,7 @@ export function RouteOptimizationDashboard({
               leftIcon={<FiZap />}
               onClick={onOptimizeModalOpen}
               bg="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-              color="#FFFFFF"
+              color="#F5F8FF"
               _hover={{ bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)' }}
               size="lg"
               fontWeight="bold"
@@ -274,7 +274,7 @@ export function RouteOptimizationDashboard({
 
       {/* Optimization Metrics */}
       {loading ? (
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardBody>
             <HStack justify="center" py={8}>
               <Spinner size="lg" color="#2563eb" />
@@ -284,11 +284,11 @@ export function RouteOptimizationDashboard({
       ) : metrics ? (
         <SimpleGrid columns={3} spacing={4}>
           {/* Distance Savings */}
-          <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+          <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
             <CardBody>
               <Stat>
                 <StatLabel color="#9ca3af">Distance</StatLabel>
-                <StatNumber color="#FFFFFF" fontSize="2xl">
+                <StatNumber color="#F5F8FF" fontSize="2xl">
                   {metrics.optimizedDistance.toFixed(1)} km
                 </StatNumber>
                 <StatHelpText>
@@ -305,11 +305,11 @@ export function RouteOptimizationDashboard({
           </Card>
 
           {/* Time Savings */}
-          <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+          <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
             <CardBody>
               <Stat>
                 <StatLabel color="#9ca3af">Duration</StatLabel>
-                <StatNumber color="#FFFFFF" fontSize="2xl">
+                <StatNumber color="#F5F8FF" fontSize="2xl">
                   {formatDuration(metrics.optimizedDuration)}
                 </StatNumber>
                 <StatHelpText>
@@ -326,11 +326,11 @@ export function RouteOptimizationDashboard({
           </Card>
 
           {/* Cost Savings */}
-          <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+          <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
             <CardBody>
               <Stat>
                 <StatLabel color="#9ca3af">Cost</StatLabel>
-                <StatNumber color="#FFFFFF" fontSize="2xl">
+                <StatNumber color="#F5F8FF" fontSize="2xl">
                   £{((metrics.optimizedCost || 0) / 100).toFixed(2)}
                 </StatNumber>
                 <StatHelpText>
@@ -350,11 +350,11 @@ export function RouteOptimizationDashboard({
 
       {/* Efficiency Gain */}
       {metrics && (
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardBody>
             <VStack align="stretch" spacing={3}>
               <HStack justify="space-between">
-                <Text fontWeight="bold" color="#FFFFFF">
+                <Text fontWeight="bold" color="#F5F8FF">
                   Overall Efficiency Gain
                 </Text>
                 <Badge
@@ -387,9 +387,9 @@ export function RouteOptimizationDashboard({
 
       {/* Suggestions */}
       {metrics && metrics.suggestions && metrics.suggestions.length > 0 && (
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardHeader>
-            <Text fontWeight="bold" color="#FFFFFF">
+            <Text fontWeight="bold" color="#F5F8FF">
               Optimization Suggestions
             </Text>
           </CardHeader>
@@ -398,7 +398,7 @@ export function RouteOptimizationDashboard({
               {metrics.suggestions.map((suggestion, index) => (
                 <HStack key={index} align="start" spacing={2}>
                   <FiAlertCircle color="#f59e0b" />
-                  <Text fontSize="sm" color="#FFFFFF" flex={1}>
+                  <Text fontSize="sm" color="#F5F8FF" flex={1}>
                     {suggestion}
                   </Text>
                 </HStack>
@@ -411,20 +411,20 @@ export function RouteOptimizationDashboard({
       {/* Optimize Confirmation Modal */}
       <Modal isOpen={isOptimizeModalOpen} onClose={onOptimizeModalClose} size="lg">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Confirm Route Optimization</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Confirm Route Optimization</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack align="stretch" spacing={4}>
-              <Alert status="warning" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="warning" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   This will reorder the route stops to optimize efficiency. The current order will be replaced.
                 </Text>
               </Alert>
               {metrics && (
                 <VStack align="stretch" spacing={2}>
-                  <Text fontWeight="bold" color="#FFFFFF">Expected Improvements:</Text>
+                  <Text fontWeight="bold" color="#F5F8FF">Expected Improvements:</Text>
                   <HStack justify="space-between">
                     <Text fontSize="sm" color="#9ca3af">Distance Reduction:</Text>
                     <Text fontSize="sm" color="#10b981" fontWeight="bold">
@@ -454,9 +454,9 @@ export function RouteOptimizationDashboard({
               <Button
                 variant="outline"
                 onClick={onOptimizeModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
-                _hover={{ bg: '#1a1a1a' }}
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
+                _hover={{ bg: '#18233A' }}
               >
                 Cancel
               </Button>
@@ -465,7 +465,7 @@ export function RouteOptimizationDashboard({
                 onClick={handleOptimize}
                 isLoading={optimizing}
                 bg="#f59e0b"
-                color="#FFFFFF"
+                color="#F5F8FF"
                 _hover={{ bg: '#d97706' }}
                 leftIcon={<FiZap />}
               >

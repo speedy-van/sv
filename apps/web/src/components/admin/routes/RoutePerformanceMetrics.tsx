@@ -279,7 +279,7 @@ export function RoutePerformanceMetrics({
 
   if (loading) {
     return (
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardBody>
           <HStack justify="center" py={8}>
             <Spinner size="lg" color="#2563eb" />
@@ -291,11 +291,11 @@ export function RoutePerformanceMetrics({
 
   if (!metrics) {
     return (
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardBody>
-          <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+          <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
             <AlertIcon />
-            <Text color="#FFFFFF">
+            <Text color="#F5F8FF">
               No performance data available for this route
             </Text>
           </Alert>
@@ -307,12 +307,12 @@ export function RoutePerformanceMetrics({
   return (
     <VStack align="stretch" spacing={4}>
       {/* Overall Performance Score */}
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardHeader>
           <HStack justify="space-between">
             <HStack spacing={2}>
               <FiBarChart2 color="#2563eb" />
-              <Text fontWeight="bold" fontSize="lg" color="#FFFFFF">
+              <Text fontWeight="bold" fontSize="lg" color="#F5F8FF">
                 Overall Performance Score
               </Text>
             </HStack>
@@ -343,19 +343,19 @@ export function RoutePerformanceMetrics({
           <SimpleGrid columns={3} spacing={4}>
             <Stat>
               <StatLabel color="#9ca3af">Distance Efficiency</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="xl">
+              <StatNumber color="#F5F8FF" fontSize="xl">
                 {metrics.efficiency.distanceEfficiency.toFixed(1)}%
               </StatNumber>
             </Stat>
             <Stat>
               <StatLabel color="#9ca3af">Time Efficiency</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="xl">
+              <StatNumber color="#F5F8FF" fontSize="xl">
                 {metrics.efficiency.timeEfficiency.toFixed(1)}%
               </StatNumber>
             </Stat>
             <Stat>
               <StatLabel color="#9ca3af">Cost Efficiency</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="xl">
+              <StatNumber color="#F5F8FF" fontSize="xl">
                 {metrics.efficiency.costEfficiency.toFixed(1)}%
               </StatNumber>
             </Stat>
@@ -366,11 +366,11 @@ export function RoutePerformanceMetrics({
       {/* Key Metrics Grid */}
       <SimpleGrid columns={4} spacing={4}>
         {/* On-Time Performance */}
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardBody>
             <Stat>
               <StatLabel color="#9ca3af">On-Time Rate</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="2xl">
+              <StatNumber color="#F5F8FF" fontSize="2xl">
                 {metrics.onTimePerformance.onTimeRate.toFixed(1)}%
               </StatNumber>
               <StatHelpText>
@@ -388,11 +388,11 @@ export function RoutePerformanceMetrics({
         </Card>
 
         {/* Completion Rate */}
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardBody>
             <Stat>
               <StatLabel color="#9ca3af">Completion Rate</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="2xl">
+              <StatNumber color="#F5F8FF" fontSize="2xl">
                 {metrics.completion.completionRate.toFixed(1)}%
               </StatNumber>
               <StatHelpText>
@@ -405,11 +405,11 @@ export function RoutePerformanceMetrics({
         </Card>
 
         {/* Profit Margin */}
-        <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+        <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
           <CardBody>
             <Stat>
               <StatLabel color="#9ca3af">Profit Margin</StatLabel>
-              <StatNumber color="#FFFFFF" fontSize="2xl">
+              <StatNumber color="#F5F8FF" fontSize="2xl">
                 {metrics.financial.profitMargin.toFixed(1)}%
               </StatNumber>
               <StatHelpText>
@@ -426,11 +426,11 @@ export function RoutePerformanceMetrics({
 
         {/* Driver Utilization */}
         {metrics.driverPerformance && (
-          <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+          <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
             <CardBody>
               <Stat>
                 <StatLabel color="#9ca3af">Driver Utilization</StatLabel>
-                <StatNumber color="#FFFFFF" fontSize="2xl">
+                <StatNumber color="#F5F8FF" fontSize="2xl">
                   {metrics.driverPerformance.utilizationRate.toFixed(1)}%
                 </StatNumber>
                 <StatHelpText>
@@ -445,9 +445,9 @@ export function RoutePerformanceMetrics({
       </SimpleGrid>
 
       {/* Financial Breakdown */}
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardHeader>
-          <Text fontWeight="bold" fontSize="md" color="#FFFFFF">
+          <Text fontWeight="bold" fontSize="md" color="#F5F8FF">
             Financial Breakdown
           </Text>
         </CardHeader>
@@ -476,9 +476,9 @@ export function RoutePerformanceMetrics({
       </Card>
 
       {/* Drop Performance Table */}
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardHeader>
-          <Text fontWeight="bold" fontSize="md" color="#FFFFFF">
+          <Text fontWeight="bold" fontSize="md" color="#F5F8FF">
             Drop Performance
           </Text>
         </CardHeader>
@@ -486,19 +486,19 @@ export function RoutePerformanceMetrics({
           <Table variant="simple" size="sm">
             <Thead>
               <Tr>
-                <Th color="#FFFFFF" borderColor="#333333">#</Th>
-                <Th color="#FFFFFF" borderColor="#333333">Status</Th>
-                <Th color="#FFFFFF" borderColor="#333333">Scheduled</Th>
-                <Th color="#FFFFFF" borderColor="#333333">Actual</Th>
-                <Th color="#FFFFFF" borderColor="#333333">Delay</Th>
-                <Th color="#FFFFFF" borderColor="#333333">Efficiency</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">#</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">Status</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">Scheduled</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">Actual</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">Delay</Th>
+                <Th color="#F5F8FF" borderColor="#2A3A5E">Efficiency</Th>
               </Tr>
             </Thead>
             <Tbody>
               {metrics.dropMetrics.map((drop) => (
                 <Tr key={drop.dropId}>
-                  <Td color="#FFFFFF" borderColor="#333333">{drop.sequence}</Td>
-                  <Td borderColor="#333333">
+                  <Td color="#F5F8FF" borderColor="#2A3A5E">{drop.sequence}</Td>
+                  <Td borderColor="#2A3A5E">
                     <Badge
                       colorScheme={
                         drop.status === 'completed' ? 'green' :
@@ -510,11 +510,11 @@ export function RoutePerformanceMetrics({
                       {drop.status}
                     </Badge>
                   </Td>
-                  <Td color="#FFFFFF" borderColor="#333333">{drop.scheduledTime}</Td>
-                  <Td color="#FFFFFF" borderColor="#333333">
+                  <Td color="#F5F8FF" borderColor="#2A3A5E">{drop.scheduledTime}</Td>
+                  <Td color="#F5F8FF" borderColor="#2A3A5E">
                     {drop.actualTime || '-'}
                   </Td>
-                  <Td borderColor="#333333">
+                  <Td borderColor="#2A3A5E">
                     {drop.delay !== undefined ? (
                       <Text
                         color={Math.abs(drop.delay) <= 5 ? '#10b981' : drop.delay > 0 ? '#ef4444' : '#3b82f6'}
@@ -526,7 +526,7 @@ export function RoutePerformanceMetrics({
                       <Text color="#9ca3af">-</Text>
                     )}
                   </Td>
-                  <Td borderColor="#333333">
+                  <Td borderColor="#2A3A5E">
                     <HStack spacing={2}>
                       <Progress
                         value={drop.efficiency}
@@ -538,7 +538,7 @@ export function RoutePerformanceMetrics({
                         w="60px"
                         borderRadius="full"
                       />
-                      <Text color="#FFFFFF" fontSize="xs">
+                      <Text color="#F5F8FF" fontSize="xs">
                         {drop.efficiency}%
                       </Text>
                     </HStack>
@@ -551,11 +551,11 @@ export function RoutePerformanceMetrics({
       </Card>
 
       {/* Performance Insights */}
-      <Card bg="#000000" borderColor="#333333" borderWidth={1}>
+      <Card bg="#0B1020" borderColor="#2A3A5E" borderWidth={1}>
         <CardHeader>
           <HStack spacing={2}>
             <FiTarget color="#f59e0b" />
-            <Text fontWeight="bold" fontSize="md" color="#FFFFFF">
+            <Text fontWeight="bold" fontSize="md" color="#F5F8FF">
               Performance Insights
             </Text>
           </HStack>
@@ -563,41 +563,41 @@ export function RoutePerformanceMetrics({
         <CardBody>
           <VStack align="stretch" spacing={3}>
             {metrics.onTimePerformance.onTimeRate >= 90 && (
-              <Alert status="success" bg="#1a1a1a" borderColor="#10b981">
+              <Alert status="success" bg="#18233A" borderColor="#10b981">
                 <AlertIcon color="#10b981" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Excellent on-time performance! {metrics.onTimePerformance.onTimeRate.toFixed(1)}% of drops completed on time.
                 </Text>
               </Alert>
             )}
             {metrics.onTimePerformance.late > metrics.onTimePerformance.onTime && (
-              <Alert status="warning" bg="#1a1a1a" borderColor="#f59e0b">
+              <Alert status="warning" bg="#18233A" borderColor="#f59e0b">
                 <AlertIcon color="#f59e0b" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   {metrics.onTimePerformance.late} drops were late. Consider optimizing route or adjusting time windows.
                 </Text>
               </Alert>
             )}
             {metrics.efficiency.overallEfficiency < 60 && (
-              <Alert status="error" bg="#1a1a1a" borderColor="#ef4444">
+              <Alert status="error" bg="#18233A" borderColor="#ef4444">
                 <AlertIcon color="#ef4444" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Route efficiency is below target. Review route optimization and driver performance.
                 </Text>
               </Alert>
             )}
             {metrics.financial.profitMargin < 20 && (
-              <Alert status="warning" bg="#1a1a1a" borderColor="#f59e0b">
+              <Alert status="warning" bg="#18233A" borderColor="#f59e0b">
                 <AlertIcon color="#f59e0b" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Low profit margin ({metrics.financial.profitMargin.toFixed(1)}%). Consider route optimization or pricing review.
                 </Text>
               </Alert>
             )}
             {metrics.completion.completionRate === 100 && (
-              <Alert status="success" bg="#1a1a1a" borderColor="#10b981">
+              <Alert status="success" bg="#18233A" borderColor="#10b981">
                 <AlertIcon color="#10b981" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   All drops completed successfully! Great job!
                 </Text>
               </Alert>

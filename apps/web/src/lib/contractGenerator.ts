@@ -13,7 +13,7 @@ export async function generateEmploymentContract(data: ContractData): Promise<Bu
 
   const companyName = 'Speedy Van Limited';
   const companyAddress = 'Office 2.18, 1 Barrack street, Hamilton ML3 0DG';
-  const companyPhone = '+44 1202129746';
+  const companyPhone = '01202 129746';
   const companyEmail = 'support@speedy-van.co.uk';
 
   // Header

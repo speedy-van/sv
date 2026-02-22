@@ -276,7 +276,7 @@ export default function JourneyOpportunityDetailPage() {
   if (!opportunity) {
     return (
       <Box p={8} bg="gray.900" minH="100vh">
-        <Alert status="error" bg="gray.800" borderColor="gray.700">
+        <Alert status="error" variant="subtle" colorScheme="red">
           <AlertIcon />
           Journey opportunity not found
         </Alert>

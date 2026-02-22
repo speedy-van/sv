@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
@@ -1882,8 +1882,8 @@ export default function WhereAndWhatStep({
                     {/* Using inline styles to prevent hydration override */}
                     <Box 
                       sx={{
-                        display: 'grid !important',
-                        gridTemplateColumns: 'repeat(3, 1fr) !important',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
                         gap: { base: '8px', sm: '12px', md: '16px' },
                         width: '100%',
                         maxWidth: '500px',

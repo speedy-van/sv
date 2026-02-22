@@ -188,7 +188,7 @@ export default function SpeedyAIBotMobile() {
       console.error('Chat error:', error);
 
       // H4: Specific error messages based on error type
-      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at +44 1202129746.';
+      let errorContent = 'I apologize, I\'m experiencing technical difficulties. Please try again or call us at 01202 129746.';
 
       // Try to parse API error response
       try {
@@ -411,7 +411,7 @@ export default function SpeedyAIBotMobile() {
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Sorry, there was an error creating your booking: ${error.message || 'Please try again or call us at +44 1202129746.'}`,
+        content: `Sorry, there was an error creating your booking: ${error.message || 'Please try again or call us at 01202 129746.'}`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -493,13 +493,13 @@ export default function SpeedyAIBotMobile() {
 
         /* FORCE Speedy AI button to bottom-right */
         .speedy-ai-mobile-button {
-          position: fixed !important;
-          bottom: 8px !important;
-          right: 8px !important;
-          left: unset !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          background: transparent !important;
+          position: fixed;
+          bottom: 8px;
+          right: 8px;
+          left: unset;
+          margin: 0;
+          padding: 0;
+          background: transparent;
         }
 
         /* iPhone 14/15/16/17 SPECIFIC FIX - Manual Layout Control */
@@ -518,53 +518,53 @@ export default function SpeedyAIBotMobile() {
           
           /* Force input container layout */
           .speedy-ai-input-container {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            padding: 16px !important;
-            gap: 12px !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-            background-color: #ffffff !important;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #ffffff;
           }
 
           /* Force input field to take proper space */
           .speedy-ai-input-field {
-            width: calc(100% - 58px) !important;
-            max-width: calc(100% - 58px) !important;
-            min-width: 0 !important;
-            height: 44px !important;
-            min-height: 44px !important;
-            max-height: 44px !important;
-            flex: none !important;
-            box-sizing: border-box !important;
-            font-size: 16px !important;
-            padding: 0 18px !important;
-            background-color: #fff !important;
-            background: #fff !important;
-            border: 1.5px solid #e5e7eb !important;
-            border-radius: 22px !important;
-            color: #1f2937 !important;
-            -webkit-appearance: none !important;
+            width: calc(100% - 58px);
+            max-width: calc(100% - 58px);
+            min-width: 0;
+            height: 44px;
+            min-height: 44px;
+            max-height: 44px;
+            flex: none;
+            box-sizing: border-box;
+            font-size: 16px;
+            padding: 0 18px;
+            background-color: #fff;
+            background: #fff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 22px;
+            color: #1f2937;
+            -webkit-appearance: none;
           }
 
           .speedy-ai-input-field:focus {
-            background-color: #fff !important;
-            background: #fff !important;
+            background-color: #fff;
+            background: #fff;
           }
 
           /* Force send button to be properly sized */
           .speedy-ai-send-button {
-            width: 44px !important;
-            height: 44px !important;
-            min-width: 44px !important;
-            min-height: 44px !important;
-            max-width: 44px !important;
-            max-height: 44px !important;
-            flex: none !important;
-            flex-shrink: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            max-width: 44px;
+            max-height: 44px;
+            flex: none;
+            flex-shrink: 0;
+            padding: 0;
+            margin: 0;
           }
         }
 
@@ -574,20 +574,20 @@ export default function SpeedyAIBotMobile() {
           and (device-height: 915px) {
           
           .speedy-ai-input-container {
-            background-color: #ffffff !important;
+            background-color: #ffffff;
           }
           
           .speedy-ai-input-field {
-            background-color: #fff !important;
-            background: #fff !important;
-            -webkit-appearance: none !important;
-            appearance: none !important;
+            background-color: #fff;
+            background: #fff;
+            -webkit-appearance: none;
+            appearance: none;
           }
           
           .speedy-ai-input-field:focus,
           .speedy-ai-input-field:active {
-            background-color: #fff !important;
-            background: #fff !important;
+            background-color: #fff;
+            background: #fff;
           }
         }
 
@@ -595,33 +595,33 @@ export default function SpeedyAIBotMobile() {
         @supports (-webkit-touch-callout: none) {
           @media (max-width: 430px) and (max-height: 932px) {
             .speedy-ai-input-container {
-              display: flex !important;
-              flex-direction: row !important;
-              align-items: center !important;
-              background-color: #ffffff !important;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              background-color: #ffffff;
             }
             
             .speedy-ai-input-field {
-              flex: 1 1 auto !important;
-              width: auto !important;
-              min-width: 0 !important;
-              height: 44px !important;
-              background-color: #fff !important;
-              background: #fff !important;
-              -webkit-appearance: none !important;
-              appearance: none !important;
+              flex: 1 1 auto;
+              width: auto;
+              min-width: 0;
+              height: 44px;
+              background-color: #fff;
+              background: #fff;
+              -webkit-appearance: none;
+              appearance: none;
             }
             
             .speedy-ai-input-field:focus,
             .speedy-ai-input-field:active {
-              background-color: #fff !important;
-              background: #fff !important;
+              background-color: #fff;
+              background: #fff;
             }
             
             .speedy-ai-send-button {
-              flex: 0 0 44px !important;
-              width: 44px !important;
-              height: 44px !important;
+              flex: 0 0 44px;
+              width: 44px;
+              height: 44px;
             }
           }
         }
@@ -629,15 +629,15 @@ export default function SpeedyAIBotMobile() {
         /* Universal mobile fix - catch all */
         @media (max-width: 768px) {
           .speedy-ai-input-field {
-            background-color: #fff !important;
-            background: #fff !important;
+            background-color: #fff;
+            background: #fff;
           }
           
           .speedy-ai-input-field:focus,
           .speedy-ai-input-field:active,
           .speedy-ai-input-field:hover {
-            background-color: #fff !important;
-            background: #fff !important;
+            background-color: #fff;
+            background: #fff;
           }
         }
       `}</style>
@@ -817,7 +817,7 @@ export default function SpeedyAIBotMobile() {
             borderBottom: '1px solid #E5E7EB',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#2A3A5E' }}>
                 Step {currentStep} of {totalSteps}
               </div>
               <div style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -853,7 +853,7 @@ export default function SpeedyAIBotMobile() {
               justifyContent: 'center',
               gap: '16px',
               fontSize: '12px',
-              color: '#374151',
+              color: '#2A3A5E',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ color: '#10B981' }}>✓</span>
@@ -921,7 +921,7 @@ export default function SpeedyAIBotMobile() {
                     maxWidth: '85%',
                     padding: '14px 16px',
                     borderRadius: '18px',
-                    backgroundColor: message.role === 'user' ? '#3B82F6' : '#000000',
+                    backgroundColor: message.role === 'user' ? '#3B82F6' : '#0B1020',
                     color: '#ffffff',
                     fontSize: '16px',
                     fontWeight: 'normal',
@@ -1041,7 +1041,7 @@ export default function SpeedyAIBotMobile() {
                         padding: '10px 18px',
                         borderRadius: '20px',
                         border: '1.5px solid rgba(255,255,255,0.1)',
-                        backgroundColor: '#000000',
+                        backgroundColor: '#0B1020',
                         color: '#ffffff',
                         fontSize: '14px',
                         fontWeight: '500',
@@ -1050,11 +1050,11 @@ export default function SpeedyAIBotMobile() {
                         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                       }}
                       onTouchStart={(e) => {
-                        e.currentTarget.style.backgroundColor = '#1a1a1a';
+                        e.currentTarget.style.backgroundColor = '#18233A';
                         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                       }}
                       onTouchEnd={(e) => {
-                        e.currentTarget.style.backgroundColor = '#000000';
+                        e.currentTarget.style.backgroundColor = '#0B1020';
                         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                       }}
                     >

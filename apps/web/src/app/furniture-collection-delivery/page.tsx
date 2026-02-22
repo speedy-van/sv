@@ -39,7 +39,6 @@ import { FaCouch, FaBed, FaBox, FaTools, FaHandsHelping } from 'react-icons/fa';
 import Link from 'next/link';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 const faqData = [
   {
@@ -68,7 +67,6 @@ export default function FurnitureCollectionDeliveryPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <MarketplaceServiceSchema
         serviceName="Furniture Collection & Delivery Service"
         serviceDescription="Professional furniture collection and delivery service. We pick up furniture from private sellers, stores, and any location, delivering safely to your door with full insurance."
@@ -149,7 +147,7 @@ export default function FurnitureCollectionDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -587,7 +585,7 @@ export default function FurnitureCollectionDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

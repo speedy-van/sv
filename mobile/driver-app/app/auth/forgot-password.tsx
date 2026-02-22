@@ -81,7 +81,7 @@ export default function ForgotPasswordScreen() {
         {/* Content */}
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Ionicons name="lock-closed-outline" size={80} color="#007AFF" />
+            <Ionicons name="lock-closed-outline" size={80} color="#3B82F6" />
           </View>
 
           <Text style={styles.title}>Reset Your Password</Text>
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     borderRadius: 12,
     height: 56,
     alignItems: 'center',
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   backToLoginLink: {
-    color: '#007AFF',
+    color: '#3B82F6',
     fontWeight: '600',
   },
 });

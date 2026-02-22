@@ -23,7 +23,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
         transitionDuration="0.8"
         position="relative"
         overflow="hidden"
-        bg="linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 100%)"
+        bg="linear-gradient(135deg, #0D0D0D 0%, #18233A 100%)"
         borderBottom="2px solid"
         borderColor="neon.500"
       >
@@ -95,7 +95,7 @@ export default function RegionPageClient({ regionName, regionPlaces }: RegionPag
                 </Button>
                 <Button
                   as={Link}
-                  href={`tel:+441202129746`}
+                  href={`tel:01202129746`}
                   size="lg"
                   variant="outline"
                   borderColor="neon.500"

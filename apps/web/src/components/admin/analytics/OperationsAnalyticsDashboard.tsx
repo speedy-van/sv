@@ -121,9 +121,9 @@ export function OperationsAnalyticsDashboard({
   const [previousPeriodMetrics, setPreviousPeriodMetrics] = useState<OperationalMetrics | null>(null);
   const toast = useToast();
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -246,7 +246,7 @@ export function OperationsAnalyticsDashboard({
               <Select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value as '7' | '30' | '90' | '365')}
-                bg="#1a1a1a"
+                bg="#18233A"
                 borderColor={borderColor}
                 color={textColor}
                 size="sm"
@@ -263,7 +263,7 @@ export function OperationsAnalyticsDashboard({
                 isLoading={refreshing}
                 size="sm"
                 bg="#2563eb"
-                color="#FFFFFF"
+                color="#F5F8FF"
                 _hover={{ bg: '#1d4ed8' }}
               >
                 Refresh
@@ -276,7 +276,7 @@ export function OperationsAnalyticsDashboard({
                   variant="outline"
                   borderColor={borderColor}
                   color={textColor}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                 >
                   Export
                 </Button>
@@ -602,33 +602,33 @@ export function OperationsAnalyticsDashboard({
           <TabPanel p={0} pt={4}>
             <VStack align="stretch" spacing={3}>
               {operationalMetrics && operationalMetrics.customerSatisfaction >= 4.5 && (
-                <Alert status="success" bg="rgba(16, 185, 129, 0.1)" borderColor="#10b981" borderWidth={1}>
-                  <AlertIcon color="#10b981" />
-                  <Text fontSize="sm" color="#FFFFFF">
+                <Alert status="success" variant="subtle" colorScheme="green">
+                  <AlertIcon />
+                  <Text fontSize="sm">
                     Excellent customer satisfaction score of {(operationalMetrics.customerSatisfaction).toFixed(1)}/5.0
                   </Text>
                 </Alert>
               )}
               {revenueBreakdown && revenueBreakdown.marginPercentage < 20 && (
-                <Alert status="warning" bg="rgba(245, 158, 11, 0.1)" borderColor="#f59e0b" borderWidth={1}>
-                  <AlertIcon color="#f59e0b" />
-                  <Text fontSize="sm" color="#FFFFFF">
+                <Alert status="warning" variant="subtle" colorScheme="orange">
+                  <AlertIcon />
+                  <Text fontSize="sm">
                     Profit margin of {revenueBreakdown.marginPercentage.toFixed(1)}% is below target. Consider pricing optimization.
                   </Text>
                 </Alert>
               )}
               {operationalMetrics && operationalMetrics.routeEfficiency >= 85 && (
-                <Alert status="success" bg="rgba(16, 185, 129, 0.1)" borderColor="#10b981" borderWidth={1}>
-                  <AlertIcon color="#10b981" />
-                  <Text fontSize="sm" color="#FFFFFF">
+                <Alert status="success" variant="subtle" colorScheme="green">
+                  <AlertIcon />
+                  <Text fontSize="sm">
                     High route efficiency of {operationalMetrics.routeEfficiency.toFixed(1)}% indicates effective optimization.
                   </Text>
                 </Alert>
               )}
               {driverAnalytics.filter(d => d.trend === 'improving').length > driverAnalytics.length * 0.4 && (
-                <Alert status="success" bg="rgba(16, 185, 129, 0.1)" borderColor="#10b981" borderWidth={1}>
-                  <AlertIcon color="#10b981" />
-                  <Text fontSize="sm" color="#FFFFFF">
+                <Alert status="success" variant="subtle" colorScheme="green">
+                  <AlertIcon />
+                  <Text fontSize="sm">
                     {driverAnalytics.filter(d => d.trend === 'improving').length} drivers showing performance improvement.
                   </Text>
                 </Alert>

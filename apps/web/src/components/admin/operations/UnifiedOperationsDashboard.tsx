@@ -850,8 +850,8 @@ export default function UnifiedOperationsDashboard() {
         isLazy
       >
         <TabList 
-          bg="#111111" 
-          borderColor="#333333" 
+          bg="#121A2B" 
+          borderColor="#2A3A5E" 
           borderWidth="2px"
           borderRadius="xl" 
           p={2}
@@ -864,11 +864,11 @@ export default function UnifiedOperationsDashboard() {
               height: '6px',
             },
             '&::-webkit-scrollbar-track': {
-              background: '#1a1a1a',
+              background: '#18233A',
               borderRadius: '3px',
             },
             '&::-webkit-scrollbar-thumb': {
-              background: '#333333',
+              background: '#2A3A5E',
               borderRadius: '3px',
               '&:hover': {
                 background: '#444444',
@@ -887,7 +887,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -895,7 +895,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#2563eb',
@@ -913,8 +913,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -929,7 +929,7 @@ export default function UnifiedOperationsDashboard() {
               {ordersCount > 0 && (
                 <Badge 
                   bg="rgba(37, 99, 235, 0.2)"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   borderRadius="full"
                   px={3}
                   py={1}
@@ -959,7 +959,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -967,7 +967,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#10b981',
@@ -985,8 +985,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1001,7 +1001,7 @@ export default function UnifiedOperationsDashboard() {
               {routesCount > 0 && (
                 <Badge 
                   bg="rgba(16, 185, 129, 0.2)"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   borderRadius="full"
                   px={3}
                   py={1}
@@ -1032,7 +1032,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1040,7 +1040,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#06b6d4',
@@ -1058,8 +1058,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1074,7 +1074,7 @@ export default function UnifiedOperationsDashboard() {
               {additionalJourneysCount > 0 && (
                 <Badge 
                   bg="rgba(6, 182, 212, 0.2)"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   borderRadius="full"
                   px={3}
                   py={1}
@@ -1105,7 +1105,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1113,7 +1113,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(147, 51, 234, 0.4), 0 0 20px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#9333ea',
@@ -1131,8 +1131,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1159,7 +1159,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1167,7 +1167,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#f59e0b',
@@ -1185,8 +1185,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1213,7 +1213,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1221,7 +1221,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#06b6d4',
@@ -1239,8 +1239,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1267,7 +1267,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1275,7 +1275,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(245, 158, 11, 0.4), 0 0 20px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#f59e0b',
@@ -1293,8 +1293,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1321,7 +1321,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1329,7 +1329,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#06b6d4',
@@ -1347,8 +1347,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1375,7 +1375,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1383,7 +1383,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(147, 51, 234, 0.4), 0 0 20px rgba(147, 51, 234, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#9333ea',
@@ -1401,8 +1401,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}
@@ -1429,7 +1429,7 @@ export default function UnifiedOperationsDashboard() {
             fontSize="md"
             letterSpacing="0.5px"
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            bg="#1a1a1a"
+            bg="#18233A"
             color="#9ca3af"
             borderWidth="2px"
             borderColor="transparent"
@@ -1437,7 +1437,7 @@ export default function UnifiedOperationsDashboard() {
             overflow="hidden"
             _selected={{
               bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: '#FFFFFF',
+              color: '#F5F8FF',
               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
               transform: 'translateY(-2px)',
               borderColor: '#10b981',
@@ -1455,8 +1455,8 @@ export default function UnifiedOperationsDashboard() {
               },
             }}
             _hover={{
-              bg: '#1a1a1a',
-              color: '#FFFFFF',
+              bg: '#18233A',
+              color: '#F5F8FF',
               transform: 'translateY(-2px)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
             }}

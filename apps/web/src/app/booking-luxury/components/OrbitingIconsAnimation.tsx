@@ -117,20 +117,20 @@ export default function OrbitingIconsAnimation({ duration = 270 }: OrbitingIcons
               <linearGradient id="gear1-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style={{ stopColor: '#6B7280', stopOpacity: 1 }} />
                 <stop offset="50%" style={{ stopColor: '#4B5563', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: '#374151', stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#2A3A5E', stopOpacity: 1 }} />
               </linearGradient>
             </defs>
             <g>
               {/* Gear teeth */}
               <path 
                 fill="url(#gear1-grad)" 
-                stroke="#000000" 
+                stroke="#0B1020" 
                 strokeWidth="1" 
                 strokeLinejoin="round"
                 d={gear1Path}
               />
               {/* Center hub */}
-              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#000000" strokeWidth="1"/>
+              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#0B1020" strokeWidth="1"/>
               {/* Bolt holes */}
               <circle cx="0" cy="-6" r="1.5" fill="#D1D5DB"/>
               <circle cx="5.2" cy="3" r="1.5" fill="#D1D5DB"/>
@@ -159,20 +159,20 @@ export default function OrbitingIconsAnimation({ duration = 270 }: OrbitingIcons
               <linearGradient id="gear3-grad" x1="0%" y1="100%" x2="100%" y2="0%">
                 <stop offset="0%" style={{ stopColor: '#6B7280', stopOpacity: 1 }} />
                 <stop offset="50%" style={{ stopColor: '#4B5563', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: '#374151', stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#2A3A5E', stopOpacity: 1 }} />
               </linearGradient>
             </defs>
             <g>
               {/* Gear teeth */}
               <path 
                 fill="url(#gear3-grad)" 
-                stroke="#000000" 
+                stroke="#0B1020" 
                 strokeWidth="1" 
                 strokeLinejoin="round"
                 d={gear3Path}
               />
               {/* Center hub */}
-              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#000000" strokeWidth="1"/>
+              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#0B1020" strokeWidth="1"/>
               {/* Bolt holes */}
               <circle cx="0" cy="-6" r="1.5" fill="#D1D5DB"/>
               <circle cx="5.2" cy="3" r="1.5" fill="#D1D5DB"/>
@@ -201,20 +201,20 @@ export default function OrbitingIconsAnimation({ duration = 270 }: OrbitingIcons
               <linearGradient id="gear2-grad" x1="100%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" style={{ stopColor: '#6B7280', stopOpacity: 1 }} />
                 <stop offset="50%" style={{ stopColor: '#4B5563', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: '#374151', stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#2A3A5E', stopOpacity: 1 }} />
               </linearGradient>
             </defs>
             <g>
               {/* Gear teeth */}
               <path 
                 fill="url(#gear2-grad)" 
-                stroke="#000000" 
+                stroke="#0B1020" 
                 strokeWidth="1" 
                 strokeLinejoin="round"
                 d={gear2Path}
               />
               {/* Center hub */}
-              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#000000" strokeWidth="1"/>
+              <circle cx="0" cy="0" r="12" fill="#F9FAFB" stroke="#0B1020" strokeWidth="1"/>
               {/* Bolt holes */}
               <circle cx="0" cy="-6" r="1.5" fill="#D1D5DB"/>
               <circle cx="5.2" cy="3" r="1.5" fill="#D1D5DB"/>

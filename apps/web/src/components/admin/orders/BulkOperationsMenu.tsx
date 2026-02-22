@@ -263,9 +263,9 @@ export function BulkOperationsMenu({
           variant="outline"
           isDisabled={disabled || selectedCount === 0}
           isLoading={loading !== null}
-          bg="#111111"
-          color="#FFFFFF"
-          borderColor="#333333"
+          bg="#121A2B"
+          color="#F5F8FF"
+          borderColor="#2A3A5E"
           borderWidth="2px"
           borderRadius="lg"
           px={4}
@@ -275,123 +275,123 @@ export function BulkOperationsMenu({
         >
           Bulk Actions
         </MenuButton>
-        <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+        <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
           {/* Status Actions */}
           <MenuItem
             icon={<FaCheckCircle />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onStatusModalOpen}
           >
             Change Status
           </MenuItem>
           <MenuItem
             icon={<FaTimesCircle />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('cancel')}
           >
             Cancel Orders
           </MenuItem>
 
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
 
           {/* Driver Actions */}
           <MenuItem
             icon={<FaUser />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onDriverModalOpen}
           >
             Assign Driver
           </MenuItem>
           <MenuItem
             icon={<FaUser />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('unassign-driver')}
           >
             Unassign Driver
           </MenuItem>
 
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
 
           {/* Communication */}
           <MenuItem
             icon={<FaEnvelope />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onEmailModalOpen}
           >
             Send Email
           </MenuItem>
           <MenuItem
             icon={<FaEnvelope />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('send-floor-warnings')}
           >
             Send Floor Warnings
           </MenuItem>
 
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
 
           {/* Price & Notes */}
           <MenuItem
             icon={<FaDollarSign />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onPriceModalOpen}
           >
             Adjust Price
           </MenuItem>
           <MenuItem
             icon={<FaStickyNote />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onNotesModalOpen}
           >
             Add Notes
           </MenuItem>
 
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
 
           {/* Route & Export */}
           <MenuItem
             icon={<FaRoute />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('create-route')}
           >
             Create Route
           </MenuItem>
           <MenuItem
             icon={<FaFileExport />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('export')}
           >
             Export to CSV
           </MenuItem>
 
-          <MenuDivider borderColor="#333333" />
+          <MenuDivider borderColor="#2A3A5E" />
 
           {/* Tags & Labels */}
           <MenuItem
             icon={<FaTag />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={() => handleQuickAction('add-tag')}
           >
             Add Tag
@@ -402,14 +402,14 @@ export function BulkOperationsMenu({
       {/* Status Change Modal */}
       <Modal isOpen={isStatusModalOpen} onClose={onStatusModalClose} size="md">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Change Status</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Change Status</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   This will change the status of {selectedCount} selected order(s)
                 </Text>
               </Alert>
@@ -418,9 +418,9 @@ export function BulkOperationsMenu({
                 <Select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                 >
                   <option value="">Select Status</option>
                   <option value="PENDING_PAYMENT">Pending Payment</option>
@@ -437,8 +437,8 @@ export function BulkOperationsMenu({
               <Button
                 variant="outline"
                 onClick={onStatusModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
               >
                 Cancel
               </Button>
@@ -447,7 +447,7 @@ export function BulkOperationsMenu({
                 onClick={handleStatusChange}
                 isLoading={loading === 'status'}
                 bg="#2563eb"
-                color="#FFFFFF"
+                color="#F5F8FF"
               >
                 Change Status
               </Button>
@@ -459,14 +459,14 @@ export function BulkOperationsMenu({
       {/* Driver Assignment Modal */}
       <Modal isOpen={isDriverModalOpen} onClose={onDriverModalClose} size="md">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Assign Driver</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Assign Driver</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Assign driver to {selectedCount} selected order(s)
                 </Text>
               </Alert>
@@ -482,9 +482,9 @@ export function BulkOperationsMenu({
                       setDriverId(e.target.value);
                     }
                   }}
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                 >
                   <option value="auto">Auto-Assign (Recommended)</option>
                   <option value="">Select Driver Manually</option>
@@ -498,9 +498,9 @@ export function BulkOperationsMenu({
                     value={driverId}
                     onChange={(e) => setDriverId(e.target.value)}
                     placeholder="Enter driver ID"
-                    bg="#111111"
-                    color="#FFFFFF"
-                    borderColor="#333333"
+                    bg="#121A2B"
+                    color="#F5F8FF"
+                    borderColor="#2A3A5E"
                   />
                 </FormControl>
               )}
@@ -510,9 +510,9 @@ export function BulkOperationsMenu({
                   value={assignmentReason}
                   onChange={(e) => setAssignmentReason(e.target.value)}
                   placeholder="Reason for assignment..."
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   rows={3}
                 />
               </FormControl>
@@ -523,8 +523,8 @@ export function BulkOperationsMenu({
               <Button
                 variant="outline"
                 onClick={onDriverModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
               >
                 Cancel
               </Button>
@@ -533,7 +533,7 @@ export function BulkOperationsMenu({
                 onClick={handleDriverAssignment}
                 isLoading={loading === 'driver'}
                 bg="#2563eb"
-                color="#FFFFFF"
+                color="#F5F8FF"
               >
                 Assign Driver
               </Button>
@@ -545,14 +545,14 @@ export function BulkOperationsMenu({
       {/* Price Adjustment Modal */}
       <Modal isOpen={isPriceModalOpen} onClose={onPriceModalClose} size="md">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Adjust Price</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Adjust Price</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Alert status="warning" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="warning" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   This will adjust the price for {selectedCount} selected order(s)
                 </Text>
               </Alert>
@@ -561,9 +561,9 @@ export function BulkOperationsMenu({
                 <Select
                   value={adjustmentType}
                   onChange={(e) => setAdjustmentType(e.target.value as 'fixed' | 'percentage')}
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                 >
                   <option value="fixed">Fixed Amount (£)</option>
                   <option value="percentage">Percentage (%)</option>
@@ -578,9 +578,9 @@ export function BulkOperationsMenu({
                   onChange={(_, value) => setPriceAdjustment(value.toString())}
                 >
                   <NumberInputField
-                    bg="#111111"
-                    color="#FFFFFF"
-                    borderColor="#333333"
+                    bg="#121A2B"
+                    color="#F5F8FF"
+                    borderColor="#2A3A5E"
                     placeholder={adjustmentType === 'fixed' ? '0.00' : '0'}
                   />
                 </NumberInput>
@@ -591,9 +591,9 @@ export function BulkOperationsMenu({
                   value={adjustmentReason}
                   onChange={(e) => setAdjustmentReason(e.target.value)}
                   placeholder="Reason for price adjustment..."
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   rows={3}
                   required
                 />
@@ -605,8 +605,8 @@ export function BulkOperationsMenu({
               <Button
                 variant="outline"
                 onClick={onPriceModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
               >
                 Cancel
               </Button>
@@ -615,7 +615,7 @@ export function BulkOperationsMenu({
                 onClick={handlePriceAdjustment}
                 isLoading={loading === 'price'}
                 bg="#f59e0b"
-                color="#FFFFFF"
+                color="#F5F8FF"
               >
                 Adjust Price
               </Button>
@@ -627,14 +627,14 @@ export function BulkOperationsMenu({
       {/* Notes Modal */}
       <Modal isOpen={isNotesModalOpen} onClose={onNotesModalClose} size="md">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Add Notes</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Add Notes</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Add notes to {selectedCount} selected order(s)
                 </Text>
               </Alert>
@@ -644,9 +644,9 @@ export function BulkOperationsMenu({
                   value={bulkNotes}
                   onChange={(e) => setBulkNotes(e.target.value)}
                   placeholder="Enter notes to add to all selected orders..."
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   rows={5}
                 />
               </FormControl>
@@ -657,8 +657,8 @@ export function BulkOperationsMenu({
               <Button
                 variant="outline"
                 onClick={onNotesModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
               >
                 Cancel
               </Button>
@@ -667,7 +667,7 @@ export function BulkOperationsMenu({
                 onClick={handleAddNotes}
                 isLoading={loading === 'notes'}
                 bg="#2563eb"
-                color="#FFFFFF"
+                color="#F5F8FF"
               >
                 Add Notes
               </Button>
@@ -679,14 +679,14 @@ export function BulkOperationsMenu({
       {/* Email Modal */}
       <Modal isOpen={isEmailModalOpen} onClose={onEmailModalClose} size="lg">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF">Send Email</ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF">Send Email</ModalHeader>
+          <ModalCloseButton color="#F5F8FF" />
           <ModalBody>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" bg="#1a1a1a" borderColor="#333333">
+              <Alert status="info" bg="#18233A" borderColor="#2A3A5E">
                 <AlertIcon />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Send email to customers of {selectedCount} selected order(s)
                 </Text>
               </Alert>
@@ -696,9 +696,9 @@ export function BulkOperationsMenu({
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Email subject..."
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                 />
               </FormControl>
               <FormControl>
@@ -707,9 +707,9 @@ export function BulkOperationsMenu({
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
                   placeholder="Email body..."
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   rows={8}
                 />
               </FormControl>
@@ -720,8 +720,8 @@ export function BulkOperationsMenu({
               <Button
                 variant="outline"
                 onClick={onEmailModalClose}
-                borderColor="#333333"
-                color="#FFFFFF"
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
               >
                 Cancel
               </Button>
@@ -730,7 +730,7 @@ export function BulkOperationsMenu({
                 onClick={handleSendEmail}
                 isLoading={loading === 'email'}
                 bg="#2563eb"
-                color="#FFFFFF"
+                color="#F5F8FF"
               >
                 Send Email
               </Button>

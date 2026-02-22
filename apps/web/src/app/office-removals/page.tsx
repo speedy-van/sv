@@ -30,13 +30,11 @@ import {
 } from 'react-icons/fi';
 import Link from 'next/link';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function OfficeRemovalsPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
     <Box pt={36} bg="gray.900" minH="100vh">
       {/* Hero */}
       <Box bgGradient="linear(to-br, gray.800, blue.900, gray.900)" py={{ base: 16, md: 24 }}>
@@ -74,7 +72,7 @@ export default function OfficeRemovalsPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -270,7 +268,7 @@ export default function OfficeRemovalsPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

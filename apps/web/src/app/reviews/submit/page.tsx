@@ -21,7 +21,6 @@ import {
 } from '@chakra-ui/react';
 import { FiStar, FiCheckCircle } from 'react-icons/fi';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 function SubmitReviewContent() {
   const searchParams = useSearchParams();
@@ -115,7 +114,6 @@ function SubmitReviewContent() {
     return (
       <>
         <Header />
-        <MobileHeader />
         <Container maxW="xl" py={20}>
           <VStack spacing={4}>
             <Spinner size="xl" color="cyan.500" />
@@ -130,7 +128,6 @@ function SubmitReviewContent() {
     return (
       <>
         <Header />
-        <MobileHeader />
         <Container maxW="xl" py={20}>
           <Alert status="error" borderRadius="md">
             <AlertIcon />
@@ -145,7 +142,6 @@ function SubmitReviewContent() {
     return (
       <>
         <Header />
-        <MobileHeader />
         <Container maxW="xl" py={20}>
           <VStack spacing={6} textAlign="center">
             <Icon as={FiCheckCircle} boxSize={16} color="green.500" />
@@ -198,7 +194,6 @@ function SubmitReviewContent() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Box
         minH="100vh"
         bg="linear-gradient(180deg, #0A0E17 0%, #0D1321 50%, #0A0E17 100%)"

@@ -29,7 +29,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       case colors.danger:
         return { start: '#FF3B30', end: '#FF2D55' };
       default:
-        return { start: '#007AFF', end: '#5AC8FA' };
+        return { start: '#3B82F6', end: '#22D3EE' };
     }
   };
 

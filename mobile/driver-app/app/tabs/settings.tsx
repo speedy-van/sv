@@ -156,7 +156,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#3B82F6" />
       </View>
     );
   }
@@ -173,7 +173,7 @@ export default function SettingsScreen() {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator size="small" color="#007AFF" />
+              <ActivityIndicator size="small" color="#3B82F6" />
             ) : (
               <Text style={styles.editButtonText}>Save</Text>
             )}
@@ -281,7 +281,7 @@ export default function SettingsScreen() {
 
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
-              <Ionicons name="location" size={24} color="#007AFF" />
+              <Ionicons name="location" size={24} color="#3B82F6" />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Share Location</Text>
                 <Text style={styles.settingDescription}>
@@ -292,7 +292,7 @@ export default function SettingsScreen() {
             <Switch
               value={profile.locationConsent}
               onValueChange={handleLocationConsentToggle}
-              trackColor={{ false: '#ccc', true: '#007AFF' }}
+              trackColor={{ false: '#ccc', true: '#3B82F6' }}
               thumbColor="#fff"
             />
           </View>
@@ -310,7 +310,7 @@ export default function SettingsScreen() {
             <Switch
               value={emotesEnabled}
               onValueChange={handleEmoteToggle}
-              trackColor={{ false: '#ccc', true: '#007AFF' }}
+              trackColor={{ false: '#ccc', true: '#3B82F6' }}
               thumbColor="#fff"
             />
           </View>
@@ -324,7 +324,7 @@ export default function SettingsScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/auth/forgot-password')}
           >
-            <Ionicons name="key-outline" size={24} color="#007AFF" />
+            <Ionicons name="key-outline" size={24} color="#3B82F6" />
             <Text style={styles.actionButtonText}>Change Password</Text>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   editButtonText: {
-    color: '#007AFF',
+    color: '#3B82F6',
     fontSize: 16,
     fontWeight: '600',
   },

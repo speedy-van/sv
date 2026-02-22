@@ -77,9 +77,9 @@ export function JourneyTimelineAnalytics({
   onRefresh,
 }: JourneyTimelineAnalyticsProps) {
   const [loading, setLoading] = useState(false);
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   const sortedSegments = [...segments].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
@@ -543,7 +543,7 @@ export function JourneyTimelineAnalytics({
             {analytics.onTimeRate && analytics.onTimeRate >= 90 && (
               <Alert status="success" bg="rgba(16, 185, 129, 0.1)" borderColor="#10b981" borderWidth={1}>
                 <AlertIcon color="#10b981" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Excellent on-time performance! {analytics.onTimeRate.toFixed(1)}% of journeys completed on time.
                 </Text>
               </Alert>
@@ -551,7 +551,7 @@ export function JourneyTimelineAnalytics({
             {analytics.lateCount > analytics.onTimeCount && (
               <Alert status="warning" bg="rgba(245, 158, 11, 0.1)" borderColor="#f59e0b" borderWidth={1}>
                 <AlertIcon color="#f59e0b" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   {analytics.lateCount} journey{analytics.lateCount > 1 ? 's were' : ' was'} late. Consider adjusting schedules or optimizing routes.
                 </Text>
               </Alert>
@@ -559,7 +559,7 @@ export function JourneyTimelineAnalytics({
             {analytics.completionRate < 100 && (
               <Alert status="info" bg="rgba(37, 99, 235, 0.1)" borderColor="#2563eb" borderWidth={1}>
                 <AlertIcon color="#2563eb" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   {analytics.pendingSegments} journey{analytics.pendingSegments > 1 ? 's are' : ' is'} still pending completion.
                 </Text>
               </Alert>
@@ -567,7 +567,7 @@ export function JourneyTimelineAnalytics({
             {analytics.averageGap < 2 && analytics.timeGaps.length > 0 && (
               <Alert status="warning" bg="rgba(245, 158, 11, 0.1)" borderColor="#f59e0b" borderWidth={1}>
                 <AlertIcon color="#f59e0b" />
-                <Text fontSize="sm" color="#FFFFFF">
+                <Text fontSize="sm" color="#F5F8FF">
                   Short time gaps between journeys ({analytics.averageGap.toFixed(1)}h average). Ensure sufficient buffer time.
                 </Text>
               </Alert>

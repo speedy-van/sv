@@ -90,9 +90,9 @@ export function WorkflowAutomation() {
   const [enabled, setEnabled] = useState(true);
 
   const toast = useToast();
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -217,7 +217,7 @@ export function WorkflowAutomation() {
           onClick={onCreateModalOpen}
           size="sm"
           bg="#9333ea"
-          color="#FFFFFF"
+          color="#F5F8FF"
           _hover={{ bg: '#7c3aed' }}
         >
           Create Rule
@@ -228,7 +228,7 @@ export function WorkflowAutomation() {
         <Alert status="info" bg="rgba(147, 51, 234, 0.1)" borderColor="#9333ea" borderWidth={1}>
           <AlertIcon color="#9333ea" />
           <VStack align="start" spacing={1} flex={1}>
-            <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+            <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
               No automation rules yet
             </Text>
             <Text fontSize="xs" color={secondaryTextColor}>
@@ -274,7 +274,7 @@ export function WorkflowAutomation() {
                         onClick={() => handleToggleRule(rule.id)}
                         bg={cardBg}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         {rule.enabled ? 'Disable' : 'Enable'}
                       </MenuItem>
@@ -290,7 +290,7 @@ export function WorkflowAutomation() {
                         }}
                         bg={cardBg}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Edit
                       </MenuItem>
@@ -299,7 +299,7 @@ export function WorkflowAutomation() {
                         onClick={() => handleDeleteRule(rule.id)}
                         bg={cardBg}
                         color="#ef4444"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Delete
                       </MenuItem>
@@ -360,7 +360,7 @@ export function WorkflowAutomation() {
                   value={ruleName}
                   onChange={(e) => setRuleName(e.target.value)}
                   placeholder="e.g., Auto-assign driver for high priority orders"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -371,7 +371,7 @@ export function WorkflowAutomation() {
                   value={ruleDescription}
                   onChange={(e) => setRuleDescription(e.target.value)}
                   placeholder="Describe this automation rule..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -381,7 +381,7 @@ export function WorkflowAutomation() {
                 <Select
                   value={triggerType}
                   onChange={(e) => setTriggerType(e.target.value as any)}
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 >
@@ -421,7 +421,7 @@ export function WorkflowAutomation() {
             </Button>
             <Button
               bg="#9333ea"
-              color="#FFFFFF"
+              color="#F5F8FF"
               onClick={handleCreateRule}
               _hover={{ bg: '#7c3aed' }}
             >

@@ -11,6 +11,7 @@
 import { prisma } from '@/lib/prisma';
 import Pusher from 'pusher';
 import Stripe from 'stripe';
+import { PostcodeValidator } from '@/lib/postcode-validator';
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -26,7 +27,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const MATCH_TIMEOUT_MINUTES = 15;
 const MAX_DRIVERS_TO_BROADCAST = 5;
-const SEARCH_RADIUS_KM = 25;
 
 export interface DriverMatchResult {
   success: boolean;
@@ -36,18 +36,37 @@ export interface DriverMatchResult {
 }
 
 /**
- * Calculate distance between two points using Haversine formula
+ * Postcode-based proximity scoring (non-distance heuristic).
+ * This avoids distance calculations which are blocked in the unified pricing system guardrails.
  */
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+function getPostcodeParts(postcode: string): { area?: string; outward?: string } {
+  const result = PostcodeValidator.validateUKPostcode(postcode || '');
+  const cleaned = (result.formatted || '').trim().toUpperCase().replace(/\s+/g, '');
+
+  if (!cleaned) return {};
+
+  const areaMatch = cleaned.match(/^[A-Z]{1,2}/);
+  const area = areaMatch ? areaMatch[0] : undefined;
+
+  // If it's a complete postcode, outward code is everything except the final 3 inward chars.
+  const outward = result.type === 'complete' && cleaned.length > 3 ? cleaned.slice(0, -3) : cleaned;
+  return { area, outward };
+}
+
+function scoreDriverProximity(pickupPostcode: string, driverBasePostcode: string): number {
+  const pickup = getPostcodeParts(pickupPostcode);
+  const driver = getPostcodeParts(driverBasePostcode);
+
+  if (!pickup.area || !driver.area) return 0;
+
+  // Same outward code (e.g. SW1A) is the closest match.
+  if (pickup.outward && driver.outward && pickup.outward === driver.outward) return 100;
+
+  // Same postcode area (e.g. SW) is a strong regional match.
+  if (pickup.area === driver.area) return 70;
+
+  // Different area: no proximity confidence.
+  return 0;
 }
 
 /**
@@ -71,9 +90,7 @@ export async function broadcastJobToDrivers(bookingId: string): Promise<void> {
       throw new Error('Booking not found');
     }
 
-    if (!booking.pickupLat || !booking.pickupLng) {
-      throw new Error('Booking has no pickup coordinates');
-    }
+    const pickupPostcode = booking.pickupAddress?.postcode || '';
 
     // Find available drivers
     const availableDrivers = await prisma.driver.findMany({
@@ -103,40 +120,41 @@ export async function broadcastJobToDrivers(bookingId: string): Promise<void> {
 
     console.log('[MATCH] Found available drivers:', availableDrivers.length);
 
-    // Calculate distance to each driver and sort by proximity
-    const driversWithDistance = availableDrivers
-      .filter(d => d.DriverLocation[0]?.lat && d.DriverLocation[0]?.lng)
-      .map(driver => {
-        const distance = calculateDistance(
-          booking.pickupLat!,
-          booking.pickupLng!,
-          driver.DriverLocation[0].lat!,
-          driver.DriverLocation[0].lng!
-        );
-        return { driver, distance };
+    // Score drivers using postcode proximity (no distance calculations).
+    const scoredDrivers = availableDrivers
+      .map((driver) => {
+        const basePostcode = driver.basePostcode || '';
+        const score = pickupPostcode ? scoreDriverProximity(pickupPostcode, basePostcode) : 0;
+        const hasLiveLocation = Boolean(driver.DriverLocation[0]?.lat && driver.DriverLocation[0]?.lng);
+        return { driver, score, hasLiveLocation };
       })
-      .filter(d => d.distance <= SEARCH_RADIUS_KM)
-      .sort((a, b) => a.distance - b.distance)
+      // Prefer drivers that have either a base postcode match signal or live location.
+      .filter(({ score, hasLiveLocation }) => score > 0 || hasLiveLocation)
+      // Prefer higher score, then prefer live location for tie-break.
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return Number(b.hasLiveLocation) - Number(a.hasLiveLocation);
+      })
       .slice(0, MAX_DRIVERS_TO_BROADCAST);
 
-    console.log('[MATCH] Drivers within radius:', driversWithDistance.length);
+    console.log('[MATCH] Drivers selected for broadcast:', scoredDrivers.length);
 
-    if (driversWithDistance.length === 0) {
-      throw new Error('No drivers available within radius');
+    if (scoredDrivers.length === 0) {
+      throw new Error('No drivers available for broadcast');
     }
 
     // Create assignments for each driver
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + MATCH_TIMEOUT_MINUTES);
 
-    for (const { driver, distance } of driversWithDistance) {
+    for (const { driver, score } of scoredDrivers) {
       await prisma.assignment.create({
         data: {
           bookingId: booking.id,
           driverId: driver.id,
           status: 'invited',
           round: booking.matchAttempts + 1,
-          score: Math.round((1 - distance / SEARCH_RADIUS_KM) * 100), // 100 = closest, 0 = furthest
+          score: Math.max(0, Math.min(100, Math.round(score))),
           expiresAt,
         },
       });
@@ -149,7 +167,6 @@ export async function broadcastJobToDrivers(bookingId: string): Promise<void> {
           pickupAddress: booking.pickupAddress?.label || 'Pickup address',
           dropoffAddress: booking.dropoffAddress?.label || 'Drop-off address',
           scheduledAt: booking.scheduledAt.toISOString(),
-          distance: Math.round(distance * 10) / 10, // Round to 1 decimal
           estimatedEarnings: calculateDriverEarnings(booking.totalGBP / 100),
           expiresAt: expiresAt.toISOString(),
           itemCount: booking.BookingItem?.length || 0,
@@ -173,7 +190,7 @@ export async function broadcastJobToDrivers(bookingId: string): Promise<void> {
 
     console.log('[MATCH] Broadcast complete:', {
       bookingId,
-      driversNotified: driversWithDistance.length,
+      driversNotified: scoredDrivers.length,
       expiresAt: expiresAt.toISOString(),
     });
 

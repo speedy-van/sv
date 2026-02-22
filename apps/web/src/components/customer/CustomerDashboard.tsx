@@ -18,11 +18,11 @@ import {
   StatNumber,
   StatHelpText,
   Button,
-  Card,
   CardBody,
   Badge,
 } from '@chakra-ui/react';
 import { ROUTES } from '@/lib/routing';
+import AppCard from '@/components/shared/AppCard';
 
 interface CustomerDashboardProps {
   userId?: string;
@@ -75,7 +75,7 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
         <Heading size="lg" mb={2}>
           Welcome to Your Dashboard
         </Heading>
-        <Text color="gray.600">
+        <Text color="text.secondary">
           Manage your bookings and track your moving services
         </Text>
       </Box>
@@ -83,7 +83,7 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
       {/* Stats Grid */}
       <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={6}>
         <GridItem>
-          <Card>
+          <AppCard>
             <CardBody>
               <Stat>
                 <StatLabel>Total Bookings</StatLabel>
@@ -91,23 +91,23 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
                 <StatHelpText>All time</StatHelpText>
               </Stat>
             </CardBody>
-          </Card>
+          </AppCard>
         </GridItem>
 
         <GridItem>
-          <Card>
+          <AppCard>
             <CardBody>
               <Stat>
                 <StatLabel>Active Bookings</StatLabel>
-                <StatNumber color="primary.500">{stats.activeBookings}</StatNumber>
+                <StatNumber color="interactive.primary">{stats.activeBookings}</StatNumber>
                 <StatHelpText>In progress</StatHelpText>
               </Stat>
             </CardBody>
-          </Card>
+          </AppCard>
         </GridItem>
 
         <GridItem>
-          <Card>
+          <AppCard>
             <CardBody>
               <Stat>
                 <StatLabel>Completed</StatLabel>
@@ -115,11 +115,11 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
                 <StatHelpText>Successfully delivered</StatHelpText>
               </Stat>
             </CardBody>
-          </Card>
+          </AppCard>
         </GridItem>
 
         <GridItem>
-          <Card>
+          <AppCard>
             <CardBody>
               <Stat>
                 <StatLabel>Total Spent</StatLabel>
@@ -127,7 +127,7 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
                 <StatHelpText>All time</StatHelpText>
               </Stat>
             </CardBody>
-          </Card>
+          </AppCard>
         </GridItem>
       </Grid>
 
@@ -142,16 +142,16 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
 
         <VStack spacing={4} align="stretch">
           {recentBookings.map((booking) => (
-            <Card key={booking.id}>
+            <AppCard key={booking.id} variantStyle="interactive">
               <CardBody>
                 <VStack spacing={3} align="stretch">
                   <HStack justify="space-between">
                     <VStack align="start" spacing={1}>
                       <Text fontWeight="bold">{booking.reference}</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="text.secondary">
                         {booking.from} → {booking.to}
                       </Text>
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize="sm" color="text.tertiary">
                         {new Date(booking.date).toLocaleDateString()}
                       </Text>
                     </VStack>
@@ -193,7 +193,7 @@ export default function CustomerDashboard({ userId }: CustomerDashboardProps) {
                   </HStack>
                 </VStack>
               </CardBody>
-            </Card>
+            </AppCard>
           ))}
         </VStack>
       </Box>

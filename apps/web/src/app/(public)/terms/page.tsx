@@ -3,13 +3,11 @@
 import { Container, Heading, Text, VStack, Box, Divider, List, ListItem, ListIcon } from '@chakra-ui/react';
 import { CheckCircleIcon } from '@chakra-ui/icons';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function TermsPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Container maxW="5xl" py={{ base: 20, md: 32 }} mt={{ base: 16, md: 20 }}>
         <VStack align="start" spacing={10}>
           {/* Header Section */}

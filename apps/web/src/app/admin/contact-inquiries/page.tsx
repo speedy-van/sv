@@ -469,7 +469,7 @@ export default function ContactInquiriesPage() {
   };
 
   return (
-    <Box minH="100vh" bg="#0a0a0a" py={6}>
+    <Box minH="100vh" bg="#121A2B" py={6}>
       <Container maxW="container.xl">
         <VStack spacing={6} align="stretch">
           
@@ -610,10 +610,10 @@ export default function ContactInquiriesPage() {
                     color="white"
                     _focus={{ borderColor: 'blue.400' }}
                   >
-                    <option value="all" style={{ background: '#1a1a1a' }}>All Status</option>
-                    <option value="pending" style={{ background: '#1a1a1a' }}>Pending</option>
-                    <option value="contacted" style={{ background: '#1a1a1a' }}>Contacted</option>
-                    <option value="resolved" style={{ background: '#1a1a1a' }}>Resolved</option>
+                    <option value="all" style={{ background: '#18233A' }}>All Status</option>
+                    <option value="pending" style={{ background: '#18233A' }}>Pending</option>
+                    <option value="contacted" style={{ background: '#18233A' }}>Contacted</option>
+                    <option value="resolved" style={{ background: '#18233A' }}>Resolved</option>
                   </Select>
                 </Box>
                 <Box>
@@ -820,7 +820,7 @@ export default function ContactInquiriesPage() {
                               color="gray.400"
                               _hover={{ bg: 'rgba(255,255,255,0.1)' }}
                             />
-                            <MenuList bg="#1a1a1a" borderColor="rgba(255,255,255,0.1)">
+                            <MenuList bg="#18233A" borderColor="rgba(255,255,255,0.1)">
                               <MenuItem 
                                 icon={<FaEye />} 
                                 bg="transparent"

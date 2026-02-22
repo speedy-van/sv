@@ -38,7 +38,6 @@ import { SiGumtree } from 'react-icons/si';
 import Link from 'next/link';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 const faqData = [
   {
@@ -67,7 +66,6 @@ export default function GumtreePickupDeliveryPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <MarketplaceServiceSchema
         serviceName="Gumtree Pickup & Delivery Service"
         serviceDescription="Professional Gumtree collection and delivery service. We pick up furniture and large items from Gumtree sellers and deliver to your door with full insurance coverage."
@@ -148,7 +146,7 @@ export default function GumtreePickupDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -445,7 +443,7 @@ export default function GumtreePickupDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

@@ -7,7 +7,6 @@ import {
   Heading,
   Text,
   VStack,
-  Container,
   useBreakpointValue,
   chakra,
   shouldForwardProp,
@@ -130,15 +129,15 @@ const CategoryCardsGrid: React.FC<CategoryCardsGridProps> = ({
         return {
           bg: 'transparent',
           py: { base: 4, md: 6 },
-          titleColor: 'gray.800',
-          subtitleColor: 'gray.600',
+          titleColor: 'text.primary',
+          subtitleColor: 'text.secondary',
         };
       default:
         return {
-          bg: 'gray.50',
+          bg: 'bg.surface',
           py: { base: 8, md: 12 },
-          titleColor: 'gray.800',
-          subtitleColor: 'gray.600',
+          titleColor: 'text.primary',
+          subtitleColor: 'text.secondary',
         };
     }
   };
@@ -165,7 +164,7 @@ const CategoryCardsGrid: React.FC<CategoryCardsGridProps> = ({
           <Text
             fontSize={{ base: 'sm', md: 'md' }}
             color={styles.subtitleColor}
-            maxW="600px"
+            maxW={{ base: '100%', md: '600px' }}
             px={4}
           >
             {subtitle}

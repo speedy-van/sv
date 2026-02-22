@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     maxWidth: 500,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
     borderRadius: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     gap: 16,
   },
   headerTextContainer: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     marginBottom: 4,
     letterSpacing: -0.3,
     lineHeight: 24,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.95,
     letterSpacing: 0.3,
     lineHeight: 20,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   earnings: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '800',
     letterSpacing: -0.3,
     lineHeight: 24,
@@ -447,9 +447,9 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     marginTop: 4,
-    shadowColor: '#007AFF',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   },
   additionalStopsText: {
     fontSize: 13,
-    color: '#007AFF',
+    color: '#3B82F6',
     fontWeight: '700',
   },
   detailsGrid: {
@@ -525,19 +525,19 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonView: {
-    backgroundColor: '#007AFF',
-    shadowColor: '#007AFF',
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
     shadowOpacity: 0.3,
   },
   buttonDecline: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
     borderWidth: 2,
     borderColor: '#EF4444',
   },
   buttonTextView: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.2,
   },
   buttonTextDecline: {

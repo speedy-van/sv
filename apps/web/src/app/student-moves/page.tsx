@@ -30,13 +30,11 @@ import {
 } from 'react-icons/fi';
 import Link from 'next/link';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function StudentMovesPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
     <Box pt={36} bg="gray.900" minH="100vh">
       {/* Hero */}
       <Box bgGradient="linear(to-br, purple.900, pink.900, gray.900)" py={{ base: 16, md: 24 }}>
@@ -73,7 +71,7 @@ export default function StudentMovesPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

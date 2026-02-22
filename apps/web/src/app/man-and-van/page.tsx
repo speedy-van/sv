@@ -21,7 +21,6 @@ import { FiCheckCircle, FiArrowRight, FiPhone } from 'react-icons/fi';
 import Link from 'next/link';
 import { locations } from '@/data/locations';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 export default function ManAndVanIndexPage() {
   // Group locations by first letter
@@ -46,7 +45,6 @@ export default function ManAndVanIndexPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Box bg="gray.900" minH="100vh">
         {/* Hero */}
         <Box 
@@ -99,7 +97,7 @@ export default function ManAndVanIndexPage() {
                 </Button>
                 <Button
                   as="a"
-                  href="tel:+441202129746"
+                  href="tel:01202129746"
                   size="lg"
                   variant="outline"
                   color="white"
@@ -251,7 +249,7 @@ export default function ManAndVanIndexPage() {
                 </Button>
                 <Button
                   as="a"
-                  href="tel:+441202129746"
+                  href="tel:01202129746"
                   size="lg"
                   variant="outline"
                   color="white"

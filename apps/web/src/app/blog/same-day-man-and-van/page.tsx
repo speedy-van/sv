@@ -28,7 +28,7 @@ export default function SameDayManAndVanPage() {
         <Alert status="info" borderRadius="md">
           <AlertIcon />
           <Text>
-            <strong>Need a van NOW?</strong> Call 0800 XXX XXXX for immediate dispatch. Average response time: 2 hours.
+            <strong>Need a van NOW?</strong> Call 01202 129746 for immediate dispatch. Average response time: 2 hours.
           </Text>
         </Alert>
 
@@ -230,7 +230,7 @@ export default function SameDayManAndVanPage() {
             Don't panic - we've got you covered. Our same-day man and van service operates 24/7 with an average 2-hour response time. Fully insured, professional drivers, and transparent pricing.
           </Text>
           <Text fontSize="lg" fontWeight="bold" mb={4}>
-            📞 CALL NOW: 0800 XXX XXXX (24/7 Emergency Line)
+            📞 CALL NOW: 01202 129746 (24/7 Emergency Line)
           </Text>
           <Text fontSize="lg">
             Or book instantly online at speedy-van.co.uk/same-day

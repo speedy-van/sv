@@ -9,7 +9,6 @@ import {
   Badge,
   Icon,
   Tooltip,
-  useColorModeValue,
   Skeleton,
   SkeletonText,
 } from '@chakra-ui/react';
@@ -48,10 +47,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
     loading: true,
   });
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
-  const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
+  const cardBg = 'bg.card';
+  const textColor = 'text.primary';
+  const borderColor = 'border.primary';
+  const secondaryTextColor = 'text.secondary';
 
   useEffect(() => {
     loadStats();
@@ -131,7 +130,7 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
 
   if (compact) {
     return (
-      <HStack spacing={4} p={3} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+      <HStack spacing={4} p={3} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
         {stats.loading ? (
           <>
             <Skeleton height="20px" width="80px" />
@@ -143,14 +142,14 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
           <>
             <Tooltip label={`Revenue (${period})`}>
               <HStack spacing={1}>
-                <Icon as={FiDollarSign} color="#10b981" boxSize={4} />
+                <Icon as={FiDollarSign} color="green.400" boxSize={4} />
                 <Text fontSize="sm" fontWeight="bold" color={textColor}>
                   {formatCurrency(stats.totalRevenue)}
                 </Text>
                 {stats.revenueChange !== 0 && (
                   <Icon
                     as={stats.revenueChange > 0 ? FiTrendingUp : FiTrendingDown}
-                    color={stats.revenueChange > 0 ? '#10b981' : '#ef4444'}
+                    color={stats.revenueChange > 0 ? 'green.400' : 'red.400'}
                     boxSize={3}
                   />
                 )}
@@ -158,14 +157,14 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </Tooltip>
             <Tooltip label={`Orders (${period})`}>
               <HStack spacing={1}>
-                <Icon as={FiPackage} color="#2563eb" boxSize={4} />
+                <Icon as={FiPackage} color="interactive.primary" boxSize={4} />
                 <Text fontSize="sm" fontWeight="bold" color={textColor}>
                   {stats.totalOrders}
                 </Text>
                 {stats.ordersChange !== 0 && (
                   <Icon
                     as={stats.ordersChange > 0 ? FiTrendingUp : FiTrendingDown}
-                    color={stats.ordersChange > 0 ? '#10b981' : '#ef4444'}
+                    color={stats.ordersChange > 0 ? 'green.400' : 'red.400'}
                     boxSize={3}
                   />
                 )}
@@ -173,7 +172,7 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </Tooltip>
             <Tooltip label="Active Routes">
               <HStack spacing={1}>
-                <Icon as={FiTruck} color="#9333ea" boxSize={4} />
+                <Icon as={FiTruck} color="purple.400" boxSize={4} />
                 <Text fontSize="sm" fontWeight="bold" color={textColor}>
                   {stats.activeRoutes}
                 </Text>
@@ -181,7 +180,7 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </Tooltip>
             <Tooltip label="Pending Orders">
               <HStack spacing={1}>
-                <Icon as={FiClock} color="#f59e0b" boxSize={4} />
+                <Icon as={FiClock} color="orange.400" boxSize={4} />
                 <Text fontSize="sm" fontWeight="bold" color={textColor}>
                   {stats.pendingOrders}
                 </Text>
@@ -197,25 +196,25 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
     <HStack spacing={4} align="stretch">
       {stats.loading ? (
         <>
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <SkeletonText noOfLines={2} />
           </Box>
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <SkeletonText noOfLines={2} />
           </Box>
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <SkeletonText noOfLines={2} />
           </Box>
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <SkeletonText noOfLines={2} />
           </Box>
         </>
       ) : (
         <>
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <VStack align="start" spacing={1}>
               <HStack spacing={2}>
-                <Icon as={FiDollarSign} color="#10b981" boxSize={5} />
+                <Icon as={FiDollarSign} color="green.400" boxSize={5} />
                 <Text fontSize="xs" color={secondaryTextColor} textTransform="uppercase">
                   Revenue ({period})
                 </Text>
@@ -227,10 +226,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
                 <HStack spacing={1}>
                   <Icon
                     as={stats.revenueChange > 0 ? FiTrendingUp : FiTrendingDown}
-                    color={stats.revenueChange > 0 ? '#10b981' : '#ef4444'}
+                    color={stats.revenueChange > 0 ? 'green.400' : 'red.400'}
                     boxSize={3}
                   />
-                  <Text fontSize="xs" color={stats.revenueChange > 0 ? '#10b981' : '#ef4444'}>
+                  <Text fontSize="xs" color={stats.revenueChange > 0 ? 'green.400' : 'red.400'}>
                     {Math.abs(stats.revenueChange).toFixed(1)}%
                   </Text>
                 </HStack>
@@ -238,10 +237,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </VStack>
           </Box>
 
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <VStack align="start" spacing={1}>
               <HStack spacing={2}>
-                <Icon as={FiPackage} color="#2563eb" boxSize={5} />
+                <Icon as={FiPackage} color="interactive.primary" boxSize={5} />
                 <Text fontSize="xs" color={secondaryTextColor} textTransform="uppercase">
                   Orders ({period})
                 </Text>
@@ -253,10 +252,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
                 <HStack spacing={1}>
                   <Icon
                     as={stats.ordersChange > 0 ? FiTrendingUp : FiTrendingDown}
-                    color={stats.ordersChange > 0 ? '#10b981' : '#ef4444'}
+                    color={stats.ordersChange > 0 ? 'green.400' : 'red.400'}
                     boxSize={3}
                   />
-                  <Text fontSize="xs" color={stats.ordersChange > 0 ? '#10b981' : '#ef4444'}>
+                  <Text fontSize="xs" color={stats.ordersChange > 0 ? 'green.400' : 'red.400'}>
                     {Math.abs(stats.ordersChange).toFixed(1)}%
                   </Text>
                 </HStack>
@@ -264,10 +263,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </VStack>
           </Box>
 
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <VStack align="start" spacing={1}>
               <HStack spacing={2}>
-                <Icon as={FiTruck} color="#9333ea" boxSize={5} />
+                <Icon as={FiTruck} color="purple.400" boxSize={5} />
                 <Text fontSize="xs" color={secondaryTextColor} textTransform="uppercase">
                   Active Routes
                 </Text>
@@ -278,10 +277,10 @@ export function QuickStatsWidget({ period = 'today', compact = false }: QuickSta
             </VStack>
           </Box>
 
-          <Box flex={1} p={4} bg={cardBg} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+          <Box flex={1} p={4} bg={cardBg} borderRadius="xl" borderWidth={1} borderColor={borderColor}>
             <VStack align="start" spacing={1}>
               <HStack spacing={2}>
-                <Icon as={FiClock} color="#f59e0b" boxSize={5} />
+                <Icon as={FiClock} color="orange.400" boxSize={5} />
                 <Text fontSize="xs" color={secondaryTextColor} textTransform="uppercase">
                   Pending Orders
                 </Text>

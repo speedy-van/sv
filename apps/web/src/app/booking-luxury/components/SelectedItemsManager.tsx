@@ -188,10 +188,10 @@ export default function SelectedItemsManager({
           position="relative"
           sx={{
             '@media (max-width: 767px)': {
-              display: 'block !important',
+              display: 'block',
             },
             '@media (min-width: 768px)': {
-              display: 'none !important',
+              display: 'none',
             },
           }}
         >
@@ -306,7 +306,7 @@ export default function SelectedItemsManager({
           display={{ base: 'none', md: 'block' }}
           sx={{
             '@media (max-width: 768px)': {
-              display: 'none !important',
+              display: 'none',
             },
           }}
         >
@@ -465,10 +465,10 @@ export default function SelectedItemsManager({
           display={{ base: 'block', md: 'none' }}
           sx={{
             '@media (max-width: 767px)': {
-              display: 'block !important',
+              display: 'block',
             },
             '@media (min-width: 768px)': {
-              display: 'none !important',
+              display: 'none',
             },
           }}
         >

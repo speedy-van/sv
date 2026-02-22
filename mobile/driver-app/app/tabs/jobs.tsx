@@ -231,7 +231,7 @@ export default function JobsScreen() {
               <Ionicons
                 name="grid"
                 size={18}
-                color={filter === 'all' ? '#FFFFFF' : '#999'}
+                color={filter === 'all' ? '#F5F8FF' : '#999'}
               />
               <Text
                 style={[
@@ -253,7 +253,7 @@ export default function JobsScreen() {
               <Ionicons
                 name="checkmark-circle"
                 size={18}
-                color={filter === 'assigned' ? '#FFFFFF' : '#999'}
+                color={filter === 'assigned' ? '#F5F8FF' : '#999'}
               />
               <Text
                 style={[
@@ -275,7 +275,7 @@ export default function JobsScreen() {
               <Ionicons
                 name="add-circle"
                 size={18}
-                color={filter === 'available' ? '#FFFFFF' : '#999'}
+                color={filter === 'available' ? '#F5F8FF' : '#999'}
               />
               <Text
                 style={[
@@ -414,7 +414,7 @@ export default function JobsScreen() {
                   onPress={handleRefresh}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="refresh" size={18} color="#FFFFFF" />
+                  <Ionicons name="refresh" size={18} color="#F5F8FF" />
                   <Text style={styles.emptyStateButtonText}>Refresh</Text>
                 </TouchableOpacity>
               </View>
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
   },
   headerStats: {
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   headerGradient: {
     position: 'absolute',
@@ -522,9 +522,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(59, 130, 246, 0.2)',
   },
   filterTabActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
-    shadowColor: '#007AFF',
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.7,
     shadowRadius: 16,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   filterTabTextActive: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '700',
   },
   filterBadge: {
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
   filterBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   scrollView: {
     flex: 1,
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   loadingContainer: {
     padding: spacing.xxl,
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.8,
     fontWeight: '500',
   },
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.8,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   emptyStateButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
 });
 

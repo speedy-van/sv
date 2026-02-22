@@ -52,9 +52,9 @@ export function AdvancedSearch({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const bgColor = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const bgColor = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useOutsideClick({
@@ -242,7 +242,7 @@ export function AdvancedSearch({
                 <Box
                   key={`${result.type}-${result.id}`}
                   p={3}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                   cursor="pointer"
                   onClick={() => handleSelectResult(result)}
                   borderBottomWidth={1}
@@ -291,7 +291,7 @@ export function AdvancedSearch({
                 <Box
                   key={index}
                   p={3}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                   cursor="pointer"
                   onClick={() => handleSearch(search)}
                   borderBottomWidth={index < recentSearches.length - 1 ? 1 : 0}

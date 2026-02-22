@@ -79,9 +79,9 @@ export function NotificationsCenter({
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'orders' | 'routes'>('all');
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -210,7 +210,7 @@ export function NotificationsCenter({
           variant="ghost"
           position="relative"
           color={textColor}
-          _hover={{ bg: '#1a1a1a' }}
+          _hover={{ bg: '#18233A' }}
         >
           {unreadCount > 0 && (
             <Badge
@@ -218,7 +218,7 @@ export function NotificationsCenter({
               top="-2px"
               right="-2px"
               bg="#ef4444"
-              color="#FFFFFF"
+              color="#F5F8FF"
               borderRadius="full"
               boxSize="18px"
               fontSize="xs"
@@ -243,7 +243,7 @@ export function NotificationsCenter({
                     onClick={handleMarkAllAsRead}
                     variant="ghost"
                     color={textColor}
-                    _hover={{ bg: '#1a1a1a' }}
+                    _hover={{ bg: '#18233A' }}
                   >
                     Mark all read
                   </Button>
@@ -255,7 +255,7 @@ export function NotificationsCenter({
                   variant="ghost"
                   onClick={onOpen}
                   color={textColor}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                 />
               </HStack>
             </HStack>
@@ -277,7 +277,7 @@ export function NotificationsCenter({
                     borderBottomColor={borderColor}
                     cursor="pointer"
                     onClick={() => handleNotificationClick(notification)}
-                    _hover={{ bg: '#1a1a1a' }}
+                    _hover={{ bg: '#18233A' }}
                   >
                     <HStack align="start" spacing={3}>
                       <Icon
@@ -323,7 +323,7 @@ export function NotificationsCenter({
                       variant="ghost"
                       onClick={onOpen}
                       color={textColor}
-                      _hover={{ bg: '#1a1a1a' }}
+                      _hover={{ bg: '#18233A' }}
                     >
                       View all ({filteredNotifications.length})
                     </Button>
@@ -379,7 +379,7 @@ export function NotificationsCenter({
                             borderWidth={1}
                             cursor="pointer"
                             onClick={() => handleNotificationClick(notification)}
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           >
                             <CardBody>
                               <HStack align="start" spacing={3}>
@@ -440,7 +440,7 @@ export function NotificationsCenter({
                                         window.location.href = notification.actionUrl!;
                                       }}
                                       bg="#2563eb"
-                                      color="#FFFFFF"
+                                      color="#F5F8FF"
                                       _hover={{ bg: '#1d4ed8' }}
                                     >
                                       {notification.actionLabel || 'View'}
@@ -476,7 +476,7 @@ export function NotificationsCenter({
                   variant="outline"
                   borderColor={borderColor}
                   color={textColor}
-                  _hover={{ bg: '#1a1a1a' }}
+                  _hover={{ bg: '#18233A' }}
                 >
                   Mark All Read
                 </Button>

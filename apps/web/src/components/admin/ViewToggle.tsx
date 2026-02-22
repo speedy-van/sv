@@ -28,11 +28,11 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange }) => {
       isAttached
       variant="outline"
       size="md"
-      bg="#111111"
-      borderColor="#333333"
+      bg="bg.card"
+      borderColor="border.primary"
       borderWidth="2px"
       borderRadius="lg"
-      boxShadow="0 4px 12px rgba(0, 0, 0, 0.3)"
+      boxShadow="md"
       overflow="hidden"
       position="relative"
       _before={{
@@ -42,7 +42,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)',
+        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
         pointerEvents: 'none',
         opacity: 0.5,
       }}
@@ -56,8 +56,8 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange }) => {
                 icon={<Icon />}
                 aria-label={label}
                 onClick={() => onViewChange(type)}
-                bg={isActive ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : 'transparent'}
-                color={isActive ? '#FFFFFF' : '#9ca3af'}
+                bg={isActive ? 'linear-gradient(135deg, var(--chakra-colors-interactive-primary) 0%, var(--chakra-colors-interactive-active) 100%)' : 'transparent'}
+                color={isActive ? 'text.primary' : 'text.secondary'}
                 border="none"
                 borderRadius="0"
                 size="md"
@@ -66,14 +66,14 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange }) => {
                 fontWeight="semibold"
                 boxShadow={isActive ? '0 4px 16px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)' : 'none'}
                 _hover={{
-                  bg: isActive 
-                    ? 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)' 
-                    : '#1a1a1a',
-                  color: isActive ? '#FFFFFF' : '#FFFFFF',
+                  bg: isActive
+                    ? 'linear-gradient(135deg, var(--chakra-colors-interactive-active) 0%, var(--chakra-colors-blue-700) 100%)'
+                    : 'bg.surface.elevated',
+                  color: 'text.primary',
                   transform: 'translateY(-1px)',
                   boxShadow: isActive 
-                    ? '0 6px 20px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)' 
-                    : '0 2px 8px rgba(0, 0, 0, 0.2)',
+                    ? '0 6px 20px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                    : 'sm',
                 }}
                 _active={{
                   transform: 'translateY(0)',
@@ -88,9 +88,9 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ view, onViewChange }) => {
                   transform: 'translateX(-50%)',
                   width: '60%',
                   height: '2px',
-                  bg: '#10b981',
+                  bg: 'green.400',
                   borderRadius: 'full',
-                  boxShadow: '0 0 8px rgba(16, 185, 129, 0.6)',
+                  boxShadow: '0 0 8px rgba(16, 185, 129, 0.45)',
                 } : {}}
               />
             </Box>

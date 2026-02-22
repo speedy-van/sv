@@ -1,14 +1,14 @@
 // iOS 17+ Modern Design System
 export const colors = {
-  // Primary - Modern Blue with depth
-  primary: '#007AFF',
-  primaryDark: '#0051D5',
-  primaryLight: '#5AC8FA',
+  // Midnight Neon Pro core
+  primary: '#3B82F6',
+  primaryDark: '#2563EB',
+  primaryLight: '#60A5FA',
 
-  // Secondary - Emerald Green
-  secondary: '#10B981',
-  secondaryDark: '#059669',
-  secondaryLight: '#34D399',
+  // Secondary accent
+  secondary: '#22D3EE',
+  secondaryDark: '#0891B2',
+  secondaryLight: '#67E8F9',
 
   // Accent Colors
   accent: '#FF9500',
@@ -20,52 +20,52 @@ export const colors = {
   purple: '#AF52DE',
   pink: '#FF2D55',
 
-  // Light Theme Backgrounds (iOS 17 Style)
+  // Midnight Neon Pro surfaces
   background: {
-    primary: '#F2F2F7',          // iOS system background (light mode)
-    secondary: '#FFFFFF',         // Cards and elevated surfaces
-    tertiary: '#F9F9F9',         // Alternative surface (disabled inputs)
-    elevated: '#FFFFFF',         // Elevated surfaces
+    primary: '#0B1020',
+    secondary: '#121A2B',
+    tertiary: '#18233A',
+    elevated: '#1A2640',
   },
-  surface: '#FFFFFF',             // Cards and elevated surfaces
-  surfaceAlt: '#F9F9F9',         // Alternative surface (disabled inputs)
+  surface: '#121A2B',
+  surfaceAlt: '#18233A',
   border: {
-    light: '#E5E5EA',            // iOS system separator color
-    medium: '#D1D1D6',           // Medium emphasis border
-    strong: '#C7C7CC',           // Strong emphasis border
+    light: '#2A3A5E',
+    medium: '#334872',
+    strong: '#3E5A8F',
   },
-  borderLegacy: '#E5E5EA',      // Legacy single border color for backward compat
+  borderLegacy: '#2A3A5E',
 
   // Glass surfaces with blur
   glass: {
-    light: 'rgba(255, 255, 255, 0.1)',
-    medium: 'rgba(255, 255, 255, 0.15)',
-    strong: 'rgba(255, 255, 255, 0.2)',
-    dark: 'rgba(0, 0, 0, 0.3)',
+    light: 'rgba(18, 26, 43, 0.7)',
+    medium: 'rgba(26, 38, 64, 0.75)',
+    strong: 'rgba(33, 48, 77, 0.8)',
+    dark: 'rgba(0, 0, 0, 0.45)',
   },
 
-  // Text colors (iOS 17) - Light Mode Compatible
+  // Text colors
   text: {
-    primary: '#000000',           // Pure black for maximum readability
-    secondary: '#3C3C43',         // iOS system gray (60% opacity)
-    tertiary: '#8E8E93',          // iOS system gray (40% opacity)
-    quaternary: '#C7C7CC',        // iOS system gray (20% opacity)
-    disabled: '#C7C7CC',          // For disabled text and placeholders
-    inverse: '#FFFFFF',           // For text on dark backgrounds
-    placeholder: '#C7C7CC',       // For input placeholders
+    primary: '#F5F8FF',
+    secondary: '#A9B4CC',
+    tertiary: '#7E8AA6',
+    quaternary: '#64748B',
+    disabled: '#64748B',
+    inverse: '#0B1020',
+    placeholder: '#7E8AA6',
   },
 
   // Border colors (removed - using single border color above)
 
   // Gradient overlays
   gradients: {
-    primary: ['#007AFF', '#5AC8FA'],
-    success: ['#34C759', '#10B981'],
+    primary: ['#3B82F6', '#22D3EE'],
+    success: ['#10B981', '#22C55E'],
     warning: ['#FF9500', '#FFCC00'],
     danger: ['#FF3B30', '#FF2D55'],
-    purple: ['#AF52DE', '#5E5CE6'],
-    dark: ['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.4)'],
-    glass: ['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.05)'],
+    purple: ['#8B5CF6', '#6366F1'],
+    dark: ['rgba(11, 16, 32, 0.95)', 'rgba(18, 26, 43, 0.8)'],
+    glass: ['rgba(26, 38, 64, 0.6)', 'rgba(18, 26, 43, 0.4)'],
   },
 
   // Shadows

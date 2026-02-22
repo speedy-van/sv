@@ -160,7 +160,7 @@ export function CallMeBackFloating() {
                     placeholder="Full name"
                     bg="#111827"
                     borderColor="#1f2937"
-                    color="#e2e8f0"
+                    color="#A9B4CC"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                   />
@@ -175,7 +175,7 @@ export function CallMeBackFloating() {
                     placeholder="07xxxxxxxx"
                     bg="#111827"
                     borderColor="#1f2937"
-                    color="#e2e8f0"
+                    color="#A9B4CC"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -189,7 +189,7 @@ export function CallMeBackFloating() {
                   <Select
                     bg="#111827"
                     borderColor="#1f2937"
-                    color="#e2e8f0"
+                    color="#A9B4CC"
                     value={preferredTime}
                     onChange={(e) => setPreferredTime(e.target.value)}
                   >

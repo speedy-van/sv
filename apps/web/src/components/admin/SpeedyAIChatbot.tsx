@@ -229,8 +229,8 @@ export default function SpeedyAIChatbot({
   const headerBg = '#202123'; // Darker header like ChatGPT
   
   // Non-hook values derived from hooks
-  const messageBgUserText = '#FFFFFF'; // White text on user messages
-  const messageBgAssistantText = '#FFFFFF'; // White text on assistant messages
+  const messageBgUserText = '#F5F8FF'; // White text on user messages
+  const messageBgAssistantText = '#F5F8FF'; // White text on assistant messages
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -966,11 +966,11 @@ export default function SpeedyAIChatbot({
       <Box position="fixed" bottom="20px" right="20px" zIndex={1000}>
         <IconButton
           aria-label="Open Speedy AI"
-          icon={<FiMessageCircle style={{ color: '#FFFFFF' }} />}
+          icon={<FiMessageCircle style={{ color: '#F5F8FF' }} />}
           onClick={() => setIsOpen(true)}
           size="lg"
           bg="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
-          color="#FFFFFF"
+          color="#F5F8FF"
           borderRadius="full"
           boxShadow="0 8px 25px rgba(37, 99, 235, 0.6), 0 0 50px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
           border="2px solid"
@@ -1001,7 +1001,7 @@ export default function SpeedyAIChatbot({
             py={0.5}
             boxShadow="0 0 15px rgba(239, 68, 68, 0.8), 0 2px 8px rgba(239, 68, 68, 0.4)"
             animation="pulse 2s infinite"
-            border="2px solid #000000"
+            border="2px solid #0B1020"
           >
             {notificationCount > 9 ? '9+' : notificationCount}
           </Badge>
@@ -1026,22 +1026,22 @@ export default function SpeedyAIChatbot({
         borderRadius="xl"
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
         sx={{ 
-          bg: `${bgColor} !important`,
-          backgroundColor: `${bgColor} !important`,
-          background: `${bgColor} !important`,
-          borderColor: `${borderColor} !important`,
+          bg: `${bgColor}`,
+          backgroundColor: `${bgColor}`,
+          background: `${bgColor}`,
+          borderColor: `${borderColor}`,
           '&': {
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
+            backgroundColor: '#0B1020',
+            background: '#0B1020',
           },
         }}
         __css={{
-          backgroundColor: '#000000 !important',
-          background: '#000000 !important',
+          backgroundColor: '#0B1020',
+          background: '#0B1020',
         }}
         style={{
-          backgroundColor: '#000000',
-          background: '#000000',
+          backgroundColor: '#0B1020',
+          background: '#0B1020',
         }}
         _hover={{
           boxShadow: '0 16px 50px rgba(0, 0, 0, 0.95), 0 0 40px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
@@ -1061,24 +1061,24 @@ export default function SpeedyAIChatbot({
           p={4} 
           bg={bgColor} 
           sx={{ 
-            bg: `${bgColor} !important`,
-            backgroundColor: `${bgColor} !important`,
+            bg: `${bgColor}`,
+            backgroundColor: `${bgColor}`,
             '&': {
-              backgroundColor: '#000000 !important',
-              background: '#000000 !important',
+              backgroundColor: '#0B1020',
+              background: '#0B1020',
             },
           }}
           __css={{
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
+            backgroundColor: '#0B1020',
+            background: '#0B1020',
           }}
           css={{
-            backgroundColor: '#000000 !important',
-            background: '#000000 !important',
+            backgroundColor: '#0B1020',
+            background: '#0B1020',
           }}
           style={{
-            backgroundColor: '#000000',
-            background: '#000000',
+            backgroundColor: '#0B1020',
+            background: '#0B1020',
           }}
         >
           <HStack justify="space-between">
@@ -1103,7 +1103,7 @@ export default function SpeedyAIChatbot({
                   </Text>
                   <Badge 
                     bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     fontSize="xs"
                     px={2}
                     py={0.5}
@@ -1127,7 +1127,7 @@ export default function SpeedyAIChatbot({
                 variant="ghost"
                 color={showSidebar ? '#10b981' : textColor}
                 borderRadius="md"
-                _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                _hover={{ bg: '#18233A', color: '#10b981', transform: 'scale(1.1)' }}
                 onClick={() => setShowSidebar(!showSidebar)}
                 transition="all 0.2s ease"
               />
@@ -1138,7 +1138,7 @@ export default function SpeedyAIChatbot({
                 variant="ghost"
                 color={textColor}
                 borderRadius="md"
-                _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                _hover={{ bg: '#18233A', color: '#10b981', transform: 'scale(1.1)' }}
                 onClick={handleExportConversation}
                 isDisabled={messages.length === 0}
                 transition="all 0.2s ease"
@@ -1150,7 +1150,7 @@ export default function SpeedyAIChatbot({
                 variant="ghost"
                 color={textColor}
                 borderRadius="md"
-                _hover={{ bg: '#1a1a1a', color: '#2563eb', transform: 'scale(1.1)' }}
+                _hover={{ bg: '#18233A', color: '#2563eb', transform: 'scale(1.1)' }}
                 onClick={handleToggle}
                 transition="all 0.2s ease"
               />
@@ -1161,7 +1161,7 @@ export default function SpeedyAIChatbot({
                 variant="ghost"
                 color={textColor}
                 borderRadius="md"
-                _hover={{ bg: '#1a1a1a', color: '#ef4444', transform: 'scale(1.1)' }}
+                _hover={{ bg: '#18233A', color: '#ef4444', transform: 'scale(1.1)' }}
                 onClick={handleClose}
                 transition="all 0.2s ease"
               />
@@ -1191,22 +1191,22 @@ export default function SpeedyAIChatbot({
       overflow="hidden"
       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
       sx={{ 
-        bg: `${bgColor} !important`,
-        backgroundColor: `${bgColor} !important`,
-        background: `${bgColor} !important`,
-        borderColor: `${borderColor} !important`,
+        bg: `${bgColor}`,
+        backgroundColor: `${bgColor}`,
+        background: `${bgColor}`,
+        borderColor: `${borderColor}`,
         '&': {
-          backgroundColor: '#000000 !important',
-          background: '#000000 !important',
+          backgroundColor: '#0B1020',
+          background: '#0B1020',
         },
       }}
       __css={{
-        backgroundColor: '#000000 !important',
-        background: '#000000 !important',
+        backgroundColor: '#0B1020',
+        background: '#0B1020',
       }}
       style={{
-        backgroundColor: '#000000',
-        background: '#000000',
+        backgroundColor: '#0B1020',
+        background: '#0B1020',
       }}
       _hover={{
         boxShadow: '0 25px 70px rgba(0, 0, 0, 0.98), 0 0 60px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
@@ -1219,27 +1219,27 @@ export default function SpeedyAIChatbot({
         borderColor={borderColor}
         bg={headerBg}
         sx={{ 
-          bg: `${headerBg} !important`, 
-          backgroundColor: `${headerBg} !important`,
-          borderColor: `${borderColor} !important`,
-          background: `linear-gradient(135deg, ${headerBg} 0%, #0a0a0a 100%) !important`,
-          backgroundImage: `linear-gradient(135deg, ${headerBg} 0%, #0a0a0a 100%) !important`,
+          bg: `${headerBg}`, 
+          backgroundColor: `${headerBg}`,
+          borderColor: `${borderColor}`,
+          background: `linear-gradient(135deg, ${headerBg} 0%, #121A2B 100%)`,
+          backgroundImage: `linear-gradient(135deg, ${headerBg} 0%, #121A2B 100%)`,
           '&': {
-            backgroundColor: '#111111 !important',
-            background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+            backgroundColor: '#121A2B',
+            background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
           },
         }}
         __css={{
-          backgroundColor: '#111111 !important',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         css={{
-          backgroundColor: '#111111 !important',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         style={{
-          backgroundColor: '#111111',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%)',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         position="relative"
         _before={{
@@ -1252,7 +1252,7 @@ export default function SpeedyAIChatbot({
           background: 'linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.5) 50%, transparent 100%)',
         }}
       >
-        <Flex justify="space-between" align="center" p={4} style={{ backgroundColor: '#111111' }}>
+        <Flex justify="space-between" align="center" p={4} style={{ backgroundColor: '#121A2B' }}>
           <HStack spacing={3}>
             <Avatar 
               size="md" 
@@ -1274,7 +1274,7 @@ export default function SpeedyAIChatbot({
                 </Text>
                 <Badge 
                   bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   fontSize="xs"
                   px={2.5}
                   py={1}
@@ -1292,7 +1292,7 @@ export default function SpeedyAIChatbot({
                     width: '6px',
                     height: '6px',
                     borderRadius: '50%',
-                    bg: '#FFFFFF',
+                    bg: '#F5F8FF',
                     boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
                     animation: 'pulse 2s infinite',
                   }}
@@ -1314,7 +1314,7 @@ export default function SpeedyAIChatbot({
               variant="ghost"
               color={textColor}
               borderRadius="md"
-              _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+              _hover={{ bg: '#18233A', color: '#10b981', transform: 'scale(1.1)' }}
               onClick={() => setShowExamples(!showExamples)}
               transition="all 0.2s ease"
               title={language === 'ar' ? 'أمثلة' : 'Examples'}
@@ -1328,7 +1328,7 @@ export default function SpeedyAIChatbot({
                 variant="ghost"
                 color={textColor}
                 borderRadius="md"
-                _hover={{ bg: '#1a1a1a', color: '#f59e0b', transform: 'scale(1.1)' }}
+                _hover={{ bg: '#18233A', color: '#f59e0b', transform: 'scale(1.1)' }}
                 onClick={handleExportConversation}
                 transition="all 0.2s ease"
                 title={language === 'ar' ? 'تصدير' : 'Export'}
@@ -1356,8 +1356,8 @@ export default function SpeedyAIChatbot({
               }}
               transition="all 0.2s ease"
             >
-              <option value="en" style={{ background: '#000000', color: '#FFFFFF' }}>EN</option>
-              <option value="ar" style={{ background: '#000000', color: '#FFFFFF' }}>AR</option>
+              <option value="en" style={{ background: '#0B1020', color: '#F5F8FF' }}>EN</option>
+              <option value="ar" style={{ background: '#0B1020', color: '#F5F8FF' }}>AR</option>
             </Select>
             <IconButton
               aria-label="Minimize"
@@ -1366,7 +1366,7 @@ export default function SpeedyAIChatbot({
               variant="ghost"
               color={textColor}
               borderRadius="md"
-              _hover={{ bg: '#1a1a1a', color: '#2563eb', transform: 'scale(1.1)' }}
+              _hover={{ bg: '#18233A', color: '#2563eb', transform: 'scale(1.1)' }}
               onClick={handleToggle}
               transition="all 0.2s ease"
             />
@@ -1377,7 +1377,7 @@ export default function SpeedyAIChatbot({
               variant="ghost"
               color={textColor}
               borderRadius="md"
-              _hover={{ bg: '#1a1a1a', color: '#ef4444', transform: 'scale(1.1)' }}
+              _hover={{ bg: '#18233A', color: '#ef4444', transform: 'scale(1.1)' }}
               onClick={handleClose}
               transition="all 0.2s ease"
             />
@@ -1465,39 +1465,39 @@ export default function SpeedyAIChatbot({
         p={5}
         bg={messagesBg}
         sx={{ 
-          bg: `${messagesBg} !important`,
-          backgroundColor: `${messagesBg} !important`,
+          bg: `${messagesBg}`,
+          backgroundColor: `${messagesBg}`,
           '&': {
-            backgroundColor: '#0a0a0a !important',
-            background: '#0a0a0a !important',
+            backgroundColor: '#121A2B',
+            background: '#121A2B',
           },
         }}
         __css={{
-          backgroundColor: '#0a0a0a !important',
-          background: '#0a0a0a !important',
+          backgroundColor: '#121A2B',
+          background: '#121A2B',
         }}
         css={{
-          backgroundColor: '#0a0a0a !important',
-          background: '#0a0a0a !important',
+          backgroundColor: '#121A2B',
+          background: '#121A2B',
           '&::-webkit-scrollbar': {
             width: '10px',
           },
           '&::-webkit-scrollbar-track': {
-            background: '#0a0a0a',
+            background: '#121A2B',
             borderRadius: '10px',
           },
           '&::-webkit-scrollbar-thumb': {
-            background: 'linear-gradient(180deg, #333333 0%, #444444 100%)',
+            background: 'linear-gradient(180deg, #2A3A5E 0%, #444444 100%)',
             borderRadius: '10px',
-            border: '2px solid #0a0a0a',
+            border: '2px solid #121A2B',
           },
           '&::-webkit-scrollbar-thumb:hover': {
             background: 'linear-gradient(180deg, #444444 0%, #555555 100%)',
           },
         }}
         style={{
-          backgroundColor: '#0a0a0a',
-          background: '#0a0a0a',
+          backgroundColor: '#121A2B',
+          background: '#121A2B',
         }}
         _before={{
           content: '""',
@@ -1621,9 +1621,9 @@ export default function SpeedyAIChatbot({
                     }
                     sx={{
                       bg: message.role === 'user' 
-                        ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important'
-                        : `${messageBgAssistant} !important`,
-                      color: `${message.role === 'user' ? messageBgUserText : messageBgAssistantText} !important`,
+                        ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                        : `${messageBgAssistant}`,
+                      color: `${message.role === 'user' ? messageBgUserText : messageBgAssistantText}`,
                     }}
                     boxShadow={
                       message.role === 'user'
@@ -1722,7 +1722,7 @@ export default function SpeedyAIChatbot({
                 {message.role === 'user' && (
                   <Avatar 
                     size="md" 
-                    bg="linear-gradient(135deg, #4b5563 0%, #374151 100%)"
+                    bg="linear-gradient(135deg, #4b5563 0%, #2A3A5E 100%)"
                     icon={<FiUser />}
                     boxShadow="0 0 15px rgba(75, 85, 99, 0.6), 0 4px 12px rgba(75, 85, 99, 0.3)"
                     border="2px solid"
@@ -1797,27 +1797,27 @@ export default function SpeedyAIChatbot({
         borderColor={borderColor}
         bg={headerBg}
         sx={{ 
-          bg: `${headerBg} !important`,
-          backgroundColor: `${headerBg} !important`,
-          borderColor: `${borderColor} !important`,
-          background: `linear-gradient(135deg, ${headerBg} 0%, #0a0a0a 100%) !important`,
-          backgroundImage: `linear-gradient(135deg, ${headerBg} 0%, #0a0a0a 100%) !important`,
+          bg: `${headerBg}`,
+          backgroundColor: `${headerBg}`,
+          borderColor: `${borderColor}`,
+          background: `linear-gradient(135deg, ${headerBg} 0%, #121A2B 100%)`,
+          backgroundImage: `linear-gradient(135deg, ${headerBg} 0%, #121A2B 100%)`,
           '&': {
-            backgroundColor: '#111111 !important',
-            background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+            backgroundColor: '#121A2B',
+            background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
           },
         }}
         __css={{
-          backgroundColor: '#111111 !important',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         css={{
-          backgroundColor: '#111111 !important',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%) !important',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         style={{
-          backgroundColor: '#111111',
-          background: 'linear-gradient(135deg, #111111 0%, #0a0a0a 100%)',
+          backgroundColor: '#121A2B',
+          background: 'linear-gradient(135deg, #121A2B 0%, #121A2B 100%)',
         }}
         position="relative"
         _before={{
@@ -1830,8 +1830,8 @@ export default function SpeedyAIChatbot({
           background: 'linear-gradient(90deg, transparent 0%, rgba(37, 99, 235, 0.3) 50%, transparent 100%)',
         }}
       >
-        <VStack spacing={0} style={{ backgroundColor: '#111111' }}>
-          <HStack p={4} spacing={3} align="flex-end" style={{ backgroundColor: '#111111' }}>
+        <VStack spacing={0} style={{ backgroundColor: '#121A2B' }}>
+          <HStack p={4} spacing={3} align="flex-end" style={{ backgroundColor: '#121A2B' }}>
             <Textarea
               ref={inputRef}
               value={inputMessage}
@@ -1879,7 +1879,7 @@ export default function SpeedyAIChatbot({
                   size="sm"
                   variant="ghost"
                   color={uploadedFile ? '#10b981' : '#9ca3af'}
-                  _hover={{ bg: '#1a1a1a', color: '#10b981', transform: 'scale(1.1)' }}
+                  _hover={{ bg: '#18233A', color: '#10b981', transform: 'scale(1.1)' }}
                   onClick={() => fileInputRef.current?.click()}
                   transition="all 0.2s ease"
                 />
@@ -1889,7 +1889,7 @@ export default function SpeedyAIChatbot({
                   size="sm"
                   variant="ghost"
                   color={isRecording ? '#ef4444' : '#9ca3af'}
-                  _hover={{ bg: '#1a1a1a', color: isRecording ? '#ef4444' : '#10b981', transform: 'scale(1.1)' }}
+                  _hover={{ bg: '#18233A', color: isRecording ? '#ef4444' : '#10b981', transform: 'scale(1.1)' }}
                   onClick={handleVoiceToggle}
                   transition="all 0.2s ease"
                   animation={isRecording ? 'pulse 1.5s infinite' : 'none'}
@@ -1897,9 +1897,9 @@ export default function SpeedyAIChatbot({
               </HStack>
               <IconButton
                 aria-label="Send"
-                icon={<FiSend style={{ color: '#FFFFFF' }} />}
+                icon={<FiSend style={{ color: '#F5F8FF' }} />}
                 bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                color="#FFFFFF"
+                color="#F5F8FF"
                 size="md"
                 borderRadius="xl"
                 onClick={handleSendMessage}
@@ -1914,11 +1914,11 @@ export default function SpeedyAIChatbot({
                   transform: 'scale(0.95)',
                 }}
                 _disabled={{
-                  bg: '#1a1a1a',
+                  bg: '#18233A',
                   color: '#6b7280',
                   cursor: 'not-allowed',
                   opacity: 0.5,
-                  border: '1px solid #333333',
+                  border: '1px solid #2A3A5E',
                 }}
                 transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 boxShadow="0 0 15px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(16, 185, 129, 0.2)"
@@ -1935,7 +1935,7 @@ export default function SpeedyAIChatbot({
                   fontWeight="medium"
                   borderRadius="md"
                   _hover={{
-                    bg: '#1a1a1a',
+                    bg: '#18233A',
                     color: '#ef4444',
                     transform: 'translateY(-1px)',
                   }}

@@ -71,9 +71,9 @@ export function ActivityLog({
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export function ActivityLog({
               <Select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                bg="#1a1a1a"
+                bg="#18233A"
                 borderColor={borderColor}
                 color={textColor}
                 size="sm"
@@ -209,7 +209,7 @@ export function ActivityLog({
               <Select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                bg="#1a1a1a"
+                bg="#18233A"
                 borderColor={borderColor}
                 color={textColor}
                 size="sm"
@@ -224,7 +224,7 @@ export function ActivityLog({
                 placeholder="Search activities..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                bg="#1a1a1a"
+                bg="#18233A"
                 borderColor={borderColor}
                 color={textColor}
                 size="sm"
@@ -280,7 +280,7 @@ export function ActivityLog({
                       {activity.entityName}
                     </Text>
                     {activity.changes && activity.changes.length > 0 && (
-                      <VStack align="start" spacing={1} mt={2} p={2} bg="#1a1a1a" borderRadius="md" w="100%">
+                      <VStack align="start" spacing={1} mt={2} p={2} bg="#18233A" borderRadius="md" w="100%">
                         {activity.changes.map((change, idx) => (
                           <HStack key={idx} fontSize="xs" spacing={2}>
                             <Text color={secondaryTextColor}>{change.field}:</Text>

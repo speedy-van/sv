@@ -15,8 +15,6 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
-  Card,
-  CardBody,
   Icon,
   Spinner,
 } from '@chakra-ui/react';
@@ -30,6 +28,8 @@ import PricePreview from './PricePreview';
 import SegmentManager from './SegmentManager';
 import RouteMapPreview from './RouteMapPreview';
 import MarketplacePickupOptions from './MarketplacePickupOptions';
+import LuxurySurfaceCard from './LuxurySurfaceCard';
+import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 
 
 interface AddressesStepProps {
@@ -147,35 +147,18 @@ export default function AddressesStep({
   // No need for deprecated /api/address/distance endpoint
 
   return (
-    <Box w="full" pb={8}>
-      <VStack spacing={10} w="full" align="stretch">
-        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 8, xl: 10 }} w="full">
-          <Card
-            bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
-            border="2px solid"
-            borderColor="rgba(34, 197, 94, 0.4)"
-            borderRadius="3xl"
-            backdropFilter="blur(24px)"
-            boxShadow="0 25px 60px rgba(0,0,0,0.6), 0 0 80px rgba(34, 197, 94, 0.15)"
-            position="relative"
-            overflow="visible"
-            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-            _hover={{
-              borderColor: "rgba(34, 197, 94, 0.6)",
-              boxShadow: "0 30px 75px rgba(0,0,0,0.7), 0 0 100px rgba(34, 197, 94, 0.25)",
-            }}
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              bgGradient: 'linear(to-r, green.400, emerald.500, teal.400)',
-              opacity: 0.8,
-            }}
+    <ResponsiveSection maxW="1200px" w="full">
+    <Box w="full" pb={{ base: 6, md: 8 }}>
+      <VStack spacing={{ base: 8, md: 10 }} w="full" align="stretch">
+        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 6, xl: 10 }} w="full">
+          <LuxurySurfaceCard
+            tone="success"
+            borderWidth="1px"
+            borderRadius="2xl"
+            transition="all 0.25s ease"
+            _hover={{ borderColor: 'green.300' }}
           >
-            <CardBody p={10}>
+            <Box p={{ base: 5, md: 8 }}>
               <VStack spacing={6} align="stretch">
                 {/* Header with Enhanced Icon */}
                 <HStack spacing={4} mb={2}>
@@ -183,37 +166,23 @@ export default function AddressesStep({
                     w="64px"
                     h="64px"
                     borderRadius="2xl"
-                    bg="linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))"
-                    border="2px solid"
-                    borderColor="rgba(34, 197, 94, 0.4)"
+                    bg="green.900"
+                    border="1px solid"
+                    borderColor="green.400"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    position="relative"
-                    boxShadow="0 8px 32px rgba(34, 197, 94, 0.3), inset 0 0 20px rgba(34, 197, 94, 0.1)"
-                    _before={{
-                      content: '""',
-                      position: 'absolute',
-                      inset: '-3px',
-                      borderRadius: '2xl',
-                      padding: '3px',
-                      background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.5), rgba(16, 185, 129, 0.5))',
-                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude',
-                    }}
                   >
                     <Box 
                       w="28px" 
                       h="28px" 
                       borderRadius="full" 
-                      bg="linear-gradient(135deg, #22c55e, #10b981)"
-                      boxShadow="0 4px 16px rgba(34, 197, 94, 0.6)"
+                      bg="green.400"
                     />
                   </Box>
                   <VStack spacing={1} align="flex-start" flex={1}>
                     <Text 
-                      color="white" 
+                      color="text.primary" 
                       fontWeight="800" 
                       fontSize="2xl"
                       letterSpacing="tight"
@@ -223,7 +192,7 @@ export default function AddressesStep({
                       Pickup Location
                     </Text>
                     <Text 
-                      color="whiteAlpha.700" 
+                      color="text.secondary" 
                       fontSize="md"
                       fontWeight="500"
                     >
@@ -277,25 +246,17 @@ export default function AddressesStep({
                   </FormControl>
                 </Box>
               </VStack>
-            </CardBody>
-          </Card>
+            </Box>
+          </LuxurySurfaceCard>
 
-          <Card
-            bg="rgba(15, 23, 42, 0.95)"
-            border="2px solid"
-            borderColor="rgba(236, 72, 153, 0.4)"
-            borderRadius="3xl"
-            backdropFilter="blur(20px)"
-            boxShadow="0 25px 60px rgba(236, 72, 153, 0.25)"
-            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-            position="relative"
-            overflow="hidden"
-            _hover={{
-              borderColor: "rgba(236, 72, 153, 0.6)",
-              boxShadow: "0 30px 70px rgba(236, 72, 153, 0.35)",
-            }}
+          <LuxurySurfaceCard
+            tone="info"
+            borderWidth="1px"
+            borderRadius="2xl"
+            transition="all 0.25s ease"
+            _hover={{ borderColor: 'purple.300' }}
           >
-            <CardBody p={8}>
+            <Box p={{ base: 5, md: 8 }}>
               <VStack spacing={5} align="stretch">
                 {/* Enhanced Header */}
                 <HStack spacing={4} mb={2}>
@@ -304,43 +265,23 @@ export default function AddressesStep({
                     w="56px"
                     h="56px"
                     borderRadius="2xl"
-                    bg="rgba(236, 72, 153, 0.15)"
-                    border="2px solid rgba(236, 72, 153, 0.4)"
+                    bg="purple.900"
+                    border="1px solid"
+                    borderColor="purple.400"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    _before={{
-                      content: '""',
-                      position: 'absolute',
-                      inset: '-3px',
-                      borderRadius: '2xl',
-                      padding: '2px',
-                      background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.5), rgba(168, 85, 247, 0.5))',
-                      mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      maskComposite: 'exclude',
-                      WebkitMaskComposite: 'xor',
-                    }}
-                    _after={{
-                      content: '""',
-                      position: 'absolute',
-                      inset: '-8px',
-                      borderRadius: '2xl',
-                      background: 'radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%)',
-                      animation: 'pulse 2s ease-in-out infinite',
-                    }}
                   >
                     <Box 
                       w="20px" 
                       h="20px" 
                       borderRadius="full" 
-                      bg="pink.400"
-                      boxShadow="0 0 20px rgba(236, 72, 153, 0.6)"
+                      bg="purple.400"
                     />
                   </Box>
                   <VStack spacing={1} align="flex-start" flex={1}>
                     <Text 
-                      color="white" 
+                      color="text.primary" 
                       fontWeight="800" 
                       fontSize="xl"
                       letterSpacing="tight"
@@ -348,7 +289,7 @@ export default function AddressesStep({
                       Drop-off Location
                     </Text>
                     <Text 
-                      color="whiteAlpha.600" 
+                      color="text.secondary" 
                       fontSize="sm"
                       fontWeight="500"
                     >
@@ -402,16 +343,16 @@ export default function AddressesStep({
                   </FormControl>
                 </Box>
               </VStack>
-            </CardBody>
-          </Card>
+            </Box>
+          </LuxurySurfaceCard>
         </SimpleGrid>
 
         <VStack spacing={4} align="stretch">
           <HStack justify="space-between" align="center">
-            <Text color="white" fontSize="lg" fontWeight="700">
+            <Text color="text.primary" fontSize="lg" fontWeight="700">
               Live route preview
             </Text>
-            <Text color="whiteAlpha.700" fontSize="sm">
+            <Text color="text.secondary" fontSize="sm">
               Visualise your pickup and drop-off before continuing
             </Text>
           </HStack>
@@ -446,7 +387,7 @@ export default function AddressesStep({
           isLoading={isTransitioning}
           loadingText="Processing..."
           spinner={<Spinner size="sm" color="white" thickness="2px" speed="0.65s" />}
-          bgGradient={canProceed ? "linear(to-r, blue.500, purple.500)" : "linear(to-r, gray.600, gray.700)"}
+          bg={canProceed ? 'interactive.primary' : 'bg.surface.elevated'}
           color="white"
           size="lg"
           w="full"
@@ -456,12 +397,12 @@ export default function AddressesStep({
           fontWeight="600"
           borderRadius="xl"
           rightIcon={!isTransitioning ? <Icon as={FaArrowRight} /> : undefined}
-          boxShadow={canProceed ? "0 15px 35px rgba(59, 130, 246, 0.4)" : "none"}
+          boxShadow={canProceed ? 'lg' : 'none'}
           transition="all 0.3s"
           _hover={canProceed && !isTransitioning ? {
-            bgGradient: "linear(to-r, blue.600, purple.600)",
+            bg: 'interactive.active',
             transform: "translateY(-2px)",
-            boxShadow: "0 20px 45px rgba(59, 130, 246, 0.5)",
+            boxShadow: 'xl',
           } : {}}
           _active={canProceed && !isTransitioning ? {
             transform: "translateY(0)",
@@ -476,6 +417,7 @@ export default function AddressesStep({
         </Button>
       )}
     </Box>
+    </ResponsiveSection>
   );
 }
 

@@ -191,16 +191,16 @@ export function AdvancedSortingGrouping({
           as={Button}
           leftIcon={<FaSort />}
           variant="outline"
-          bg="#111111"
-          color="#FFFFFF"
-          borderColor="#333333"
+          bg="#121A2B"
+          color="#F5F8FF"
+          borderColor="#2A3A5E"
           borderWidth="2px"
           borderRadius="lg"
           px={4}
           py={2}
           fontWeight="semibold"
           letterSpacing="0.5px"
-          _hover={{ bg: '#1a1a1a', borderColor: '#2563eb' }}
+          _hover={{ bg: '#18233A', borderColor: '#2563eb' }}
         >
           Sort & Group
           {(hasActiveSorting || hasActiveGrouping) && (
@@ -209,15 +209,15 @@ export function AdvancedSortingGrouping({
             </Badge>
           )}
         </MenuButton>
-        <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+        <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
           {savedPresets.length > 0 && (
             <>
               {savedPresets.map((preset) => (
                 <MenuItem
                   key={preset.name}
-                  bg="#111111"
-                  color="#FFFFFF"
-                  _hover={{ bg: '#1a1a1a' }}
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  _hover={{ bg: '#18233A' }}
                   onClick={() => handleLoadPreset(preset)}
                 >
                   <HStack justify="space-between" w="full">
@@ -238,14 +238,14 @@ export function AdvancedSortingGrouping({
                   </HStack>
                 </MenuItem>
               ))}
-              <MenuDivider borderColor="#333333" />
+              <MenuDivider borderColor="#2A3A5E" />
             </>
           )}
           <MenuItem
             icon={<FaSort />}
-            bg="#111111"
-            color="#FFFFFF"
-            _hover={{ bg: '#1a1a1a' }}
+            bg="#121A2B"
+            color="#F5F8FF"
+            _hover={{ bg: '#18233A' }}
             onClick={onModalOpen}
           >
             Configure Sorting & Grouping
@@ -253,9 +253,9 @@ export function AdvancedSortingGrouping({
           {onSavePreset && (
             <MenuItem
               icon={<FaSave />}
-              bg="#111111"
-              color="#FFFFFF"
-              _hover={{ bg: '#1a1a1a' }}
+              bg="#121A2B"
+              color="#F5F8FF"
+              _hover={{ bg: '#18233A' }}
               onClick={() => setShowSaveDialog(true)}
             >
               Save Current Settings
@@ -267,20 +267,20 @@ export function AdvancedSortingGrouping({
       {/* Configuration Modal */}
       <Modal isOpen={isModalOpen} onClose={onModalClose} size="xl" scrollBehavior="inside">
         <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-          <ModalHeader color="#FFFFFF" borderBottomWidth={1} borderColor="#333333">
+        <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+          <ModalHeader color="#F5F8FF" borderBottomWidth={1} borderColor="#2A3A5E">
             <HStack spacing={2}>
               <FaSort />
               <Text>Advanced Sorting & Grouping</Text>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton color="#FFFFFF" />
+          <ModalCloseButton color="#F5F8FF" />
           
-          <ModalBody color="#FFFFFF" py={6}>
+          <ModalBody color="#F5F8FF" py={6}>
             <VStack align="stretch" spacing={6}>
               {/* Primary Sort */}
               <Box>
-                <Text fontWeight="bold" mb={3} color="#FFFFFF">
+                <Text fontWeight="bold" mb={3} color="#F5F8FF">
                   Primary Sort
                 </Text>
                 <VStack align="stretch" spacing={3}>
@@ -292,9 +292,9 @@ export function AdvancedSortingGrouping({
                         ...localSort,
                         field: e.target.value as SortField,
                       })}
-                      bg="#111111"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#121A2B"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                     >
                       <option value="scheduledAt">Scheduled Date</option>
                       <option value="createdAt">Created Date</option>
@@ -327,7 +327,7 @@ export function AdvancedSortingGrouping({
 
               {/* Secondary Sort */}
               <Box>
-                <Text fontWeight="bold" mb={3} color="#FFFFFF">
+                <Text fontWeight="bold" mb={3} color="#F5F8FF">
                   Secondary Sort (Optional)
                 </Text>
                 <VStack align="stretch" spacing={3}>
@@ -350,7 +350,7 @@ export function AdvancedSortingGrouping({
                     }}
                     colorScheme="blue"
                   >
-                    <Text color="#FFFFFF" fontSize="sm">Enable Secondary Sort</Text>
+                    <Text color="#F5F8FF" fontSize="sm">Enable Secondary Sort</Text>
                   </Checkbox>
                   {localSort.secondaryField && (
                     <>
@@ -362,9 +362,9 @@ export function AdvancedSortingGrouping({
                             ...localSort,
                             secondaryField: e.target.value as SortField,
                           })}
-                          bg="#111111"
-                          color="#FFFFFF"
-                          borderColor="#333333"
+                          bg="#121A2B"
+                          color="#F5F8FF"
+                          borderColor="#2A3A5E"
                         >
                           <option value="scheduledAt">Scheduled Date</option>
                           <option value="createdAt">Created Date</option>
@@ -394,11 +394,11 @@ export function AdvancedSortingGrouping({
                 </VStack>
               </Box>
 
-              <MenuDivider borderColor="#333333" />
+              <MenuDivider borderColor="#2A3A5E" />
 
               {/* Grouping */}
               <Box>
-                <Text fontWeight="bold" mb={3} color="#FFFFFF">
+                <Text fontWeight="bold" mb={3} color="#F5F8FF">
                   Group By
                 </Text>
                 <VStack align="stretch" spacing={3}>
@@ -410,9 +410,9 @@ export function AdvancedSortingGrouping({
                         ...localGroupBy,
                         field: e.target.value as GroupByField,
                       })}
-                      bg="#111111"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#121A2B"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                     >
                       <option value="none">No Grouping</option>
                       <option value="status">Status</option>
@@ -435,7 +435,7 @@ export function AdvancedSortingGrouping({
                         })}
                         colorScheme="blue"
                       >
-                        <Text color="#FFFFFF" fontSize="sm">Show Counts in Group Headers</Text>
+                        <Text color="#F5F8FF" fontSize="sm">Show Counts in Group Headers</Text>
                       </Checkbox>
                       <Checkbox
                         isChecked={localGroupBy.collapseGroups === true}
@@ -445,7 +445,7 @@ export function AdvancedSortingGrouping({
                         })}
                         colorScheme="blue"
                       >
-                        <Text color="#FFFFFF" fontSize="sm">Collapse Groups by Default</Text>
+                        <Text color="#F5F8FF" fontSize="sm">Collapse Groups by Default</Text>
                       </Checkbox>
                     </>
                   )}
@@ -454,7 +454,7 @@ export function AdvancedSortingGrouping({
             </VStack>
           </ModalBody>
 
-          <ModalFooter borderTopWidth={1} borderColor="#333333">
+          <ModalFooter borderTopWidth={1} borderColor="#2A3A5E">
             <HStack spacing={3} w="full" justify="space-between">
               <Button
                 variant="ghost"
@@ -463,7 +463,7 @@ export function AdvancedSortingGrouping({
                   setLocalGroupBy({ field: 'none' });
                 }}
                 color="#9ca3af"
-                _hover={{ color: '#FFFFFF' }}
+                _hover={{ color: '#F5F8FF' }}
               >
                 Reset
               </Button>
@@ -471,9 +471,9 @@ export function AdvancedSortingGrouping({
                 <Button
                   variant="outline"
                   onClick={onModalClose}
-                  borderColor="#333333"
-                  color="#FFFFFF"
-                  _hover={{ bg: '#1a1a1a' }}
+                  borderColor="#2A3A5E"
+                  color="#F5F8FF"
+                  _hover={{ bg: '#18233A' }}
                 >
                   Cancel
                 </Button>
@@ -481,7 +481,7 @@ export function AdvancedSortingGrouping({
                   colorScheme="blue"
                   onClick={handleApply}
                   bg="#2563eb"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                   _hover={{ bg: '#1d4ed8' }}
                 >
                   Apply
@@ -496,9 +496,9 @@ export function AdvancedSortingGrouping({
       {showSaveDialog && (
         <Modal isOpen={showSaveDialog} onClose={() => setShowSaveDialog(false)} size="sm">
           <ModalOverlay bg="blackAlpha.800" />
-          <ModalContent bg="#000000" borderColor="#333333" borderWidth={2}>
-            <ModalHeader color="#FFFFFF">Save Sorting Preset</ModalHeader>
-            <ModalCloseButton color="#FFFFFF" />
+          <ModalContent bg="#0B1020" borderColor="#2A3A5E" borderWidth={2}>
+            <ModalHeader color="#F5F8FF">Save Sorting Preset</ModalHeader>
+            <ModalCloseButton color="#F5F8FF" />
             <ModalBody>
               <FormControl>
                 <FormLabel color="#9ca3af">Preset Name</FormLabel>
@@ -506,9 +506,9 @@ export function AdvancedSortingGrouping({
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="e.g., Urgent by Date"
-                  bg="#111111"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#121A2B"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleSavePreset();
@@ -522,8 +522,8 @@ export function AdvancedSortingGrouping({
                 <Button
                   variant="outline"
                   onClick={() => setShowSaveDialog(false)}
-                  borderColor="#333333"
-                  color="#FFFFFF"
+                  borderColor="#2A3A5E"
+                  color="#F5F8FF"
                 >
                   Cancel
                 </Button>
@@ -531,7 +531,7 @@ export function AdvancedSortingGrouping({
                   colorScheme="blue"
                   onClick={handleSavePreset}
                   bg="#2563eb"
-                  color="#FFFFFF"
+                  color="#F5F8FF"
                 >
                   Save
                 </Button>

@@ -195,7 +195,7 @@ export default function CheapManAndVanPage() {
             Get instant quotes from verified, insured man and van services in your area. Compare prices, read reviews, and book online in 2 minutes. Same-day service available from £25/hour.
           </Text>
           <Text fontSize="lg" fontWeight="bold">
-            📞 Call 0800 XXX XXXX or book online at speedy-van.co.uk
+            📞 Call 01202 129746 or book online at speedy-van.co.uk
           </Text>
         </Box>
       </VStack>

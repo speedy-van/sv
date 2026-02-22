@@ -109,7 +109,7 @@ export default function ResetPasswordScreen() {
         {/* Content */}
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Ionicons name="key-outline" size={80} color="#007AFF" />
+            <Ionicons name="key-outline" size={80} color="#3B82F6" />
           </View>
 
           <Text style={styles.title}>Create New Password</Text>
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#3B82F6',
     borderRadius: 12,
     height: 56,
     alignItems: 'center',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   backToLoginText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#3B82F6',
     fontWeight: '600',
   },
 });

@@ -138,7 +138,7 @@ export default function DriverApplicationPage() {
   // Force dark theme colors
   const bgColor = '#0A0F1A';
   const cardBg = '#111827';
-  const borderColor = '#1F2937';
+  const borderColor = '#18233A';
   const inputBg = '#1A202C';
 
   // Common input styles for white text
@@ -690,9 +690,9 @@ export default function DriverApplicationPage() {
                     top="100%"
                     left={0}
                     width="100%"
-                    bg="#1F2937"
+                    bg="#18233A"
                     border="1px solid"
-                    borderColor="#374151"
+                    borderColor="#2A3A5E"
                     borderRadius="xl"
                     boxShadow="0 10px 40px rgba(0,0,0,0.5)"
                     zIndex={10}
@@ -1627,7 +1627,7 @@ export default function DriverApplicationPage() {
                     fontWeight="semibold"
                     fontSize="lg"
                     _hover={{
-                      bg: '#1a1a1a',
+                      bg: '#18233A',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
                     }}

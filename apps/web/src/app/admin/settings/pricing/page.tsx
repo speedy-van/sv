@@ -483,6 +483,27 @@ export default function PricingSettingsPage() {
   const saveSettingsWithHistory = async () => {
     setSaving(true);
     try {
+      if (simulationMode) {
+        const simulatedEntry: HistoryEntry = {
+          timestamp: new Date(),
+          customerAdjustment,
+          driverMultiplier,
+          user: session?.user?.email || 'Admin',
+          action: customNote || 'Simulation run (not persisted)',
+        };
+        const updatedSimulationHistory = [simulatedEntry, ...changeHistory].slice(0, 20);
+        setChangeHistory(updatedSimulationHistory);
+        safeLocalStorageSetJSON('pricingHistory', updatedSimulationHistory);
+        toast({
+          title: 'Simulation Complete',
+          description: 'No server-side changes were saved.',
+          status: 'info',
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/settings/pricing', {
         method: 'POST',
         headers: {
@@ -520,13 +541,19 @@ export default function PricingSettingsPage() {
         });
         await loadSettings();
       } else {
-        throw new Error('Failed to save settings');
+        const errorPayload = await response.json().catch(() => null);
+        const errorMessage = errorPayload?.error || 'Failed to save settings';
+        const requestId = errorPayload?.requestId ? ` (requestId: ${errorPayload.requestId})` : '';
+        const details = Array.isArray(errorPayload?.details)
+          ? ` ${errorPayload.details.map((d: any) => d.message).join(' | ')}`
+          : '';
+        throw new Error(`${errorMessage}${details}${requestId}`);
       }
     } catch (error) {
       console.error('Failed to save pricing settings:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save pricing settings',
+        description: error instanceof Error ? error.message : 'Failed to save pricing settings',
         status: 'error',
         duration: 5000,
         isClosable: true,

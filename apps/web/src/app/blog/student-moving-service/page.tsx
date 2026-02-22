@@ -295,7 +295,7 @@ export default function StudentMovingServicePage() {
             Get 20% student discount on all moves. Flexible booking, campus access expertise, and storage options available. From £20/hour with valid student ID.
           </Text>
           <Text fontSize="lg" fontWeight="bold" mb={4}>
-            📞 Student Hotline: 0800 XXX XXXX
+            📞 Student Hotline: 01202 129746
           </Text>
           <Text fontSize="lg">
             Or book online at speedy-van.co.uk/student with code STUDENT20

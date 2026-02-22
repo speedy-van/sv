@@ -158,7 +158,7 @@
   }
   
   .hero-video-background video.loaded {
-    opacity: 1 !important;
+    opacity: 1;
   }
 }
 
@@ -185,8 +185,8 @@
   }
   
   .hero-text-overlay {
-    color: black !important;
-    text-shadow: none !important;
+    color: black;
+    text-shadow: none;
   }
 }
 

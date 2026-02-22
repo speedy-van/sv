@@ -375,7 +375,7 @@ export default function ScheduleScreen() {
                         {/* Date & Time Badge - Enhanced */}
                         <View style={[styles.dateBadge, { backgroundColor: statusColor }]}>
                           <View style={styles.dateBadgeContent}>
-                            <Ionicons name="time" size={16} color="#FFFFFF" />
+                            <Ionicons name="time" size={16} color="#F5F8FF" />
                             <View style={styles.dateBadgeTextContainer}>
                               <Text style={styles.dateLabel}>{dateLabel}</Text>
                               <Text style={styles.timeLabel}>{timeLabel}</Text>
@@ -402,7 +402,7 @@ export default function ScheduleScreen() {
                               </View>
                             </View>
                             <View style={[styles.earningsBadge, { backgroundColor: statusColor }]}>
-                              <Ionicons name="cash" size={14} color="#FFFFFF" />
+                              <Ionicons name="cash" size={14} color="#F5F8FF" />
                               <Text style={styles.earningsText}>{item.earnings}</Text>
                             </View>
                           </View>
@@ -425,7 +425,7 @@ export default function ScheduleScreen() {
                               <View style={[styles.locationDot, styles.locationDotPickup]} />
                               <View style={styles.locationTextContainer}>
                                 <View style={styles.locationLabelContainer}>
-                                  <Ionicons name="location" size={12} color="#007AFF" />
+                                  <Ionicons name="location" size={12} color="#3B82F6" />
                                   <Text style={styles.locationLabel}>PICKUP</Text>
                                 </View>
                                 <Text style={styles.locationText} numberOfLines={2}>
@@ -496,7 +496,7 @@ export default function ScheduleScreen() {
                   onPress={handleRefresh}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="refresh" size={18} color="#FFFFFF" />
+                  <Ionicons name="refresh" size={18} color="#F5F8FF" />
                   <Text style={styles.emptyStateButtonText}>Refresh</Text>
                 </TouchableOpacity>
               </View>
@@ -547,12 +547,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '500',
     opacity: 0.8,
   },
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   headerGradient: {
     position: 'absolute',
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   dateHeaderText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     flex: 1,
   },
   dateHeaderBadge: {
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   dateHeaderBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   loadingContainer: {
     padding: spacing.xxl,
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.8,
     fontWeight: '500',
   },
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
   dateLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     opacity: 0.9,
@@ -688,14 +688,14 @@ const styles = StyleSheet.create({
   timeLabel: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.3,
   },
   statusIndicator: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
     opacity: 0.9,
   },
   cardContent: {
@@ -737,7 +737,7 @@ const styles = StyleSheet.create({
   reference: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: 0.3,
   },
   earningsBadge: {
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
   earningsText: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.2,
   },
   stopsIndicator: {
@@ -802,16 +802,16 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     marginTop: 4,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#007AFF',
+    borderColor: '#F5F8FF',
+    shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 8,
     elevation: 6,
   },
   locationDotPickup: {
-    backgroundColor: '#007AFF',
-    shadowColor: '#007AFF',
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
   },
   locationDotDestination: {
     backgroundColor: '#10B981',
@@ -850,7 +850,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     lineHeight: 18,
   },
   customerContainer: {
@@ -881,7 +881,7 @@ const styles = StyleSheet.create({
   customerText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   actionHint: {
     flexDirection: 'row',
@@ -948,7 +948,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.8,
@@ -969,7 +969,7 @@ const styles = StyleSheet.create({
   emptyStateButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
 });
 

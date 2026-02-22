@@ -1154,37 +1154,37 @@ export default function AdminAIOverlay({
                     placeholder={placeholder}
                     rows={3}
                     resize="none"
-                    bg="#1a1d29 !important"
-                    color="#FFFFFF !important"
+                    bg="#1a1d29"
+                    color="#F5F8FF"
                     border="none"
                     _placeholder={{ color: '#6B7280' }}
                     _focus={{ 
-                      bg: '#1a1d29 !important',
+                      bg: '#1a1d29',
                       boxShadow: 'none',
-                      color: '#FFFFFF !important',
+                      color: '#F5F8FF',
                       outline: 'none'
                     }}
                     _active={{
-                      bg: '#1a1d29 !important',
-                      color: '#FFFFFF !important'
+                      bg: '#1a1d29',
+                      color: '#F5F8FF'
                     }}
                     _hover={{
-                      bg: '#1a1d29 !important'
+                      bg: '#1a1d29'
                     }}
                     fontSize="sm"
                     sx={{
                       caretColor: '#10b981',
                       '&:focus': {
-                        bg: '#1a1d29 !important',
-                        color: '#FFFFFF !important'
+                        bg: '#1a1d29',
+                        color: '#F5F8FF'
                       },
                       '&:active': {
-                        bg: '#1a1d29 !important',
-                        color: '#FFFFFF !important'
+                        bg: '#1a1d29',
+                        color: '#F5F8FF'
                       },
                       '&::selection': {
                         bg: 'rgba(16, 185, 129, 0.3)',
-                        color: '#FFFFFF'
+                        color: '#F5F8FF'
                       }
                     }}
                   />

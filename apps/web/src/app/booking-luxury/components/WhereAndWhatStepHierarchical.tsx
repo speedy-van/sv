@@ -19,9 +19,6 @@ import {
   Flex,
   Button,
   Text,
-  Card,
-  CardBody,
-  CardHeader,
   Badge,
   Alert,
   AlertIcon,
@@ -59,11 +56,13 @@ import PropertyTypeSelector, { PropertyType } from './PropertyTypeSelector';
 import PropertySizeSelector from './PropertySizeSelector';
 import RoomBasedInventory from './RoomBasedInventory';
 import AIItemExtractionAssistant, { type AiAddedItemPayload } from './AIItemExtractionAssistant';
+import LuxurySurfaceCard from './LuxurySurfaceCard';
 import { getPrePopulatedItems, filterByPriority } from '@/lib/pre-populated-inventory';
 import { ALL_REMOVAL_ITEMS, type RemovalItem } from '@/lib/uk-removal-items-data';
 import { CommonItemsGrid } from '@/components/booking/CommonItemsGrid';
 import SelectedItemsManager from './SelectedItemsManager';
-import CategoryFlipCard, { CATEGORY_CONFIGS } from '@/components/ui/CategoryFlipCard';
+import { CATEGORY_CONFIGS } from '@/components/ui/CategoryFlipCard';
+import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 
 interface WhereAndWhatStepHierarchicalProps {
   formData: FormData;
@@ -738,18 +737,18 @@ export default function WhereAndWhatStepHierarchical({
   };
 
   return (
-    <Box>
-      <VStack spacing={8} align="stretch">
+    <ResponsiveSection maxW="1200px" w="full">
+      <Box w="full">
+      <VStack spacing={{ base: 6, md: 8 }} align="stretch">
         {/* Multi-Leg Journey Selector */}
         {isMultiLeg ? (
-          <Card 
-            bg="linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%)"
-            borderWidth="2px"
-            borderColor="rgba(139, 92, 246, 0.4)"
-            borderRadius="3xl"
+          <LuxurySurfaceCard
+            tone="info"
+            borderWidth="1px"
+            borderRadius="2xl"
             overflow="hidden"
             position="relative"
-            boxShadow="0 20px 50px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.1)"
+            boxShadow="lg"
             _before={{
               content: '""',
               position: 'absolute',
@@ -760,7 +759,7 @@ export default function WhereAndWhatStepHierarchical({
               bgGradient: 'linear(to-r, purple.400, pink.400, purple.500)',
             }}
           >
-            <CardBody p={{ base: 5, md: 8 }}>
+            <Box p={{ base: 5, md: 8 }}>
               <VStack spacing={6} align="stretch">
                 {/* Header Section */}
                 <HStack spacing={4} align="center">
@@ -782,7 +781,7 @@ export default function WhereAndWhatStepHierarchical({
                     >
                       Select Items for Each Journey
                     </Heading>
-                    <Text fontSize="sm" color="whiteAlpha.700">
+                    <Text fontSize="sm" color="text.secondary">
                       Tap a journey card below to add items for that trip
                     </Text>
                   </VStack>
@@ -863,7 +862,7 @@ export default function WhereAndWhatStepHierarchical({
                             position="absolute"
                             top={2}
                             right={2}
-                            bg="white"
+                            bg="bg.surface"
                             borderRadius="full"
                             p={1}
                           >
@@ -877,7 +876,7 @@ export default function WhereAndWhatStepHierarchical({
                           <Box
                             p={2}
                             borderRadius="lg"
-                            bg={isActive ? 'whiteAlpha.200' : 'whiteAlpha.100'}
+                            bg={isActive ? 'bg.surface.elevated' : 'bg.surface'}
                             flexShrink={0}
                           >
                             <Icon 
@@ -893,14 +892,14 @@ export default function WhereAndWhatStepHierarchical({
                               <Text 
                                 fontSize="sm" 
                                 fontWeight="bold"
-                                color={isActive ? 'white' : 'whiteAlpha.900'}
+                                color={isActive ? 'text.primary' : 'text.secondary'}
                               >
                                 {segmentType === 'outbound' ? 'Outbound' : 
                                  segmentType === 'return' ? 'Return' : 'Additional'} Journey
                               </Text>
                               <Badge 
-                                bg={isActive ? 'whiteAlpha.300' : 'whiteAlpha.200'}
-                                color={isActive ? 'white' : 'whiteAlpha.900'}
+                                bg={isActive ? 'bg.surface.elevated' : 'bg.surface'}
+                                color={isActive ? 'text.primary' : 'text.secondary'}
                                 fontSize="2xs"
                                 px={2}
                                 borderRadius="full"
@@ -910,7 +909,7 @@ export default function WhereAndWhatStepHierarchical({
                             </HStack>
                             <Text 
                               fontSize="xs" 
-                              color={isActive ? 'whiteAlpha.800' : 'whiteAlpha.600'}
+                              color={isActive ? 'text.secondary' : 'text.tertiary'}
                             >
                               {segment.pickupAddress?.postcode || '?'} → {segment.dropoffAddress?.postcode || '?'}
                             </Text>
@@ -919,7 +918,7 @@ export default function WhereAndWhatStepHierarchical({
                           {/* Arrow indicator */}
                           <Icon 
                             as={FaArrowRight} 
-                            color={isActive ? 'white' : 'whiteAlpha.500'} 
+                            color={isActive ? 'text.primary' : 'text.tertiary'} 
                             boxSize={4}
                             flexShrink={0}
                           />
@@ -931,11 +930,11 @@ export default function WhereAndWhatStepHierarchical({
 
                 {/* Active Journey Info Banner */}
                 <Box
-                  bg="linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1))"
+                  bg="bg.surface.elevated"
                   borderRadius="xl"
                   p={{ base: 3, md: 4 }}
                   border="1px solid"
-                  borderColor="rgba(139, 92, 246, 0.3)"
+                  borderColor="border.primary"
                 >
                   <HStack spacing={{ base: 3, md: 4 }}>
                     <Box
@@ -947,7 +946,7 @@ export default function WhereAndWhatStepHierarchical({
                     </Box>
                     <VStack spacing={0} align="flex-start" flex={1}>
                       <HStack spacing={2}>
-                        <Text fontSize="sm" fontWeight="bold" color="white">
+                        <Text fontSize="sm" fontWeight="bold" color="text.primary">
                           Now adding items for
                         </Text>
                         <Badge
@@ -959,349 +958,215 @@ export default function WhereAndWhatStepHierarchical({
                           Journey {selectedSegmentIndex + 1}
                         </Badge>
                       </HStack>
-                      <Text fontSize="xs" color="whiteAlpha.700">
+                      <Text fontSize="xs" color="text.secondary">
                         {segments[selectedSegmentIndex]?.pickupAddress?.full || segments[selectedSegmentIndex]?.pickupAddress?.postcode || 'Not set'} → {segments[selectedSegmentIndex]?.dropoffAddress?.full || segments[selectedSegmentIndex]?.dropoffAddress?.postcode || 'Not set'}
                       </Text>
                     </VStack>
                   </HStack>
                 </Box>
               </VStack>
-            </CardBody>
-          </Card>
+            </Box>
+          </LuxurySurfaceCard>
         ) : (
           <>
-          {/* Enhanced Search Box for Quick Item Search */}
-          <Card
-            bg="white"
-            borderRadius="2xl"
-            boxShadow="lg"
-            border="1px solid"
-            borderColor="purple.100"
-            overflow="hidden"
+          {/* Search items — accessible, no neon/motion, clear labels */}
+          <Box
+            bg="bg.card"
+            borderRadius="xl"
+            borderWidth="1px"
+            borderColor="border.primary"
+            p={4}
           >
-            {/* Search Header with gradient */}
-            <Box
-              bgGradient="linear(to-r, blue.500, purple.500)"
-              px={4}
-              py={3}
-            >
-              <HStack spacing={2} align="center">
-                <Box
-                  bg="whiteAlpha.200"
-                  borderRadius="lg"
-                  p={2}
-                >
-                  <Icon as={FaSearch} color="white" boxSize={4} />
-                </Box>
-                <VStack spacing={0} align="start">
-                  <Text fontSize="md" color="white" fontWeight="bold">
-                    Search Items
-                  </Text>
-                  <Text fontSize="xs" color="whiteAlpha.800">
-                    Find any furniture or appliance quickly
-                  </Text>
-                </VStack>
-              </HStack>
-            </Box>
-            
-            <CardBody p={4}>
-              <VStack spacing={3}>
-                {/* Search Input with Blue Neon Border Animation */}
-                <Box
-                  position="relative"
-                  w="100%"
-                  sx={{
-                    '@keyframes borderTravel': {
-                      '0%': { 
-                        clipPath: 'inset(0 100% 100% 0)',
-                      },
-                      '25%': { 
-                        clipPath: 'inset(0 0 100% 0)',
-                      },
-                      '50%': { 
-                        clipPath: 'inset(0 0 0 100%)',
-                      },
-                      '75%': { 
-                        clipPath: 'inset(100% 0 0 0)',
-                      },
-                      '100%': { 
-                        clipPath: 'inset(0 100% 0 0)',
-                      },
-                    },
-                  }}
-                >
-                  {/* Animated neon border - travels around the edges */}
-                  <Box
-                    position="absolute"
-                    top="-2px"
-                    left="-2px"
-                    right="-2px"
-                    bottom="-2px"
-                    borderRadius="xl"
-                    border="3px solid"
-                    borderColor="#3b82f6"
-                    boxShadow="0 0 10px #3b82f6, 0 0 20px #3b82f6, 0 0 30px #3b82f6"
-                    sx={{
-                      animation: 'borderTravel 2s linear infinite',
-                    }}
-                    pointerEvents="none"
-                  />
-                  {/* Static subtle border underneath */}
-                  <Box
-                    position="absolute"
-                    top="-2px"
-                    left="-2px"
-                    right="-2px"
-                    bottom="-2px"
-                    borderRadius="xl"
-                    border="2px solid"
-                    borderColor="blue.200"
-                    opacity={0.3}
-                    pointerEvents="none"
-                  />
-                  <InputGroup size="lg">
-                    <Input
-                      placeholder="Type to search... (sofa, bed, boxes)"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      bg="white"
-                      border="2px solid"
-                      borderColor="transparent"
-                      borderRadius="xl"
-                      color="gray.800"
-                      fontSize="md"
-                      fontWeight="medium"
-                      h="56px"
-                      _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
-                      _hover={{ bg: 'gray.50' }}
-                      _focus={{ 
-                        bg: 'white',
-                        borderColor: 'transparent',
-                        boxShadow: 'none',
-                      }}
+            <FormControl>
+              <FormLabel fontWeight="600" color="text.primary">
+                Search items
+              </FormLabel>
+              <InputGroup size="lg">
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={FaSearch} color="text.secondary" />
+                </InputLeftElement>
+                <Input
+                  id="item-search"
+                  placeholder="e.g. sofa, bed, boxes"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  bg="bg.surface"
+                  borderColor="border.primary"
+                  color="text.primary"
+                  _focus={{ borderColor: 'interactive.primary', boxShadow: '0 0 0 1px var(--chakra-colors-blue-400)' }}
+                  aria-label="Search for furniture or appliances"
+                />
+                {searchQuery && (
+                  <InputRightElement>
+                    <IconButton
+                      aria-label="Clear search"
+                      icon={<Icon as={FaTimes} />}
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSearchQuery('')}
                     />
-                    {searchQuery && (
-                      <InputRightElement h="full" pr={2}>
-                        <IconButton
-                          aria-label="Clear search"
-                          icon={<Icon as={FaTimes} />}
-                          size="sm"
-                          variant="ghost"
-                          colorScheme="gray"
-                          onClick={() => setSearchQuery('')}
-                          borderRadius="full"
-                        />
-                      </InputRightElement>
-                    )}
-                  </InputGroup>
-                </Box>
-                
-                {/* Quick suggestion chips */}
-                {!searchQuery.trim() && (
-                  <HStack spacing={2} flexWrap="wrap" justify="center">
-                    {['Sofa', 'Bed', 'Boxes', 'Table', 'Wardrobe'].map((suggestion) => (
-                      <Badge
-                        key={suggestion}
-                        px={3}
-                        py={1.5}
-                        borderRadius="full"
-                        bg="purple.50"
-                        color="purple.600"
-                        fontWeight="medium"
-                        fontSize="xs"
-                        cursor="pointer"
-                        transition="all 0.2s"
-                        _hover={{ bg: 'purple.100', transform: 'scale(1.05)' }}
-                        onClick={() => setSearchQuery(suggestion)}
-                      >
-                        {suggestion}
-                      </Badge>
-                    ))}
-                  </HStack>
+                  </InputRightElement>
                 )}
-
-                {/* Premium Category Cards */}
-                {!searchQuery.trim() && (
-                  <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.100">
-                    <VStack spacing={4}>
-                      <HStack spacing={2} justify="center">
-                        <Icon as={FaShoppingBag} color="purple.500" boxSize={4} />
-                        <Text fontSize="sm" color="gray.600" fontWeight="600">
-                          Browse by Category
-                        </Text>
-                      </HStack>
-                      {/* CSS Grid with !important to prevent hydration override */}
-                      <Box
-                        sx={{
-                          display: 'grid !important',
-                          gridTemplateColumns: 'repeat(3, 1fr) !important',
-                          gap: { base: '8px', md: '12px' },
-                          width: '100%',
-                          maxWidth: '400px',
-                          margin: '0 auto',
-                        }}
-                      >
-                        {CATEGORY_CONFIGS.slice(0, 6).map((cat) => (
-                          <CategoryFlipCard
-                            key={cat.id}
-                            category={cat}
-                            size="sm"
-                            navigateOnClick={false}
-                            onClick={(category) => {
-                              // Set search query to category name to filter items
-                              setSearchQuery(category.displayName);
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </VStack>
-                  </Box>
-                )}
-                
-                {/* Search Results - Inside the same card */}
-                {searchQuery.trim() && (
-                  <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.200">
-                    <VStack spacing={3} align="stretch">
-                      <HStack justify="space-between" align="center">
-                        <HStack spacing={2}>
-                          <Icon as={FaSearch} color="purple.500" boxSize={4} />
-                          <Text fontSize="sm" color="gray.600" fontWeight="600">
-                            Results for "<Text as="span" color="purple.600">{searchQuery}</Text>"
+              </InputGroup>
+            </FormControl>
+            {!searchQuery.trim() && (
+              <HStack mt={3} spacing={2} flexWrap="wrap">
+                {['Sofa', 'Bed', 'Boxes', 'Table', 'Wardrobe'].map((suggestion) => (
+                  <Button
+                    key={suggestion}
+                    size="sm"
+                    variant="outline"
+                    colorScheme="gray"
+                    onClick={() => setSearchQuery(suggestion)}
+                    _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </HStack>
+            )}
+            {!searchQuery.trim() && (
+              <Box mt={4} pt={4} borderTop="1px solid" borderColor="border.primary">
+                <Text fontSize="sm" fontWeight="600" color="text.secondary" mb={2}>
+                  Browse by category
+                </Text>
+                <SimpleGrid columns={{ base: 2, sm: 3 }} spacing={2} maxW={{ base: '100%', sm: '420px' }}>
+                  {CATEGORY_CONFIGS.slice(0, 6).map((cat) => (
+                    <Button
+                      key={cat.id}
+                      variant="outline"
+                      size="sm"
+                      borderColor="border.primary"
+                      color="text.primary"
+                      bg="bg.surface"
+                      _hover={{ bg: 'bg.surface.elevated', borderColor: 'interactive.primary' }}
+                      _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
+                      onClick={() => setSearchQuery(cat.displayName)}
+                    >
+                      {cat.displayName}
+                    </Button>
+                  ))}
+                </SimpleGrid>
+              </Box>
+            )}
+            {searchQuery.trim() && (
+              <Box mt={4} pt={4} borderTop="1px solid" borderColor="border.primary">
+                <Text fontSize="sm" fontWeight="600" color="text.primary" mb={2}>
+                  Results for &quot;{searchQuery}&quot;
+                </Text>
+                <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3} role="list">
+                  {ALL_REMOVAL_ITEMS
+                    .filter(item =>
+                      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .slice(0, 12)
+                    .map(item => {
+                      const existingItem = selectedItemsWithRooms.find(i => i.id === item.id);
+                      const quantity = existingItem?.quantity || 0;
+                      return (
+                        <Box
+                          key={item.id}
+                          as="button"
+                          type="button"
+                          w="full"
+                          py={3}
+                          px={2}
+                          borderRadius="lg"
+                          border="2px solid"
+                          borderColor={quantity > 0 ? 'green.400' : 'border.primary'}
+                          bg={quantity > 0 ? 'green.50' : 'bg.surface'}
+                          textAlign="center"
+                          cursor="pointer"
+                          _hover={{ borderColor: quantity > 0 ? 'green.500' : 'interactive.primary' }}
+                          _focus={{ outline: 'none', boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
+                          onClick={() => {
+                            handleAddItem(item as any, 'Search', 1);
+                            setSearchQuery('');
+                          }}
+                          role="listitem"
+                        >
+                          {item.image ? (
+                            <Box w="full" h="64px" mb={2} borderRadius="md" overflow="hidden" bg="gray.100" position="relative">
+                              <NextImage
+                                src={item.image}
+                                alt=""
+                                width={80}
+                                height={64}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            </Box>
+                          ) : (
+                            <Box w="full" h="64px" mb={2} borderRadius="md" bg="gray.100" display="flex" alignItems="center" justifyContent="center">
+                              <Icon as={FaShoppingBag} color="gray.400" boxSize={6} />
+                            </Box>
+                          )}
+                          <Text fontSize="sm" fontWeight="600" noOfLines={2} color="text.primary">
+                            {item.name}
                           </Text>
-                        </HStack>
-                        <Badge colorScheme="purple" borderRadius="full" px={2}>
-                          {ALL_REMOVAL_ITEMS.filter(item => 
-                            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            item.category.toLowerCase().includes(searchQuery.toLowerCase())
-                          ).length} found
-                        </Badge>
-                      </HStack>
-                      <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3}>
-                        {ALL_REMOVAL_ITEMS
-                          .filter(item => 
-                            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            item.category.toLowerCase().includes(searchQuery.toLowerCase())
-                          )
-                          .slice(0, 12)
-                          .map(item => {
-                            const existingItem = selectedItemsWithRooms.find(i => i.id === item.id);
-                            const quantity = existingItem?.quantity || 0;
-                            return (
-                              <Box
-                                key={item.id}
-                                bg={quantity > 0 ? 'green.50' : 'gray.50'}
-                                borderRadius="lg"
-                                p={3}
-                                border="2px solid"
-                                borderColor={quantity > 0 ? 'green.400' : 'gray.200'}
-                                cursor="pointer"
-                                transition="all 0.2s"
-                                _hover={{ 
-                                  bg: quantity > 0 ? 'green.100' : 'purple.50',
-                                  borderColor: quantity > 0 ? 'green.500' : 'purple.300',
-                                  transform: 'translateY(-2px)',
-                                  boxShadow: 'md'
-                                }}
-                                onClick={() => {
-                                  handleAddItem(item as any, 'Search', 1);
-                                  setSearchQuery('');
-                                }}
-                              >
-                                <VStack spacing={1}>
-                                  <Text fontSize="xs" fontWeight="600" color="gray.700" textAlign="center" noOfLines={2}>
-                                    {item.name}
-                                  </Text>
-                                  {quantity > 0 ? (
-                                    <Badge colorScheme="green" borderRadius="full" fontSize="2xs">
-                                      {quantity} added
-                                    </Badge>
-                                  ) : (
-                                    <HStack spacing={1}>
-                                      <Icon as={FaPlus} color="purple.500" boxSize={3} />
-                                      <Text fontSize="2xs" color="purple.500" fontWeight="medium">Add</Text>
-                                    </HStack>
-                                  )}
-                                </VStack>
-                              </Box>
-                            );
-                          })}
-                      </SimpleGrid>
-                      {ALL_REMOVAL_ITEMS.filter(item => 
-                        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        item.category.toLowerCase().includes(searchQuery.toLowerCase())
-                      ).length === 0 && (
-                        <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
-                          No items found. Try a different search term.
-                        </Text>
-                      )}
-                    </VStack>
-                  </Box>
+                          {quantity > 0 ? (
+                            <Badge colorScheme="green" mt={1} fontSize="2xs">{quantity} added</Badge>
+                          ) : (
+                            <Text fontSize="xs" color="text.secondary" mt={1}>Tap to add</Text>
+                          )}
+                        </Box>
+                      );
+                    })}
+                </SimpleGrid>
+                {ALL_REMOVAL_ITEMS.filter(item =>
+                  item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.category.toLowerCase().includes(searchQuery.toLowerCase())
+                ).length === 0 && (
+                  <Text fontSize="sm" color="text.secondary" textAlign="center" py={4}>
+                    No items found. Try a different search term.
+                  </Text>
                 )}
-              </VStack>
-            </CardBody>
-          </Card>
+              </Box>
+            )}
+          </Box>
           </>
         )}
 
         {/* Quick access to Add-on Services */}
-        <Card
+        <LuxurySurfaceCard
           mt={4}
-          bg="rgba(79, 70, 229, 0.08)"
-          border="1px solid"
-          borderColor="purple.200"
+          tone="info"
+          borderWidth="1px"
           borderRadius="xl"
         >
-          <CardBody display="flex" justifyContent="space-between" alignItems="center" gap={3} flexWrap="wrap">
+          <Box display="flex" justifyContent="space-between" alignItems="center" gap={3} flexWrap="wrap" p={4}>
             <VStack align="flex-start" spacing={0}>
-              <Text fontWeight="bold" color="white">Add-on Services</Text>
-              <Text fontSize="sm" color="purple.700">Packing, protection, and assembly for premium moves.</Text>
+              <Text fontWeight="bold" color="text.primary">Add-on Services</Text>
+              <Text fontSize="sm" color="text.secondary">Packing, protection, and assembly for premium moves.</Text>
             </VStack>
             <Button colorScheme="purple" variant="solid" onClick={scrollToAddOns}>
               Jump to Add-ons
             </Button>
-          </CardBody>
-        </Card>
+          </Box>
+        </LuxurySurfaceCard>
 
-        {/* Common Items Grid - Always visible at the top */}
-        <Card 
-          bg="white" 
-          borderRadius="2xl" 
-          boxShadow="lg" 
-          border="1px solid" 
-          borderColor="purple.100"
+        {/* Common Items Grid - Always visible at the top (responsive card) */}
+        <Box
+          bg="bg.card"
+          borderRadius="xl"
+          borderWidth="1px"
+          borderColor="border.primary"
           overflow="hidden"
         >
-          {/* Header with gradient */}
-          <Box
-            bgGradient="linear(to-r, purple.500, purple.600)"
-            px={4}
-            py={3}
-          >
-            <HStack spacing={2} align="center">
-              <Box
-                bg="whiteAlpha.200"
-                borderRadius="lg"
-                p={2}
-              >
-                <Text fontSize="xl">⚡</Text>
-              </Box>
-              <VStack spacing={0} align="start">
-                <Heading size="md" color="white" fontWeight="bold">
-                  Quick Add Items
-                </Heading>
-                <Text fontSize="xs" color="whiteAlpha.800">
-                  Most popular furniture & appliances
-                </Text>
-              </VStack>
-            </HStack>
+          <Box px={{ base: 4, md: 6 }} py={{ base: 3, md: 4 }} borderBottomWidth="1px" borderColor="border.primary">
+            <Heading size="sm" color="text.primary">
+              Quick add items
+            </Heading>
+            <Text fontSize="sm" color="text.secondary">
+              Tap a category to browse. Most popular furniture and appliances.
+            </Text>
           </Box>
-          
-          <CardBody pt={3} pb={4}>
+          <Box pt={{ base: 3, md: 4 }} pb={{ base: 4, md: 5 }} px={{ base: 4, md: 6 }}>
             <VStack spacing={4} align="stretch">
               {/* Instructions */}
               <HStack 
                 spacing={3} 
-                bg="gray.50" 
+                bg="bg.surface" 
                 p={3} 
                 borderRadius="lg"
                 flexWrap="wrap"
@@ -1322,7 +1187,7 @@ export default function WhereAndWhatStepHierarchical({
                   >
                     +
                   </Box>
-                  <Text fontSize="xs" color="gray.600">Add</Text>
+                  <Text fontSize="xs" color="text.secondary">Add</Text>
                 </HStack>
                 <HStack spacing={1}>
                   <Box 
@@ -1339,10 +1204,10 @@ export default function WhereAndWhatStepHierarchical({
                   >
                     −
                   </Box>
-                  <Text fontSize="xs" color="gray.600">Remove</Text>
+                  <Text fontSize="xs" color="text.secondary">Remove</Text>
                 </HStack>
-                <Text fontSize="xs" color="gray.500">|</Text>
-                <Text fontSize="xs" color="gray.600" fontWeight="medium">
+                <Text fontSize="xs" color="text.tertiary">|</Text>
+                <Text fontSize="xs" color="text.secondary" fontWeight="medium">
                   Tap category to browse ⬇️
                 </Text>
               </HStack>
@@ -1458,8 +1323,8 @@ export default function WhereAndWhatStepHierarchical({
                 }}
               />
             </VStack>
-          </CardBody>
-        </Card>
+          </Box>
+        </Box>
 
         {/* Add-on Services - Collapsible Premium Section */}
         {!isAddOnsExpanded ? (
@@ -1470,15 +1335,15 @@ export default function WhereAndWhatStepHierarchical({
             h="auto"
             py={4}
             px={5}
-            bg="linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)"
+            bg="bg.surface.elevated"
             border="1px solid"
-            borderColor="rgba(139, 92, 246, 0.4)"
+            borderColor="border.primary"
             borderRadius="xl"
             _hover={{ 
-              borderColor: 'purple.400', 
-              bg: 'linear-gradient(135deg, rgba(79, 70, 229, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%)',
+              borderColor: 'purple.400',
+              bg: 'bg.card',
               transform: 'translateY(-2px)',
-              boxShadow: '0 10px 30px rgba(139, 92, 246, 0.25)',
+              boxShadow: 'lg',
             }}
             transition="all 0.3s"
           >
@@ -1493,10 +1358,10 @@ export default function WhereAndWhatStepHierarchical({
                   <Icon as={FaShieldAlt} color="white" boxSize={4} />
                 </Box>
                 <VStack spacing={0} align="start">
-                  <Text fontWeight="700" color="white" fontSize="sm">
+                  <Text fontWeight="700" color="text.primary" fontSize="sm">
                     Add-on Services
                   </Text>
-                  <Text fontSize="xs" color="whiteAlpha.600">
+                  <Text fontSize="xs" color="text.secondary">
                     Packing, protection & assembly options
                   </Text>
                 </VStack>
@@ -1521,32 +1386,22 @@ export default function WhereAndWhatStepHierarchical({
           </Button>
         ) : (
           // Expanded Card View
-          <Card
-            ref={addOnsRef}
-            bg="linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(49, 46, 129, 0.95) 100%)"
+          <Box ref={addOnsRef}>
+          <LuxurySurfaceCard
             borderRadius="2xl"
-            boxShadow="0 25px 60px rgba(79, 70, 229, 0.25)"
-            border="1px solid"
-            borderColor="rgba(139, 92, 246, 0.4)"
+            boxShadow="lg"
+            borderWidth="1px"
             overflow="hidden"
             position="relative"
+            tone="info"
           >
             {/* Gradient top border */}
             <Box h="4px" bgGradient="linear(to-r, purple.400, indigo.500, violet.400)" />
             
             {/* Decorative glow */}
-            <Box
-              position="absolute"
-              top="-80px"
-              right="-80px"
-              w="200px"
-              h="200px"
-              borderRadius="full"
-              bg="radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)"
-              pointerEvents="none"
-            />
+            <Box position="absolute" top="-80px" right="-80px" w="200px" h="200px" borderRadius="full" bg="purple.900" opacity={0.35} pointerEvents="none" />
             
-            <CardHeader pb={3} pt={5}>
+            <Box pb={3} pt={5} px={5}>
               <HStack justify="space-between" align="start">
                 <HStack spacing={3}>
                   <Box
@@ -1566,7 +1421,7 @@ export default function WhereAndWhatStepHierarchical({
                     >
                       Add-on Services
                     </Heading>
-                    <Text color="whiteAlpha.700" fontSize="sm">
+                    <Text color="text.secondary" fontSize="sm">
                       Enhance your move with premium protection
                     </Text>
                   </VStack>
@@ -1574,29 +1429,29 @@ export default function WhereAndWhatStepHierarchical({
                 <Button
                   size="sm"
                   variant="ghost"
-                  color="whiteAlpha.600"
+                  color="text.secondary"
                   onClick={() => setIsAddOnsExpanded(false)}
-                  _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+                  _hover={{ color: 'text.primary', bg: 'bg.surface.elevated' }}
                   borderRadius="full"
                   p={2}
                 >
                   <Icon as={FaChevronUp} />
                 </Button>
               </HStack>
-            </CardHeader>
+            </Box>
             
-            <CardBody pt={2}>
+            <Box pt={2} px={5} pb={5}>
               <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
                 {/* Professional Packing */}
                 <Box
                   p={5}
                   borderRadius="xl"
                   bg={addOns.packing 
-                    ? "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.1) 100%)"
-                    : "rgba(17, 24, 39, 0.6)"}
+                    ? "purple.900"
+                    : "bg.surface"}
                   border="2px solid"
-                  borderColor={addOns.packing ? "purple.400" : "rgba(139, 92, 246, 0.2)"}
-                  boxShadow={addOns.packing ? "0 0 25px rgba(139, 92, 246, 0.2)" : "none"}
+                  borderColor={addOns.packing ? "purple.400" : "border.primary"}
+                  boxShadow={addOns.packing ? "md" : "none"}
                   transition="all 0.3s"
                   _hover={{ borderColor: 'purple.400', transform: 'translateY(-2px)' }}
                   cursor="pointer"
@@ -1620,10 +1475,10 @@ export default function WhereAndWhatStepHierarchical({
                       <Text fontSize="xl">📦</Text>
                     </Box>
                     <VStack align="start" spacing={2} flex={1}>
-                      <Text fontWeight="700" color="white" fontSize="md">
+                      <Text fontWeight="700" color="text.primary" fontSize="md">
                         Professional Packing
                       </Text>
-                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                      <Text fontSize="sm" color="text.secondary" lineHeight="tall">
                         White-glove packing with premium materials.
                       </Text>
                       <Badge colorScheme="purple" variant="subtle" fontSize="xs">
@@ -1638,11 +1493,11 @@ export default function WhereAndWhatStepHierarchical({
                   p={5}
                   borderRadius="xl"
                   bg={addOns.furnitureProtection 
-                    ? "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)"
-                    : "rgba(17, 24, 39, 0.6)"}
+                    ? "blue.900"
+                    : "bg.surface"}
                   border="2px solid"
-                  borderColor={addOns.furnitureProtection ? "blue.400" : "rgba(59, 130, 246, 0.2)"}
-                  boxShadow={addOns.furnitureProtection ? "0 0 25px rgba(59, 130, 246, 0.2)" : "none"}
+                  borderColor={addOns.furnitureProtection ? "blue.400" : "border.primary"}
+                  boxShadow={addOns.furnitureProtection ? "md" : "none"}
                   transition="all 0.3s"
                   _hover={{ borderColor: 'blue.400', transform: 'translateY(-2px)' }}
                   cursor="pointer"
@@ -1666,10 +1521,10 @@ export default function WhereAndWhatStepHierarchical({
                       <Text fontSize="xl">🛡️</Text>
                     </Box>
                     <VStack align="start" spacing={2} flex={1}>
-                      <Text fontWeight="700" color="white" fontSize="md">
+                      <Text fontWeight="700" color="text.primary" fontSize="md">
                         Furniture Protection
                       </Text>
-                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                      <Text fontSize="sm" color="text.secondary" lineHeight="tall">
                         Enhanced insurance and premium padding.
                       </Text>
                       <Badge colorScheme="blue" variant="subtle" fontSize="xs">
@@ -1684,11 +1539,11 @@ export default function WhereAndWhatStepHierarchical({
                   p={5}
                   borderRadius="xl"
                   bg={addOns.assembly 
-                    ? "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.1) 100%)"
-                    : "rgba(17, 24, 39, 0.6)"}
+                    ? "teal.900"
+                    : "bg.surface"}
                   border="2px solid"
-                  borderColor={addOns.assembly ? "teal.400" : "rgba(20, 184, 166, 0.2)"}
-                  boxShadow={addOns.assembly ? "0 0 25px rgba(20, 184, 166, 0.2)" : "none"}
+                  borderColor={addOns.assembly ? "teal.400" : "border.primary"}
+                  boxShadow={addOns.assembly ? "md" : "none"}
                   transition="all 0.3s"
                   _hover={{ borderColor: 'teal.400', transform: 'translateY(-2px)' }}
                   cursor="pointer"
@@ -1712,10 +1567,10 @@ export default function WhereAndWhatStepHierarchical({
                       <Text fontSize="xl">🔧</Text>
                     </Box>
                     <VStack align="start" spacing={2} flex={1}>
-                      <Text fontWeight="700" color="white" fontSize="md">
+                      <Text fontWeight="700" color="text.primary" fontSize="md">
                         Assembly / Disassembly
                       </Text>
-                      <Text fontSize="sm" color="whiteAlpha.700" lineHeight="tall">
+                      <Text fontSize="sm" color="text.secondary" lineHeight="tall">
                         Dismantles and reassembles furniture on-site.
                       </Text>
                       <Badge colorScheme="teal" variant="subtle" fontSize="xs">
@@ -1730,18 +1585,19 @@ export default function WhereAndWhatStepHierarchical({
               <HStack 
                 mt={4} 
                 p={3} 
-                bg="whiteAlpha.50" 
+                bg="bg.surface.elevated" 
                 borderRadius="lg"
                 justify="center"
                 spacing={2}
               >
                 <Icon as={FaCheck} color="green.400" boxSize={3} />
-                <Text fontSize="xs" color="whiteAlpha.700">
+                <Text fontSize="xs" color="text.secondary">
                   Pricing updates instantly when you toggle any add-on
                 </Text>
               </HStack>
-            </CardBody>
-          </Card>
+            </Box>
+          </LuxurySurfaceCard>
+          </Box>
         )}
 
         {/* AI Assistant - Controlled by parent via FloatingActionButtons */}
@@ -1828,5 +1684,6 @@ export default function WhereAndWhatStepHierarchical({
       {/* Expose toggle function to parent via ref */}
       {/* This allows parent to control summary panel */}
     </Box>
+    </ResponsiveSection>
   );
 }

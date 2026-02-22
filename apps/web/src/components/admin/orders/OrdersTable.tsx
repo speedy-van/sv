@@ -2114,34 +2114,34 @@ export function OrdersTable({
   };
 
   const renderOrdersTable = () => (
-    <Card bg="#000000" borderColor="#333333">
-      <CardBody p={0} bg="#000000">
+    <Card bg="#0B1020" borderColor="#2A3A5E">
+      <CardBody p={0} bg="#0B1020">
         <Table 
           variant="simple"
           sx={{
-            backgroundColor: '#000000',
-            color: '#FFFFFF',
+            backgroundColor: '#0B1020',
+            color: '#F5F8FF',
             '& thead tr': {
-              backgroundColor: '#111111 !important',
+              backgroundColor: '#121A2B',
             },
             '& thead th': {
-              backgroundColor: '#111111 !important',
-              color: '#FFFFFF !important',
-              borderColor: '#333333 !important',
+              backgroundColor: '#121A2B',
+              color: '#F5F8FF',
+              borderColor: '#2A3A5E',
             },
             '& tbody tr:nth-of-type(even)': {
-              backgroundColor: '#000000 !important',
+              backgroundColor: '#0B1020',
             },
             '& tbody tr:nth-of-type(odd)': {
-              backgroundColor: '#0a0a0a !important',
+              backgroundColor: '#121A2B',
             },
             '& tbody tr': {
-              backgroundColor: '#000000 !important',
-              color: '#FFFFFF !important',
+              backgroundColor: '#0B1020',
+              color: '#F5F8FF',
             },
             '& tbody td': {
-              color: '#FFFFFF !important',
-              borderColor: '#333333 !important',
+              color: '#F5F8FF',
+              borderColor: '#2A3A5E',
             },
           }}
         >
@@ -2149,9 +2149,9 @@ export function OrdersTable({
             <Tr>
               <Th 
                 px={4} 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2176,9 +2176,9 @@ export function OrdersTable({
                 />
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2192,9 +2192,9 @@ export function OrdersTable({
                 Code
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2208,9 +2208,9 @@ export function OrdersTable({
                 Customer
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2224,9 +2224,9 @@ export function OrdersTable({
                 Service
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2240,9 +2240,9 @@ export function OrdersTable({
                 Type
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2256,9 +2256,9 @@ export function OrdersTable({
                 Journey Info
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2272,9 +2272,9 @@ export function OrdersTable({
                 Route
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2288,9 +2288,9 @@ export function OrdersTable({
                 Time Window
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2304,9 +2304,9 @@ export function OrdersTable({
                 Booked At
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2320,9 +2320,9 @@ export function OrdersTable({
                 Status
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2336,9 +2336,9 @@ export function OrdersTable({
                 Driver
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2352,9 +2352,9 @@ export function OrdersTable({
                 Price
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2368,9 +2368,9 @@ export function OrdersTable({
                 Data Quality
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2384,9 +2384,9 @@ export function OrdersTable({
                 Payment
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2400,9 +2400,9 @@ export function OrdersTable({
                 SLA
               </Th>
               <Th 
-                color="#FFFFFF" 
-                bg="linear-gradient(180deg, #1a1a1a 0%, #111111 100%)" 
-                borderColor="#333333"
+                color="#F5F8FF" 
+                bg="linear-gradient(180deg, #18233A 0%, #121A2B 100%)" 
+                borderColor="#2A3A5E"
                 position="sticky"
                 top={0}
                 zIndex={5}
@@ -2430,9 +2430,9 @@ export function OrdersTable({
               ))
             ) : filteredOrders.length === 0 ? (
               <Tr>
-                <Td colSpan={15} color="#FFFFFF">
+                <Td colSpan={15} color="#F5F8FF">
                   <Flex justify="center" py={8}>
-                    <Text color="#FFFFFF">No orders found</Text>
+                    <Text color="#F5F8FF">No orders found</Text>
                   </Flex>
                 </Td>
               </Tr>
@@ -2450,7 +2450,7 @@ export function OrdersTable({
                       bg: isDeclined ? 'rgba(239, 68, 68, 0.15)' : 
                           isInProgress ? 'rgba(59, 130, 246, 0.15)' :
                           isAccepted ? 'rgba(16, 185, 129, 0.15)' : 
-                          '#1a1a1a',
+                          '#18233A',
                       transform: 'translateX(2px)',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     }}
@@ -2462,7 +2462,7 @@ export function OrdersTable({
                       isAccepted ? 'rgba(16, 185, 129, 0.05)' : 
                       'transparent'
                     }
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     borderLeft={
                       isDeclined || isAccepted || isInProgress ? '4px solid' : '2px solid transparent'
                     }
@@ -2519,7 +2519,7 @@ export function OrdersTable({
                             isDeclined ? 'red.400' : 
                             isInProgress ? 'blue.400' :
                             isAccepted ? 'green.400' :
-                            '#FFFFFF'
+                            '#F5F8FF'
                           }
                           fontFamily="mono"
                         >
@@ -2544,7 +2544,7 @@ export function OrdersTable({
                       <VStack align="start" spacing={1.5}>
                         <HStack spacing={2}>
                           <Icon as={FaUser} color="#9ca3af" fontSize="xs" />
-                          <Text fontWeight="semibold" color="#FFFFFF" fontSize="sm">
+                          <Text fontWeight="semibold" color="#F5F8FF" fontSize="sm">
                             {order.customerName || 'Unknown Customer'}
                           </Text>
                         </HStack>
@@ -2726,7 +2726,7 @@ export function OrdersTable({
                             color="green.500"
                             boxSize={3}
                           />
-                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
+                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#F5F8FF">
                             {order.pickupAddress?.label || '-'}
                           </Text>
                         </HStack>
@@ -2736,7 +2736,7 @@ export function OrdersTable({
                             color="red.500"
                             boxSize={3}
                           />
-                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
+                          <Text fontSize="sm" noOfLines={1} maxW="200px" color="#F5F8FF">
                             {order.dropoffAddress?.label || '-'}
                           </Text>
                         </HStack>
@@ -2753,7 +2753,7 @@ export function OrdersTable({
                     </Td>
                     <Td>
                       <VStack align="start" spacing={1}>
-                        <Text fontSize="sm" color="#FFFFFF">
+                        <Text fontSize="sm" color="#F5F8FF">
                           {order.scheduledAt
                             ? format(new Date(order.scheduledAt), 'MMM dd')
                             : '-'}
@@ -2774,7 +2774,7 @@ export function OrdersTable({
                     </Td>
                     <Td>
                       <VStack align="start" spacing={0}>
-                        <Text fontSize="sm" color="#FFFFFF" fontWeight="medium">
+                        <Text fontSize="sm" color="#F5F8FF" fontWeight="medium">
                           {order.createdAt
                             ? format(new Date(order.createdAt), 'MMM dd, yyyy')
                             : '-'}
@@ -2843,7 +2843,7 @@ export function OrdersTable({
                         {order.driver?.user?.name ? (
                           <>
                             <Icon as={FaTruck} color="blue.500" boxSize={3} />
-                            <Text fontSize="sm" color="#FFFFFF">{order.driver.user.name}</Text>
+                            <Text fontSize="sm" color="#F5F8FF">{order.driver.user.name}</Text>
                           </>
                         ) : (
                           <Text fontSize="sm" color="#9ca3af">
@@ -2853,7 +2853,7 @@ export function OrdersTable({
                       </HStack>
                     </Td>
                     <Td>
-                      <Text fontWeight="bold" color="#FFFFFF">{formatCurrency(order.totalGBP || 0)}</Text>
+                      <Text fontWeight="bold" color="#F5F8FF">{formatCurrency(order.totalGBP || 0)}</Text>
                     </Td>
                     <Td>
                       <Tooltip label={`Data completeness: ${getDataQualityScore(order)}%`}>
@@ -2918,7 +2918,7 @@ export function OrdersTable({
                               handleEditOrder(order);
                             }}
                             color="#2563eb"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         <Tooltip label="Send Confirmation">
@@ -2931,7 +2931,7 @@ export function OrdersTable({
                             onClick={() => handleSendConfirmation(order)}
                             isDisabled={order.status === 'CANCELLED'}
                             color="#10b981"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         {!order.paidAt ? (
@@ -2945,7 +2945,7 @@ export function OrdersTable({
                               onClick={() => handleMarkAsPaid(order)}
                               isDisabled={order.status === 'CANCELLED'}
                               color="#10b981"
-                              _hover={{ bg: '#1a1a1a' }}
+                              _hover={{ bg: '#18233A' }}
                             />
                           </Tooltip>
                         ) : (
@@ -2962,7 +2962,7 @@ export function OrdersTable({
                                 handleViewPaymentDetails(order);
                               }}
                               color="#f59e0b"
-                              _hover={{ bg: '#1a1a1a' }}
+                              _hover={{ bg: '#18233A' }}
                             />
                           </Tooltip>
                         )}
@@ -2976,7 +2976,7 @@ export function OrdersTable({
                             onClick={() => handleSendFloorWarning(order)}
                             isDisabled={order.status === 'CANCELLED'}
                             color="#f59e0b"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         <Tooltip label={order.driver ? "Change Driver" : "Assign Driver"}>
@@ -2989,7 +2989,7 @@ export function OrdersTable({
                             onClick={() => handleOpenAssignModal(order)}
                             isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                             color="#2563eb"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         <Tooltip label="Complete Order">
@@ -3002,7 +3002,7 @@ export function OrdersTable({
                             onClick={() => handleCompleteOrder(order)}
                             isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                             color="#10b981"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         <Tooltip label="Cancel Order">
@@ -3015,7 +3015,7 @@ export function OrdersTable({
                             onClick={() => handleCancelOrder(order)}
                             isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                             color="#ef4444"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                           />
                         </Tooltip>
                         <Menu>
@@ -3024,15 +3024,15 @@ export function OrdersTable({
                             icon={<FaEllipsisV />}
                             variant="ghost"
                             size="sm"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                           />
-                          <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+                          <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
                             <MenuItem
                               icon={<FaEye />}
-                              bg="#111111"
-                              color="#FFFFFF"
-                              _hover={{ bg: '#1a1a1a' }}
+                              bg="#121A2B"
+                              color="#F5F8FF"
+                              _hover={{ bg: '#18233A' }}
                               onClick={() => handleViewOrder(order.reference)}
                             >
                               View Details
@@ -3040,9 +3040,9 @@ export function OrdersTable({
                             {order.driver && (
                               <MenuItem
                                 icon={<FaUserSlash />}
-                                bg="#111111"
+                                bg="#121A2B"
                                 color="#ef4444"
-                                _hover={{ bg: '#1a1a1a' }}
+                                _hover={{ bg: '#18233A' }}
                                 onClick={() => handleOpenRemoveModal(order)}
                               >
                                 Remove Assignment
@@ -3060,11 +3060,11 @@ export function OrdersTable({
               Array.from(groupedOrders.entries()).map(([groupKey, groupOrders]) => (
                 <React.Fragment key={groupKey}>
                   {/* Group Header */}
-                  <Tr bg="#1a1a1a" borderTop="2px solid" borderColor="#333333">
+                  <Tr bg="#18233A" borderTop="2px solid" borderColor="#2A3A5E">
                     <Td colSpan={15} py={3} px={4}>
                       <HStack justify="space-between">
                         <HStack spacing={3}>
-                          <Text fontWeight="bold" fontSize="md" color="#FFFFFF">
+                          <Text fontWeight="bold" fontSize="md" color="#F5F8FF">
                             {groupKey}
                           </Text>
                           {groupByConfig.showCounts !== false && (
@@ -3095,7 +3095,7 @@ export function OrdersTable({
                           bg: isDeclined ? 'red.900' : 
                               isInProgress ? 'blue.900' :
                               isAccepted ? 'green.900' : 
-                              '#1a1a1a' 
+                              '#18233A' 
                         }}
                         cursor="pointer"
                         onClick={() => handleViewOrder(order.reference)}
@@ -3105,7 +3105,7 @@ export function OrdersTable({
                           isAccepted ? 'green.950' : 
                           'transparent'
                         }
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         borderLeft={
                           isDeclined || isAccepted || isInProgress ? '4px solid' : 'none'
                         }
@@ -3137,7 +3137,7 @@ export function OrdersTable({
                           </Text>
                         </Td>
                         <Td>
-                          <Text fontSize="sm" color="#FFFFFF">{order.customerName || '-'}</Text>
+                          <Text fontSize="sm" color="#F5F8FF">{order.customerName || '-'}</Text>
                         </Td>
                         <Td>
                           <Badge colorScheme="blue" size="sm">
@@ -3157,7 +3157,7 @@ export function OrdersTable({
                                 color="green.500"
                                 boxSize={3}
                               />
-                              <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
+                              <Text fontSize="sm" noOfLines={1} maxW="200px" color="#F5F8FF">
                                 {order.pickupAddress?.label || '-'}
                               </Text>
                             </HStack>
@@ -3167,7 +3167,7 @@ export function OrdersTable({
                                 color="red.500"
                                 boxSize={3}
                               />
-                              <Text fontSize="sm" noOfLines={1} maxW="200px" color="#FFFFFF">
+                              <Text fontSize="sm" noOfLines={1} maxW="200px" color="#F5F8FF">
                                 {order.dropoffAddress?.label || '-'}
                               </Text>
                             </HStack>
@@ -3183,7 +3183,7 @@ export function OrdersTable({
                           )}
                         </Td>
                         <Td>
-                          <Text fontSize="sm" color="#FFFFFF">
+                          <Text fontSize="sm" color="#F5F8FF">
                             {format(new Date(order.scheduledAt), 'MMM dd, HH:mm')}
                           </Text>
                         </Td>
@@ -3237,7 +3237,7 @@ export function OrdersTable({
                             {order.driver?.user?.name ? (
                               <>
                                 <Icon as={FaTruck} color="blue.500" boxSize={3} />
-                                <Text fontSize="sm" color="#FFFFFF">{order.driver.user.name}</Text>
+                                <Text fontSize="sm" color="#F5F8FF">{order.driver.user.name}</Text>
                               </>
                             ) : (
                               <Text fontSize="sm" color="#9ca3af">-</Text>
@@ -3245,7 +3245,7 @@ export function OrdersTable({
                           </HStack>
                         </Td>
                         <Td>
-                          <Text fontWeight="bold" color="#FFFFFF">{formatCurrency(order.totalGBP || 0)}</Text>
+                          <Text fontWeight="bold" color="#F5F8FF">{formatCurrency(order.totalGBP || 0)}</Text>
                         </Td>
                         <Td>
                           <Tooltip label={`Data completeness: ${getDataQualityScore(order)}%`}>
@@ -3305,12 +3305,12 @@ export function OrdersTable({
                               size="sm"
                               onClick={(e) => e.stopPropagation()}
                             />
-                            <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+                            <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
                               <MenuItem
                                 icon={<FaEye />}
-                                bg="#111111"
-                                color="#FFFFFF"
-                                _hover={{ bg: '#1a1a1a' }}
+                                bg="#121A2B"
+                                color="#F5F8FF"
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleViewOrder(order.reference);
@@ -3320,9 +3320,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={<FaEdit />}
-                                bg="#111111"
-                                color="#FFFFFF"
-                                _hover={{ bg: '#1a1a1a' }}
+                                bg="#121A2B"
+                                color="#F5F8FF"
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditOrder(order);
@@ -3332,9 +3332,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={<FaEnvelope />}
-                                bg="#111111"
-                                color="#FFFFFF"
-                                _hover={{ bg: '#1a1a1a' }}
+                                bg="#121A2B"
+                                color="#F5F8FF"
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleSendConfirmation(order);
@@ -3345,9 +3345,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={<FaExclamationTriangle />}
-                                bg="#111111"
-                                color="#FFFFFF"
-                                _hover={{ bg: '#1a1a1a' }}
+                                bg="#121A2B"
+                                color="#F5F8FF"
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleSendFloorWarning(order);
@@ -3358,9 +3358,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={order.driver ? <FaUserFriends /> : <FaUser />}
-                                bg="#111111"
-                                color="#FFFFFF"
-                                _hover={{ bg: '#1a1a1a' }}
+                                bg="#121A2B"
+                                color="#F5F8FF"
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleOpenAssignModal(order);
@@ -3371,9 +3371,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={<FaFlagCheckered />}
-                                bg="#111111"
+                                bg="#121A2B"
                                 color="#10b981"
-                                _hover={{ bg: '#1a1a1a' }}
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleCompleteOrder(order);
@@ -3384,9 +3384,9 @@ export function OrdersTable({
                               </MenuItem>
                               <MenuItem
                                 icon={<FaTimes />}
-                                bg="#111111"
+                                bg="#121A2B"
                                 color="#ef4444"
-                                _hover={{ bg: '#1a1a1a' }}
+                                _hover={{ bg: '#18233A' }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleCancelOrder(order);
@@ -3438,8 +3438,8 @@ export function OrdersTable({
           return (
             <Card
               key={order.id}
-              bg="#111111"
-              borderColor="#333333"
+              bg="#121A2B"
+              borderColor="#2A3A5E"
               borderWidth="2px"
               borderRadius="xl"
               boxShadow="0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)"
@@ -3463,7 +3463,7 @@ export function OrdersTable({
                 borderColor: '#2563eb',
               }}
             >
-              <CardBody bg="#111111" p={4}>
+              <CardBody bg="#121A2B" p={4}>
                 <VStack align="stretch" spacing={3}>
                   {/* Header: Order ID + Actions Menu + Checkbox */}
                   <HStack justify="space-between" align="start">
@@ -3511,15 +3511,15 @@ export function OrdersTable({
                           variant="ghost"
                           size="sm"
                           onClick={(e) => e.stopPropagation()}
-                          color="#FFFFFF"
-                          _hover={{ bg: '#1a1a1a' }}
+                          color="#F5F8FF"
+                          _hover={{ bg: '#18233A' }}
                         />
-                        <MenuList bg="#111111" borderColor="#333333" borderWidth={2}>
+                        <MenuList bg="#121A2B" borderColor="#2A3A5E" borderWidth={2}>
                           <MenuItem
                             icon={<FaEye />}
-                            bg="#111111"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            bg="#121A2B"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleViewOrder(order.reference);
@@ -3529,9 +3529,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={<FaEdit />}
-                            bg="#111111"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            bg="#121A2B"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                                   handleEditOrder(order);
@@ -3541,9 +3541,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={<FaEnvelope />}
-                            bg="#111111"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            bg="#121A2B"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSendConfirmation(order);
@@ -3554,9 +3554,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={<FaExclamationTriangle />}
-                            bg="#111111"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            bg="#121A2B"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSendFloorWarning(order);
@@ -3567,9 +3567,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={order.driver ? <FaUserFriends /> : <FaUser />}
-                            bg="#111111"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            bg="#121A2B"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenAssignModal(order);
@@ -3580,9 +3580,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={<FaFlagCheckered />}
-                            bg="#111111"
+                            bg="#121A2B"
                             color="#10b981"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCompleteOrder(order);
@@ -3593,9 +3593,9 @@ export function OrdersTable({
                           </MenuItem>
                           <MenuItem
                             icon={<FaTimes />}
-                            bg="#111111"
+                            bg="#121A2B"
                             color="#ef4444"
-                            _hover={{ bg: '#1a1a1a' }}
+                            _hover={{ bg: '#18233A' }}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCancelOrder(order);
@@ -3695,7 +3695,7 @@ export function OrdersTable({
                       <Icon as={FaMapMarkerAlt} color="#10b981" boxSize={4} />
                       <Text 
                         fontSize="sm" 
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         fontWeight="medium"
                         noOfLines={1}
                       >
@@ -3706,7 +3706,7 @@ export function OrdersTable({
                       <Icon as={FaMapMarkerAlt} color="#ef4444" boxSize={4} />
                       <Text 
                         fontSize="sm" 
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         fontWeight="medium"
                         noOfLines={1}
                       >
@@ -3716,7 +3716,7 @@ export function OrdersTable({
                   </VStack>
 
                   {/* Payment & Assignment Status */}
-                  <HStack justify="space-between" align="center" pt={2} borderTop="1px solid" borderColor="#333333">
+                  <HStack justify="space-between" align="center" pt={2} borderTop="1px solid" borderColor="#2A3A5E">
                     <VStack align="start" spacing={1}>
                       <HStack spacing={2}>
                         {order.driver && order.driver.user && order.driver.user.name ? (
@@ -3826,7 +3826,7 @@ export function OrdersTable({
                       <Box 
                         pt={2} 
                         borderTop="1px solid" 
-                        borderColor="#333333"
+                        borderColor="#2A3A5E"
                         w="full"
                       >
                         <VStack align="start" spacing={2} w="full">
@@ -3961,7 +3961,7 @@ export function OrdersTable({
                   })()}
 
                   {/* Action Buttons - Always Visible */}
-                  <VStack spacing={2} pt={3} borderTop="1px solid" borderColor="#333333">
+                  <VStack spacing={2} pt={3} borderTop="1px solid" borderColor="#2A3A5E">
                     <HStack spacing={2} w="full">
                       <Button
                         size="sm"
@@ -3974,7 +3974,7 @@ export function OrdersTable({
                           handleEditOrder(order);
                         }}
                         bg="#2563eb"
-                        color="#FFFFFF"
+                        color="#F5F8FF"
                         _hover={{ bg: '#1d4ed8' }}
                       >
                         Edit
@@ -3992,7 +3992,7 @@ export function OrdersTable({
                         isDisabled={order.status === 'CANCELLED'}
                         borderColor="#10b981"
                         color="#10b981"
-                        _hover={{ bg: '#10b981', color: '#FFFFFF' }}
+                        _hover={{ bg: '#10b981', color: '#F5F8FF' }}
                         _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                       >
                         Confirm
@@ -4011,7 +4011,7 @@ export function OrdersTable({
                           }}
                           isDisabled={order.status === 'CANCELLED'}
                           bg="#10b981"
-                          color="#FFFFFF"
+                          color="#F5F8FF"
                           _hover={{ bg: '#059669' }}
                           _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                         >
@@ -4031,7 +4031,7 @@ export function OrdersTable({
                           }}
                           borderColor="#f59e0b"
                           color="#f59e0b"
-                          _hover={{ bg: '#f59e0b', color: '#FFFFFF' }}
+                          _hover={{ bg: '#f59e0b', color: '#F5F8FF' }}
                         >
                           Payment
                         </Button>
@@ -4049,7 +4049,7 @@ export function OrdersTable({
                         isDisabled={order.status === 'CANCELLED'}
                         borderColor="#f59e0b"
                         color="#f59e0b"
-                        _hover={{ bg: '#f59e0b', color: '#FFFFFF' }}
+                        _hover={{ bg: '#f59e0b', color: '#F5F8FF' }}
                         _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                       >
                         Floor Warning
@@ -4069,7 +4069,7 @@ export function OrdersTable({
                         isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                         borderColor="#2563eb"
                         color="#2563eb"
-                        _hover={{ bg: '#2563eb', color: '#FFFFFF' }}
+                        _hover={{ bg: '#2563eb', color: '#F5F8FF' }}
                         _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                       >
                         {order.driver ? 'Change Driver' : 'Assign Driver'}
@@ -4087,7 +4087,7 @@ export function OrdersTable({
                         isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                         borderColor="#10b981"
                         color="#10b981"
-                        _hover={{ bg: '#10b981', color: '#FFFFFF' }}
+                        _hover={{ bg: '#10b981', color: '#F5F8FF' }}
                         _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                       >
                         Complete
@@ -4107,7 +4107,7 @@ export function OrdersTable({
                         isDisabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                         borderColor="#ef4444"
                         color="#ef4444"
-                        _hover={{ bg: '#ef4444', color: '#FFFFFF' }}
+                        _hover={{ bg: '#ef4444', color: '#F5F8FF' }}
                         _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
                       >
                         Cancel
@@ -4133,24 +4133,24 @@ export function OrdersTable({
           return (
             <Card 
               key={status}
-              bg="#111111"
-              borderColor="#333333"
+              bg="#121A2B"
+              borderColor="#2A3A5E"
               borderWidth="2px"
               borderRadius="xl"
               boxShadow="0 4px 16px rgba(0, 0, 0, 0.4)"
               overflow="hidden"
             >
               <CardHeader 
-                bg="linear-gradient(135deg, #1a1a1a 0%, #111111 100%)"
+                bg="linear-gradient(135deg, #18233A 0%, #121A2B 100%)"
                 borderBottom="2px solid"
-                borderColor="#333333"
+                borderColor="#2A3A5E"
                 pb={3}
               >
                 <HStack justify="space-between">
                   <Heading 
                     size="sm" 
                     textTransform="capitalize"
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     fontWeight="bold"
                     letterSpacing="0.5px"
                   >
@@ -4169,15 +4169,15 @@ export function OrdersTable({
                   </Badge>
                 </HStack>
               </CardHeader>
-              <CardBody bg="#111111" p={4}>
+              <CardBody bg="#121A2B" p={4}>
                 <VStack spacing={3} align="stretch">
                   {statusOrders.map(order => {
                     const slaStatus = getSLAStatus(order);
                     return (
                       <Card
                         key={order.id}
-                        bg="#1a1a1a"
-                        borderColor="#333333"
+                        bg="#18233A"
+                        borderColor="#2A3A5E"
                         borderWidth="1px"
                         borderRadius="lg"
                         cursor="pointer"
@@ -4201,7 +4201,7 @@ export function OrdersTable({
                             </Text>
                             <Text 
                               fontSize="xs" 
-                              color="#FFFFFF"
+                              color="#F5F8FF"
                               fontWeight="medium"
                             >
                               {order.customerName}
@@ -4214,7 +4214,7 @@ export function OrdersTable({
                             >
                               {order.pickupAddress?.label || '-'}
                             </Text>
-                            <HStack justify="space-between" w="full" pt={1} borderTop="1px solid" borderColor="#333333">
+                            <HStack justify="space-between" w="full" pt={1} borderTop="1px solid" borderColor="#2A3A5E">
                               <Text 
                                 fontWeight="bold" 
                                 fontSize="xs"
@@ -4460,15 +4460,15 @@ export function OrdersTable({
         leftIcon={<FaFilter />}
         variant="outline"
         onClick={onAdvancedFiltersOpen}
-        bg="#111111"
-        color="#FFFFFF"
-        borderColor="#333333"
+        bg="#121A2B"
+        color="#F5F8FF"
+        borderColor="#2A3A5E"
         borderWidth="1px"
         borderRadius="md"
         size="sm"
         fontWeight="medium"
         _hover={{
-          bg: '#1a1a1a',
+          bg: '#18233A',
           borderColor: '#2563eb',
         }}
       >
@@ -4489,7 +4489,7 @@ export function OrdersTable({
     }
 
     return (
-      <HStack spacing={2} align="center" bg="#1a1a1a" p={2} borderRadius="md" borderWidth="1px" borderColor="#333333">
+      <HStack spacing={2} align="center" bg="#18233A" p={2} borderRadius="md" borderWidth="1px" borderColor="#2A3A5E">
         <Text fontSize="sm" color="gray.400" fontWeight="medium" mr={2}>
           {selectedOrders.length} selected
         </Text>
@@ -4633,7 +4633,7 @@ export function OrdersTable({
                   >
                     <Icon
                       as={FaExclamationTriangle}
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       boxSize="24px"
                       animation={`${fastPulseAnimation} 2s infinite`}
                     />
@@ -4642,7 +4642,7 @@ export function OrdersTable({
                     <Text
                       fontSize="lg"
                       fontWeight="bold"
-                      color="#FFFFFF"
+                      color="#F5F8FF"
                       letterSpacing="0.5px"
                       textShadow="0 2px 8px rgba(0, 0, 0, 0.3)"
                     >
@@ -4658,7 +4658,7 @@ export function OrdersTable({
                   </VStack>
                   <Badge
                     bg="rgba(255, 255, 255, 0.2)"
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     fontSize="lg"
                     fontWeight="bold"
                     px={4}
@@ -4677,7 +4677,7 @@ export function OrdersTable({
 
           {/* Compact Filters Bar */}
           <Box mb={4}>
-            <Card bg="#111111" borderColor="#333333" borderWidth="1px">
+            <Card bg="#121A2B" borderColor="#2A3A5E" borderWidth="1px">
               <CardBody p={3}>
                 <VStack spacing={3} align="stretch">
                   {/* Compact Horizontal Filter Row */}
@@ -4697,12 +4697,12 @@ export function OrdersTable({
                           handleQuickReferenceSearch();
                         }
                       }}
-                          bg="#000000"
-                          color="#FFFFFF"
-                          borderColor="#333333"
+                          bg="#0B1020"
+                          color="#F5F8FF"
+                          borderColor="#2A3A5E"
                           size="sm"
                           _placeholder={{ color: '#9ca3af' }}
-                          _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                          _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                         />
                       </InputGroup>
                     </Box>
@@ -4738,17 +4738,17 @@ export function OrdersTable({
                       placeholder="Status"
                       size="sm"
                       minW="120px"
-                      bg="#000000"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#0B1020"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                       _hover={{ borderColor: '#2563eb' }}
-                      _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                      _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                     >
-                      <option value="open" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Open</option>
-                      <option value="assigned" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Assigned</option>
-                      <option value="in_progress" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>In Progress</option>
-                      <option value="completed" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Completed</option>
-                      <option value="cancelled" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Cancelled</option>
+                      <option value="open" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Open</option>
+                      <option value="assigned" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Assigned</option>
+                      <option value="in_progress" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>In Progress</option>
+                      <option value="completed" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Completed</option>
+                      <option value="cancelled" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Cancelled</option>
                     </Select>
 
                     <Select
@@ -4757,16 +4757,16 @@ export function OrdersTable({
                       placeholder="Payment"
                       size="sm"
                       minW="120px"
-                      bg="#000000"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#0B1020"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                       _hover={{ borderColor: '#2563eb' }}
-                      _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                      _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                     >
-                      <option value="unpaid" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Unpaid</option>
-                      <option value="requires_action" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Requires Action</option>
-                      <option value="paid" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Paid</option>
-                      <option value="refunded" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Refunded</option>
+                      <option value="unpaid" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Unpaid</option>
+                      <option value="requires_action" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Requires Action</option>
+                      <option value="paid" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Paid</option>
+                      <option value="refunded" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Refunded</option>
                     </Select>
 
                     <Select
@@ -4775,15 +4775,15 @@ export function OrdersTable({
                       placeholder="Type"
                       size="sm"
                       minW="120px"
-                      bg="#000000"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#0B1020"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                       _hover={{ borderColor: '#2563eb' }}
-                      _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                      _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                     >
-                      <option value="all" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>All</option>
-                      <option value="new" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>New</option>
-                      <option value="existing" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Existing</option>
+                      <option value="all" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>All</option>
+                      <option value="new" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>New</option>
+                      <option value="existing" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Existing</option>
                     </Select>
 
                     <Select
@@ -4792,16 +4792,16 @@ export function OrdersTable({
                       placeholder="Date"
                       size="sm"
                       minW="120px"
-                      bg="#000000"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#0B1020"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                       _hover={{ borderColor: '#2563eb' }}
-                      _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                      _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                     >
-                      <option value="today" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Today</option>
-                      <option value="week" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>This Week</option>
-                      <option value="month" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>This Month</option>
-                      <option value="custom" style={{ backgroundColor: '#111111', color: '#FFFFFF' }}>Custom</option>
+                      <option value="today" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Today</option>
+                      <option value="week" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>This Week</option>
+                      <option value="month" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>This Month</option>
+                      <option value="custom" style={{ backgroundColor: '#121A2B', color: '#F5F8FF' }}>Custom</option>
                     </Select>
 
                     {/* Additional Filters - Collapsed */}
@@ -4810,15 +4810,15 @@ export function OrdersTable({
                         as={Button}
                         size="sm"
                         variant="outline"
-                        bg="#000000"
-                        color="#FFFFFF"
-                        borderColor="#333333"
-                        _hover={{ borderColor: '#2563eb', bg: '#0a0a0a' }}
+                        bg="#0B1020"
+                        color="#F5F8FF"
+                        borderColor="#2A3A5E"
+                        _hover={{ borderColor: '#2563eb', bg: '#121A2B' }}
                         leftIcon={<FaFilter />}
                       >
                         More
                       </MenuButton>
-                      <MenuList bg="#111111" borderColor="#333333">
+                      <MenuList bg="#121A2B" borderColor="#2A3A5E">
                         <Box p={3}>
                           <VStack spacing={2} align="stretch">
                             <Text fontSize="xs" color="gray.400" mb={1}>Additional Filters</Text>
@@ -4827,22 +4827,22 @@ export function OrdersTable({
                               value={driverFilter}
                               onChange={e => setDriverFilter(e.target.value)}
                               size="sm"
-                              bg="#000000"
-                              color="#FFFFFF"
-                              borderColor="#333333"
+                              bg="#0B1020"
+                              color="#F5F8FF"
+                              borderColor="#2A3A5E"
                               _placeholder={{ color: '#9ca3af' }}
-                              _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                              _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                             />
                             <ClientInput
                               placeholder="Area..."
                               value={areaFilter}
                               onChange={e => setAreaFilter(e.target.value)}
                               size="sm"
-                              bg="#000000"
-                              color="#FFFFFF"
-                              borderColor="#333333"
+                              bg="#0B1020"
+                              color="#F5F8FF"
+                              borderColor="#2A3A5E"
                               _placeholder={{ color: '#9ca3af' }}
-                              _focus={{ borderColor: '#2563eb', bg: '#000000' }}
+                              _focus={{ borderColor: '#2563eb', bg: '#0B1020' }}
                             />
                           </VStack>
                         </Box>
@@ -4949,10 +4949,10 @@ export function OrdersTable({
 
                   {/* Bulk Selection Alert */}
                   {selectedOrders.length > 0 && (
-                    <Alert status="info" bg="#1a1a1a" borderColor="#2563eb" borderRadius="md" size="sm">
+                    <Alert status="info" bg="#18233A" borderColor="#2563eb" borderRadius="md" size="sm">
                       <AlertIcon color="#2563eb" />
                       <HStack justify="space-between" w="full">
-                        <Text color="#FFFFFF" fontSize="sm" fontWeight="semibold">
+                        <Text color="#F5F8FF" fontSize="sm" fontWeight="semibold">
                           {selectedOrders.length} order{selectedOrders.length > 1 ? 's' : ''} selected
                         </Text>
                         <HStack spacing={2}>
@@ -4960,7 +4960,7 @@ export function OrdersTable({
                             size="xs"
                             onClick={() => handleBulkAction('assign')}
                             bg="#2563eb"
-                            color="#FFFFFF"
+                            color="#F5F8FF"
                             _hover={{ bg: '#1d4ed8' }}
                           >
                             Assign Driver
@@ -4969,9 +4969,9 @@ export function OrdersTable({
                             size="xs" 
                             onClick={() => setSelectedOrders([])}
                             variant="outline"
-                            borderColor="#333333"
-                            color="#FFFFFF"
-                            _hover={{ bg: '#1a1a1a' }}
+                            borderColor="#2A3A5E"
+                            color="#F5F8FF"
+                            _hover={{ bg: '#18233A' }}
                           >
                             Clear
                           </Button>
@@ -4991,7 +4991,7 @@ export function OrdersTable({
 
           {/* Pagination and Summary */}
           <Flex justify="space-between" align="center" mt={4}>
-            <Text color="#FFFFFF">
+            <Text color="#F5F8FF">
               Showing {filteredOrders.length} of {orders.length} orders
             </Text>
             <HStack spacing={2}>
@@ -5002,10 +5002,10 @@ export function OrdersTable({
                 onClick={() =>
                   setPagination(prev => ({ ...prev, page: prev.page - 1 }))
                 }
-                borderColor="#333333"
-                color="#FFFFFF"
-                _hover={{ bg: '#1a1a1a' }}
-                _disabled={{ borderColor: '#333333', color: '#9ca3af', opacity: 0.5 }}
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
+                _hover={{ bg: '#18233A' }}
+                _disabled={{ borderColor: '#2A3A5E', color: '#9ca3af', opacity: 0.5 }}
               >
                 Previous
               </Button>
@@ -5017,10 +5017,10 @@ export function OrdersTable({
                   setPagination(prev => ({ ...prev, page: prev.page + 1 }));
                   loadOrders();
                 }}
-                borderColor="#333333"
-                color="#FFFFFF"
-                _hover={{ bg: '#1a1a1a' }}
-                _disabled={{ borderColor: '#333333', color: '#9ca3af', opacity: 0.5 }}
+                borderColor="#2A3A5E"
+                color="#F5F8FF"
+                _hover={{ bg: '#18233A' }}
+                _disabled={{ borderColor: '#2A3A5E', color: '#9ca3af', opacity: 0.5 }}
               >
                 Next
               </Button>
@@ -5081,12 +5081,12 @@ export function OrdersTable({
                       as={Button}
                       w="full"
                       textAlign="left"
-                      bg="#111111"
-                      color="#FFFFFF"
-                      borderColor="#333333"
+                      bg="#121A2B"
+                      color="#F5F8FF"
+                      borderColor="#2A3A5E"
                       borderWidth="1px"
-                      _hover={{ borderColor: '#555555', bg: '#1a1a1a' }}
-                      _active={{ borderColor: '#2563eb', bg: '#1a1a1a' }}
+                      _hover={{ borderColor: '#555555', bg: '#18233A' }}
+                      _active={{ borderColor: '#2563eb', bg: '#18233A' }}
                       _focus={{ borderColor: '#2563eb', boxShadow: '0 0 0 1px #2563eb' }}
                       rightIcon={<Icon as={FaChevronDown} />}
                     >
@@ -5102,7 +5102,7 @@ export function OrdersTable({
                             <HStack spacing={2} w="full" justify="space-between">
                               <HStack spacing={2}>
                                 {isNearby && <Icon as={FaCheckCircle} color="#10b981" />}
-                                <Text color={isNearby ? "#10b981" : "#FFFFFF"} fontWeight={isNearby ? "bold" : "normal"}>
+                                <Text color={isNearby ? "#10b981" : "#F5F8FF"} fontWeight={isNearby ? "bold" : "normal"}>
                                   {selectedDriver?.name || `Driver ${selectedDriverId.slice(-4)}`}
                                 </Text>
                               </HStack>
@@ -5119,8 +5119,8 @@ export function OrdersTable({
                       )}
                     </MenuButton>
                     <MenuList
-                      bg="#111111"
-                      borderColor="#333333"
+                      bg="#121A2B"
+                      borderColor="#2A3A5E"
                       borderWidth="2px"
                       maxH="500px"
                       overflowY="auto"
@@ -5138,14 +5138,14 @@ export function OrdersTable({
                             <MenuItem
                               key={driver.id}
                               onClick={() => setSelectedDriverId(driver.id)}
-                              bg={isSelected ? (isNearby ? "rgba(16, 185, 129, 0.15)" : "#1a1a1a") : "#111111"}
-                              color={isNearby ? "#10b981" : "#FFFFFF"}
+                              bg={isSelected ? (isNearby ? "rgba(16, 185, 129, 0.15)" : "#18233A") : "#121A2B"}
+                              color={isNearby ? "#10b981" : "#F5F8FF"}
                               fontWeight={isNearby ? "bold" : "normal"}
                               _hover={{ 
-                                bg: isNearby ? "rgba(16, 185, 129, 0.2)" : "#1a1a1a",
+                                bg: isNearby ? "rgba(16, 185, 129, 0.2)" : "#18233A",
                                 transform: "translateX(4px)"
                               }}
-                              _focus={{ bg: isNearby ? "rgba(16, 185, 129, 0.2)" : "#1a1a1a" }}
+                              _focus={{ bg: isNearby ? "rgba(16, 185, 129, 0.2)" : "#18233A" }}
                               borderLeft={isNearby ? "4px solid #10b981" : "4px solid transparent"}
                               borderRadius="md"
                               mb={2}
@@ -5165,7 +5165,7 @@ export function OrdersTable({
                                       <HStack spacing={2}>
                                         <Icon as={FaUser} color={isNearby ? "#10b981" : "#9ca3af"} boxSize={4} />
                                         <Text 
-                                          color={isNearby ? "#10b981" : "#FFFFFF"} 
+                                          color={isNearby ? "#10b981" : "#F5F8FF"} 
                                           fontWeight={isNearby ? "bold" : "semibold"}
                                           fontSize="sm"
                                         >
@@ -5292,10 +5292,10 @@ export function OrdersTable({
                             <MenuItem
                               key={driver.id}
                               onClick={() => setSelectedDriverId(driver.id)}
-                              bg={isSelected ? "#1a1a1a" : "#111111"}
-                              color="#FFFFFF"
-                              _hover={{ bg: "#1a1a1a", transform: "translateX(4px)" }}
-                              _focus={{ bg: "#1a1a1a" }}
+                              bg={isSelected ? "#18233A" : "#121A2B"}
+                              color="#F5F8FF"
+                              _hover={{ bg: "#18233A", transform: "translateX(4px)" }}
+                              _focus={{ bg: "#18233A" }}
                               borderRadius="md"
                               mb={2}
                               p={3}
@@ -5582,7 +5582,7 @@ export function OrdersTable({
                     <Box w="6px" h="6px" borderRadius="full" bg="#22c55e" flexShrink={0} />
                     <VStack align="start" spacing={0} flex={1}>
                       <Text fontSize="xs" color="#64748b" fontWeight="medium">PICKUP</Text>
-                      <Text fontSize="sm" color="#e2e8f0">
+                      <Text fontSize="sm" color="#A9B4CC">
                         {draftResult?.pickupAddress?.address || draftResult?.pickupAddress?.label || '—'}
                       </Text>
                     </VStack>
@@ -5592,7 +5592,7 @@ export function OrdersTable({
                     <Box w="6px" h="6px" borderRadius="full" bg="#ef4444" flexShrink={0} />
                     <VStack align="start" spacing={0} flex={1}>
                       <Text fontSize="xs" color="#64748b" fontWeight="medium">DROPOFF</Text>
-                      <Text fontSize="sm" color="#e2e8f0">
+                      <Text fontSize="sm" color="#A9B4CC">
                         {draftResult?.dropoffAddress?.address || draftResult?.dropoffAddress?.label || '—'}
                       </Text>
                     </VStack>
@@ -5644,7 +5644,7 @@ export function OrdersTable({
                           _hover={{ bg: 'rgba(30, 41, 59, 0.6)' }}
                           transition="background 0.15s"
                         >
-                          <Text fontSize="sm" color="#e2e8f0">{item.name || item.id || 'Item'}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">{item.name || item.id || 'Item'}</Text>
                           <Badge bg="rgba(51, 65, 85, 0.5)" color="#94a3b8" fontSize="xs">×{item.quantity || 1}</Badge>
                         </HStack>
                       ))}
@@ -5697,37 +5697,37 @@ export function OrdersTable({
                       {draftResult.pricing.baseFee !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">Base Fee</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.baseFee?.toFixed?.(2) || draftResult.pricing.baseFee}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.baseFee?.toFixed?.(2) || draftResult.pricing.baseFee}</Text>
                         </HStack>
                       )}
                       {draftResult.pricing.distanceFee !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">Distance</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.distanceFee?.toFixed?.(2) || draftResult.pricing.distanceFee}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.distanceFee?.toFixed?.(2) || draftResult.pricing.distanceFee}</Text>
                         </HStack>
                       )}
                       {draftResult.pricing.volumeFee !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">Volume</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.volumeFee?.toFixed?.(2) || draftResult.pricing.volumeFee}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.volumeFee?.toFixed?.(2) || draftResult.pricing.volumeFee}</Text>
                         </HStack>
                       )}
                       {draftResult.pricing.serviceFee !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">Service</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.serviceFee?.toFixed?.(2) || draftResult.pricing.serviceFee}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.serviceFee?.toFixed?.(2) || draftResult.pricing.serviceFee}</Text>
                         </HStack>
                       )}
                       {draftResult.pricing.urgencyFee !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">Urgency</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.urgencyFee?.toFixed?.(2) || draftResult.pricing.urgencyFee}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.urgencyFee?.toFixed?.(2) || draftResult.pricing.urgencyFee}</Text>
                         </HStack>
                       )}
                       {draftResult.pricing.vat !== undefined && (
                         <HStack justify="space-between" py={1}>
                           <Text fontSize="sm" color="#94a3b8">VAT</Text>
-                          <Text fontSize="sm" color="#e2e8f0">£{draftResult.pricing.vat?.toFixed?.(2) || draftResult.pricing.vat}</Text>
+                          <Text fontSize="sm" color="#A9B4CC">£{draftResult.pricing.vat?.toFixed?.(2) || draftResult.pricing.vat}</Text>
                         </HStack>
                       )}
                     </Grid>
@@ -5754,7 +5754,7 @@ export function OrdersTable({
                 <Button
                   size="sm"
                   bg="rgba(30, 41, 59, 0.6)"
-                  color="#e2e8f0"
+                  color="#A9B4CC"
                   borderRadius="lg"
                   fontWeight="medium"
                   h="40px"
@@ -5778,7 +5778,7 @@ export function OrdersTable({
                 <Button
                   size="sm"
                   bg="rgba(30, 41, 59, 0.6)"
-                  color="#e2e8f0"
+                  color="#A9B4CC"
                   borderRadius="lg"
                   fontWeight="medium"
                   h="40px"
@@ -5801,7 +5801,7 @@ export function OrdersTable({
                 <Button
                   size="sm"
                   bg="rgba(30, 41, 59, 0.6)"
-                  color="#e2e8f0"
+                  color="#A9B4CC"
                   borderRadius="lg"
                   fontWeight="medium"
                   h="40px"
@@ -5824,7 +5824,7 @@ export function OrdersTable({
                 <Button
                   size="sm"
                   bg="rgba(30, 41, 59, 0.6)"
-                  color="#e2e8f0"
+                  color="#A9B4CC"
                   borderRadius="lg"
                   fontWeight="medium"
                   h="40px"
@@ -5902,7 +5902,7 @@ Total: £${draftResult?.pricing?.total || 0}
                 color="#94a3b8"
                 borderRadius="lg"
                 h="36px"
-                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#A9B4CC' }}
                 onClick={() => setIsDraftModalOpen(false)}
               >
                 Close
@@ -6020,7 +6020,7 @@ Total: £${draftResult?.pricing?.total || 0}
                       onChange={(e) => setDraftStatusFilter(e.target.value)}
                       bg="rgba(17, 24, 39, 0.8)"
                       borderColor="rgba(51, 65, 85, 0.5)"
-                      color="#e2e8f0"
+                      color="#A9B4CC"
                       borderRadius="lg"
                       _hover={{ borderColor: 'rgba(59, 130, 246, 0.5)' }}
                       _focus={{ borderColor: '#3b82f6', boxShadow: '0 0 0 1px #3b82f6' }}
@@ -6037,7 +6037,7 @@ Total: £${draftResult?.pricing?.total || 0}
                       size="sm"
                       bg="rgba(17, 24, 39, 0.8)"
                       borderColor="rgba(51, 65, 85, 0.5)"
-                      color="#e2e8f0"
+                      color="#A9B4CC"
                       borderRadius="lg"
                       value={draftFromDate}
                       onChange={(e: any) => setDraftFromDate(e.target.value)}
@@ -6050,7 +6050,7 @@ Total: £${draftResult?.pricing?.total || 0}
                       size="sm"
                       bg="rgba(17, 24, 39, 0.8)"
                       borderColor="rgba(51, 65, 85, 0.5)"
-                      color="#e2e8f0"
+                      color="#A9B4CC"
                       borderRadius="lg"
                       value={draftToDate}
                       onChange={(e: any) => setDraftToDate(e.target.value)}
@@ -6083,7 +6083,7 @@ Total: £${draftResult?.pricing?.total || 0}
                       setDraftToDate('');
                       handleLoadDraftsList();
                     }}
-                    _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                    _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#A9B4CC' }}
                   >
                     Reset
                   </Button>
@@ -6182,7 +6182,7 @@ Total: £${draftResult?.pricing?.total || 0}
                       key={draft.id}
                       templateColumns="1.2fr 0.8fr 1fr 1fr 0.6fr 0.8fr"
                       alignItems="center"
-                      color="#e2e8f0"
+                      color="#A9B4CC"
                       borderBottom={idx < draftsList.length - 1 ? '1px solid rgba(51, 65, 85, 0.3)' : 'none'}
                       px={4}
                       py={3}
@@ -6234,7 +6234,7 @@ Total: £${draftResult?.pricing?.total || 0}
                 variant="ghost"
                 color="#94a3b8"
                 borderRadius="lg"
-                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#e2e8f0' }}
+                _hover={{ bg: 'rgba(51, 65, 85, 0.4)', color: '#A9B4CC' }}
                 onClick={() => setIsDraftsListOpen(false)}
               >
                 Close
@@ -6271,7 +6271,7 @@ Total: £${draftResult?.pricing?.total || 0}
       >
         <AlertDialogOverlay bg="rgba(0, 0, 0, 0.8)" backdropFilter="blur(4px)" />
         <AlertDialogContent
-          bg="#111111"
+          bg="#121A2B"
           borderColor="#ef4444"
           borderWidth="2px"
           borderRadius="xl"
@@ -6281,9 +6281,9 @@ Total: £${draftResult?.pricing?.total || 0}
           <AlertDialogHeader
             fontSize="xl"
             fontWeight="bold"
-            color="#FFFFFF"
+            color="#F5F8FF"
             borderBottom="1px solid"
-            borderColor="#333333"
+            borderColor="#2A3A5E"
             pb={4}
           >
             <HStack spacing={3}>
@@ -6294,20 +6294,20 @@ Total: £${draftResult?.pricing?.total || 0}
 
           <AlertDialogBody py={6}>
             <VStack spacing={4} align="stretch">
-              <Alert status="warning" borderRadius="md" bg="#1a1a1a" borderColor="#f59e0b" borderWidth="1px">
+              <Alert status="warning" borderRadius="md" bg="#18233A" borderColor="#f59e0b" borderWidth="1px">
                 <AlertIcon color="#f59e0b" />
                 <Box flex="1">
                   <Text color="#f59e0b" fontWeight="bold" mb={2}>
                     This action cannot be undone
                   </Text>
-                  <AlertDescription color="#FFFFFF" fontSize="sm">
+                  <AlertDescription color="#F5F8FF" fontSize="sm">
                     Cancelling this order will permanently mark it as cancelled and trigger notifications.
                   </AlertDescription>
                 </Box>
               </Alert>
 
               <Box>
-                <Text fontWeight="semibold" color="#FFFFFF" mb={2}>
+                <Text fontWeight="semibold" color="#F5F8FF" mb={2}>
                   What will happen:
                 </Text>
                 <VStack align="stretch" spacing={2} pl={4}>
@@ -6334,19 +6334,19 @@ Total: £${draftResult?.pricing?.total || 0}
                 </VStack>
               </Box>
 
-              <Divider borderColor="#333333" />
+              <Divider borderColor="#2A3A5E" />
 
               <Box>
-                <Text fontWeight="semibold" color="#FFFFFF" mb={2}>
+                <Text fontWeight="semibold" color="#F5F8FF" mb={2}>
                   Cancellation Reason:
                 </Text>
                 <Textarea
                   placeholder="Enter reason for cancellation (e.g., Customer request, Van breakdown, etc.)"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  bg="#000000"
-                  color="#FFFFFF"
-                  borderColor="#333333"
+                  bg="#0B1020"
+                  color="#F5F8FF"
+                  borderColor="#2A3A5E"
                   _placeholder={{ color: '#6b7280' }}
                   _focus={{ borderColor: '#ef4444', boxShadow: '0 0 0 1px #ef4444' }}
                   rows={3}
@@ -6356,13 +6356,13 @@ Total: £${draftResult?.pricing?.total || 0}
             </VStack>
           </AlertDialogBody>
 
-          <AlertDialogFooter borderTop="1px solid" borderColor="#333333" pt={4}>
+          <AlertDialogFooter borderTop="1px solid" borderColor="#2A3A5E" pt={4}>
             <Button
               ref={cancelDialogRef}
               onClick={onCancelDialogClose}
               variant="ghost"
-              color="#FFFFFF"
-              _hover={{ bg: '#1a1a1a' }}
+              color="#F5F8FF"
+              _hover={{ bg: '#18233A' }}
               isDisabled={isCancelling}
             >
               Keep Order
@@ -6374,7 +6374,7 @@ Total: £${draftResult?.pricing?.total || 0}
               isLoading={isCancelling}
               loadingText="Cancelling..."
               bg="#ef4444"
-              color="#FFFFFF"
+              color="#F5F8FF"
               _hover={{ bg: '#dc2626' }}
               _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
               leftIcon={<FaTimes />}
@@ -6395,7 +6395,7 @@ Total: £${draftResult?.pricing?.total || 0}
       >
         <AlertDialogOverlay bg="rgba(0, 0, 0, 0.8)" backdropFilter="blur(4px)" />
         <AlertDialogContent
-          bg="#111111"
+          bg="#121A2B"
           borderColor="#10b981"
           borderWidth="2px"
           borderRadius="xl"
@@ -6405,9 +6405,9 @@ Total: £${draftResult?.pricing?.total || 0}
           <AlertDialogHeader
             fontSize="xl"
             fontWeight="bold"
-            color="#FFFFFF"
+            color="#F5F8FF"
             borderBottom="1px solid"
-            borderColor="#333333"
+            borderColor="#2A3A5E"
             pb={4}
           >
             <HStack spacing={3}>
@@ -6418,20 +6418,20 @@ Total: £${draftResult?.pricing?.total || 0}
 
           <AlertDialogBody py={6}>
             <VStack spacing={4} align="stretch">
-              <Alert status="info" borderRadius="md" bg="#1a1a1a" borderColor="#10b981" borderWidth="1px">
+              <Alert status="info" borderRadius="md" bg="#18233A" borderColor="#10b981" borderWidth="1px">
                 <AlertIcon color="#10b981" />
                 <Box flex="1">
                   <Text color="#10b981" fontWeight="bold" mb={2}>
                     Payment Confirmation
                   </Text>
-                  <AlertDescription color="#FFFFFF" fontSize="sm">
+                  <AlertDescription color="#F5F8FF" fontSize="sm">
                     This will mark the order as paid and update its status to confirmed.
                   </AlertDescription>
                 </Box>
               </Alert>
 
               <Box>
-                <Text fontWeight="semibold" color="#FFFFFF" mb={2}>
+                <Text fontWeight="semibold" color="#F5F8FF" mb={2}>
                   This action will:
                 </Text>
                 <VStack align="stretch" spacing={2} pl={4}>
@@ -6452,13 +6452,13 @@ Total: £${draftResult?.pricing?.total || 0}
             </VStack>
           </AlertDialogBody>
 
-          <AlertDialogFooter borderTop="1px solid" borderColor="#333333" pt={4}>
+          <AlertDialogFooter borderTop="1px solid" borderColor="#2A3A5E" pt={4}>
             <Button
               ref={markPaidDialogRef}
               onClick={onMarkPaidDialogClose}
               variant="ghost"
-              color="#FFFFFF"
-              _hover={{ bg: '#1a1a1a' }}
+              color="#F5F8FF"
+              _hover={{ bg: '#18233A' }}
               isDisabled={isMarkingPaid}
             >
               Cancel
@@ -6470,7 +6470,7 @@ Total: £${draftResult?.pricing?.total || 0}
               isLoading={isMarkingPaid}
               loadingText="Confirming..."
               bg="#10b981"
-              color="#FFFFFF"
+              color="#F5F8FF"
               _hover={{ bg: '#059669' }}
               _disabled={{ opacity: 0.5, cursor: 'not-allowed' }}
               leftIcon={<FaCheckCircle />}

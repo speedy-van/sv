@@ -50,10 +50,10 @@ interface OrderTimelineProps {
 
 export function OrderTimeline({
   orderCode,
-  bgColor = '#000000',
-  textColor = '#FFFFFF',
-  borderColor = '#333333',
-  cardBg = '#111111',
+  bgColor = '#0B1020',
+  textColor = '#F5F8FF',
+  borderColor = '#2A3A5E',
+  cardBg = '#121A2B',
 }: OrderTimelineProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);

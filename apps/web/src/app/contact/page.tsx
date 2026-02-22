@@ -45,7 +45,6 @@ import {
 import { FaWhatsapp } from 'react-icons/fa';
 import HeaderButton from '@/components/common/HeaderButton';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 import { WhatsAppFloatingButton, openWhatsAppLink } from '@/components/shared/WhatsAppEntryPoint';
 import CallMeBackFloating from '@/components/shared/CallMeBackFloating';
 
@@ -247,7 +246,6 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <Box bg={bgColor} minH="100vh" pt={20}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
@@ -538,7 +536,7 @@ export default function ContactPage() {
                           _focus={{ borderColor: 'blue.400', bg: 'rgba(26, 26, 26, 0.9)' }}
                         >
                           {services.map((service) => (
-                            <option key={service.name} value={service.name} style={{ backgroundColor: '#1a1a1a', color: 'white' }}>
+                            <option key={service.name} value={service.name} style={{ backgroundColor: '#18233A', color: 'white' }}>
                               {service.name}
                             </option>
                           ))}

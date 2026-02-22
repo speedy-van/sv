@@ -47,6 +47,8 @@ import {
   Textarea,
   Alert,
   AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 import {
   FaBuilding,
@@ -1002,13 +1004,13 @@ export default function B2BApplicationsPage() {
           </ModalHeader>
           <ModalBody py={8}>
             <VStack spacing={6} align="stretch">
-              <Alert status="warning" borderRadius="lg" bg="orange.900" borderColor="orange.600">
-                <AlertIcon color="orange.300" />
+              <Alert status="warning" variant="subtle" colorScheme="orange" borderRadius="lg">
+                <AlertIcon />
                 <Box>
-                  <Text color="orange.100" fontWeight="bold">⚠️ Important: API Key (Show Once Only)</Text>
-                  <Text color="orange.200" fontSize="sm" mt={1}>
+                  <AlertTitle>⚠️ Important: API Key (Show Once Only)</AlertTitle>
+                  <AlertDescription fontSize="sm" mt={1}>
                     This API key will only be shown once. Make sure to copy and save it securely.
-                  </Text>
+                  </AlertDescription>
                 </Box>
               </Alert>
 

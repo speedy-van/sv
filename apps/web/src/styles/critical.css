@@ -69,12 +69,6 @@ body {
   min-height: 300px;
 }
 
-/* Prevent layout shift */
-.chakra-portal {
-  position: fixed;
-  z-index: 9999;
-}
-
 /* Optimize font loading */
 @font-face {
   font-family: 'Inter';
@@ -96,22 +90,6 @@ body {
 img, video {
   max-width: 100%;
   height: auto;
-}
-
-/* Avatar placeholder to prevent CLS */
-.chakra-avatar {
-  background: #1a1a1a;
-}
-
-/* Button placeholder dimensions */
-.chakra-button {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Card placeholder */
-.chakra-card {
-  min-height: 100px;
 }
 
 /* Loading state */
@@ -148,9 +126,9 @@ img, video {
 
 .skip-to-content:focus,
 .skip-to-content:focus-visible {
-  transform: translateY(0) !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
   outline: 2px solid white;
   outline-offset: 2px;
 }
@@ -179,8 +157,8 @@ input[type="radio"] {
   
   /* Ensure header stays fixed properly on iOS */
   .desktop-header {
-    position: fixed !important;
-    top: 0 !important;
+    position: fixed;
+    top: 0;
     will-change: transform;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);

@@ -36,7 +36,7 @@ const AnimatedSectionTitle: React.FC = () => {
   const [colorIndex, setColorIndex] = React.useState(0);
   
   const COLOR_PALETTE = [
-    '#007AFF', // Blue
+    '#3B82F6', // Blue
     '#10B981', // Green
     '#8B5CF6', // Purple
     '#F59E0B', // Orange
@@ -204,7 +204,7 @@ const AvailableJobsCard: React.FC<AvailableJobsCardProps> = ({ jobs, totalCount,
                     },
                   ]}
                 >
-                  <Ionicons name="cube" size={32} color="#FFFFFF" />
+                  <Ionicons name="cube" size={32} color="#F5F8FF" />
                   <View style={styles.availableJobsIconGlow} />
                 </Animated.View>
               </Animated.View>
@@ -462,7 +462,7 @@ const AdminStory: React.FC = () => {
                 style={styles.storyCloseButton}
                 onPress={() => setIsModalVisible(false)}
               >
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+                <Ionicons name="close" size={24} color="#F5F8FF" />
               </TouchableOpacity>
 
               <View style={styles.storyHeader}>
@@ -875,9 +875,9 @@ export default function DashboardScreen() {
                 <View style={styles.statusTitleRow}>
                   <View style={[styles.statusIndicator, isOnline && styles.statusIndicatorOnline]}>
                     {isOnline ? (
-                      <Ionicons name="checkmark-circle" size={24} color="#FFFFFF" />
+                      <Ionicons name="checkmark-circle" size={24} color="#F5F8FF" />
                     ) : (
-                      <Ionicons name="close-circle" size={24} color="#FFFFFF" />
+                      <Ionicons name="close-circle" size={24} color="#F5F8FF" />
                     )}
                   </View>
                   <View style={styles.statusTextContainer}>
@@ -1097,12 +1097,12 @@ const styles = StyleSheet.create({
   storyAvatarText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   storyLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     marginTop: spacing.xs,
     textAlign: 'center',
   },
@@ -1115,7 +1115,7 @@ const styles = StyleSheet.create({
   storyModalContent: {
     width: '90%',
     height: '80%',
-    backgroundColor: '#000000',
+    backgroundColor: '#0B1020',
     borderRadius: borderRadius.xl,
     overflow: 'hidden',
   },
@@ -1144,11 +1144,11 @@ const styles = StyleSheet.create({
   storyHeaderAvatarText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   storyHeaderName: {
     ...typography.headline,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     flex: 1,
   },
   storyHeaderTime: {
@@ -1161,13 +1161,13 @@ const styles = StyleSheet.create({
   },
   storyTitle: {
     ...typography.title1,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     marginBottom: spacing.md,
     textAlign: 'center',
   },
   storyText: {
     ...typography.body,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     lineHeight: 24,
     textAlign: 'center',
   },
@@ -1245,7 +1245,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '500',
     marginTop: 2,
     opacity: 0.8,
@@ -1345,14 +1345,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusTitle: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: 0.3,
     marginBottom: spacing.xs / 2,
   },
   statusSubtitle: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 15,
     opacity: 0.9,
     fontWeight: '500',
@@ -1378,7 +1378,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -1401,7 +1401,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   statusHint: {
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 14,
     opacity: 0.8,
     fontWeight: '500',
@@ -1423,13 +1423,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.3,
   },
   trackingStatus: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.8,
   },
   trackingActive: {
@@ -1473,7 +1473,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.8,
@@ -1582,7 +1582,7 @@ const styles = StyleSheet.create({
   },
   availableJobsTitle: {
     ...typography.title2,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -1594,19 +1594,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
     ...shadows.md,
   },
   availableJobsBadgeText: {
     ...typography.subheadline,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   availableJobsSubtitle: {
     ...typography.caption1,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 14,
     opacity: 0.9,
     fontWeight: '500',

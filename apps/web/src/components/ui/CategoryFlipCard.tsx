@@ -272,11 +272,11 @@ const CategoryFlipCard: React.FC<CategoryFlipCardProps> = ({
   return (
     <Box
       sx={{ 
-        width: '100% !important',
+        width: '100%',
         minHeight: config.minHeight,
         perspective: '1000px',
         aspectRatio: config.aspectRatio.toString(),
-        maxWidth: 'none !important',
+        maxWidth: 'none',
       }}
       cursor="pointer"
       onClick={handleClick}

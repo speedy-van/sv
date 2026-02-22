@@ -167,7 +167,7 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
                       },
                     ]}
                   >
-                    <Ionicons name="search" size={24} color="#FFFFFF" />
+                    <Ionicons name="search" size={24} color="#F5F8FF" />
                   </Animated.View>
                 </>
               )}
@@ -201,11 +201,11 @@ export const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({
               {isSearching && (
                 <View style={styles.searchStats}>
                   <View style={styles.statItem}>
-                    <Ionicons name="location" size={14} color="#FFFFFF" />
+                    <Ionicons name="location" size={14} color="#F5F8FF" />
                     <Text style={styles.statText}>Nearby</Text>
                   </View>
                   <View style={styles.statItem}>
-                    <Ionicons name="time" size={14} color="#FFFFFF" />
+                    <Ionicons name="time" size={14} color="#F5F8FF" />
                     <Text style={styles.statText}>Real-time</Text>
                   </View>
                 </View>
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
   },
   dotContainer: {
     width: 40,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
   },
   dotGlowing: {
     backgroundColor: colors.success,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.headline,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.2,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
     flexShrink: 0,
     ...shadows.md,
   },
@@ -389,18 +389,18 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F8FF',
   },
   searchBadgeText: {
     ...typography.small,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '800',
     fontSize: 11,
     letterSpacing: 1.5,
   },
   subText: {
     ...typography.subheadline,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 15,
     opacity: 0.95,
     lineHeight: 22,
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     ...typography.caption,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontSize: 12,
     fontWeight: '600',
   },

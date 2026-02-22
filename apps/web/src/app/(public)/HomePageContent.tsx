@@ -1,1148 +1,145 @@
 'use client';
 
 import React from 'react';
+import NextLink from 'next/link';
 import {
   Box,
-  Container,
-  VStack,
-  Heading,
-  Text,
   Button,
+  Container,
+  Grid,
+  GridItem,
+  Heading,
   HStack,
-  Icon,
-  useColorModeValue,
+  Link,
   SimpleGrid,
-  Card,
-  Avatar,
-  Badge,
-  Image,
-  Flex,
-  chakra,
+  Text,
+  VStack,
 } from '@chakra-ui/react';
-import { motion, isValidMotionProp } from 'framer-motion';
-import {
-  FaTruck,
-  FaClock,
-  FaShieldAlt,
-  FaStar,
-  FaCouch,
-  FaLaptop,
-  FaGraduationCap,
-  FaBuilding,
-  FaMagic,
-  FaArrowRight,
-  FaCheckCircle,
-  FaMapMarkerAlt,
-  FaPhone,
-  FaEnvelope,
-} from 'react-icons/fa';
-import { SiAfterpay, SiKlarna } from 'react-icons/si';
-import Hero from '../../components/Hero';
-import HeroMessage from '../../components/HeroMessage';
-import ServiceMapSection from '../../components/ServiceMapSection';
+import { FaArrowRight, FaPhone } from 'react-icons/fa';
+import Header from '@/components/site/Header';
+import AppCard from '@/components/shared/AppCard';
 import HomeFooter from '@/components/site/HomeFooter';
-import dynamic from 'next/dynamic';
+import TrustpilotWidget from '@/components/site/TrustpilotWidget';
+import StickyCTA from '@/components/StickyCTA';
+import SpeedyAIBotWrapper from '@/components/site/SpeedyAIBotWrapper';
 
-const TrustpilotWidget = dynamic(
-  () => import('@/components/site/TrustpilotWidget'),
-  { 
-    ssr: false,
-    loading: () => null,
-  }
-);
-
-// Create motion components using chakra integration
-const MotionBox = chakra(motion.div, {
-  shouldForwardProp: (prop) => {
-    if (typeof prop === 'string') {
-      return isValidMotionProp(prop) || (chakra as any).shouldForwardProp?.(prop) || true;
-    }
-    return true;
-  },
-});
-
-const features = [
-  {
-    icon: FaTruck,
-    title: 'Fast & Reliable',
-    description: 'Professional moving service with guaranteed delivery times',
-    color: 'blue',
-    gradient: 'linear(to-r, blue.400, blue.600)',
-  },
-  {
-    icon: FaClock,
-    title: '24/7 Support',
-    description: 'Round-the-clock customer support for peace of mind',
-    color: 'green',
-    gradient: 'linear(to-r, green.400, green.600)',
-  },
-  {
-    icon: FaShieldAlt,
-    title: 'Fully Insured',
-    description: 'Complete coverage for your valuable belongings',
-    color: 'purple',
-    gradient: 'linear(to-r, purple.400, purple.600)',
-  },
-  {
-    icon: FaStar,
-    title: '5-Star Rated',
-    description: 'Trusted by thousands of satisfied customers',
-    color: 'yellow',
-    gradient: 'linear(to-r, yellow.400, yellow.600)',
-  },
+const valueCards = [
+  { title: 'Instant pricing', text: 'See clear rates before checkout with no hidden extras.' },
+  { title: 'Verified drivers', text: 'Professional teams with insurance and tracked jobs.' },
+  { title: 'Live support', text: 'Reach us fast on 01202 129746 or support@speedy-van.co.uk.' },
 ];
 
-const services = [
-  {
-    icon: FaCouch,
-    title: 'Furniture Moves',
-    description: 'Expert handling of sofas, tables & delicate pieces',
-    emoji: '🪑',
-    color: 'orange',
-    features: [
-      'Professional packing',
-      'Furniture protection',
-      'Assembly service',
-    ],
-  },
-  {
-    icon: FaLaptop,
-    title: 'Appliances & Electronics',
-    description: 'Safe transport of TVs, computers & kitchen gear',
-    emoji: '💻',
-    color: 'blue',
-    features: [
-      'Anti-static packaging',
-      'Climate control',
-      'Insurance coverage',
-    ],
-  },
-  {
-    icon: FaGraduationCap,
-    title: 'Student Moves',
-    description: 'Affordable campus-to-campus relocation',
-    emoji: '🎓',
-    color: 'green',
-    features: ['Student discounts', 'Flexible scheduling', 'Storage options'],
-  },
-  {
-    icon: FaBuilding,
-    title: 'Business & Office',
-    description: 'Professional corporate relocation services',
-    emoji: '🏢',
-    color: 'purple',
-    features: ['Minimal downtime', 'Document security', 'After-hours service'],
-  },
-  {
-    icon: FaMagic,
-    title: 'Custom Requests',
-    description: 'Tailored solutions for unique moving needs',
-    emoji: '✨',
-    color: 'pink',
-    features: ['Personalized planning', 'Special handling', 'Custom packaging'],
-  },
-];
-
-const testimonials = [
-  {
-    name: 'Sarah Mitchell',
-    city: 'Manchester',
-    quote:
-      'Speedy Van moved my entire flat in under 3 hours! The team was incredibly professional and careful with my antique furniture.',
-    rating: 5,
-    avatar: '/avatars/sarah.jpg',
-    service: 'Flat Removal',
-  },
-  {
-    name: 'James Thompson',
-    city: 'Birmingham',
-    quote:
-      'Best moving experience ever. They handled my electronics with such care, and the price was exactly what they quoted.',
-    rating: 5,
-    avatar: '/avatars/james.jpg',
-    service: 'Electronics Move',
-  },
-  {
-    name: 'Emma Davies',
-    city: 'Leeds',
-    quote:
-      'From booking to delivery, everything was seamless. The drivers were punctual and my items arrived in perfect condition.',
-    rating: 5,
-    avatar: '/avatars/emma.jpg',
-    service: 'Home Removal',
-  },
-];
-
-const stats = [
-  {
-    number: '50,000+',
-    label: 'Happy Customers',
-    icon: FaStar,
-    color: 'yellow',
-  },
-  { number: '95%', label: 'On-Time Delivery', icon: FaClock, color: 'green' },
-  { number: '24/7', label: 'Customer Support', icon: FaPhone, color: 'blue' },
-  { number: '£50', label: 'Starting Price', icon: FaTruck, color: 'neon' },
+const serviceCards = [
+  { title: 'House Removals', href: '/house-removals' },
+  { title: 'Office Moves', href: '/office-removals' },
+  { title: 'Furniture Delivery', href: '/furniture-removal' },
+  { title: 'Single Item Delivery', href: '/single-item-delivery' },
+  { title: 'Student Moves', href: '/student-moves' },
+  { title: 'Same Day Delivery', href: '/same-day-delivery' },
 ];
 
 export default function HomePageContent() {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
-
   return (
-    <Box
-      bg={bgColor}
-      py={{ base: 8, md: 16 }}
-      position="relative"
-      overflow="hidden"
-    >
-      {/* Background Pattern */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        width="100%"
-        height="100%"
-        opacity={0.02}
-        background="radial-gradient(circle at 20% 80%, rgba(0,194,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0,209,143,0.1) 0%, transparent 50%)"
-        pointerEvents="none"
-      />
+    <Box as="main" id="main-content" bg="bg.canvas" color="text.primary" minH="100vh">
+      <Header />
 
-      <Container maxW="7xl">
-        <VStack spacing={{ base: 12, md: 20 }}>
-          {/* Hero Section */}
-          <Hero />
-
-          {/* Services Scrolling Banner - RIGHT AFTER HERO */}
-          <Box 
-            w="full" 
-            overflow="hidden" 
-            py={4}
-            position="relative"
-            bg="linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(16, 185, 129, 0.15) 100%)"
-            borderRadius="2xl"
-            border="1px solid"
-            borderColor="rgba(59, 130, 246, 0.3)"
-            boxShadow="0 10px 40px rgba(0,0,0,0.3)"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: '80px',
-              background: 'linear-gradient(90deg, rgba(13,13,13,1), transparent)',
-              zIndex: 10,
-              pointerEvents: 'none',
-            }}
-            _after={{
-              content: '""',
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: '80px',
-              background: 'linear-gradient(-90deg, rgba(13,13,13,1), transparent)',
-              zIndex: 10,
-              pointerEvents: 'none',
-            }}
-          >
-            <style>
-              {`
-                @keyframes scrollServicesHome {
-                  0% { transform: translateX(0); }
-                  100% { transform: translateX(-50%); }
-                }
-              `}
-            </style>
-            <Box
-              display="flex"
-              gap={4}
-              w="max-content"
-              px={4}
-              style={{
-                animation: 'scrollServicesHome 25s linear infinite',
-              }}
-            >
-              {[
-                { icon: '🏠', text: 'House Removals', color: '#3B82F6' },
-                { icon: '🏢', text: 'Office Moves', color: '#8B5CF6' },
-                { icon: '🛋️', text: 'Furniture Delivery', color: '#14B8A6' },
-                { icon: '📦', text: 'Single Items', color: '#F97316' },
-                { icon: '🛒', text: 'IKEA & Store Pickup', color: '#EAB308' },
-                { icon: '📱', text: 'Facebook Marketplace', color: '#3B82F6' },
-                { icon: '🏷️', text: 'Gumtree & eBay', color: '#22C55E' },
-                { icon: '🎓', text: 'Student Moves', color: '#EC4899' },
-                { icon: '⚡', text: 'Same Day Service', color: '#EF4444' },
-                { icon: '🚚', text: 'Man & Van', color: '#06B6D4' },
-                { icon: '🏠', text: 'House Removals', color: '#3B82F6' },
-                { icon: '🏢', text: 'Office Moves', color: '#8B5CF6' },
-                { icon: '🛋️', text: 'Furniture Delivery', color: '#14B8A6' },
-                { icon: '📦', text: 'Single Items', color: '#F97316' },
-                { icon: '🛒', text: 'IKEA & Store Pickup', color: '#EAB308' },
-                { icon: '📱', text: 'Facebook Marketplace', color: '#3B82F6' },
-                { icon: '🏷️', text: 'Gumtree & eBay', color: '#22C55E' },
-                { icon: '🎓', text: 'Student Moves', color: '#EC4899' },
-                { icon: '⚡', text: 'Same Day Service', color: '#EF4444' },
-                { icon: '🚚', text: 'Man & Van', color: '#06B6D4' },
-              ].map((service, idx) => (
-                <Box
-                  key={idx}
-                  px={5}
-                  py={2.5}
-                  borderRadius="full"
-                  bg={service.color}
-                  color="white"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  fontWeight="700"
-                  whiteSpace="nowrap"
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  flexShrink={0}
-                  boxShadow="0 4px 15px rgba(0,0,0,0.3)"
-                  transition="all 0.2s"
-                  _hover={{ transform: 'scale(1.05)' }}
-                >
-                  <Text as="span" fontSize={{ base: 'md', md: 'lg' }}>{service.icon}</Text>
-                  <Text as="span">{service.text}</Text>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          {/* Hero Message Section */}
-          <HeroMessage />
-
-          {/* Service Map Section */}
-          <ServiceMapSection />
-
-          {/* Stats Section */}
-          <Box w="full" py={{ base: 12, md: 16 }} bg="bg.surface" borderRadius="2xl">
-            <VStack spacing={{ base: 8, md: 12 }}>
-              <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 } as any}
-                textAlign="center"
-              >
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  mb={4}
-                  color="text.primary"
-                >
-                  Trusted by Thousands
-                </Heading>
-                <Text
-                  color={textColor}
-                  maxW="2xl"
-                  mx="auto"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                >
-                  Our numbers speak for themselves
+      <Box pt={{ base: '92px', md: '116px' }} pb={{ base: 12, md: 16 }}>
+        <Container maxW="container.xl">
+          <Grid templateColumns={{ base: '1fr', lg: '1.1fr 0.9fr' }} gap={{ base: 8, lg: 10 }}>
+            <GridItem>
+              <VStack align="start" spacing={6}>
+                <Text fontSize="sm" letterSpacing="0.12em" textTransform="uppercase" color="interactive.secondary">
+                  Speedy Van
                 </Text>
-              </MotionBox>
 
-              <SimpleGrid
-                columns={{ base: 1, '2xl': 4 }}
-                spacing={{ base: 6, md: 8 }}
-                w="full"
-              >
-                {stats.map((stat, index) => (
-                  <MotionBox
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 } as any}
-                    textAlign="center"
+                <Heading size="2xl" lineHeight="1.05">
+                  Move faster with a modern booking experience.
+                </Heading>
+
+                <Text color="text.secondary" fontSize={{ base: 'md', md: 'lg' }} maxW="2xl">
+                  Premium reliability across the UK with transparent pricing, clear status updates,
+                  and a cleaner moving workflow from quote to completion.
+                </Text>
+
+                <HStack spacing={3} flexWrap="wrap">
+                  <Button
+                    as={NextLink}
+                    href="/booking-luxury"
+                    colorScheme="blue"
+                    rightIcon={<FaArrowRight />}
+                    size="lg"
                   >
-                    <Box
-                      p={{ base: 4, md: 6 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
-                      borderColor="#00C2FF"
-                      bg="bg.card"
-                      _hover={{
-                        shadow: '0 0 30px rgba(0,194,255,0.5)',
-                        transform: 'translateY(-4px)',
-                        borderColor: `${stat.color}.400`,
-                      }}
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      position="relative"
-                      overflow="visible"
-                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                      className="stat-card-neon"
-                      _before={{
-                        content: '""',
-                        position: 'absolute',
-                        top: '-2px',
-                        left: '-2px',
-                        right: '-2px',
-                        bottom: '-2px',
-                        background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                        backgroundSize: '300% 300%',
-                        borderRadius: '2xl',
-                        zIndex: -1,
-                        filter: 'blur(8px)',
-                        opacity: 0.6,
-                        animation: 'neon-glow 3s ease-in-out infinite',
-                      }}
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        width: '12px',
-                        height: '12px',
-                        background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                        borderRadius: 'full',
-                        boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                        zIndex: 10,
-                        animation: 'light-point-move 3s linear infinite',
-                      }}
-                    >
-                      <VStack spacing={3} position="relative" zIndex={1}>
-                        <Box
-                          p={3}
-                          borderRadius="xl"
-                          bg={`${stat.color}.500`}
-                          color="white"
-                          boxSize="60px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          boxShadow={`0 0 20px rgba(0,0,0,0.2)`}
-                        >
-                          <Icon as={stat.icon} boxSize={6} />
-                        </Box>
-                        <Text
-                          fontSize={{ base: '2xl', md: '3xl' }}
-                          fontWeight="bold"
-                          color={`${stat.color}.500`}
-                        >
-                          {stat.number}
-                        </Text>
-                        <Text
-                          color="text.secondary"
-                          fontSize={{ base: 'xs', md: 'sm' }}
-                          fontWeight="medium"
-                        >
-                          {stat.label}
-                        </Text>
-                      </VStack>
-                    </Box>
-                  </MotionBox>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </Box>
-
-          {/* Features Grid */}
-          <Box w="full">
-            <VStack spacing={{ base: 8, md: 12 }}>
-              <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 } as any}
-                textAlign="center"
-              >
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  mb={4}
-                  color="text.primary"
-                >
-                  Why Choose Speedy Van?
-                </Heading>
-                <Text
-                  color={textColor}
-                  maxW="2xl"
-                  mx="auto"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                >
-                  We provide comprehensive moving solutions tailored to your
-                  needs
-                </Text>
-                <HStack
-                  spacing={2}
-                  mt={2}
-                  justify="center"
-                  flexWrap="wrap"
-                  color={textColor}
-                >
-                  <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={3} py={1} fontSize="xs">
-                    Book now, pay later
-                  </Badge>
-                  <HStack spacing={2} flexWrap="wrap">
-                    <HStack
-                      spacing={1}
-                      px={2}
-                      py={1}
-                      borderRadius="full"
-                      bg={useColorModeValue('gray.100', 'whiteAlpha.200')}
-                      borderWidth="1px"
-                      borderColor={useColorModeValue('gray.200', 'whiteAlpha.300')}
-                    >
-                      <Icon as={SiKlarna} boxSize={4} />
-                      <Text fontSize="xs">Klarna</Text>
-                    </HStack>
-                    <HStack
-                      spacing={1}
-                      px={2}
-                      py={1}
-                      borderRadius="full"
-                      bg={useColorModeValue('gray.100', 'whiteAlpha.200')}
-                      borderWidth="1px"
-                      borderColor={useColorModeValue('gray.200', 'whiteAlpha.300')}
-                    >
-                      <Icon as={SiAfterpay} boxSize={4} />
-                      <Text fontSize="xs">Clearpay</Text>
-                    </HStack>
-                  </HStack>
-                  <Text fontSize="xs" color={textColor}>
-                    Appears at checkout when eligible.
-                  </Text>
+                    Start Booking
+                  </Button>
+                  <Button
+                    as="a"
+                    href="tel:01202129746"
+                    variant="outline"
+                    borderColor="border.neon"
+                    leftIcon={<FaPhone />}
+                    size="lg"
+                  >
+                    01202 129746
+                  </Button>
                 </HStack>
-              </MotionBox>
+              </VStack>
+            </GridItem>
 
-              <SimpleGrid
-                columns={{ base: 1, lg: 4 }}
-                spacing={{ base: 6, md: 8 }}
-                w="full"
-              >
-                {features.map((feature, index) => (
-                  <MotionBox
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.4 + index * 0.1 } as any}
-                    textAlign="center"
-                  >
-                    <Box
-                      p={{ base: 6, md: 8 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
-                      borderColor="#00C2FF"
-                      bg="bg.card"
-                      _hover={{
-                        shadow: '0 0 30px rgba(0,194,255,0.5)',
-                        transform: 'translateY(-6px)',
-                        borderColor: `${feature.color}.400`,
-                      }}
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                      position="relative"
-                      overflow="visible"
-                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                      className="stat-card-neon"
-                      _before={{
-                        content: '""',
-                        position: 'absolute',
-                        top: '-2px',
-                        left: '-2px',
-                        right: '-2px',
-                        bottom: '-2px',
-                        background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                        backgroundSize: '300% 300%',
-                        borderRadius: '2xl',
-                        zIndex: -1,
-                        filter: 'blur(8px)',
-                        opacity: 0.6,
-                        animation: 'neon-glow 3s ease-in-out infinite',
-                      }}
-                      _after={{
-                        content: '""',
-                        position: 'absolute',
-                        width: '12px',
-                        height: '12px',
-                        background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                        borderRadius: 'full',
-                        boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                        zIndex: 10,
-                        animation: 'light-point-move 3s linear infinite',
-                      }}
-                    >
-                      <VStack spacing={4} position="relative" zIndex={1}>
-                        <Box
-                          p={4}
-                          borderRadius="xl"
-                          bgGradient={feature.gradient}
-                          color="white"
-                          boxSize="80px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          boxShadow="0 8px 25px rgba(0,0,0,0.15)"
-                        >
-                          <Icon as={feature.icon} boxSize={8} />
-                        </Box>
-                        <Heading
-                          size={{ base: 'md', md: 'lg' }}
-                          mb={3}
-                          color="text.primary"
-                        >
-                          {feature.title}
-                        </Heading>
-                        <Text
-                          color={textColor}
-                          fontSize={{ base: 'sm', md: 'md' }}
-                          lineHeight="1.6"
-                        >
-                          {feature.description}
+            <GridItem>
+              <AppCard variantStyle="elevated" h="full">
+                <VStack align="start" spacing={4} p={{ base: 5, md: 6 }}>
+                  <Text color="text.tertiary" fontSize="sm" textTransform="uppercase" letterSpacing="0.08em">
+                    Why teams choose us
+                  </Text>
+                  <SimpleGrid columns={1} spacing={4} w="full">
+                    {valueCards.map((item) => (
+                      <Box key={item.title} p={4} bg="bg.surface" border="1px solid" borderColor="border.secondary" borderRadius="lg">
+                        <Text fontWeight="700" mb={1}>
+                          {item.title}
                         </Text>
-                      </VStack>
-                    </Box>
-                  </MotionBox>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </Box>
-
-          {/* Services Section */}
-          <Box w="full" bg="bg.surface" py={{ base: 12, md: 16 }} borderRadius="2xl">
-            <VStack spacing={{ base: 8, md: 12 }}>
-              <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.5 } as any}
-                textAlign="center"
-              >
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  mb={4}
-                  color="text.primary"
-                >
-                  Our Premium Services
-                </Heading>
-                <Text
-                  color={textColor}
-                  maxW="2xl"
-                  mx="auto"
-                  fontSize={{ base: 'sm', md: 'lg' }}
-                >
-                  Professional moving solutions for every need
-                </Text>
-              </MotionBox>
-
-              <SimpleGrid
-                columns={{ base: 1, lg: 3 }}
-                spacing={{ base: 6, md: 8 }}
-                w="full"
-              >
-                {services.map((service, index) => (
-                  <MotionBox
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.6 + index * 0.1 } as any}
-                  >
-                    <Card
-                      p={{ base: 6, md: 8 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
-                      borderColor="#00C2FF"
-                      bg="dark.800"
-                      _hover={{
-                        shadow: '0 0 30px rgba(0,194,255,0.5)',
-                        transform: 'translateY(-8px)',
-                        borderColor: 'neon.400',
-                      }}
-                      transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                      position="relative"
-                      overflow="visible"
-                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                      cursor="pointer"
-                      className="stat-card-neon"
-                      sx={{
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: '-2px',
-                          left: '-2px',
-                          right: '-2px',
-                          bottom: '-2px',
-                          background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                          backgroundSize: '300% 300%',
-                          borderRadius: '2xl',
-                          zIndex: -1,
-                          filter: 'blur(8px)',
-                          opacity: 0.6,
-                          animation: 'neon-glow 3s ease-in-out infinite',
-                        },
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          width: '12px',
-                          height: '12px',
-                          background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                          borderRadius: 'full',
-                          boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                          zIndex: 10,
-                          animation: 'light-point-move 3s linear infinite',
-                        },
-                      }}
-                    >
-
-                      <VStack
-                        spacing={{ base: 4, md: 6 }}
-                        align="center"
-                        textAlign="center"
-                      >
-                        <Box
-                          p={{ base: 3, md: 4 }}
-                          borderRadius="full"
-                          bg="neon.500"
-                          color="white"
-                          fontSize={{ base: '2xl', md: '3xl' }}
-                          mb={2}
-                          boxShadow="0 8px 25px rgba(0,194,255,0.3)"
-                        >
-                          {service.emoji}
-                        </Box>
-                        <Icon
-                          as={service.icon}
-                          boxSize={{ base: 8, md: 10 }}
-                          color="neon.400"
-                        />
-                        <Heading
-                          size={{ base: 'md', md: 'lg' }}
-                          color="white"
-                          mb={3}
-                        >
-                          {service.title}
-                        </Heading>
-                        <Text
-                          color="gray.300"
-                          fontSize={{ base: 'sm', md: 'md' }}
-                          lineHeight="1.6"
-                          mb={4}
-                        >
-                          {service.description}
+                        <Text color="text.secondary" fontSize="sm">
+                          {item.text}
                         </Text>
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                </VStack>
+              </AppCard>
+            </GridItem>
+          </Grid>
 
-                        {/* Service Features */}
-                        <VStack spacing={2} align="start" w="full">
-                          {service.features.map((feature, idx) => (
-                            <HStack key={idx} spacing={2}>
-                              <Icon
-                                as={FaCheckCircle}
-                                color="green.400"
-                                boxSize={4}
-                              />
-                              <Text color="gray.400" fontSize="xs">
-                                {feature}
-                              </Text>
-                            </HStack>
-                          ))}
-                        </VStack>
-                      </VStack>
-                    </Card>
-                  </MotionBox>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </Box>
+          <VStack align="stretch" spacing={6} mt={{ base: 10, md: 14 }}>
+            <HStack justify="space-between" align="end" flexWrap="wrap">
+              <Heading size="lg">Core Services</Heading>
+              <Link as={NextLink} href="/services" color="interactive.secondary">
+                View all services
+              </Link>
+            </HStack>
 
-          {/* Customer Trust (Testimonials) */}
-          <Box w="full">
-            <VStack spacing={{ base: 8, md: 12 }}>
-              <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.7 } as any}
-                textAlign="center"
-              >
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  mb={4}
-                  color="text.primary"
-                >
-                  Trusted by Thousands
-                </Heading>
-                <Text
-                  color={textColor}
-                  maxW="2xl"
-                  mx="auto"
-                  fontSize={{ base: 'sm', md: 'lg' }}
-                >
-                  Real customers, real experiences
-                </Text>
-              </MotionBox>
+            <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={4}>
+              {serviceCards.map((item) => (
+                <AppCard key={item.title} variantStyle="interactive">
+                  <VStack align="start" spacing={2} p={5}>
+                    <Text fontWeight="700">{item.title}</Text>
+                    <Text color="text.secondary" fontSize="sm">
+                      Trusted service, professional handling, and on-time delivery.
+                    </Text>
+                    <Link as={NextLink} href={item.href} color="interactive.secondary" fontSize="sm">
+                      Learn more
+                    </Link>
+                  </VStack>
+                </AppCard>
+              ))}
+            </SimpleGrid>
+          </VStack>
+        </Container>
+      </Box>
 
-              <SimpleGrid
-                columns={{ base: 1, lg: 3 }}
-                spacing={{ base: 6, md: 8 }}
-                w="full"
-              >
-                {testimonials.map((testimonial, index) => (
-                  <MotionBox
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.8 + index * 0.1 } as any}
-                  >
-                    <Card
-                      p={{ base: 6, md: 8 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
-                      borderColor="#00C2FF"
-                      bg="dark.800"
-                      _hover={{
-                        shadow: '0 0 30px rgba(0,194,255,0.5)',
-                        transform: 'translateY(-4px)',
-                      }}
-                      transition="all 0.3s ease"
-                      position="relative"
-                      overflow="visible"
-                      boxShadow="0 0 20px rgba(0,194,255,0.3)"
-                      className="stat-card-neon"
-                      sx={{
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: '-2px',
-                          left: '-2px',
-                          right: '-2px',
-                          bottom: '-2px',
-                          background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                          backgroundSize: '300% 300%',
-                          borderRadius: '2xl',
-                          zIndex: -1,
-                          filter: 'blur(8px)',
-                          opacity: 0.6,
-                          animation: 'neon-glow 3s ease-in-out infinite',
-                        },
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          width: '12px',
-                          height: '12px',
-                          background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                          borderRadius: 'full',
-                          boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                          zIndex: 10,
-                          animation: 'light-point-move 3s linear infinite',
-                        },
-                      }}
-                    >
-
-                      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-                        {/* Service Badge */}
-                        <Badge
-                          colorScheme="neon"
-                          variant="outline"
-                          size="sm"
-                          alignSelf="start"
-                          px={3}
-                          py={1}
-                          borderRadius="full"
-                          fontSize="xs"
-                          borderColor="neon.400"
-                        >
-                          {testimonial.service}
-                        </Badge>
-
-                        <HStack spacing={3} mb={3}>
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <Icon
-                              key={i}
-                              as={FaStar}
-                              color="neon.400"
-                              boxSize={4}
-                            />
-                          ))}
-                        </HStack>
-
-                        <Text
-                          color="gray.200"
-                          fontSize={{ base: 'sm', md: 'md' }}
-                          lineHeight="1.6"
-                          fontStyle="italic"
-                          mb={4}
-                        >
-                          "{testimonial.quote}"
-                        </Text>
-
-                        <HStack spacing={4}>
-                          <Avatar
-                            size={{ base: 'md', md: 'lg' }}
-                            name={testimonial.name}
-                            bg="neon.500"
-                            src={testimonial.avatar}
-                          />
-                          <VStack spacing={1} align="start">
-                            <Text
-                              fontWeight="bold"
-                              color="white"
-                              fontSize={{ base: 'sm', md: 'md' }}
-                            >
-                              {testimonial.name}
-                            </Text>
-                            <HStack spacing={2}>
-                              <Icon
-                                as={FaMapMarkerAlt}
-                                color="neon.400"
-                                boxSize={3}
-                              />
-                              <Text
-                                color="neon.400"
-                                fontSize={{ base: 'xs', md: 'sm' }}
-                              >
-                                {testimonial.city}
-                              </Text>
-                            </HStack>
-                          </VStack>
-                        </HStack>
-                      </VStack>
-                    </Card>
-                  </MotionBox>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </Box>
-
-          {/* Contact Section */}
-          <Box w="full" py={{ base: 12, md: 16 }}>
-            <VStack spacing={{ base: 8, md: 12 }}>
-              <MotionBox
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.9 } as any}
-                textAlign="center"
-              >
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  mb={4}
-                  color="text.primary"
-                >
-                  Need Help? Get in Touch
-                </Heading>
-                <Text
-                  color={textColor}
-                  maxW="2xl"
-                  mx="auto"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                >
-                  Our team is here to help with any questions or special
-                  requests
-                </Text>
-              </MotionBox>
-
-              <SimpleGrid
-                columns={{ base: 1, lg: 3 }}
-                spacing={{ base: 6, md: 8 }}
-                w="full"
-              >
-                {[
-                  {
-                    icon: FaPhone,
-                    title: 'Call Us',
-                    contact: '01202 129746',
-                    action: 'Call Now',
-                  },
-                  {
-                    icon: FaEnvelope,
-                    title: 'Email Us',
-                    contact: 'support@speedy-van.co.uk',
-                    action: 'Send Email',
-                  },
-                  {
-                    icon: FaMapMarkerAlt,
-                    title: 'Visit Us',
-                    contact: 'London, UK',
-                    action: 'Get Directions',
-                  },
-                ].map((contact, index) => (
-                  <MotionBox
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 1.0 + index * 0.1 } as any}
-                  >
-                    <Box
-                      p={{ base: 6, md: 8 }}
-                      borderRadius="2xl"
-                      borderWidth="2px"
-                      borderColor="border.primary"
-                      bg="bg.card"
-                      _hover={{
-                        shadow: 'xl',
-                        transform: 'translateY(-4px)',
-                        borderColor: 'neon.400',
-                      }}
-                      transition="all 0.3s ease"
-                      textAlign="center"
-                    >
-                      <VStack spacing={4}>
-                        <Box
-                          p={4}
-                          borderRadius="xl"
-                          bg="neon.500"
-                          color="white"
-                          boxSize="60px"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          mx="auto"
-                        >
-                          <Icon as={contact.icon} boxSize={6} />
-                        </Box>
-                        <Heading size="md" color="text.primary">
-                          {contact.title}
-                        </Heading>
-                        <Text color="text.secondary" fontSize="md">
-                          {contact.contact}
-                        </Text>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          colorScheme="neon"
-                          rightIcon={<FaArrowRight />}
-                          _hover={{
-                            bg: 'neon.500',
-                            color: 'white',
-                          }}
-                        >
-                          {contact.action}
-                        </Button>
-                      </VStack>
-                    </Box>
-                  </MotionBox>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </Box>
-
-          {/* Final Call-to-Action */}
-          <MotionBox
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 1.1 } as any}
-            w="full"
-            textAlign="center"
-            py={{ base: 12, md: 20 }}
-            px={{ base: 6, md: 12 }}
-            borderRadius="3xl"
-            borderWidth="2px"
-            borderColor="#00C2FF"
-            bg="bg.card"
-            position="relative"
-            overflow="visible"
-            boxShadow="0 0 20px rgba(0,194,255,0.3)"
-            className="stat-card-neon"
-            sx={{
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: '-2px',
-                left: '-2px',
-                right: '-2px',
-                bottom: '-2px',
-                background: 'linear-gradient(90deg, #00C2FF, #00D18F, #00C2FF, #00D18F)',
-                backgroundSize: '300% 300%',
-                borderRadius: '3xl',
-                zIndex: -1,
-                filter: 'blur(8px)',
-                opacity: 0.6,
-                animation: 'neon-glow 3s ease-in-out infinite',
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                width: '12px',
-                height: '12px',
-                background: 'radial-gradient(circle, white 0%, rgba(255,255,255,0.8) 30%, transparent 70%)',
-                borderRadius: 'full',
-                boxShadow: '0 0 15px rgba(255,255,255,0.9), 0 0 30px rgba(0,194,255,0.6)',
-                zIndex: 10,
-                animation: 'light-point-move 3s linear infinite',
-              },
-            }}
-          >
-
-            <VStack
-              spacing={{ base: 8, md: 10 }}
-              position="relative"
-              zIndex={1}
-            >
-              <Heading size={{ base: 'xl', md: '2xl' }} color="text.primary" mb={4}>
-                Ready to Move with Confidence?
-              </Heading>
-              <Text
-                color="text.secondary"
-                fontSize={{ base: 'md', md: 'xl' }}
-                maxW="3xl"
-                mx="auto"
-                lineHeight="1.6"
-              >
-                Join thousands of satisfied customers who trust Speedy Van for
-                their moving needs. Get your instant quote today and experience
-                the difference.
-              </Text>
-              <HStack spacing={4} flexWrap="wrap" justify="center">
-                <Button
-                  size={{ base: 'lg', md: 'xl' }}
-                  variant="primary"
-                  bg="linear-gradient(135deg, #00C2FF, #00D18F)"
-                  color="white"
-                  _hover={{
-                    bg: 'linear-gradient(135deg, #00D18F, #00C2FF)',
-                    shadow: 'neon.glow',
-                    transform: 'translateY(-2px)',
-                  }}
-                  _active={{
-                    bg: 'linear-gradient(135deg, #00B8E6, #00C2FF)',
-                  }}
-                  px={{ base: 8, md: 10 }}
-                  py={{ base: 6, md: 8 }}
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  fontWeight="bold"
-                  borderRadius="xl"
-                  transition="all 0.3s ease"
-                  rightIcon={<FaArrowRight />}
-                  onClick={() => (window.location.href = '/booking-luxury')}
-                >
-                  Get Your Quote
-                </Button>
-                <Button
-                  size={{ base: 'lg', md: 'xl' }}
-                  variant="outline"
-                  borderColor="neon.400"
-                  color="neon.300"
-                  _hover={{
-                    bg: 'neon.400',
-                    color: 'black',
-                    transform: 'translateY(-2px)',
-                  }}
-                  px={{ base: 8, md: 10 }}
-                  py={{ base: 6, md: 8 }}
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  fontWeight="semibold"
-                  borderRadius="xl"
-                  transition="all 0.3s ease"
-                  leftIcon={<FaTruck />}
-                  onClick={() => (window.location.href = '/track')}
-                >
-                  Track Move
-                </Button>
-              </HStack>
-            </VStack>
-          </MotionBox>
-        </VStack>
-      </Container>
-
-      {/* Home Footer */}
-      <HomeFooter />
-
-      {/* Trustpilot Widget Section */}
       <TrustpilotWidget />
+      <HomeFooter />
+      <SpeedyAIBotWrapper />
+      <StickyCTA />
     </Box>
   );
 }
+

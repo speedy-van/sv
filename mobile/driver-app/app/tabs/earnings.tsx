@@ -246,7 +246,7 @@ export default function EarningsScreen() {
               <View style={styles.totalCardContent}>
                 <View style={styles.totalCardHeader}>
                   <View style={styles.totalIconContainer}>
-                    <Ionicons name="cash" size={32} color="#FFFFFF" />
+                    <Ionicons name="cash" size={32} color="#F5F8FF" />
                   </View>
                   <Text style={styles.totalLabel}>Total Earnings</Text>
                 </View>
@@ -255,13 +255,13 @@ export default function EarningsScreen() {
                 </Text>
                 <View style={styles.totalCardFooter}>
                   <View style={styles.totalFooterItem}>
-                    <Ionicons name="checkmark-circle" size={14} color="#FFFFFF" />
+                    <Ionicons name="checkmark-circle" size={14} color="#F5F8FF" />
                     <Text style={styles.totalSubtext}>
                       {earnings?.completedJobs || 0} completed jobs
                     </Text>
                   </View>
                   <View style={styles.totalFooterItem}>
-                    <Ionicons name="trending-up" size={14} color="#FFFFFF" />
+                    <Ionicons name="trending-up" size={14} color="#F5F8FF" />
                     <Text style={styles.totalSubtext}>
                       {formatCurrency(earnings?.averagePerJob || 0)} avg/job
                     </Text>
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.8,
     fontWeight: '500',
   },
@@ -449,12 +449,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '500',
     opacity: 0.8,
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   headerGradient: {
     position: 'absolute',
@@ -561,11 +561,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#F5F8FF',
   },
   totalLabel: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.95,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 56,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -1,
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 2 },
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   totalSubtext: {
     fontSize: 12,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     opacity: 0.95,
     fontWeight: '600',
   },
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     letterSpacing: -0.3,
   },
   statsGrid: {
@@ -664,11 +664,11 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5F8FF',
   },
   infoText: {
     fontSize: 13,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     lineHeight: 20,
     fontWeight: '500',
     opacity: 0.9,
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
   },
   infoFooterText: {
     fontSize: 11,
-    color: '#FFFFFF',
+    color: '#F5F8FF',
     fontWeight: '600',
     opacity: 0.9,
   },

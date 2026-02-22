@@ -81,9 +81,9 @@ export function OrderTemplatesManager() {
   const [templateData, setTemplateData] = useState<any>({});
 
   const toast = useToast();
-  const cardBg = useColorModeValue('#111111', '#111111');
-  const textColor = useColorModeValue('#FFFFFF', '#FFFFFF');
-  const borderColor = useColorModeValue('#333333', '#333333');
+  const cardBg = useColorModeValue('#121A2B', '#121A2B');
+  const textColor = useColorModeValue('#F5F8FF', '#F5F8FF');
+  const borderColor = useColorModeValue('#2A3A5E', '#2A3A5E');
   const secondaryTextColor = useColorModeValue('#9ca3af', '#9ca3af');
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export function OrderTemplatesManager() {
           onClick={onCreateModalOpen}
           size="sm"
           bg="#2563eb"
-          color="#FFFFFF"
+          color="#F5F8FF"
           _hover={{ bg: '#1d4ed8' }}
         >
           Create Template
@@ -254,7 +254,7 @@ export function OrderTemplatesManager() {
         <Alert status="info" bg="rgba(37, 99, 235, 0.1)" borderColor="#2563eb" borderWidth={1}>
           <AlertIcon color="#2563eb" />
           <VStack align="start" spacing={1} flex={1}>
-            <Text fontSize="sm" fontWeight="bold" color="#FFFFFF">
+            <Text fontSize="sm" fontWeight="bold" color="#F5F8FF">
               No templates yet
             </Text>
             <Text fontSize="xs" color={secondaryTextColor}>
@@ -292,7 +292,7 @@ export function OrderTemplatesManager() {
                         onClick={() => handleEditClick(template)}
                         bg={cardBg}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Edit
                       </MenuItem>
@@ -310,7 +310,7 @@ export function OrderTemplatesManager() {
                         }}
                         bg={cardBg}
                         color={textColor}
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Duplicate
                       </MenuItem>
@@ -319,7 +319,7 @@ export function OrderTemplatesManager() {
                         onClick={() => handleDeleteTemplate(template.id)}
                         bg={cardBg}
                         color="#ef4444"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Delete
                       </MenuItem>
@@ -338,7 +338,7 @@ export function OrderTemplatesManager() {
                     onClick={() => handleUseTemplate(template)}
                     size="sm"
                     bg="#10b981"
-                    color="#FFFFFF"
+                    color="#F5F8FF"
                     _hover={{ bg: '#059669' }}
                   >
                     Use Template
@@ -366,7 +366,7 @@ export function OrderTemplatesManager() {
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder="e.g., Standard Delivery"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -379,7 +379,7 @@ export function OrderTemplatesManager() {
                   value={templateDescription}
                   onChange={(e) => setTemplateDescription(e.target.value)}
                   placeholder="Describe this template..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                   rows={3}
@@ -397,7 +397,7 @@ export function OrderTemplatesManager() {
             <Button variant="ghost" onClick={onCreateModalClose} mr={3} color={textColor}>
               Cancel
             </Button>
-            <Button bg="#2563eb" color="#FFFFFF" onClick={handleCreateTemplate} _hover={{ bg: '#1d4ed8' }}>
+            <Button bg="#2563eb" color="#F5F8FF" onClick={handleCreateTemplate} _hover={{ bg: '#1d4ed8' }}>
               Create Template
             </Button>
           </ModalFooter>
@@ -420,7 +420,7 @@ export function OrderTemplatesManager() {
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder="e.g., Standard Delivery"
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                 />
@@ -433,7 +433,7 @@ export function OrderTemplatesManager() {
                   value={templateDescription}
                   onChange={(e) => setTemplateDescription(e.target.value)}
                   placeholder="Describe this template..."
-                  bg="#1a1a1a"
+                  bg="#18233A"
                   borderColor={borderColor}
                   color={textColor}
                   rows={3}
@@ -445,7 +445,7 @@ export function OrderTemplatesManager() {
             <Button variant="ghost" onClick={onEditModalClose} mr={3} color={textColor}>
               Cancel
             </Button>
-            <Button bg="#2563eb" color="#FFFFFF" onClick={handleEditTemplate} _hover={{ bg: '#1d4ed8' }}>
+            <Button bg="#2563eb" color="#F5F8FF" onClick={handleEditTemplate} _hover={{ bg: '#1d4ed8' }}>
               Save Changes
             </Button>
           </ModalFooter>

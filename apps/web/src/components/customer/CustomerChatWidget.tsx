@@ -34,52 +34,52 @@ if (typeof document !== 'undefined') {
       .customer-chat-input fieldset,
       input.customer-chat-input,
       [class*="chakra-input"].customer-chat-input {
-        color: #000000 !important;
-        background: white !important;
-        background-color: white !important;
-        -webkit-text-fill-color: #000000 !important;
-        -webkit-text-stroke-color: #000000 !important;
-        -webkit-text-stroke-width: 0px !important;
-        opacity: 1 !important;
-        font-size: 16px !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
+        color: #0B1020;
+        background: white;
+        background-color: white;
+        -webkit-text-fill-color: #0B1020;
+        -webkit-text-stroke-color: #0B1020;
+        -webkit-text-stroke-width: 0px;
+        opacity: 1;
+        font-size: 16px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
       }
       .customer-chat-input::placeholder,
       .customer-chat-input input::placeholder {
-        color: #9CA3AF !important;
-        -webkit-text-fill-color: #9CA3AF !important;
-        opacity: 1 !important;
+        color: #9CA3AF;
+        -webkit-text-fill-color: #9CA3AF;
+        opacity: 1;
       }
       .customer-chat-input:focus,
       .customer-chat-input:focus-within,
       .customer-chat-input:hover,
       .customer-chat-input:active,
       .customer-chat-input:focus-visible {
-        color: #000000 !important;
-        background: white !important;
-        background-color: white !important;
-        -webkit-text-fill-color: #000000 !important;
-        -webkit-text-stroke-color: #000000 !important;
-        opacity: 1 !important;
+        color: #0B1020;
+        background: white;
+        background-color: white;
+        -webkit-text-fill-color: #0B1020;
+        -webkit-text-stroke-color: #0B1020;
+        opacity: 1;
       }
       .customer-chat-input:disabled,
       .customer-chat-input[disabled] {
-        color: #000000 !important;
-        background: white !important;
-        background-color: white !important;
-        -webkit-text-fill-color: #000000 !important;
-        opacity: 1 !important;
-        cursor: text !important;
+        color: #0B1020;
+        background: white;
+        background-color: white;
+        -webkit-text-fill-color: #0B1020;
+        opacity: 1;
+        cursor: text;
       }
       /* iOS Safari specific fixes */
       @supports (-webkit-touch-callout: none) {
         .customer-chat-input {
-          color: #000000 !important;
-          -webkit-text-fill-color: #000000 !important;
-          background-color: white !important;
-          font-size: 16px !important;
+          color: #0B1020;
+          -webkit-text-fill-color: #0B1020;
+          background-color: white;
+          font-size: 16px;
         }
       }
       /* Autofill fixes */
@@ -87,11 +87,11 @@ if (typeof document !== 'undefined') {
       .customer-chat-input:-webkit-autofill:hover,
       .customer-chat-input:-webkit-autofill:focus,
       .customer-chat-input:-webkit-autofill:active {
-        -webkit-text-fill-color: #000000 !important;
-        -webkit-box-shadow: 0 0 0px 1000px white inset !important;
-        box-shadow: 0 0 0px 1000px white inset !important;
-        background-color: white !important;
-        color: #000000 !important;
+        -webkit-text-fill-color: #0B1020;
+        -webkit-box-shadow: 0 0 0px 1000px white inset;
+        box-shadow: 0 0 0px 1000px white inset;
+        background-color: white;
+        color: #0B1020;
         transition: background-color 5000s ease-in-out 0s;
       }
     `;
@@ -536,27 +536,27 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       whiteSpace="nowrap"
                       overflow="hidden"
                       textOverflow="ellipsis"
-                      color="#000000"
+                      color="#0B1020"
                       sx={{
-                        color: '#000000 !important',
-                        WebkitTextFillColor: '#000000 !important',
+                        color: '#0B1020',
+                        WebkitTextFillColor: '#0B1020',
                         textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       }}
                     >
                       Chat Support
                     </Text>
                     <Flex align="center" gap={1} mt={{ base: 0.5, md: 0.5 }}>
-                      <Box w={{ base: '6px', md: '6px' }} h={{ base: '6px', md: '6px' }} bg="#000000" borderRadius="full" flexShrink={0} />
+                      <Box w={{ base: '6px', md: '6px' }} h={{ base: '6px', md: '6px' }} bg="#0B1020" borderRadius="full" flexShrink={0} />
                       <Text 
                         fontSize={{ base: '11px', md: 'xs' }}
                         fontWeight="600"
                         whiteSpace="nowrap"
                         overflow="hidden"
                         textOverflow="ellipsis"
-                        color="#000000"
+                        color="#0B1020"
                         sx={{
-                          color: '#000000 !important',
-                          WebkitTextFillColor: '#000000 !important',
+                          color: '#0B1020',
+                          WebkitTextFillColor: '#0B1020',
                           textShadow: '0 0 1px rgba(0,0,0,0.5)',
                         }}
                       >
@@ -620,7 +620,7 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       onChange={(e) => setFormName(e.target.value)}
                       size="lg"
                       bg="white"
-                      color="#000000"
+                      color="#0B1020"
                       border="2px solid"
                       borderColor="gray.200"
                       borderRadius="md"
@@ -632,22 +632,22 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                         borderColor: 'blue.500',
                         boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
                         bg: 'white',
-                        color: '#000000',
+                        color: '#0B1020',
                       }}
                       sx={{
-                        WebkitTextFillColor: '#000000 !important',
-                        WebkitTextStrokeColor: '#000000',
-                        caretColor: '#000000',
-                        opacity: '1 !important',
+                        WebkitTextFillColor: '#0B1020',
+                        WebkitTextStrokeColor: '#0B1020',
+                        caretColor: '#0B1020',
+                        opacity: '1',
                         fontSize: '16px',
                         '&:-webkit-autofill': {
-                          WebkitTextFillColor: '#000000 !important',
-                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
-                          backgroundColor: 'white !important',
+                          WebkitTextFillColor: '#0B1020',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset',
+                          backgroundColor: 'white',
                         },
                         '&:-webkit-autofill:focus': {
-                          WebkitTextFillColor: '#000000 !important',
-                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                          WebkitTextFillColor: '#0B1020',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset',
                         },
                       }}
                     />
@@ -665,7 +665,7 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       onChange={(e) => setFormEmail(e.target.value)}
                       size="lg"
                       bg="white"
-                      color="#000000"
+                      color="#0B1020"
                       border="2px solid"
                       borderColor="gray.200"
                       borderRadius="md"
@@ -677,22 +677,22 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                         borderColor: 'blue.500',
                         boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.1)',
                         bg: 'white',
-                        color: '#000000',
+                        color: '#0B1020',
                       }}
                       sx={{
-                        WebkitTextFillColor: '#000000 !important',
-                        WebkitTextStrokeColor: '#000000',
-                        caretColor: '#000000',
-                        opacity: '1 !important',
+                        WebkitTextFillColor: '#0B1020',
+                        WebkitTextStrokeColor: '#0B1020',
+                        caretColor: '#0B1020',
+                        opacity: '1',
                         fontSize: '16px',
                         '&:-webkit-autofill': {
-                          WebkitTextFillColor: '#000000 !important',
-                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
-                          backgroundColor: 'white !important',
+                          WebkitTextFillColor: '#0B1020',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset',
+                          backgroundColor: 'white',
                         },
                         '&:-webkit-autofill:focus': {
-                          WebkitTextFillColor: '#000000 !important',
-                          WebkitBoxShadow: '0 0 0px 1000px white inset !important',
+                          WebkitTextFillColor: '#0B1020',
+                          WebkitBoxShadow: '0 0 0px 1000px white inset',
                         },
                       }}
                     />
@@ -787,27 +787,27 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
                       whiteSpace="nowrap"
                       overflow="hidden"
                       textOverflow="ellipsis"
-                      color="#000000"
+                      color="#0B1020"
                       sx={{
-                        color: '#000000 !important',
-                        WebkitTextFillColor: '#000000 !important',
+                        color: '#0B1020',
+                        WebkitTextFillColor: '#0B1020',
                         textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       }}
                     >
                       Live Chat Support
                     </Text>
                     <Flex align="center" gap={1} mt={{ base: 0.5, md: 0.5 }}>
-                      <Box w={{ base: '6px', md: '6px' }} h={{ base: '6px', md: '6px' }} bg="#000000" borderRadius="full" flexShrink={0} />
+                      <Box w={{ base: '6px', md: '6px' }} h={{ base: '6px', md: '6px' }} bg="#0B1020" borderRadius="full" flexShrink={0} />
                       <Text 
                         fontSize={{ base: '11px', md: 'xs' }}
                         fontWeight="600"
                         whiteSpace="nowrap"
                         overflow="hidden"
                         textOverflow="ellipsis"
-                        color="#000000"
+                        color="#0B1020"
                         sx={{
-                          color: '#000000 !important',
-                          WebkitTextFillColor: '#000000 !important',
+                          color: '#0B1020',
+                          WebkitTextFillColor: '#0B1020',
                           textShadow: '0 0 1px rgba(0,0,0,0.5)',
                         }}
                       >
@@ -959,7 +959,7 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
               w="full"
               borderRadius="full"
               bg="white"
-              color="#000000"
+              color="#0B1020"
               border="1px solid"
               borderColor="gray.300"
               fontWeight="500"
@@ -972,90 +972,86 @@ export default function CustomerChatWidget({ isOpen, onClose }: CustomerChatWidg
               _hover={{
                 borderColor: 'gray.400',
                 bg: 'white',
-                color: '#000000',
+                color: '#0B1020',
               }}
               _focus={{
                 bg: 'white',
                 borderColor: 'blue.500',
                 boxShadow: '0 0 0 1px #2563EB',
-                color: '#000000',
+                color: '#0B1020',
               }}
               _active={{
                 bg: 'white',
-                color: '#000000',
+                color: '#0B1020',
               }}
               _disabled={{
                 opacity: 1,
-                color: '#000000',
+                color: '#0B1020',
                 bg: 'white',
                 cursor: 'text',
               }}
               sx={{
-                background: 'white !important',
-                backgroundColor: 'white !important',
-                color: '#000000 !important',
-                fontWeight: '500 !important',
-                fontSize: '14px !important',
-                WebkitTextFillColor: '#000000 !important',
-                WebkitTextStrokeColor: '#000000 !important',
-                WebkitTextStrokeWidth: '0px !important',
-                opacity: '1 !important',
+                background: 'white',
+                backgroundColor: 'white',
+                color: '#0B1020',
+                fontWeight: '500',
+                fontSize: '14px',
+                WebkitTextFillColor: '#0B1020',
+                WebkitTextStrokeColor: '#0B1020',
+                WebkitTextStrokeWidth: '0px',
+                opacity: '1',
                 position: 'relative',
                 zIndex: 10,
                 pointerEvents: 'auto',
-                borderColor: 'gray.300 !important',
+                borderColor: 'gray.300',
                 '& fieldset': {
-                  borderColor: 'gray.300 !important',
+                  borderColor: 'gray.300',
                 },
                 '&:disabled': {
-                  color: '#000000 !important',
-                  WebkitTextFillColor: '#000000 !important',
-                  WebkitTextStrokeColor: '#000000 !important',
-                  WebkitTextStrokeWidth: '0px !important',
-                  opacity: '1 !important',
-                  bg: 'white !important',
-                  backgroundColor: 'white !important',
-                  cursor: 'text !important',
+                  color: '#0B1020',
+                  WebkitTextFillColor: '#0B1020',
+                  WebkitTextStrokeColor: '#0B1020',
+                  WebkitTextStrokeWidth: '0px',
+                  opacity: '1',
+                  bg: 'white',
+                  backgroundColor: 'white',
+                  cursor: 'text',
                 },
                 '&::before, &::after': {
-                  display: 'none !important',
+                  display: 'none',
                   content: '""',
                 },
                 '&::placeholder': {
-                  color: 'gray.400 !important',
-                  opacity: '1 !important',
-                  WebkitTextFillColor: 'gray.400 !important',
+                  color: 'gray.400',
+                  opacity: '1',
+                  WebkitTextFillColor: 'gray.400',
                 },
                 '&::selection': {
-                  backgroundColor: '#2563EB !important',
-                  color: 'white !important',
+                  backgroundColor: '#2563EB',
+                  color: 'white',
                 },
                 '&::-moz-selection': {
-                  backgroundColor: '#2563EB !important',
-                  color: 'white !important',
+                  backgroundColor: '#2563EB',
+                  color: 'white',
                 },
                 '& input': {
-                  color: '#000000 !important',
-                  WebkitTextFillColor: '#000000 !important',
-                  WebkitTextStrokeColor: '#000000 !important',
-                  WebkitTextStrokeWidth: '0px !important',
+                  color: '#0B1020',
+                  WebkitTextFillColor: '#0B1020',
+                  WebkitTextStrokeColor: '#0B1020',
+                  WebkitTextStrokeWidth: '0px',
                 },
                 '& input::placeholder': {
-                  color: 'gray.400 !important',
-                  WebkitTextFillColor: 'gray.400 !important',
+                  color: 'gray.400',
+                  WebkitTextFillColor: 'gray.400',
                 },
                 '&:focus, &:hover, &:active, &:focus-visible, &:focus-within': {
-                  color: '#000000 !important',
-                  WebkitTextFillColor: '#000000 !important',
-                  WebkitTextStrokeColor: '#000000 !important',
-                  WebkitTextStrokeWidth: '0px !important',
-                  opacity: '1 !important',
-                  bg: 'white !important',
-                  backgroundColor: 'white !important',
-                },
-                '&[data-chakra-input]': {
-                  color: '#000000 !important',
-                  WebkitTextFillColor: '#000000 !important',
+                  color: '#0B1020',
+                  WebkitTextFillColor: '#0B1020',
+                  WebkitTextStrokeColor: '#0B1020',
+                  WebkitTextStrokeWidth: '0px',
+                  opacity: '1',
+                  bg: 'white',
+                  backgroundColor: 'white',
                 }
               }}
             />

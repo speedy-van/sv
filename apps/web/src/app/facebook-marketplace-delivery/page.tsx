@@ -39,7 +39,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
 import Header from '@/components/site/Header';
-import MobileHeader from '@/components/mobile/MobileHeader';
 
 const LiveBookingCounter = dynamic(() => import('@/components/LiveBookingCounter'), {
   ssr: false,
@@ -77,7 +76,6 @@ export default function FacebookMarketplaceDeliveryPage() {
   return (
     <>
       <Header />
-      <MobileHeader />
       <MarketplaceServiceSchema
         serviceName="Facebook Marketplace Pickup & Delivery"
         serviceDescription="Professional Facebook Marketplace delivery service. We collect furniture from private sellers and deliver to your door."
@@ -163,7 +161,7 @@ export default function FacebookMarketplaceDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"
@@ -534,7 +532,7 @@ export default function FacebookMarketplaceDeliveryPage() {
               </Button>
               <Button
                 as="a"
-                href="tel:+441202129746"
+                href="tel:01202129746"
                 size="lg"
                 variant="outline"
                 color="white"

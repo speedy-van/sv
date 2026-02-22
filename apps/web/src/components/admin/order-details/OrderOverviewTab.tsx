@@ -333,7 +333,7 @@ export function OrderOverviewTab({
               onClick={onEdit}
               borderColor="#2563eb"
               color="#2563eb"
-              _hover={{ bg: '#1a1a1a', borderColor: '#3b82f6' }}
+              _hover={{ bg: '#18233A', borderColor: '#3b82f6' }}
             >
               Edit
             </Button>
@@ -453,7 +453,7 @@ export function OrderOverviewTab({
                         loadingText="Calculating..."
                         borderColor="#2563eb"
                         color="#2563eb"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Recalculate Price
                       </Button>
@@ -612,7 +612,7 @@ export function OrderOverviewTab({
                         loadingText="Calculating..."
                         borderColor="#2563eb"
                         color="#2563eb"
-                        _hover={{ bg: '#1a1a1a' }}
+                        _hover={{ bg: '#18233A' }}
                       >
                         Recalculate Price
                       </Button>

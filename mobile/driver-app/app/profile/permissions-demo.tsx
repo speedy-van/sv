@@ -192,7 +192,7 @@ export default function PermissionsDemoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000000" />
+          <Ionicons name="arrow-back" size={24} color="#0B1020" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Permissions Demo</Text>
         <View style={{ width: 40 }} />
@@ -272,7 +272,7 @@ export default function PermissionsDemoScreen() {
               • (Would show popup in production)
             </Text>
             <TouchableOpacity style={styles.demoButton} onPress={handleTestJobAlert}>
-              <Ionicons name="flash" size={20} color="#000000" />
+              <Ionicons name="flash" size={20} color="#0B1020" />
               <Text style={styles.demoButtonText}>Trigger Job Alert</Text>
             </TouchableOpacity>
           </View>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typography.h3,
-    color: '#000000',
+    color: '#0B1020',
   },
   content: {
     flex: 1,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     ...typography.caption,
-    color: '#000000',
+    color: '#0B1020',
     flex: 1,
     fontWeight: '600',
     lineHeight: 20,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     ...typography.caption,
-    color: '#000000',
+    color: '#0B1020',
     flex: 1,
   },
   testAccountCard: {
@@ -424,19 +424,19 @@ const styles = StyleSheet.create({
   },
   testAccountLabel: {
     ...typography.body,
-    color: '#000000',
+    color: '#0B1020',
     fontWeight: '600',
   },
   testAccountValue: {
     ...typography.bodyBold,
-    color: '#000000',
+    color: '#0B1020',
     fontFamily: 'monospace',
     fontSize: 16,
     fontWeight: '700',
   },
   sectionTitle: {
     ...typography.h4,
-    color: '#000000',
+    color: '#0B1020',
   },
   card: {
     backgroundColor: 'rgba(30, 64, 175, 0.1)',
@@ -470,11 +470,11 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...typography.bodyBold,
-    color: '#000000',
+    color: '#0B1020',
   },
   cardDescription: {
     ...typography.caption,
-    color: '#000000',
+    color: '#0B1020',
     lineHeight: 18,
   },
   statusBadge: {
@@ -488,11 +488,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...typography.small,
-    color: '#000000',
+    color: '#0B1020',
     fontWeight: '600',
   },
   statusTextActive: {
-    color: '#000000',
+    color: '#0B1020',
   },
   testButton: {
     flexDirection: 'row',
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   },
   testButtonText: {
     ...typography.captionBold,
-    color: '#000000',
+    color: '#0B1020',
   },
   demoSection: {
     gap: spacing.md,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   demoButtonText: {
     ...typography.bodyBold,
-    color: '#000000',
+    color: '#0B1020',
   },
   featureSection: {
     gap: spacing.md,
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     ...typography.caption,
-    color: '#000000',
+    color: '#0B1020',
     flex: 1,
   },
 });
