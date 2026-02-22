@@ -1,16 +1,17 @@
 import { Metadata } from 'next';
 import { Container, Heading, Text, Box, VStack, HStack, List, ListItem, Badge, Divider } from '@chakra-ui/react';
 import FAQSchema from '@/components/Schema/FAQSchema';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'The Ultimate Guide to Moving in London | Speedy Van',
   description: 'Complete guide to moving in London including area guides, transport links, costs, and expert tips from London\'s leading man and van service.',
   keywords: 'moving to London, London areas, student moving London, house removal London, London transport, moving costs London',
-  alternates: { canonical: 'https://speedy-van.co.uk/blog/ultimate-london-moving-guide' },
+  alternates: { canonical: `${APP_BASE_URL}/blog/ultimate-london-moving-guide` },
   openGraph: {
     title: 'The Ultimate Guide to Moving in London | Speedy Van',
     description: 'Complete guide to moving in London with expert tips and area recommendations.',
-    url: 'https://speedy-van.co.uk/blog/ultimate-london-moving-guide',
+    url: `${APP_BASE_URL}/blog/ultimate-london-moving-guide`,
     siteName: 'Speedy Van',
     type: 'article',
     publishedTime: '2025-01-20T00:00:00.000Z',

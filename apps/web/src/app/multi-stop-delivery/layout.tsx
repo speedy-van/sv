@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Multi-Stop Delivery | Multiple Pickups & Drop-offs | Speedy Van',
@@ -16,12 +17,12 @@ export const metadata: Metadata = {
     'seller delivery',
   ].join(', '),
   alternates: {
-    canonical: 'https://speedy-van.co.uk/multi-stop-delivery',
+    canonical: `${APP_BASE_URL}/multi-stop-delivery`,
   },
   openGraph: {
     title: 'Multi-Stop Delivery | Speedy Van',
     description: 'Multiple pickups and drop-offs in one trip. From £99.',
-    url: 'https://speedy-van.co.uk/multi-stop-delivery',
+    url: `${APP_BASE_URL}/multi-stop-delivery`,
     siteName: 'Speedy Van',
     locale: 'en_GB',
     type: 'website',

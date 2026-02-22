@@ -1,16 +1,17 @@
 import { Metadata } from 'next';
 import { Container, Heading, Text, SimpleGrid, Box, VStack, HStack, Badge } from '@chakra-ui/react';
 import Link from 'next/link';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Moving Tips & Guides | Speedy Van Blog',
   description: 'Expert moving tips, student guides, and furniture delivery advice from London\'s leading man and van service. Get the best moving experience with our comprehensive guides.',
   keywords: 'moving tips, student moving guide, furniture delivery tips, house removal advice, London moving, van hire guide',
-  alternates: { canonical: 'https://speedy-van.co.uk/blog' },
+  alternates: { canonical: `${APP_BASE_URL}/blog` },
   openGraph: {
     title: 'Moving Tips & Guides | Speedy Van Blog',
     description: 'Expert moving tips and guides from London\'s leading man and van service.',
-    url: 'https://speedy-van.co.uk/blog',
+    url: `${APP_BASE_URL}/blog`,
     siteName: 'Speedy Van',
     type: 'website',
   },

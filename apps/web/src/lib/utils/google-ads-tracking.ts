@@ -1,53 +1,61 @@
 /**
  * Google Ads Conversion Tracking Utilities
- * 
- * IMPORTANT: Replace the conversion labels with actual values from Google Ads:
- * 1. Go to Google Ads → Tools & Settings → Conversions
- * 2. Create/find your conversion actions
- * 3. Copy the conversion labels and update the constants below
+ *
+ * Conversion labels are from Google Ads → Tools & Settings → Conversions.
+ * Fires on booking success page when payment is confirmed.
  */
 
-// Google Ads Conversion ID (kept for documentation/reference)
 const GOOGLE_ADS_ID = 'AW-17715630822';
+const STANDARD_BOOKING_CONVERSION_LABEL = '7393649164';
+const LUXURY_BOOKING_CONVERSION_LABEL = '7375337919';
 
-// Verified Conversion Labels from Google Ads (Updated: Nov 23, 2025)
-const STANDARD_BOOKING_CONVERSION_LABEL = '7393649164'; // Standard booking conversion
-const LUXURY_BOOKING_CONVERSION_LABEL = '7375337919'; // Luxury booking conversion
-
-const logManualTrackingDisabled = (context: string) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `[tracking-disabled:${context}] Manual Google Ads conversion tracking has been disabled in favour of page-load conversions on /booking/success and /booking-luxury/success.`
-    );
-  }
-};
+const SEND_TO_STANDARD = `${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}`;
+const SEND_TO_LUXURY = `${GOOGLE_ADS_ID}/${LUXURY_BOOKING_CONVERSION_LABEL}`;
 
 /**
- * Track completed booking conversion
- * Fires on the booking success page after payment
- * 
- * @param bookingValue - Total booking value in GBP (pounds, not pence)
- * @param bookingReference - Unique booking reference ID
+ * Fire Google Ads conversion event (and GA4 purchase when gtag is available).
+ * Call only once per booking from the success page.
+ *
+ * @param bookingValue - Total booking value in GBP (pounds)
+ * @param bookingReference - Unique booking reference (transaction_id)
+ * @param isLuxury - Use luxury conversion action when true (booking-luxury)
  */
 export const trackBookingConversion = (
   bookingValue: number,
-  bookingReference: string
+  bookingReference: string,
+  isLuxury: boolean = false
 ): void => {
-  logManualTrackingDisabled(
-    `standard:${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}:${bookingReference}:${bookingValue}`
-  );
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+    return;
+  }
+
+  const sendTo = isLuxury ? SEND_TO_LUXURY : SEND_TO_STANDARD;
+
+  // Google Ads conversion
+  window.gtag('event', 'conversion', {
+    send_to: sendTo,
+    value: bookingValue,
+    currency: 'GBP',
+    transaction_id: bookingReference,
+  });
+
+  // GA4 purchase event (for Analytics)
+  window.gtag('event', 'purchase', {
+    transaction_id: bookingReference,
+    value: bookingValue,
+    currency: 'GBP',
+    items: [],
+  });
 };
 
 /**
- * Enhanced booking conversion with item details
- * Use this for more detailed tracking with Google Analytics 4
+ * Enhanced booking conversion (alias for luxury flow with tier label).
+ * Use for booking-luxury success page.
  */
 export const trackBookingConversionEnhanced = (
   bookingValue: number,
   bookingReference: string,
-  serviceTier: string
+  _serviceTier: string
 ): void => {
-  logManualTrackingDisabled(
-    `enhanced:${GOOGLE_ADS_ID}/${STANDARD_BOOKING_CONVERSION_LABEL}:${bookingReference}:${bookingValue}:${serviceTier}`
-  );
+  trackBookingConversion(bookingValue, bookingReference, true);
 };

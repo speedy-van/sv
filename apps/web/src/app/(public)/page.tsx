@@ -2,16 +2,17 @@ import { Metadata, Viewport } from 'next';
 import CookieBanner from '@/components/Consent/CookieBanner';
 import CookiePreferencesModal from '@/components/Consent/CookiePreferencesModal';
 import HomePageContent from './HomePageContent';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Book Man and Van Today from £25/hr | Beat Any Price | Speedy Van',
   description: 'Unbeatable Man With A Van prices from only £25/hour. Guaranteed to beat any price. Van service across England, Scotland, Wales (same-day subject to availability). Facebook Marketplace pickups, furniture moves, and full house removals across the UK. Professional furniture transport, long distance house movers, packers and movers. Fully insured, 5-star rated.',
   keywords: 'man and van, man with a van, book man and van today, man and van prices, cheap man and van, man and van England, man and van Scotland, man and van Wales, same day van service, Facebook Marketplace delivery, Gumtree pickup, furniture removal, house removals, furniture delivery, £25 per hour, furniture transport, long distance house mover, packers and movers, removal companies, large item movers',
-  alternates: { canonical: 'https://speedy-van.co.uk/' },
+  alternates: { canonical: `${APP_BASE_URL}/` },
   openGraph: {
     title: 'Book Man and Van Today from £25/hr | Beat Any Price | Speedy Van',
     description: 'Unbeatable Man With A Van prices from only £25/hour. Van service across England, Scotland, Wales (same-day subject to availability). Facebook Marketplace pickups, furniture moves, and full house removals. Professional furniture transport, guaranteed to beat any price.',
-    url: 'https://speedy-van.co.uk/',
+    url: `${APP_BASE_URL}/`,
     siteName: 'Speedy Van',
     images: [
       { url: '/og/og-home.jpg', width: 1200, height: 630, alt: 'Facebook Marketplace pickup and furniture delivery service UK' },
@@ -55,9 +56,9 @@ export default function HomePage() {
     '@type': 'MovingCompany',
     name: 'Speedy Van',
     description: 'Unbeatable Man With A Van prices from only £25/hour. Professional furniture transport, long distance house movers, packers and movers across England, Scotland, Wales. Guaranteed to beat any price.',
-    url: 'https://speedy-van.co.uk',
-    logo: 'https://speedy-van.co.uk/android-chrome-512x512.png',
-    image: 'https://speedy-van.co.uk/og/og-home.jpg',
+    url: APP_BASE_URL,
+    logo: `${APP_BASE_URL}/android-chrome-512x512.png`,
+    image: `${APP_BASE_URL}/og/og-home.jpg`,
     telephone: '01202 129746',
     priceRange: '£',
     slogan: 'Book Man and Van Today - Guaranteed To Beat Any Price',
@@ -130,7 +131,7 @@ export default function HomePage() {
             '@type': 'Service',
             name: 'Furniture Transport',
             description: 'Professional movers to transport sofas, tables, chairs and beds',
-            url: 'https://speedy-van.co.uk/furniture-removal',
+            url: `${APP_BASE_URL}/furniture-removal`,
           },
         },
         {
@@ -139,7 +140,7 @@ export default function HomePage() {
             '@type': 'Service',
             name: 'Long Distance House Mover',
             description: 'Minimise the effort and hassle of moving house by getting the pros in',
-            url: 'https://speedy-van.co.uk/house-removals',
+            url: `${APP_BASE_URL}/house-removals`,
           },
         },
         {
@@ -148,7 +149,7 @@ export default function HomePage() {
             '@type': 'Service',
             name: 'Packers and Movers',
             description: 'Get your house items packed quickly and moved safely by the experts',
-            url: 'https://speedy-van.co.uk/man-and-van',
+            url: `${APP_BASE_URL}/man-and-van`,
           },
         },
         {
@@ -157,7 +158,7 @@ export default function HomePage() {
             '@type': 'Service',
             name: 'Removal Companies',
             description: 'Small removals to moving mansions, our great removal services can help',
-            url: 'https://speedy-van.co.uk/office-removals',
+            url: `${APP_BASE_URL}/office-removals`,
           },
         },
         {
@@ -166,7 +167,7 @@ export default function HomePage() {
             '@type': 'Service',
             name: 'Large Item Movers',
             description: 'Save money by using transporters already heading along your route',
-            url: 'https://speedy-van.co.uk/single-item-delivery',
+            url: `${APP_BASE_URL}/single-item-delivery`,
           },
         },
       ],

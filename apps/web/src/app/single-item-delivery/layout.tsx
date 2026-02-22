@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Single Item Delivery | Sofa, Bed, Appliance Delivery | Speedy Van',
@@ -16,12 +17,12 @@ export const metadata: Metadata = {
     'marketplace delivery',
   ].join(', '),
   alternates: {
-    canonical: 'https://speedy-van.co.uk/single-item-delivery',
+    canonical: `${APP_BASE_URL}/single-item-delivery`,
   },
   openGraph: {
     title: 'Single Item Delivery | Speedy Van',
     description: 'Single item delivery for sofas, beds, appliances. From £49, same-day available.',
-    url: 'https://speedy-van.co.uk/single-item-delivery',
+    url: `${APP_BASE_URL}/single-item-delivery`,
     siteName: 'Speedy Van',
     locale: 'en_GB',
     type: 'website',

@@ -16,7 +16,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { FaArrowRight, FaPhone } from 'react-icons/fa';
-import Header from '@/components/site/Header';
 import AppCard from '@/components/shared/AppCard';
 import HomeFooter from '@/components/site/HomeFooter';
 import TrustpilotWidget from '@/components/site/TrustpilotWidget';
@@ -40,10 +39,8 @@ const serviceCards = [
 
 export default function HomePageContent() {
   return (
-    <Box as="main" id="main-content" bg="bg.canvas" color="text.primary" minH="100vh">
-      <Header />
-
-      <Box pt={{ base: '92px', md: '116px' }} pb={{ base: 12, md: 16 }}>
+    <>
+      <Box id="main-content" bg="bg.canvas" color="text.primary" pb={{ base: 12, md: 16 }}>
         <Container maxW="container.xl">
           <Grid templateColumns={{ base: '1fr', lg: '1.1fr 0.9fr' }} gap={{ base: 8, lg: 10 }}>
             <GridItem>
@@ -139,7 +136,7 @@ export default function HomePageContent() {
       <HomeFooter />
       <SpeedyAIBotWrapper />
       <StickyCTA />
-    </Box>
+    </>
   );
 }
 

@@ -4,16 +4,17 @@ import Link from 'next/link';
 import { ArticleSchema } from '@/components/Schema/ArticleSchema';
 import { BreadcrumbSchema } from '@/components/Schema/BreadcrumbSchema';
 import { EnhancedFAQSchema } from '@/components/Schema/EnhancedFAQSchema';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Moving to London Guide 2025 | Complete Relocation Guide | Speedy Van',
   description: 'Comprehensive guide to moving to London. Learn about best neighborhoods, cost of living, transport links, housing tips, and essential services. Expert advice from London moving specialists.',
   keywords: 'moving to London, relocating to London, London neighborhoods, cost of living London, London transport, finding accommodation London, man and van London, London moving guide',
-  alternates: { canonical: 'https://speedy-van.co.uk/blog/moving-to-london-guide' },
+  alternates: { canonical: `${APP_BASE_URL}/blog/moving-to-london-guide` },
   openGraph: {
     title: 'Moving to London Guide 2025 | Complete Relocation Guide',
     description: 'Comprehensive guide to moving to London. Learn about best neighborhoods, cost of living, transport, and housing tips from moving experts.',
-    url: 'https://speedy-van.co.uk/blog/moving-to-london-guide',
+    url: `${APP_BASE_URL}/blog/moving-to-london-guide`,
     siteName: 'Speedy Van',
     type: 'article',
     publishedTime: '2025-01-25T09:00:00Z',

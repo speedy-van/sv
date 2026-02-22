@@ -34,6 +34,9 @@ import Link from 'next/link';
 import Header from '@/components/site/Header';
 import LuxurySurfaceCard from '../components/LuxurySurfaceCard';
 import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
+import { APP_BASE_URL } from '@/lib/seo/constants';
+import { trackBookingConversionEnhanced } from '@/lib/utils/google-ads-tracking';
+import { trackBookingComplete } from '@/lib/analytics';
 // SMS will be sent via API endpoint
 
 interface BookingDetails {
@@ -72,6 +75,7 @@ function BookingSuccessPageContent() {
   const supportEmail = 'support@speedy-van.co.uk';
 
   const hasTrackedInitialConversion = useRef(false);
+  const hasTrackedAdsConversion = useRef(false);
   const hasBookingDetailsRef = useRef(false);
 
   const handleRetryFetch = () => {
@@ -105,11 +109,25 @@ function BookingSuccessPageContent() {
 
     hasTrackedInitialConversion.current = true;
 
-    console.log('âœ… Google Ads page view tracked:', {
+    console.log('✅ Google Ads page view tracked:', {
       page: 'Booking Success',
       transaction_id: transactionId,
     });
   }, [sessionId, bookingRef]);
+
+  // Fire Google Ads conversion + GA4 purchase once when booking is confirmed (payment captured)
+  useEffect(() => {
+    if (!bookingDetails || hasTrackedAdsConversion.current) return;
+    const confirmed = bookingDetails.paymentCaptured && bookingDetails.status === 'CONFIRMED';
+    if (!confirmed) return;
+
+    hasTrackedAdsConversion.current = true;
+    const valueGBP = Number(bookingDetails.totalAmount) || 0;
+    const ref = bookingDetails.reference || '';
+
+    trackBookingConversionEnhanced(valueGBP, ref, 'luxury');
+    trackBookingComplete(ref, 'luxury', valueGBP);
+  }, [bookingDetails]);
 
   // Load Trustpilot script using centralized configuration
   useEffect(() => {
@@ -261,7 +279,7 @@ function BookingSuccessPageContent() {
                 },
                 body: JSON.stringify({
                   to: nextBookingDetails.customer.phone,
-                  message: `Your Speedy Van booking ${nextBookingDetails.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: https://speedy-van.co.uk/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
+                  message: `Your Speedy Van booking ${nextBookingDetails.reference} has been confirmed. We'll notify you once your driver is assigned.\n\nTrack your booking: ${APP_BASE_URL}/track\n\nFor assistance, call 01202 129746 or email support@speedy-van.co.uk`,
                   type: 'booking_confirmation'
                 })
               });
@@ -825,13 +843,13 @@ function BookingSuccessPageContent() {
                         Monitor your booking status at{' '}
                         <Text 
                           as="a" 
-                          href="https://speedy-van.co.uk/track" 
+                          href={`${APP_BASE_URL}/track`} 
                           color="cyan.300"
                           fontWeight="semibold"
                           textDecoration="underline"
                           _hover={{ color: "cyan.200" }}
                         >
-                          speedy-van.co.uk/track
+                          {APP_BASE_URL.replace(/^https?:\/\//, '')}/track
                         </Text>
                       </Text>
                     </VStack>

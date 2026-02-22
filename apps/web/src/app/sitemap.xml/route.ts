@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export async function GET() {
-  const baseUrl = 'https://speedy-van.co.uk';
+  const baseUrl = APP_BASE_URL;
   const currentDate = new Date().toISOString().split('T')[0];
 
   // Complete UK cities and regions for location-based SEO
@@ -31,11 +32,10 @@ export async function GET() {
     'shrewsbury', 'telford', 'torquay', 'scarborough', 'hastings', 'harrogate'
   ];
 
-  // Blog categories for content SEO
-  const blogCategories = [
-    'moving-tips', 'student-moving-guide', 'luxury-moving-services',
-    'furniture-delivery', 'house-removals', 'van-hire-guide',
-    'packing-tips', 'moving-checklist', 'london-moving-guide'
+  // Actual blog post slugs (routes that exist under /blog)
+  const blogPostSlugs = [
+    'moving-to-london-guide', 'ultimate-london-moving-guide', 'professional-packing-tips',
+    'student-moving-service', 'same-day-man-and-van', 'cheap-man-and-van-near-me'
   ];
 
   const urls = [
@@ -48,7 +48,7 @@ export async function GET() {
     },
     // High-priority SEO landing pages
     {
-      url: `${baseUrl}/man-and-van-london`,
+      url: `${baseUrl}/man-and-van/london`,
       lastmod: currentDate,
       changefreq: 'weekly',
       priority: '0.95'
@@ -182,6 +182,37 @@ export async function GET() {
       changefreq: 'weekly',
       priority: '0.9'
     },
+    // Core info & conversion pages
+    {
+      url: `${baseUrl}/how-it-works`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/pricing`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.85'
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.85'
+    },
     // Core Service Hub
     {
       url: `${baseUrl}/services`,
@@ -297,12 +328,24 @@ export async function GET() {
       changefreq: 'weekly',
       priority: '0.7'
     },
-    ...blogCategories.map(category => ({
-      url: `${baseUrl}/blog/${category}`,
+    ...blogPostSlugs.map(slug => ({
+      url: `${baseUrl}/blog/${slug}`,
       lastmod: currentDate,
       changefreq: 'monthly',
       priority: '0.6'
-    }))
+    })),
+    {
+      url: `${baseUrl}/track`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.7'
+    },
+    {
+      url: `${baseUrl}/van-hire-near-me`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '0.9'
+    }
   ];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

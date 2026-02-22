@@ -1,3 +1,5 @@
+import { APP_BASE_URL } from '@/lib/seo/constants';
+
 interface FAQItem {
   question: string;
   answer: string;
@@ -8,7 +10,7 @@ interface FAQSchemaProps {
   pageUrl?: string;
 }
 
-export default function FAQSchema({ faqs, pageUrl = 'https://speedy-van.co.uk' }: FAQSchemaProps) {
+export default function FAQSchema({ faqs, pageUrl = APP_BASE_URL }: FAQSchemaProps) {
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',

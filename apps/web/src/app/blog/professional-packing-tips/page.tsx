@@ -4,16 +4,17 @@ import Link from 'next/link';
 import { ArticleSchema } from '@/components/Schema/ArticleSchema';
 import { BreadcrumbSchema } from '@/components/Schema/BreadcrumbSchema';
 import { EnhancedFAQSchema } from '@/components/Schema/EnhancedFAQSchema';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Professional Packing Tips for Moving House | Expert Guide 2025 | Speedy Van',
   description: 'Learn professional packing techniques from moving experts. Complete guide with room-by-room tips, material recommendations, and time-saving strategies for stress-free house moves.',
   keywords: 'packing tips, house moving packing guide, how to pack for moving, professional packing service, moving boxes, packing materials, furniture packing, fragile items packing',
-  alternates: { canonical: 'https://speedy-van.co.uk/blog/professional-packing-tips' },
+  alternates: { canonical: `${APP_BASE_URL}/blog/professional-packing-tips` },
   openGraph: {
     title: 'Professional Packing Tips for Moving House | Expert Guide 2025',
     description: 'Learn professional packing techniques from moving experts. Complete guide with room-by-room tips and time-saving strategies.',
-    url: 'https://speedy-van.co.uk/blog/professional-packing-tips',
+    url: `${APP_BASE_URL}/blog/professional-packing-tips`,
     siteName: 'Speedy Van',
     type: 'article',
     publishedTime: '2025-01-10T09:00:00Z',
@@ -45,9 +46,9 @@ const faqs = [
 ];
 
 const breadcrumbs = [
-  { name: 'Home', url: 'https://speedy-van.co.uk' },
-  { name: 'Blog', url: 'https://speedy-van.co.uk/blog' },
-  { name: 'Professional Packing Tips', url: 'https://speedy-van.co.uk/blog/professional-packing-tips' },
+  { name: 'Home', url: APP_BASE_URL },
+  { name: 'Blog', url: `${APP_BASE_URL}/blog` },
+  { name: 'Professional Packing Tips', url: `${APP_BASE_URL}/blog/professional-packing-tips` },
 ];
 
 export default function ProfessionalPackingTipsPage() {
@@ -59,7 +60,7 @@ export default function ProfessionalPackingTipsPage() {
         author="Speedy Van Team"
         datePublished="2025-01-10T09:00:00Z"
         dateModified="2025-10-21T10:00:00Z"
-        url="https://speedy-van.co.uk/blog/professional-packing-tips"
+        url={`${APP_BASE_URL}/blog/professional-packing-tips`}
         keywords={['packing tips', 'house moving', 'professional packing', 'moving guide', 'packing materials']}
         articleSection="Moving Tips"
         wordCount={2400}

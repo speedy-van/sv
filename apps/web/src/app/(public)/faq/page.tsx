@@ -1,6 +1,7 @@
 'use client';
 
 import type { FAQPage, WithContext, Organization, BreadcrumbList } from 'schema-dts';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 import {
   Box,
   Container,
@@ -69,28 +70,18 @@ function JsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Speedy Van',
-    url: 'https://speedy-van.co.uk',
+    url: APP_BASE_URL,
     telephone: '01202 129746',
     email: 'support@speedy-van.co.uk',
-    logo: 'https://speedy-van.co.uk/logo.png',
+    logo: `${APP_BASE_URL}/logo.png`,
   };
 
   const breadcrumbs: WithContext<BreadcrumbList> = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: 'https://speedy-van.co.uk/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'FAQ',
-        item: 'https://speedy-van.co.uk/faq',
-      },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${APP_BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'FAQ', item: `${APP_BASE_URL}/faq` },
     ],
   };
 
@@ -116,9 +107,11 @@ export default function FAQPage() {
   const cardBg = useColorModeValue('white', 'gray.800');
   const cardBorder = useColorModeValue('gray.200', 'gray.700');
   const textColor = useColorModeValue('gray.700', 'gray.200');
+  const headingColor = useColorModeValue('gray.900', 'white');
+  const pageBg = useColorModeValue('gray.50', 'gray.900');
 
   return (
-    <Box as="main" bg={useColorModeValue('gray.50', 'gray.900')} minH="100vh" py={{ base: 10, md: 16 }}>
+    <Box as="main" bg={pageBg} minH="100vh" py={{ base: 10, md: 16 }}>
       <JsonLd />
 
       <Container maxW="5xl" px={{ base: 4, md: 6 }}>
@@ -127,7 +120,7 @@ export default function FAQPage() {
             <Badge colorScheme="purple" borderRadius="full" px={3} py={1} fontSize="xs">
               FAQ
             </Badge>
-            <Heading size={{ base: 'xl', md: '2xl' }} color={useColorModeValue('gray.900', 'white')}>
+            <Heading size={{ base: 'xl', md: '2xl' }} color={headingColor}>
               Frequently Asked Questions
             </Heading>
             <Text color={textColor} maxW="3xl">
@@ -176,7 +169,7 @@ export default function FAQPage() {
               >
                 <VStack align="flex-start" spacing={2}>
                   <HStack spacing={2} flexWrap="wrap">
-                    <Heading size="sm" color={useColorModeValue('gray.900', 'white')}>
+                    <Heading size="sm" color={headingColor}>
                       {item.q}
                     </Heading>
                     {item.badge ? (

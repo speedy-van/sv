@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPlaceBySlug } from '@/lib/places';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 import '@/styles/route-pages.css';
 
 // ✅ Force Node runtime for SSG/ISR
@@ -27,7 +28,7 @@ export async function generateMetadata({
       title,
       description,
       alternates: {
-        canonical: `https://speedy-van.co.uk/routes/${from.slug}-to-${to.slug}`,
+        canonical: `${APP_BASE_URL}/routes/${from.slug}-to-${to.slug}`,
       },
     };
   } catch (error) {
@@ -42,11 +43,11 @@ function JsonLd({ from, to }: any) {
     '@type': 'Service',
     name: `Removals ${from.name} → ${to.name}`,
     areaServed: [from.name, to.name],
-    url: `https://speedy-van.co.uk/routes/${from.slug}-to-${to.slug}`,
+    url: `${APP_BASE_URL}/routes/${from.slug}-to-${to.slug}`,
     provider: {
       '@type': 'Organization',
       name: 'Speedy Van',
-      url: 'https://speedy-van.co.uk',
+      url: APP_BASE_URL,
     },
     offers: {
       '@type': 'AggregateOffer',

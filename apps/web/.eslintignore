@@ -1,0 +1,2 @@
+# Config files excluded from tsconfig.eslint.json - avoid parsing errors
+src/lib/config/enhanced-notifications.config.ts

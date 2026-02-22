@@ -629,53 +629,45 @@ export default function RouteDetailsPage() {
                       status: drop.status,
                     }))}
                     onDropsReorder={async (reorderedDrops) => {
-                      try {
-                        const response = await fetch(`/api/admin/routes/${route.id}`, {
-                          method: 'PATCH',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            action: 'reorder_drops',
-                            dropsOrder: reorderedDrops.map(drop => ({
-                              dropId: drop.id,
-                              sequenceNumber: drop.sequenceNumber,
-                            })),
-                          }),
-                        });
+                      const response = await fetch(`/api/admin/routes/${route.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          action: 'reorder_drops',
+                          dropsOrder: reorderedDrops.map(drop => ({
+                            dropId: drop.id,
+                            sequenceNumber: drop.sequenceNumber,
+                          })),
+                        }),
+                      });
 
-                        if (!response.ok) {
-                          throw new Error('Failed to reorder drops');
-                        }
-
-                        // Refresh route data
-                        loadRouteDetails();
-                      } catch (error) {
-                        throw error;
+                      if (!response.ok) {
+                        throw new Error('Failed to reorder drops');
                       }
+
+                      // Refresh route data
+                      loadRouteDetails();
                     }}
                     onDropRemove={async (dropId) => {
-                      try {
-                        const response = await fetch(`/api/admin/routes/${route.id}`, {
-                          method: 'PATCH',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({
-                            action: 'remove_drops',
-                            dropIdsToRemove: [dropId],
-                          }),
-                        });
+                      const response = await fetch(`/api/admin/routes/${route.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          action: 'remove_drops',
+                          dropIdsToRemove: [dropId],
+                        }),
+                      });
 
-                        if (!response.ok) {
-                          throw new Error('Failed to remove drop');
-                        }
-
-                        // Refresh route data
-                        loadRouteDetails();
-                      } catch (error) {
-                        throw error;
+                      if (!response.ok) {
+                        throw new Error('Failed to remove drop');
                       }
+
+                      // Refresh route data
+                      loadRouteDetails();
                     }}
                     editable={route.status !== 'completed'}
                     showControls={true}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { APP_BASE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Storage Pickup & Delivery | Self Storage Transport | Speedy Van',
@@ -16,12 +17,12 @@ export const metadata: Metadata = {
     'items to storage',
   ].join(', '),
   alternates: {
-    canonical: 'https://speedy-van.co.uk/storage-services',
+    canonical: `${APP_BASE_URL}/storage-services`,
   },
   openGraph: {
     title: 'Storage Pickup & Delivery | Speedy Van',
     description: 'Transport to and from any storage facility. From £79, fully insured.',
-    url: 'https://speedy-van.co.uk/storage-services',
+    url: `${APP_BASE_URL}/storage-services`,
     siteName: 'Speedy Van',
     locale: 'en_GB',
     type: 'website',
