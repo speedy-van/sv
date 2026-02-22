@@ -58,3 +58,12 @@
 - **Date:** _______________
 - **Tester:** _______________
 - **Notes:** _______________
+
+---
+
+## Pre-PR validation (lead developer)
+
+- **TypeScript:** `pnpm -C apps/web exec tsc --noEmit` — must pass.
+- **ESLint:** Project uses `--max-warnings 0`; many pre-existing warnings (unused vars, no-explicit-any, unescaped entities). Fix in a dedicated pass or relax for now.
+- **Build:** `pnpm -C apps/web build` — requires `DATABASE_URL` in env and no file lock on `node_modules/.prisma`. If EPERM on `prisma generate`, close other processes using Prisma and retry.
+- **Prisma:** `pnpm exec prisma validate` — requires `.env` or `.env.local` with `DATABASE_URL`.
