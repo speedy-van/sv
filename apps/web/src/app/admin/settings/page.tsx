@@ -176,14 +176,6 @@ export default function AdminSettings() {
       icon: FiFileText,
       badge: 'GDPR',
     },
-    {
-      title: 'Tax Management',
-      description:
-        'Comprehensive tax management system with VAT returns, Corporation Tax, compliance monitoring, and HMRC integration.',
-      href: '/admin/settings/tax',
-      icon: FiActivity,
-      badge: 'UK Compliant',
-    },
   ];
 
   return (

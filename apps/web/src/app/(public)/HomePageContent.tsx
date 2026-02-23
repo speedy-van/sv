@@ -40,7 +40,7 @@ const serviceCards = [
 export default function HomePageContent() {
   return (
     <>
-      <Box id="main-content" bg="bg.canvas" color="text.primary" pt={{ base: 6, md: 8 }} pb={{ base: 12, md: 16 }}>
+      <Box id="main-content" bg="bg.canvas" color="text.primary" pt={{ base: 10, md: 14 }} pb={{ base: 12, md: 16 }}>
         <Container maxW="container.xl">
           <Grid templateColumns={{ base: '1fr', lg: '1.1fr 0.9fr' }} gap={{ base: 8, lg: 10 }}>
             <GridItem>
