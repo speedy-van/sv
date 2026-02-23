@@ -12,12 +12,7 @@ export default function PublicLayout({
   return (
     <>
       <Box
-        sx={{
-          minHeight: '100svh',
-          '@supports not (height: 100svh)': {
-            minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-          },
-        }}
+        minH="100vh"
         display="grid"
         gridTemplateRows="auto 1fr"
         w="100%"
@@ -26,16 +21,10 @@ export default function PublicLayout({
 
         <Box
           as="main"
-          sx={{
-            // Header height + iOS safe area
-            paddingTop: {
-              base: 'calc(72px + env(safe-area-inset-top))',
-              md: 'calc(120px + env(safe-area-inset-top))',
-              lg: 'calc(140px + env(safe-area-inset-top))',
-            },
-          }}
-          pb="env(safe-area-inset-bottom)"
+          pt={{ base: 20, md: 22 }}
+          boxSizing="border-box"
           className="safe-area-bottom"
+          sx={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           {children}
         </Box>

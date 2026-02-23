@@ -2,13 +2,10 @@
 
 import { Box, Container, Heading, Text, VStack, HStack, Icon, SimpleGrid, Card, CardBody, List, ListItem, ListIcon, Button, Divider, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon } from '@chakra-ui/react';
 import { FiCheckCircle, FiStar, FiShield, FiPackage, FiTruck } from 'react-icons/fi';
-import Header from '@/components/site/Header';
 
 export default function FurnitureRemovalPage() {
   return (
-    <>
-      <Header />
-    <Box pt={36}>
+    <Box>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={12}>
           <Box textAlign="center">
@@ -202,7 +199,6 @@ export default function FurnitureRemovalPage() {
         </VStack>
       </Container>
     </Box>
-    </>
   );
 }
 

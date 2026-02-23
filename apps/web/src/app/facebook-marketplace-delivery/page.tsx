@@ -38,7 +38,6 @@ import { FaFacebook, FaCouch, FaBed, FaBox } from 'react-icons/fa';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import MarketplaceServiceSchema from '@/components/Schema/MarketplaceServiceSchema';
-import Header from '@/components/site/Header';
 
 const LiveBookingCounter = dynamic(() => import('@/components/LiveBookingCounter'), {
   ssr: false,
@@ -75,7 +74,6 @@ const faqData = [
 export default function FacebookMarketplaceDeliveryPage() {
   return (
     <>
-      <Header />
       <MarketplaceServiceSchema
         serviceName="Facebook Marketplace Pickup & Delivery"
         serviceDescription="Professional Facebook Marketplace delivery service. We collect furniture from private sellers and deliver to your door."
@@ -83,7 +81,7 @@ export default function FacebookMarketplaceDeliveryPage() {
         platform="facebook"
         faqs={faqData}
       />
-    <Box pt={36} bg="gray.900" minH="100vh">
+    <Box bg="gray.900" minH="100vh">
       {/* Hero Section */}
       <Box
         bgGradient="linear(to-br, blue.900, purple.900, gray.900)"

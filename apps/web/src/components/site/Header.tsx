@@ -51,11 +51,10 @@ export default function Header() {
       borderBottom="1px solid"
       borderColor="border.primary"
       boxShadow="sm"
-      backdropFilter="blur(10px)"
-      sx={{ paddingTop: 'env(safe-area-inset-top)' }}
+      sx={{ paddingTop: 'max(env(safe-area-inset-top), 0px)' }}
     >
       <Container maxW="container.xl" py={3}>
-        <HStack justify="space-between" align="center" minH={{ base: '56px', md: '64px' }}>
+        <HStack justify="space-between" align="center" minH={{ base: '56px', md: '64px' }} gap={2}>
           <Link
             as={NextLink}
             href="/"
@@ -63,10 +62,12 @@ export default function Header() {
             display="inline-flex"
             alignItems="center"
             gap={3}
+            flexShrink={0}
           >
             <Box
               w={{ base: 9, md: 10 }}
               h={{ base: 9, md: 10 }}
+              flexShrink={0}
               borderRadius="full"
               bgGradient="linear(to-br, interactive.primary, interactive.secondary)"
             />
@@ -80,7 +81,7 @@ export default function Header() {
             </VStack>
           </Link>
 
-          <HStack spacing={2} display={{ base: 'none', md: 'flex' }}>
+          <HStack spacing={2} display={{ base: 'none', md: 'flex' }} flexShrink={0}>
             {primaryLinks.map((item) => (
               <Button
                 key={item.href}
@@ -89,13 +90,14 @@ export default function Header() {
                 variant="ghost"
                 color="text.secondary"
                 _hover={{ color: 'text.primary', bg: 'bg.surface' }}
+                size="sm"
               >
                 {item.label}
               </Button>
             ))}
           </HStack>
 
-          <HStack spacing={2} display={{ base: 'none', md: 'flex' }}>
+          <HStack spacing={2} display={{ base: 'none', md: 'flex' }} flexShrink={0}>
             <Button
               as="a"
               href="tel:01202129746"
@@ -103,10 +105,11 @@ export default function Header() {
               borderColor="border.neon"
               color="text.primary"
               leftIcon={<FiPhone />}
+              size="sm"
             >
               01202 129746
             </Button>
-            <Button as={NextLink} href="/booking-luxury" colorScheme="blue">
+            <Button as={NextLink} href="/booking-luxury" colorScheme="blue" size="sm">
               Book Now
             </Button>
           </HStack>
@@ -119,16 +122,24 @@ export default function Header() {
             variant="outline"
             borderColor="border.primary"
             color="text.primary"
+            size="lg"
+            minW={{ base: '44px', md: '40px' }}
+            minH={{ base: '44px', md: '40px' }}
           />
         </HStack>
       </Container>
 
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size={{ base: 'full', sm: 'xs' }}>
         <DrawerOverlay bg="blackAlpha.700" />
-        <DrawerContent bg="bg.surface" borderLeft="1px solid" borderColor="border.primary">
-          <DrawerCloseButton color="text.primary" />
+        <DrawerContent
+          bg="bg.surface"
+          borderLeft="1px solid"
+          borderColor="border.primary"
+          sx={{ paddingTop: 'max(env(safe-area-inset-top), 0px)' }}
+        >
+          <DrawerCloseButton color="text.primary" size="lg" sx={{ top: 'max(env(safe-area-inset-top), 8px)' }} />
           <DrawerHeader color="text.primary">Menu</DrawerHeader>
-          <DrawerBody>
+          <DrawerBody overflowY="auto">
             <VStack align="stretch" spacing={2}>
               {primaryLinks.map((item) => (
                 <Button
@@ -140,6 +151,8 @@ export default function Header() {
                   variant="ghost"
                   color="text.secondary"
                   _hover={{ color: 'text.primary', bg: 'bg.surface.elevated' }}
+                  size="lg"
+                  minH="44px"
                 >
                   {item.label}
                 </Button>
@@ -157,6 +170,8 @@ export default function Header() {
                   variant="outline"
                   borderColor="border.primary"
                   color="text.primary"
+                  size="lg"
+                  minH="44px"
                 >
                   {item.label}
                 </Button>
@@ -170,11 +185,13 @@ export default function Header() {
                 variant="outline"
                 borderColor="border.neon"
                 color="text.primary"
+                size="lg"
+                minH="44px"
               >
                 01202 129746
               </Button>
 
-              <Button as={NextLink} href="/booking-luxury" onClick={onClose} colorScheme="blue">
+              <Button as={NextLink} href="/booking-luxury" onClick={onClose} colorScheme="blue" size="lg" minH="44px">
                 Start Booking
               </Button>
 

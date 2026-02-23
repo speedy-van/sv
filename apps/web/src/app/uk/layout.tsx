@@ -14,33 +14,22 @@ export default function UKLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Box
-        sx={{
-          minHeight: '100svh',
-          '@supports not (height: 100svh)': {
-            minHeight: 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-          },
-        }}
+        minH="100vh"
         display="flex"
         flexDirection="column"
         w="100%"
-        bg="linear-gradient(135deg, #121A2B 0%, #111827 50%, #121A2B 100%)"
-        color="white"
+        bg="bg.canvas"
+        color="text.primary"
       >
         <Header />
 
         <Box
           as="main"
           flex="1"
-          sx={{
-            // Header height + iOS safe area
-            paddingTop: {
-              base: 'calc(72px + env(safe-area-inset-top))',
-              md: 'calc(120px + env(safe-area-inset-top))',
-              lg: 'calc(140px + env(safe-area-inset-top))',
-            },
-          }}
-          pb="env(safe-area-inset-bottom)"
+          pt={{ base: 20, md: 22 }}
+          boxSizing="border-box"
           className="safe-area-bottom"
+          sx={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           {children}
         </Box>

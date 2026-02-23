@@ -272,9 +272,9 @@ main#main {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Make anchored scroll/focus land below sticky header */
+/* Make anchored scroll/focus land below fixed header (matches Header + Container height) */
 :root {
-  scroll-padding-top: calc(64px + env(safe-area-inset-top));
+  scroll-padding-top: 88px;
 }
 
 /* Final viewport fixes - iPhone 15/16/17 compatible */
