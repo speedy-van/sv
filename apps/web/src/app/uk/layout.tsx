@@ -26,7 +26,7 @@ export default function UKLayout({ children }: { children: React.ReactNode }) {
         <Box
           as="main"
           flex="1"
-          pt={{ base: 20, md: 22 }}
+          pt={{ base: 24, md: 28 }}
           boxSizing="border-box"
           className="safe-area-bottom"
           sx={{ paddingBottom: 'env(safe-area-inset-bottom)' }}

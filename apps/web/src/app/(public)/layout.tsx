@@ -21,7 +21,7 @@ export default function PublicLayout({
 
         <Box
           as="main"
-          pt={{ base: 20, md: 22 }}
+          pt={{ base: 24, md: 28 }}
           boxSizing="border-box"
           className="safe-area-bottom"
           sx={{ paddingBottom: 'env(safe-area-inset-bottom)' }}

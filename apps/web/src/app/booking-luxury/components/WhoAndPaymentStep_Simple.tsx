@@ -1030,26 +1030,29 @@ export default function WhoAndPaymentStepSimple({
       <VStack spacing={{ base: 5, md: 6 }} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* ⚠️ CRITICAL: Booking Reference - Chakra Alert (do not delete) */}
+        {/* ⚠️ CRITICAL: Booking Reference - same height as price cards (do not delete) */}
         {formData.step2.bookingReference && (
-          <Alert
-            status="info"
-            variant="subtle"
-            colorScheme="blue"
-            borderRadius="lg"
+          <Card
+            minH="140px"
+            borderRadius="xl"
+            borderWidth="2px"
+            borderColor="blue.400"
+            bg="linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.12))"
             data-testid="booking-reference-alert"
             data-critical="true"
           >
-            <AlertIcon />
-            <Box flex="1">
-              <AlertTitle fontSize="sm">
-                Booking reference (pending payment)
-              </AlertTitle>
-              <AlertDescription fontSize="sm" opacity={0.95}>
-                {formData.step2.bookingReference} — share this with admin to view or modify before payment.
-              </AlertDescription>
-            </Box>
-          </Alert>
+            <CardBody p={{ base: 3, md: 4 }} display="flex" alignItems="center" gap={3}>
+              <AlertIcon boxSize={5} color="blue.400" flexShrink={0} />
+              <Box flex="1" minW={0}>
+                <Text fontSize="sm" fontWeight="semibold" color="text.primary" mb={1}>
+                  Booking reference (pending payment)
+                </Text>
+                <Text fontSize="sm" color="text.secondary" opacity={0.95}>
+                  {formData.step2.bookingReference} — share this with admin to view or modify before payment.
+                </Text>
+              </Box>
+            </CardBody>
+          </Card>
         )}
 
         {/* STATE 1: CALCULATING - Show ONLY gears + text during calculating */}
