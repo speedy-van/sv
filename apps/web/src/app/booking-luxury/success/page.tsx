@@ -725,23 +725,6 @@ function BookingSuccessPageContent() {
             </CardBody>
           </LuxurySurfaceCard>
 
-          {isNoDriverAvailable && (
-            <Alert status="warning" borderRadius="xl">
-              <AlertIcon />
-              <Box flex="1">
-                <AlertTitle>We could not find a driver</AlertTitle>
-                <AlertDescription>
-                  Please choose an alternative time or contact our support team for assistance.
-                </AlertDescription>
-                <HStack mt={4} spacing={3} flexWrap="wrap">
-                  <Button as="a" href="mailto:support@speedy-van.co.uk" variant="outline">
-                    Contact support
-                  </Button>
-                </HStack>
-              </Box>
-            </Alert>
-          )}
-
           {/* Next Steps - Enhanced */}
           <LuxurySurfaceCard
             tone="info"
@@ -949,7 +932,7 @@ function BookingSuccessPageContent() {
             }}
           >
             <CardBody p={{ base: 6, md: 8 }}>
-              <VStack spacing={{ base: 5, md: 6 }} align="stretch">
+                <VStack spacing={{ base: 5, md: 6 }} align="stretch">
                 <HStack spacing={3}>
                   <Box
                     w={3}
@@ -1029,6 +1012,23 @@ function BookingSuccessPageContent() {
               </VStack>
             </CardBody>
           </LuxurySurfaceCard>
+
+          {isNoDriverAvailable && (
+            <Alert status="warning" borderRadius="xl">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle>We could not find a driver</AlertTitle>
+                <AlertDescription>
+                  Please choose an alternative time or contact our support team for assistance.
+                </AlertDescription>
+                <HStack mt={4} spacing={3} flexWrap="wrap">
+                  <Button as="a" href="mailto:support@speedy-van.co.uk" variant="outline">
+                    Contact support
+                  </Button>
+                </HStack>
+              </Box>
+            </Alert>
+          )}
 
           {/* Action Buttons - Enhanced */}
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 3, md: 4 }} w="full">

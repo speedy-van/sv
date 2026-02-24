@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     // Dynamic import to prevent build-time initialization
     const { prisma } = await import('@speedy-van/shared');
 
-    // Look up the booking by reference
+    // Look up the booking by reference (Booking has no paymentStatus; derive from paidAt / additionalPaymentStatus)
     const booking = await prisma.booking.findFirst({
       where: {
         reference: reference,
@@ -32,8 +32,9 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         status: true,
-        paymentStatus: true,
         createdAt: true,
+        paidAt: true,
+        additionalPaymentStatus: true,
       },
     });
 
@@ -46,17 +47,27 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Return the booking status
+    // Derive payment status: Booking has paidAt and additionalPaymentStatus, not paymentStatus
+    const paymentStatus =
+      booking.paidAt != null
+        ? 'PAID'
+        : booking.additionalPaymentStatus !== 'NONE'
+          ? booking.additionalPaymentStatus
+          : booking.status === 'PENDING_PAYMENT'
+            ? 'PENDING'
+            : 'PENDING';
+
+    const isComplete =
+      booking.status === 'CONFIRMED' ||
+      booking.status === 'COMPLETED' ||
+      paymentStatus === 'PAID' ||
+      paymentStatus === 'SUCCEEDED';
+
     return NextResponse.json({
       found: true,
       status: booking.status,
-      paymentStatus: booking.paymentStatus,
-      // Consider a booking complete if it's CONFIRMED or payment is successful
-      isComplete: 
-        booking.status === 'CONFIRMED' || 
-        booking.status === 'COMPLETED' ||
-        booking.paymentStatus === 'PAID' ||
-        booking.paymentStatus === 'SUCCEEDED',
+      paymentStatus,
+      isComplete,
     });
   } catch (error) {
     console.error('[Booking Status API] Error:', error);

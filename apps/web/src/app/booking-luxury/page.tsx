@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable no-console -- booking flow debug logging */
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import {
   safeLocalStorageGetItem,
@@ -14,18 +15,14 @@ import {
   Heading,
   Text,
   Button,
-  Progress,
   useToast,
   Alert,
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Badge,
   Icon,
   Flex,
-  Divider,
   Stack,
-  Circle,
   Spinner,
   SimpleGrid,
   IconButton,
@@ -35,21 +32,19 @@ import {
   Input,
   Select,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaShieldAlt, FaClock, FaMapMarkerAlt, FaPhone, FaStar, FaPlus, FaMinus, FaExclamationTriangle, FaRedo, FaTrash, FaCopy, FaCalendarAlt } from 'react-icons/fa';
-import { Image } from '@chakra-ui/react';
+import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaClock, FaMapMarkerAlt, FaPhone, FaRedo, FaCopy, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
 import AddressesStep from './components/AddressesStep';
-import WhereAndWhatStep from './components/WhereAndWhatStep';
 import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
-import ServiceTierSelector from './components/ServiceTierSelector';
 import { useBookingForm } from './hooks/useBookingForm';
 import FloatingActionButtons from './components/FloatingActionButtons';
 import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
 import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
 import SelectedItemsManager from './components/SelectedItemsManager';
 import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
+import LuxurySurfaceCard from './components/LuxurySurfaceCard';
 import type { BookingSegment } from './types/segment';
 import { 
   useDisclosure,
@@ -107,6 +102,23 @@ const isValidUkPostcode = (postcode?: string | null) => {
 
 type PricingFlowState = 'idle' | 'loading' | 'success' | 'error';
 
+/** Minimal address shape for pricing normalization (from autocomplete or API). */
+interface AddressForPricing {
+  components?: Record<string, unknown>;
+  formatted_address?: string;
+  fullAddress?: string;
+  full?: string;
+  displayText?: string;
+  place_name?: string;
+  houseNumber?: string;
+  number?: string;
+  city?: string;
+  postcode?: string;
+  coordinates?: { lat?: number; lng?: number };
+  location?: { lat?: number; lng?: number };
+  street?: string;
+}
+
 export default function BookingLuxuryPage() {
   return (
     <Suspense fallback={
@@ -126,17 +138,17 @@ function BookingLuxuryContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isClient, setIsClient] = useState<boolean>(false);
   const router = useRouter();
-  const handleClearBookingProgress = useCallback(() => {
+  const _handleClearBookingProgress = useCallback(() => {
     if (typeof window === 'undefined') return;
     safeLocalStorageRemoveItem('sv_booking_luxury_last_step');
     setResumeStep(null);
     router.replace('/booking-luxury');
   }, [router]);
   
-  // Wave effects for step headers
-  const [addressWaveActive, setAddressWaveActive] = useState(false);
-  const [itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
-  const [checkoutWaveActive, setCheckoutWaveActive] = useState(false);
+  // Wave effects for step headers (reserved for future UI)
+  const [_addressWaveActive, setAddressWaveActive] = useState(false);
+  const [_itemsDetailsWaveActive, setItemsDetailsWaveActive] = useState(false);
+  const [_checkoutWaveActive, setCheckoutWaveActive] = useState(false);
   const toast = useToast();
   const searchParams = useSearchParams();
   
@@ -215,16 +227,6 @@ function BookingLuxuryContent() {
     }
   }, [onChatOpen]);
 
-  // Persist current step so user can resume if they navigate away
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    safeLocalStorageSetItem('sv_booking_luxury_last_step', String(currentStep));
-    if (formData.step2.bookingReference) {
-      safeLocalStorageSetItem('sv_booking_luxury_reference', formData.step2.bookingReference);
-    }
-  }, [currentStep]);
-  
-
   /**
    * CRITICAL: Booking form state management
    * 
@@ -243,8 +245,8 @@ function BookingLuxuryContent() {
   const {
     formData,
     updateFormData,
-    validateStep,
-    isStepValid,
+    validateStep: _validateStep,
+    isStepValid: _isStepValid,
     errors,
     clearErrors,
     calculatePricing,
@@ -261,28 +263,36 @@ function BookingLuxuryContent() {
     getTotalSegmentsPrice,
   } = useBookingForm();
 
+  // Persist current step so user can resume if they navigate away
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    safeLocalStorageSetItem('sv_booking_luxury_last_step', String(currentStep));
+    if (formData.step2.bookingReference) {
+      safeLocalStorageSetItem('sv_booking_luxury_reference', formData.step2.bookingReference);
+    }
+  }, [currentStep, formData.step2.bookingReference]);
 
   // Enterprise Engine: Automatic availability & pricing with full addresses
-  const [availabilityData, setAvailabilityData] = useState<any>(null);
+  const [_availabilityData, setAvailabilityData] = useState<Record<string, unknown> | null>(null);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
-  const [capacityCheck, setCapacityCheck] = useState<any>(null);
-  const [routeSummary, setRouteSummary] = useState<any>(null);
+  const [_capacityCheck, setCapacityCheck] = useState<Record<string, unknown> | null>(null);
+  const [_routeSummary, setRouteSummary] = useState<Record<string, unknown> | null>(null);
   const [pricingTiers, setPricingTiers] = useState<{
-    economy: any;
-    standard: any;
-    express: any;
+    economy: { price?: number; [k: string]: unknown };
+    standard: { price?: number; [k: string]: unknown };
+    express: { price?: number; [k: string]: unknown };
   } | null>(null);
   const [pricingFlowState, setPricingFlowState] = useState<PricingFlowState>('idle');
   const [pricingFlowMessage, setPricingFlowMessage] = useState<string | null>(null);
   const [isLoadingReference, setIsLoadingReference] = useState(false);
-  const [resumeStep, setResumeStep] = useState<number | null>(null);
+  const [_resumeStep, setResumeStep] = useState<number | null>(null);
   const bookingReference = formData.step2.bookingReference;
   const isReferenceLoading = isLoadingReference && !bookingReference;
   const { hasCopied: hasCopiedReference, onCopy: copyBookingReference } = useClipboard(bookingReference || '');
 
   // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
-  const pendingSegmentPricing = useRef<Map<number, any>>(new Map());
+  const pendingSegmentPricing = useRef<Map<number, Record<string, unknown>>>(new Map());
 
   const setPricingFailure = useCallback((message: string) => {
     setPricingFlowState('error');
@@ -302,20 +312,27 @@ function BookingLuxuryContent() {
 
   // ✅ CRITICAL FIX: Wrap addReturnSegment to pass pricingTiers for accurate pricing
   const addReturnSegmentWithPricing = useCallback((bufferMinutes: number = 30) => {
-    addReturnSegment(bufferMinutes, pricingTiers || undefined);
+    const tiersRef =
+      pricingTiers?.standard?.price != null
+        ? { standard: { price: pricingTiers.standard.price } }
+        : undefined;
+    addReturnSegment(bufferMinutes, tiersRef);
   }, [addReturnSegment, pricingTiers]);
 
   // ✅ CRITICAL FIX: Wrap addAdditionalSegment to pass pricingTiers for accurate outbound pricing
   const addAdditionalSegmentWithPricing = useCallback(() => {
-    addAdditionalSegment(pricingTiers || undefined);
+    const tiersRef =
+      pricingTiers?.standard?.price != null
+        ? { standard: { price: pricingTiers.standard.price } }
+        : undefined;
+    addAdditionalSegment(tiersRef);
   }, [addAdditionalSegment, pricingTiers]);
 
   // Normalize address from autocomplete to comprehensive pricing schema
   // ✅ MOVED UP: Must be defined before calculateSegmentPricing which depends on it
-  const normalizeAddressForPricing = useCallback((addr: any) => {
+  const normalizeAddressForPricing = useCallback((addr: AddressForPricing | null | undefined) => {
     if (!addr) return null;
-    
-    const components = addr.components || {};
+    const components = (addr.components || {}) as Record<string, unknown>;
     
     // Extract full address
     const full = 
@@ -388,7 +405,7 @@ function BookingLuxuryContent() {
   // ✅ FIXED: Use functional update to avoid stale closure bug
   const calculateSegmentPricing = useCallback(async (segmentIndex: number) => {
     // Read segments from formData (will be stale but we'll use functional update later)
-    const currentSegments = (formData.step1.segments || []) as any[];
+    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
     if (currentSegments.length <= 1) {
       console.log('⏭️ Not a multi-leg booking');
       return;
@@ -427,8 +444,8 @@ function BookingLuxuryContent() {
     }
 
     const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
-    const pickupPostcode = pickupNorm?.postcode?.trim();
-    const dropPostcode = dropNorm?.postcode?.trim();
+    const pickupPostcode = (typeof pickupNorm?.postcode === 'string' ? pickupNorm.postcode : '').trim();
+    const dropPostcode = (typeof dropNorm?.postcode === 'string' ? dropNorm.postcode : '').trim();
 
     if (!pickupPostcode || !postcodeRegex.test(pickupPostcode)) {
       console.log(`⏭️ Segment ${segmentIndex}: Invalid pickup postcode, skipping pricing`, pickupPostcode);
@@ -442,7 +459,7 @@ function BookingLuxuryContent() {
 
     try {
       // Filter out invalid items before sending
-      const validItems = itemsToUse.filter((item: any) => 
+      const validItems = itemsToUse.filter((item) =>
         item && item.id && item.name && item.quantity > 0
       );
       
@@ -478,7 +495,7 @@ function BookingLuxuryContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: validItems.map((item: any) => ({
+          items: validItems.map((item) => ({
             id: item.id,
             name: item.name,
             quantity: item.quantity,
@@ -566,7 +583,7 @@ function BookingLuxuryContent() {
     } catch (error) {
       console.error(`Segment ${segmentIndex} pricing failed:`, error);
     }
-  }, [formData.step1.segments, formData.step1.items, formData.step1.crewSize, formData.step1.serviceType, formData.step1.urgency, formData.step1.pickupTimeSlot, normalizeAddressForPricing]);
+  }, [formData.step1.segments, formData.step1.items, formData.step1.crewSize, formData.step1.serviceType, formData.step1.urgency, formData.step1.pickupTimeSlot, formData.step1.serviceTier, normalizeAddressForPricing]);
 
   const handleBookingCreated = useCallback(({ bookingId, reference }: { bookingId: string; reference: string }) => {
     updateFormData('step2', { bookingId, bookingReference: reference });
@@ -646,7 +663,7 @@ function BookingLuxuryContent() {
           serviceType: formData.step1.serviceType,
           crewSize: formData.step1.crewSize,
           scheduledDate: formData.step1.pickupDate,
-          capacityCheck,
+          capacityCheck: _capacityCheck,
           notes: formData.step2.specialInstructions,
           status: 'DRAFT',
         }),
@@ -661,12 +678,12 @@ function BookingLuxuryContent() {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [formData.step1, formData.step2, capacityCheck]);
+  }, [formData.step1, formData.step2]);
 
   // Calculate all segments pricing in multi-leg
   // ✅ CRITICAL FIX: Apply all segment pricing updates atomically to avoid stale closure bugs
   const calculateAllSegmentsPricing = useCallback(async () => {
-    const segments = (formData.step1.segments || []) as any[];
+    const segments = (formData.step1.segments || []) as BookingSegment[];
     if (segments.length <= 1) return;
 
     // Clear any pending updates from previous runs
@@ -687,17 +704,18 @@ function BookingLuxuryContent() {
       
       pendingSegmentPricing.current.forEach((update, segmentIndex) => {
         if (latestSegments[segmentIndex]) {
+          const pricing = (typeof update.pricing === 'object' && update.pricing !== null ? update.pricing : {}) as { total?: number; distance?: number };
           latestSegments[segmentIndex] = {
             ...latestSegments[segmentIndex],
-            items: update.items,
+            items: (update.items ?? latestSegments[segmentIndex].items) as BookingSegment['items'],
             pricing: {
-              ...update.pricing,
-              distance: update.pricing.distance || latestSegments[segmentIndex].distance || 0,
-            }
+              ...pricing,
+              distance: pricing.distance ?? latestSegments[segmentIndex].distance ?? 0,
+            } as BookingSegment['pricing']
           };
-          totalPrice += update.pricing.total || 0;
+          totalPrice += pricing.total ?? 0;
           hasUpdates = true;
-          console.log(`✅ Applied pricing for segment ${segmentIndex}: £${update.pricing.total.toFixed(2)}`);
+          console.log(`✅ Applied pricing for segment ${segmentIndex}: £${(pricing?.total ?? 0).toFixed(2)}`);
         }
       });
       
@@ -867,7 +885,7 @@ function BookingLuxuryContent() {
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
     // For multi-leg bookings: calculate pricing per-segment
-    const segments = (formData.step1.segments || []) as any[];
+    const segments = (formData.step1.segments || []) as BookingSegment[];
     if (segments.length > 1) {
       console.log('🔄 Multi-leg booking: Calculating pricing for all segments');
       setPricingFlowState('loading');
@@ -900,40 +918,42 @@ function BookingLuxuryContent() {
     // Normalize addresses to consistent schema
     const pickupNormRaw = normalizeAddressForPricing(formData.step1.pickupAddress);
     const dropNormRaw = normalizeAddressForPricing(formData.step1.dropoffAddress);
-    const pickupNorm = pickupNormRaw ? { ...pickupNormRaw, postcode: normalizeUkPostcode(pickupNormRaw.postcode) } : null;
-    const dropNorm = dropNormRaw ? { ...dropNormRaw, postcode: normalizeUkPostcode(dropNormRaw.postcode) } : null;
+    const pickupNorm = pickupNormRaw ? { ...pickupNormRaw, postcode: normalizeUkPostcode(typeof pickupNormRaw.postcode === 'string' ? pickupNormRaw.postcode : '') } : null;
+    const dropNorm = dropNormRaw ? { ...dropNormRaw, postcode: normalizeUkPostcode(typeof dropNormRaw.postcode === 'string' ? dropNormRaw.postcode : '') } : null;
     const segmentDropoffs = (formData.step1.segments || [])
-      .map((segment: any) => ({
+      .map((segment: BookingSegment) => ({
         norm: normalizeAddressForPricing(segment.dropoffAddress),
         property: segment.dropoffProperty || formData.step1.dropoffProperty
       }))
       .filter(({ norm }) => norm && norm.postcode);
 
-    const buildDropoffPayload = (norm: any, property?: any) => {
-      const postcode = normalizeUkPostcode(norm?.postcode || '');
+    type NormShape = { full?: unknown; line1?: unknown; city?: unknown; postcode?: unknown; street?: unknown; number?: unknown; coordinates?: { lat?: number; lng?: number } };
+    const buildDropoffPayload = (norm: NormShape, property?: Record<string, unknown>) => {
+      const postcode = normalizeUkPostcode(typeof norm?.postcode === 'string' ? norm.postcode : '');
       return {
-        full: norm?.full || 'Dropoff Address',
-        line1: norm?.line1 || '1 Main Street',
-        city: norm?.city || 'London',
+        full: (typeof norm?.full === 'string' ? norm.full : 'Dropoff Address'),
+        line1: (typeof norm?.line1 === 'string' ? norm.line1 : '1 Main Street'),
+        city: (typeof norm?.city === 'string' ? norm.city : 'London'),
         postcode: postcode || 'SW1A 1AA',
         propertyType: property?.type || 'house',
-        street: norm?.street || 'Main Street',
-        number: norm?.number || '1',
+        street: (typeof norm?.street === 'string' ? norm.street : 'Main Street'),
+        number: (typeof norm?.number === 'string' ? norm.number : '1'),
         coordinates: {
-          lat: norm?.coordinates?.lat || 0,
-          lng: norm?.coordinates?.lng || 0
+          lat: norm?.coordinates?.lat ?? 0,
+          lng: norm?.coordinates?.lng ?? 0
         }
       };
     };
 
-    const dropoffsPayload: any[] = [];
+    const dropoffsPayload: Array<{ line1?: string; city?: string; postcode?: string }> = [];
 
     if (dropNorm) {
       dropoffsPayload.push(buildDropoffPayload(dropNorm, formData.step1.dropoffProperty));
     }
 
     segmentDropoffs.forEach(({ norm, property }) => {
-      const key = `${norm?.line1 || ''}|${norm?.postcode || ''}`.toLowerCase();
+      if (!norm) return;
+      const key = `${typeof norm.line1 === 'string' ? norm.line1 : ''}|${typeof norm.postcode === 'string' ? norm.postcode : ''}`.toLowerCase();
       const exists = dropoffsPayload.some((d) => `${d.line1}|${d.postcode}`.toLowerCase() === key);
       if (!exists) {
         dropoffsPayload.push(buildDropoffPayload(norm, property));
@@ -995,10 +1015,10 @@ function BookingLuxuryContent() {
       // ✅ CRITICAL FIX: Validate items before sending to API
       // Do not use default items - require explicit item selection
       const validItems = itemsToUse
-        .map((item: any) => {
+        .map((item) => {
           const quantity = typeof item?.quantity === 'number'
             ? item.quantity
-            : parseInt(item?.quantity ?? '0', 10);
+            : parseInt(String(item?.quantity ?? '0'), 10);
 
           return {
             id: item?.id,
@@ -1008,7 +1028,7 @@ function BookingLuxuryContent() {
             volume_override: item?.volume,
           };
         })
-        .filter((item: any) => item && item.id && item.name && typeof item.quantity === 'number' && item.quantity > 0);
+        .filter((item) => item && item.id && item.name && typeof item.quantity === 'number' && item.quantity > 0);
 
       // ✅ CRITICAL FIX: Require at least one valid item
       // Do not use default items - this leads to inaccurate pricing
@@ -1169,7 +1189,7 @@ function BookingLuxuryContent() {
     } finally {
       setIsLoadingAvailability(false);
     }
-  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, toast]);
+  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, toast, normalizeAddressForPricing, updateFormData]);
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -1181,7 +1201,7 @@ function BookingLuxuryContent() {
 
   // Three-tier pricing calculations (fallback for legacy)
   const calculateEconomyPrice = useCallback(() => {
-    const segments = (formData.step1.segments || []) as any[];
+    const segments = (formData.step1.segments || []) as BookingSegment[];
     const isMultiLeg = segments.length > 1;
     
     if (isMultiLeg) {
@@ -1217,7 +1237,7 @@ function BookingLuxuryContent() {
   }, [pricingTiers, formData.step1.segments]);
 
   const calculateStandardPrice = useCallback(() => {
-    const segments = (formData.step1.segments || []) as any[];
+    const segments = (formData.step1.segments || []) as BookingSegment[];
     const isMultiLeg = segments.length > 1;
     
     if (isMultiLeg) {
@@ -1253,7 +1273,7 @@ function BookingLuxuryContent() {
   }, [pricingTiers, formData.step1.segments]);
 
   const calculatePriorityPrice = useCallback(() => {
-    const segments = (formData.step1.segments || []) as any[];
+    const segments = (formData.step1.segments || []) as BookingSegment[];
     const isMultiLeg = segments.length > 1;
     
     if (isMultiLeg) {
@@ -1294,14 +1314,14 @@ function BookingLuxuryContent() {
     { id: 'bed', name: 'Double Bed', category: 'Bedroom Furniture', unitPrice: 25 },
   ];
 
-  // Get quantity of trending item
-  const getTrendingItemQuantity = (itemId: string) => {
+  // Get quantity of trending item (reserved for trending UI)
+  const _getTrendingItemQuantity = (itemId: string) => {
     const item = formData.step1.items.find(item => item.id === itemId);
     return item?.quantity || 0;
   };
 
-  // Add trending item with feedback
-  const addTrendingItem = (trendingItem: typeof trendingItems[0]) => {
+  // Add trending item with feedback (reserved for trending UI)
+  const _addTrendingItem = (trendingItem: typeof trendingItems[0]) => {
     const existingItems = formData.step1.items;
     const existingIndex = existingItems.findIndex(item => item.id === trendingItem.id);
     
@@ -1347,8 +1367,8 @@ function BookingLuxuryContent() {
     // Pricing will be calculated automatically when items change
   };
 
-  // Remove trending item with feedback
-  const removeTrendingItem = (itemId: string) => {
+  // Remove trending item with feedback (reserved for trending UI)
+  const _removeTrendingItem = (itemId: string) => {
     const existingItems = formData.step1.items;
     const existingIndex = existingItems.findIndex(item => item.id === itemId);
     
@@ -1464,8 +1484,8 @@ function BookingLuxuryContent() {
           urgency: formData.step1.urgency
         },
         // ✅ INCLUDE SEGMENTS to detect changes in multi-leg bookings
-        segments: segments.map((s: any) => ({
-          items: s.items?.map((i: any) => ({ id: i.id, quantity: i.quantity })) || [],
+        segments: segments.map((s: BookingSegment) => ({
+          items: s.items?.map((i: { id: string; quantity: number }) => ({ id: i.id, quantity: i.quantity })) || [],
           pickup: { lat: s.pickupAddress?.coordinates?.lat, lng: s.pickupAddress?.coordinates?.lng },
           dropoff: { lat: s.dropoffAddress?.coordinates?.lat, lng: s.dropoffAddress?.coordinates?.lng },
           datetime: s.datetime
@@ -1583,7 +1603,7 @@ function BookingLuxuryContent() {
       if (formData.step1.pickupAddress?.full && formData.step1.dropoffAddress?.full) {
         // For Step 1, we DON'T validate segments for items OR datetime (both are in Step 2)
         // Just verify addresses exist for multi-leg
-        const segments = (formData.step1.segments || []) as any[];
+        const segments = (formData.step1.segments || []) as BookingSegment[];
         if (segments.length > 1) {
           // Manual validation: Only check addresses, NOT items or datetime
           let hasError = false;
@@ -1620,7 +1640,7 @@ function BookingLuxuryContent() {
       }
     } else if (currentStep === 2) {
       // Step 2: Check items and date/time are selected
-      const segments = (formData.step1.segments || []) as any[];
+      const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
       const pickupCoordinates = formData.step1.pickupAddress?.coordinates;
       const dropoffCoordinates = formData.step1.dropoffAddress?.coordinates;
@@ -1713,8 +1733,8 @@ function BookingLuxuryContent() {
       
       // CRITICAL FIX: Sync items AND pricing from outbound to return segment before checkout
       if (isMultiLeg) {
-        const outboundSegment = segments.find((s: any) => s.segmentType === 'outbound');
-        const returnSegmentIndex = segments.findIndex((s: any) => s.segmentType === 'return');
+        const outboundSegment = segments.find((s: BookingSegment) => s.segmentType === 'outbound');
+        const returnSegmentIndex = segments.findIndex((s: BookingSegment) => s.segmentType === 'return');
         
         if (outboundSegment && returnSegmentIndex !== -1) {
           const returnSegment = segments[returnSegmentIndex];
@@ -1725,7 +1745,7 @@ function BookingLuxuryContent() {
           
           if (needsItemSync || needsPricingSync) {
             console.log('🔄 Auto-syncing items and pricing from outbound to return before checkout');
-            const updates: any = {};
+            const updates: Record<string, unknown> = {};
             if (needsItemSync) {
               updates.items = [...outboundSegment.items];
             }
@@ -2179,12 +2199,14 @@ function BookingLuxuryContent() {
                 </Box>
               </Box>
 
-              {/* Bottom: Progress Steps - Enhanced Design with Labels */}
-              <VStack spacing={2} w="full">
-                <HStack 
+              {/* Bottom: Progress Steps - Accessible, not color-only */}
+              <VStack spacing={2} w="full" role="navigation" aria-label="Booking steps">
+                <HStack
+                  role="list"
                   spacing={{ base: 2, md: 3 }}
                   justify="center"
                   w="full"
+                  flexWrap="nowrap"
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -2192,8 +2214,10 @@ function BookingLuxuryContent() {
                 >
                   {STEPS.map((step, index) => (
                     <React.Fragment key={step.id}>
-                      <VStack spacing={1}>
+                      <VStack spacing={1} role="listitem" flexShrink={0}>
                         <Box
+                          as="button"
+                          type="button"
                           w={{ base: '40px', md: '48px' }}
                           h={{ base: '40px', md: '48px' }}
                           borderRadius="full"
@@ -2223,6 +2247,15 @@ function BookingLuxuryContent() {
                           }
                           position="relative"
                           animation={step.id === currentStep ? 'stepPulse 2s ease-in-out infinite' : undefined}
+                          aria-current={step.id === currentStep ? 'step' : undefined}
+                          aria-label={
+                            step.id < currentStep
+                              ? `Step ${step.id}: ${step.shortTitle}, completed`
+                              : step.id === currentStep
+                              ? `Step ${step.id}: ${step.shortTitle}, current step`
+                              : `Step ${step.id}: ${step.shortTitle}`
+                          }
+                          disabled={step.id > currentStep}
                           sx={{
                             '@keyframes stepPulse': {
                               '0%, 100%': {
@@ -2270,9 +2303,9 @@ function BookingLuxuryContent() {
                             pointerEvents: 'none',
                           } : {}}
                         >
-                          {step.id < currentStep ? <Icon as={FaCheck} boxSize={{ base: 4, md: 5 }} /> : step.id}
+                          {step.id < currentStep ? <Icon as={FaCheck} boxSize={{ base: 4, md: 5 }} aria-hidden /> : step.id}
                         </Box>
-                        {/* Step Label */}
+                        {/* Step Label - visible state for accessibility */}
                         <Text
                           fontSize={{ base: 'xs', md: 'sm' }}
                           fontWeight={step.id === currentStep ? '700' : '500'}
@@ -2284,7 +2317,9 @@ function BookingLuxuryContent() {
                               : 'whiteAlpha.500'
                           }
                           textAlign="center"
-                          whiteSpace="nowrap"
+                          maxW={{ base: '56px', sm: '72px', md: 'none' }}
+                          noOfLines={1}
+                          title={step.shortTitle}
                           transition="all 0.3s"
                         >
                           {step.shortTitle}
@@ -2364,42 +2399,43 @@ function BookingLuxuryContent() {
           </Box>
 
           {(bookingReference || isReferenceLoading) && (
-            <Box mb={{ base: 4, md: 6 }}>
-              <Alert
-                status="info"
-                variant="subtle"
-                bg="rgba(59, 130, 246, 0.12)"
-                border="1px solid"
-                borderColor="blue.400"
-                borderRadius="lg"
-                px={{ base: 3, md: 4 }}
-                py={{ base: 3, md: 4 }}
-              >
-                <AlertIcon />
-                <Flex w="full" align="center" justify="space-between" gap={3} flexWrap="wrap">
+            <Box
+              mb={{ base: 4, md: 6 }}
+              borderRadius="2xl"
+              border="1px solid"
+              borderColor="border.primary"
+              bg="bg.card"
+              p={{ base: 5, md: 7 }}
+              minH={{ base: '120px', md: '140px' }}
+              display="flex"
+              alignItems="center"
+            >
+              <Flex w="full" align="center" justify="space-between" gap={3} flexWrap="wrap">
+                <HStack spacing={3}>
+                  <Icon as={FaInfoCircle} boxSize={5} color="blue.400" />
                   <Box>
-                    <AlertTitle color="white" fontSize="sm">
+                    <Text color="text.primary" fontSize="sm" fontWeight="600">
                       Booking reference
-                    </AlertTitle>
-                    <AlertDescription color="whiteAlpha.900" fontSize="sm">
+                    </Text>
+                    <Text color="text.secondary" fontSize="sm">
                       {bookingReference || 'Generating your reference...'}
-                    </AlertDescription>
+                    </Text>
                   </Box>
-                  {bookingReference ? (
-                    <Button
-                      size="sm"
-                      leftIcon={<FaCopy />}
-                      onClick={copyBookingReference}
-                      colorScheme={hasCopiedReference ? 'green' : 'blue'}
-                      variant="solid"
-                    >
-                      {hasCopiedReference ? 'Copied' : 'Copy'}
-                    </Button>
-                  ) : (
-                    <Spinner size="sm" color="white" />
-                  )}
-                </Flex>
-              </Alert>
+                </HStack>
+                {bookingReference ? (
+                  <Button
+                    size="sm"
+                    leftIcon={<FaCopy />}
+                    onClick={copyBookingReference}
+                    colorScheme={hasCopiedReference ? 'green' : 'blue'}
+                    variant="solid"
+                  >
+                    {hasCopiedReference ? 'Copied' : 'Copy'}
+                  </Button>
+                ) : (
+                  <Spinner size="sm" color="blue.400" />
+                )}
+              </Flex>
             </Box>
           )}
 
@@ -2438,20 +2474,12 @@ function BookingLuxuryContent() {
               <Box key="step2-items" w="full" data-booking-step="2">
                 <ResponsiveSection maxW="1200px" w="full">
                 <VStack spacing={6} align="stretch">
-                  {/* Date & Time Selection - Right Under Progress Bar */}
-                  <Box
+                  {/* Date & Time Selection - unified LuxurySurfaceCard */}
+                  <LuxurySurfaceCard
                     id="datetime-card"
                     position="relative"
-                    borderRadius="2xl"
-                    border="1px solid"
-                    borderColor={errorCardId === 'datetime-card' ? 'red.400' : 'border.primary'}
-                    boxShadow={errorCardId === 'datetime-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : 'none'}
-                  >
-                    <Box 
-                      bg="bg.card"
-                      borderRadius="2xl"
-                      position="relative"
-                      overflow="hidden"
+                    borderColor={errorCardId === 'datetime-card' ? 'red.400' : undefined}
+                    boxShadow={errorCardId === 'datetime-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : undefined}
                   >
                     <Box p={{ base: 5, md: 7 }}>
                       <VStack spacing={{ base: 6, md: 8 }} align="stretch">
@@ -2486,7 +2514,7 @@ function BookingLuxuryContent() {
                               fontSize="md"
                               _focus={{ boxShadow: '0 0 0 2px var(--chakra-colors-purple-400)' }}
                             >
-                              I'm flexible
+                              I&apos;m flexible
                             </Button>
                           </Stack>
                         </VStack>
@@ -2494,7 +2522,7 @@ function BookingLuxuryContent() {
                         {formData.step1.pickupDateChoice === 'unknown' ? (
                           <Box textAlign="center">
                             <Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
-                              You're flexible — you can confirm date and time later and continue now.
+                              You&apos;re flexible — you can confirm date and time later and continue now.
                             </Text>
                           </Box>
                         ) : (
@@ -2598,18 +2626,16 @@ function BookingLuxuryContent() {
                         </Box>
                       </VStack>
                     </Box>
-                  </Box>
-                  </Box>
+                  </LuxurySurfaceCard>
 
 
-                  {/* Items Selection Card with Red Neon Error Animation */}
-                  <Box
+                  {/* Items Selection - unified LuxurySurfaceCard */}
+                  <LuxurySurfaceCard
                     id="items-card"
                     position="relative"
-                    borderRadius="2xl"
-                    border="1px solid"
-                    borderColor={errorCardId === 'items-card' ? 'red.400' : 'border.primary'}
-                    boxShadow={errorCardId === 'items-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : 'none'}
+                    borderColor={errorCardId === 'items-card' ? 'red.400' : undefined}
+                    boxShadow={errorCardId === 'items-card' ? '0 0 0 1px var(--chakra-colors-red-400)' : undefined}
+                    overflow="visible"
                   >
                     <WhereAndWhatStepHierarchical
                       formData={formData}
@@ -2618,22 +2644,15 @@ function BookingLuxuryContent() {
                       errors={errors}
                       calculatePricing={calculateComprehensivePricing}
                     />
-                  </Box>
+                  </LuxurySurfaceCard>
 
                   {/* SINGLE Navigation Section - Bottom of Step 2 */}
-                  <Box
-                    bg="bg.card"
-                    backdropFilter="blur(10px)"
-                    borderRadius="xl"
-                    border="1px solid"
-                    borderColor="border.primary"
-                    mt={8}
-                  >
+                  <LuxurySurfaceCard mt={8}>
                     <Box p={{ base: 4, md: 6 }}>
                       <VStack spacing={4}>
                         {/* Status Message */}
                         {(() => {
-                          const segments = (formData.step1.segments || []) as any[];
+                          const segments = (formData.step1.segments || []) as BookingSegment[];
                           const isMultiLeg = segments.length > 1;
                           const hasItems = isMultiLeg 
                             ? segments.some(s => s.items && s.items.length > 0)
@@ -2748,7 +2767,7 @@ function BookingLuxuryContent() {
                             size="lg"
                             flex={2}
                             isDisabled={(() => {
-                              const segments = (formData.step1.segments || []) as any[];
+                              const segments = (formData.step1.segments || []) as BookingSegment[];
                               const isMultiLeg = segments.length > 1;
                               const hasItems = isMultiLeg 
                                 ? segments.some(s => s.items && s.items.length > 0)
@@ -2760,7 +2779,7 @@ function BookingLuxuryContent() {
                               return !hasItems || !hasDate || !quoteReady || isLoadingAvailability;
                             })()}
                             boxShadow={(() => {
-                              const segments = (formData.step1.segments || []) as any[];
+                              const segments = (formData.step1.segments || []) as BookingSegment[];
                               const isMultiLeg = segments.length > 1;
                               const hasItems = isMultiLeg 
                                 ? segments.some(s => s.items && s.items.length > 0)
@@ -2772,7 +2791,7 @@ function BookingLuxuryContent() {
                               return hasItems && hasDate && quoteReady ? "0 4px 20px rgba(59, 130, 246, 0.4)" : "none";
                             })()}
                             _hover={(() => {
-                              const segments = (formData.step1.segments || []) as any[];
+                              const segments = (formData.step1.segments || []) as BookingSegment[];
                               const isMultiLeg = segments.length > 1;
                               const hasItems = isMultiLeg 
                                 ? segments.some(s => s.items && s.items.length > 0)
@@ -2798,7 +2817,7 @@ function BookingLuxuryContent() {
                         </HStack>
                       </VStack>
                     </Box>
-                  </Box>
+                  </LuxurySurfaceCard>
                 </VStack>
                 </ResponsiveSection>
               </Box>
@@ -2811,8 +2830,8 @@ function BookingLuxuryContent() {
                   updateFormData={updateFormData}
                   errors={errors}
                   paymentSuccess={false}
-                  capacityCheck={capacityCheck}
-                  routeSummary={routeSummary}
+                  capacityCheck={_capacityCheck}
+                  routeSummary={_routeSummary}
                   isCalculatingPricing={isCalculatingPricing}
                   economyPrice={calculateEconomyPrice()}
                   standardPrice={calculateStandardPrice()}
@@ -2859,12 +2878,12 @@ function BookingLuxuryContent() {
       {/* Unified Floating Action Buttons */}
       <FloatingActionButtons
         itemCount={(() => {
-          const segments = (formData.step1.segments || []) as any[];
+          const segments = (formData.step1.segments || []) as BookingSegment[];
           const isMultiLeg = segments.length > 1;
           if (isMultiLeg) {
             return segments.reduce((total, seg) => {
               const items = seg.items || [];
-              return total + items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+              return total + items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
             }, 0);
           }
           return (formData.step1.items || []).reduce((sum, item) => sum + item.quantity, 0);
@@ -2893,7 +2912,7 @@ function BookingLuxuryContent() {
           }))}
           onAddItems={(extractedItems) => {
             // Handle extracted items
-            const segments = (formData.step1.segments || []) as any[];
+            const segments = (formData.step1.segments || []) as BookingSegment[];
             const isMultiLeg = segments.length > 1;
             
             if (isMultiLeg) {

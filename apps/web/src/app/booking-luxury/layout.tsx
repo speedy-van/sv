@@ -1,4 +1,5 @@
 import React from 'react';
+import './luxury-design-system.css';
 
 export const metadata = {
   title: 'Book Your Move | Man & Van Service | House, Office & Furniture Removal | Speedy Van UK',

@@ -1,10 +1,11 @@
 'use client';
 
+/* eslint-disable no-console -- critical console.error for booking reference visibility check */
 /**
  * Step 3: Customer Details & Payment - Simplified Version
  * Updated: 2025-11-20 - Enhanced toggle button UX
  * Clean, modern design like Uber/Airbnb
- * 
+ *
  * ⚠️⚠️⚠️ CRITICAL WARNINGS - READ BEFORE EDITING ⚠️⚠️⚠️
  * 
  * This file contains CRITICAL UI components that MUST NOT be deleted:
@@ -31,13 +32,11 @@
  */
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import NextImage from 'next/image';
 import {
   Box,
   VStack,
   HStack,
   Flex,
-  Grid,
   Text,
   Input,
   Textarea,
@@ -54,7 +53,6 @@ import {
   FormErrorMessage,
   Icon,
   SimpleGrid,
-  Collapse,
   useDisclosure,
   Heading,
   Button,
@@ -67,13 +65,8 @@ import {
 } from '@chakra-ui/react';
 import {
   FaCreditCard,
-  FaShoppingBag,
-  FaChevronUp,
-  FaTimes,
   FaMapMarkerAlt,
-  FaPlus,
-  FaMinus,
-  FaTrash,
+  FaInfoCircle,
 } from 'react-icons/fa';
 import {
   SiApplepay,
@@ -88,7 +81,6 @@ import { FormData, CustomerDetails } from '../hooks/useBookingForm';
 import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
-import SelectedItemsManager from './SelectedItemsManager';
 import OrbitingIconsAnimation from './OrbitingIconsAnimation';
 import LuxurySurfaceCard from './LuxurySurfaceCard';
 
@@ -103,12 +95,12 @@ interface WhoAndPaymentStepProps {
   priorityPrice?: number;
   calculatePricing?: () => Promise<boolean>;
   calculateComprehensivePricing?: () => Promise<void>;
-  validatePromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
-  applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: any }>;
+  validatePromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: unknown }>;
+  applyPromotionCode?: (code: string) => Promise<{ success: boolean; error?: string; promotion?: unknown }>;
   removePromotionCode?: () => void;
   getTotalSegmentsPrice?: () => number;
-  capacityCheck?: any;
-  routeSummary?: any;
+  capacityCheck?: unknown;
+  routeSummary?: unknown;
   onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
 }
 
@@ -116,15 +108,15 @@ export default function WhoAndPaymentStepSimple({
   formData,
   updateFormData,
   errors,
-  capacityCheck,
-  routeSummary,
+  capacityCheck: _capacityCheck,
+  routeSummary: _routeSummary,
   onBookingCreated,
-  economyPrice = 0,
+  economyPrice: _economyPrice = 0,
   standardPrice = 0,
-  priorityPrice = 0,
-  calculatePricing,
+  priorityPrice: _priorityPrice = 0,
+  calculatePricing: _calculatePricing,
   calculateComprehensivePricing,
-  getTotalSegmentsPrice,
+  getTotalSegmentsPrice: _getTotalSegmentsPrice,
   validatePromotionCode,
   applyPromotionCode,
   removePromotionCode,
@@ -134,14 +126,14 @@ export default function WhoAndPaymentStepSimple({
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [promotionCode, setPromotionCode] = useState('');
   const [isValidatingPromotion, setIsValidatingPromotion] = useState(false);
-  const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
+  const { isOpen: _isSummaryExpanded, onToggle: _toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const [pricingStage, setPricingStage] = useState<'calculating' | 'results'>('calculating');
   const [visibleCardsCount, setVisibleCardsCount] = useState(0);
   const toast = useToast();
-  const isIOSDevice = useIsIOSDevice();
+  const _isIOSDevice = useIsIOSDevice();
   const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
   const [isMobileView, setIsMobileView] = useState(false);
-  const [mobilePriceCardLimit, setMobilePriceCardLimit] = useState(6);
+  const [_mobilePriceCardLimit, _setMobilePriceCardLimit] = useState(6);
 
   // ⚠️ CRITICAL: Safety check for booking reference card visibility
   useEffect(() => {
@@ -228,12 +220,13 @@ export default function WhoAndPaymentStepSimple({
 
       // If validation succeeds, apply the promotion
       const result = await applyPromotionCode(promotionCode.trim());
-      
-      if (result.success && result.promotion) {
+      const promotion = result.promotion as { name?: string; discountAmount?: number } | undefined;
+
+      if (result.success && promotion) {
         setPromotionCode('');
         toast({
           title: 'Promotion Applied! 🎉',
-          description: `${result.promotion.name} - You saved £${result.promotion.discountAmount?.toFixed(2) || '0.00'}!`,
+          description: `${promotion.name ?? 'Promotion'} - You saved £${promotion.discountAmount?.toFixed(2) ?? '0.00'}!`,
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -278,7 +271,7 @@ export default function WhoAndPaymentStepSimple({
   useEffect(() => {
     // Create a stable string representation of items for comparison
     const currentItemsKey = JSON.stringify(
-      (formData.step1.items || []).map((item: any) => ({ id: item.id, quantity: item.quantity }))
+      (formData.step1.items || []).map((item: { id: string; quantity: number }) => ({ id: item.id, quantity: item.quantity }))
     );
     const currentCrewSize = formData.step1.crewSize || '2';
     
@@ -337,7 +330,10 @@ export default function WhoAndPaymentStepSimple({
     return undefined;
   };
 
-  const segments = (formData.step1.segments || []) as BookingSegment[];
+  const segments = useMemo(
+    () => (formData.step1.segments || []) as BookingSegment[],
+    [formData.step1.segments]
+  );
 
   // Detect when address data is incomplete (e.g., missing postcodes) so we can warn
   const hasBasePostcodes =
@@ -488,7 +484,7 @@ export default function WhoAndPaymentStepSimple({
     return () => window.removeEventListener('resize', compute);
   }, []);
 
-  const effectiveIsMobile = isMobile || isMobileView;
+  const _effectiveIsMobile = isMobile || isMobileView;
 
   const isSameDay = (a: Date, b: Date) => {
     return a.getFullYear() === b.getFullYear() &&
@@ -579,13 +575,11 @@ export default function WhoAndPaymentStepSimple({
     return minIdx;
   }, [priceCalendar]);
 
-  const selectCheapest = useCallback(() => {
-    console.log('🔍 Best Price clicked - selecting index:', cheapestIndex);
+  const _selectCheapest = useCallback(() => {
     handleSelectDay(cheapestIndex);
   }, [cheapestIndex, handleSelectDay]);
-  
-  const selectEarliest = useCallback(() => {
-    console.log('⏰ Earliest clicked - selecting index: 0');
+
+  const _selectEarliest = useCallback(() => {
     handleSelectDay(0);
   }, [handleSelectDay]);
 
@@ -630,7 +624,7 @@ export default function WhoAndPaymentStepSimple({
       // ✅ CRITICAL FIX: For multi-leg, aggregate ALL items from ALL segments
       // Each segment now has its own isolated items (fixed in Step 2)
       // Create a map to aggregate quantities: { itemId: totalQuantity }
-      const itemsMap = new Map<string, any>();
+      const itemsMap = new Map<string, { quantity: number; name?: string; id?: string; weight?: number }>();
       
       segments.forEach(segment => {
         if (segment.items && Array.isArray(segment.items)) {
@@ -661,7 +655,7 @@ export default function WhoAndPaymentStepSimple({
       : [];
   }, [formData.step1.items, formData.step1.segments]);
 
-  const selectionStats = useMemo(() => {
+  const _selectionStats = useMemo(() => {
     if (!selectedItems.length) {
       return { totalItems: 0, totalWeight: 0 };
     }
@@ -671,7 +665,7 @@ export default function WhoAndPaymentStepSimple({
 
     selectedItems.forEach((item) => {
       totalItems += item.quantity;
-      totalWeight += item.quantity * item.weight;
+      totalWeight += item.quantity * (item.weight ?? 0);
     });
 
     return { totalItems, totalWeight };
@@ -699,23 +693,21 @@ export default function WhoAndPaymentStepSimple({
         // ✅ CRITICAL FIX: For multi-leg, keep ALL items in ALL segments with SAME quantities
         // This is correct because each journey leg carries the same items
         // (e.g., outbound brings items A→B, return brings same items B→A)
-        const updatedSegments = segments.map((segment) => {
-          return {
-            ...segment,
-            // Each segment gets the full items list (not divided) with deep copy
-            items: sanitizedItems.map(item => ({ ...item }))
-          };
-        });
+        const updatedSegments: BookingSegment[] = segments.map((segment) => ({
+          ...segment,
+          // Each segment gets the full items list (not divided) with deep copy.
+          // Cast: sanitizedItems are aggregated from segment items + catalog; full Item shape is ensured elsewhere.
+          items: sanitizedItems.map((item) => ({ ...item })) as FormData['step1']['items'],
+        }));
 
         updateFormData('step1', { 
           segments: updatedSegments,
-          // Also update global items for consistency
-          items: sanitizedItems.map((item) => ({ ...item }))
+          items: sanitizedItems.map((item) => ({ ...item })) as FormData['step1']['items'],
         });
       } else {
         // Single-leg: update global items
         updateFormData('step1', {
-          items: sanitizedItems.map((item) => ({ ...item })),
+          items: sanitizedItems.map((item) => ({ ...item })) as FormData['step1']['items'],
         });
       }
       
@@ -729,7 +721,7 @@ export default function WhoAndPaymentStepSimple({
     [updateFormData, formData.step1.segments]
   );
 
-  const incrementItem = useCallback(
+  const _incrementItem = useCallback(
     async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
@@ -789,10 +781,10 @@ export default function WhoAndPaymentStepSimple({
         // This ensures proper state synchronization without race conditions
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
   );
 
-  const decrementItem = useCallback(
+  const _decrementItem = useCallback(
     async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
@@ -865,10 +857,10 @@ export default function WhoAndPaymentStepSimple({
         // This ensures proper state synchronization without race conditions
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
   );
 
-  const removeItem = useCallback(
+  const _removeItem = useCallback(
     async (itemId: string) => {
       const segments = (formData.step1.segments || []) as BookingSegment[];
       const isMultiLeg = segments.length > 1;
@@ -909,7 +901,7 @@ export default function WhoAndPaymentStepSimple({
         // This ensures proper state synchronization without race conditions
       }
     },
-    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData, calculatePricing, calculateComprehensivePricing]
+    [formData.step1.items, formData.step1.segments, applyItemUpdates, updateFormData]
   );
 
   const updateCustomerDetails = useCallback((field: keyof CustomerDetails, value: string) => {
@@ -974,10 +966,10 @@ export default function WhoAndPaymentStepSimple({
 
   // Re-trigger orbit animation when items or addresses change
   useEffect(() => {
-    const itemsKey = JSON.stringify(
-      (formData.step1.items || []).map((item: any) => ({ id: item.id, quantity: item.quantity }))
+    const _itemsKey = JSON.stringify(
+      (formData.step1.items || []).map((item: { id: string; quantity: number }) => ({ id: item.id, quantity: item.quantity }))
     );
-    const addressKey = `${formData.step1.pickupAddress?.postcode}-${formData.step1.dropoffAddress?.postcode}`;
+    const _addressKey = `${formData.step1.pickupAddress?.postcode}-${formData.step1.dropoffAddress?.postcode}`;
     
     // Skip first render (already handled by mount effect)
     if (prevItemsRef.current !== '' || prevCrewSizeRef.current !== '') {
@@ -1030,19 +1022,19 @@ export default function WhoAndPaymentStepSimple({
       <VStack spacing={{ base: 5, md: 6 }} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* ⚠️ CRITICAL: Booking Reference - same height as price cards (do not delete) */}
+        {/* ⚠️ CRITICAL: Booking Reference - unified LuxurySurfaceCard (do not delete) */}
         {formData.step2.bookingReference && (
-          <Card
-            minH="140px"
-            borderRadius="xl"
+          <LuxurySurfaceCard
+            tone="info"
             borderWidth="2px"
             borderColor="blue.400"
             bg="linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.12))"
             data-testid="booking-reference-alert"
             data-critical="true"
+            minH="120px"
           >
-            <CardBody p={{ base: 3, md: 4 }} display="flex" alignItems="center" gap={3}>
-              <AlertIcon boxSize={5} color="blue.400" flexShrink={0} />
+            <Box p={{ base: 3, md: 4 }} display="flex" alignItems="center" gap={3}>
+              <Icon as={FaInfoCircle} boxSize={5} color="blue.400" flexShrink={0} />
               <Box flex="1" minW={0}>
                 <Text fontSize="sm" fontWeight="semibold" color="text.primary" mb={1}>
                   Booking reference (pending payment)
@@ -1051,8 +1043,8 @@ export default function WhoAndPaymentStepSimple({
                   {formData.step2.bookingReference} — share this with admin to view or modify before payment.
                 </Text>
               </Box>
-            </CardBody>
-          </Card>
+            </Box>
+          </LuxurySurfaceCard>
         )}
 
         {/* STATE 1: CALCULATING - Show ONLY gears + text during calculating */}
@@ -1414,7 +1406,7 @@ export default function WhoAndPaymentStepSimple({
         )}
 
         {/* CARD 2: Customer Information - Single Clean Card */}
-        <LuxurySurfaceCard tone="info" borderWidth="1px" borderRadius="xl">
+        <LuxurySurfaceCard tone="info" borderWidth="1px">
           <Box p={{ base: 6, md: 8 }}>
             <VStack spacing={6} align="stretch">
               <Heading size="md" color="text.primary">
@@ -2125,8 +2117,8 @@ export default function WhoAndPaymentStepSimple({
                     phone: formData.step2.customerDetails.phone,
                   },
                   bookingDraftId: formData.step2.bookingDraftId || undefined,
-                  pickupAddress: formData.step1.pickupAddress as any,
-                  dropoffAddress: formData.step1.dropoffAddress as any,
+                  pickupAddress: formData.step1.pickupAddress as Record<string, unknown>,
+                  dropoffAddress: formData.step1.dropoffAddress as Record<string, unknown>,
                   // ✅ CRITICAL FIX: For multi-leg, use items from segments (selectedItems already handles this)
                   items: selectedItems.length > 0 ? selectedItems : (
                     // Fallback: try to get items from segments first, then from formData
@@ -2135,9 +2127,9 @@ export default function WhoAndPaymentStepSimple({
                       : (formData.step1.items || [])
                   ),
                   pricing: {
-                    ...(formData.step1.pricing as any),
+                    ...(formData.step1.pricing as Record<string, unknown>),
                     total: formData.step2.promotionDetails?.finalAmount || actualPrice, // Use promotion final amount if applied
-                  } as any,
+                  } as Record<string, unknown>,
                   promotionCode: formData.step2.promotionCode,
                   promotionDetails: formData.step2.promotionDetails,
                   serviceType,
@@ -2149,8 +2141,8 @@ export default function WhoAndPaymentStepSimple({
                   priorityPrice: actualPrice,
                   scheduledDate: formData.step1.pickupDate || new Date().toISOString().split('T')[0],
                   scheduledTime: formData.step1.pickupTimeSlot,
-                  pickupDetails: formData.step1.pickupProperty as any,
-                  dropoffDetails: formData.step1.dropoffProperty as any,
+                  pickupDetails: formData.step1.pickupProperty as Record<string, unknown>,
+                  dropoffDetails: formData.step1.dropoffProperty as Record<string, unknown>,
                   notes: formData.step2.specialInstructions,
                   // ✅ CRITICAL FIX: Always pass segments for multi-leg bookings
                   segments: segments.length > 1 ? segments : undefined,

@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable no-console -- segment/item sync debug */
 /**
  * Hierarchical Items Selection - Enterprise Grade with Multi-Leg Support
  * Updated: 2025-11-20 - Enhanced toggle button UX
@@ -16,58 +17,45 @@ import {
   Box,
   VStack,
   HStack,
-  Flex,
   Button,
   Text,
   Badge,
   Alert,
   AlertIcon,
   Fade,
-  Progress,
   useToast,
   FormControl,
   FormLabel,
-  FormErrorMessage,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
   IconButton,
-  Select,
   SimpleGrid,
   Heading,
   Icon,
   useDisclosure,
-  Switch,
-  Collapse,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Divider,
   Circle,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaMinus, FaTrash, FaTruck, FaRedo, FaCheck, FaMapMarkerAlt, FaSearch, FaShieldAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaShoppingBag, FaTimes, FaChevronUp, FaPlus, FaTruck, FaRedo, FaCheck, FaSearch, FaShieldAlt } from 'react-icons/fa';
 import NextImage from 'next/image';
 
 import type { FormData } from '../hooks/useBookingForm';
 import PropertyTypeSelector, { PropertyType } from './PropertyTypeSelector';
 import PropertySizeSelector from './PropertySizeSelector';
 import RoomBasedInventory from './RoomBasedInventory';
-import AIItemExtractionAssistant, { type AiAddedItemPayload } from './AIItemExtractionAssistant';
+import type { AiAddedItemPayload } from './AIItemExtractionAssistant';
 import LuxurySurfaceCard from './LuxurySurfaceCard';
 import { getPrePopulatedItems, filterByPriority } from '@/lib/pre-populated-inventory';
 import { ALL_REMOVAL_ITEMS, type RemovalItem } from '@/lib/uk-removal-items-data';
 import { CommonItemsGrid } from '@/components/booking/CommonItemsGrid';
-import SelectedItemsManager from './SelectedItemsManager';
 import { CATEGORY_CONFIGS } from '@/components/ui/CategoryFlipCard';
 import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 
 interface WhereAndWhatStepHierarchicalProps {
   formData: FormData;
   updateFormData: (step: keyof FormData, data: Partial<FormData[keyof FormData]>) => void;
-  updateSegment?: (index: number, segmentData: Partial<any>) => void;
+  updateSegment?: (index: number, segmentData: Partial<BookingSegment>) => void;
   errors: Record<string, string>;
   onNext?: () => void;
   onBack?: () => void;
@@ -79,12 +67,12 @@ export default function WhereAndWhatStepHierarchical({
   updateFormData,
   updateSegment,
   errors,
-  onNext,
-  onBack,
+  onNext: _onNext,
+  onBack: _onBack,
   calculatePricing,
 }: WhereAndWhatStepHierarchicalProps) {
   const toast = useToast();
-  const { isOpen: isSummaryExpanded, onToggle: toggleSummary } = useDisclosure({ defaultIsOpen: false });
+  const { isOpen: _isSummaryExpanded, onToggle: _toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const [isToggling, setIsToggling] = useState(false);
   
   // Search state for quick item search
@@ -134,15 +122,15 @@ export default function WhereAndWhatStepHierarchical({
     ? (segments[selectedSegmentIndex]?.items || step1.items || [])
     : (step1.items || []);
   const estimatedPackingVolume = itemsForAddOns.reduce((sum, item) => {
-    const volume = (item as any).volume || 0;
-    const quantity = (item as any).quantity || 1;
-    return sum + volume * quantity;
+    const vol = (item as { volume?: number; quantity?: number }).volume ?? 0;
+    const qty = (item as { volume?: number; quantity?: number }).quantity ?? 1;
+    return sum + vol * qty;
   }, 0);
-  const resolveAssemblyItems = () => {
+  const resolveAssemblyItems = (): string[] => {
     const fromState = Array.isArray(addOns.disassembly) && addOns.disassembly.length > 0
       ? addOns.disassembly
       : [];
-    const fromItems = itemsForAddOns.map(item => (item as any).name || (item as any).id).filter(Boolean);
+    const fromItems = itemsForAddOns.map(item => (item as { name?: string; id?: string }).name || (item as { name?: string; id?: string }).id).filter(Boolean) as string[];
     return fromItems.length > 0 ? fromItems : fromState;
   };
   const handleAddOnToggle = (key: 'packing' | 'furnitureProtection' | 'assembly', value: boolean) => {
@@ -278,7 +266,7 @@ export default function WhereAndWhatStepHierarchical({
         lastItemsCountRef.current = 0;
       }
     }
-  }, [selectedSegmentIndex, formData.step1.segments, loadItemsFromSegment]);
+  }, [selectedSegmentIndex, formData.step1.segments, loadItemsFromSegment, isMultiLeg, selectedItemsWithRooms]);
 
   // Sync with formData - always keep in sync (for single-leg)
   useEffect(() => {
@@ -315,6 +303,8 @@ export default function WhereAndWhatStepHierarchical({
       // Clear local state if formData is empty
       setSelectedItemsWithRooms([]);
     }
+    // Intentionally omit isMultiLeg/selectedItemsWithRooms to avoid sync loops; step1.items is the source of truth
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- sync from formData only when single-leg
   }, [step1.items]);
 
   // Handle property type selection
@@ -516,8 +506,8 @@ export default function WhereAndWhatStepHierarchical({
     }
   };
 
-  // Handle AI-added items
-  const handleAiAddItems = (aiItems: AiAddedItemPayload[]) => {
+  // Handle AI-added items (reserved for AI assistant UI)
+  const _handleAiAddItems = (aiItems: AiAddedItemPayload[]) => {
     const updated = [...selectedItemsWithRooms];
     
     aiItems.forEach(({ item, quantity, room }) => {
@@ -634,31 +624,31 @@ export default function WhereAndWhatStepHierarchical({
     }
   };
 
-  // Handle toggle with debounce protection
-  const handleToggleSummary = () => {
+  // Handle toggle with debounce protection (reserved for summary UI)
+  const _handleToggleSummary = () => {
     if (isToggling) return;
     setIsToggling(true);
-    toggleSummary();
+    _toggleSummary();
     setTimeout(() => setIsToggling(false), 300);
   };
 
-  // Calculate totals
-  const totalItems = selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0);
-  const totalWeight = selectedItemsWithRooms.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
+  // Calculate totals (reserved for summary UI)
+  const _totalItems = selectedItemsWithRooms.reduce((sum, item) => sum + item.quantity, 0);
+  const _totalWeight = selectedItemsWithRooms.reduce((sum, item) => sum + (item.weight * item.quantity), 0);
 
   // Comprehensive item control handlers for SelectedItemsManager
-  const handleIncrementItem = (segmentIndex: number | null, itemId: string) => {
+  const _handleIncrementItem = (segmentIndex: number | null, itemId: string) => {
     if (segmentIndex !== null && isMultiLeg) {
       // Multi-leg: update specific segment
       const segment = segments[segmentIndex];
-      const updatedItems = segment.items.map((item: any) =>
+      const updatedItems = segment.items.map((item) =>
         item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
       );
       justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
-      const updatedItems = (formData.step1.items || []).map((item: any) =>
+      const updatedItems = (formData.step1.items || []).map((item) =>
         item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
       );
       updateFormData('step1', { items: updatedItems });
@@ -669,28 +659,28 @@ export default function WhereAndWhatStepHierarchical({
     }
   };
 
-  const handleDecrementItem = (segmentIndex: number | null, itemId: string) => {
+  const _handleDecrementItem = (segmentIndex: number | null, itemId: string) => {
     if (segmentIndex !== null && isMultiLeg) {
       // Multi-leg: update specific segment
       const segment = segments[segmentIndex];
       const updatedItems = segment.items
-        .map((item: any) =>
-          item.id === itemId && item.quantity > 1 
-            ? { ...item, quantity: item.quantity - 1 } 
+        .map((item) =>
+          item.id === itemId && item.quantity > 1
+            ? { ...item, quantity: item.quantity - 1 }
             : item
         )
-        .filter((item: any) => item.quantity > 0);
+        .filter((item) => item.quantity > 0);
       justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
       const updatedItems = (formData.step1.items || [])
-        .map((item: any) =>
+        .map((item) =>
           item.id === itemId && item.quantity > 1
             ? { ...item, quantity: item.quantity - 1 }
             : item
         )
-        .filter((item: any) => item.quantity > 0);
+        .filter((item) => item.quantity > 0);
       updateFormData('step1', { items: updatedItems });
     }
     
@@ -703,12 +693,12 @@ export default function WhereAndWhatStepHierarchical({
     if (segmentIndex !== null && isMultiLeg) {
       // Multi-leg: update specific segment
       const segment = segments[segmentIndex];
-      const updatedItems = segment.items.filter((item: any) => item.id !== itemId);
+      const updatedItems = segment.items.filter((item: { id: string }) => item.id !== itemId);
       justUpdatedSegmentsRef.current = true;
       updateSegment?.(segmentIndex, { items: updatedItems });
     } else {
       // Single-leg: update global items
-      const updatedItems = (formData.step1.items || []).filter((item: any) => item.id !== itemId);
+      const updatedItems = (formData.step1.items || []).filter((item: { id: string }) => item.id !== itemId);
       updateFormData('step1', { items: updatedItems });
     }
     
@@ -969,14 +959,8 @@ export default function WhereAndWhatStepHierarchical({
           </LuxurySurfaceCard>
         ) : (
           <>
-          {/* Search items — accessible, no neon/motion, clear labels */}
-          <Box
-            bg="bg.card"
-            borderRadius="xl"
-            borderWidth="1px"
-            borderColor="border.primary"
-            p={4}
-          >
+          {/* Search items — unified LuxurySurfaceCard */}
+          <LuxurySurfaceCard p={4}>
             <FormControl>
               <FormLabel fontWeight="600" color="text.primary">
                 Search items
@@ -1081,7 +1065,7 @@ export default function WhereAndWhatStepHierarchical({
                           _hover={{ borderColor: quantity > 0 ? 'green.500' : 'interactive.primary' }}
                           _focus={{ outline: 'none', boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
                           onClick={() => {
-                            handleAddItem(item as any, 'Search', 1);
+                            handleAddItem(item, 'Search', 1);
                             setSearchQuery('');
                           }}
                           role="listitem"
@@ -1123,7 +1107,7 @@ export default function WhereAndWhatStepHierarchical({
                 )}
               </Box>
             )}
-          </Box>
+          </LuxurySurfaceCard>
           </>
         )}
 
@@ -1132,7 +1116,6 @@ export default function WhereAndWhatStepHierarchical({
           mt={4}
           tone="info"
           borderWidth="1px"
-          borderRadius="xl"
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" gap={3} flexWrap="wrap" p={4}>
             <VStack align="flex-start" spacing={0}>
@@ -1145,14 +1128,8 @@ export default function WhereAndWhatStepHierarchical({
           </Box>
         </LuxurySurfaceCard>
 
-        {/* Common Items Grid - Always visible at the top (responsive card) */}
-        <Box
-          bg="bg.card"
-          borderRadius="xl"
-          borderWidth="1px"
-          borderColor="border.primary"
-          overflow="hidden"
-        >
+        {/* Common Items Grid - unified LuxurySurfaceCard */}
+        <LuxurySurfaceCard overflow="hidden">
           <Box px={{ base: 4, md: 6 }} py={{ base: 3, md: 4 }} borderBottomWidth="1px" borderColor="border.primary">
             <Heading size="sm" color="text.primary">
               Quick add items
@@ -1324,7 +1301,7 @@ export default function WhereAndWhatStepHierarchical({
               />
             </VStack>
           </Box>
-        </Box>
+        </LuxurySurfaceCard>
 
         {/* Add-on Services - Collapsible Premium Section */}
         {!isAddOnsExpanded ? (

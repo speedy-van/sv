@@ -5,14 +5,12 @@
  * Works for both Step 2 and Step 3, supports single and multi-leg journeys
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   VStack,
   HStack,
   Text,
-  Button,
-  Image,
   Card,
   CardBody,
   Badge,
@@ -21,9 +19,8 @@ import {
   Divider,
   useToast,
   ScaleFade,
-  Tooltip,
   Icon,
-  Circle,
+  Skeleton,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { 
@@ -186,7 +183,11 @@ export default function SelectedItemsCard({
   readonly = false,
 }: SelectedItemsCardProps) {
   const toast = useToast();
-  
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  const handleImageLoad = useCallback((itemId: string) => {
+    setLoadedImages((prev) => ({ ...prev, [itemId]: true }));
+  }, []);
+
   // Get color theme based on segment type
   const theme = colorThemes[segmentType || 'default'];
 
@@ -419,6 +420,8 @@ export default function SelectedItemsCard({
           {items.map((item, index) => (
             <ScaleFade key={`${item.id}-${index}`} initialScale={0.98} in delay={index * 0.05}>
               <Card
+                role="article"
+                aria-label={`Item: ${item.name}, quantity ${item.quantity}`}
                 bg="bg.surface"
                 borderWidth="2px"
                 borderColor={theme.borderColor}
@@ -429,6 +432,12 @@ export default function SelectedItemsCard({
                   borderColor: theme.hoverBorderColor,
                   shadow: 'lg',
                   transform: 'translateY(-2px)',
+                }}
+                _focusWithin={{
+                  outline: '2px solid',
+                  outlineColor: theme.hoverBorderColor,
+                  outlineOffset: '2px',
+                  borderColor: theme.hoverBorderColor,
                 }}
               >
                 <CardBody p={{ base: 2, sm: 3, md: 4 }}>
@@ -458,11 +467,21 @@ export default function SelectedItemsCard({
                           bg="bg.surface.elevated"
                           boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                         >
+                          {!loadedImages[item.id] && (
+                            <Skeleton
+                              position="absolute"
+                              inset={0}
+                              borderRadius={{ base: 'lg', md: 'xl' }}
+                              startColor="gray.600"
+                              endColor="gray.700"
+                            />
+                          )}
                           <NextImage
                             src={item.image}
                             alt={item.name}
                             fill
-                            style={{ objectFit: 'cover' }}
+                            style={{ objectFit: 'cover', opacity: loadedImages[item.id] ? 1 : 0 }}
+                            onLoad={() => handleImageLoad(item.id)}
                           />
                           <Badge
                             position="absolute"
@@ -574,7 +593,7 @@ export default function SelectedItemsCard({
                           flexShrink={0}
                         >
                           <IconButton
-                            aria-label="Decrease quantity"
+                            aria-label={`Decrease quantity of ${item.name}`}
                             icon={<FaMinus />}
                             size={{ base: 'xs', sm: 'sm' }}
                             colorScheme="gray"
@@ -596,6 +615,7 @@ export default function SelectedItemsCard({
                             isDisabled={item.quantity <= 1}
                             minW={{ base: '24px', sm: '28px' }}
                             h={{ base: '24px', sm: '28px' }}
+                            _focusVisible={{ boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
                           />
                           
                           <Box
@@ -614,7 +634,7 @@ export default function SelectedItemsCard({
                           </Box>
                           
                           <IconButton
-                            aria-label="Increase quantity"
+                            aria-label={`Increase quantity of ${item.name}`}
                             icon={<FaPlus />}
                             size={{ base: 'xs', sm: 'sm' }}
                             colorScheme={theme.badgeColorScheme}
@@ -623,12 +643,13 @@ export default function SelectedItemsCard({
                             onClick={() => onIncrement(item.id)}
                             minW={{ base: '24px', sm: '28px' }}
                             h={{ base: '24px', sm: '28px' }}
+                            _focusVisible={{ boxShadow: '0 0 0 2px var(--chakra-colors-blue-400)' }}
                           />
                         </HStack>
 
                         {/* Delete Button - Below quantity controls */}
                         <IconButton
-                          aria-label="Remove item"
+                          aria-label={`Remove ${item.name} from selection`}
                           icon={<FaTrash />}
                           size={{ base: 'xs', sm: 'sm' }}
                           colorScheme="red"
@@ -646,9 +667,8 @@ export default function SelectedItemsCard({
                           }}
                           minW={{ base: '28px', sm: '32px' }}
                           h={{ base: '28px', sm: '32px' }}
-                          _hover={{
-                            transform: 'scale(1.1)',
-                          }}
+                          _hover={{ transform: 'scale(1.1)' }}
+                          _focusVisible={{ boxShadow: '0 0 0 2px var(--chakra-colors-red-400)' }}
                         />
                       </VStack>
                     )}
