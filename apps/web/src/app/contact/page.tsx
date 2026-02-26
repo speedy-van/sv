@@ -246,7 +246,7 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <Box bg={bgColor} minH="100vh" pt={20}>
+      <Box bg={bgColor} minH="100vh" pt={20} pb={{ base: 32, md: 36 }}>
       <Container maxW="container.xl" py={16}>
         <VStack spacing={16}>
           {/* Hero Section */}
@@ -399,8 +399,167 @@ export default function ContactPage() {
             ))}
           </SimpleGrid>
 
-          {/* Contact Form and Info */}
-          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} w="full">
+          {/* Testimonials - placed above Form/Urgent to avoid overlap and fix visual priority */}
+          <Box
+            as="section"
+            w="full"
+            position="relative"
+            zIndex={2}
+            isolation="isolate"
+          >
+            <Box
+              w="full"
+              p={{ base: 6, md: 10 }}
+              bg="rgba(13,13,13,0.6)"
+              borderRadius="2xl"
+              border="1px solid rgba(255,255,255,0.05)"
+              position="relative"
+              overflow="hidden"
+              _before={{
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '50%',
+                height: '100%',
+                bgGradient: 'radial(circle at 20% 50%, rgba(251,191,36,0.1), transparent 60%)',
+                pointerEvents: 'none',
+              }}
+            >
+              <MotionBox
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition="0.6s ease-out"
+                textAlign="center"
+                mb={12}
+                position="relative"
+                zIndex={1}
+              >
+                <HStack justify="center" mb={4}>
+                  <Box
+                    p={3}
+                    bg="rgba(251,191,36,0.15)"
+                    borderRadius="full"
+                    border="1px solid rgba(251,191,36,0.3)"
+                  >
+                    <FiUsers size={28} color="rgb(250,204,21)" />
+                  </Box>
+                </HStack>
+                <Badge
+                  colorScheme="yellow"
+                  variant="subtle"
+                  fontSize="xs"
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  mb={4}
+                  textTransform="uppercase"
+                  letterSpacing="wider"
+                >
+                  Customer Reviews
+                </Badge>
+                <Heading 
+                  size="2xl" 
+                  mb={4}
+                  bgGradient="linear(to-r, white, yellow.300, orange.400)"
+                  bgClip="text"
+                  fontWeight="bold"
+                >
+                  What Our Customers Say
+                </Heading>
+                <Text 
+                  color="gray.300" 
+                  fontSize="lg"
+                  maxW="2xl"
+                  mx="auto"
+                >
+                  Real feedback from <Box as="span" color="yellow.400" fontWeight="semibold">satisfied customers</Box>
+                </Text>
+              </MotionBox>
+
+              <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
+                {testimonials.map((testimonial, index) => (
+                  <Card
+                    as={motion.div}
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={`0.5s ease-out ${index * 0.1}s`}
+                    bg="rgba(26,26,26,0.9)"
+                    borderRadius="xl"
+                    boxShadow="lg"
+                    border="1px solid"
+                    borderColor="rgba(251,191,36,0.2)"
+                    _hover={{
+                      borderColor: 'yellow.400',
+                      transform: 'translateY(-4px)',
+                      shadow: '0 12px 40px rgba(251,191,36,0.2)',
+                    }}
+                    sx={{ transition: 'all 0.3s' }}
+                  >
+                    <CardBody p={8}>
+                      <VStack spacing={5} align="start">
+                        <HStack spacing={1}>
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Icon key={i} as={FiStar} color="yellow.400" fill="yellow.400" boxSize={5} />
+                          ))}
+                        </HStack>
+                        <Box
+                          p={4}
+                          bg="rgba(251,191,36,0.05)"
+                          borderRadius="lg"
+                          borderLeft="4px solid"
+                          borderColor="yellow.400"
+                        >
+                          <Text 
+                            color="gray.200" 
+                            fontSize="md" 
+                            fontStyle="italic"
+                            lineHeight="tall"
+                          >
+                            "{testimonial.text}"
+                          </Text>
+                        </Box>
+                        <HStack spacing={3}>
+                          <Box
+                            w={10}
+                            h={10}
+                            bg="yellow.500"
+                            borderRadius="full"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            color="gray.900"
+                            fontWeight="bold"
+                            fontSize="lg"
+                          >
+                            {testimonial.name.charAt(0)}
+                          </Box>
+                          <VStack align="start" spacing={0}>
+                            <Text fontWeight="bold" color="white" fontSize="md">
+                              {testimonial.name}
+                            </Text>
+                            <HStack spacing={2}>
+                              <FiMapPin size={14} color="rgba(251,191,36,1)" />
+                              <Text fontSize="sm" color="gray.400">
+                                {testimonial.location}
+                              </Text>
+                            </HStack>
+                          </VStack>
+                        </HStack>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            </Box>
+          </Box>
+
+          {/* Contact Form and Info - strict grid, no overlap */}
+          <Box as="section" position="relative" zIndex={1} w="full">
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={12} w="full">
             {/* Contact Form */}
             <Card
               as={motion.div}
@@ -685,353 +844,8 @@ export default function ContactPage() {
                   </VStack>
                 </CardBody>
               </Card>
-
-              {/* Quick Contact */}
-              <Card
-                as={motion.div}
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition="0.6s ease-out 0.4s"
-                bgGradient="linear(to-br, rgba(239,68,68,0.15), rgba(249,115,22,0.15))"
-                borderRadius="xl"
-                boxShadow="xl"
-                border="2px solid"
-                borderColor="red.500"
-                position="relative"
-                overflow="hidden"
-                _before={{
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  bgGradient: 'radial(circle at 50% 0%, rgba(239,68,68,0.2), transparent 70%)',
-                  pointerEvents: 'none',
-                }}
-              >
-                <CardBody p={8} position="relative" zIndex={1}>
-                  <VStack spacing={6} textAlign="center">
-                    <Box
-                      p={4}
-                      bg="rgba(239,68,68,0.2)"
-                      borderRadius="full"
-                      border="2px solid"
-                      borderColor="red.500"
-                      display="inline-flex"
-                    >
-                      <FiPhone size={32} color="rgb(239,68,68)" />
-                    </Box>
-                    <VStack spacing={3}>
-                      <Badge
-                        colorScheme="red"
-                        variant="solid"
-                        fontSize="sm"
-                        px={4}
-                        py={2}
-                        borderRadius="full"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                      >
-                        ⚡ Urgent Support
-                      </Badge>
-                      <Heading 
-                        size="xl" 
-                        bgGradient="linear(to-r, white, red.300)"
-                        bgClip="text"
-                        fontWeight="bold"
-                      >
-                        Need Immediate Help?
-                      </Heading>
-                      <Text color="gray.200" fontSize="md" maxW="md">
-                        For <Box as="span" color="red.400" fontWeight="bold">urgent moving inquiries</Box> or{' '}
-                        <Box as="span" color="orange.400" fontWeight="bold">same-day service</Box>, call us directly.
-                      </Text>
-                    </VStack>
-                    <VStack spacing={3} w="full">
-                      <Button
-                        size="lg"
-                        onClick={() => window.open(SUPPORT_PHONE_URI)}
-                        leftIcon={<FiPhone />}
-                        w="full"
-                        bg="red.500"
-                        color="white"
-                        fontWeight="bold"
-                        fontSize="lg"
-                        _hover={{
-                          bg: 'red.600',
-                          transform: 'translateY(-4px)',
-                          shadow: '0 12px 40px rgba(239,68,68,0.4)',
-                        }}
-                        sx={{ transition: 'all 0.3s' }}
-                      >
-                        <span>Call Now: {SUPPORT_PHONE_DISPLAY}</span>
-                      </Button>
-                      <Button
-                        size="lg"
-                        onClick={() => window.location.href = '/booking-luxury'}
-                        w="full"
-                        variant="outline"
-                        borderColor="red.500"
-                        borderWidth="2px"
-                        color="white"
-                        fontWeight="semibold"
-                        _hover={{
-                          bg: 'rgba(239,68,68,0.1)',
-                          borderColor: 'red.400',
-                          transform: 'translateY(-2px)',
-                        }}
-                        sx={{ transition: 'all 0.3s' }}
-                      >
-                        Get Free Quote
-                      </Button>
-                    </VStack>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Location Info */}
-              <Card
-                as={motion.div}
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition="0.6s ease-out 0.6s"
-                bg="rgba(26,26,26,0.9)"
-                borderRadius="xl"
-                boxShadow="xl"
-                border="1px solid"
-                borderColor="rgba(0,255,157,0.2)"
-                _hover={{
-                  borderColor: 'neon.400',
-                  transform: 'translateY(-4px)',
-                  shadow: '0 12px 40px rgba(0,255,157,0.2)',
-                }}
-                sx={{ transition: 'all 0.3s' }}
-              >
-                <CardBody p={8}>
-                  <VStack spacing={6} align="start">
-                    <HStack spacing={4}>
-                      <Box
-                        p={4}
-                        bgGradient="linear(to-br, rgba(0,255,157,0.2), rgba(34,197,94,0.2))"
-                        color="neon.400"
-                        borderRadius="xl"
-                        border="1px solid"
-                        borderColor="rgba(0,255,157,0.3)"
-                      >
-                        <Icon as={FiMapPin} boxSize={8} />
-                      </Box>
-                      <VStack align="start" spacing={2}>
-                        <Heading size="lg" color="white" fontWeight="bold">
-                          Our Location
-                        </Heading>
-                        <HStack spacing={2}>
-                          <Badge
-                            colorScheme="green"
-                            variant="subtle"
-                            fontSize="xs"
-                            px={2}
-                            py={1}
-                            borderRadius="full"
-                          >
-                            Main Hub
-                          </Badge>
-                        </HStack>
-                      </VStack>
-                    </HStack>
-
-                    <Box
-                      p={4}
-                      bg="rgba(0,255,157,0.05)"
-                      borderRadius="lg"
-                      borderLeft="4px solid"
-                      borderColor="neon.400"
-                      w="full"
-                    >
-                      <HStack spacing={3}>
-                        <FiMapPin size={20} color="rgba(0,255,157,1)" />
-                        <VStack align="start" spacing={0}>
-                          <Text color="white" fontWeight="semibold" fontSize="md">
-                            Office 2.18 1 Barrack St
-                          </Text>
-                          <Text color="gray.400" fontSize="sm">
-                            Hamilton ML3 0HS, United Kingdom
-                          </Text>
-                        </VStack>
-                      </HStack>
-                    </Box>
-
-                    <Alert 
-                      status="info" 
-                      borderRadius="lg"
-                      bg="rgba(59,130,246,0.05)"
-                      border="1px solid"
-                      borderColor="rgba(59,130,246,0.2)"
-                    >
-                      <AlertIcon color="blue.400" />
-                      <Box>
-                        <Text fontSize="sm" color="gray.300" lineHeight="tall">
-                          We serve customers <Box as="span" color="blue.400" fontWeight="semibold">across the UK</Box>. Our Hamilton office is our main hub, 
-                          and we have <Box as="span" color="neon.400" fontWeight="semibold">local teams in major cities</Box>.
-                        </Text>
-                      </Box>
-                    </Alert>
-                  </VStack>
-                </CardBody>
-              </Card>
             </VStack>
           </SimpleGrid>
-
-          {/* Testimonials */}
-          <Box 
-            w="full"
-            p={{ base: 6, md: 10 }}
-            bg="rgba(13,13,13,0.6)"
-            borderRadius="2xl"
-            border="1px solid rgba(255,255,255,0.05)"
-            position="relative"
-            overflow="hidden"
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '50%',
-              height: '100%',
-              bgGradient: 'radial(circle at 20% 50%, rgba(251,191,36,0.1), transparent 60%)',
-              pointerEvents: 'none',
-            }}
-          >
-            <MotionBox
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition="0.6s ease-out"
-              textAlign="center"
-              mb={12}
-              position="relative"
-              zIndex={1}
-            >
-              <HStack justify="center" mb={4}>
-                <Box
-                  p={3}
-                  bg="rgba(251,191,36,0.15)"
-                  borderRadius="full"
-                  border="1px solid rgba(251,191,36,0.3)"
-                >
-                  <FiUsers size={28} color="rgb(250,204,21)" />
-                </Box>
-              </HStack>
-              <Badge
-                colorScheme="yellow"
-                variant="subtle"
-                fontSize="xs"
-                px={3}
-                py={1}
-                borderRadius="full"
-                mb={4}
-                textTransform="uppercase"
-                letterSpacing="wider"
-              >
-                Customer Reviews
-              </Badge>
-              <Heading 
-                size="2xl" 
-                mb={4}
-                bgGradient="linear(to-r, white, yellow.300, orange.400)"
-                bgClip="text"
-                fontWeight="bold"
-              >
-                What Our Customers Say
-              </Heading>
-              <Text 
-                color="gray.300" 
-                fontSize="lg"
-                maxW="2xl"
-                mx="auto"
-              >
-                Real feedback from <Box as="span" color="yellow.400" fontWeight="semibold">satisfied customers</Box>
-              </Text>
-            </MotionBox>
-
-            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8} position="relative" zIndex={1}>
-              {testimonials.map((testimonial, index) => (
-                <Card
-                  as={motion.div}
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={`0.5s ease-out ${index * 0.1}s`}
-                  bg="rgba(26,26,26,0.9)"
-                  borderRadius="xl"
-                  boxShadow="lg"
-                  border="1px solid"
-                  borderColor="rgba(251,191,36,0.2)"
-                  _hover={{
-                    borderColor: 'yellow.400',
-                    transform: 'translateY(-4px)',
-                    shadow: '0 12px 40px rgba(251,191,36,0.2)',
-                  }}
-                  sx={{ transition: 'all 0.3s' }}
-                >
-                  <CardBody p={8}>
-                    <VStack spacing={5} align="start">
-                      <HStack spacing={1}>
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Icon key={i} as={FiStar} color="yellow.400" fill="yellow.400" boxSize={5} />
-                        ))}
-                      </HStack>
-                      <Box
-                        p={4}
-                        bg="rgba(251,191,36,0.05)"
-                        borderRadius="lg"
-                        borderLeft="4px solid"
-                        borderColor="yellow.400"
-                      >
-                        <Text 
-                          color="gray.200" 
-                          fontSize="md" 
-                          fontStyle="italic"
-                          lineHeight="tall"
-                        >
-                          "{testimonial.text}"
-                        </Text>
-                      </Box>
-                      <HStack spacing={3}>
-                        <Box
-                          w={10}
-                          h={10}
-                          bg="yellow.500"
-                          borderRadius="full"
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          color="gray.900"
-                          fontWeight="bold"
-                          fontSize="lg"
-                        >
-                          {testimonial.name.charAt(0)}
-                        </Box>
-                        <VStack align="start" spacing={0}>
-                          <Text fontWeight="bold" color="white" fontSize="md">
-                            {testimonial.name}
-                          </Text>
-                          <HStack spacing={2}>
-                            <FiMapPin size={14} color="rgba(251,191,36,1)" />
-                            <Text fontSize="sm" color="gray.400">
-                              {testimonial.location}
-                            </Text>
-                          </HStack>
-                        </VStack>
-                      </HStack>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              ))}
-            </SimpleGrid>
           </Box>
 
           {/* Final CTA */}

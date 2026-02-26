@@ -114,10 +114,10 @@ export function CallMeBackFloating() {
       position="fixed"
       bottom={
         isHowItWorks || isAbout || isContact || isPricing
-          ? { base: 24, md: 28 } // elevate above WhatsApp/other floating buttons on these pages
+          ? { base: 28, md: 32 } // safe spacing above WhatsApp, never overlap page content
           : { base: 4, md: 8 }
       }
-      right={isHome ? undefined : { base: 4, md: 8 }}
+      right={isHome ? undefined : { base: 5, md: 10 }}
       left={isHome ? { base: 4, md: 8 } : undefined}
       zIndex={2000}
       pointerEvents="none"
