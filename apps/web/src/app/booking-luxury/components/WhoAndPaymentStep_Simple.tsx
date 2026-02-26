@@ -66,7 +66,6 @@ import {
 import {
   FaCreditCard,
   FaMapMarkerAlt,
-  FaInfoCircle,
 } from 'react-icons/fa';
 import {
   SiApplepay,
@@ -1022,30 +1021,7 @@ export default function WhoAndPaymentStepSimple({
       <VStack spacing={{ base: 5, md: 6 }} align="stretch">
         {/* Selected Items Summary - Handled by parent with unified floating buttons */}
 
-        {/* ⚠️ CRITICAL: Booking Reference - unified LuxurySurfaceCard (do not delete) */}
-        {formData.step2.bookingReference && (
-          <LuxurySurfaceCard
-            tone="info"
-            borderWidth="2px"
-            borderColor="blue.400"
-            bg="linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.12))"
-            data-testid="booking-reference-alert"
-            data-critical="true"
-            minH="120px"
-          >
-            <Box p={{ base: 3, md: 4 }} display="flex" alignItems="center" gap={3}>
-              <Icon as={FaInfoCircle} boxSize={5} color="blue.400" flexShrink={0} />
-              <Box flex="1" minW={0}>
-                <Text fontSize="sm" fontWeight="semibold" color="text.primary" mb={1}>
-                  Booking reference (pending payment)
-                </Text>
-                <Text fontSize="sm" color="text.secondary" opacity={0.95}>
-                  {formData.step2.bookingReference} — share this with admin to view or modify before payment.
-                </Text>
-              </Box>
-            </Box>
-          </LuxurySurfaceCard>
-        )}
+        {/* Booking reference is shown at page level on ALL steps (see page.tsx) */}
 
         {/* STATE 1: CALCULATING - Show ONLY gears + text during calculating */}
         {pricingStage === 'calculating' && (

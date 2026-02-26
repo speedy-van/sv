@@ -26,13 +26,12 @@ import {
   Spinner,
   SimpleGrid,
   IconButton,
-  useClipboard,
   FormControl,
   FormLabel,
   Input,
   Select,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaClock, FaMapMarkerAlt, FaPhone, FaRedo, FaCopy, FaCalendarAlt, FaInfoCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaCheck, FaTruck, FaClock, FaMapMarkerAlt, FaPhone, FaRedo, FaCalendarAlt } from 'react-icons/fa';
 // @ts-ignore - Temporary fix for Next.js module resolution
 import { useSearchParams, useRouter } from 'next/navigation';
 import AddressesStep from './components/AddressesStep';
@@ -45,6 +44,7 @@ import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
 import SelectedItemsManager from './components/SelectedItemsManager';
 import { ResponsiveSection } from '@/components/layout/ResponsiveSection';
 import LuxurySurfaceCard from './components/LuxurySurfaceCard';
+import BookingReferenceCard from './components/BookingReferenceCard';
 import type { BookingSegment } from './types/segment';
 import { 
   useDisclosure,
@@ -286,9 +286,6 @@ function BookingLuxuryContent() {
   const [pricingFlowMessage, setPricingFlowMessage] = useState<string | null>(null);
   const [isLoadingReference, setIsLoadingReference] = useState(false);
   const [_resumeStep, setResumeStep] = useState<number | null>(null);
-  const bookingReference = formData.step2.bookingReference;
-  const isReferenceLoading = isLoadingReference && !bookingReference;
-  const { hasCopied: hasCopiedReference, onCopy: copyBookingReference } = useClipboard(bookingReference || '');
 
   // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
@@ -2398,44 +2395,14 @@ function BookingLuxuryContent() {
             </Text>
           </Box>
 
-          {(bookingReference || isReferenceLoading) && (
-            <Box
-              mb={{ base: 4, md: 6 }}
-              borderRadius="2xl"
-              border="1px solid"
-              borderColor="border.primary"
-              bg="bg.card"
-              p={{ base: 5, md: 7 }}
-              minH={{ base: '120px', md: '140px' }}
-              display="flex"
-              alignItems="center"
-            >
-              <Flex w="full" align="center" justify="space-between" gap={3} flexWrap="wrap">
-                <HStack spacing={3}>
-                  <Icon as={FaInfoCircle} boxSize={5} color="blue.400" />
-                  <Box>
-                    <Text color="text.primary" fontSize="sm" fontWeight="600">
-                      Booking reference
-                    </Text>
-                    <Text color="text.secondary" fontSize="sm">
-                      {bookingReference || 'Generating your reference...'}
-                    </Text>
-                  </Box>
-                </HStack>
-                {bookingReference ? (
-                  <Button
-                    size="sm"
-                    leftIcon={<FaCopy />}
-                    onClick={copyBookingReference}
-                    colorScheme={hasCopiedReference ? 'green' : 'blue'}
-                    variant="solid"
-                  >
-                    {hasCopiedReference ? 'Copied' : 'Copy'}
-                  </Button>
-                ) : (
-                  <Spinner size="sm" color="blue.400" />
-                )}
-              </Flex>
+          {/* Booking reference: same distinct design visible on ALL steps (1, 2, 3) */}
+          {(formData.step2.bookingReference || isLoadingReference) && (
+            <Box mb={{ base: 4, md: 6 }}>
+              <BookingReferenceCard
+                reference={formData.step2.bookingReference}
+                isLoading={isLoadingReference}
+                variant="bar"
+              />
             </Box>
           )}
 

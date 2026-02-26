@@ -3,6 +3,14 @@
  * `ios-device` class is present on <html>/<body>, keeping the impact localized.
  */
 
+/* Header: ensure solid background and no horizontal overflow on iPhone */
+.ios-device header[role="banner"] {
+  background-color: #121A2B !important;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 .ios-device .floating-call-button {
   bottom: calc(env(safe-area-inset-bottom, 0px) + 90px);
   right: 20px;

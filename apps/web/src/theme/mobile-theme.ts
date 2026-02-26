@@ -195,6 +195,7 @@ const colors = {
     canvas: '#0B1020',
     card: '#1A2640',
     surface: '#121A2B',
+    header: '#121A2B', // Same as surface so header is visible; required for Header component
     overlay: 'rgba(0, 0, 0, 0.8)',
   },
 

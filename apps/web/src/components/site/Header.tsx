@@ -46,33 +46,49 @@ export default function Header() {
       top={0}
       left={0}
       right={0}
+      width="100%"
+      maxW="100vw"
       zIndex={1000}
       bg="bg.header"
       borderBottom="1px solid"
       borderColor="border.primary"
       boxShadow="sm"
-      sx={{ paddingTop: 'max(env(safe-area-inset-top), 0px)' }}
+      minH="56px"
+      overflow="hidden"
+      sx={{
+        paddingTop: 'max(env(safe-area-inset-top), 0px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(12px)',
+        backdropFilter: 'saturate(180%) blur(12px)',
+      }}
     >
-      <Container maxW="container.xl" py={3}>
-        <HStack justify="space-between" align="center" minH={{ base: '56px', md: '64px' }} gap={2}>
+      <Container maxW="container.xl" py={3} px={{ base: 3, sm: 4 }} w="100%">
+        <HStack
+          justify="space-between"
+          align="center"
+          minH={{ base: '56px', lg: '64px' }}
+          gap={2}
+          w="100%"
+          flexWrap="nowrap"
+        >
           <Link
             as={NextLink}
             href="/"
             _hover={{ textDecoration: 'none' }}
             display="inline-flex"
             alignItems="center"
-            gap={3}
+            gap={2}
             flexShrink={0}
+            minW={0}
           >
             <Box
-              w={{ base: 9, md: 10 }}
-              h={{ base: 9, md: 10 }}
+              w={{ base: 9, sm: 10 }}
+              h={{ base: 9, sm: 10 }}
               flexShrink={0}
               borderRadius="full"
-              bgGradient="linear(to-br, interactive.primary, interactive.secondary)"
+              bgGradient="linear(to-br, neon.400, neon.600)"
             />
-            <VStack align="start" spacing={0} display={{ base: 'none', sm: 'flex' }}>
-              <Text color="text.primary" fontWeight="800" lineHeight="1">
+            <VStack align="start" spacing={0} display={{ base: 'none', sm: 'flex' }} flexShrink={0}>
+              <Text color="text.primary" fontWeight="800" lineHeight="1" fontSize={{ base: 'sm', sm: 'md' }}>
                 Speedy Van
               </Text>
               <Text color="text.secondary" fontSize="xs" lineHeight="1">
@@ -81,7 +97,8 @@ export default function Header() {
             </VStack>
           </Link>
 
-          <HStack spacing={2} display={{ base: 'none', md: 'flex' }} flexShrink={0}>
+          {/* Desktop nav: show only from lg (768px) so iPhone always gets hamburger */}
+          <HStack spacing={2} display={{ base: 'none', lg: 'flex' }} flexShrink={0}>
             {primaryLinks.map((item) => (
               <Button
                 key={item.href}
@@ -97,7 +114,7 @@ export default function Header() {
             ))}
           </HStack>
 
-          <HStack spacing={2} display={{ base: 'none', md: 'flex' }} flexShrink={0}>
+          <HStack spacing={2} display={{ base: 'none', lg: 'flex' }} flexShrink={0}>
             <Button
               as="a"
               href="tel:01202129746"
@@ -118,13 +135,14 @@ export default function Header() {
             aria-label="Open menu"
             icon={<FiMenu />}
             onClick={onOpen}
-            display={{ base: 'inline-flex', md: 'none' }}
+            display={{ base: 'inline-flex', lg: 'none' }}
             variant="outline"
             borderColor="border.primary"
             color="text.primary"
             size="lg"
-            minW={{ base: '44px', md: '40px' }}
-            minH={{ base: '44px', md: '40px' }}
+            minW="44px"
+            minH="44px"
+            flexShrink={0}
           />
         </HStack>
       </Container>
@@ -150,7 +168,7 @@ export default function Header() {
                   justifyContent="flex-start"
                   variant="ghost"
                   color="text.secondary"
-                  _hover={{ color: 'text.primary', bg: 'bg.surface.elevated' }}
+                  _hover={{ color: 'text.primary', bg: 'bg.card' }}
                   size="lg"
                   minH="44px"
                 >
