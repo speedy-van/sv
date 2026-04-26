@@ -1,0 +1,33 @@
+{
+  "name": "@speedy-van/app-v2",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^3.27.0",
+    "@emotion/react": "^11.14.0",
+    "@speedy-van/pricing": "workspace:*",
+    "@speedy-van/shared": "workspace:*",
+    "@speedy-van/utils": "workspace:*",
+    "framer-motion": "^11.18.2",
+    "next": "15.5.15",
+    "next-themes": "^0.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-icons": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.5.6",
+    "typescript": "5.9.2"
+  }
+}
