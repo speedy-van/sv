@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HiBars3, HiXMark } from "react-icons/hi2";
 import { Logo } from "@/components/ui/Logo";
+import { NotificationBell } from "@/components/admin/NotificationBell";
 import { NAV_LINKS } from "@/lib/site";
 import { easeOutExpo } from "@/lib/motion";
 
@@ -26,6 +27,19 @@ export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const has =
+      !!sessionStorage.getItem("sv-auth-token") ||
+      !!localStorage.getItem("sv-auth-token") ||
+      document.cookie.includes("sv-auth-token=");
+    setAuthed(has);
+  }, [pathname]);
+
+  const showBell =
+    authed && (pathname?.startsWith("/admin") || pathname?.startsWith("/driver"));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -97,6 +111,7 @@ export function Navbar() {
           </HStack>
 
           <HStack gap="3" display={{ base: "none", md: "flex" }}>
+            {showBell && <NotificationBell />}
             <Link href="/auth/login">
               <Button
                 variant="ghost"
