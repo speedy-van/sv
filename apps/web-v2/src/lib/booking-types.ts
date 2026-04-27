@@ -131,5 +131,11 @@ export function buildSyntheticItems(size: PropertyDetails["size"]) {
 }
 
 export function getApiBase(): string {
+  // In the browser, always use a relative URL so requests stay same-origin
+  // and are routed through the Next.js rewrite proxy (see next.config.mjs).
+  // This avoids CORS entirely with `credentials: "include"`.
+  if (typeof window !== "undefined") return "";
+  // On the server (during SSR / route handlers), fall back to the configured
+  // upstream so server-side fetches reach the API directly.
   return process.env.NEXT_PUBLIC_API_URL || "";
 }

@@ -20,6 +20,16 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@chakra-ui/react", "react-icons", "framer-motion"],
   },
+  async rewrites() {
+    const apiOrigin = process.env.NEXT_PUBLIC_API_URL || process.env.API_ORIGIN || "";
+    if (!apiOrigin) return [];
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiOrigin.replace(/\/$/, "")}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
