@@ -1,0 +1,12 @@
+# Heavy ML dataset images — used decoratively only, should be on CDN
+public/UK_Removal_Dataset/Images_Only
+public/UK_Removal_Dataset/vedio
+
+# User uploads — runtime data, not deployment artifacts
+public/uploads
+
+# Build artifacts and logs
+build-log.txt
+build-web.txt
+deploy-log*.txt
+.next/cache

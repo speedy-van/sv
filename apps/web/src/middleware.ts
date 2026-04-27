@@ -4,6 +4,28 @@ export function middleware(request: NextRequest) {
   // Get pathname early for redirect check
   const pathname = request.nextUrl.pathname;
 
+  // CORS preflight short-circuit for /api/* — required so cross-origin POST/PATCH
+  // (e.g. from web-v2.vercel.app) doesn't 405 on the preflight.
+  if (request.method === 'OPTIONS' && pathname.startsWith('/api/')) {
+    const origin = request.headers.get('origin') || '';
+    const allowedOrigin =
+      process.env.WEB_V2_ORIGIN || 'https://speedy-van-co-uk-web-v2.vercel.app';
+    const allow = origin === allowedOrigin ? origin : allowedOrigin;
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': allow,
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers':
+          request.headers.get('access-control-request-headers') ||
+          'Content-Type,Authorization,X-Requested-With',
+        'Access-Control-Max-Age': '86400',
+        Vary: 'Origin',
+      },
+    });
+  }
+
   // Redirect /booking to /booking-luxury (temporary fix for missing standard booking page)
   // MUST be checked BEFORE NextResponse.next() to prevent 404
   if (pathname === '/booking') {

@@ -26,6 +26,94 @@ const nextConfig = {
   // Hide powered-by header for security
   poweredByHeader: false,
 
+  // Externalize heavy server-only packages so they aren't bundled into serverless functions
+  serverExternalPackages: [
+    '@prisma/client',
+    'prisma',
+    '@opentelemetry/sdk-node',
+    '@opentelemetry/auto-instrumentations-node',
+    '@opentelemetry/instrumentation',
+    '@opentelemetry/exporter-trace-otlp-http',
+    '@opentelemetry/exporter-metrics-otlp-http',
+    'require-in-the-middle',
+  ],
+
+  // Trace excludes for monorepo — drop dev-only deps from serverless bundles
+  outputFileTracingRoot: '../../',
+  outputFileTracingExcludes: {
+    '*': [
+      // Public assets that must never be bundled into functions
+      '../../apps/web/public/UK_Removal_Dataset/**',
+      '../../apps/web/public/uploads/**',
+      '../../apps/web/public/images/**',
+      '../../apps/web/public/videos/**',
+      '../../apps/web/public/audio/**',
+      'apps/web/public/UK_Removal_Dataset/**',
+      'apps/web/public/uploads/**',
+      'apps/web/public/images/**',
+      'apps/web/public/videos/**',
+      'apps/web/public/audio/**',
+      'public/UK_Removal_Dataset/**',
+      'public/uploads/**',
+      'public/images/**',
+      'public/videos/**',
+      'public/audio/**',
+      // Build/test/dev tooling
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/**',
+      'node_modules/typescript/**',
+      'node_modules/@types/**',
+      'node_modules/.cache/**',
+      'node_modules/sharp/vendor/**',
+      'node_modules/canvas/**',
+      'node_modules/playwright/**',
+      'node_modules/playwright-core/**',
+      'node_modules/puppeteer*/**',
+      'node_modules/@next/swc-*/**',
+      '.next/cache/**',
+      // Mobile app deps that leak into workspace traces
+      'node_modules/react-native/**',
+      'node_modules/@react-native/**',
+      'node_modules/@react-native-*/**',
+      'node_modules/@expo/**',
+      'node_modules/expo/**',
+      'node_modules/expo-*/**',
+      'node_modules/jsc-android/**',
+      'node_modules/hermes-engine/**',
+      'node_modules/metro/**',
+      'node_modules/metro-*/**',
+      // Turbo / native binaries we don't need at runtime
+      'node_modules/turbo-*/**',
+      'node_modules/turbo/**',
+      'node_modules/@changesets/**',
+      'node_modules/@electric-sql/**',
+      // Prisma extra engines (we set binaryTargets explicitly in schema)
+      'node_modules/@prisma/engines/libquery_engine-darwin*',
+      'node_modules/@prisma/engines/libquery_engine-windows*',
+      'node_modules/@prisma/engines/query-engine-windows*',
+      'node_modules/@prisma/engines/query_engine-windows*',
+      'node_modules/@prisma/engines/migration-engine*',
+      'node_modules/@prisma/engines/introspection-engine*',
+      'node_modules/@prisma/engines/prisma-fmt*',
+      // Heavy unused libs
+      'node_modules/effect/**',
+      'node_modules/jspdf/**',
+      'node_modules/mapbox-gl/dist/mapbox-gl-csp-worker*',
+      'node_modules/@sentry/replay*/**',
+      'node_modules/@sentry/profiling-node/**',
+      // Source/test files of common deps
+      'node_modules/**/*.md',
+      'node_modules/**/*.map',
+      'node_modules/**/test/**',
+      'node_modules/**/tests/**',
+      'node_modules/**/__tests__/**',
+      'node_modules/**/example/**',
+      'node_modules/**/examples/**',
+      'node_modules/**/docs/**',
+    ],
+  },
+
   // Disable production source maps for better performance
   productionBrowserSourceMaps: false,
 
@@ -220,6 +308,18 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
+        ],
+      },
+      // CORS for /api/* — allow web-v2 origin (and previews) to call this API directly
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: process.env.WEB_V2_ORIGIN || 'https://speedy-van-co-uk-web-v2.vercel.app' },
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PATCH,PUT,DELETE,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type,Authorization,X-Requested-With' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+          { key: 'Vary', value: 'Origin' },
         ],
       },
     ];

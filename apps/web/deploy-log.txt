@@ -1,0 +1,29 @@
+Vercel CLI 50.17.0
+Retrieving projectÔÇª
+Deploying wakaaahmad607-9482s-projects/speedy-van-co-uk-web
+Uploading [--------------------] (0.0B/123.8MB)
+Uploading [=====---------------] (31.0MB/123.8MB)
+Uploading [==========----------] (61.9MB/123.8MB)
+Uploading [===============-----] (92.9MB/123.8MB)
+Uploading [====================] (123.8MB/123.8MB)
+Inspect: https://vercel.com/wakaaahmad607-9482s-projects/speedy-van-co-uk-web/BNi5PdCKqFAM8vxAq1Uf6DZ5w11r [24s]
+Production: https://speedy-van-co-uk-goj6zi4fk-wakaaahmad607-9482s-projects.vercel.app [24s]
+Building...
+Building...
+Building: Running build in Washington, D.C., USA (East) ÔÇô iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Previous build caches not available.
+Building: Downloading 2396 deployment files...
+Building: Running "vercel build"
+Building: Vercel CLI 51.6.1
+Building: Detected OpenTelemetry dependency: @opentelemetry/api@1.9.0, which meets the minimum version requirement of 1.7.0
+Building: Warning: Detected "engines": { "node": ">=20.18.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
+Building: Running "install" command: `cd ../.. && pnpm install --frozen-lockfile=false`...
+Building: (node:44) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Building: (Use `node --trace-deprecation ...` to show where the warning was created)
+Building: Already up-to-date
+Building: Warning: Could not identify Next.js version, ensure it is defined as a project dependency.
+Building: Error: No Next.js version detected. Make sure your package.json has "next" in either "dependencies" or "devDependencies". Also check your Root Directory setting matches the directory of your package.json file.
+Error: No Next.js version detected. Make sure your package.json has "next" in either "dependencies" or "devDependencies". Also check your Root Directory setting matches the directory of your package.json file.
+https://speedy-van-co-uk-goj6zi4fk-wakaaahmad607-9482s-projects.vercel.app
