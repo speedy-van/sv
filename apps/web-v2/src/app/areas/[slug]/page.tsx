@@ -75,12 +75,27 @@ export default async function AreaDetailPage({ params }: PageProps) {
   const popularServices = SERVICES.slice(0, 6);
   const otherAreas = AREAS.filter((a) => a.slug !== area.slug && a.region === area.region).slice(0, 4);
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE.url },
+      { "@type": "ListItem", position: 2, name: "Areas", item: `${SITE.url}/areas` },
+      { "@type": "ListItem", position: 3, name: area.name, item: `${SITE.url}/areas/${area.slug}` },
+    ],
+  };
+
   return (
     <ClientShell>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <PageHero
         eyebrow={`${area.region} · From ${area.fromPrice}`}

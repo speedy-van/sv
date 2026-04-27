@@ -113,7 +113,7 @@ export function TrackingActions({
             <HiXCircle /> Cancel Booking
           </Button>
         )}
-        <a href={SITE.phone.href} style={{ flex: 1, minWidth: "140px" }}>
+        <Box as="a" {...{ href: SITE.phone.href }} flex="1" minW="140px">
           <Button
             bg="obsidian"
             color="pearl"
@@ -126,8 +126,8 @@ export function TrackingActions({
           >
             <HiPhone /> Call Us
           </Button>
-        </a>
-        <a href={SITE.whatsapp.href} target="_blank" rel="noopener noreferrer" style={{ flex: 1, minWidth: "140px" }}>
+        </Box>
+        <Box as="a" {...{ href: SITE.whatsapp.href, target: "_blank", rel: "noopener noreferrer" }} flex="1" minW="140px">
           <Button
             bg="emerald"
             color="white"
@@ -140,7 +140,7 @@ export function TrackingActions({
           >
             <HiChatBubbleLeftRight /> WhatsApp
           </Button>
-        </a>
+        </Box>
       </Stack>
 
       <AnimatePresence>

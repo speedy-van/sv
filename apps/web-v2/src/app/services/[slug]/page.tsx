@@ -69,12 +69,27 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   const otherServices = SERVICES.filter((s) => s.slug !== service.slug).slice(0, 4);
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE.url },
+      { "@type": "ListItem", position: 2, name: "Services", item: `${SITE.url}/services` },
+      { "@type": "ListItem", position: 3, name: service.title, item: `${SITE.url}/services/${service.slug}` },
+    ],
+  };
+
   return (
     <ClientShell>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <PageHero eyebrow={`From ${service.fromPrice}`} title={service.title} subtitle={service.hero} />
 

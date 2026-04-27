@@ -64,7 +64,7 @@ export function DriverCard({ name, phone }: DriverCardProps) {
 
         <Stack direction="row" gap="3" w={{ base: "full", sm: "auto" }}>
           {phone ? (
-            <a href={`tel:${phone}`} style={{ flex: 1 }}>
+            <Box as="a" {...{ href: `tel:${phone}` }} flex="1">
               <Button
                 bg="obsidian"
                 color="pearl"
@@ -77,7 +77,7 @@ export function DriverCard({ name, phone }: DriverCardProps) {
               >
                 <HiPhone /> Call
               </Button>
-            </a>
+            </Box>
           ) : (
             <Button
               bg="obsidian"
