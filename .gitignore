@@ -252,3 +252,24 @@ test-results.xml
 *.tmp
 *.temp
 dist/
+
+# Local browser automation / visual QA artifacts
+.chrome-*/
+.edge-*/
+.playwright-mcp/
+.screens/
+/*.png
+booking-draft-*.py
+browser-checks.py
+
+# Local deployment state and generated Expo files
+.vercel/
+**/.vercel/
+.expo/
+**/.expo/
+**/expo-env.d.ts
+
+# Local signing material and env upload helpers
+apps/**/credentials/
+add-api-env.ps1
+add-web-env.ps1
