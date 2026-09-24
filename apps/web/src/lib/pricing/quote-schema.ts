@@ -9,11 +9,9 @@ import { z } from 'zod';
 const QuoteAddressSchema = z.object({
   full: z.string().min(1),
   line1: z.string().optional(),
-  city: z.string().optional(),
+  city: z.string().min(1),
   postcode: z.string().min(1),
-  coordinates: z
-    .object({ lat: z.number(), lng: z.number() })
-    .optional(),
+  coordinates: z.object({ lat: z.number(), lng: z.number() }),
   floors: z.number().int().min(0).max(50).optional(),
   hasLift: z.boolean().optional(),
   propertyType: z.string().optional(),
@@ -51,6 +49,7 @@ export const QuoteRequestSchema = z.object({
   segments: z
     .array(
       z.object({
+        segmentType: z.enum(['outbound', 'return', 'additional']).optional(),
         pickup: QuoteAddressSchema,
         dropoffs: z.array(QuoteAddressSchema).min(1),
         items: z.array(QuoteItemSchema).optional(),
@@ -106,6 +105,24 @@ export const QuoteResponseSchema = z.object({
       amountPence: z.number().int(),
     })
   ),
+  segments: z.array(
+    z.object({
+      sequenceNumber: z.number().int().min(0),
+      segmentType: z.enum(['outbound', 'return', 'additional']),
+      totalPence: z.number().int(),
+      lines: z.array(
+        z.object({
+          code: z.string(),
+          label: z.string(),
+          amountPence: z.number().int(),
+        })
+      ),
+      route: z.object({
+        miles: z.number().optional(),
+        durationMinutes: z.number().optional(),
+      }),
+    })
+  ).optional(),
   route: z.object({
     miles: z.number().optional(),
     durationMinutes: z.number().optional(),
@@ -154,4 +171,11 @@ export interface ResolvedQuote {
   extras: QuoteExtras;
   promotionCode?: string;
   discountPence: number;
+  segments?: Array<{
+    sequenceNumber: number;
+    segmentType: 'outbound' | 'return' | 'additional';
+    totalPence: number;
+    lines: QuoteResponse['lines'];
+    route: QuoteResponse['route'];
+  }>;
 }

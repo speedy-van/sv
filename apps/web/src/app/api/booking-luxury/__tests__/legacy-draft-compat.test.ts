@@ -1,14 +1,14 @@
 /**
- * Gate item 7 — pre-Phase-0 draft compatibility.
+ * Gate item B2 — pre-Phase-0 draft hard stop.
  *
  * A BookingDraft saved before Phase 0 has no quoteId / dateKey fields.
- * Submitting that draft to /api/booking-luxury must succeed using the
- * dynamic-pricing-engine path (not the quote path).
+ * Submitting that draft to /api/booking-luxury must now fail because the
+ * booking total can only come from a server-issued PriceQuote.
  *
  * Key assertions:
- *  - 200 response (not 400 QUOTE_ERROR)
- *  - booking.totalGBP set from engine output, not from a quote
- *  - Booking.promotionCode remains null (no promo in old draft)
+ *  - 400 response with code QUOTE_REQUIRED
+ *  - no booking is created
+ *  - priceQuote.findUnique is not called when quoteId is absent
  */
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -50,21 +50,6 @@ jest.mock('@/lib/logger', () => ({
 
 jest.mock('@/lib/services/pricing-snapshot-service', () => ({
   PricingSnapshotService: { createPricingSnapshot: (...a: any[]) => mockPricingSnapshotCreate(...a) },
-}));
-
-jest.mock('@/lib/services/dynamic-pricing-engine', () => ({
-  dynamicPricingEngine: {
-    calculateDynamicPrice: jest.fn().mockResolvedValue({
-      finalPrice: 120,
-      basePrice: 100,
-      dynamicMultipliers: {},
-      confidence: 0.9,
-      breakdown: { itemsCost: 0, timeCost: 100, surcharges: 0, discounts: 0 },
-      recommendations: [],
-      validUntil: new Date(Date.now() + 3600_000).toISOString(),
-      capacityCheck: { fits: true },
-    }),
-  },
 }));
 
 jest.mock('@/lib/ref', () => ({
@@ -126,31 +111,17 @@ function makeOldStyleDraftBody() {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('legacy (pre-Phase-0) draft compatibility', () => {
-  let createdBooking: any;
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockPriceQuoteFindUnique.mockResolvedValue(null); // no quote in DB either
     mockPricingSnapshotCreate.mockResolvedValue({});
     mockBookingAddressCreate.mockResolvedValue({ id: 'addr-legacy' });
     mockPropertyDetailsCreate.mockResolvedValue({ id: 'prop-legacy' });
-    mockBookingUpdate.mockImplementation(() => Promise.resolve(createdBooking));
-
-    mockBookingCreate.mockImplementation((args: any) => {
-      createdBooking = {
-        id: 'booking-legacy',
-        reference: 'SV-LEGACY-001',
-        status: 'PENDING_PAYMENT',
-        totalGBP: args.data.totalGBP,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        ...args.data,
-      };
-      return Promise.resolve(createdBooking);
-    });
+    mockBookingUpdate.mockResolvedValue({});
+    mockBookingCreate.mockResolvedValue({});
   });
 
-  it('returns 200 for old-style draft without quoteId/dateKey', async () => {
+  it('returns 400 QUOTE_REQUIRED for old-style draft without quoteId/dateKey', async () => {
     const req = new NextRequest('http://localhost/api/booking-luxury', {
       method: 'POST',
       body: JSON.stringify(makeOldStyleDraftBody()),
@@ -158,27 +129,12 @@ describe('legacy (pre-Phase-0) draft compatibility', () => {
     });
 
     const res = await bookingLuxury(req);
-    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(res.status).toBe(400);
+    expect(data.code).toBe('QUOTE_REQUIRED');
   });
 
-  it('creates booking with engine-computed totalGBP (not 0, not client value)', async () => {
-    const req = new NextRequest('http://localhost/api/booking-luxury', {
-      method: 'POST',
-      body: JSON.stringify(makeOldStyleDraftBody()),
-      headers: { 'content-type': 'application/json' },
-    });
-
-    const res = await bookingLuxury(req);
-    expect(res.status).toBe(200);
-
-    // totalGBP must be >0 (engine produced something)
-    expect(createdBooking.totalGBP).toBeGreaterThan(0);
-    // Must NOT be the client-supplied amount (£120 = 12000p)
-    // The engine will produce a different amount based on its own logic
-    expect(typeof createdBooking.totalGBP).toBe('number');
-  });
-
-  it('does not set promotionCode when no promo in old draft', async () => {
+  it('does not create a booking for old-style draft without quoteId/dateKey', async () => {
     const req = new NextRequest('http://localhost/api/booking-luxury', {
       method: 'POST',
       body: JSON.stringify(makeOldStyleDraftBody()),
@@ -186,7 +142,7 @@ describe('legacy (pre-Phase-0) draft compatibility', () => {
     });
 
     await bookingLuxury(req);
-    expect(createdBooking.promotionCode).toBeNull();
+    expect(mockBookingCreate).not.toHaveBeenCalled();
   });
 
   it('does not call priceQuote.findUnique when no quoteId in body', async () => {

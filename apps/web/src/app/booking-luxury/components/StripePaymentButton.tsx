@@ -131,6 +131,8 @@ interface BookingData {
   segments?: any[];
 }
 
+const ADDRESS_SUGGESTION_REQUIRED_MESSAGE = 'Choose your address from the suggestions so we can price it';
+
 const normaliseFlatNumber = (address?: AddressData): string | undefined => {
   if (!address) return undefined;
 
@@ -160,6 +162,45 @@ const normaliseFlatNumber = (address?: AddressData): string | undefined => {
   }
 
   return undefined;
+};
+
+const getAddressStreet = (address?: AddressData): string | undefined => {
+  if (!address) return undefined;
+
+  const candidates = [
+    address.street,
+    address.address,
+    address.formatted_address,
+    address.full,
+    address.line1,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+};
+
+const buildAddressPayload = (address?: AddressData) => {
+  const street = getAddressStreet(address);
+  const city = typeof address?.city === 'string' ? address.city.trim() : '';
+  const postcode = typeof address?.postcode === 'string' ? address.postcode.trim() : '';
+  const lat = address?.coordinates?.lat;
+  const lng = address?.coordinates?.lng;
+
+  if (!street || !city || !postcode || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  return {
+    street,
+    city,
+    postcode,
+    coordinates: { lat, lng },
+  };
 };
 
 const normaliseFloorNumber = (address?: AddressData): string | undefined => {
@@ -224,7 +265,7 @@ interface StripePaymentButtonProps {
   /** London date key (YYYY-MM-DD) selected by the user. */
   dateKey?: string;
   /** Called when the server returns QUOTE_EXPIRED so the parent can refresh the quote. */
-  onQuoteExpired?: () => void;
+  onQuoteExpired?: (previousAmountPence?: number) => void;
 }
 
 export default function StripePaymentButton({
@@ -288,6 +329,50 @@ export default function StripePaymentButton({
 
       // Create booking if it doesn't exist yet (skip on re-tap after price adjustment)
       if (!bookingId && !requiresRetap) {
+        const pickupAddressPayload = buildAddressPayload(bookingData.pickupAddress);
+        const dropoffAddressPayload = buildAddressPayload(bookingData.dropoffAddress);
+        const segmentPayloads = bookingData.segments && Array.isArray(bookingData.segments) && bookingData.segments.length > 1
+          ? bookingData.segments.map((segment: any, idx: number) => {
+              const segmentPickup = buildAddressPayload(segment.pickupAddress);
+              const segmentDropoff = buildAddressPayload(segment.dropoffAddress);
+
+              if (!segmentPickup || !segmentDropoff) {
+                return null;
+              }
+
+              return {
+                id: segment.id || `segment-${idx}`,
+                segmentType: segment.segmentType || (idx === 0 ? 'outbound' : 'return'),
+                sequenceNumber: segment.sequenceNumber ?? idx,
+                pickupAddress: segmentPickup,
+                dropoffAddress: segmentDropoff,
+                items: (segment.items || []).map((item: any) => ({
+                  id: item.id || `item-${Date.now()}-${Math.random()}`,
+                  name: item.name || 'Unknown Item',
+                  quantity: item.quantity || 1,
+                  category: item.category || 'furniture',
+                  volumeFactor: item.volume || 0.1,
+                })),
+                pricing: segment.pricing || { total: 0 },
+                datetime: segment.datetime,
+                distance: segment.distance,
+              };
+            })
+          : undefined;
+
+        if (!pickupAddressPayload || !dropoffAddressPayload || segmentPayloads?.some((segment: any) => segment === null)) {
+          setIsProcessing(false);
+          setPaymentStatus('idle');
+          toast({
+            title: ADDRESS_SUGGESTION_REQUIRED_MESSAGE,
+            status: 'warning',
+            duration: 6000,
+            isClosable: true,
+          });
+          onError(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
+          return;
+        }
+
         // Transform the data to match the API schema
         const pickupFlatNumber = normaliseFlatNumber(bookingData.pickupAddress);
         const dropoffFlatNumber = normaliseFlatNumber(bookingData.dropoffAddress);
@@ -303,16 +388,11 @@ export default function StripePaymentButton({
           bookingDraftId,
           bookingReference,
           pickupAddress: {
-            // Extract street from multiple possible sources
-            street: bookingData.pickupAddress.street || 
-                   bookingData.pickupAddress.address || 
-                   bookingData.pickupAddress.formatted_address ||
-                   bookingData.pickupAddress.full ||
-                   bookingData.pickupAddress.line1 ||
-                   '',
-            city: bookingData.pickupAddress.city || 'Unknown City',
-            postcode: bookingData.pickupAddress.postcode || '',
+            street: pickupAddressPayload.street,
+            city: pickupAddressPayload.city,
+            postcode: pickupAddressPayload.postcode,
             country: 'UK',
+            coordinates: pickupAddressPayload.coordinates,
             flatNumber: pickupFlatNumber,
             floorNumber: pickupFloorNumber,
             buildingDetails: {
@@ -323,16 +403,11 @@ export default function StripePaymentButton({
             },
           },
           dropoffAddress: {
-            // Extract street from multiple possible sources
-            street: bookingData.dropoffAddress.street || 
-                   bookingData.dropoffAddress.address || 
-                   bookingData.dropoffAddress.formatted_address ||
-                   bookingData.dropoffAddress.full ||
-                   bookingData.dropoffAddress.line1 ||
-                   '',
-            city: bookingData.dropoffAddress.city || 'Unknown City',
-            postcode: bookingData.dropoffAddress.postcode || '',
+            street: dropoffAddressPayload.street,
+            city: dropoffAddressPayload.city,
+            postcode: dropoffAddressPayload.postcode,
             country: 'UK',
+            coordinates: dropoffAddressPayload.coordinates,
             flatNumber: dropoffFlatNumber,
             floorNumber: dropoffFloorNumber,
             buildingDetails: {
@@ -394,35 +469,7 @@ export default function StripePaymentButton({
           ...(quoteId ? { quoteId } : {}),
           ...(dateKey ? { dateKey } : {}),
           // ✅ CRITICAL FIX: Include segments for multi-leg bookings
-          segments: bookingData.segments && Array.isArray(bookingData.segments) && bookingData.segments.length > 1
-            ? bookingData.segments.map((segment: any, idx: number) => ({
-                id: segment.id || `segment-${idx}`,
-                segmentType: segment.segmentType || (idx === 0 ? 'outbound' : 'return'),
-                sequenceNumber: segment.sequenceNumber ?? idx,
-                pickupAddress: {
-                  street: segment.pickupAddress?.street || segment.pickupAddress?.address || segment.pickupAddress?.full || '',
-                  city: segment.pickupAddress?.city || 'Unknown City',
-                  postcode: segment.pickupAddress?.postcode || '',
-                  coordinates: segment.pickupAddress?.coordinates,
-                },
-                dropoffAddress: {
-                  street: segment.dropoffAddress?.street || segment.dropoffAddress?.address || segment.dropoffAddress?.full || '',
-                  city: segment.dropoffAddress?.city || 'Unknown City',
-                  postcode: segment.dropoffAddress?.postcode || '',
-                  coordinates: segment.dropoffAddress?.coordinates,
-                },
-                items: (segment.items || []).map((item: any) => ({
-                  id: item.id || `item-${Date.now()}-${Math.random()}`,
-                  name: item.name || 'Unknown Item',
-                  quantity: item.quantity || 1,
-                  category: item.category || 'furniture',
-                  volumeFactor: item.volume || 0.1,
-                })),
-                pricing: segment.pricing || { total: 0 },
-                datetime: segment.datetime,
-                distance: segment.distance,
-              }))
-            : undefined,
+          segments: segmentPayloads,
         };
 
         // Validate all required fields before sending
@@ -462,14 +509,7 @@ export default function StripePaymentButton({
           const errorData = await bookingResponse.json();
 
           if (errorData.code === 'QUOTE_EXPIRED') {
-            toast({
-              title: 'Quote expired',
-              description: 'Fetching a fresh price — please tap pay again.',
-              status: 'warning',
-              duration: 6000,
-              isClosable: true,
-            });
-            onQuoteExpired?.();
+            onQuoteExpired?.(Math.round(amount * 100));
             setIsProcessing(false);
             setPaymentStatus('idle');
             return;

@@ -60,7 +60,6 @@ jest.mock('@/lib/promotions/validate-promotion', () => ({
 const mockStripeSessionCreate = jest.fn();
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => ({
-    paymentIntents: { create: jest.fn().mockResolvedValue({ id: 'pi_test' }) },
     checkout: { sessions: { create: (...a: any[]) => mockStripeSessionCreate(...a) } },
   }));
 });
@@ -74,21 +73,6 @@ jest.mock('@/lib/logger', () => ({
 
 jest.mock('@/lib/services/pricing-snapshot-service', () => ({
   PricingSnapshotService: { createPricingSnapshot: (...a: any[]) => mockPricingSnapshotCreate(...a) },
-}));
-
-jest.mock('@/lib/services/dynamic-pricing-engine', () => ({
-  dynamicPricingEngine: {
-    calculateDynamicPrice: jest.fn().mockResolvedValue({
-      finalPrice: 144, // £144 = 14400p (matches QUOTE_TOTAL_PENCE / 100)
-      basePrice: 120,
-      dynamicMultipliers: {},
-      confidence: 0.95,
-      breakdown: { itemsCost: 0, timeCost: 120, surcharges: 0, discounts: 0 },
-      recommendations: [],
-      validUntil: new Date(Date.now() + 3600_000).toISOString(),
-      capacityCheck: { fits: true },
-    }),
-  },
 }));
 
 jest.mock('@/lib/ref', () => ({
@@ -245,6 +229,7 @@ describe('price integrity — createQuote → booking-luxury → checkout-sessio
   });
 
   async function runBookingLuxury(bodyOverrides: Record<string, any> = {}) {
+    mockBookingFindUnique.mockResolvedValueOnce(null);
     mockQuoteInDb();
     const req = makeBookingRequest(makeBookingLuxuryBody(bodyOverrides));
     const res = await bookingLuxury(req);
@@ -278,6 +263,53 @@ describe('price integrity — createQuote → booking-luxury → checkout-sessio
         ]),
       })
     );
+  });
+
+  it('reuses the existing pending booking on Stripe cancel/retry with the same reference', async () => {
+    const first = await runBookingLuxury({ bookingReference: REF });
+    expect(first.res.status).toBe(200);
+    expect(first.data.booking.reference).toBe(REF);
+    expect(first.data.booking.payment.amountPence).toBe(QUOTE_TOTAL_PENCE);
+
+    mockBookingFindUnique.mockResolvedValueOnce(createdBooking);
+    const retryReq = makeBookingRequest(makeBookingLuxuryBody({ bookingReference: REF }));
+    const retryRes = await bookingLuxury(retryReq);
+    const retryData = await retryRes.json();
+
+    expect(retryRes.status).toBe(200);
+    expect(retryData.booking.reference).toBe(REF);
+    expect(retryData.booking.id).toBe(createdBooking.id);
+    expect(retryData.booking.payment.amountPence).toBe(QUOTE_TOTAL_PENCE);
+    expect(mockBookingCreate).toHaveBeenCalledTimes(1);
+    expect(mockPriceQuoteFindUnique).toHaveBeenCalledTimes(1);
+
+    mockBookingFindUnique.mockResolvedValueOnce(createdBooking);
+    await createCheckoutSession(makeCheckoutRequest(createdBooking.id, REF, 99900));
+
+    expect(mockStripeSessionCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client_reference_id: REF,
+        line_items: expect.arrayContaining([
+          expect.objectContaining({
+            price_data: expect.objectContaining({ unit_amount: QUOTE_TOTAL_PENCE }),
+          }),
+        ]),
+      })
+    );
+  });
+
+  it('returns QUOTE_REQUIRED when booking-luxury is called without quoteId/dateKey', async () => {
+    const body = makeBookingLuxuryBody();
+    delete (body as any).quoteId;
+    delete (body as any).dateKey;
+
+    const res = await bookingLuxury(makeBookingRequest(body));
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.code).toBe('QUOTE_REQUIRED');
+    expect(mockBookingCreate).not.toHaveBeenCalled();
+    expect(mockPriceQuoteFindUnique).not.toHaveBeenCalled();
   });
 
   it('(b) % promo applied server-side: Stripe unit_amount = quote − discount', async () => {

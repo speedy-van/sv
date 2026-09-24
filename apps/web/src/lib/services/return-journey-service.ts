@@ -73,6 +73,16 @@ export interface ReturnJourneyPricing {
   matchScore: number; // 0-100, how good is this match?
 }
 
+export function calculateReturnJourneyDiscountRate(deviationPercentage: number): number {
+  if (deviationPercentage < 0.05) {
+    return 0.60;
+  }
+  if (deviationPercentage < 0.10) {
+    return 0.55;
+  }
+  return 0.50;
+}
+
 export class ReturnJourneyService {
   private static instance: ReturnJourneyService;
 
@@ -119,12 +129,7 @@ export class ReturnJourneyService {
     // Step 4: Calculate return journey discount
     // Base discount: 50%
     // Additional discount if deviation is minimal: up to 10%
-    let discountPercentage = 0.50; // 50% base discount
-    if (deviationPercentage < 0.05) {
-      discountPercentage = 0.60; // 60% discount for perfect match
-    } else if (deviationPercentage < 0.10) {
-      discountPercentage = 0.55; // 55% discount for good match
-    }
+    const discountPercentage = calculateReturnJourneyDiscountRate(deviationPercentage);
 
     const discount = standardPrice * discountPercentage;
     const returnJourneyPrice = standardPrice - discount;

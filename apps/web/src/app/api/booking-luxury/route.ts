@@ -9,9 +9,9 @@ import {
   validateBookingAmount, 
   convertBookingAmountsToPence
 } from '@/lib/utils/currency';
-import { dynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
 import { logger } from '@/lib/logger';
 import { resolveQuoteForCheckout } from '@/lib/pricing/quote-service';
+import type { ResolvedQuote } from '@/lib/pricing/quote-schema';
 import { londonWallTimeToUtc } from '@/lib/dates/london';
 // Using Prisma enums instead
 // import {
@@ -543,30 +543,14 @@ export async function POST(request: NextRequest) {
     const incomingQuoteId = typeof rawData.quoteId === 'string' ? rawData.quoteId.trim() || undefined : undefined;
     const incomingDateKey = typeof rawData.dateKey === 'string' ? rawData.dateKey.trim() || undefined : undefined;
 
-    // Resolve quote early (fail fast before any DB writes)
-    let resolvedQuoteAmountPence: number | undefined;
-    let resolvedQuoteCrewSize: string | undefined;
-    let resolvedPromoCode: string | undefined;
-    if (incomingQuoteId && incomingDateKey) {
-      try {
-        const resolved = await resolveQuoteForCheckout({
-          quoteId: incomingQuoteId,
-          dateKey: incomingDateKey,
-          customerEmail: bookingData.customer.email,
-          promoCode: bookingData.promotionCode,
-        });
-        resolvedQuoteAmountPence = resolved.amountPence;
-        resolvedQuoteCrewSize = resolved.crewSize;
-        resolvedPromoCode = resolved.promotionCode;
-        logger.info('[booking-luxury] quote resolved', { quoteId: incomingQuoteId, dateKey: incomingDateKey, amountPence: resolved.amountPence });
-      } catch (err: unknown) {
-        const code = (err as any)?.quoteCode as string | undefined;
-        logger.warn('[booking-luxury] quote resolution failed', { quoteId: incomingQuoteId, code, msg: (err as Error).message });
-        return NextResponse.json(
-          { error: (err as Error).message, code: code ?? 'QUOTE_ERROR' },
-          { status: 400 }
-        );
-      }
+    if (!incomingQuoteId || !incomingDateKey) {
+      return NextResponse.json(
+        {
+          error: 'Quote required',
+          code: 'QUOTE_REQUIRED',
+        },
+        { status: 400 }
+      );
     }
 
     logger.info('[booking-luxury] creating booking', {
@@ -582,12 +566,15 @@ export async function POST(request: NextRequest) {
       : (typeof rawData.bookingReference === 'string' ? rawData.bookingReference.trim() : '');
     let reference = providedReference || await createUniqueReference('booking');
 
-    // Check if booking already exists with this reference
+    // Check if booking already exists with this reference before resolving the quote.
+    // This keeps Stripe-cancel/retry idempotent: the quote may already be consumed
+    // by the first pending booking, but the customer must keep the same reference.
     const existingBooking = await prisma.booking.findUnique({ where: { reference } });
     if (existingBooking) {
       // If booking exists and is pending payment, return it (idempotent behavior)
       if (existingBooking.status === 'PENDING_PAYMENT' || existingBooking.status === 'DRAFT') {
         console.log('✅ Returning existing pending booking:', existingBooking.reference);
+        const existingTotalPounds = (existingBooking.totalGBP || 0) / 100;
         return NextResponse.json({
           success: true,
           booking: {
@@ -595,6 +582,17 @@ export async function POST(request: NextRequest) {
             reference: existingBooking.reference,
             status: existingBooking.status,
             totalGBP: existingBooking.totalGBP,
+            pricing: {
+              total: existingTotalPounds,
+              totalPounds: existingTotalPounds,
+              totalPence: existingBooking.totalGBP,
+            },
+            payment: {
+              stripePaymentIntentId: existingBooking.stripePaymentIntentId ?? null,
+              status: 'pending',
+              amountPounds: existingTotalPounds,
+              amountPence: existingBooking.totalGBP,
+            },
           },
           message: 'Existing booking returned',
         });
@@ -608,6 +606,36 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+
+    // Resolve the server quote only after the idempotency check. From this point
+    // on, the quote is the only source of the chargeable total.
+    let resolvedQuote: ResolvedQuote;
+    try {
+      resolvedQuote = await resolveQuoteForCheckout({
+        quoteId: incomingQuoteId,
+        dateKey: incomingDateKey,
+        customerEmail: bookingData.customer.email,
+        promoCode: bookingData.promotionCode,
+      });
+      logger.info('[booking-luxury] quote resolved', {
+        quoteId: incomingQuoteId,
+        dateKey: incomingDateKey,
+        amountPence: resolvedQuote.amountPence,
+        segments: resolvedQuote.segments?.length ?? 0,
+      });
+    } catch (err: unknown) {
+      const code = (err as any)?.quoteCode as string | undefined;
+      logger.warn('[booking-luxury] quote resolution failed', { quoteId: incomingQuoteId, code, msg: (err as Error).message });
+      return NextResponse.json(
+        { error: (err as Error).message, code: code ?? 'QUOTE_ERROR' },
+        { status: 400 }
+      );
+    }
+
+    const resolvedQuoteAmountPence = resolvedQuote.amountPence;
+    const resolvedQuoteCrewSize = resolvedQuote.crewSize;
+    const resolvedPromoCode = resolvedQuote.promotionCode;
+    const resolvedQuoteSegments = resolvedQuote.segments ?? [];
 
     // Note: We DON'T generate new reference if draft exists - the draft IS this booking
     // The draft was created at step 1, now we're converting it to a real booking
@@ -677,18 +705,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Calculate pricing using Dynamic Pricing Engine
-    console.log('🚀 Calculating pricing using Dynamic Pricing Engine...');
+    console.log('🚀 Using resolved quote for booking pricing...');
     
-    // Prepare items for pricing engine
-    const pricingItems = (bookingData.items || []).map((item: any) => ({
-      category: item.category || 'general',
-      quantity: item.quantity || 1,
-      weight: item.weight || 0,
-      volume: item.volumeFactor || 0,
-      fragile: item.fragile || false,
-    }));
-
     // Determine service type - prioritize serviceTier, then serviceType, fallback to urgency
     let serviceType: 'ECONOMY' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE' = 'STANDARD';
     
@@ -815,170 +833,30 @@ export async function POST(request: NextRequest) {
     }
     
     const isMultiLeg = rawSegments && rawSegments.length > 1;
-    let dynamicPricingResult: any;
-    let aggregatedPricing = {
-      finalPrice: 0,
-      basePrice: 0,
-      breakdown: {
-        itemsCost: 0,
-        timeCost: 0,
-        surcharges: 0,
-        discounts: 0,
-      },
-      dynamicMultipliers: {},
-      confidence: 1.0,
-      validUntil: new Date(Date.now() + 30 * 60 * 1000),
-      capacityCheck: { fits: true },
-      recommendations: [],
-    };
+    const quoteTotalPounds = resolvedQuoteAmountPence / 100;
+    const quoteSubtotalBeforeVatPence = Math.round(resolvedQuoteAmountPence / 1.2);
+    const quoteVatPence = resolvedQuoteAmountPence - quoteSubtotalBeforeVatPence;
+    const quoteLineItems = resolvedQuoteSegments.flatMap((segment) =>
+      segment.lines.map((line) => ({
+        ...line,
+        segmentSequenceNumber: segment.sequenceNumber,
+        segmentType: segment.segmentType,
+      }))
+    );
 
-    if (isMultiLeg) {
-      console.log(`🚗 Multi-leg booking detected: ${rawSegments.length} segments`);
-      
-      // ✅ FIXED: Calculate pricing for each segment with proper item handling
-      for (let i = 0; i < rawSegments.length; i++) {
-        const segment = rawSegments[i];
-        const segmentPickup = segment.pickupAddress;
-        const segmentDropoff = segment.dropoffAddress;
-        
-        // ✅ CRITICAL FIX: Multi-leg bookings - all segments carry the SAME items
-        // In multi-leg (e.g., outbound + return), the same items are transported in each leg
-        // Therefore, all segments should use the same items list to avoid double-counting
-        let segmentItems = segment.items || [];
-        if (!segmentItems || segmentItems.length === 0) {
-          // For multi-leg: use items from first segment (they're the same items for all legs)
-          if (rawSegments[0]?.items && Array.isArray(rawSegments[0].items) && rawSegments[0].items.length > 0) {
-            // Deep copy to avoid reference issues
-            segmentItems = rawSegments[0].items.map((item: any) => ({ ...item }));
-            console.log(`ℹ️ Segment ${i + 1} has no items, using items from first segment (same items for all legs)`);
-          } else if (pricingItems && pricingItems.length > 0) {
-            // Fallback to global items
-            segmentItems = pricingItems.map((item: any) => ({ ...item }));
-            console.log(`ℹ️ Segment ${i + 1} has no items, using global items`);
-          } else {
-            console.error(`❌ Segment ${i + 1} has no items and no fallback available`);
-            throw new Error(`Segment ${i + 1} must have items. In multi-leg bookings, all segments carry the same items.`);
-          }
-        }
-        
-        // ✅ VALIDATION: Ensure segment items match first segment items (for consistency)
-        // This prevents double-counting and ensures pricing accuracy
-        if (i > 0 && rawSegments[0]?.items && rawSegments[0].items.length > 0) {
-          const firstSegmentItems = rawSegments[0].items;
-          const segmentItemsIds = new Set(segmentItems.map((item: any) => item.id));
-          const firstSegmentItemsIds = new Set(firstSegmentItems.map((item: any) => item.id));
-          
-          // Check if items are different (should be same in multi-leg)
-          if (segmentItemsIds.size !== firstSegmentItemsIds.size || 
-              ![...segmentItemsIds].every(id => firstSegmentItemsIds.has(id))) {
-            console.warn(`⚠️ Segment ${i + 1} has different items than first segment. Using first segment items for consistency.`, {
-              segmentItems: segmentItems.map((item: any) => item.id),
-              firstSegmentItems: firstSegmentItems.map((item: any) => item.id)
-            });
-            // Use first segment items to ensure consistency
-            segmentItems = firstSegmentItems.map((item: any) => ({ ...item }));
-          }
-        }
-        
-        const segmentDatetime = segment.datetime ? new Date(segment.datetime) : new Date();
-
-        console.log(`📍 Calculating segment ${i + 1}: ${segmentPickup?.postcode || 'N/A'} → ${segmentDropoff?.postcode || 'N/A'}`, {
-          itemsCount: segmentItems.length,
-          totalQuantity: segmentItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0)
-        });
-
-        // ✅ CRITICAL FIX: Validate addresses before pricing
-        if (!segmentPickup?.postcode || !segmentDropoff?.postcode) {
-          console.error(`❌ Segment ${i + 1} missing addresses:`, {
-            pickup: segmentPickup?.postcode || 'missing',
-            dropoff: segmentDropoff?.postcode || 'missing'
-          });
-          throw new Error(`Segment ${i + 1} must have valid pickup and dropoff addresses`);
-        }
-
-        const segmentPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
-          pickupAddress: {
-            address: segmentPickup.street || segmentPickup.address || segmentPickup.line1 || '',
-            postcode: segmentPickup.postcode || '',
-            coordinates: segmentPickup.coordinates,
-          },
-          dropoffAddress: {
-            address: segmentDropoff.street || segmentDropoff.address || segmentDropoff.line1 || '',
-            postcode: segmentDropoff.postcode || '',
-            coordinates: segmentDropoff.coordinates,
-          },
-          scheduledDate: segmentDatetime,
-          serviceType,
-          customerSegment,
-          loyaltyTier,
-          items: segmentItems.map((item: any) => ({
-            name: item.name || 'Item',
-            category: item.category || 'general',
-            quantity: item.quantity || 1,
-            weight: item.weight || 0,
-            volume: item.volumeFactor || item.volume || 0,
-            fragile: item.fragile || item.fragility_level === 'High' || item.fragility_level === 'Medium',
-          })),
-          customerId: customerId || undefined,
-        });
-
-        // Aggregate pricing
-        aggregatedPricing.finalPrice += segmentPricingResult.finalPrice;
-        aggregatedPricing.basePrice += segmentPricingResult.basePrice;
-        aggregatedPricing.breakdown.itemsCost += segmentPricingResult.breakdown.itemsCost;
-        aggregatedPricing.breakdown.timeCost += segmentPricingResult.breakdown.timeCost;
-        aggregatedPricing.breakdown.surcharges += segmentPricingResult.breakdown.surcharges;
-        aggregatedPricing.breakdown.discounts += segmentPricingResult.breakdown.discounts;
-
-        console.log(`✅ Segment ${i + 1} price: £${segmentPricingResult.finalPrice.toFixed(2)}`, {
-          itemsCount: segmentItems.length,
-          basePrice: segmentPricingResult.basePrice,
-          finalPrice: segmentPricingResult.finalPrice
-        });
-      }
-
-      dynamicPricingResult = aggregatedPricing;
-      console.log(`💰 Total multi-leg price: £${aggregatedPricing.finalPrice.toFixed(2)}`, {
-        segmentsCount: rawSegments.length,
-        averagePricePerSegment: (aggregatedPricing.finalPrice / rawSegments.length).toFixed(2)
-      });
-    } else {
-      // Single journey - original logic
-      dynamicPricingResult = await dynamicPricingEngine.calculateDynamicPrice({
-        pickupAddress: {
-          address: bookingData.pickupAddress.street || '',
-          postcode: bookingData.pickupAddress.postcode || '',
-          coordinates: rawPickupAddress.coordinates,
-        },
-        dropoffAddress: {
-          address: bookingData.dropoffAddress.street || '',
-          postcode: bookingData.dropoffAddress.postcode || '',
-          coordinates: rawDropoffAddress.coordinates,
-        },
-        scheduledDate: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
-                       bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
-        serviceType,
-        customerSegment,
-        loyaltyTier,
-        items: pricingItems,
-        customerId: customerId || undefined,
-      });
-    }
-
-    console.log('✅ Dynamic pricing calculated:', {
-      basePrice: dynamicPricingResult.basePrice,
-      finalPrice: dynamicPricingResult.finalPrice,
-      multipliers: dynamicPricingResult.dynamicMultipliers,
-      confidence: dynamicPricingResult.confidence,
+    console.log('✅ Quote resolved for booking pricing:', {
+      quoteId: incomingQuoteId,
+      amountPence: resolvedQuoteAmountPence,
       isMultiLeg,
-      segments: isMultiLeg ? rawSegments.length : 1,
+      segments: resolvedQuoteSegments.length || 1,
     });
 
-    // Compare with frontend pricing and log any significant differences
+    // Compare with frontend display pricing and log any significant differences.
+    // The quote amount remains authoritative either way.
     const frontendPrice = bookingData.pricing.total;
-    const backendPrice = dynamicPricingResult.finalPrice;
+    const backendPrice = quoteTotalPounds;
     const priceDifference = Math.abs(frontendPrice - backendPrice);
-    const priceDifferencePercent = (priceDifference / frontendPrice) * 100;
+    const priceDifferencePercent = frontendPrice > 0 ? (priceDifference / frontendPrice) * 100 : 0;
 
     if (priceDifferencePercent > 10) {
       console.warn('⚠️ Significant price difference detected:', {
@@ -989,31 +867,41 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Use backend calculated price (more accurate and includes all multipliers)
     const pricingResult = {
-      price: dynamicPricingResult.finalPrice,
+      price: quoteTotalPounds,
       currency: 'GBP',
-      totalPrice: dynamicPricingResult.finalPrice,
-      subtotalBeforeVAT: dynamicPricingResult.finalPrice / 1.2, // Remove VAT
-      vatAmount: dynamicPricingResult.finalPrice - (dynamicPricingResult.finalPrice / 1.2),
+      totalPrice: quoteTotalPounds,
+      subtotalBeforeVAT: quoteSubtotalBeforeVatPence / 100,
+      vatAmount: quoteVatPence / 100,
       vatRate: 0.2,
-      basePrice: dynamicPricingResult.basePrice,
-      itemsPrice: dynamicPricingResult.breakdown.itemsCost,
-      servicePrice: dynamicPricingResult.breakdown.timeCost,
+      basePrice: quoteTotalPounds,
+      itemsPrice: 0,
+      servicePrice: 0,
       propertyAccessPrice: 0,
-      urgencyPrice: dynamicPricingResult.breakdown.surcharges,
-      promoDiscount: dynamicPricingResult.breakdown.discounts,
-      estimatedDuration: 60,
+      urgencyPrice: 0,
+      promoDiscount: resolvedQuote.discountPence / 100,
+      estimatedDuration: Math.max(
+        1,
+        Math.round(
+          resolvedQuoteSegments.reduce((sum, segment) => sum + (segment.route.durationMinutes ?? 0), 0)
+        ) || 60
+      ),
       recommendedVehicle: 'van',
-      distance: 10,
-      breakdown: dynamicPricingResult.breakdown,
+      distance: resolvedQuoteSegments.reduce((sum, segment) => sum + (segment.route.miles ?? 0), 0),
+      breakdown: {
+        source: 'price_quote',
+        quoteId: incomingQuoteId,
+        dateKey: incomingDateKey,
+        lines: quoteLineItems,
+        segments: resolvedQuoteSegments,
+      },
       surcharges: [],
-      multipliers: dynamicPricingResult.dynamicMultipliers,
-      recommendations: dynamicPricingResult.recommendations || [],
+      multipliers: {},
+      recommendations: [],
       optimizationTips: [],
-      validUntil: dynamicPricingResult.validUntil,
-      confidence: dynamicPricingResult.confidence,
-      capacityCheck: dynamicPricingResult.capacityCheck, // Include capacity check
+      validUntil: new Date(Date.now() + 30 * 60 * 1000),
+      confidence: 1,
+      capacityCheck: { fits: true },
     };
     
     // Validate pricing
@@ -1042,20 +930,12 @@ export async function POST(request: NextRequest) {
     const effectiveCrewSize = resolvedQuoteCrewSize ?? bookingData.crewSize ?? '1';
     const mappedCrewSize = crewSizeMap[effectiveCrewSize] || 'ONE';
     
-    // Calculate crew multiplier (affects price)
-    // ✅ CRITICAL FIX: Only 1 Man = base price. 2+ Men = crew surcharge applied.
-    const crewMultipliers: Record<string, number> = {
-      'ONE': 0,    // Base price (1 man = driver only)
-      'TWO': 20,   // +20% for 2-man crew (FIXED: was 0%, causing revenue loss)
-      'THREE': 35, // +35% for 3-man crew
-      'FOUR': 50,  // +50% for 4-man crew
-    };
-    const crewMultiplierPercent = crewMultipliers[mappedCrewSize] || 0;
-    
-    // Apply crew multiplier to the total price
+    // The quote already includes the selected crew size. Keep the DB enum for
+    // operations, but do not apply a second crew multiplier in booking-luxury.
+    const crewMultiplierPercent = 0;
     const baseTotal = Number.isFinite(pricingResult.totalPrice) ? pricingResult.totalPrice : 0;
-    const crewSurcharge = baseTotal * (crewMultiplierPercent / 100);
-    const calculatedTotal = baseTotal + crewSurcharge;
+    const crewSurcharge = 0;
+    const calculatedTotal = baseTotal;
     
     console.log('👷 Crew size pricing:', {
       frontend: bookingData.crewSize,
@@ -1073,12 +953,12 @@ export async function POST(request: NextRequest) {
       itemsPrice: pricingResult.itemsPrice,
       timePrice: pricingResult.servicePrice,
       urgencyPrice: pricingResult.urgencyPrice,
-      crewSurcharge: crewSurcharge, // NEW: Crew size surcharge
+      crewSurcharge,
       crewSize: mappedCrewSize, // NEW: Selected crew size
-      subtotalBeforeVAT: calculatedTotal / 1.2, // Updated with crew surcharge
-      vatAmount: calculatedTotal - (calculatedTotal / 1.2), // Updated with crew surcharge
+      subtotalBeforeVAT: pricingResult.subtotalBeforeVAT,
+      vatAmount: pricingResult.vatAmount,
       promoDiscount: pricingResult.promoDiscount,
-      totalPrice: calculatedTotal, // Updated with crew surcharge
+      totalPrice: calculatedTotal,
       breakdown: pricingResult.breakdown,
       recommendations: pricingResult.recommendations,
       calculatedAt: new Date().toISOString(),
@@ -1092,11 +972,8 @@ export async function POST(request: NextRequest) {
       : 0;
 
     const itemsSurchargeBase = Number.isFinite(pricingResult.itemsPrice) ? pricingResult.itemsPrice : 0;
-    const normalizedTotal = Number.isFinite(calculatedTotal) ? calculatedTotal : baseTotal;
-
     const amountsInPence = {
-      // Phase 0: use server-resolved quote amount when available; fall back to dynamic engine
-      totalGBP: resolvedQuoteAmountPence ?? poundsToPence(normalizedTotal),
+      totalGBP: resolvedQuoteAmountPence,
       distanceCostGBP: 0, // No longer calculated
       accessSurchargeGBP: poundsToPence(accessSurchargeBase),
       weatherSurchargeGBP: 0, // Not implemented in new pricing engine
@@ -1305,6 +1182,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    try {
+      await prisma.priceQuote.update({
+        where: { id: incomingQuoteId },
+        data: {
+          bookingId: booking.id,
+          consumedAt: new Date(),
+        },
+      });
+    } catch (quoteAttachError) {
+      console.error('⚠️ Failed to attach quote to booking:', quoteAttachError);
+    }
+
     // Booking progress tracking removed - using simple status tracking
 
     // ✅ Create booking segments if this is a multi-leg booking
@@ -1379,7 +1268,7 @@ export async function POST(request: NextRequest) {
               scheduledAt: segment.datetime ? new Date(segment.datetime) : new Date(),
               estimatedArrival: segment.estimatedArrival ? new Date(segment.estimatedArrival) : null,
               items: segment.items || [],
-              priceGBP: segment.pricing?.total ? poundsToPence(segment.pricing.total) : 0,
+              priceGBP: resolvedQuoteSegments[i]?.totalPence ?? 0,
               distanceMeters: segment.distance || null,
               durationSeconds: segment.estimatedDuration || null,
               notes: segment.notes || null,
@@ -1411,46 +1300,6 @@ export async function POST(request: NextRequest) {
             estimatedWeight: 0,
           },
         });
-      }
-    }
-
-    // Create Stripe Payment Intent with booking ID
-    let stripePaymentIntentId: string | null = null;
-    
-    if (amountsInPence.totalGBP > 0) {
-      try {
-        const stripe = await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: '2024-04-10',
-        }));
-
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: amountsInPence.totalGBP,
-          currency: 'gbp',
-          metadata: {
-            bookingId: booking.id,  // Now booking.id exists
-            bookingReference: reference,
-            customerEmail: bookingData.customer.email,
-            customerName: bookingData.customer.name,
-          },
-          description: `Speedy Van booking ${reference} - ${bookingData.customer.name}`,
-        });
-
-        stripePaymentIntentId = paymentIntent.id;
-        
-        // Update booking with payment intent ID
-        await prisma.booking.update({
-          where: { id: booking.id },
-          data: { stripePaymentIntentId: paymentIntent.id },
-        });
-        
-        console.log('💳 Created Stripe Payment Intent with booking ID:', {
-          paymentIntentId: stripePaymentIntentId,
-          bookingId: booking.id,
-          bookingReference: reference,
-        });
-      } catch (error) {
-        console.error('❌ Failed to create Payment Intent:', error);
-        // Continue without payment intent - can be created later
       }
     }
 
@@ -1508,7 +1357,7 @@ export async function POST(request: NextRequest) {
             itemsCount: bookingData.items?.length || 0,
             createdAt: new Date().toISOString(),
             linkedToAccount: 'Yes',
-            pricingEngine: 'dynamic',
+            pricingEngine: 'price_quote',
             multipliers: pricingResult.multipliers,
             confidence: pricingResult.confidence,
           },
@@ -1704,10 +1553,10 @@ export async function POST(request: NextRequest) {
     // IMPORTANT: Do NOT send email here - it will be sent after payment confirmation via webhook
     // This ensures the email contains the correct final price from Stripe
     console.log('ℹ️ Email will be sent after payment confirmation via webhook');
-    console.log('💰 Initial booking total (will be updated by checkout session):', {
+    console.log('💰 Booking total set from resolved quote:', {
       reference: booking.reference,
       currentTotal: booking.totalGBP,
-      note: 'Final price will be set by create-checkout-session endpoint'
+      note: 'Checkout charges the stored booking total'
     });
 
     // Return the created booking with all details
@@ -1763,7 +1612,7 @@ export async function POST(request: NextRequest) {
           totalPence: amountsInPence.totalGBP,
         },
         payment: {
-          stripePaymentIntentId: stripePaymentIntentId,
+          stripePaymentIntentId: null,
           status: 'pending',
           amountPounds: calculatedTotal || 0,
           amountPence: amountsInPence.totalGBP,

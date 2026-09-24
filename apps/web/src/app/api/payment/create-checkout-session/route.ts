@@ -338,6 +338,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!Number.isFinite(booking.totalGBP) || booking.totalGBP <= 0) {
+      return NextResponse.json(
+        { error: 'Booking total is missing. Please restart the booking flow.' },
+        { status: 422 }
+      );
+    }
+
     const defaultSuccessUrl = `${request.nextUrl.origin}/booking-luxury/success?session_id={CHECKOUT_SESSION_ID}&booking_ref=${bookingReference}`;
     const resolvedSuccessUrl: string = (() => {
       const baseUrl = successUrl || defaultSuccessUrl;
@@ -383,7 +390,7 @@ export async function POST(request: NextRequest) {
               images: ['https://speedy-van.co.uk/logo.png'],
             },
             // HARD RULE: charge the server-stored amount, never the client-supplied amount
-            unit_amount: booking.totalGBP || amountInPence,
+            unit_amount: booking.totalGBP,
           },
           quantity: 1,
         },
@@ -395,7 +402,7 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         customerName: customerName.substring(0, 100),
         customerEmail: customerEmail.substring(0, 100),
-        bookingAmount: amount.toString(),
+        bookingAmount: (booking.totalGBP / 100).toFixed(2),
         bookingReference: bookingReference,
         serviceType: (bookingData as any)?.serviceType || 'unknown',
         itemCount: (bookingData as any)?.items?.length?.toString() || '0',

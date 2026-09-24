@@ -25,6 +25,7 @@ import { pricingSnapshotService } from '@/lib/services/pricing-snapshot-service'
 import { RouteOrchestrationService } from '@/lib/services/route-orchestration-service';
 import { logAudit } from '@/lib/audit';
 import { AdditionalPaymentStatus } from '@prisma/client';
+import { sendAdminNotification } from '@/lib/notifications';
 
 // Supported webhook events
 const SUPPORTED_EVENTS = [
@@ -43,13 +44,6 @@ type SupportedEvent = typeof SUPPORTED_EVENTS[number];
  * Handle incoming Stripe webhooks
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  return NextResponse.json(
-    {
-      error: 'This webhook endpoint is deprecated. Use /api/webhooks/stripe instead.',
-    },
-    { status: 410 }
-  );
-
   const correlationId = `WEBHOOK-${createRequestId()}`;
   const startTime = Date.now();
 
@@ -217,9 +211,59 @@ async function handlePaymentIntentSucceeded(
     return;
   }
 
-  const bookingId = paymentIntent.metadata.bookingId;
+  const bookingId = paymentIntent.metadata?.bookingId;
   if (bookingId) {
     try {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        select: {
+          id: true,
+          reference: true,
+          totalGBP: true,
+        },
+      });
+
+      if (!booking) {
+        console.error(`[STRIPE WEBHOOK] ${correlationId} - Booking not found for payment intent`, {
+          bookingId,
+          paymentIntentId: paymentIntent.id,
+        });
+        return;
+      }
+
+      if (paymentIntent.amount !== booking.totalGBP) {
+        await prisma.auditLog.create({
+          data: {
+            actorId: 'system',
+            actorRole: 'system',
+            action: 'payment_amount_mismatch',
+            targetType: 'booking',
+            targetId: bookingId,
+            details: {
+              expectedAmount: booking.totalGBP,
+              receivedAmount: paymentIntent.amount,
+              paymentIntentId: paymentIntent.id,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        });
+
+        await sendAdminNotification({
+          subject: `Payment amount mismatch — booking ${bookingId}`,
+          message: `Expected ${booking.totalGBP}p, received ${paymentIntent.amount}p for PaymentIntent ${paymentIntent.id}. Booking was not confirmed.`,
+          priority: 'critical',
+        });
+
+        console.error(`[STRIPE WEBHOOK] ${correlationId} - Payment amount mismatch; booking not confirmed`, {
+          bookingId,
+          reference: booking.reference,
+          expectedAmount: booking.totalGBP,
+          receivedAmount: paymentIntent.amount,
+          paymentIntentId: paymentIntent.id,
+        });
+        return;
+      }
+
       console.log(`[STRIPE WEBHOOK] ${correlationId} - Updating booking ${bookingId} to paid status`);
 
       // Update booking status to CONFIRMED (paid)

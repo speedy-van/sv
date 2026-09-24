@@ -105,7 +105,7 @@ interface WhoAndPaymentStepProps {
   /** Server-issued quote (Phase 0+). When present, calendar uses server prices. */
   quoteData?: QuoteResponse;
   /** Called when the server returns QUOTE_EXPIRED; triggers a fresh quote fetch. */
-  onQuoteExpired?: () => void;
+  onQuoteExpired?: (previousAmountPence?: number) => void;
 }
 
 export default function WhoAndPaymentStepSimple({
@@ -542,19 +542,21 @@ export default function WhoAndPaymentStepSimple({
   }, [priceCalendar, selectedDayKey, updateFormData, formData.step1.quote]);
 
   const selectedPriceOption = useMemo(() => {
-    if (selectedDayKey) {
-      return priceCalendar.find((p) => p.key === selectedDayKey) || priceCalendar[0];
-    }
-    return priceCalendar[0];
+    if (!selectedDayKey) return undefined;
+    return priceCalendar.find((p) => p.key === selectedDayKey);
   }, [priceCalendar, selectedDayKey]);
 
   const actualPrice = selectedPriceOption?.price ?? standardBase ?? 0;
-  const selectedPriceLabel = selectedPriceOption ? selectedPriceOption.label : 'Selected date';
+  const selectedPriceLabel = selectedPriceOption ? selectedPriceOption.label : 'Pick a date';
   const serviceType = 'standard';
 
   const priceIsValid = Number.isFinite(actualPrice) && actualPrice > 0;
-  const priceReady = !addressIncomplete && priceIsValid;
-  const displayPriceText = priceReady ? `£${actualPrice.toFixed(2)}` : 'Add full address';
+  const priceReady = !!selectedPriceOption && !addressIncomplete && priceIsValid;
+  const displayPriceText = addressIncomplete
+    ? 'Add full address'
+    : selectedPriceOption
+      ? `£${actualPrice.toFixed(2)}`
+      : 'Pick a date to see your price';
 
   const priceStats = useMemo(() => {
     if (!priceCalendar.length) {
@@ -1088,9 +1090,7 @@ export default function WhoAndPaymentStepSimple({
                 {displayedPriceCalendar.slice(0, visibleCardsCount).map((option, displayIndex) => {
                   const level = getPriceLevel(option.price);
                   const cardIndex = priceCalendar.findIndex((p) => p.iso === option.iso);
-                  const isSelected = selectedDayKey
-                    ? option.key === selectedDayKey
-                    : cardIndex === 0;
+                  const isSelected = selectedDayKey ? option.key === selectedDayKey : false;
                   const isCheapest = cardIndex === cheapestIndex;
                   
                   // Labels for the 3 tiers
@@ -1318,8 +1318,22 @@ export default function WhoAndPaymentStepSimple({
                   );
                 })}
               </SimpleGrid>
-              
+
               {/* Selection Confirmation - Enhanced */}
+              {!selectedPriceOption && (
+                <Box
+                  p={5}
+                  bg="bg.surface"
+                  borderRadius="lg"
+                  borderWidth="1px"
+                  borderColor="border.primary"
+                >
+                  <Text color="text.secondary" fontSize="sm" fontWeight="700" textAlign="center">
+                    Pick a date to see your price
+                  </Text>
+                </Box>
+              )}
+
               {selectedPriceOption && (
                 <Box 
                   p={5} 

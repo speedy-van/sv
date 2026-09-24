@@ -3,9 +3,11 @@
  *
  * When booking-luxury returns { code: 'QUOTE_EXPIRED' } (HTTP 400), the
  * StripePaymentButton must:
- *   1. Call the onQuoteExpired callback (triggers a fresh quote fetch in the parent).
+ *   1. Call the onQuoteExpired callback with the currently displayed amount.
  *   2. Reset to idle (not stay in "processing" state).
  *   3. NOT proceed to create-checkout-session.
+ *   4. NOT show a warning toast by itself; the parent only shows a toast if the
+ *      refreshed quote amount actually changed.
  *
  * We test the handler logic directly (not DOM/React) by extracting the path
  * through handlePayment and verifying the observable side-effects on the mocked
@@ -48,6 +50,7 @@ function makeSuccessBookingResponse(totalPence: number) {
 // Simulate the handlePayment logic that lives inside StripePaymentButton
 async function simulateHandlePayment({
   bookingId,
+  displayedAmountPence,
   fetchBookingLuxury,
   onQuoteExpired,
   setIsProcessing,
@@ -55,8 +58,9 @@ async function simulateHandlePayment({
   toast,
 }: {
   bookingId: string | undefined;
+  displayedAmountPence: number;
   fetchBookingLuxury: () => Promise<{ ok: boolean; status: number; json: () => Promise<any> }>;
-  onQuoteExpired: () => void;
+  onQuoteExpired: (previousAmountPence?: number) => void;
   setIsProcessing: (v: boolean) => void;
   setPaymentStatus: (v: string) => void;
   toast: (opts: any) => void;
@@ -69,8 +73,7 @@ async function simulateHandlePayment({
     if (!bookingResponse.ok) {
       const errorData = await bookingResponse.json();
       if (errorData.code === 'QUOTE_EXPIRED') {
-        toast({ title: 'Quote expired', status: 'warning' });
-        onQuoteExpired();
+        onQuoteExpired(displayedAmountPence);
         setIsProcessing(false);
         setPaymentStatus('idle');
         return 'expired';
@@ -95,19 +98,20 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
   });
 
   it('calls onQuoteExpired and resets to idle when server returns QUOTE_EXPIRED', async () => {
-    let quoteExpiredCalled = false;
+    let quoteExpiredAmount: number | undefined;
 
     const result = await simulateHandlePayment({
       bookingId: undefined,
+      displayedAmountPence: 12000,
       fetchBookingLuxury: async () => makeExpiredQuoteResponse() as any,
-      onQuoteExpired: () => { quoteExpiredCalled = true; },
+      onQuoteExpired: (amount) => { quoteExpiredAmount = amount; },
       setIsProcessing: (v) => setProcessingValues.push(v),
       setPaymentStatus: (v) => setStatusValues.push(v),
       toast: (opts) => toastCalls.push(opts),
     });
 
     expect(result).toBe('expired');
-    expect(quoteExpiredCalled).toBe(true);
+    expect(quoteExpiredAmount).toBe(12000);
     expect(setProcessingValues).toContain(false); // reset to idle
     expect(setStatusValues).toContain('idle');
   });
@@ -115,6 +119,7 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
   it('does NOT proceed to checkout-session when quote is expired', async () => {
     await simulateHandlePayment({
       bookingId: undefined,
+      displayedAmountPence: 12000,
       fetchBookingLuxury: async () => makeExpiredQuoteResponse() as any,
       onQuoteExpired: () => {},
       setIsProcessing: () => {},
@@ -125,9 +130,10 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
     expect(checkoutSessionCalls).toHaveLength(0);
   });
 
-  it('shows a warning toast when quote is expired', async () => {
+  it('does not show a warning toast when quote is expired', async () => {
     await simulateHandlePayment({
       bookingId: undefined,
+      displayedAmountPence: 12000,
       fetchBookingLuxury: async () => makeExpiredQuoteResponse() as any,
       onQuoteExpired: () => {},
       setIsProcessing: () => {},
@@ -135,12 +141,13 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
       toast: (opts) => toastCalls.push(opts),
     });
 
-    expect(toastCalls.some((t) => t.status === 'warning')).toBe(true);
+    expect(toastCalls.some((t) => t.status === 'warning')).toBe(false);
   });
 
   it('proceeds to checkout-session when booking-luxury succeeds', async () => {
     const result = await simulateHandlePayment({
       bookingId: undefined,
+      displayedAmountPence: 14400,
       fetchBookingLuxury: async () => makeSuccessBookingResponse(14400) as any,
       onQuoteExpired: () => {},
       setIsProcessing: () => {},
@@ -156,6 +163,7 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
     await expect(
       simulateHandlePayment({
         bookingId: undefined,
+        displayedAmountPence: 12000,
         fetchBookingLuxury: async () => ({
           ok: false,
           status: 500,
@@ -167,6 +175,56 @@ describe('StripePaymentButton — QUOTE_EXPIRED handling', () => {
         toast: () => {},
       })
     ).rejects.toThrow('Internal server error');
+  });
+});
+
+// ─── Refreshed quote comparison ───────────────────────────────────────────────
+
+function simulateQuoteRefreshComparison({
+  previousAmountPence,
+  refreshedAmountPence,
+  toast,
+}: {
+  previousAmountPence: number | null;
+  refreshedAmountPence: number;
+  toast: (opts: any) => void;
+}) {
+  if (previousAmountPence !== null && Math.abs(previousAmountPence - refreshedAmountPence) > 1) {
+    toast({
+      title: `Your price was updated to £${(refreshedAmountPence / 100).toFixed(2)}`,
+      status: 'info',
+    });
+  }
+}
+
+describe('booking page — refreshed quote messaging', () => {
+  beforeEach(() => {
+    toastCalls = [];
+  });
+
+  it('shows the updated price when a refreshed quote changes amount', () => {
+    simulateQuoteRefreshComparison({
+      previousAmountPence: 12000,
+      refreshedAmountPence: 14400,
+      toast: (opts) => toastCalls.push(opts),
+    });
+
+    expect(toastCalls).toEqual([
+      expect.objectContaining({
+        title: 'Your price was updated to £144.00',
+        status: 'info',
+      }),
+    ]);
+  });
+
+  it('continues silently when a refreshed quote amount is unchanged', () => {
+    simulateQuoteRefreshComparison({
+      previousAmountPence: 14400,
+      refreshedAmountPence: 14400,
+      toast: (opts) => toastCalls.push(opts),
+    });
+
+    expect(toastCalls).toHaveLength(0);
   });
 });
 
@@ -259,7 +317,7 @@ describe('StripePaymentButton — price adjustment retap', () => {
     expect(checkoutSessionCalls).toHaveLength(1);
   });
 
-  it('does NOT halts when amounts match (within 1p tolerance)', async () => {
+  it('does not halt when amounts match (within 1p tolerance)', async () => {
     const result = await simulateHandlePaymentWithRetap({
       displayedAmountPence: 14400,
       serverAmountPence: 14400,

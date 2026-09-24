@@ -102,6 +102,8 @@ const isValidUkPostcode = (postcode?: string | null) => {
   return /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/.test(pc);
 };
 
+const ADDRESS_SUGGESTION_REQUIRED_MESSAGE = 'Choose your address from the suggestions so we can price it';
+
 type PricingFlowState = 'idle' | 'loading' | 'success' | 'error';
 
 /** Minimal address shape for pricing normalization (from autocomplete or API). */
@@ -110,6 +112,8 @@ interface AddressForPricing {
   formatted_address?: string;
   fullAddress?: string;
   full?: string;
+  address?: string;
+  line1?: string;
   displayText?: string;
   place_name?: string;
   houseNumber?: string;
@@ -289,37 +293,108 @@ function BookingLuxuryContent() {
   const [isLoadingReference, setIsLoadingReference] = useState(false);
   const [_resumeStep, setResumeStep] = useState<number | null>(null);
 
-  // ✅ CRITICAL FIX: Ref to accumulate segment pricing updates and apply atomically
-  // This prevents the stale closure bug where parallel pricing updates overwrite each other
-  const pendingSegmentPricing = useRef<Map<number, Record<string, unknown>>>(new Map());
+  const buildQuoteAddress = useCallback((addr: AddressForPricing | null | undefined): QuoteRequest['pickup'] | null => {
+    if (!addr) return null;
+    const components = (addr.components || {}) as Record<string, unknown>;
+    const full = String(
+      addr.formatted_address ||
+      addr.fullAddress ||
+      addr.full ||
+      addr.displayText ||
+      addr.place_name ||
+      addr.address ||
+      ''
+    ).trim();
+    const firstPart = full.split(',')[0]?.trim() || '';
+    const line1 = String(addr.line1 || firstPart || addr.street || '').trim();
+    const city = String(
+      addr.city ||
+      components.city ||
+      components.locality ||
+      components.post_town ||
+      ''
+    ).trim();
+    const postcode = normalizeUkPostcode(String(
+      addr.postcode ||
+      components.postcode ||
+      components.postal_code ||
+      ''
+    ));
+    const coordinates = addr.coordinates || addr.location;
+    const lat = coordinates?.lat;
+    const lng = coordinates?.lng;
+    const hasCoordinates = typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
 
-  // Phase 0: server-side quote — single-leg only
+    if (!full || !line1 || !city || !isValidUkPostcode(postcode) || !hasCoordinates) {
+      return null;
+    }
+
+    return {
+      full,
+      line1,
+      city,
+      postcode,
+      coordinates: { lat, lng },
+    };
+  }, []);
+
+  // Phase 0.5: server-side quote for single-leg and multi-leg bookings
   const quoteInput = useMemo((): QuoteRequest | null => {
     const s1 = formData.step1;
     const segments = (s1.segments || []) as BookingSegment[];
-    if (segments.length > 1) return null;
-    const pickup = s1.pickupAddress;
-    const dropoff = s1.dropoffAddress;
-    if (!pickup?.coordinates?.lat || !pickup?.coordinates?.lng) return null;
-    if (!dropoff?.coordinates?.lat || !dropoff?.coordinates?.lng) return null;
-    const pPost = normalizeUkPostcode(pickup.postcode ?? '');
-    const dPost = normalizeUkPostcode(dropoff.postcode ?? '');
-    if (!isValidUkPostcode(pPost) || !isValidUkPostcode(dPost)) return null;
     const items = (s1.items ?? []).filter((i: any) => i?.id && i?.name && (i?.quantity ?? 0) > 0);
     if (items.length === 0) return null;
+
+    const quoteItems = items.map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      quantity: i.quantity,
+      weight_override: i.weight,
+      volume_override: i.volume ?? i.volumeFactor,
+    }));
+
+    const segmentInputs = segments.length > 1
+      ? segments.map((segment, index) => {
+          const pickup = buildQuoteAddress(segment.pickupAddress as AddressForPricing | null | undefined);
+          const dropoff = buildQuoteAddress(segment.dropoffAddress as AddressForPricing | null | undefined);
+          const segmentItems = (segment.items?.length ? segment.items : items)
+            .filter((i: any) => i?.id && i?.name && (i?.quantity ?? 0) > 0)
+            .map((i: any) => ({
+              id: i.id,
+              name: i.name,
+              quantity: i.quantity,
+              weight_override: i.weight,
+              volume_override: i.volume ?? i.volumeFactor,
+            }));
+          if (!pickup || !dropoff || segmentItems.length === 0) return null;
+          return {
+            segmentType: (segment.segmentType || (index === 0 ? 'outbound' : segments.length === 2 && index === 1 ? 'return' : 'additional')) as NonNullable<QuoteRequest['segments']>[number]['segmentType'],
+            pickup,
+            dropoffs: [dropoff],
+            items: segmentItems,
+          };
+        })
+      : undefined;
+
+    if (segmentInputs?.some((segment) => segment === null)) return null;
+
+    const primaryPickup = segmentInputs?.[0]?.pickup ?? buildQuoteAddress(s1.pickupAddress as AddressForPricing | null | undefined);
+    const primaryDropoff = segmentInputs?.[0]?.dropoffs[0] ?? buildQuoteAddress(s1.dropoffAddress as AddressForPricing | null | undefined);
+    if (!primaryPickup || !primaryDropoff) return null;
+
     return {
-      pickup: { full: (pickup as any).formatted_address ?? (pickup as any).address ?? '', postcode: pPost, coordinates: { lat: pickup.coordinates.lat, lng: pickup.coordinates.lng }, city: pickup.city ?? 'London' },
-      dropoffs: [{ full: (dropoff as any).formatted_address ?? (dropoff as any).address ?? '', postcode: dPost, coordinates: { lat: dropoff.coordinates.lat, lng: dropoff.coordinates.lng }, city: dropoff.city ?? 'London' }],
-      items: items.map((i: any) => ({ id: i.id, name: i.name, quantity: i.quantity })),
+      pickup: primaryPickup,
+      dropoffs: [primaryDropoff],
+      segments: segmentInputs ? (segmentInputs.filter(Boolean) as NonNullable<QuoteRequest['segments']>) : undefined,
+      items: quoteItems,
       crewSize: (s1.crewSize ?? '2') as QuoteRequest['crewSize'],
       extras: { packing: false, assembly: [] },
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, formData.step1.items, formData.step1.crewSize, formData.step1.segments]);
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, formData.step1.items, formData.step1.crewSize, formData.step1.segments, buildQuoteAddress]);
 
   const quoteResult = useQuote(quoteInput);
-
-  const segmentCount = (formData.step1.segments || []).length;
+  const pendingQuoteRefreshAmountPenceRef = useRef<number | null>(null);
 
   const setPricingFailure = useCallback((message: string) => {
     setPricingFlowState('error');
@@ -355,14 +430,30 @@ function BookingLuxuryContent() {
     addAdditionalSegment(tiersRef);
   }, [addAdditionalSegment, pricingTiers]);
 
-  // Phase 0: sync quote result → pricingTiers (single-leg only)
+  // Phase 0.5: sync quote result → pricingTiers and multi-leg segment display
   useEffect(() => {
-    if (segmentCount > 1) return;
     if (quoteResult.status === 'success' && quoteResult.data) {
       const q = quoteResult.data;
-      const cheapestEntry = q.datePrices.find((p: { cheapest: boolean }) => p.cheapest) ?? q.datePrices[0];
-      const stdPrice = cheapestEntry ? cheapestEntry.totalPence / 100 : 0;
+      const selectedDateKey = formData.step1.quote?.dateKey || formData.step1.pickupDate || '';
+      const selectedEntry = (selectedDateKey ? q.datePrices.find((p) => p.dateKey === selectedDateKey) : undefined)
+        ?? q.datePrices.find((p: { cheapest: boolean }) => p.cheapest)
+        ?? q.datePrices[0];
+      const stdPrice = selectedEntry ? selectedEntry.totalPence / 100 : 0;
       if (stdPrice <= 0) return;
+
+      const previousAmountPence = pendingQuoteRefreshAmountPenceRef.current;
+      if (previousAmountPence !== null) {
+        if (Math.abs(previousAmountPence - selectedEntry.totalPence) > 1) {
+          toast({
+            title: `Your price was updated to £${(selectedEntry.totalPence / 100).toFixed(2)}`,
+            status: 'info',
+            duration: 6000,
+            isClosable: true,
+          });
+        }
+        pendingQuoteRefreshAmountPenceRef.current = null;
+      }
+
       setPricingTiers({
         economy: { price: Math.round(stdPrice * 85) / 100 },
         standard: { price: stdPrice },
@@ -371,10 +462,40 @@ function BookingLuxuryContent() {
       setPricingFlowState('success');
       setPricingFlowMessage(null);
       setIsLoadingAvailability(false);
-      updateFormData('step1', {
-        quote: { id: q.quoteId, expiresAt: q.expiresAt, dateKey: '' },
+
+      const updatePayload: {
+        quote: { id: string; expiresAt: string; dateKey: string };
+        pricing: { baseFee: number; distanceFee: number; volumeFee: number; serviceFee: number; urgencyFee: number; vat: number; total: number; distance: number };
+        segments?: BookingSegment[];
+      } = {
+        quote: { id: q.quoteId, expiresAt: q.expiresAt, dateKey: selectedDateKey },
         pricing: { baseFee: 0, distanceFee: 0, volumeFee: 0, serviceFee: 0, urgencyFee: 0, vat: 0, total: stdPrice, distance: 0 },
-      });
+      };
+
+      const currentSegments = (formData.step1.segments || []) as BookingSegment[];
+      if (currentSegments.length > 1 && q.segments?.length) {
+        updatePayload.segments = currentSegments.map((segment, index) => {
+          const quotedSegment = q.segments?.find((quoteSegment) => quoteSegment.sequenceNumber === index);
+          if (!quotedSegment) return segment;
+          return {
+            ...segment,
+            pricing: {
+              baseFee: segment.pricing?.baseFee ?? 0,
+              distanceFee: segment.pricing?.distanceFee ?? 0,
+              volumeFee: segment.pricing?.volumeFee ?? 0,
+              serviceFee: segment.pricing?.serviceFee ?? 0,
+              urgencyFee: segment.pricing?.urgencyFee ?? 0,
+              vat: segment.pricing?.vat ?? 0,
+              total: quotedSegment.totalPence / 100,
+              distance: quotedSegment.route.miles ?? segment.distance ?? 0,
+            },
+            distance: quotedSegment.route.miles ?? segment.distance,
+            estimatedDuration: quotedSegment.route.durationMinutes ?? segment.estimatedDuration,
+          };
+        });
+      }
+
+      updateFormData('step1', updatePayload);
     } else if (quoteResult.status === 'loading' && !quoteResult.isStale) {
       setPricingFlowState('loading');
       setPricingFlowMessage('Calculating your quote...');
@@ -386,10 +507,9 @@ function BookingLuxuryContent() {
     if (quoteResult.status !== 'loading') {
       setIsLoadingAvailability(false);
     }
-  }, [quoteResult.status, quoteResult.data, quoteResult.error, quoteResult.isStale, segmentCount, setPricingFailure, updateFormData]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [quoteResult.status, quoteResult.data, quoteResult.error, quoteResult.isStale, setPricingFailure, toast, updateFormData]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Normalize address from autocomplete to comprehensive pricing schema
-  // ✅ MOVED UP: Must be defined before calculateSegmentPricing which depends on it
+  // Normalize address from autocomplete to the quote/pricing schema
   const normalizeAddressForPricing = useCallback((addr: AddressForPricing | null | undefined) => {
     if (!addr) return null;
     const components = (addr.components || {}) as Record<string, unknown>;
@@ -420,7 +540,6 @@ function BookingLuxuryContent() {
         number = numberMatch[1];
       }
     }
-    if (!number) number = '1';
     
     // Extract street name with improved logic
     let street = components.route || components.road || components.street || addr.street || '';
@@ -432,10 +551,9 @@ function BookingLuxuryContent() {
     if (!street && full) {
       const parts = full.split(',');
       if (parts.length > 0) {
-        street = parts[0].replace(/^\d+[a-zA-Z]?\s+/, '').trim() || 'Main Street';
+        street = parts[0].replace(/^\d+[a-zA-Z]?\s+/, '').trim();
       }
     }
-    if (!street) street = 'Main Street';
     
     // Extract city
     const city = 
@@ -443,207 +561,30 @@ function BookingLuxuryContent() {
       components.city || 
       components.locality || 
       components.post_town || 
-      'London';
+      '';
     
     // Extract postcode
     const postcode = 
       addr.postcode || 
       components.postcode || 
       components.postal_code || 
-      'SW1A 1AA';
+      '';
     
     // Extract line1
-    const line1 = firstPart || `${number} ${street}`;
+    const line1 = firstPart || [number, street].filter(Boolean).join(' ');
     
     // Extract coordinates
-    const coordinates = addr.coordinates || addr.location || { lat: 0, lng: 0 };
-    
-    return { full, line1, city, postcode, street, number, coordinates };
+    const coordinates = addr.coordinates || addr.location;
+    const lat = coordinates?.lat;
+    const lng = coordinates?.lng;
+    const hasCoordinates = typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0);
+
+    if (!full || !line1 || !city || !postcode || !hasCoordinates) {
+      return null;
+    }
+
+    return { full, line1, city, postcode, street, number, coordinates: { lat, lng } };
   }, []);
-
-  // Calculate pricing for individual segments in multi-leg bookings
-  // ✅ FIXED: Use functional update to avoid stale closure bug
-  const calculateSegmentPricing = useCallback(async (segmentIndex: number) => {
-    // Read segments from formData (will be stale but we'll use functional update later)
-    const currentSegments = (formData.step1.segments || []) as BookingSegment[];
-    if (currentSegments.length <= 1) {
-      console.log('⏭️ Not a multi-leg booking');
-      return;
-    }
-
-    const segment = currentSegments[segmentIndex];
-    if (!segment) {
-      console.error('Invalid segment index:', segmentIndex);
-      return;
-    }
-
-    console.log(`🔍 calculateSegmentPricing for segment ${segmentIndex}:`, {
-      segmentItems: segment.items,
-      globalItems: formData.step1.items,
-      segmentItemsLength: segment.items?.length || 0,
-      globalItemsLength: formData.step1.items?.length || 0
-    });
-
-    // Resolve items: prefer segment items, else fall back to global items
-    const itemsToUse = (segment.items && segment.items.length > 0)
-      ? segment.items
-      : (formData.step1.items || []);
-
-    if (!itemsToUse || itemsToUse.length === 0) {
-      console.log(`⏭️ Segment ${segmentIndex}: No items selected yet - skipping pricing`);
-      return;
-    }
-
-    // Check addresses
-    const pickupNorm = normalizeAddressForPricing(segment.pickupAddress);
-    const dropNorm = normalizeAddressForPricing(segment.dropoffAddress);
-
-    if (!pickupNorm?.coordinates?.lat || !dropNorm?.coordinates?.lat) {
-      console.log(`⏭️ Segment ${segmentIndex}: Missing coordinates - skipping pricing`);
-      return;
-    }
-
-    const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
-    const pickupPostcode = (typeof pickupNorm?.postcode === 'string' ? pickupNorm.postcode : '').trim();
-    const dropPostcode = (typeof dropNorm?.postcode === 'string' ? dropNorm.postcode : '').trim();
-
-    if (!pickupPostcode || !postcodeRegex.test(pickupPostcode)) {
-      console.log(`⏭️ Segment ${segmentIndex}: Invalid pickup postcode, skipping pricing`, pickupPostcode);
-      return;
-    }
-
-    if (!dropPostcode || !postcodeRegex.test(dropPostcode)) {
-      console.log(`⏭️ Segment ${segmentIndex}: Invalid dropoff postcode, skipping pricing`, dropPostcode);
-      return;
-    }
-
-    try {
-      // Filter out invalid items before sending
-      const validItems = itemsToUse.filter((item) =>
-        item && item.id && item.name && item.quantity > 0
-      );
-      
-      if (validItems.length === 0) {
-        console.log(`⏭️ Segment ${segmentIndex}: No valid items after filtering - skipping pricing`);
-        return;
-      }
-      
-      console.log(`📤 Calculating pricing for segment ${segmentIndex} with ${validItems.length} valid items`);
-
-      // Use actual service level from formData (signature/premium/white-glove)
-      const actualServiceLevel = formData.step1.serviceType || 'signature';
-      // Map urgency to API-compatible format (API only accepts standard/express/urgent)
-      // Frontend uses: 'scheduled', 'same-day', 'next-day'
-      // API expects: 'standard', 'express', 'urgent'
-      const mapUrgencyToAPI = (urgency?: string): 'standard' | 'express' | 'urgent' => {
-        if (!urgency) return 'standard';
-        const lowerUrgency = urgency.toLowerCase();
-        if (lowerUrgency === 'scheduled' || lowerUrgency === 'economy') return 'standard';
-        if (lowerUrgency === 'same-day' || lowerUrgency === 'next-day') return 'express';
-        if (lowerUrgency === 'urgent' || lowerUrgency === 'immediate') return 'urgent';
-        // If already in API format, return as-is (but validate)
-        if (lowerUrgency === 'standard' || lowerUrgency === 'express' || lowerUrgency === 'urgent') {
-          return lowerUrgency as 'standard' | 'express' | 'urgent';
-        }
-        return 'standard';
-      };
-      const actualUrgency = mapUrgencyToAPI(formData.step1.urgency);
-      
-      console.log(`🎯 Using service level: ${actualServiceLevel}, urgency: ${actualUrgency} (mapped from ${formData.step1.urgency})`);
-
-      const response = await fetch('/api/pricing/comprehensive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: validItems.map((item) => ({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            weight_override: item.weight,
-            volume_override: item.volume
-          })),
-          pickup: { 
-            full: pickupNorm?.full || 'Pickup Address',
-            line1: pickupNorm?.line1 || '1 Main Street',
-            city: pickupNorm?.city || 'London',
-            postcode: pickupPostcode || 'SW1A 1AA',
-            propertyType: 'house' as const,
-            street: pickupNorm?.street || 'Main Street',
-            number: pickupNorm?.number || '1',
-            coordinates: {
-              lat: pickupNorm?.coordinates?.lat || 0,
-              lng: pickupNorm?.coordinates?.lng || 0
-            }
-          },
-          dropoffs: [{
-            full: dropNorm?.full || 'Dropoff Address',
-            line1: dropNorm?.line1 || '1 Main Street',
-            city: dropNorm?.city || 'London',
-            postcode: dropNorm?.postcode || 'SW1A 1AA',
-            propertyType: 'house' as const,
-            street: dropNorm?.street || 'Main Street',
-            number: dropNorm?.number || '1',
-            coordinates: {
-              lat: dropNorm?.coordinates?.lat || 0,
-              lng: dropNorm?.coordinates?.lng || 0
-            }
-          }],
-          scheduledDate: segment.datetime || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          serviceLevel: actualServiceLevel,
-          serviceTier: formData.step1.serviceTier || 'economy', // ✅ NEW: Pass serviceTier for competitive pricing
-          urgency: actualUrgency,
-          timeSlot: formData.step1.pickupTimeSlot || 'flexible',
-          // ✅ CRITICAL: Include crewSize for crew surcharge calculation
-          // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
-          crewSize: formData.step1.crewSize || '1'
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data && data.success === true && data.data) {
-          const apiData = data.data;
-          const amountMinor = typeof apiData.amountGbpMinor === 'string' 
-            ? parseFloat(apiData.amountGbpMinor) 
-            : apiData.amountGbpMinor;
-
-          const totalPrice = amountMinor / 100;
-
-          // Use actual breakdown from API instead of fixed percentages
-          const breakdown = apiData.breakdown || {};
-          
-          console.log(`✅ Segment ${segmentIndex} pricing from API:`, {
-            total: totalPrice,
-            breakdown,
-            distance: apiData.distance
-          });
-
-          // ✅ CRITICAL FIX: Store pricing update in ref instead of applying immediately
-          // This prevents stale closure bugs when multiple segments are priced in parallel
-          pendingSegmentPricing.current.set(segmentIndex, {
-            items: itemsToUse,
-            pricing: {
-              baseFee: breakdown.baseFee ?? 0,
-              distanceFee: breakdown.distanceFee ?? 0,
-              volumeFee: breakdown.volumeFee ?? breakdown.itemsCost ?? 0,
-              serviceFee: breakdown.serviceFee ?? 0,
-              urgencyFee: breakdown.urgencyFee ?? 0,
-              vat: breakdown.vat ?? 0,
-              total: totalPrice,
-              distance: apiData.distance || 0,
-            }
-          });
-
-          console.log(`✅ Segment ${segmentIndex} pricing calculated: £${totalPrice.toFixed(2)} (pending atomic update)`);
-        }
-      } else {
-        console.error(`Pricing API error for segment ${segmentIndex}:`, await response.text());
-      }
-    } catch (error) {
-      console.error(`Segment ${segmentIndex} pricing failed:`, error);
-    }
-  }, [formData.step1.segments, formData.step1.items, formData.step1.crewSize, formData.step1.serviceType, formData.step1.urgency, formData.step1.pickupTimeSlot, formData.step1.serviceTier, normalizeAddressForPricing]);
 
   const handleBookingCreated = useCallback(({ bookingId, reference }: { bookingId: string; reference: string }) => {
     updateFormData('step2', { bookingId, bookingReference: reference });
@@ -740,224 +681,26 @@ function BookingLuxuryContent() {
     };
   }, [formData.step1, formData.step2]);
 
-  // Calculate all segments pricing in multi-leg
-  // ✅ CRITICAL FIX: Apply all segment pricing updates atomically to avoid stale closure bugs
-  const calculateAllSegmentsPricing = useCallback(async () => {
-    const segments = (formData.step1.segments || []) as BookingSegment[];
-    if (segments.length <= 1) return;
-
-    // Clear any pending updates from previous runs
-    pendingSegmentPricing.current.clear();
-
-    console.log('🔄 Calculating pricing for all segments...');
-    for (let i = 0; i < segments.length; i++) {
-      await calculateSegmentPricing(i);
-    }
-    
-    // ✅ CRITICAL FIX: Apply all pending updates atomically
-    // This ensures all segment pricing updates are applied without overwriting each other
-    if (pendingSegmentPricing.current.size > 0) {
-      // Read latest segments at this point (after all API calls completed)
-      const latestSegments = [...(formData.step1.segments || [])];
-      let hasUpdates = false;
-      let totalPrice = 0;
-      
-      pendingSegmentPricing.current.forEach((update, segmentIndex) => {
-        if (latestSegments[segmentIndex]) {
-          const pricing = (typeof update.pricing === 'object' && update.pricing !== null ? update.pricing : {}) as { total?: number; distance?: number };
-          latestSegments[segmentIndex] = {
-            ...latestSegments[segmentIndex],
-            items: (update.items ?? latestSegments[segmentIndex].items) as BookingSegment['items'],
-            pricing: {
-              ...pricing,
-              distance: pricing.distance ?? latestSegments[segmentIndex].distance ?? 0,
-            } as BookingSegment['pricing']
-          };
-          totalPrice += pricing.total ?? 0;
-          hasUpdates = true;
-          console.log(`✅ Applied pricing for segment ${segmentIndex}: £${(pricing?.total ?? 0).toFixed(2)}`);
-        }
-      });
-      
-      if (hasUpdates) {
-        updateFormData('step1', { segments: latestSegments });
-        console.log('✅ All segment pricing updates applied atomically');
-        
-        // ✅ CRITICAL FIX: Also set pricingTiers for multi-leg bookings
-        // This ensures Step 3 has access to pricing even if segments array timing is off
-        const avgPerSegment = totalPrice / latestSegments.length;
-        const multiLegTiers = {
-          economy: {
-            price: avgPerSegment * 0.85, // Economy discount per segment
-            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          standard: {
-            price: avgPerSegment,
-            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          express: {
-            price: avgPerSegment * 1.5, // Express premium per segment
-            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          }
-        };
-        setPricingTiers(multiLegTiers);
-        setPricingFlowState('success');
-        setPricingFlowMessage(null);
-        console.log('✅ Multi-leg pricingTiers set:', {
-          totalPrice,
-          avgPerSegment,
-          economy: multiLegTiers.economy.price,
-          standard: multiLegTiers.standard.price,
-          express: multiLegTiers.express.price
-        });
-      }
-      
-      // Clear pending updates
-      pendingSegmentPricing.current.clear();
-    } else {
-      // ✅ FALLBACK: If no segment pricing was calculated, use existing segment pricing or estimate
-      console.log('⚠️ No segment pricing calculated from API, checking existing pricing...');
-      
-      let totalFromExisting = 0;
-      let hasExistingPricing = false;
-      
-      // Check if segments already have pricing from previous calculations
-      segments.forEach((seg, idx) => {
-        if (seg.pricing?.total && seg.pricing.total > 0) {
-          totalFromExisting += seg.pricing.total;
-          hasExistingPricing = true;
-          console.log(`📊 Segment ${idx} has existing pricing: £${seg.pricing.total.toFixed(2)}`);
-        }
-      });
-      
-      // If we have existing pricing, use it to set pricingTiers
-      if (hasExistingPricing && totalFromExisting > 0) {
-        const avgPerSegment = totalFromExisting / segments.length;
-        const fallbackTiers = {
-          economy: {
-            price: avgPerSegment * 0.85,
-            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          standard: {
-            price: avgPerSegment,
-            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          express: {
-            price: avgPerSegment * 1.5,
-            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          }
-        };
-        setPricingTiers(fallbackTiers);
-        setPricingFlowState('success');
-        setPricingFlowMessage(null);
-        console.log('✅ Multi-leg pricingTiers set from existing segment pricing:', {
-          totalFromExisting,
-          avgPerSegment,
-          economy: fallbackTiers.economy.price,
-          standard: fallbackTiers.standard.price,
-          express: fallbackTiers.express.price
-        });
-      } else if (formData.step1.pricing?.total && formData.step1.pricing.total > 0) {
-        // Use global pricing as fallback
-        const globalPrice = formData.step1.pricing.total;
-        const estimatedTotal = globalPrice * segments.length;
-        const avgPerSegment = globalPrice;
-        
-        const fallbackTiers = {
-          economy: {
-            price: avgPerSegment * 0.85,
-            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          standard: {
-            price: avgPerSegment,
-            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          express: {
-            price: avgPerSegment * 1.5,
-            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          }
-        };
-        setPricingTiers(fallbackTiers);
-        setPricingFlowState('success');
-        setPricingFlowMessage(null);
-        console.log('✅ Multi-leg pricingTiers set from global formData.step1.pricing:', {
-          globalPrice,
-          estimatedTotal,
-          avgPerSegment,
-          economy: fallbackTiers.economy.price,
-          standard: fallbackTiers.standard.price,
-          express: fallbackTiers.express.price
-        });
-      } else {
-        // Last resort: estimate based on distance
-        const totalDistance = segments.reduce((sum, seg) => sum + (seg.distance || 10), 0);
-        const estimatedPrice = Math.max(49.99, totalDistance * 2.5); // £2.50 per mile, min £49.99
-        const avgPerSegment = estimatedPrice / segments.length;
-        
-        const fallbackTiers = {
-          economy: {
-            price: avgPerSegment * 0.85,
-            available: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          standard: {
-            price: avgPerSegment,
-            available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          },
-          express: {
-            price: avgPerSegment * 1.5,
-            available: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            availability: null
-          }
-        };
-        setPricingTiers(fallbackTiers);
-        setPricingFailure('We could not generate a verified quote for this route. Please retry quote or review your addresses and items.');
-        toast({
-          title: 'Quote requires attention',
-          description: 'The displayed amount is only an estimate. Please retry quote before continuing.',
-          status: 'warning',
-          duration: 6000,
-          isClosable: true,
-        });
-        console.log('⚠️ Multi-leg pricingTiers estimated from distance (fallback):', {
-          totalDistance,
-          estimatedPrice,
-          avgPerSegment,
-          economy: fallbackTiers.economy.price,
-          standard: fallbackTiers.standard.price,
-          express: fallbackTiers.express.price,
-          note: 'This is an estimate - actual price may differ'
-        });
-      }
-    }
-  }, [calculateSegmentPricing, formData.step1.segments, formData.step1.pricing, setPricingFailure, toast, updateFormData]);
-
   // Auto-calculate availability and pricing when addresses/items change
   const calculateComprehensivePricing = useCallback(async () => {
-    // For multi-leg bookings: calculate pricing per-segment
     const segments = (formData.step1.segments || []) as BookingSegment[];
     if (segments.length > 1) {
-      console.log('🔄 Multi-leg booking: Calculating pricing for all segments');
+      if (!quoteInput) {
+        setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
+        setIsLoadingAvailability(false);
+        return;
+      }
+      console.log('🔄 Multi-leg booking: refreshing server quote for all segments');
       setPricingFlowState('loading');
       setPricingFlowMessage('Calculating quote for all journey segments...');
-      await calculateAllSegmentsPricing();
+      quoteResult.refresh();
       return;
     }
 
     // Single-leg: continue with normal pricing
     // Only calculate if we have addresses (items can be empty - will use default)
     if (!formData.step1.pickupAddress?.coordinates) {
-      setPricingFailure('Please select a valid pickup address from suggestions before getting your quote.');
+      setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
       return;
     }
     
@@ -980,53 +723,10 @@ function BookingLuxuryContent() {
     const dropNormRaw = normalizeAddressForPricing(formData.step1.dropoffAddress);
     const pickupNorm = pickupNormRaw ? { ...pickupNormRaw, postcode: normalizeUkPostcode(typeof pickupNormRaw.postcode === 'string' ? pickupNormRaw.postcode : '') } : null;
     const dropNorm = dropNormRaw ? { ...dropNormRaw, postcode: normalizeUkPostcode(typeof dropNormRaw.postcode === 'string' ? dropNormRaw.postcode : '') } : null;
-    const segmentDropoffs = (formData.step1.segments || [])
-      .map((segment: BookingSegment) => ({
-        norm: normalizeAddressForPricing(segment.dropoffAddress),
-        property: segment.dropoffProperty || formData.step1.dropoffProperty
-      }))
-      .filter(({ norm }) => norm && norm.postcode);
-
-    type NormShape = { full?: unknown; line1?: unknown; city?: unknown; postcode?: unknown; street?: unknown; number?: unknown; coordinates?: { lat?: number; lng?: number } };
-    const buildDropoffPayload = (norm: NormShape, property?: Record<string, unknown>) => {
-      const postcode = normalizeUkPostcode(typeof norm?.postcode === 'string' ? norm.postcode : '');
-      return {
-        full: (typeof norm?.full === 'string' ? norm.full : 'Dropoff Address'),
-        line1: (typeof norm?.line1 === 'string' ? norm.line1 : '1 Main Street'),
-        city: (typeof norm?.city === 'string' ? norm.city : 'London'),
-        postcode: postcode || 'SW1A 1AA',
-        propertyType: property?.type || 'house',
-        street: (typeof norm?.street === 'string' ? norm.street : 'Main Street'),
-        number: (typeof norm?.number === 'string' ? norm.number : '1'),
-        coordinates: {
-          lat: norm?.coordinates?.lat ?? 0,
-          lng: norm?.coordinates?.lng ?? 0
-        }
-      };
-    };
-
-    const dropoffsPayload: Array<{ line1?: string; city?: string; postcode?: string }> = [];
-
-    if (dropNorm) {
-      dropoffsPayload.push(buildDropoffPayload(dropNorm, formData.step1.dropoffProperty));
-    }
-
-    segmentDropoffs.forEach(({ norm, property }) => {
-      if (!norm) return;
-      const key = `${typeof norm.line1 === 'string' ? norm.line1 : ''}|${typeof norm.postcode === 'string' ? norm.postcode : ''}`.toLowerCase();
-      const exists = dropoffsPayload.some((d) => `${d.line1}|${d.postcode}`.toLowerCase() === key);
-      if (!exists) {
-        dropoffsPayload.push(buildDropoffPayload(norm, property));
-      }
-    });
-
-    if (dropoffsPayload.length === 0) {
-      dropoffsPayload.push(buildDropoffPayload(dropNorm || {}, formData.step1.dropoffProperty));
-    }
 
     // Validate addresses exist
     if (!pickupNorm || !dropNorm) {
-      setPricingFailure('Please complete both pickup and drop-off addresses.');
+      setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
       return;
     }
 
@@ -1035,7 +735,7 @@ function BookingLuxuryContent() {
     const dropPostcode = normalizeUkPostcode(dropNorm.postcode);
 
     if (!isValidUkPostcode(pickupPostcode) || !isValidUkPostcode(dropPostcode)) {
-      setPricingFailure('Please use valid UK postcodes for pickup and drop-off.');
+      setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
       toast({
         title: 'Postcode needed',
         description: 'Please enter valid UK postcodes (e.g., SW1A 1AA, M1 1AE).',
@@ -1058,12 +758,12 @@ function BookingLuxuryContent() {
     const dropIsZero = dropLat === 0 && dropLng === 0;
 
     if (!hasPickupCoordinates || pickupIsZero) {
-      setPricingFailure('Pickup coordinates are invalid. Please re-select the pickup address.');
+      setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
       return;
     }
 
     if (!hasDropCoordinates || dropIsZero) {
-      setPricingFailure('Drop-off coordinates are invalid. Please re-select the drop-off address.');
+      setPricingFailure(ADDRESS_SUGGESTION_REQUIRED_MESSAGE);
       return;
     }
 
@@ -1071,7 +771,14 @@ function BookingLuxuryContent() {
     quoteResult.refresh();
     return;
 
-  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, normalizeAddressForPricing, quoteResult.refresh]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [formData.step1, setPricingFailure, normalizeAddressForPricing, quoteInput, quoteResult.refresh]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleQuoteExpired = useCallback((previousAmountPence?: number) => {
+    pendingQuoteRefreshAmountPenceRef.current = typeof previousAmountPence === 'number'
+      ? previousAmountPence
+      : null;
+    quoteResult.refresh();
+  }, [quoteResult.refresh]);
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -2681,7 +2388,7 @@ function BookingLuxuryContent() {
                   getTotalSegmentsPrice={getTotalSegmentsPrice}
                   onBookingCreated={handleBookingCreated}
                   quoteData={quoteResult.data ?? undefined}
-                  onQuoteExpired={quoteResult.refresh}
+                  onQuoteExpired={handleQuoteExpired}
                 />
                 </ResponsiveSection>
               </Box>
