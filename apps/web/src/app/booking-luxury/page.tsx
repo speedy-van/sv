@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable no-console -- booking flow debug logging */
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, useMemo } from 'react';
 import {
   safeLocalStorageGetItem,
   safeLocalStorageRemoveItem,
@@ -38,6 +38,8 @@ import AddressesStep from './components/AddressesStep';
 import WhereAndWhatStepHierarchical from './components/WhereAndWhatStepHierarchical';
 import WhoAndPaymentStepSimple from './components/WhoAndPaymentStep_Simple';
 import { useBookingForm } from './hooks/useBookingForm';
+import { useQuote } from './hooks/useQuote';
+import type { QuoteRequest, QuoteResponse } from '@/lib/pricing/quote-schema';
 import FloatingActionButtons from './components/FloatingActionButtons';
 import AIItemExtractionAssistant from './components/AIItemExtractionAssistant';
 import CustomerChatWidget from '@/components/customer/CustomerChatWidget';
@@ -291,6 +293,34 @@ function BookingLuxuryContent() {
   // This prevents the stale closure bug where parallel pricing updates overwrite each other
   const pendingSegmentPricing = useRef<Map<number, Record<string, unknown>>>(new Map());
 
+  // Phase 0: server-side quote — single-leg only
+  const quoteInput = useMemo((): QuoteRequest | null => {
+    const s1 = formData.step1;
+    const segments = (s1.segments || []) as BookingSegment[];
+    if (segments.length > 1) return null;
+    const pickup = s1.pickupAddress;
+    const dropoff = s1.dropoffAddress;
+    if (!pickup?.coordinates?.lat || !pickup?.coordinates?.lng) return null;
+    if (!dropoff?.coordinates?.lat || !dropoff?.coordinates?.lng) return null;
+    const pPost = normalizeUkPostcode(pickup.postcode ?? '');
+    const dPost = normalizeUkPostcode(dropoff.postcode ?? '');
+    if (!isValidUkPostcode(pPost) || !isValidUkPostcode(dPost)) return null;
+    const items = (s1.items ?? []).filter((i: any) => i?.id && i?.name && (i?.quantity ?? 0) > 0);
+    if (items.length === 0) return null;
+    return {
+      pickup: { full: (pickup as any).formatted_address ?? (pickup as any).address ?? '', postcode: pPost, coordinates: { lat: pickup.coordinates.lat, lng: pickup.coordinates.lng }, city: pickup.city ?? 'London' },
+      dropoffs: [{ full: (dropoff as any).formatted_address ?? (dropoff as any).address ?? '', postcode: dPost, coordinates: { lat: dropoff.coordinates.lat, lng: dropoff.coordinates.lng }, city: dropoff.city ?? 'London' }],
+      items: items.map((i: any) => ({ id: i.id, name: i.name, quantity: i.quantity })),
+      crewSize: (s1.crewSize ?? '2') as QuoteRequest['crewSize'],
+      extras: { packing: false, assembly: [] },
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.step1.pickupAddress, formData.step1.dropoffAddress, formData.step1.items, formData.step1.crewSize, formData.step1.segments]);
+
+  const quoteResult = useQuote(quoteInput);
+
+  const segmentCount = (formData.step1.segments || []).length;
+
   const setPricingFailure = useCallback((message: string) => {
     setPricingFlowState('error');
     setPricingFlowMessage(message);
@@ -324,6 +354,39 @@ function BookingLuxuryContent() {
         : undefined;
     addAdditionalSegment(tiersRef);
   }, [addAdditionalSegment, pricingTiers]);
+
+  // Phase 0: sync quote result → pricingTiers (single-leg only)
+  useEffect(() => {
+    if (segmentCount > 1) return;
+    if (quoteResult.status === 'success' && quoteResult.data) {
+      const q = quoteResult.data;
+      const cheapestEntry = q.datePrices.find((p: { cheapest: boolean }) => p.cheapest) ?? q.datePrices[0];
+      const stdPrice = cheapestEntry ? cheapestEntry.totalPence / 100 : 0;
+      if (stdPrice <= 0) return;
+      setPricingTiers({
+        economy: { price: Math.round(stdPrice * 85) / 100 },
+        standard: { price: stdPrice },
+        express: { price: Math.round(stdPrice * 150) / 100 },
+      });
+      setPricingFlowState('success');
+      setPricingFlowMessage(null);
+      setIsLoadingAvailability(false);
+      updateFormData('step1', {
+        quote: { id: q.quoteId, expiresAt: q.expiresAt, dateKey: '' },
+        pricing: { baseFee: 0, distanceFee: 0, volumeFee: 0, serviceFee: 0, urgencyFee: 0, vat: 0, total: stdPrice, distance: 0 },
+      });
+    } else if (quoteResult.status === 'loading' && !quoteResult.isStale) {
+      setPricingFlowState('loading');
+      setPricingFlowMessage('Calculating your quote...');
+      setIsLoadingAvailability(true);
+    } else if (quoteResult.status === 'error') {
+      setPricingFailure(quoteResult.error?.message ?? 'Quote unavailable. Please retry.');
+      setIsLoadingAvailability(false);
+    }
+    if (quoteResult.status !== 'loading') {
+      setIsLoadingAvailability(false);
+    }
+  }, [quoteResult.status, quoteResult.data, quoteResult.error, quoteResult.isStale, segmentCount, setPricingFailure, updateFormData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Normalize address from autocomplete to comprehensive pricing schema
   // ✅ MOVED UP: Must be defined before calculateSegmentPricing which depends on it
@@ -1004,189 +1067,11 @@ function BookingLuxuryContent() {
       return;
     }
 
-    setPricingFlowState('loading');
-    setPricingFlowMessage('Calculating your quote...');
-    setIsLoadingAvailability(true);
+    // Phase 0: single-leg pricing via server quote hook
+    quoteResult.refresh();
+    return;
 
-    try {
-      // ✅ CRITICAL FIX: Validate items before sending to API
-      // Do not use default items - require explicit item selection
-      const validItems = itemsToUse
-        .map((item) => {
-          const quantity = typeof item?.quantity === 'number'
-            ? item.quantity
-            : parseInt(String(item?.quantity ?? '0'), 10);
-
-          return {
-            id: item?.id,
-            name: item?.name,
-            quantity,
-            weight_override: item?.weight,
-            volume_override: item?.volume,
-          };
-        })
-        .filter((item) => item && item.id && item.name && typeof item.quantity === 'number' && item.quantity > 0);
-
-      // ✅ CRITICAL FIX: Require at least one valid item
-      // Do not use default items - this leads to inaccurate pricing
-      if (validItems.length === 0) {
-        setPricingFailure('Please review your items. We could not use the current item selection for quoting.');
-        setIsLoadingAvailability(false);
-        return;
-      }
-
-      const payloadItems = validItems;
-
-      console.log('📤 Sending pricing request with items:', payloadItems.length);
-
-      const response = await fetch('/api/pricing/comprehensive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: payloadItems,
-          pickup: { 
-            full: pickupNorm?.full || 'Pickup Address',
-            line1: pickupNorm?.line1 || '1 Main Street',
-            city: pickupNorm?.city || 'London',
-            postcode: pickupNorm?.postcode || 'SW1A 1AA',
-            propertyType: 'house' as const,
-            street: pickupNorm?.street || 'Main Street',
-            number: pickupNorm?.number || '1',
-            coordinates: {
-              lat: pickupNorm?.coordinates?.lat || 0,
-              lng: pickupNorm?.coordinates?.lng || 0
-            }
-          },
-          dropoffs: dropoffsPayload,
-          scheduledDate: (() => {
-            const fallback = () => {
-              const d = new Date(Date.now() + 24 * 60 * 60 * 1000);
-              d.setUTCHours(9, 0, 0, 0);
-              return d.toISOString();
-            };
-
-            const raw = formData.step1.pickupDate;
-            if (!raw) return fallback();
-
-            // Try direct parse first
-            const direct = new Date(raw);
-            if (!Number.isNaN(direct.getTime())) {
-              direct.setUTCHours(9, 0, 0, 0);
-              return direct.toISOString();
-            }
-
-            // Try appending a time component
-            const withTime = new Date(`${raw}T09:00:00.000Z`);
-            if (!Number.isNaN(withTime.getTime())) {
-              return withTime.toISOString();
-            }
-
-            // Last resort
-            return fallback();
-          })(),
-          serviceLevel: 'standard',
-          serviceTier: formData.step1.serviceTier || 'economy', // ✅ NEW: Pass serviceTier for competitive pricing
-          // ✅ CRITICAL: Include crewSize for crew surcharge calculation
-          // Crew size affects price: 2-men = +20%, 3-men = +35%, 4-men = +50%
-          crewSize: formData.step1.crewSize || '1'
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        if (!data || data.success !== true || !data.data) {
-          console.error('Pricing API returned an unexpected payload', { data });
-          setPricingFailure('Quote service returned an invalid response. Please retry quote.');
-          return;
-        }
-
-        setAvailabilityData(data.data.availability);
-
-        const amountMinorRaw = data.data.amountGbpMinor;
-        let amountMinor: number;
-
-        if (typeof amountMinorRaw === 'string') {
-          amountMinor = parseFloat(amountMinorRaw);
-        } else {
-          amountMinor = amountMinorRaw;
-        }
-
-        if (typeof amountMinor !== 'number' || Number.isNaN(amountMinor) || amountMinor <= 0) {
-          console.error('Pricing API returned an invalid amount', { amountMinorRaw });
-          setPricingFailure('Quote amount is invalid. Please retry quote.');
-          return;
-        }
-
-        const normalizePrice = (value: number) => {
-          const fixed = value.toFixed(2);
-          return parseFloat(fixed);
-        };
-
-        const rawBasePrice = amountMinor / 100;
-        const basePrice = normalizePrice(rawBasePrice);
-        const economyPriceValue = normalizePrice(rawBasePrice * 0.85);
-        const expressPriceValue = normalizePrice(rawBasePrice * 1.5);
-
-        const calculatedTiers = {
-          economy: {
-            price: economyPriceValue,
-            available: data.data.availability?.economy?.next_available_date,
-            availability: data.data.availability?.economy
-          },
-          standard: {
-            price: basePrice,
-            available: data.data.availability?.standard?.next_available_date,
-            availability: data.data.availability?.standard
-          },
-          express: {
-            price: expressPriceValue,
-            available: data.data.availability?.express?.next_available_date,
-            availability: data.data.availability?.express
-          }
-        };
-
-        setPricingTiers(calculatedTiers);
-        setPricingFlowState('success');
-        setPricingFlowMessage(null);
-        setCapacityCheck(data.data.route?.capacityCheck || null);
-        setRouteSummary(data.data.route || null);
-
-        // ✅ CRITICAL FIX: Also update formData.step1.pricing so addReturnSegment can copy it
-        updateFormData('step1', {
-          pricing: {
-            baseFee: basePrice * 0.4,
-            distanceFee: basePrice * 0.3,
-            volumeFee: basePrice * 0.15,
-            serviceFee: basePrice * 0.1,
-            urgencyFee: 0,
-            vat: basePrice * 0.05,
-            total: basePrice,
-            distance: data.data.distance || formData.step1.distance || 0,
-          }
-        });
-
-        console.log('✅ Enterprise Engine Pricing Tiers (STEP 2):', {
-          rawBasePrice,
-          basePrice,
-          economy: calculatedTiers.economy.price,
-          standard: calculatedTiers.standard.price,
-          express: calculatedTiers.express.price,
-          note: 'These exact values will be used in Step 3',
-          formDataPricingUpdated: true
-        });
-
-      } else {
-        console.error('Pricing API error:', await response.text());
-        setPricingFailure('Unable to generate your quote right now. Please retry quote.');
-      }
-    } catch (error) {
-      console.error('Auto-pricing calculation failed:', error);
-      setPricingFailure('Quote request failed. Please retry quote.');
-    } finally {
-      setIsLoadingAvailability(false);
-    }
-  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, toast, normalizeAddressForPricing, updateFormData]);
+  }, [calculateAllSegmentsPricing, formData.step1, setPricingFailure, normalizeAddressForPricing, quoteResult.refresh]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set isClient to true after component mounts to avoid hydration mismatch
   useEffect(() => {
@@ -2810,6 +2695,7 @@ function BookingLuxuryContent() {
                   removePromotionCode={removePromotionCode}
                   getTotalSegmentsPrice={getTotalSegmentsPrice}
                   onBookingCreated={handleBookingCreated}
+                  quoteData={quoteResult.data ?? undefined}
                 />
                 </ResponsiveSection>
               </Box>

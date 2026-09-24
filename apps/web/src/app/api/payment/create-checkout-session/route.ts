@@ -323,16 +323,11 @@ export async function POST(request: NextRequest) {
     }
     
     if (existingBooking) {
-      // Update existing booking status to PENDING_PAYMENT
-      console.log('📝 Updating existing booking status...');
+      // Update status only — do NOT overwrite totalGBP, which was set by /api/booking-luxury
       booking = await prisma.booking.update({
         where: { id: existingBooking.id },
-        data: { 
-          status: 'PENDING_PAYMENT',
-          totalGBP: amountInPence,
-        }
+        data: { status: 'PENDING_PAYMENT' },
       });
-      console.log('✅ Updated existing booking:', booking.id);
     } else {
       // Create new booking in database BEFORE creating Stripe session
       console.log('📝 Creating new booking in database...');
@@ -399,7 +394,10 @@ export async function POST(request: NextRequest) {
             pickupTimeSlot: bookingData.pickupTimeSlot || null,
             urgency: bookingData.urgency || 'scheduled',
             estimatedDurationMinutes: 120, // Default duration
-            crewSize: 'TWO',
+            crewSize: (() => {
+              const m: Record<string, 'ONE'|'TWO'|'THREE'|'FOUR'> = { '1':'ONE','2':'TWO','3':'THREE','4':'FOUR' };
+              return m[(bookingData as any)?.crewSize] ?? 'TWO';
+            })(),
             baseDistanceMiles: 0, // Will be calculated later
             distanceCostGBP: 0, // Will be calculated later
             accessSurchargeGBP: 0,
@@ -507,7 +505,8 @@ export async function POST(request: NextRequest) {
               description: 'Professional moving and van hire service',
               images: ['https://speedy-van.co.uk/logo.png'],
             },
-            unit_amount: amountInPence,
+            // HARD RULE: charge the server-stored amount, never the client-supplied amount
+            unit_amount: booking.totalGBP || amountInPence,
           },
           quantity: 1,
         },

@@ -241,6 +241,8 @@ const step1Schema = z.object({
   // Multi-leg booking support
   isMultiLeg: z.boolean().default(false),
   segments: z.array(bookingSegmentSchema).optional().default([]), // Properly validated BookingSegment
+  // Server-side quote token (Phase 0+)
+  quote: z.object({ id: z.string(), expiresAt: z.string(), dateKey: z.string() }).optional(),
 }).superRefine((data, ctx) => {
   if (data.pickupDateChoice === 'known') {
     if (!data.pickupDate || data.pickupDate.trim().length === 0) {
@@ -399,6 +401,7 @@ const initialFormData: FormData = {
     },
     isMultiLeg: false,
     segments: [],
+    quote: undefined,
   },
   step2: {
     customerDetails: {

@@ -318,15 +318,10 @@ async function handleCheckoutSessionCompleted(session: any) {
       return;
     }
 
-    // Validate payment amount - booking.totalGBP is in pounds, amount_total is in pence
-    const expectedAmount = booking.totalGBP * 100;
+    // Validate payment amount — totalGBP is stored in pence (not pounds)
+    const expectedAmount = booking.totalGBP; // already pence
     if (session.amount_total !== expectedAmount) {
-      console.error('❌ Payment amount mismatch:', {
-        expected: expectedAmount,
-        received: session.amount_total,
-        bookingId,
-      });
-      // Create audit log for amount mismatch
+      // Genuine mismatch: audit log + admin alert, do NOT confirm or dispatch
       await prisma.auditLog.create({
         data: {
           actorId: 'system',
@@ -342,7 +337,12 @@ async function handleCheckoutSessionCompleted(session: any) {
           },
         },
       });
-      // Continue processing but flag the issue
+      await sendAdminNotification({
+        subject: `Payment amount mismatch — booking ${bookingId}`,
+        message: `Expected ${expectedAmount}p, received ${session.amount_total}p (session ${session.id}). Booking NOT confirmed.`,
+        priority: 'critical',
+      });
+      return; // do not confirm or dispatch
     }
 
     // Get full booking details to check service type

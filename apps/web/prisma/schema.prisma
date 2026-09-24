@@ -234,6 +234,9 @@ model Booking {
   isMultiLeg                                                 Boolean               @default(false)
   totalSegments                                              Int                   @default(1)
   notes                                                      String?               // Customer special instructions
+  quoteId                                                    String?
+  extras                                                     Json?
+  promotionCode                                              String?
   Assignment                                                 Assignment[]
   BookingSegment                                             BookingSegment[]
   customer                                                   User?                 @relation(fields: [customerId], references: [id])
@@ -2609,4 +2612,21 @@ model JourneyOpportunity {
   @@index([scheduledDate])
   @@index([customerEmail])
   @@index([type, status, createdAt])
+}
+
+// ─── Phase 0: server-side price quotes ────────────────────────────────────────
+
+model PriceQuote {
+  id         String    @id @default(cuid())
+  inputHash  String
+  input      Json
+  result     Json
+  expiresAt  DateTime
+  consumedAt DateTime?
+  bookingId  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([inputHash])
+  @@index([expiresAt])
+  @@index([bookingId])
 }

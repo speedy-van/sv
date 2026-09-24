@@ -226,6 +226,10 @@ interface StripePaymentButtonProps {
   onError: (error: string) => void;
   disabled?: boolean;
   onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
+  /** Server-issued quote token — must be present for checkout to proceed. */
+  quoteId?: string;
+  /** London date key (YYYY-MM-DD) selected by the user. */
+  dateKey?: string;
 }
 
 export default function StripePaymentButton({
@@ -235,6 +239,8 @@ export default function StripePaymentButton({
   onError,
   disabled = false,
   onBookingCreated,
+  quoteId,
+  dateKey,
 }: StripePaymentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
@@ -385,6 +391,9 @@ export default function StripePaymentButton({
             total: Math.round(getCorrectTotal(bookingData) * 100) / 100,
             currency: 'GBP',
           },
+          // Phase 0: server-side quote tokens
+          ...(quoteId ? { quoteId } : {}),
+          ...(dateKey ? { dateKey } : {}),
           // ✅ CRITICAL FIX: Include segments for multi-leg bookings
           segments: bookingData.segments && Array.isArray(bookingData.segments) && bookingData.segments.length > 1
             ? bookingData.segments.map((segment: any, idx: number) => ({

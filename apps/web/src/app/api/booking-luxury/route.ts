@@ -10,6 +10,8 @@ import {
   convertBookingAmountsToPence
 } from '@/lib/utils/currency';
 import { dynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
+import { logger } from '@/lib/logger';
+import { resolveQuoteForCheckout } from '@/lib/pricing/quote-service';
 // Using Prisma enums instead
 // import {
 //   BookingStep,
@@ -527,14 +529,38 @@ export async function POST(request: NextRequest) {
 
     const bookingDraftId = typeof rawData.bookingDraftId === 'string' ? rawData.bookingDraftId : undefined;
 
-    console.log('📝 Creating new booking with validated data:', {
-      customer: bookingData.customer,
-      pickupAddress: bookingData.pickupAddress,
-      dropoffAddress: bookingData.dropoffAddress,
-      items: bookingData.items?.length || 0,
-      totalAmountPounds: bookingData.pricing.total,
-      totalAmountPence: poundsToPence(bookingData.pricing?.total || 0),
-      authenticatedUser: customerId ? 'Yes' : 'No',
+    // Phase 0: extract server-side quote tokens if present
+    const incomingQuoteId = typeof rawData.quoteId === 'string' ? rawData.quoteId.trim() || undefined : undefined;
+    const incomingDateKey = typeof rawData.dateKey === 'string' ? rawData.dateKey.trim() || undefined : undefined;
+
+    // Resolve quote early (fail fast before any DB writes)
+    let resolvedQuoteAmountPence: number | undefined;
+    let resolvedQuoteCrewSize: string | undefined;
+    if (incomingQuoteId && incomingDateKey) {
+      try {
+        const resolved = await resolveQuoteForCheckout({
+          quoteId: incomingQuoteId,
+          dateKey: incomingDateKey,
+          customerEmail: bookingData.customer.email,
+          promoCode: bookingData.promotionCode,
+        });
+        resolvedQuoteAmountPence = resolved.amountPence;
+        resolvedQuoteCrewSize = resolved.crewSize;
+        logger.info('[booking-luxury] quote resolved', { quoteId: incomingQuoteId, dateKey: incomingDateKey, amountPence: resolved.amountPence });
+      } catch (err: unknown) {
+        const code = (err as any)?.quoteCode as string | undefined;
+        logger.warn('[booking-luxury] quote resolution failed', { quoteId: incomingQuoteId, code, msg: (err as Error).message });
+        return NextResponse.json(
+          { error: (err as Error).message, code: code ?? 'QUOTE_ERROR' },
+          { status: 400 }
+        );
+      }
+    }
+
+    logger.info('[booking-luxury] creating booking', {
+      customer: bookingData.customer.email,
+      items: bookingData.items?.length ?? 0,
+      hasQuote: !!incomingQuoteId,
     });
 
     // Generate or accept provided booking reference
@@ -1000,7 +1026,9 @@ export async function POST(request: NextRequest) {
       '3': 'THREE',
       '4': 'FOUR',
     };
-    const mappedCrewSize = crewSizeMap[bookingData.crewSize || '1'] || 'ONE';
+    // Phase 0: prefer crew size from quote resolution (authoritative) over client-supplied value
+    const effectiveCrewSize = resolvedQuoteCrewSize ?? bookingData.crewSize ?? '1';
+    const mappedCrewSize = crewSizeMap[effectiveCrewSize] || 'ONE';
     
     // Calculate crew multiplier (affects price)
     // ✅ CRITICAL FIX: Only 1 Man = base price. 2+ Men = crew surcharge applied.
@@ -1055,7 +1083,8 @@ export async function POST(request: NextRequest) {
     const normalizedTotal = Number.isFinite(calculatedTotal) ? calculatedTotal : baseTotal;
 
     const amountsInPence = {
-      totalGBP: poundsToPence(normalizedTotal),
+      // Phase 0: use server-resolved quote amount when available; fall back to dynamic engine
+      totalGBP: resolvedQuoteAmountPence ?? poundsToPence(normalizedTotal),
       distanceCostGBP: 0, // No longer calculated
       accessSurchargeGBP: poundsToPence(accessSurchargeBase),
       weatherSurchargeGBP: 0, // Not implemented in new pricing engine
@@ -1186,7 +1215,9 @@ export async function POST(request: NextRequest) {
         crewMultiplierPercent: crewMultiplierPercent, // Calculated from crew size
         availabilityMultiplierPercent: 0, // Will be calculated
         totalGBP: amountsInPence.totalGBP,
-        
+        // Phase 0: link to server-issued quote for audit trail
+        quoteId: incomingQuoteId ?? null,
+
         // ✅ Multi-leg booking support
         isMultiLeg: isMultiLeg,
         totalSegments: isMultiLeg ? rawSegments.length : 1,

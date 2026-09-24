@@ -96,6 +96,8 @@ export const createLuxuryBookingSchema = z.object({
     currency: z.string().default('GBP'),
   }),
   promotionCode: z.string().optional(),
+  quoteId: z.string().optional(),
+  dateKey: z.string().optional(),
   promotionDetails: z.object({
     id: z.string().optional(),
     code: z.string().optional(),

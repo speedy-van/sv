@@ -77,6 +77,7 @@ import {
 } from 'react-icons/si';
 import type { BookingSegment } from '../types/segment';
 import { FormData, CustomerDetails } from '../hooks/useBookingForm';
+import type { QuoteResponse } from '@/lib/pricing/quote-schema';
 import StripePaymentButton from './StripePaymentButton';
 import { useIsIOSDevice } from '@/hooks/useIsIOSDevice';
 import { ALL_REMOVAL_ITEMS } from '@/lib/uk-removal-items-data';
@@ -101,6 +102,8 @@ interface WhoAndPaymentStepProps {
   capacityCheck?: unknown;
   routeSummary?: unknown;
   onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
+  /** Server-issued quote (Phase 0+). When present, calendar uses server prices. */
+  quoteData?: QuoteResponse;
 }
 
 export default function WhoAndPaymentStepSimple({
@@ -119,6 +122,7 @@ export default function WhoAndPaymentStepSimple({
   validatePromotionCode,
   applyPromotionCode,
   removePromotionCode,
+  quoteData,
 }: WhoAndPaymentStepProps) {
   const [selectedDayKey, setSelectedDayKey] = useState<string | undefined>(undefined);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -470,10 +474,28 @@ export default function WhoAndPaymentStepSimple({
   );
 
   const priceCalendar = useMemo(() => {
-    // CRITICAL: Use todayAnchor (fixed) instead of pickupDate (changes)
-    // This prevents infinite loop when user selects a date
+    // Phase 0: prefer server prices from quote (uses correct London date keys)
+    if (quoteData?.datePrices?.length) {
+      return quoteData.datePrices.map((serverEntry) => {
+        const [y, m, d] = serverEntry.dateKey.split('-').map(Number);
+        const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+        const weekday = date.toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'Europe/London' });
+        const dayNum = date.toLocaleDateString('en-GB', { day: 'numeric', timeZone: 'Europe/London' });
+        const monthStr = date.toLocaleDateString('en-GB', { month: 'short', timeZone: 'Europe/London' });
+        return {
+          date,
+          iso: date.toISOString(),
+          key: serverEntry.dateKey,
+          label: `${weekday} ${dayNum} ${monthStr}`,
+          weekday,
+          price: serverEntry.totalPence / 100,
+          factor: 1,
+        };
+      });
+    }
+    // Fallback: client-side pricing (while quote loads or for multi-leg)
     return buildPriceCalendar(standardBase, 21, todayAnchor);
-  }, [buildPriceCalendar, standardBase, todayAnchor]);
+  }, [buildPriceCalendar, standardBase, todayAnchor, quoteData?.datePrices]);
 
   // Fallback media detection to ensure mobile UI toggles even if breakpoint hook fails
   useEffect(() => {
@@ -491,40 +513,30 @@ export default function WhoAndPaymentStepSimple({
       a.getDate() === b.getDate();
   };
 
-  // Initialize selectedDayKey only once on mount, based on existing pickupDate or first available
+  // Restore previously selected date on mount; no auto-preselection to today
   useEffect(() => {
-    // If user already chose a day, keep it
     if (selectedDayKey) return;
-    
-    // Try to match with initialPickupDate (from formData)
-    const match = priceCalendar.find((entry) => isSameDay(entry.date, initialPickupDate));
-    if (match) {
-      setSelectedDayKey(match.key);
-    } else if (priceCalendar.length > 0) {
-      // Default to first day (today)
-      setSelectedDayKey(priceCalendar[0].key);
+    const savedDate = formData.step1.pickupDate;
+    if (savedDate) {
+      const match = priceCalendar.find((entry) => entry.key === savedDate || isSameDay(entry.date, new Date(savedDate)));
+      if (match) setSelectedDayKey(match.key);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 
   const handleSelectDay = useCallback((index: number) => {
     const target = priceCalendar[index];
-    console.log('📅 handleSelectDay called:', { index, target, currentSelectedDayKey: selectedDayKey });
-    if (!target) {
-      console.warn('⚠️ No target found at index:', index);
-      return;
-    }
-    // Avoid unnecessary updates if already selected
-    if (selectedDayKey === target.key) {
-      console.log('✓ Already selected, skipping');
-      return;
-    }
-    console.log('✅ Updating selection to:', target.key);
+    if (!target) return;
+    if (selectedDayKey === target.key) return;
     setSelectedDayKey(target.key);
+    const quoteUpdate = formData.step1.quote
+      ? { ...formData.step1.quote, dateKey: target.key }
+      : undefined;
     updateFormData('step1', {
-      pickupDate: target.key, // store date-only to avoid tz drift
+      pickupDate: target.key, // London date key (YYYY-MM-DD)
+      ...(quoteUpdate ? { quote: quoteUpdate } : {}),
     });
-  }, [priceCalendar, selectedDayKey, updateFormData]);
+  }, [priceCalendar, selectedDayKey, updateFormData, formData.step1.quote]);
 
   const selectedPriceOption = useMemo(() => {
     if (selectedDayKey) {
@@ -2115,7 +2127,7 @@ export default function WhoAndPaymentStepSimple({
                   economyPrice: actualPrice,
                   standardPrice: actualPrice,
                   priorityPrice: actualPrice,
-                  scheduledDate: formData.step1.pickupDate || new Date().toISOString().split('T')[0],
+                  scheduledDate: formData.step1.pickupDate || undefined,
                   scheduledTime: formData.step1.pickupTimeSlot,
                   pickupDetails: formData.step1.pickupProperty as Record<string, unknown>,
                   dropoffDetails: formData.step1.dropoffProperty as Record<string, unknown>,
@@ -2128,6 +2140,8 @@ export default function WhoAndPaymentStepSimple({
                   marketplacePickup: formData.step1.marketplacePickup || null,
                 }}
                 amount={priceReady ? (formData.step2.promotionDetails?.finalAmount || actualPrice) : 0}
+                quoteId={formData.step1.quote?.id}
+                dateKey={formData.step1.quote?.dateKey || selectedDayKey}
                 disabled={
                   addressIncomplete ||
                   !priceReady ||
