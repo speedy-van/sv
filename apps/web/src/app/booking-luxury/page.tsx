@@ -624,12 +624,12 @@ function BookingLuxuryContent() {
           pendingSegmentPricing.current.set(segmentIndex, {
             items: itemsToUse,
             pricing: {
-              baseFee: breakdown.baseFee || (totalPrice * 0.4),
-              distanceFee: breakdown.distanceFee || (totalPrice * 0.3),
-              volumeFee: breakdown.volumeFee || breakdown.itemsCost || (totalPrice * 0.15),
-              serviceFee: breakdown.serviceFee || (totalPrice * 0.1),
-              urgencyFee: breakdown.urgencyFee || 0,
-              vat: breakdown.vat || (totalPrice * 0.05),
+              baseFee: breakdown.baseFee ?? 0,
+              distanceFee: breakdown.distanceFee ?? 0,
+              volumeFee: breakdown.volumeFee ?? breakdown.itemsCost ?? 0,
+              serviceFee: breakdown.serviceFee ?? 0,
+              urgencyFee: breakdown.urgencyFee ?? 0,
+              vat: breakdown.vat ?? 0,
               total: totalPrice,
               distance: apiData.distance || 0,
             }
@@ -1632,23 +1632,8 @@ function BookingLuxuryContent() {
               updates.items = [...outboundSegment.items];
             }
             if (needsPricingSync) {
-              // ✅ CRITICAL FIX: Use pricingTiers as fallback if outbound pricing is 0
               if (outboundSegment.pricing && outboundSegment.pricing.total > 0) {
                 updates.pricing = { ...outboundSegment.pricing };
-              } else if (pricingTiers?.standard?.price && pricingTiers.standard.price > 0) {
-                // Fallback to pricingTiers
-                const basePrice = pricingTiers.standard.price;
-                updates.pricing = {
-                  baseFee: basePrice * 0.4,
-                  distanceFee: basePrice * 0.3,
-                  volumeFee: basePrice * 0.15,
-                  serviceFee: basePrice * 0.1,
-                  urgencyFee: 0,
-                  vat: basePrice * 0.05,
-                  total: basePrice,
-                  distance: outboundSegment.distance || 0,
-                };
-                console.log('✅ Using pricingTiers for return segment sync:', basePrice);
               }
               updates.distance = outboundSegment.distance;
             }
@@ -2696,6 +2681,7 @@ function BookingLuxuryContent() {
                   getTotalSegmentsPrice={getTotalSegmentsPrice}
                   onBookingCreated={handleBookingCreated}
                   quoteData={quoteResult.data ?? undefined}
+                  onQuoteExpired={quoteResult.refresh}
                 />
                 </ResponsiveSection>
               </Box>

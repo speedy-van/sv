@@ -91,7 +91,7 @@ interface BookingData {
   items: ItemData[];
   pricing: PricingData;
   serviceType: string;
-  scheduledDate: string;
+  scheduledDate?: string;
   scheduledTime?: string;
   pickupDetails: PropertyDetails;
   dropoffDetails: PropertyDetails;
@@ -183,23 +183,16 @@ const normaliseFloorNumber = (address?: AddressData): string | undefined => {
 const getCorrectTotal = (bookingData: BookingData): number => {
   const serviceType = bookingData.serviceType;
   const baseTotal = bookingData.pricing.total || 0;
-
-  // If promotion is applied, use the final amount from promotion details
-  if (bookingData.promotionDetails?.finalAmount) {
-    return bookingData.promotionDetails.finalAmount;
-  }
-
-  // Use three-tier pricing with correct service type mapping
-  // serviceType comes as 'economy' | 'standard' | 'express' from selectedService
+  // Promotion discounts are applied server-side via resolveQuoteForCheckout.
+  // Never use client-supplied promotionDetails.finalAmount here.
   switch (serviceType) {
     case 'economy':
-      return bookingData.economyPrice || (baseTotal * 0.85); // 15% discount for economy
+      return bookingData.economyPrice || (baseTotal * 0.85);
     case 'standard':
-      return bookingData.standardPrice || baseTotal; // Standard price
+      return bookingData.standardPrice || baseTotal;
     case 'express':
-      return bookingData.priorityPrice || (baseTotal * 1.5); // 50% premium for express/priority
+      return bookingData.priorityPrice || (baseTotal * 1.5);
     default:
-      // Fallback: use the total from pricing (which should already be correct)
       return baseTotal;
   }
 };
@@ -230,6 +223,8 @@ interface StripePaymentButtonProps {
   quoteId?: string;
   /** London date key (YYYY-MM-DD) selected by the user. */
   dateKey?: string;
+  /** Called when the server returns QUOTE_EXPIRED so the parent can refresh the quote. */
+  onQuoteExpired?: () => void;
 }
 
 export default function StripePaymentButton({
@@ -241,9 +236,13 @@ export default function StripePaymentButton({
   onBookingCreated,
   quoteId,
   dateKey,
+  onQuoteExpired,
 }: StripePaymentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  // retap: server computed a different total than the displayed amount
+  const [serverAmountPence, setServerAmountPence] = useState<number | null>(null);
+  const [requiresRetap, setRequiresRetap] = useState(false);
   const toast = useToast();
 
   const handlePayment = async () => {
@@ -287,8 +286,8 @@ export default function StripePaymentButton({
       let bookingDraftId = bookingData.bookingDraftId;
       let bookingReference = bookingData.bookingReference;
 
-      // Create booking if it doesn't exist yet
-      if (!bookingId) {
+      // Create booking if it doesn't exist yet (skip on re-tap after price adjustment)
+      if (!bookingId && !requiresRetap) {
         // Transform the data to match the API schema
         const pickupFlatNumber = normaliseFlatNumber(bookingData.pickupAddress);
         const dropoffFlatNumber = normaliseFlatNumber(bookingData.dropoffAddress);
@@ -461,24 +460,51 @@ export default function StripePaymentButton({
 
         if (!bookingResponse.ok) {
           const errorData = await bookingResponse.json();
-          console.error('❌ Booking API error:', {
-            status: bookingResponse.status,
-            error: errorData.error,
-            details: errorData.details,
-            validationErrors: errorData.validationErrors
-          });
-          
+
+          if (errorData.code === 'QUOTE_EXPIRED') {
+            toast({
+              title: 'Quote expired',
+              description: 'Fetching a fresh price — please tap pay again.',
+              status: 'warning',
+              duration: 6000,
+              isClosable: true,
+            });
+            onQuoteExpired?.();
+            setIsProcessing(false);
+            setPaymentStatus('idle');
+            return;
+          }
+
           if (errorData.validationErrors && Array.isArray(errorData.validationErrors)) {
             const errorMessages = errorData.validationErrors.map((err: any) => `${err.field}: ${err.message}`).join(', ');
             throw new Error(`Validation failed: ${errorMessages}`);
           }
-          
+
           throw new Error(errorData.error || `Failed to create booking (${bookingResponse.status})`);
         }
 
         const bookingResponseData = await bookingResponse.json();
         bookingId = bookingResponseData.booking.id;
         bookingReference = bookingResponseData.booking.reference;
+
+        // Server-amount guard: if the server computed a different total, require a
+        // second tap so the customer sees the adjusted price before being charged.
+        const serverPence: number | undefined = bookingResponseData.booking?.payment?.amountPence;
+        const displayedPence = Math.round(amount * 100);
+        if (serverPence !== undefined && Math.abs(serverPence - displayedPence) > 1) {
+          setServerAmountPence(serverPence);
+          setRequiresRetap(true);
+          setIsProcessing(false);
+          setPaymentStatus('idle');
+          toast({
+            title: `Price adjusted to £${(serverPence / 100).toFixed(2)}`,
+            description: 'Tap "Confirm & pay" to proceed at the updated price.',
+            status: 'info',
+            duration: 0,
+            isClosable: true,
+          });
+          return;
+        }
 
         if (onBookingCreated && bookingId && bookingReference) {
           onBookingCreated({ bookingId, reference: bookingReference });
@@ -639,6 +665,13 @@ export default function StripePaymentButton({
           {isProcessing ? (
             <HStack spacing={2}>
               <Text>Processing Payment...</Text>
+            </HStack>
+          ) : requiresRetap && serverAmountPence !== null ? (
+            <HStack spacing={3} align="center">
+              <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="700" letterSpacing="0.5px">
+                Confirm &amp; pay £{(serverAmountPence / 100).toFixed(2)}
+              </Text>
+              <Box as={FaLock} fontSize="16px" opacity={0.9} />
             </HStack>
           ) : (
             <HStack spacing={3} align="center">

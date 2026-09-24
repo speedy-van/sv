@@ -12,6 +12,7 @@ import {
 import { dynamicPricingEngine } from '@/lib/services/dynamic-pricing-engine';
 import { logger } from '@/lib/logger';
 import { resolveQuoteForCheckout } from '@/lib/pricing/quote-service';
+import { londonWallTimeToUtc } from '@/lib/dates/london';
 // Using Prisma enums instead
 // import {
 //   BookingStep,
@@ -26,6 +27,15 @@ import Pusher from 'pusher';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+function slotToHourMinute(slot: string | null | undefined): [number, number] {
+  if (!slot) return [8, 0];
+  const hm = slot.match(/^(\d{1,2}):(\d{2})$/);
+  if (hm) return [parseInt(hm[1], 10), parseInt(hm[2], 10)];
+  if (/afternoon/i.test(slot)) return [13, 0];
+  if (/evening/i.test(slot)) return [17, 0];
+  return [8, 0];
+}
 
 // Initialize Pusher for driver notifications
 const pusher = new Pusher({
@@ -536,6 +546,7 @@ export async function POST(request: NextRequest) {
     // Resolve quote early (fail fast before any DB writes)
     let resolvedQuoteAmountPence: number | undefined;
     let resolvedQuoteCrewSize: string | undefined;
+    let resolvedPromoCode: string | undefined;
     if (incomingQuoteId && incomingDateKey) {
       try {
         const resolved = await resolveQuoteForCheckout({
@@ -546,6 +557,7 @@ export async function POST(request: NextRequest) {
         });
         resolvedQuoteAmountPence = resolved.amountPence;
         resolvedQuoteCrewSize = resolved.crewSize;
+        resolvedPromoCode = resolved.promotionCode;
         logger.info('[booking-luxury] quote resolved', { quoteId: incomingQuoteId, dateKey: incomingDateKey, amountPence: resolved.amountPence });
       } catch (err: unknown) {
         const code = (err as any)?.quoteCode as string | undefined;
@@ -1195,8 +1207,15 @@ export async function POST(request: NextRequest) {
         id: crypto.randomUUID(),
         reference,
         status: 'PENDING_PAYMENT',
-        scheduledAt: bookingData.pickupDate ? new Date(bookingData.pickupDate) : 
-                     bookingData.scheduledFor ? new Date(bookingData.scheduledFor) : new Date(),
+        scheduledAt: (() => {
+          if (incomingDateKey) {
+            const [h, m] = slotToHourMinute(bookingData.pickupTimeSlot);
+            return londonWallTimeToUtc(incomingDateKey, h, m);
+          }
+          if (bookingData.pickupDate) return new Date(bookingData.pickupDate);
+          if (bookingData.scheduledFor) return new Date(bookingData.scheduledFor);
+          return new Date();
+        })(),
         pickupTimeSlot: bookingData.pickupTimeSlot || null,
         urgency: bookingData.urgency || 'scheduled',
         estimatedDurationMinutes: safeEstimatedDurationMinutes, // From pricing engine with fallback
@@ -1217,6 +1236,8 @@ export async function POST(request: NextRequest) {
         totalGBP: amountsInPence.totalGBP,
         // Phase 0: link to server-issued quote for audit trail
         quoteId: incomingQuoteId ?? null,
+        // Phase 0: persist validated promo code so usage-limit counts work
+        promotionCode: resolvedPromoCode ?? null,
 
         // ✅ Multi-leg booking support
         isMultiLeg: isMultiLeg,
@@ -1396,14 +1417,14 @@ export async function POST(request: NextRequest) {
     // Create Stripe Payment Intent with booking ID
     let stripePaymentIntentId: string | null = null;
     
-    if (calculatedTotal && calculatedTotal > 0) {
+    if (amountsInPence.totalGBP > 0) {
       try {
         const stripe = await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY!, {
           apiVersion: '2024-04-10',
         }));
 
         const paymentIntent = await stripe.paymentIntents.create({
-          amount: poundsToPence(calculatedTotal),
+          amount: amountsInPence.totalGBP,
           currency: 'gbp',
           metadata: {
             bookingId: booking.id,  // Now booking.id exists

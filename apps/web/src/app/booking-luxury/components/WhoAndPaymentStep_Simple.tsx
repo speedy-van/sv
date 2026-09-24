@@ -104,6 +104,8 @@ interface WhoAndPaymentStepProps {
   onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
   /** Server-issued quote (Phase 0+). When present, calendar uses server prices. */
   quoteData?: QuoteResponse;
+  /** Called when the server returns QUOTE_EXPIRED; triggers a fresh quote fetch. */
+  onQuoteExpired?: () => void;
 }
 
 export default function WhoAndPaymentStepSimple({
@@ -123,6 +125,7 @@ export default function WhoAndPaymentStepSimple({
   applyPromotionCode,
   removePromotionCode,
   quoteData,
+  onQuoteExpired,
 }: WhoAndPaymentStepProps) {
   const [selectedDayKey, setSelectedDayKey] = useState<string | undefined>(undefined);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -2153,6 +2156,7 @@ export default function WhoAndPaymentStepSimple({
                   !acceptedPrivacy
                 }
                 onBookingCreated={handleBookingCreated}
+                onQuoteExpired={onQuoteExpired}
                 onSuccess={(sessionId) => {
                   console.log('✅ Payment successful:', sessionId);
                   window.location.href = `/booking-luxury/success?session_id=${sessionId}`;
