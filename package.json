@@ -30,7 +30,10 @@
     "db:setup-local": "tsx scripts/setup-local-database.ts",
     "db:verify-isolation": "tsx scripts/verify-database-isolation.ts",
     "check:critical": "tsx scripts/check-critical-components.ts",
-    "hooks:install": "cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit || echo 'Git hooks installed'"
+    "hooks:install": "cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit || echo 'Git hooks installed'",
+    "deploy:check:web": "node scripts/verify-deployment-target.cjs web",
+    "deploy:check:api": "node scripts/verify-deployment-target.cjs api",
+    "deploy:verify:regression": "node scripts/deployment-target-regression.cjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

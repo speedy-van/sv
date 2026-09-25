@@ -310,11 +310,12 @@ const nextConfig = {
           },
         ],
       },
-      // CORS for /api/* — allow web-v2 origin (and previews) to call this API directly
+      // CORS for /api/* — set WEB_V2_ORIGIN env var to the cross-origin caller URL.
+      // speedy-van-co-uk-web-v2 was deleted 2026-09-24; default is now the canonical site.
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Origin', value: process.env.WEB_V2_ORIGIN || 'https://speedy-van-co-uk-web-v2.vercel.app' },
+          { key: 'Access-Control-Allow-Origin', value: process.env.WEB_V2_ORIGIN || 'https://www.speedyvan.uk' },
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PATCH,PUT,DELETE,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type,Authorization,X-Requested-With' },

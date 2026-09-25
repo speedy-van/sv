@@ -5,11 +5,12 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // CORS preflight short-circuit for /api/* — required so cross-origin POST/PATCH
-  // (e.g. from web-v2.vercel.app) doesn't 405 on the preflight.
+  // doesn't 405 on the preflight. Set WEB_V2_ORIGIN env var for cross-origin callers.
+  // speedy-van-co-uk-web-v2 was deleted 2026-09-24; default is now the canonical site.
   if (request.method === 'OPTIONS' && pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin') || '';
     const allowedOrigin =
-      process.env.WEB_V2_ORIGIN || 'https://speedy-van-co-uk-web-v2.vercel.app';
+      process.env.WEB_V2_ORIGIN || 'https://www.speedyvan.uk';
     const allow = origin === allowedOrigin ? origin : allowedOrigin;
     return new NextResponse(null, {
       status: 204,
