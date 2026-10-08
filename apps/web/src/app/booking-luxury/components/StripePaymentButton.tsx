@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Button,
   VStack,
@@ -226,6 +226,7 @@ interface StripePaymentButtonProps {
   onError: (error: string) => void;
   disabled?: boolean;
   onBookingCreated?: (payload: { bookingId: string; reference: string }) => void;
+  onSubmittingChange?: (submitting: boolean) => void;
 }
 
 export default function StripePaymentButton({
@@ -235,18 +236,29 @@ export default function StripePaymentButton({
   onError,
   disabled = false,
   onBookingCreated,
+  onSubmittingChange,
 }: StripePaymentButtonProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const mountedRef = useRef(true);
+  const submittingRef = useRef(false);
   const toast = useToast();
 
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const handlePayment = async () => {
-    if (disabled || isProcessing) return;
+    if (disabled || submittingRef.current) return;
 
     // CRITICAL: Save scroll position before payment processing (mobile only)
     const isMobile = window.innerWidth < 768;
     const scrollY = isMobile ? window.scrollY : undefined;
 
+    submittingRef.current = true;
+    onSubmittingChange?.(true);
     setIsProcessing(true);
     setPaymentStatus('processing');
 
@@ -521,7 +533,9 @@ export default function StripePaymentButton({
       
     } catch (error) {
       console.error('❌ Payment error:', error);
-      setPaymentStatus('error');
+      if (mountedRef.current) {
+        setPaymentStatus('error');
+      }
       const errorMessage = error instanceof Error ? error.message : 'Payment failed';
       onError(errorMessage);
       
@@ -533,7 +547,11 @@ export default function StripePaymentButton({
         isClosable: true,
       });
     } finally {
-      setIsProcessing(false);
+      submittingRef.current = false;
+      if (mountedRef.current) {
+        setIsProcessing(false);
+        onSubmittingChange?.(false);
+      }
     }
   };
 

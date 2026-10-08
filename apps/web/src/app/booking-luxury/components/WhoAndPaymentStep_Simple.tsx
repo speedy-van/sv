@@ -125,6 +125,7 @@ export default function WhoAndPaymentStepSimple({
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [promotionCode, setPromotionCode] = useState('');
   const [isValidatingPromotion, setIsValidatingPromotion] = useState(false);
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
   const { isOpen: _isSummaryExpanded, onToggle: _toggleSummary } = useDisclosure({ defaultIsOpen: false });
   const [pricingStage, setPricingStage] = useState<'calculating' | 'results'>('calculating');
   const [visibleCardsCount, setVisibleCardsCount] = useState(0);
@@ -2136,9 +2137,11 @@ export default function WhoAndPaymentStepSimple({
                   !formData.step2.customerDetails.email ||
                   !formData.step2.customerDetails.phone ||
                   !acceptedTerms ||
-                  !acceptedPrivacy
+                  !acceptedPrivacy ||
+                  checkoutSubmitting
                 }
                 onBookingCreated={handleBookingCreated}
+                onSubmittingChange={setCheckoutSubmitting}
                 onSuccess={(sessionId) => {
                   console.log('✅ Payment successful:', sessionId);
                   window.location.href = `/booking-luxury/success?session_id=${sessionId}`;
